@@ -23,8 +23,8 @@ export function Home() {
 
   return (
     <>
-      {/* Hero */}
-      <header className="relative flex min-h-dvh min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-obsidian">
+      {/* Hero — §8.2 dark, cinematic, warm; glass panel md+ bottom-left so center stays open for the tee */}
+      <header className="relative flex min-h-dvh min-h-screen w-full flex-col justify-end overflow-hidden bg-obsidian pb-10 pt-24 sm:pb-14 sm:pt-28 md:justify-end md:pb-16 md:pt-28 lg:pb-20">
         <div className="absolute inset-0">
           <img
             alt="Model wearing a HORO graphic tee in warm editorial photography"
@@ -35,33 +35,35 @@ export function Home() {
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
-        <div className="relative z-10 mx-auto w-full max-w-5xl px-4 text-center sm:px-6">
-          <div className="hero-glass-backdrop relative mx-auto max-w-xl rounded-2xl px-5 py-7 sm:px-8 sm:py-8 md:px-10 md:py-10">
-            <h1 className="font-headline mb-4 text-[26px] font-semibold leading-[1.2] tracking-[-0.03em] text-white md:text-[32px]">
-              Wear What You Mean
-            </h1>
-            <p className="font-body mx-auto mb-3 max-w-xl text-[17px] tracking-wide text-stone md:text-[17px]">
-              Find the design that says it for you.
-            </p>
-            <p className="font-body mx-auto mb-8 max-w-xl text-[14px] leading-relaxed text-stone/90 md:text-[15px]">
-              When nothing in your closet says what you&apos;re thinking.
-            </p>
-            <p className="font-label mb-8 text-xs font-medium uppercase tracking-[0.22em] text-stone">Starting at 799 EGP</p>
-            <Link
-              to="/vibes"
-              className="font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-5 text-sm font-medium uppercase tracking-[0.2em] text-white shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:brightness-95 sm:inline-block sm:w-auto sm:px-12"
-            >
-              Find Your Design
-            </Link>
-            <p className="font-label mt-4 text-[10px] font-medium uppercase tracking-[0.3em] text-stone">
-              COD Available | Free Exchange
-            </p>
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 md:mx-auto md:w-full md:max-w-7xl md:px-8 lg:px-10">
+          <div className="mx-auto flex max-w-xl flex-col items-center text-center md:mx-0 md:items-start md:text-left">
+            <div className="hero-glass-backdrop relative w-full max-w-xl rounded-2xl px-5 py-7 sm:px-8 sm:py-8 md:px-10 md:py-10">
+              <h1 className="font-headline mb-4 text-[26px] font-semibold leading-[1.2] tracking-[-0.03em] text-white md:text-[32px]">
+                Wear What You Mean
+              </h1>
+              <p className="font-body mx-auto mb-3 max-w-xl text-[17px] tracking-wide text-stone md:mx-0 md:text-[17px]">
+                Find the design that says it for you.
+              </p>
+              <p className="font-body mx-auto mb-8 max-w-xl text-[14px] leading-relaxed text-stone/90 md:mx-0 md:text-[15px]">
+                When nothing in your closet says what you&apos;re thinking.
+              </p>
+              <p className="font-label mb-8 text-xs font-medium uppercase tracking-[0.22em] text-stone">Starting at 799 EGP</p>
+              <Link
+                to="/vibes"
+                className="home-hover-lift font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-5 text-sm font-medium uppercase tracking-[0.2em] text-white shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:brightness-95 sm:inline-block sm:w-auto sm:px-12 md:max-w-none"
+              >
+                Find Your Design
+              </Link>
+              <p className="font-label mt-4 text-[10px] font-medium uppercase tracking-[0.3em] text-stone">
+                COD Available | Free Exchange
+              </p>
+            </div>
           </div>
         </div>
         {heroThumbProduct ? (
           <Link
             to={`/products/${heroThumbProduct.slug}`}
-            className={`glass-trust-badge absolute bottom-32 right-3 z-20 flex h-32 w-24 flex-col overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/15 transition-all duration-700 hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:bottom-28 sm:right-4 sm:h-36 sm:w-28 md:bottom-32 md:right-10 md:h-40 md:w-32 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+            className={`glass-trust-badge home-hover-lift-featured absolute bottom-32 right-3 z-20 flex h-32 w-24 flex-col overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/15 transition-all duration-700 hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:bottom-28 sm:right-4 sm:h-36 sm:w-28 md:bottom-32 md:right-10 md:h-40 md:w-32 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
             aria-label={`Featured tee: ${heroThumbProduct.name}`}
           >
             <div className="relative min-h-0 flex-1">
@@ -95,7 +97,7 @@ export function Home() {
             <p className="font-body text-[24px] font-light leading-tight text-warm-charcoal md:text-[36px] md:leading-[1.2]">
               When nothing in your closet says what you&apos;re actually thinking.
             </p>
-            <p className="font-body text-[17px] italic text-clay md:text-[17px]">We get it. That&apos;s why we&apos;re here.</p>
+            <p className="font-body text-[17px] italic text-deep-teal md:text-[17px]">We get it. That&apos;s why we&apos;re here.</p>
           </div>
         </div>
       </section>
@@ -169,7 +171,10 @@ export function Home() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-16 flex flex-col gap-4 sm:mb-24 sm:flex-row sm:items-end sm:justify-between">
             <h2 className="font-headline text-[22px] font-medium tracking-tight text-obsidian md:text-4xl md:leading-[1.3]">Just Dropped</h2>
-            <Link to="/vibes" className="font-label min-h-12 border-b border-obsidian pb-1 text-xs font-medium uppercase tracking-widest text-label">
+            <Link
+              to="/vibes"
+              className="font-label min-h-12 border-b border-obsidian pb-1 text-xs font-medium uppercase tracking-widest text-label transition-colors hover:text-deep-teal"
+            >
               View All
             </Link>
           </div>
@@ -179,7 +184,7 @@ export function Home() {
               const vibe = getVibe(p.vibeSlug);
               const main = getProductMedia(p.slug).main;
               return (
-                <article key={p.slug} className="group">
+                <article key={p.slug} className="group home-latest-product">
                   <Link to={`/products/${p.slug}`} className="block cursor-pointer">
                     <div className="editorial-shadow mb-6 aspect-[3/4] overflow-hidden rounded-sm bg-surface-container-high">
                       <img
@@ -208,7 +213,7 @@ export function Home() {
                     <p className="font-body max-w-prose text-sm leading-relaxed text-clay">{p.story}</p>
                     <Link
                       to={`/products/${p.slug}`}
-                      className="font-label mt-2 flex min-h-12 w-full items-center justify-center rounded-sm border border-primary/30 bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm transition-all hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      className="home-hover-lift font-label mt-2 flex min-h-12 w-full items-center justify-center rounded-sm border border-primary/30 bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm transition-all hover:scale-[1.01] hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
                       Shop now — EGP {p.priceEgp.toLocaleString('en-EG')}
                     </Link>
@@ -228,7 +233,7 @@ export function Home() {
           </h2>
           <Link
             to="/vibes"
-            className="font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-10 py-6 text-sm font-medium uppercase tracking-[0.25em] text-obsidian shadow-xl transition-all duration-500 hover:scale-105 hover:brightness-95 sm:inline-block sm:w-auto sm:max-w-none sm:px-16"
+            className="home-hover-lift font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-10 py-6 text-sm font-medium uppercase tracking-[0.25em] text-obsidian shadow-xl transition-all duration-500 hover:scale-105 hover:brightness-95 sm:inline-block sm:w-auto sm:max-w-none sm:px-16"
           >
             Find Your Design
           </Link>

@@ -98,6 +98,18 @@
     html {
       scroll-behavior: auto;
     }
+    .home-hover-lift {
+      transition: none !important;
+    }
+    .home-hover-lift:hover {
+      transform: none !important;
+    }
+    .home-hover-lift-featured:hover {
+      transform: none !important;
+    }
+    .home-latest-product:hover img {
+      transform: none !important;
+    }
   }
   :focus-visible {
     outline: 2px solid var(--color-deep-teal);
@@ -107,8 +119,7 @@
 
 @layer components {
   /**
-   * Sticky header — must read on dark heroes & busy photography (§3.2 Glass White).
-   * Solid-enough frost + blur so “glass” is visible; links use Obsidian, not low-contrast tan.
+   * Sticky header — Glass White §3.2: frosted nav on light pages.
    */
   .glass-nav {
     padding-top: env(safe-area-inset-top, 0px);
