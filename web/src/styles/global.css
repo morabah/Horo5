@@ -1,0 +1,163 @@
+/* Legacy tokens + components for non–Tailwind pages (PDP, cart, etc.) */
+:root {
+  --papyrus: #f5f0e8;
+  --white: #ffffff;
+  --obsidian: #1a1a1a;
+  --warm-charcoal: #2c2a26;
+  --clay-earth: #816a4f;
+  --label-brown: #876749;
+  --deep-teal: #2b7596;
+  --dusk-violet: #6b4c8a;
+  --kohl-gold-dark: #896832;
+  --nile-dark: #3a4a3f;
+  --stone: #d4cfc5;
+  --desert-sand: #c4956a;
+  --ember: #e8593c;
+  --kohl-gold-bright: #d4a24e;
+
+  --glass-white: rgba(248, 246, 242, 0.28);
+  --frost-blue: rgba(227, 239, 245, 0.22);
+  --soft-violet: rgba(237, 229, 245, 0.22);
+  --warm-glow: rgba(255, 245, 230, 0.28);
+  --mint-frost: rgba(230, 245, 239, 0.2);
+
+  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --radius-card: 16px;
+  --blur-nav: 16px;
+  --touch-min: 48px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+.nav-glass {
+  background: var(--glass-white);
+  backdrop-filter: blur(var(--blur-nav));
+  -webkit-backdrop-filter: blur(var(--blur-nav));
+  border-bottom: 1px solid var(--stone);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-min);
+  padding: 0 1.25rem;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: var(--radius-card);
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--ember);
+  color: var(--obsidian);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-primary-dark {
+  background: var(--ember);
+  color: var(--white);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--obsidian);
+  border: 1px solid var(--stone);
+}
+
+.btn-ghost:hover {
+  border-color: var(--desert-sand);
+}
+
+.card-glass {
+  background: var(--glass-white);
+  backdrop-filter: blur(var(--blur-nav));
+  -webkit-backdrop-filter: blur(var(--blur-nav));
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 4px rgba(26, 26, 26, 0.06);
+}
+
+.label {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--label-brown);
+}
+
+.footer-dark {
+  background: var(--obsidian);
+  color: var(--stone);
+  padding: 2.5rem 0;
+}
+
+.footer-dark a {
+  color: var(--white);
+}
+
+.footer-dark a:hover {
+  color: var(--stone);
+}
+
+.product-mobile-bar {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .product-page {
+    padding-bottom: calc(var(--touch-min) + 1.5rem);
+  }
+
+  .product-mobile-bar {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    background: var(--glass-white);
+    backdrop-filter: blur(var(--blur-nav));
+    -webkit-backdrop-filter: blur(var(--blur-nav));
+    border-top: 1px solid var(--stone);
+  }
+}
