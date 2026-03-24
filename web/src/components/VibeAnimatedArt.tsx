@@ -5,9 +5,15 @@ type VibeAnimatedArtProps = {
   accent: string;
 };
 
+const stroke = {
+  width: 2.25,
+  cap: 'round' as const,
+  join: 'round' as const,
+};
+
 /**
- * Decorative animated SVG per vibe — editorial header (replaces Material icons).
- * Motion: CSS in index.css; disabled when prefers-reduced-motion.
+ * Decorative animated line-art SVG per vibe — editorial header.
+ * Motion: index.css; disabled when prefers-reduced-motion.
  */
 export function VibeAnimatedArt({ slug, accent }: VibeAnimatedArtProps) {
   const base =
@@ -21,22 +27,22 @@ export function VibeAnimatedArt({ slug, accent }: VibeAnimatedArtProps) {
   let inner: ReactNode;
   switch (slug) {
     case 'emotions':
-      inner = <EmotionsArt />;
+      inner = <EmotionsLineArt />;
       break;
     case 'zodiac':
-      inner = <ZodiacArt />;
+      inner = <ZodiacLineArt />;
       break;
     case 'fictious':
-      inner = <FictiousArt />;
+      inner = <FictiousLineArt />;
       break;
     case 'career':
-      inner = <CareerArt />;
+      inner = <CareerLineArt />;
       break;
     case 'trends':
-      inner = <TrendsArt />;
+      inner = <TrendsLineArt />;
       break;
     default:
-      inner = <EmotionsArt />;
+      inner = <EmotionsLineArt />;
   }
 
   return (
@@ -46,84 +52,188 @@ export function VibeAnimatedArt({ slug, accent }: VibeAnimatedArtProps) {
   );
 }
 
-function EmotionsArt() {
+/** Three overlapping ring strokes — soft drift + dash shimmer */
+function EmotionsLineArt() {
   return (
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <circle className="vibe-art-emotions-blob vibe-art-emotions-blob--a" cx="38" cy="42" r="22" fill="currentColor" opacity="0.35" />
-      <circle className="vibe-art-emotions-blob vibe-art-emotions-blob--b" cx="58" cy="38" r="18" fill="currentColor" opacity="0.45" />
-      <circle className="vibe-art-emotions-blob vibe-art-emotions-blob--c" cx="48" cy="58" r="14" fill="currentColor" opacity="0.55" />
-    </svg>
-  );
-}
-
-function ZodiacArt() {
-  return (
-    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <circle cx="50" cy="50" r="3" fill="currentColor" opacity="0.9" />
-      <g className="vibe-art-zodiac-orbit" style={{ transformOrigin: '50px 50px' }}>
-        <circle className="vibe-art-zodiac-star" cx="50" cy="22" r="2.5" fill="currentColor" />
-        <circle className="vibe-art-zodiac-star vibe-art-zodiac-star--d1" cx="72" cy="38" r="2" fill="currentColor" />
-        <circle className="vibe-art-zodiac-star vibe-art-zodiac-star--d2" cx="65" cy="68" r="2.2" fill="currentColor" />
-        <circle className="vibe-art-zodiac-star vibe-art-zodiac-star--d3" cx="35" cy="68" r="2" fill="currentColor" />
-        <circle className="vibe-art-zodiac-star vibe-art-zodiac-star--d4" cx="28" cy="38" r="2.2" fill="currentColor" />
+      <g className="vibe-art-emotions-wrap">
+        <circle
+          className="vibe-art-emotions-ring vibe-art-emotions-ring--a"
+          cx="42"
+          cy="44"
+          r="24"
+          stroke="currentColor"
+          strokeWidth={stroke.width}
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.85"
+        />
+        <circle
+          className="vibe-art-emotions-ring vibe-art-emotions-ring--b"
+          cx="56"
+          cy="40"
+          r="19"
+          stroke="currentColor"
+          strokeWidth={stroke.width}
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.75"
+        />
+        <circle
+          className="vibe-art-emotions-ring vibe-art-emotions-ring--c"
+          cx="48"
+          cy="58"
+          r="15"
+          stroke="currentColor"
+          strokeWidth={stroke.width}
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.95"
+        />
       </g>
     </svg>
   );
 }
 
-function FictiousArt() {
+/** Orbit ring + constellation lines + hollow star nodes */
+function ZodiacLineArt() {
+  return (
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <circle
+        className="vibe-art-zodiac-orbit-ring"
+        cx="50"
+        cy="50"
+        r="28"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        strokeDasharray="6 5"
+        fill="none"
+        opacity="0.35"
+      />
+      <circle cx="50" cy="50" r="4" stroke="currentColor" strokeWidth={stroke.width} fill="none" opacity="0.95" />
+      <g className="vibe-art-zodiac-orbit" style={{ transformOrigin: '50px 50px' }}>
+        <path
+          className="vibe-art-zodiac-constellation"
+          d="M50 50 L50 22 M50 50 L72 38 M50 50 L65 68 M50 50 L35 68 M50 50 L28 38"
+          stroke="currentColor"
+          strokeWidth={1.25}
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.45"
+        />
+        <circle className="vibe-art-zodiac-node" cx="50" cy="22" r="3.5" stroke="currentColor" strokeWidth={1.5} fill="none" />
+        <circle className="vibe-art-zodiac-node vibe-art-zodiac-node--d1" cx="72" cy="38" r="2.8" stroke="currentColor" strokeWidth={1.5} fill="none" />
+        <circle className="vibe-art-zodiac-node vibe-art-zodiac-node--d2" cx="65" cy="68" r="3" stroke="currentColor" strokeWidth={1.5} fill="none" />
+        <circle className="vibe-art-zodiac-node vibe-art-zodiac-node--d3" cx="35" cy="68" r="2.8" stroke="currentColor" strokeWidth={1.5} fill="none" />
+        <circle className="vibe-art-zodiac-node vibe-art-zodiac-node--d4" cx="28" cy="38" r="3" stroke="currentColor" strokeWidth={1.5} fill="none" />
+      </g>
+    </svg>
+  );
+}
+
+/** Open book outline */
+function FictiousLineArt() {
   return (
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
       <g className="vibe-art-book">
         <path
-          d="M28 28h22v44H28c-3 0-6-2.5-6-6V34c0-3.5 3-6 6-6z"
-          fill="currentColor"
-          fillOpacity="0.25"
+          d="M28 30h22v40H28c-3 0-5-2-5-5V35c0-3 2-5 5-5z"
           stroke="currentColor"
-          strokeWidth="1.5"
-          strokeOpacity="0.5"
+          strokeWidth={stroke.width}
+          strokeLinejoin="round"
+          fill="none"
         />
         <path
-          d="M50 28h22c3 0 6 2.5 6 6v32c0 3.5-3 6-6 6H50V28z"
-          fill="currentColor"
-          fillOpacity="0.18"
+          d="M50 30h22c3 0 5 2 5 5v30c0 3-2 5-5 5H50V30z"
           stroke="currentColor"
-          strokeWidth="1.5"
-          strokeOpacity="0.45"
+          strokeWidth={stroke.width}
+          strokeLinejoin="round"
+          fill="none"
         />
-        <path d="M50 32v36" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.35" strokeLinecap="round" />
+        <path d="M50 34v36" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" />
+        <path d="M34 48h8M34 56h12" stroke="currentColor" strokeWidth={1.25} strokeLinecap="round" opacity="0.5" />
+        <path d="M58 48h12M58 56h8" stroke="currentColor" strokeWidth={1.25} strokeLinecap="round" opacity="0.5" />
       </g>
     </svg>
   );
 }
 
-function CareerArt() {
+/** Bar outlines — scaleY pulse */
+function CareerLineArt() {
   return (
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
       <g className="vibe-art-career-bars">
-        <rect className="vibe-art-career-bar" x="22" y="52" width="10" height="26" rx="2" fill="currentColor" fillOpacity="0.35" />
-        <rect className="vibe-art-career-bar vibe-art-career-bar--d1" x="36" y="44" width="10" height="34" rx="2" fill="currentColor" fillOpacity="0.42" />
-        <rect className="vibe-art-career-bar vibe-art-career-bar--d2" x="50" y="38" width="10" height="40" rx="2" fill="currentColor" fillOpacity="0.5" />
-        <rect className="vibe-art-career-bar vibe-art-career-bar--d3" x="64" y="48" width="10" height="30" rx="2" fill="currentColor" fillOpacity="0.38" />
+        <rect
+          className="vibe-art-career-bar"
+          x="22"
+          y="52"
+          width="10"
+          height="26"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth={stroke.width}
+          fill="none"
+        />
+        <rect
+          className="vibe-art-career-bar vibe-art-career-bar--d1"
+          x="36"
+          y="44"
+          width="10"
+          height="34"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth={stroke.width}
+          fill="none"
+        />
+        <rect
+          className="vibe-art-career-bar vibe-art-career-bar--d2"
+          x="50"
+          y="38"
+          width="10"
+          height="40"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth={stroke.width}
+          fill="none"
+        />
+        <rect
+          className="vibe-art-career-bar vibe-art-career-bar--d3"
+          x="64"
+          y="48"
+          width="10"
+          height="30"
+          rx="2"
+          stroke="currentColor"
+          strokeWidth={stroke.width}
+          fill="none"
+        />
       </g>
     </svg>
   );
 }
 
-function TrendsArt() {
+/** Rising line + hollow cap ring */
+function TrendsLineArt() {
   return (
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
       <path
         className="vibe-art-trends-line"
         d="M18 72 L32 58 L46 62 L58 38 L72 44 L86 28"
         stroke="currentColor"
-        strokeWidth="2.5"
+        strokeWidth={stroke.width}
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
-        strokeOpacity="0.85"
       />
-      <circle className="vibe-art-trends-dot" cx="86" cy="28" r="4" fill="currentColor" fillOpacity="0.9" />
+      <circle
+        className="vibe-art-trends-cap"
+        cx="86"
+        cy="28"
+        r="5"
+        stroke="currentColor"
+        strokeWidth={stroke.width}
+        fill="none"
+      />
     </svg>
   );
 }

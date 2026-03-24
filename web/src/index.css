@@ -123,17 +123,26 @@
     .vibe-art-career-bar {
       transform: scaleY(1) !important;
     }
-    .vibe-art-emotions-blob {
-      opacity: 0.5 !important;
+    .vibe-art-emotions-wrap {
       transform: none !important;
+    }
+    .vibe-art-emotions-ring {
+      opacity: 0.85 !important;
+      stroke-dashoffset: 0 !important;
     }
     .vibe-art-zodiac-orbit {
       transform: none !important;
     }
+    .vibe-art-zodiac-orbit-ring {
+      stroke-dashoffset: 0 !important;
+    }
+    .vibe-art-zodiac-constellation {
+      opacity: 0.55 !important;
+    }
     .vibe-art-book {
       transform: none !important;
     }
-    .vibe-art-trends-dot {
+    .vibe-art-trends-cap {
       transform: none !important;
     }
   }
@@ -267,48 +276,51 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.55);
   }
 
-  /* —— VibeAnimatedArt (editorial headers) —— */
-  @keyframes vibe-art-blob-a {
+  /* —— VibeAnimatedArt line art (editorial headers) —— */
+  @keyframes vibe-art-emotions-drift {
     0%,
     100% {
-      transform: translate(0, 0) scale(1);
-      opacity: 0.35;
+      transform: translate(0, 0);
     }
     50% {
-      transform: translate(3px, -4px) scale(1.1);
+      transform: translate(2px, -3px);
+    }
+  }
+  @keyframes vibe-art-ring-shimmer {
+    0%,
+    100% {
       opacity: 0.55;
-    }
-  }
-  @keyframes vibe-art-blob-b {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(1);
-      opacity: 0.45;
+      stroke-dashoffset: 0;
     }
     50% {
-      transform: translate(-2px, 3px) scale(1.08);
-      opacity: 0.7;
+      opacity: 1;
+      stroke-dashoffset: 24;
     }
   }
-  @keyframes vibe-art-blob-c {
-    0%,
-    100% {
-      transform: translate(0, 0) scale(1);
-      opacity: 0.55;
+  .vibe-art-emotions-wrap {
+    transform-origin: 50px 50px;
+    animation: vibe-art-emotions-drift 6s ease-in-out infinite;
+  }
+  .vibe-art-emotions-ring {
+    stroke-dasharray: 18 200;
+  }
+  .vibe-art-emotions-ring--a {
+    animation: vibe-art-ring-shimmer 5s ease-in-out infinite;
+  }
+  .vibe-art-emotions-ring--b {
+    animation: vibe-art-ring-shimmer 5.5s ease-in-out infinite 0.35s;
+  }
+  .vibe-art-emotions-ring--c {
+    animation: vibe-art-ring-shimmer 4.8s ease-in-out infinite 0.7s;
+  }
+
+  @keyframes vibe-art-orbit-ring-drift {
+    to {
+      stroke-dashoffset: -48;
     }
-    50% {
-      transform: translate(2px, 2px) scale(1.12);
-      opacity: 0.8;
-    }
   }
-  .vibe-art-emotions-blob--a {
-    animation: vibe-art-blob-a 5s ease-in-out infinite;
-  }
-  .vibe-art-emotions-blob--b {
-    animation: vibe-art-blob-b 5.5s ease-in-out infinite 0.3s;
-  }
-  .vibe-art-emotions-blob--c {
-    animation: vibe-art-blob-c 4.5s ease-in-out infinite 0.6s;
+  .vibe-art-zodiac-orbit-ring {
+    animation: vibe-art-orbit-ring-drift 24s linear infinite;
   }
 
   @keyframes vibe-art-zodiac-spin {
@@ -319,28 +331,40 @@
   .vibe-art-zodiac-orbit {
     animation: vibe-art-zodiac-spin 36s linear infinite;
   }
+  @keyframes vibe-art-constellation-pulse {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.65;
+    }
+  }
+  .vibe-art-zodiac-constellation {
+    animation: vibe-art-constellation-pulse 4s ease-in-out infinite;
+  }
   @keyframes vibe-art-twinkle {
     0%,
     100% {
-      opacity: 0.45;
+      opacity: 0.55;
     }
     50% {
       opacity: 1;
     }
   }
-  .vibe-art-zodiac-star {
+  .vibe-art-zodiac-node {
     animation: vibe-art-twinkle 2.8s ease-in-out infinite;
   }
-  .vibe-art-zodiac-star--d1 {
+  .vibe-art-zodiac-node--d1 {
     animation-delay: 0.4s;
   }
-  .vibe-art-zodiac-star--d2 {
+  .vibe-art-zodiac-node--d2 {
     animation-delay: 0.9s;
   }
-  .vibe-art-zodiac-star--d3 {
+  .vibe-art-zodiac-node--d3 {
     animation-delay: 1.4s;
   }
-  .vibe-art-zodiac-star--d4 {
+  .vibe-art-zodiac-node--d4 {
     animation-delay: 1.9s;
   }
 
@@ -391,14 +415,14 @@
       stroke-dashoffset: 0;
     }
   }
-  @keyframes vibe-art-dot-pop {
+  @keyframes vibe-art-cap-pulse {
     0%,
     100% {
       transform: scale(1);
-      opacity: 0.85;
+      opacity: 0.75;
     }
     50% {
-      transform: scale(1.25);
+      transform: scale(1.12);
       opacity: 1;
     }
   }
@@ -407,8 +431,9 @@
     stroke-dashoffset: 88;
     animation: vibe-art-dash-draw 3.2s ease-out infinite;
   }
-  .vibe-art-trends-dot {
+  .vibe-art-trends-cap {
     transform-origin: 86px 28px;
-    animation: vibe-art-dot-pop 2.4s ease-in-out infinite 0.4s;
+    transform-box: fill-box;
+    animation: vibe-art-cap-pulse 2.4s ease-in-out infinite 0.4s;
   }
 }
