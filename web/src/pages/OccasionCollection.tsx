@@ -4,6 +4,7 @@ import { getOccasion, products } from '../data/site';
 import { getProductMedia, imgUrl, tee } from '../data/images';
 import { TeeImageFrame } from '../components/TeeImage';
 import { ProductQuickView } from '../components/ProductQuickView';
+import { glassInteractive } from '../lib/glassInteractive';
 import { formatEgp } from '../utils/formatPrice';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 
@@ -135,7 +136,11 @@ export function OccasionCollection() {
           {list.map((p) => {
             const { main } = getProductMedia(p.slug);
             return (
-              <article key={p.slug} className="card-glass relative" style={{ padding: '1rem' }}>
+              <article
+                key={p.slug}
+                className={['card-glass group relative', glassInteractive.surfaceCard].join(' ')}
+                style={{ padding: '1rem' }}
+              >
                 <Link
                   to={`/products/${p.slug}`}
                   className="absolute inset-0 z-[1] rounded-[inherit]"
@@ -168,8 +173,12 @@ export function OccasionCollection() {
                       Quick view
                     </button>
                   </div>
-                  <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, margin: '0 0 0.5rem' }}>{p.name}</p>
-                  <p style={{ margin: 0, fontFamily: 'var(--font-heading)', fontWeight: 600 }}>{formatEgp(p.priceEgp)}</p>
+                  <p className={['font-headline font-medium', glassInteractive.title].join(' ')} style={{ margin: '0 0 0.5rem' }}>
+                    {p.name}
+                  </p>
+                  <p className={['font-headline font-semibold', glassInteractive.cta].join(' ')} style={{ margin: 0 }}>
+                    {formatEgp(p.priceEgp)}
+                  </p>
                 </div>
               </article>
             );

@@ -4,6 +4,7 @@ import { products, vibes, getVibe } from '../data/site';
 import { getProductMedia, heroStreet, vibeCovers } from '../data/images';
 import { TeeImageFrame } from '../components/TeeImage';
 import { ProductQuickView } from '../components/ProductQuickView';
+import { glassInteractive } from '../lib/glassInteractive';
 import { formatEgp } from '../utils/formatPrice';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -26,7 +27,8 @@ function haystackMatches(haystack: string, needleRaw: string): boolean {
   return tokens.every((t) => hay.includes(t));
 }
 
-const POPULAR_SEARCHES = ['Emotions', 'Zodiac', 'street', 'gift', 'coffee', 'Horo'] as const;
+/** Title case for UI; matching stays case-insensitive via normalizeForSearch. */
+const POPULAR_SEARCHES = ['Emotions', 'Zodiac', 'Street', 'Gift', 'Coffee', 'HORO'] as const;
 
 export function Search() {
   const [params] = useSearchParams();
@@ -189,7 +191,11 @@ export function Search() {
             {designs.map((p) => {
               const vibe = getVibe(p.vibeSlug);
               return (
-                <article key={p.slug} className="card-glass relative" style={{ padding: '1rem' }}>
+                <article
+                  key={p.slug}
+                  className={['card-glass group relative', glassInteractive.surfaceCard].join(' ')}
+                  style={{ padding: '1rem' }}
+                >
                   <Link
                     to={`/products/${p.slug}`}
                     className="absolute inset-0 z-[1] rounded-[inherit]"
@@ -223,13 +229,17 @@ export function Search() {
                         Quick view
                       </button>
                     </div>
-                    <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, margin: '0 0 0.35rem' }}>{p.name}</p>
+                    <p
+                      className={['font-headline mb-[0.35rem] font-medium', glassInteractive.title].join(' ')}
+                    >
+                      {p.name}
+                    </p>
                     {vibe && (
-                      <p style={{ fontSize: '0.75rem', margin: '0 0 0.5rem' }}>
+                      <p className={['mb-2 text-xs', glassInteractive.body].join(' ')}>
                         <span style={{ color: vibe.accent }}>●</span> {vibe.name}
                       </p>
                     )}
-                    <p style={{ margin: 0, fontWeight: 600 }}>{formatEgp(p.priceEgp)}</p>
+                    <p className={['font-headline font-semibold', glassInteractive.cta].join(' ')}>{formatEgp(p.priceEgp)}</p>
                   </div>
                 </article>
               );
@@ -241,7 +251,10 @@ export function Search() {
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '1rem' }}>
             {vibeMatches.map((v) => (
               <li key={v.slug}>
-                <Link to={`/vibes/${v.slug}`} className="card-glass" style={{ display: 'flex', gap: '1rem', padding: '1rem', textDecoration: 'none', color: 'inherit', alignItems: 'center' }}>
+                <Link
+                  to={`/vibes/${v.slug}`}
+                  className={['card-glass group flex gap-4 p-4 no-underline items-center', glassInteractive.surfaceCard].join(' ')}
+                >
                   <div style={{ width: '96px', flexShrink: 0 }}>
                     <TeeImageFrame
                       src={vibeCovers[v.slug] ?? heroStreet}
@@ -251,8 +264,12 @@ export function Search() {
                       borderRadius="12px"
                     />
                   </div>
-                  <span>
-                    <span style={{ color: v.accent }}>●</span> <strong>{v.name}</strong> — {v.tagline}
+                  <span className="min-w-0 font-body text-sm">
+                    <span className="font-semibold" style={{ color: v.accent }}>
+                      ●
+                    </span>{' '}
+                    <strong className={glassInteractive.title}>{v.name}</strong>
+                    <span className={glassInteractive.body}> — {v.tagline}</span>
                   </span>
                 </Link>
               </li>

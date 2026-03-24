@@ -5,6 +5,7 @@ import { HomeVibeGrid } from '../components/HomeVibeGrid';
 import { SectionDivider } from '../components/SectionDivider';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { formatEgp } from '../utils/formatPrice';
+import { glassInteractive } from '../lib/glassInteractive';
 import { getProductMedia, heroHomeTee, imgUrl } from '../data/images';
 import { getVibe, products } from '../data/site';
 
@@ -95,7 +96,7 @@ export function Home() {
             {heroThumbProduct ? (
               <Link
                 to={`/products/${heroThumbProduct.slug}`}
-                className={`glass-trust-badge home-hover-lift-featured touch-manipulation relative z-20 mt-5 flex h-28 w-[5.75rem] min-h-[112px] min-w-[92px] shrink-0 flex-col overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/15 transition-opacity duration-700 hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal active:brightness-95 md:absolute md:mt-0 md:h-40 md:w-32 md:min-h-[160px] md:min-w-[128px] md:max-w-none md:rounded-xl md:bottom-[max(7rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))] md:right-[max(1rem,env(safe-area-inset-right,0px))] lg:bottom-32 lg:right-10 ${isMounted ? 'opacity-100' : 'opacity-0'}`}
+                className={`group glass-trust-badge home-hover-lift-featured touch-manipulation relative z-20 mt-5 flex h-28 w-[5.75rem] min-h-[112px] min-w-[92px] shrink-0 flex-col overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/15 transition-opacity duration-700 hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal active:brightness-95 md:absolute md:mt-0 md:h-40 md:w-32 md:min-h-[160px] md:min-w-[128px] md:max-w-none md:rounded-xl md:bottom-[max(7rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))] md:right-[max(1rem,env(safe-area-inset-right,0px))] lg:bottom-32 lg:right-10 ${glassInteractive.surfaceDark} ${isMounted ? 'opacity-100' : 'opacity-0'}`}
                 aria-label={`Featured tee: ${heroThumbProduct.name}`}
               >
                 <div className="hero-featured-thumb-float flex min-h-0 flex-1 flex-col">
@@ -109,7 +110,12 @@ export function Home() {
                     />
                     <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" aria-hidden />
                   </div>
-                  <span className="font-label bg-black/40 px-2 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-frost-blue backdrop-blur-sm">
+                  <span
+                    className={[
+                      'font-label bg-black/40 px-2 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] backdrop-blur-sm',
+                      glassInteractive.labelOnDark,
+                    ].join(' ')}
+                  >
                     Featured
                   </span>
                 </div>
@@ -205,8 +211,9 @@ export function Home() {
                       </div>
                       <button
                         type="button"
-                        className="quick-view-pill font-label pointer-events-auto absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian opacity-100 shadow-md transition-[opacity,box-shadow] duration-200 hover:shadow-lg focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                        className="quick-view-pill font-label pointer-events-auto absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                         onClick={() => setQuickViewSlug(p.slug)}
+                        aria-label={`Quick view: ${p.name}`}
                       >
                         Quick view
                       </button>

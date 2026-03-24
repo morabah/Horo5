@@ -285,8 +285,6 @@ export function VibeCollection() {
         <div className="vibe-product-grid">
           {list.map((p, i) => {
             const { main } = getProductMedia(p.slug);
-            const artist = getArtist(p.artistSlug);
-            const artistPart = artist?.name ?? 'HORO';
             const stagger = (['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5'] as const)[i % 5];
             return (
               <article
@@ -323,10 +321,7 @@ export function VibeCollection() {
                     </button>
                   </div>
                   <div className="font-headline w-full max-w-[min(100%,20rem)] px-1 text-center sm:max-w-none">
-                    <p className="text-[11px] font-medium uppercase leading-snug tracking-[0.2em] text-clay md:text-sm md:tracking-[0.22em]">
-                      {artistPart}
-                    </p>
-                    <p className="mt-1.5 text-[13px] font-medium uppercase leading-snug tracking-[0.12em] text-obsidian md:text-sm md:tracking-[0.14em]">
+                    <p className="text-[13px] font-medium uppercase leading-snug tracking-[0.12em] text-obsidian md:text-sm md:tracking-[0.14em]">
                       {p.name}
                     </p>
                     <p className="font-pdp-serif mt-2 text-[15px] font-normal tracking-normal text-obsidian md:text-base">

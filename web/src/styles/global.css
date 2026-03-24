@@ -223,7 +223,13 @@
 /* PDP mobile CTA bar: styled in ProductDetail (Tailwind). Keep page padding for fixed bar + thumb home indicator. */
 @media (max-width: 767.98px) {
   .product-page {
-    padding-bottom: calc(var(--touch-min) + 1.5rem);
+    /* Fixed size strip + CTA dock (ProductDetail) + safe area */
+    padding-bottom: calc(var(--touch-min) + 11rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .product-page.pdp-dock-compact {
+    /* Collapsed dock: CTA bar only when product header is off-screen */
+    padding-bottom: calc(var(--touch-min) + 4.25rem + env(safe-area-inset-bottom, 0px));
   }
 }
 

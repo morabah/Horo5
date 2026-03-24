@@ -25,6 +25,7 @@ export default function App() {
         <Route path="/occasions/:slug" element={<OccasionCollection />} />
         <Route path="/artists" element={<Navigate to="/vibes" replace />} />
         <Route path="/artists/:slug" element={<Navigate to="/vibes" replace />} />
+        <Route path="/products" element={<Navigate to="/search" replace />} />
         <Route path="/products/:slug" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />

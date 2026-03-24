@@ -2,15 +2,15 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { getArtist, getProduct, getVibe, productsByVibe, type ProductSizeKey } from '../data/site';
 import { useCart } from '../cart/CartContext';
-import { getProductMedia, imgUrl } from '../data/images';
+import { artistAvatars, getProductMedia, imgUrl } from '../data/images';
 import { TeeImage, TeeImageFrame } from '../components/TeeImage';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { formatEgp } from '../utils/formatPrice';
 import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
 import { PDP_SCHEMA } from '../data/domain-config';
-import { PDP_FEATURE_ICONS, PDP_TRUST_ICONS } from '../data/pdpIconRegistry';
+import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 
-const { viewLabels, surfacePhrases, sizes, sizeTable, copy } = PDP_SCHEMA;
+const { viewLabels, surfacePhrases, sizes, sizeTable, copy, trustStripItems, storyPlanSteps } = PDP_SCHEMA;
 
 const featureStripItems = PDP_SCHEMA.features.map((f) => ({
   label: f.label,
@@ -75,6 +75,25 @@ function IconChevronDown() {
   );
 }
 
+function IconSearch({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className ?? 'h-5 w-5'}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M21 21l-5.2-5.2M19 11a8 8 0 11-16 0 8 8 0 0116 0z"
+      />
+    </svg>
+  );
+}
+
 export function ProductDetail() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
@@ -89,9 +108,9 @@ export function ProductDetail() {
   const [notifyEmail, setNotifyEmail] = useState('');
   const [notifyError, setNotifyError] = useState(false);
   const [notifySuccess, setNotifySuccess] = useState(false);
-  const [mobilePurchaseOpen, setMobilePurchaseOpen] = useState(false);
 
   const sizeGuideTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const mobileSizeGuideTriggerRef = useRef<HTMLButtonElement | null>(null);
   const sizeGuideDialogRef = useRef<HTMLDivElement | null>(null);
   const sizeSectionRef = useRef<HTMLDivElement | null>(null);
   const notifyFormRef = useRef<HTMLFormElement | null>(null);
@@ -100,18 +119,17 @@ export function ProductDetail() {
   const sizeGuideWasOpenRef = useRef(false);
   const sizeGuideTitleId = useId();
   const notifyFieldId = useId();
-  const mobilePurchaseTitleId = useId();
   const lightboxCloseRef = useRef<HTMLButtonElement | null>(null);
-  const mobileDrawerCloseRef = useRef<HTMLButtonElement | null>(null);
   const mobileCtaRef = useRef<HTMLButtonElement | null>(null);
-  const mobilePurchaseWasOpenRef = useRef(false);
+  const mobileSizeStripRef = useRef<HTMLDivElement | null>(null);
+  const productHeaderRef = useRef<HTMLElement | null>(null);
+  const [compactMobileDock, setCompactMobileDock] = useState(false);
 
   useEffect(() => {
     setPhotoIndex(0);
     setLightboxOpen(false);
     setRelatedQuickViewSlug(null);
-    setMobilePurchaseOpen(false);
-    mobilePurchaseWasOpenRef.current = false;
+    setCompactMobileDock(false);
   }, [slug]);
 
   useEffect(() => {
@@ -170,7 +188,10 @@ export function ProductDetail() {
     }
     if (sizeGuideWasOpenRef.current) {
       sizeGuideWasOpenRef.current = false;
-      queueMicrotask(() => sizeGuideTriggerRef.current?.focus());
+      queueMicrotask(() => {
+        const t = sizeGuideTriggerRef.current ?? mobileSizeGuideTriggerRef.current;
+        t?.focus();
+      });
     }
   }, [sizeGuideOpen]);
 
@@ -188,11 +209,31 @@ export function ProductDetail() {
   }, [p?.slug]);
 
   useEffect(() => {
+    const el = productHeaderRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setCompactMobileDock(!entry.isIntersecting),
+      { root: null, rootMargin: '-8px 0px 0px 0px', threshold: 0 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [slug]);
+
+  useEffect(() => {
     if (!lightboxOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightboxOpen(false);
+      if (gallery.length < 2) return;
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setPhotoIndex((i) => (i <= 0 ? gallery.length - 1 : i - 1));
+      }
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setPhotoIndex((i) => (i >= gallery.length - 1 ? 0 : i + 1));
+      }
     };
     window.addEventListener('keydown', onKey);
     const t = window.setTimeout(() => lightboxCloseRef.current?.focus(), 0);
@@ -201,34 +242,7 @@ export function ProductDetail() {
       window.removeEventListener('keydown', onKey);
       window.clearTimeout(t);
     };
-  }, [lightboxOpen]);
-
-  useEffect(() => {
-    if (!mobilePurchaseOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMobilePurchaseOpen(false);
-    };
-    window.addEventListener('keydown', onKey);
-    const t = window.setTimeout(() => mobileDrawerCloseRef.current?.focus(), 0);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener('keydown', onKey);
-      window.clearTimeout(t);
-    };
-  }, [mobilePurchaseOpen]);
-
-  useEffect(() => {
-    if (mobilePurchaseOpen) {
-      mobilePurchaseWasOpenRef.current = true;
-      return;
-    }
-    if (mobilePurchaseWasOpenRef.current) {
-      mobilePurchaseWasOpenRef.current = false;
-      queueMicrotask(() => mobileCtaRef.current?.focus());
-    }
-  }, [mobilePurchaseOpen]);
+  }, [lightboxOpen, gallery.length]);
 
   useEffect(() => {
     setNotifyEmail('');
@@ -289,31 +303,22 @@ export function ProductDetail() {
 
   const closeSizeGuide = () => setSizeGuideOpen(false);
 
+  function nudgeSizeSection(el: HTMLElement | null) {
+    if (!el) return;
+    el.classList.add('ring-2', 'ring-ember', 'ring-offset-4', 'rounded-md', 'transition-all', 'duration-300', 'pdp-size-nudge');
+    window.setTimeout(() => {
+      el.classList.remove('ring-2', 'ring-ember', 'ring-offset-4', 'rounded-md', 'pdp-size-nudge');
+    }, 1200);
+  }
+
   function handleMissingSize() {
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767.98px)').matches) {
-      setMobilePurchaseOpen(true);
+      nudgeSizeSection(mobileSizeStripRef.current);
       return;
     }
     if (sizeSectionRef.current) {
       sizeSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      sizeSectionRef.current.classList.add(
-        'ring-2',
-        'ring-ember',
-        'ring-offset-4',
-        'rounded-md',
-        'transition-all',
-        'duration-300',
-        'pdp-size-nudge'
-      );
-      window.setTimeout(() => {
-        sizeSectionRef.current?.classList.remove(
-          'ring-2',
-          'ring-ember',
-          'ring-offset-4',
-          'rounded-md',
-          'pdp-size-nudge'
-        );
-      }, 1200);
+      nudgeSizeSection(sizeSectionRef.current);
     }
   }
 
@@ -343,7 +348,6 @@ export function ProductDetail() {
     }
     if (!p || !selectedSize) return;
     addItem(p.slug, selectedSize as ProductSizeKey, 1);
-    setMobilePurchaseOpen(false);
     navigate('/cart');
   }
 
@@ -365,14 +369,20 @@ export function ProductDetail() {
     oosSelected
       ? 'bg-amber-100 text-obsidian hover:bg-amber-200'
       : sizeReady
-        ? 'bg-obsidian text-white shadow-sm hover:bg-obsidian/90'
+        ? 'bg-ember text-obsidian shadow-sm hover:bg-ember/90'
         : 'border-2 border-stone bg-papyrus/80 text-clay opacity-90'
   }`;
 
-  const wornIndices = [...PDP_SCHEMA.wornByGalleryIndices];
+  const wornIndices = PDP_SCHEMA.wornByGalleryIndices.filter((idx) => gallery[idx] != null);
+
+  function resolveWornSrc(galleryIdx: number): string | undefined {
+    return gallery[galleryIdx] ?? gallery[0];
+  }
 
   return (
-    <div className="product-page bg-papyrus text-obsidian">
+    <div
+      className={`product-page bg-papyrus text-obsidian${compactMobileDock ? ' pdp-dock-compact' : ''}`}
+    >
       <span id="pdp-size-hint" className="sr-only">
         {copy.sizeRequiredPrompt}
       </span>
@@ -424,7 +434,7 @@ export function ProductDetail() {
                     type="button"
                     className="relative block w-full overflow-hidden border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     onClick={() => { setPhotoIndex(i); openLightbox(); }}
-                    aria-label="Enlarge product image"
+                    aria-label={`Open full screen — ${viewLabels[i] ?? 'view'} (${i + 1} of ${gallery.length})`}
                   >
                     <div className="w-full bg-surface-container-high editorial-shadow">
                       <TeeImage
@@ -439,87 +449,122 @@ export function ProductDetail() {
                 ))}
               </div>
               
-              {/* Mobile Carousel / Thumbnails */}
+              {/* Mobile: hero → story hook → thumbnails */}
               <div className="flex flex-col gap-3 md:hidden w-full px-0 pt-2">
-                <div
-                  className="scroll-snap-carousel order-2 flex flex-row gap-2 overflow-x-auto snap-x snap-mandatory pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                role="tablist"
-                aria-label="Product views"
-              >
-                {gallery.slice(0, 5).map((src, i) => (
+                <div className="order-1 min-w-0 flex-1">
                   <button
-                    key={`${product.slug}-th-${i}`}
                     type="button"
-                    role="tab"
-                    aria-selected={photoIndex === i}
-                    aria-label={`Show image ${i + 1} — ${viewLabels[i] ?? 'view'}`}
-                    onClick={() => setPhotoIndex(i)}
-                    className={`snap-start relative h-[5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-sm bg-surface-container-high md:aspect-[3/4] md:h-auto md:w-full ${
-                      photoIndex === i
-                        ? 'ring-2 ring-obsidian ring-offset-2 ring-offset-papyrus'
-                        : 'opacity-88 ring-1 ring-stone/70 hover:opacity-100'
-                    }`}
+                    className="relative block w-full overflow-hidden border-0 bg-transparent p-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    onClick={openLightbox}
+                    aria-label={`Open full screen — ${viewLabels[photoIndex] ?? 'view'} (${photoIndex + 1} of ${gallery.length})`}
                   >
-                    <TeeImage src={src} alt="" w={320} eager className="h-full w-full" />
+                    <div className="relative aspect-3/4 w-full bg-surface-container-high editorial-shadow">
+                      {mainSrc ? (
+                        <TeeImage
+                          src={mainSrc}
+                          alt={mainGalleryAlt(product.name, photoIndex)}
+                          w={1600}
+                          eager
+                          className="h-full w-full"
+                        />
+                      ) : null}
+                    </div>
                   </button>
-                ))}
-              </div>
-              <div className="order-1 min-w-0 flex-1 md:order-2">
-                <button
-                  type="button"
-                  className="relative block w-full overflow-hidden border-0 bg-transparent p-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  onClick={openLightbox}
-                  aria-label="Enlarge product image"
+                </div>
+                <div
+                  className="glass-morphism-violet order-2 mx-0 px-4 py-2 text-obsidian"
+                  role="region"
+                  aria-labelledby="pdp-story-mobile-heading"
                 >
-                  <div className="relative aspect-3/4 w-full bg-surface-container-high editorial-shadow">
-                    {mainSrc ? (
+                  <p
+                    id="pdp-story-mobile-heading"
+                    className="font-label mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-obsidian"
+                  >
+                    {copy.storyCardHeading}
+                  </p>
+                  <p className="font-pdp-serif text-base font-normal leading-relaxed">{product.story}</p>
+                </div>
+                <div
+                  className="scroll-snap-carousel order-3 flex flex-row gap-2 overflow-x-auto snap-x snap-mandatory pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  role="tablist"
+                  aria-label="Product views"
+                >
+                  {gallery.slice(0, 5).map((src, i) => (
+                    <button
+                      key={`${product.slug}-th-${i}`}
+                      type="button"
+                      role="tab"
+                      aria-selected={photoIndex === i}
+                      aria-label={`Show image ${i + 1} — ${viewLabels[i] ?? 'view'}`}
+                      onClick={() => setPhotoIndex(i)}
+                      className={`snap-start relative h-[5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-sm bg-surface-container-high md:aspect-[3/4] md:h-auto md:w-full ${
+                        photoIndex === i
+                          ? 'ring-2 ring-obsidian ring-offset-2 ring-offset-papyrus'
+                          : 'opacity-88 ring-1 ring-stone/70 hover:opacity-100'
+                      }`}
+                    >
                       <TeeImage
-                        src={mainSrc}
-                        alt={mainGalleryAlt(product.name, photoIndex)}
-                        w={1600}
+                        src={src}
+                        alt={mainGalleryAlt(product.name, i)}
+                        w={320}
                         eager
                         className="h-full w-full"
                       />
-                    ) : null}
-                  </div>
-                </button>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="pdp-product-rail flex w-full flex-col border-stone/40 bg-papyrus md:w-[40%] md:border-l md:sticky md:top-0 md:h-[100dvh] md:overflow-y-auto">
+        <div className="pdp-product-rail flex w-full flex-col border-stone/40 bg-papyrus md:w-[40%] md:border-l md:border-stone/40">
         <nav
-            className="flex items-center justify-between gap-4 border-b border-transparent px-6 py-6 backdrop-blur-sm md:sticky md:top-0 md:z-20 md:border-b-0 md:bg-papyrus/95"
-            aria-label="Product page shortcuts"
-          >
-            <Link to="/" className="font-pdp-serif text-2xl font-semibold text-obsidian md:hidden">
-              HORO
+          className="hidden w-full items-center justify-end gap-4 border-b border-transparent px-6 py-3 backdrop-blur-sm md:flex md:sticky md:top-0 md:z-20 md:border-b-0 md:bg-papyrus/95"
+          aria-label="Product page shortcuts"
+        >
+          <div className="flex items-center gap-0 md:ml-0">
+            <Link
+              to="/search"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian transition-colors hover:text-clay"
+              aria-label="Search products"
+            >
+              <IconSearch />
             </Link>
-            <div className="hidden gap-8 font-label text-xs font-medium uppercase tracking-wider text-obsidian md:flex">
-              <Link to="/vibes" className="transition-colors hover:text-clay">
-                Collections
-              </Link>
-              <Link to="/about" className="transition-colors hover:text-clay">
-                Story
-              </Link>
-              <Link to="/search" className="transition-colors hover:text-clay">
-                Search
-              </Link>
-            </div>
             <Link
               to="/cart"
-              className="relative p-2 text-obsidian transition-colors hover:text-clay"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian transition-colors hover:text-clay"
               aria-label="Bag / shopping cart"
             >
               <IconCart />
             </Link>
-          </nav>
+          </div>
+        </nav>
 
-          <div className="flex flex-col px-6 pb-8 pt-2 md:px-8 md:pb-24 lg:px-10 lg:pb-16 lg:pt-4">
-            <header className="mb-6 space-y-5" data-purpose="product-header">
-              <h1 className="font-pdp-serif text-4xl font-semibold uppercase leading-tight tracking-tight text-obsidian md:text-5xl lg:text-6xl">
+        <div className="flex flex-col px-6 pb-8 pt-2 md:px-8 md:pb-24 lg:px-10 lg:pb-16 lg:pt-2">
+          <div className="pdp-rail-summary md:sticky md:top-0 md:z-[6] md:-mx-0 md:border-b md:border-stone/25 md:bg-papyrus/95 md:px-0 md:pb-3 md:pt-1 md:backdrop-blur-md">
+            <p className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-label text-[10px] font-medium uppercase tracking-[0.18em] text-clay">
+              {storyPlanSteps.map((step, i) => (
+                <span key={step} className="inline-flex items-center gap-2">
+                  {i > 0 ? (
+                    <span className="text-clay/45" aria-hidden>
+                      →
+                    </span>
+                  ) : null}
+                  {step}
+                </span>
+              ))}
+            </p>
+            <header ref={productHeaderRef} className="mb-4 space-y-3 md:mb-0 md:space-y-3.5" data-purpose="product-header">
+              {vibe ? (
+                <Link
+                  to={`/vibes/${vibe.slug}`}
+                  className="font-label inline-flex max-w-full items-center rounded-full border border-dusk-violet/45 bg-dusk-violet/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-dusk-violet transition-colors hover:border-dusk-violet/80 hover:bg-dusk-violet/18"
+                >
+                  {vibe.name}
+                </Link>
+              ) : null}
+              <h1 className="font-pdp-serif text-3xl font-semibold uppercase leading-tight tracking-tight text-obsidian md:text-4xl lg:text-5xl">
                 {formatTitleLines(product.name)}
               </h1>
 
@@ -543,179 +588,292 @@ export function ProductDetail() {
                 </span>
               </div>
 
-              <div className="rounded-sm bg-obsidian p-5 text-white" role="region" aria-labelledby="pdp-story-short-heading">
-                <p
-                  id="pdp-story-short-heading"
-                  className="font-label mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/65"
-                >
-                  {copy.storyCardHeading}
-                </p>
-                <p className="font-pdp-serif text-base font-normal leading-relaxed md:text-[17px]">{product.story}</p>
-              </div>
+              <p className="font-pdp-serif text-2xl font-semibold leading-[1.3] text-obsidian md:text-[26px]">
+                {formatEgp(product.priceEgp)}
+              </p>
+              <p className="border-t border-stone/30 pt-3 font-body text-[11px] leading-relaxed text-warm-charcoal md:text-xs">
+                {trustStripItems.join(' · ')}
+              </p>
+            </header>
+          </div>
 
-              {artist ? (
-                <div className="border-t border-stone/50 pt-5">
-                  <p className="font-body text-sm text-warm-charcoal">
-                    Illustrated by{' '}
-                    <Link
-                      to={`/search?q=${encodeURIComponent(artist.name)}`}
-                      className="font-medium text-obsidian underline decoration-obsidian/25 underline-offset-2 transition-colors hover:text-deep-teal"
+          <div
+            ref={mobileSizeStripRef}
+            className="md:hidden pointer-events-none fixed left-6 right-6 z-90 flex flex-col gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
+            style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+            role="region"
+            aria-label="Size and purchase"
+          >
+            <div
+              className={`pointer-events-auto rounded-xl border border-stone/50 bg-papyrus/98 p-3 shadow-lg backdrop-blur-md${compactMobileDock ? ' hidden' : ''}`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-label text-[12px] font-medium uppercase tracking-[0.28em] text-label">Size</p>
+                <button
+                  ref={mobileSizeGuideTriggerRef}
+                  type="button"
+                  onClick={() => setSizeGuideOpen(true)}
+                  className="font-label text-[11px] font-medium uppercase tracking-wide text-deep-teal underline decoration-deep-teal/40 underline-offset-4 hover:text-obsidian"
+                >
+                  {copy.sizeGuideLabel}
+                </button>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Size">
+                {sizes.map(({ key, disabled }) => {
+                  const isSel = selectedSize === key;
+                  return (
+                    <button
+                      key={`mobile-${key}`}
+                      type="button"
+                      onClick={() => setSelectedSize(key)}
+                      aria-pressed={isSel}
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border-2 font-headline text-base font-semibold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                        disabled
+                          ? isSel
+                            ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-500/25 line-through decoration-obsidian/30'
+                            : 'border-stone bg-papyrus/50 text-clay line-through decoration-obsidian/30 hover:border-amber-300 hover:text-amber-700'
+                          : isSel
+                            ? 'border-obsidian bg-white text-obsidian shadow-sm ring-2 ring-obsidian/25'
+                            : 'border-stone/80 bg-white text-obsidian hover:border-obsidian'
+                      }`}
                     >
-                      {artist.name}
-                    </Link>
+                      <span aria-disabled={disabled}>{key}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {inventoryHint ? (
+                <p className="mt-2 font-label text-[10px] font-medium uppercase tracking-wide text-ember">{inventoryHint}</p>
+              ) : null}
+              {oosSelected ? (
+                <p className="mt-1 font-label text-[10px] font-medium uppercase tracking-wide text-amber-800">{copy.lowStockLabel} — out of stock</p>
+              ) : null}
+            </div>
+
+            <div
+              className={`pointer-events-auto overflow-hidden rounded-2xl border shadow-2xl ${
+                oosSelected && notifySuccess
+                  ? 'border-deep-teal/25 bg-frost-blue/40 backdrop-blur-md'
+                  : oosSelected
+                    ? 'border-amber-300/80 bg-amber-100 backdrop-blur-md'
+                    : 'border-obsidian/10 bg-ember backdrop-blur-md'
+              }`}
+            >
+              <button
+                ref={mobileCtaRef}
+                type="button"
+                onClick={() => {
+                  if (oosSelected) {
+                    handleBuyOrScroll();
+                    return;
+                  }
+                  if (!sizeReady) {
+                    handleMissingSize();
+                    return;
+                  }
+                  handleBuyOrScroll();
+                }}
+                className={`flex w-full min-h-12 flex-col items-center justify-center gap-0.5 px-2 py-3 text-sm font-semibold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                  oosSelected && notifySuccess
+                    ? 'text-obsidian hover:bg-frost-blue/55'
+                    : oosSelected
+                      ? 'text-obsidian hover:bg-amber-200/80'
+                      : 'text-obsidian hover:bg-ember/90'
+                }`}
+              >
+                {oosSelected ? (
+                  notifySuccess ? (
+                    <span className="font-body text-xs font-medium normal-case leading-snug">{copy.notifySuccess}</span>
+                  ) : (
+                    <>
+                      <span className="flex items-center gap-2">
+                        <IconCart />
+                        <span>{copy.notifyMeCTA}</span>
+                      </span>
+                      <span className="text-[10px] font-medium normal-case tracking-normal opacity-80">{copy.notifyEmailPlaceholder}</span>
+                    </>
+                  )
+                ) : (
+                  <>
+                    <span className="flex items-center gap-2">
+                      <IconCart />
+                      <span>{sizeReady ? copy.addBtnCTA : copy.selectSizePrompt}</span>
+                    </span>
+                    <span className="text-[10px] font-medium normal-case tracking-normal text-obsidian">
+                      {formatEgp(product.priceEgp)} · {copy.addBtnTag}
+                    </span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div ref={sizeSectionRef} className="hidden space-y-3 md:block">
+            <div className="flex items-center justify-between gap-3" aria-label="Size and size guide">
+              <p className="font-label text-[12px] font-medium uppercase tracking-[0.28em] text-label">Size</p>
+              <button
+                ref={sizeGuideTriggerRef}
+                type="button"
+                onClick={() => setSizeGuideOpen(true)}
+                className="font-label text-[11px] font-medium uppercase tracking-wide text-deep-teal underline decoration-deep-teal/40 underline-offset-4 hover:text-obsidian"
+              >
+                {copy.sizeGuideLabel}
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-2.5" role="group" aria-label="Size">
+              {sizes.map(({ key, disabled }) => {
+                const isSel = selectedSize === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedSize(key)}
+                    aria-pressed={isSel}
+                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-sm border-2 font-headline text-lg font-semibold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                      disabled
+                        ? isSel
+                          ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-500/25 line-through decoration-obsidian/30'
+                          : 'border-stone bg-papyrus/50 text-clay line-through decoration-obsidian/30 hover:border-amber-300 hover:text-amber-700'
+                        : isSel
+                          ? 'border-obsidian bg-white text-obsidian shadow-sm ring-2 ring-obsidian/25'
+                          : 'border-stone/80 bg-white text-obsidian hover:border-obsidian'
+                    }`}
+                  >
+                    <span aria-disabled={disabled}>{key}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {inventoryHint ? (
+              <p className="font-label text-[11px] font-medium uppercase tracking-wide text-ember animate-fade-in">
+                {inventoryHint}
+              </p>
+            ) : null}
+
+            {oosSelected ? (
+              <p className="font-label text-[11px] font-medium text-amber-800 uppercase tracking-wide animate-fade-in">
+                {copy.lowStockLabel} — out of stock
+              </p>
+            ) : null}
+          </div>
+
+          <div className="mt-6 space-y-2 border-t border-stone/25 pt-6 md:mt-8 md:border-t-0 md:pt-0">
+            <p className="font-body text-[13px] leading-relaxed text-clay md:text-sm">{modelLine}</p>
+            {product.stockNote ? (
+              <p className="font-label text-[11px] font-medium uppercase tracking-wide text-ember">{product.stockNote}</p>
+            ) : null}
+          </div>
+
+          <div className="mt-6 space-y-4">
+            {oosSelected ? (
+              <form ref={notifyFormRef} onSubmit={handleNotifySubmit} className="space-y-3">
+                {notifySuccess ? (
+                  <p className="rounded-sm border border-deep-teal/30 bg-frost-blue/20 px-4 py-3 font-body text-sm text-obsidian">
+                    {copy.notifySuccess}
                   </p>
+                ) : (
+                  <>
+                    <label htmlFor={notifyFieldId} className="font-label text-[11px] font-medium uppercase tracking-wide text-label">
+                      {copy.notifyFieldLabel}
+                    </label>
+                    <input
+                      ref={notifyInputRef}
+                      id={notifyFieldId}
+                      type="email"
+                      name="notify-email"
+                      autoComplete="email"
+                      placeholder={copy.notifyEmailPlaceholder}
+                      value={notifyEmail}
+                      onChange={(e) => {
+                        setNotifyEmail(e.target.value);
+                        setNotifyError(false);
+                      }}
+                      className="w-full rounded-sm border border-stone bg-white px-3 py-3 font-body text-sm text-obsidian shadow-sm placeholder:text-clay/80 focus:border-deep-teal focus:outline-none focus:ring-2 focus:ring-deep-teal/25"
+                      aria-invalid={notifyError}
+                      aria-describedby={notifyError ? `${notifyFieldId}-err` : undefined}
+                    />
+                    {notifyError ? (
+                      <p id={`${notifyFieldId}-err`} className="font-body text-xs text-ember">
+                        {copy.notifyInvalidEmail}
+                      </p>
+                    ) : null}
+                    <button type="submit" className={ctaClass}>
+                      <span className="flex items-center justify-center gap-2">
+                        <IconCart />
+                        <span>{copy.notifyMeCTA}</span>
+                      </span>
+                    </button>
+                  </>
+                )}
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={handleBuyOrScroll}
+                className={`${ctaClass} hidden md:flex`}
+                aria-describedby={sizeReady ? undefined : 'pdp-size-hint'}
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <IconCart />
+                  <span>{primaryCtaLine()}</span>
+                </span>
+                {showBrandTagUnderCta() ? (
+                  <span
+                    className={`max-w-[95%] text-center text-[11px] font-medium normal-case tracking-normal md:text-xs ${
+                      sizeReady ? 'text-obsidian/80' : 'text-clay/90'
+                    }`}
+                  >
+                    {copy.addBtnTag}
+                  </span>
+                ) : null}
+              </button>
+            )}
+
+            <p className="text-center font-body text-xs leading-snug text-warm-charcoal md:text-sm">{copy.shippingLine}</p>
+          </div>
+
+          {artist ? (
+            <div className="mt-8 flex items-center gap-3 border-t border-stone/25 pt-8">
+              {artistAvatars[artist.slug] ? (
+                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/50">
+                  <TeeImage
+                    src={artistAvatars[artist.slug]}
+                    alt={artist.name}
+                    w={160}
+                    eager
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               ) : null}
-            </header>
+              <p className="font-body text-sm leading-snug text-warm-charcoal">
+                <span className="text-clay">{copy.illustratedByLabel}</span>{' '}
+                <Link
+                  to={`/search?q=${encodeURIComponent(artist.name)}`}
+                  className="font-medium text-obsidian underline decoration-obsidian/25 underline-offset-2 transition-colors hover:text-deep-teal"
+                >
+                  {artist.name}
+                </Link>
+              </p>
+            </div>
+          ) : null}
 
-            <div className="mb-10 flex flex-col gap-7 border-t border-stone/25 pt-8 md:gap-8">
-              <h2 className="font-pdp-serif text-2xl font-semibold leading-[1.3] text-obsidian md:text-[26px]">
-                {formatEgp(product.priceEgp)}
-              </h2>
+          <div
+            className="glass-morphism-violet mb-6 mt-8 hidden p-5 text-obsidian md:block"
+            role="region"
+            aria-labelledby="pdp-story-short-heading"
+          >
+            <p
+              id="pdp-story-short-heading"
+              className="font-label mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-obsidian"
+            >
+              {copy.storyCardHeading}
+            </p>
+            <p className="font-pdp-serif text-base font-normal leading-relaxed md:text-[17px]">{product.story}</p>
+          </div>
 
-              <div ref={sizeSectionRef}>
-                <p className="mb-3 font-body text-sm leading-snug text-clay md:hidden">{copy.selectSizePrompt} — open the bar below.</p>
-                <div className="hidden space-y-3 md:block">
-                  <div className="flex items-center justify-between gap-3" aria-label="Size and size guide">
-                    <p className="font-label text-[12px] font-medium uppercase tracking-[0.28em] text-label">Size</p>
-                    <button
-                      ref={sizeGuideTriggerRef}
-                      type="button"
-                      onClick={() => setSizeGuideOpen(true)}
-                      className="font-label text-[11px] font-medium uppercase tracking-wide text-deep-teal underline decoration-deep-teal/40 underline-offset-4 hover:text-obsidian"
-                    >
-                      {copy.sizeGuideLabel}
-                    </button>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2.5" role="group" aria-label="Size">
-                    {sizes.map(({ key, disabled }) => {
-                      const isSel = selectedSize === key;
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setSelectedSize(key)}
-                          aria-pressed={isSel}
-                          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-sm border-2 font-headline text-lg font-semibold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                            disabled
-                              ? isSel
-                                ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-500/25 line-through decoration-obsidian/30'
-                                : 'border-stone bg-papyrus/50 text-clay line-through decoration-obsidian/30 hover:border-amber-300 hover:text-amber-700'
-                              : isSel
-                                ? 'border-obsidian bg-white text-obsidian shadow-sm ring-2 ring-obsidian/25'
-                                : 'border-stone/80 bg-white text-obsidian hover:border-obsidian'
-                          }`}
-                        >
-                          <span aria-disabled={disabled}>{key}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {inventoryHint ? (
-                    <p className="font-label text-[11px] font-medium uppercase tracking-wide text-ember animate-fade-in">
-                      {inventoryHint}
-                    </p>
-                  ) : null}
-
-                  {oosSelected ? (
-                    <p className="font-label text-[11px] font-medium text-amber-800 uppercase tracking-wide animate-fade-in">
-                      {copy.lowStockLabel} — out of stock
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="font-body text-[13px] leading-relaxed text-clay md:text-sm">{modelLine}</p>
-                {product.stockNote ? (
-                  <p className="font-label text-[11px] font-medium uppercase tracking-wide text-ember">{product.stockNote}</p>
-                ) : null}
-              </div>
-
-              <div className="space-y-4">
-                {oosSelected ? (
-                  <form ref={notifyFormRef} onSubmit={handleNotifySubmit} className="space-y-3">
-                    {notifySuccess ? (
-                      <p className="rounded-sm border border-deep-teal/30 bg-frost-blue/20 px-4 py-3 font-body text-sm text-obsidian">
-                        {copy.notifySuccess}
-                      </p>
-                    ) : (
-                      <>
-                        <label htmlFor={notifyFieldId} className="font-label text-[11px] font-medium uppercase tracking-wide text-label">
-                          {copy.notifyFieldLabel}
-                        </label>
-                        <input
-                          ref={notifyInputRef}
-                          id={notifyFieldId}
-                          type="email"
-                          name="notify-email"
-                          autoComplete="email"
-                          placeholder={copy.notifyEmailPlaceholder}
-                          value={notifyEmail}
-                          onChange={(e) => {
-                            setNotifyEmail(e.target.value);
-                            setNotifyError(false);
-                          }}
-                          className="w-full rounded-sm border border-stone bg-white px-3 py-3 font-body text-sm text-obsidian shadow-sm placeholder:text-clay/80 focus:border-deep-teal focus:outline-none focus:ring-2 focus:ring-deep-teal/25"
-                          aria-invalid={notifyError}
-                          aria-describedby={notifyError ? `${notifyFieldId}-err` : undefined}
-                        />
-                        {notifyError ? (
-                          <p id={`${notifyFieldId}-err`} className="font-body text-xs text-ember">
-                            {copy.notifyInvalidEmail}
-                          </p>
-                        ) : null}
-                        <button type="submit" className={ctaClass}>
-                          <span className="flex items-center justify-center gap-2">
-                            <IconCart />
-                            <span>{copy.notifyMeCTA}</span>
-                          </span>
-                        </button>
-                      </>
-                    )}
-                  </form>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleBuyOrScroll}
-                    className={`${ctaClass} hidden md:flex`}
-                    aria-describedby={sizeReady ? undefined : 'pdp-size-hint'}
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      <IconCart />
-                      <span>{primaryCtaLine()}</span>
-                    </span>
-                    {showBrandTagUnderCta() ? (
-                      <span
-                        className={`max-w-[95%] text-center text-[11px] font-medium normal-case tracking-normal md:text-xs ${
-                          sizeReady ? 'text-white/80' : 'text-clay/90'
-                        }`}
-                      >
-                        {copy.addBtnTag}
-                      </span>
-                    ) : null}
-                  </button>
-                )}
-
-                <div className="space-y-3 border-t border-b border-stone/30 py-4">
-                  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[11px] font-medium uppercase tracking-wide text-clay">
-                    {PDP_SCHEMA.trustSignals.map(({ label, icon }) => {
-                      const TrustIcon = PDP_TRUST_ICONS[icon];
-                      return (
-                        <div key={label} className="flex items-center gap-1.5 opacity-90 transition-opacity hover:opacity-100">
-                          <TrustIcon />
-                          <span>{label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="text-center font-body text-[11px] leading-snug text-warm-charcoal md:text-xs">{copy.trustReturnsLine}</p>
-                </div>
-              </div>
-
-              <div className="mt-4 border-t border-stone/30">
+          <div className="mt-4 border-t border-stone/30">
                 <details className="group">
                   <summary className="font-headline flex cursor-pointer list-none items-center justify-between py-5 text-sm font-medium uppercase tracking-wide text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal [&::-webkit-details-marker]:hidden">
                     {copy.accordionProductDetails}
@@ -757,29 +915,32 @@ export function ProductDetail() {
                       </div>
                     </figure>
                     <p className="font-body text-sm font-medium leading-relaxed text-warm-charcoal md:text-[15px]">
-                      Part of the{' '}
-                      {vibe ? (
-                        <Link
-                          to={`/vibes/${vibe.slug}`}
-                          className="border-b border-primary font-medium text-obsidian transition-colors hover:text-primary"
-                        >
-                          {vibe.name}
-                        </Link>
-                      ) : (
-                        'collection'
-                      )}{' '}
-                      line — original illustration by{' '}
-                      {artist ? (
-                        <Link
-                          to={`/search?q=${encodeURIComponent(artist.name)}`}
-                          className="font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-2 transition-colors hover:text-obsidian"
-                        >
-                          {artist.name}
-                        </Link>
-                      ) : (
-                        'the artist'
-                      )}
-                      , meaning-led themes, and print quality you can see in the gallery before you wear it.
+                      {copy.designStoryAccordionBody}{' '}
+                      <span className="block pt-2 text-warm-charcoal/95">
+                        Part of the{' '}
+                        {vibe ? (
+                          <Link
+                            to={`/vibes/${vibe.slug}`}
+                            className="border-b border-primary font-medium text-obsidian transition-colors hover:text-primary"
+                          >
+                            {vibe.name}
+                          </Link>
+                        ) : (
+                          'collection'
+                        )}{' '}
+                        line — artwork by{' '}
+                        {artist ? (
+                          <Link
+                            to={`/search?q=${encodeURIComponent(artist.name)}`}
+                            className="font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-2 transition-colors hover:text-obsidian"
+                          >
+                            {artist.name}
+                          </Link>
+                        ) : (
+                          'the artist'
+                        )}
+                        .
+                      </span>
                     </p>
                   </div>
                 </details>
@@ -798,9 +959,8 @@ export function ProductDetail() {
                   </div>
                 </details>
               </div>
-            </div>
-          </div>
         </div>
+      </div>
       </div>
 
       <section className="border-t border-stone/25 bg-papyrus px-6 py-10 md:px-10 lg:px-12">
@@ -809,12 +969,12 @@ export function ProductDetail() {
           <h2 className="font-headline text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">{copy.wornByTitle}</h2>
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-          {wornIndices.map((idx, i) => {
-            const src = gallery[idx];
-            const cap = copy.wornByCaptions[i] ?? '';
+          {wornIndices.map((idx, slot) => {
+            const src = resolveWornSrc(idx);
+            const cap = copy.wornByCaptions[slot] ?? '';
             if (!src) return null;
             return (
-              <figure key={`${product.slug}-worn-${idx}`} className="overflow-hidden rounded-lg bg-surface-container-high ring-1 ring-stone/40">
+              <figure key={`${product.slug}-worn-slot-${idx}`} className="overflow-hidden rounded-lg bg-surface-container-high ring-1 ring-stone/40">
                 <div className="aspect-[3/4] w-full">
                   <TeeImage src={src} alt={`${product.name} — ${cap}`} w={600} className="h-full w-full object-cover" />
                 </div>
@@ -832,6 +992,7 @@ export function ProductDetail() {
             <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
               More from {vibe?.name ?? 'this vibe'}
             </h2>
+            <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
           </div>
           {vibe ? (
             <Link
@@ -893,160 +1054,13 @@ export function ProductDetail() {
         </div>
       </section>
 
-      <div
-        className="pdp-mobile-cta z-90 md:hidden fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-6 right-6 overflow-hidden rounded-2xl border border-white/60 bg-white/45 backdrop-blur-2xl shadow-2xl"
-        role="region"
-        aria-label="Add to cart"
-      >
-        <button
-          ref={mobileCtaRef}
-          type="button"
-          onClick={() => {
-            if (oosSelected) {
-              handleBuyOrScroll();
-              return;
-            }
-            if (!sizeReady) {
-              setMobilePurchaseOpen(true);
-              return;
-            }
-            handleBuyOrScroll();
-          }}
-          className={`flex w-full min-h-12 flex-col items-center justify-center gap-0.5 px-2 py-3 text-sm font-semibold uppercase tracking-wider transition-colors focus-visible:outline-none text-obsidian hover:bg-white/30`}
-        >
-          {oosSelected ? (
-            notifySuccess ? (
-              <span className="font-body text-xs font-medium normal-case leading-snug">{copy.notifySuccess}</span>
-            ) : (
-              <>
-                <span className="flex items-center gap-2">
-                  <IconCart />
-                  <span>{copy.notifyMeCTA}</span>
-                </span>
-                <span className="text-[10px] font-medium normal-case tracking-normal opacity-80">{copy.notifyEmailPlaceholder}</span>
-              </>
-            )
-          ) : (
-            <>
-              <span className="flex items-center gap-2">
-                <IconCart />
-                <span>
-                  {sizeReady ? copy.addBtnCTA : copy.selectSizePrompt}
-                </span>
-              </span>
-              <span className="text-[10px] font-medium normal-case tracking-normal text-white/80">
-                {formatEgp(product.priceEgp)} · {copy.addBtnTag}
-              </span>
-            </>
-          )}
-        </button>
-      </div>
-
-      {mobilePurchaseOpen ? (
-        <div className="fixed inset-0 z-115 md:hidden" role="dialog" aria-modal="true" aria-labelledby={mobilePurchaseTitleId}>
-          <button
-            type="button"
-            className="absolute inset-0 bg-obsidian/50 backdrop-blur-sm"
-            aria-label="Close purchase panel"
-            onClick={() => setMobilePurchaseOpen(false)}
-          />
-          <div className="absolute inset-x-0 bottom-0 max-h-[90dvh] overflow-y-auto rounded-t-3xl border border-white/40 bg-white/60 shadow-[0_-24px_80px_rgba(0,0,0,0.25)] backdrop-blur-2xl">
-            <div className="mx-auto max-w-lg px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
-              <div className="mx-auto mb-4 h-1 w-11 rounded-full bg-stone/45" aria-hidden />
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <h2 id={mobilePurchaseTitleId} className="font-headline text-[13px] font-semibold uppercase tracking-[0.2em] text-obsidian">
-                  Size & add to bag
-                </h2>
-                <button
-                  ref={mobileDrawerCloseRef}
-                  type="button"
-                  className="font-label shrink-0 rounded-sm border border-stone px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white"
-                  onClick={() => setMobilePurchaseOpen(false)}
-                >
-                  Close
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobilePurchaseOpen(false);
-                  setSizeGuideOpen(true);
-                }}
-                className="link-underline-reveal font-label mb-4 block text-left text-[11px] font-medium uppercase tracking-wide text-deep-teal"
-              >
-                {copy.sizeGuideLabel}
-              </button>
-              <div className="flex flex-wrap gap-2.5 pb-4" role="group" aria-label="Size">
-                {sizes.map(({ key, disabled }) => {
-                  const isSel = selectedSize === key;
-                  return (
-                    <button
-                      key={`drawer-${key}`}
-                      type="button"
-                      onClick={() => setSelectedSize(key)}
-                      aria-pressed={isSel}
-                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-sm border-2 font-headline text-lg font-semibold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                        disabled
-                          ? isSel
-                            ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-500/25 line-through decoration-obsidian/30'
-                            : 'border-stone bg-papyrus/50 text-clay line-through decoration-obsidian/30 hover:border-amber-300 hover:text-amber-700'
-                          : isSel
-                            ? 'border-obsidian bg-white text-obsidian shadow-sm ring-2 ring-obsidian/25'
-                            : 'border-stone/80 bg-white text-obsidian hover:border-obsidian'
-                      }`}
-                    >
-                      <span aria-disabled={disabled}>{key}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {inventoryHint ? (
-                <p className="font-label mb-4 text-[11px] font-medium uppercase tracking-wide text-ember">{inventoryHint}</p>
-              ) : null}
-              <div className="mb-5 rounded-xl border border-stone/50 bg-white/50 p-3 backdrop-blur-md">
-                <ul className="space-y-2.5">
-                  {featureStripItems.slice(0, 2).map(({ label, Icon }) => {
-                    const FeatureIcon = Icon;
-                    return (
-                      <li key={label} className="flex gap-2.5 text-[12px] leading-snug text-warm-charcoal">
-                        <span className="pdp-feature-icon flex shrink-0 items-center justify-center" aria-hidden>
-                          <FeatureIcon />
-                        </span>
-                        <span>{label}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  handleBuyOrScroll();
-                }}
-                className={ctaClass}
-                aria-describedby={sizeReady ? undefined : 'pdp-size-hint'}
-              >
-                <span className="flex items-center justify-center gap-2">
-                  <IconCart />
-                  <span>{primaryCtaLine()}</span>
-                </span>
-                {showBrandTagUnderCta() ? (
-                  <span
-                    className={`max-w-[95%] text-center text-[11px] font-medium normal-case tracking-normal ${
-                      sizeReady ? 'text-white/80' : 'text-clay/90'
-                    }`}
-                  >
-                    {copy.addBtnTag}
-                  </span>
-                ) : null}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {lightboxOpen ? (
-        <div className="pdp-lightbox fixed inset-0 z-130 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Enlarged product image">
+        <div
+          className="pdp-lightbox fixed inset-0 z-130 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Lightbox — ${viewLabels[photoIndex] ?? 'product'} view`}
+        >
           <button
             type="button"
             className="absolute inset-0 z-0 bg-obsidian/85"

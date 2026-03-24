@@ -9,6 +9,13 @@ const QUICK_VIEW_SIZES = ['M', 'L', 'XL'] as const;
 
 const GALLERY_VIEW_LABELS = ['flat lay', 'on-body', 'lifestyle', 'print detail', 'size reference'] as const;
 
+function galleryViewLabel(photoIndex: number): string {
+  if (photoIndex >= 0 && photoIndex < GALLERY_VIEW_LABELS.length) {
+    return GALLERY_VIEW_LABELS[photoIndex];
+  }
+  return `image ${photoIndex + 1}`;
+}
+
 type ProductQuickViewProps = {
   open: boolean;
   productSlug: string | null;
@@ -30,7 +37,9 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   const vibe = p ? getVibe(p.vibeSlug) : undefined;
   const media = p ? getProductMedia(p.slug) : null;
   const gallery = media?.gallery ?? [];
-  const mainSrc = gallery[photoIndex] ?? gallery[0] ?? '';
+  const galleryLen = gallery.length;
+  const safePhotoIndex = galleryLen > 0 ? Math.min(photoIndex, galleryLen - 1) : 0;
+  const mainSrc = gallery[safePhotoIndex] ?? gallery[0] ?? '';
   const fit = p?.fitLabel ?? 'Regular';
 
   useEffect(() => {
@@ -75,7 +84,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   return (
     <dialog
       ref={dialogRef}
-      className="product-quick-view-dialog w-[min(100vw-1rem,960px)] max-h-[90dvh] overflow-hidden rounded-2xl border border-white/25 bg-obsidian/75 p-0 shadow-[0_32px_96px_-24px_rgba(0,0,0,0.72)] backdrop-blur-2xl"
+      className="product-quick-view-dialog w-[min(calc(100vw-max(0.5rem,env(safe-area-inset-left,0px))-max(0.5rem,env(safe-area-inset-right,0px))),960px)] max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-0.5rem))] overflow-hidden rounded-2xl border border-white/25 bg-obsidian/75 p-0 shadow-[0_32px_96px_-24px_rgba(0,0,0,0.72)] backdrop-blur-2xl"
       aria-labelledby={showContent ? titleId : undefined}
       aria-describedby={showContent && p ? descId : undefined}
       onCancel={handleCancel}
@@ -96,12 +105,12 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
       ) : null}
 
       {showContent && p ? (
-        <div className="flex max-h-[90dvh] flex-col md:flex-row md:min-h-[min(560px,85dvh)]">
+        <div className="flex max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-0.5rem))] flex-col md:flex-row md:min-h-[min(560px,85dvh)]">
           <div className="flex w-full shrink-0 flex-col md:min-h-[min(560px,85vh)] md:w-1/2">
             <div className="relative min-h-[240px] flex-1 md:min-h-0">
               <img
                 src={imgUrl(mainSrc, 1000)}
-                alt={`HORO “${p.name}” — ${GALLERY_VIEW_LABELS[photoIndex] ?? 'view'}`}
+                alt={`HORO “${p.name}” — ${galleryViewLabel(safePhotoIndex)}`}
                 className="h-full min-h-[240px] w-full object-cover md:absolute md:inset-0 md:min-h-full"
                 width={1000}
                 height={1333}
@@ -127,10 +136,10 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                   type="button"
                   onClick={() => setPhotoIndex(i)}
                   className={`aspect-square h-14 w-14 shrink-0 snap-start overflow-hidden rounded-lg p-0 transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:h-auto md:w-full ${
-                    photoIndex === i ? 'ring-2 ring-white' : 'ring-1 ring-white/25 opacity-90 hover:opacity-100'
+                    safePhotoIndex === i ? 'ring-2 ring-white' : 'ring-1 ring-white/25 opacity-90 hover:opacity-100'
                   }`}
-                  aria-label={`View image ${i + 1} of 5`}
-                  aria-pressed={photoIndex === i}
+                  aria-label={galleryLen > 0 ? `View image ${i + 1} of ${galleryLen}` : `View image ${i + 1}`}
+                  aria-pressed={safePhotoIndex === i}
                 >
                   <img src={imgUrl(src, 200)} alt="" className="h-full w-full object-cover" width={200} height={200} />
                 </button>

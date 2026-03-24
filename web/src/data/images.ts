@@ -88,58 +88,63 @@ export const vibeCovers: Record<string, string> = {
   trends: vibeEditorialImagery.trends.wide,
 };
 
-/** Product slug → main card image + 5 gallery images (PDP) — all model-in-tee or product shots */
+/** PDP gallery: repeat the product main image so every thumb matches this SKU until per-angle assets exist. */
+function g(main: string, count = 5): string[] {
+  return Array.from({ length: count }, () => main);
+}
+
+/** Product slug → main card image + gallery images (PDP) */
 export const productMedia: Record<string, { main: string; gallery: string[] }> = {
   'the-weight-of-light': {
     main: tee.whiteFront,
-    gallery: [tee.whiteFront, tee.womanSmile, tee.walkingStreet, tee.flatLayStyle, tee.womanUrban],
+    gallery: g(tee.whiteFront),
   },
   'midnight-compass': {
     main: tee.yellowTee,
-    gallery: [tee.yellowTee, tee.studioTee, tee.outdoorTee, tee.flatLayStyle, tee.manCasual],
+    gallery: g(tee.yellowTee),
   },
   'quiet-revolt': {
     main: tee.womanUrban,
-    gallery: [tee.womanUrban, tee.relaxedFit, tee.womanSmile, tee.flatLayStyle, tee.streetPose],
+    gallery: g(tee.womanUrban),
   },
   'cairo-thread': {
     main: tee.walkingStreet,
-    gallery: [tee.walkingStreet, tee.womanStreet, tee.outdoorTee, tee.flatLayStyle, tee.streetPose],
+    gallery: g(tee.walkingStreet),
   },
   'signal-line': {
     main: tee.streetPose,
-    gallery: [tee.streetPose, tee.womanStreet, tee.outdoorTee, tee.flatLayStyle, tee.friendsTees],
+    gallery: g(tee.streetPose),
   },
   // --- New Emotions ---
-  'emotions-silent-scream': { main: newTees.emotions1, gallery: [newTees.emotions1, tee.womanSmile, tee.flatLayStyle] },
-  'emotions-deep-waters': { main: newTees.emotions2, gallery: [newTees.emotions2, tee.whiteFront, tee.womanStreet] },
-  'emotions-shattered-peace': { main: newTees.emotions3, gallery: [newTees.emotions3, tee.studioTee, tee.friendsTees] },
-  'emotions-raw-nerve': { main: newTees.emotions4, gallery: [newTees.emotions4, tee.manCasual, tee.outdoorTee] },
-  'emotions-unspoken': { main: newTees.emotions5, gallery: [newTees.emotions5, tee.womanUrban, tee.flatLayStyle] },
+  'emotions-silent-scream': { main: newTees.emotions1, gallery: g(newTees.emotions1) },
+  'emotions-deep-waters': { main: newTees.emotions2, gallery: g(newTees.emotions2) },
+  'emotions-shattered-peace': { main: newTees.emotions3, gallery: g(newTees.emotions3) },
+  'emotions-raw-nerve': { main: newTees.emotions4, gallery: g(newTees.emotions4) },
+  'emotions-unspoken': { main: newTees.emotions5, gallery: g(newTees.emotions5) },
   // --- New Zodiac ---
-  'zodiac-astral-body': { main: newTees.zodiac1, gallery: [newTees.zodiac1, tee.streetPose, tee.flatLayStyle] },
-  'zodiac-star-alignment': { main: newTees.zodiac2, gallery: [newTees.zodiac2, tee.womanStreet, tee.womanSmile] },
-  'zodiac-lunar-pull': { main: newTees.zodiac3, gallery: [newTees.zodiac3, tee.studioTee, tee.manCasual] },
-  'zodiac-solar-flare': { main: newTees.zodiac4, gallery: [newTees.zodiac4, tee.yellowTee, tee.outdoorTee] },
-  'zodiac-cosmic-dust': { main: newTees.zodiac5, gallery: [newTees.zodiac5, tee.womanUrban, tee.friendsTees] },
+  'zodiac-astral-body': { main: newTees.zodiac1, gallery: g(newTees.zodiac1) },
+  'zodiac-star-alignment': { main: newTees.zodiac2, gallery: g(newTees.zodiac2) },
+  'zodiac-lunar-pull': { main: newTees.zodiac3, gallery: g(newTees.zodiac3) },
+  'zodiac-solar-flare': { main: newTees.zodiac4, gallery: g(newTees.zodiac4) },
+  'zodiac-cosmic-dust': { main: newTees.zodiac5, gallery: g(newTees.zodiac5) },
   // --- New Fiction ---
-  'fiction-neon-dreams': { main: newTees.fiction1, gallery: [newTees.fiction1, tee.womanUrban, tee.flatLayStyle] },
-  'fiction-dragon-scale': { main: newTees.fiction2, gallery: [newTees.fiction2, tee.streetPose, tee.womanStreet] },
-  'fiction-distant-suns': { main: newTees.fiction3, gallery: [newTees.fiction3, tee.studioTee, tee.manCasual] },
-  'fiction-cyber-ghost': { main: newTees.fiction4, gallery: [newTees.fiction4, tee.whiteFront, tee.outdoorTee] },
-  'fiction-mythic-realm': { main: newTees.fiction5, gallery: [newTees.fiction5, tee.yellowTee, tee.friendsTees] },
+  'fiction-neon-dreams': { main: newTees.fiction1, gallery: g(newTees.fiction1) },
+  'fiction-dragon-scale': { main: newTees.fiction2, gallery: g(newTees.fiction2) },
+  'fiction-distant-suns': { main: newTees.fiction3, gallery: g(newTees.fiction3) },
+  'fiction-cyber-ghost': { main: newTees.fiction4, gallery: g(newTees.fiction4) },
+  'fiction-mythic-realm': { main: newTees.fiction5, gallery: g(newTees.fiction5) },
   // --- New Career ---
-  'career-hustle-hard': { main: newTees.career1, gallery: [newTees.career1, tee.relaxedFit, tee.flatLayStyle] },
-  'career-ceo-mindset': { main: newTees.career2, gallery: [newTees.career2, tee.womanStreet, tee.studioTee] },
-  'career-climb-the-ladder': { main: tee.relaxedFit, gallery: [tee.relaxedFit, tee.manCasual, tee.outdoorTee] },
-  'career-office-hours': { main: tee.walkingStreet, gallery: [tee.walkingStreet, tee.womanUrban, tee.friendsTees] },
-  'career-boardroom-rebel': { main: tee.whiteFront, gallery: [tee.whiteFront, tee.streetPose, tee.flatLayStyle] },
+  'career-hustle-hard': { main: newTees.career1, gallery: g(newTees.career1) },
+  'career-ceo-mindset': { main: newTees.career2, gallery: g(newTees.career2) },
+  'career-climb-the-ladder': { main: tee.relaxedFit, gallery: g(tee.relaxedFit) },
+  'career-office-hours': { main: tee.walkingStreet, gallery: g(tee.walkingStreet) },
+  'career-boardroom-rebel': { main: tee.whiteFront, gallery: g(tee.whiteFront) },
   // --- New Trends ---
-  'trends-viral-moment': { main: tee.yellowTee, gallery: [tee.yellowTee, tee.outdoorTee, tee.flatLayStyle] },
-  'trends-street-culture': { main: tee.womanStreet, gallery: [tee.womanStreet, tee.streetPose, tee.friendsTees] },
-  'trends-hype-check': { main: tee.manCasual, gallery: [tee.manCasual, tee.studioTee, tee.whiteFront] },
-  'trends-next-wave': { main: tee.outdoorTee, gallery: [tee.outdoorTee, tee.yellowTee, tee.relaxedFit] },
-  'trends-drop-culture': { main: tee.streetPose, gallery: [tee.streetPose, tee.womanUrban, tee.flatLayStyle] },
+  'trends-viral-moment': { main: tee.yellowTee, gallery: g(tee.yellowTee) },
+  'trends-street-culture': { main: tee.womanStreet, gallery: g(tee.womanStreet) },
+  'trends-hype-check': { main: tee.manCasual, gallery: g(tee.manCasual) },
+  'trends-next-wave': { main: tee.outdoorTee, gallery: g(tee.outdoorTee) },
+  'trends-drop-culture': { main: tee.streetPose, gallery: g(tee.streetPose) },
 };
 
 export function imgUrl(src: string, w: number) {
@@ -151,7 +156,7 @@ export function getProductMedia(slug: string) {
   return (
     productMedia[slug] ?? {
       main: tee.whiteFront,
-      gallery: [tee.whiteFront, tee.womanSmile, tee.relaxedFit, tee.flatLayStyle, tee.manCasual],
+      gallery: g(tee.whiteFront),
     }
   );
 }

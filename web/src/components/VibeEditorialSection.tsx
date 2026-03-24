@@ -65,6 +65,7 @@ export function VibeEditorialSection({ block, onQuickView }: VibeEditorialSectio
                     type="button"
                     onClick={() => onQuickView(showcaseProduct.slug)}
                     className="quick-view-pill font-label absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg"
+                    aria-label={`Quick view: ${showcaseProduct.name}`}
                   >
                     Quick view
                   </button>
@@ -83,6 +84,7 @@ export function VibeEditorialSection({ block, onQuickView }: VibeEditorialSectio
                     type="button"
                     onClick={() => onQuickView(showcaseProduct.slug)}
                     className="quick-view-pill quick-view-pill--compact font-label absolute bottom-2 left-2 right-2 z-10 rounded-full text-center font-medium uppercase text-obsidian transition-shadow hover:shadow-md"
+                    aria-label={`Quick view: ${showcaseProduct.name}`}
                   >
                     Quick view
                   </button>
@@ -101,6 +103,7 @@ export function VibeEditorialSection({ block, onQuickView }: VibeEditorialSectio
                     type="button"
                     onClick={() => onQuickView(showcaseProduct.slug)}
                     className="quick-view-pill quick-view-pill--compact font-label absolute bottom-2 left-2 right-2 z-10 rounded-full text-center font-medium uppercase text-obsidian transition-shadow hover:shadow-md"
+                    aria-label={`Quick view: ${showcaseProduct.name}`}
                   >
                     Quick view
                   </button>

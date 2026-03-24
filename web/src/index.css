@@ -126,6 +126,9 @@
     .vibe-animated-art * {
       animation: none !important;
     }
+    .animate-fade-in {
+      animation: none !important;
+    }
     .vibe-art-trends-line {
       stroke-dashoffset: 0 !important;
     }

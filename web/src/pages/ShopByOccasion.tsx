@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { glassInteractive } from '../lib/glassInteractive';
 import { formatEgp } from '../utils/formatPrice';
 import { occasions } from '../data/site';
 import { tee, imgUrl } from '../data/images';
@@ -29,28 +30,24 @@ export function ShopByOccasion() {
         <div style={{ display: 'grid', gap: '1.25rem' }}>
           <Link
             to={`/occasions/${occasions[0].slug}`}
-            className="card-glass"
+            className={['card-glass group grid gap-5 no-underline', glassInteractive.surfaceCard].join(' ')}
             style={{
               padding: '1.25rem',
-              display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1.25rem',
               alignItems: 'center',
-              textDecoration: 'none',
-              color: 'inherit',
               background: 'var(--warm-glow)',
             }}
           >
             <TeeImageFrame src={tee.womanSmile} alt="Model wearing graphic tee — gift collection" w={700} aspectRatio="4/3" borderRadius="12px" />
             <div>
-              <h2 style={{ fontSize: '1.25rem', margin: '0 0 0.5rem' }}>{occasions[0].name}</h2>
-              <p style={{ margin: 0 }}>{occasions[0].blurb}</p>
-              <p style={{ margin: '0.75rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
-                from {formatEgp(999)} (bundle)
+              <h2 className={['text-xl font-semibold', glassInteractive.title].join(' ')} style={{ margin: '0 0 0.5rem' }}>
+                {occasions[0].name}
+              </h2>
+              <p className={glassInteractive.body} style={{ margin: 0 }}>
+                {occasions[0].blurb}
               </p>
-              <span className="btn btn-ghost" style={{ marginTop: '1rem', display: 'inline-flex' }}>
-                Explore gifts →
-              </span>
+              <p className={['mt-3 text-sm', glassInteractive.body].join(' ')}>from {formatEgp(999)} (bundle)</p>
+              <span className={['btn btn-ghost mt-4 inline-flex', glassInteractive.cta].join(' ')}>Explore gifts →</span>
             </div>
           </Link>
 
@@ -62,16 +59,7 @@ export function ShopByOccasion() {
                 <Link
                   key={o.slug}
                   to={`/occasions/${o.slug}`}
-                  className="card-glass"
-                  style={{
-                    padding: '1.25rem',
-                    textDecoration: 'none',
-                    color: 'inherit',
-                    display: 'flex',
-                    gap: '1rem',
-                    alignItems: 'stretch',
-                    minHeight: '176px',
-                  }}
+                  className={['card-glass group flex min-h-[176px] items-stretch gap-4 no-underline p-5', glassInteractive.surfaceCard].join(' ')}
                 >
                   <div
                     style={{
@@ -91,10 +79,14 @@ export function ShopByOccasion() {
                       loading="lazy"
                     />
                   </div>
-                  <div style={{ display: 'flex', flex: 1, flexDirection: 'column', minWidth: 0 }}>
-                    <h2 style={{ fontSize: '1.125rem', margin: '0 0 0.5rem' }}>{o.name}</h2>
-                    <p style={{ margin: 0, fontSize: '0.9375rem', flex: 1 }}>{o.blurb}</p>
-                    <span style={{ display: 'inline-block', marginTop: '0.75rem', color: 'var(--deep-teal)', fontWeight: 500 }}>Explore →</span>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <h2 className={['text-lg font-semibold', glassInteractive.title].join(' ')} style={{ margin: '0 0 0.5rem' }}>
+                      {o.name}
+                    </h2>
+                    <p className={['flex-1 text-[0.9375rem]', glassInteractive.body].join(' ')} style={{ margin: 0 }}>
+                      {o.blurb}
+                    </p>
+                    <span className={['mt-3 inline-block font-medium', glassInteractive.cta].join(' ')}>Explore →</span>
                   </div>
                 </Link>
               );

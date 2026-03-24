@@ -40,7 +40,7 @@ export function Layout() {
     } else if (pathname === '/about') {
       document.title = 'About | HORO Egypt';
     } else {
-      document.title = DEFAULT_DOCUMENT_TITLE;
+      document.title = 'Page not found | HORO Egypt';
     }
   }, [pathname]);
 

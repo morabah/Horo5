@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Vibe } from '../data/site';
+import { glassInteractive } from '../lib/glassInteractive';
 import { heroStreet, imgUrl, vibeCovers } from '../data/images';
 
 const linkBaseClass =
@@ -31,8 +32,10 @@ export function VibeCommerceCard({
       ? `Shop the ${vibe.name} vibe collection`
       : `See the ${vibe.name} vibe collection`;
 
-  const titleClassName =
-    'font-pdp-serif mb-0.5 line-clamp-2 text-lg font-normal leading-tight tracking-wide text-obsidian';
+  const titleClassName = [
+    'font-pdp-serif mb-0.5 line-clamp-2 font-normal leading-tight tracking-wide text-[clamp(1rem,5.2cqw,1.375rem)]',
+    glassInteractive.title,
+  ].join(' ');
 
   const titleEl =
     titleTag === 'h2' ? (
@@ -49,14 +52,14 @@ export function VibeCommerceCard({
       id={id}
       {...(dataReveal !== undefined ? { 'data-reveal': dataReveal } : {})}
     >
-      <div className="relative aspect-4/5 w-full shrink-0 overflow-hidden">
+      <div className="relative @container/vibe-card flex aspect-4/5 w-full flex-1 flex-col overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out motion-safe:group-hover:scale-105 motion-reduce:group-hover:scale-100"
           style={{ backgroundImage: `url(${imgUrl(cover, 960)})` }}
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 top-[38%] bg-linear-to-t from-black/45 via-black/10 to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 top-[45%] bg-linear-to-t from-black/80 via-black/25 to-transparent"
           aria-hidden
         />
         <div
@@ -66,24 +69,45 @@ export function VibeCommerceCard({
           }}
           aria-hidden
         />
-      </div>
 
-      <div className="glass-vibe-card-footer vibe-card-text-strip flex min-h-30 shrink-0 flex-col justify-center overflow-hidden border-t border-white/80 px-3 py-2.5 sm:px-3.5">
-        <div className="glass-text-inner flex min-h-27 items-start gap-2.5 px-3 py-2.5 sm:min-h-28">
-          <span
-            className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full shadow-sm ring-2 ring-white/90"
-            style={{ backgroundColor: vibe.accent }}
-            aria-hidden
-          />
-          <div className="min-w-0 flex-1">
-            {titleEl}
-            <p className="font-body line-clamp-2 text-[13px] leading-snug text-warm-charcoal">{vibe.tagline}</p>
+        <div className="absolute inset-x-0 bottom-0 p-[clamp(0.75rem,3.5cqw,1.25rem)]">
+          <div
+            className={[
+              'glass-vibe-card-footer relative flex max-h-[min(36cqh,12rem)] flex-col justify-center overflow-hidden rounded-[clamp(0.875rem,3.2cqw,1.25rem)] border border-white/90 px-[clamp(1rem,4cqw,1.25rem)] py-[clamp(0.625rem,2.2cqh,0.875rem)] shadow-2xl shadow-black/20 backdrop-blur-2xl',
+              glassInteractive.surfaceBottom,
+            ].join(' ')}
+          >
+            {/* Subtle inner glow for physical glass bevel effect */}
+            <div
+              className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/20"
+              style={{ borderRadius: 'inherit' }}
+              aria-hidden
+            />
+
+            <div className="relative z-10 flex items-center gap-[clamp(0.5rem,2cqw,0.875rem)]">
+              <span
+                className={[
+                  'mt-0.5 h-[clamp(0.375rem,1.8cqw,0.5rem)] w-[clamp(0.375rem,1.8cqw,0.5rem)] shrink-0 rounded-full shadow-md',
+                  glassInteractive.accentDot,
+                ].join(' ')}
+                style={{ backgroundColor: vibe.accent }}
+                aria-hidden
+              />
+              {titleEl}
+            </div>
+            <p
+              className={[
+                'relative z-10 font-body mt-1 line-clamp-2 pl-[clamp(1.125rem,5cqw,1.375rem)] text-[clamp(0.6875rem,2.8cqw,0.84rem)] leading-snug',
+                glassInteractive.body,
+              ].join(' ')}
+            >
+              {vibe.tagline}
+            </p>
             <span
-              className={
-                variant === 'explore'
-                  ? 'font-label mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.25em] text-deep-teal drop-shadow-sm'
-                  : 'font-label mt-2 inline-flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.25em] text-deep-teal drop-shadow-sm'
-              }
+              className={[
+                'relative z-10 font-label mt-2 inline-flex items-center gap-1.5 pl-[clamp(1.125rem,5cqw,1.375rem)] text-[clamp(0.5625rem,2.4cqw,0.625rem)] font-medium uppercase tracking-[0.25em]',
+                glassInteractive.cta,
+              ].join(' ')}
             >
               <span className="relative inline-flex items-center gap-1.5 pb-0.5 after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:opacity-90 after:transition-[width] after:duration-300 after:ease-out motion-reduce:after:transition-none group-hover:after:w-full">
                 {variant === 'explore' ? (
@@ -91,7 +115,7 @@ export function VibeCommerceCard({
                     Shop vibe
                     <span
                       aria-hidden
-                      className="text-xs leading-none transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-0.5 motion-reduce:transition-none"
+                      className="text-[10px] leading-none transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-0.5 motion-reduce:transition-none"
                     >
                       →
                     </span>
@@ -101,7 +125,7 @@ export function VibeCommerceCard({
                     See vibe
                     <span
                       aria-hidden
-                      className="text-sm leading-none transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-0.5 motion-reduce:transition-none"
+                      className="text-[10px] leading-none transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-0.5 motion-reduce:transition-none"
                     >
                       →
                     </span>

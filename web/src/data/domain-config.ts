@@ -35,7 +35,11 @@ export const PDP_SCHEMA = {
     { label: 'Small batch', icon: 'Shield' as const },
     { label: 'Secure checkout', icon: 'Lock' as const },
   ],
-  /** Gallery image indices (0-based) for the “Worn by you” grid */
+  /** Persistent PDP trust line (Guidelines §8.3) */
+  trustStripItems: ['220 GSM cotton', 'Licensed art', 'Free exchange 14d', 'COD available'] as const,
+  /** StoryBrand micro-plan strip */
+  storyPlanSteps: ['Find your vibe', 'Pick your design', 'It arrives'] as const,
+  /** Gallery image indices (0-based) for the “See it styled” grid */
   wornByGalleryIndices: [1, 2, 0] as const,
   copy: {
     addBtnCTA: 'Add to Cart',
@@ -48,9 +52,10 @@ export const PDP_SCHEMA = {
     notifyMeCTA: 'Notify Me When Available',
     lowStockLabel: 'Only a few left',
     sizeGuideLabel: 'Size guide',
-    selectSizePrompt: 'Select size',
+    selectSizePrompt: 'Pick your size',
     sizeRequiredPrompt: 'Choose a size above first.',
     storyCardHeading: 'For the one who…',
+    illustratedByLabel: 'Illustrated by',
     accordionProductDetails: 'Product Details & Fit',
     accordionDesignStory: 'The Design Story',
     accordionShipping: 'Shipping & Returns',
@@ -69,8 +74,9 @@ export const PDP_SCHEMA = {
     trustReturnsLine: '14-day hassle-free returns',
     sizeGuideModelNote: 'Model is 178 cm, wearing size M.',
     modelLineTemplate: "Model is 178 cm / 5'10\", wearing size M{fit}",
-    wornByEyebrow: 'Community',
-    wornByTitle: 'Worn by you',
+    wornByEyebrow: 'Styling',
+    wornByTitle: 'See it styled',
+    relatedMoreFromSubtitle: 'Designs from the same vibe.',
     wornByCaptions: ['Studio days', 'Street light', 'Your rotation'],
     notifyEmailPlaceholder: 'Email for restock alerts',
     notifyFieldLabel: 'Get notified when this size is back',
@@ -78,6 +84,9 @@ export const PDP_SCHEMA = {
     notifySuccess: 'You’re on the list — we’ll email you when this size is back.',
     notifyInvalidEmail: 'Enter a valid email address.',
     inventoryLowFormat: 'Only {n} left',
+    /** Accordion “Design story” — making / craft (card above = emotional hook) */
+    designStoryAccordionBody:
+      'Printed with care using high-fidelity DTF: crisp edges, wash-fast color, and a hand that stays soft after repeat wears. Each piece is inspected before it ships so the graphic matches what you saw in the gallery.',
   },
 };
 

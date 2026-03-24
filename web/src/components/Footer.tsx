@@ -33,7 +33,7 @@ export function Footer() {
           <Link to="/" className="inline-flex items-center" aria-label="HORO — Home">
             <BrandLogo variant="light" />
           </Link>
-          <p className="max-w-xs text-sm leading-relaxed text-secondary">
+          <p className="max-w-xs text-sm leading-relaxed text-stone">
             A digital atelier curating the intersection of wearable art and Egyptian heritage. Vol 01: The Inner Dialogue.
           </p>
         </div>
@@ -42,7 +42,7 @@ export function Footer() {
           <ul className="space-y-4">
             <li>
               <Link
-                className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]"
+                className="font-label text-xs uppercase tracking-widest text-stone transition-colors hover:text-papyrus"
                 to={NAV_ROUTE.collection.path}
               >
                 {NAV_ROUTE.collection.label}
@@ -50,7 +50,7 @@ export function Footer() {
             </li>
             <li>
               <Link
-                className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]"
+                className="font-label text-xs uppercase tracking-widest text-stone transition-colors hover:text-papyrus"
                 to={NAV_ROUTE.occasions.path}
               >
                 {NAV_ROUTE.occasions.label}
@@ -72,7 +72,7 @@ export function Footer() {
             <li>
               <ComingSoonControl
                 label="Sustainability"
-                className="font-label cursor-default border-0 bg-transparent p-0 text-left text-xs uppercase tracking-widest text-secondary"
+                className="font-label cursor-default border-0 bg-transparent p-0 text-left text-xs uppercase tracking-widest text-stone/80"
               >
                 Sustainability
               </ComingSoonControl>
@@ -83,38 +83,38 @@ export function Footer() {
           <h4 className="font-headline mb-8 text-sm font-semibold uppercase tracking-[0.3em] text-primary">Contact</h4>
           <ul className="space-y-4">
             <li>
-              <a className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" href="https://instagram.com" target="_blank" rel="noreferrer">
+              <a className="font-label text-xs uppercase tracking-widest text-stone transition-colors hover:text-papyrus" href="https://instagram.com" target="_blank" rel="noreferrer">
                 Instagram
               </a>
             </li>
             <li>
               <ComingSoonControl
                 label="Facebook"
-                className="font-label cursor-default border-0 bg-transparent p-0 text-left text-xs uppercase tracking-widest text-secondary"
+                className="font-label cursor-default border-0 bg-transparent p-0 text-left text-xs uppercase tracking-widest text-stone/80"
               >
                 Facebook
               </ComingSoonControl>
             </li>
             <li>
-              <Link className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" to="/search">
+              <Link className="font-label text-xs uppercase tracking-widest text-stone transition-colors hover:text-papyrus" to="/search">
                 Search
               </Link>
             </li>
           </ul>
         </div>
       </div>
-      <div className="mx-auto mt-24 flex max-w-[1400px] flex-col items-center justify-between gap-4 border-t border-secondary/20 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-10 font-label text-[10px] uppercase tracking-[0.4em] text-secondary sm:mt-40 sm:px-8 md:flex-row md:px-12 md:pt-12">
+      <div className="mx-auto mt-24 flex max-w-[1400px] flex-col items-center justify-between gap-4 border-t border-stone/25 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-10 font-label text-[10px] uppercase tracking-[0.4em] text-stone sm:mt-40 sm:px-8 md:flex-row md:px-12 md:pt-12">
         <div>© {year} HORO Egypt. Designed for the Introspective.</div>
         <div className="flex flex-wrap justify-center gap-x-12 gap-y-2">
           <ComingSoonControl
             label="Privacy Policy"
-            className="cursor-default border-0 bg-transparent p-0 text-[10px] uppercase tracking-[0.4em] text-secondary"
+            className="cursor-default border-0 bg-transparent p-0 text-[10px] uppercase tracking-[0.4em] text-stone/80"
           >
             Privacy Policy
           </ComingSoonControl>
           <ComingSoonControl
             label="Terms of Service"
-            className="cursor-default border-0 bg-transparent p-0 text-[10px] uppercase tracking-[0.4em] text-secondary"
+            className="cursor-default border-0 bg-transparent p-0 text-[10px] uppercase tracking-[0.4em] text-stone/80"
           >
             Terms of Service
           </ComingSoonControl>
