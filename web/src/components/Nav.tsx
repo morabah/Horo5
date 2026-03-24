@@ -126,8 +126,12 @@ export function Nav() {
     setDesktopSearchExpanded(false);
   }
 
+  const isDarkHero = pathname === '/';
+
   return (
-    <nav className="glass-nav fixed top-0 z-50 w-full">
+    <nav
+      className={`glass-nav fixed top-0 z-100 w-full ${isDarkHero ? 'glass-nav--on-dark' : ''}`}
+    >
       {/* Mobile: Menu | Logo | Search | Bag — single search entry (icon only) */}
       <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:hidden">
         <button
@@ -288,7 +292,7 @@ export function Nav() {
       {searchOpen ? (
         <div
           id="mobile-search-layer"
-          className="fixed inset-0 z-70 flex flex-col bg-papyrus/98 backdrop-blur-md md:hidden"
+          className="fixed inset-0 z-120 flex flex-col bg-papyrus/98 backdrop-blur-md md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Search"
@@ -333,7 +337,7 @@ export function Nav() {
       ) : null}
 
       {menuVisible ? (
-        <div className="fixed inset-0 z-60">
+        <div className="fixed inset-0 z-110">
           <button
             type="button"
             tabIndex={-1}

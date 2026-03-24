@@ -314,6 +314,19 @@
       0 4px 24px rgba(26, 26, 26, 0.08);
   }
 
+  /** Home full-bleed dark hero — stronger frost so bar stays readable over photography */
+  .glass-nav--on-dark {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.94) 0%,
+      rgba(248, 246, 242, 0.9) 100%
+    );
+    border-bottom: 1px solid rgba(255, 255, 255, 1);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.85) inset,
+      0 6px 28px rgba(26, 26, 26, 0.12);
+  }
+
   .editorial-shadow {
     box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
   }

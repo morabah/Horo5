@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { flushSync } from 'react-dom';
 import { useMemo, useState, type CSSProperties, type FormEvent } from 'react';
 import { getProductMedia } from '../data/images';
 import { getProduct } from '../data/site';
@@ -98,8 +99,14 @@ export function Checkout() {
       paymentMethod,
       shippingMethod,
     });
-    clearCart();
-    navigate('/checkout/success');
+    // Navigate first; defer clearCart so the router commits /checkout/success before cart empties
+    // (otherwise Checkout can briefly show the empty state while the URL is already /checkout/success).
+    flushSync(() => {
+      navigate('/checkout/success');
+    });
+    setTimeout(() => {
+      clearCart();
+    }, 0);
   }
 
   if (items.length === 0) {

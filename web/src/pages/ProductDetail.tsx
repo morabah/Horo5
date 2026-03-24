@@ -178,16 +178,13 @@ export function ProductDetail() {
     if (!p) return;
     const g = getProductMedia(p.slug).gallery;
     if (g.length === 0) return;
-    const links: HTMLLinkElement[] = [];
-    g.forEach((src) => {
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = imgUrl(src, 1200);
-      document.head.appendChild(link);
-      links.push(link);
-    });
-    return () => links.forEach((l) => l.remove());
+    // Preload only the hero frame; other gallery assets load when the user switches views.
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = imgUrl(g[0], 1200);
+    document.head.appendChild(link);
+    return () => link.remove();
   }, [p?.slug]);
 
   useEffect(() => {
@@ -897,7 +894,7 @@ export function ProductDetail() {
       </section>
 
       <div
-        className="pdp-mobile-cta z-40 md:hidden fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-6 right-6 overflow-hidden rounded-2xl border border-white/60 bg-white/45 backdrop-blur-2xl shadow-2xl"
+        className="pdp-mobile-cta z-90 md:hidden fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-6 right-6 overflow-hidden rounded-2xl border border-white/60 bg-white/45 backdrop-blur-2xl shadow-2xl"
         role="region"
         aria-label="Add to cart"
       >
@@ -946,7 +943,7 @@ export function ProductDetail() {
       </div>
 
       {mobilePurchaseOpen ? (
-        <div className="fixed inset-0 z-45 md:hidden" role="dialog" aria-modal="true" aria-labelledby={mobilePurchaseTitleId}>
+        <div className="fixed inset-0 z-115 md:hidden" role="dialog" aria-modal="true" aria-labelledby={mobilePurchaseTitleId}>
           <button
             type="button"
             className="absolute inset-0 bg-obsidian/50 backdrop-blur-sm"
@@ -1049,7 +1046,7 @@ export function ProductDetail() {
       ) : null}
 
       {lightboxOpen ? (
-        <div className="pdp-lightbox fixed inset-0 z-60 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Enlarged product image">
+        <div className="pdp-lightbox fixed inset-0 z-130 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Enlarged product image">
           <button
             type="button"
             className="absolute inset-0 bg-obsidian/85"
@@ -1077,7 +1074,7 @@ export function ProductDetail() {
       ) : null}
 
       {sizeGuideOpen ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="presentation">
+        <div className="fixed inset-0 z-125 flex items-end justify-center sm:items-center" role="presentation">
           <div className="absolute inset-0 bg-obsidian/40" aria-hidden onClick={closeSizeGuide} />
           <div
             ref={sizeGuideDialogRef}
