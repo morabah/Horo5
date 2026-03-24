@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { NAV_ROUTE } from '../lib/navLinks';
 import { BrandLogo } from './BrandLogo';
 
 function ComingSoonControl({
@@ -40,13 +41,19 @@ export function Footer() {
           <h4 className="font-headline mb-8 text-sm font-semibold uppercase tracking-[0.3em] text-primary">Shop</h4>
           <ul className="space-y-4">
             <li>
-              <Link className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" to="/vibes">
-                All Products
+              <Link
+                className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]"
+                to={NAV_ROUTE.collection.path}
+              >
+                {NAV_ROUTE.collection.label}
               </Link>
             </li>
             <li>
-              <Link className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" to="/occasions">
-                Limited Drops
+              <Link
+                className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]"
+                to={NAV_ROUTE.occasions.path}
+              >
+                {NAV_ROUTE.occasions.label}
               </Link>
             </li>
           </ul>
@@ -57,9 +64,9 @@ export function Footer() {
             <li>
               <Link
                 className="font-label text-xs uppercase tracking-widest text-[#f5f0e8] underline decoration-primary underline-offset-8 transition-colors"
-                to="/about"
+                to={NAV_ROUTE.about.path}
               >
-                Our Story
+                {NAV_ROUTE.about.label}
               </Link>
             </li>
             <li>
@@ -90,7 +97,7 @@ export function Footer() {
             </li>
             <li>
               <Link className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" to="/search">
-                Support
+                Search
               </Link>
             </li>
           </ul>

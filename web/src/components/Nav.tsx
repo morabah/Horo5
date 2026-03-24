@@ -1,7 +1,41 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { FormEvent, TransitionEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
+import { NAV_DRAWER_LINKS, NAV_PRIMARY_SHORTCUTS } from '../lib/navLinks';
 import { BrandLogo } from './BrandLogo';
+
+function drawerNavLinkClass(isActive: boolean) {
+  return `font-label box-border flex min-h-14 w-full items-center rounded-sm py-4 pl-4 pr-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
+    isActive
+      ? 'border-l-[3px] border-primary bg-primary/8 text-primary'
+      : 'border-l-[3px] border-transparent text-obsidian/90 active:bg-surface-container-high'
+  }`;
+}
+
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function getFocusableElements(container: HTMLElement): HTMLElement[] {
+  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((el) => {
+    if (el.hasAttribute('disabled')) return false;
+    if (el.getAttribute('aria-hidden') === 'true') return false;
+    if (el.tabIndex < 0 && el.tagName !== 'A' && el.tagName !== 'BUTTON') return false;
+    return true;
+  });
+}
+
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return reduced;
+}
 
 export function Nav() {
   const { totalQty } = useCart();
@@ -15,15 +49,29 @@ export function Nav() {
   const desktopSearchInputRef = useRef<HTMLInputElement>(null);
   const prevMenuVisibleRef = useRef(false);
   const menuVisibleRef = useRef(menuVisible);
+  const menuTriggerFocusRef = useRef<HTMLElement | null>(null);
+  const drawerPanelRef = useRef<HTMLDivElement>(null);
+  const drawerCloseBtnRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
   menuVisibleRef.current = menuVisible;
   const { pathname } = useLocation();
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  const motionClass = prefersReducedMotion ? 'transition-none duration-0 ease-linear' : 'transition-opacity duration-300 ease-out';
+  const drawerMotionClass = prefersReducedMotion
+    ? 'transition-none duration-0 ease-linear'
+    : 'transition-transform duration-300 ease-out';
+  const searchWidthMotionClass = prefersReducedMotion ? '' : 'transition-[max-width] duration-300 ease-out';
 
   const closeMenu = useCallback(() => {
     setMenuPanelOpen(false);
-  }, []);
+    if (prefersReducedMotion) {
+      setMenuVisible(false);
+    }
+  }, [prefersReducedMotion]);
 
   const openMenu = useCallback(() => {
+    menuTriggerFocusRef.current = document.activeElement as HTMLElement | null;
     setMenuVisible(true);
   }, []);
 
@@ -47,6 +95,10 @@ export function Nav() {
     }
     if (!prevMenuVisibleRef.current) {
       prevMenuVisibleRef.current = true;
+      if (prefersReducedMotion) {
+        setMenuPanelOpen(true);
+        return;
+      }
       const id = requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           if (menuVisibleRef.current) setMenuPanelOpen(true);
@@ -54,7 +106,7 @@ export function Nav() {
       });
       return () => cancelAnimationFrame(id);
     }
-  }, [menuVisible]);
+  }, [menuVisible, prefersReducedMotion]);
 
   function handlePanelTransitionEnd(e: TransitionEvent<HTMLDivElement>) {
     if (e.target !== e.currentTarget) return;
@@ -72,7 +124,12 @@ export function Nav() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!menuVisible) return;
+    if (!menuVisible) {
+      const el = menuTriggerFocusRef.current;
+      menuTriggerFocusRef.current = null;
+      el?.focus();
+      return;
+    }
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
@@ -84,6 +141,41 @@ export function Nav() {
       window.removeEventListener('keydown', onKey);
     };
   }, [menuVisible, closeMenu]);
+
+  useEffect(() => {
+    if (!menuVisible || !menuPanelOpen) return;
+    const id = requestAnimationFrame(() => {
+      drawerCloseBtnRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [menuVisible, menuPanelOpen]);
+
+  useEffect(() => {
+    if (!menuVisible || !menuPanelOpen) return;
+    const panel = drawerPanelRef.current;
+    if (!panel) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const nodes = getFocusableElements(panel);
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    panel.addEventListener('keydown', onKeyDown);
+    return () => panel.removeEventListener('keydown', onKeyDown);
+  }, [menuVisible, menuPanelOpen]);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -129,8 +221,9 @@ export function Nav() {
   const isDarkHero = pathname === '/';
 
   return (
-    <nav
+    <header
       className={`glass-nav fixed top-0 z-100 w-full ${isDarkHero ? 'glass-nav--on-dark' : ''}`}
+      role="banner"
     >
       {/* Mobile: Menu | Logo | Search | Bag — single search entry (icon only) */}
       <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:hidden">
@@ -188,44 +281,24 @@ export function Nav() {
             <BrandLogo variant="dark" />
           </Link>
         </div>
-        <nav
-          className="hidden shrink-0 items-center gap-1 lg:flex"
-          aria-label="Primary shortcuts"
-        >
-          <NavLink
-            to="/vibes"
-            className={({ isActive }) =>
-              `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
-                isActive ? 'text-primary' : 'text-obsidian/90 hover:text-obsidian'
-              }`
-            }
-          >
-            Collection
-          </NavLink>
-          <NavLink
-            to="/occasions"
-            className={({ isActive }) =>
-              `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
-                isActive ? 'text-primary' : 'text-obsidian/90 hover:text-obsidian'
-              }`
-            }
-          >
-            Occasions
-          </NavLink>
-          <NavLink
-            to="/about"
-            className={({ isActive }) =>
-              `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
-                isActive ? 'text-primary' : 'text-obsidian/90 hover:text-obsidian'
-              }`
-            }
-          >
-            About
-          </NavLink>
+        <nav className="hidden shrink-0 items-center gap-1 md:flex" aria-label="Primary shortcuts">
+          {NAV_PRIMARY_SHORTCUTS.map(({ path, label }) => (
+            <NavLink
+              key={path}
+              to={path}
+              className={({ isActive }) =>
+                `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
+                  isActive ? 'text-primary' : 'text-obsidian/90 hover:text-obsidian'
+                }`
+              }
+            >
+              {label}
+            </NavLink>
+          ))}
         </nav>
         <div className="flex min-w-0 flex-1 justify-center px-2 md:px-4">
           <div
-            className={`flex items-center justify-center transition-[max-width] duration-300 ease-out ${desktopSearchExpanded ? 'w-full max-w-md' : 'max-w-12'}`}
+            className={`flex items-center justify-center ${searchWidthMotionClass} ${desktopSearchExpanded ? 'w-full max-w-md' : 'max-w-12'}`}
           >
             {!desktopSearchExpanded ? (
               <button
@@ -292,7 +365,7 @@ export function Nav() {
       {searchOpen ? (
         <div
           id="mobile-search-layer"
-          className="fixed inset-0 z-120 flex flex-col bg-papyrus/98 backdrop-blur-md md:hidden"
+          className="fixed inset-0 z-190 flex flex-col bg-papyrus/98 backdrop-blur-md md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Search"
@@ -336,116 +409,75 @@ export function Nav() {
         </div>
       ) : null}
 
-      {menuVisible ? (
-        <div className="fixed inset-0 z-110">
-          <button
-            type="button"
-            tabIndex={-1}
-            className={`absolute inset-0 bg-black/15 backdrop-blur-sm transition-opacity duration-300 ease-out ${
-              menuPanelOpen ? 'opacity-100' : 'opacity-0'
-            }`}
-            aria-label="Close menu"
-            onClick={closeMenu}
-          />
-          <div
-            id="primary-nav-drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Main navigation"
-            className={`absolute left-0 top-0 flex h-full min-h-0 w-full max-w-sm flex-col border-r border-white/25 bg-papyrus/90 shadow-[8px_0_40px_rgba(26,26,26,0.12)] backdrop-blur-xl transition-transform duration-300 ease-out pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] pt-[max(1rem,env(safe-area-inset-top,0px))] ${
-              menuPanelOpen ? 'translate-x-0' : '-translate-x-full'
-            }`}
-            onTransitionEnd={handlePanelTransitionEnd}
-          >
-            <div className="flex shrink-0 items-center justify-between border-b border-white/20 px-4 py-3">
-              <Link to="/" className="flex items-center" onClick={closeMenu} aria-label="HORO Egypt — Home">
-                <BrandLogo variant="dark" />
-              </Link>
+      {menuVisible
+        ? createPortal(
+            <div className="fixed inset-0 z-200">
               <button
                 type="button"
-                className="material-symbols-outlined inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/90"
+                tabIndex={-1}
+                className={`absolute inset-0 bg-obsidian/45 backdrop-blur-[2px] ${motionClass} ${
+                  menuPanelOpen ? 'opacity-100' : 'opacity-0'
+                }`}
                 aria-label="Close menu"
                 onClick={closeMenu}
+              />
+              <div
+                id="primary-nav-drawer"
+                ref={drawerPanelRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="primary-nav-drawer-title"
+                className={`absolute left-0 top-0 isolate z-10 flex h-full min-h-0 w-full max-w-sm flex-col border-r border-stone/30 bg-papyrus shadow-[8px_0_40px_rgba(26,26,26,0.18)] ${drawerMotionClass} pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] pt-[max(1rem,env(safe-area-inset-top,0px))] ${
+                  menuPanelOpen ? 'translate-x-0' : '-translate-x-full'
+                }`}
+                onTransitionEnd={handlePanelTransitionEnd}
               >
-                close
-              </button>
-            </div>
-            <nav
-              className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-y-contain px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]"
-              aria-label="Primary"
-            >
-              <NavLink
-                to="/"
-                end
-                className={({ isActive }) =>
-                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                  }`
-                }
-                onClick={closeMenu}
-              >
-                Home
-              </NavLink>
-              <NavLink
-                to="/vibes"
-                className={({ isActive }) =>
-                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                  }`
-                }
-                onClick={closeMenu}
-              >
-                Collection
-              </NavLink>
-              <NavLink
-                to="/occasions"
-                className={({ isActive }) =>
-                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                  }`
-                }
-                onClick={closeMenu}
-              >
-                Occasions
-              </NavLink>
-              <NavLink
-                to="/about"
-                className={({ isActive }) =>
-                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                  }`
-                }
-                onClick={closeMenu}
-              >
-                About
-              </NavLink>
-              <NavLink
-                to="/search"
-                className={({ isActive }) =>
-                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                  }`
-                }
-                onClick={closeMenu}
-              >
-                Search
-              </NavLink>
-              <NavLink
-                to="/cart"
-                className={({ isActive }) =>
-                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                  }`
-                }
-                onClick={closeMenu}
-                aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
-              >
-                Cart{totalQty > 0 ? ` (${totalQty})` : ''}
-              </NavLink>
-            </nav>
-          </div>
-        </div>
-      ) : null}
-    </nav>
+                <h2 id="primary-nav-drawer-title" className="sr-only">
+                  Menu
+                </h2>
+                <div className="relative z-20 flex shrink-0 items-center justify-between border-b border-stone/25 bg-papyrus px-4 py-3 shadow-[0_1px_0_rgba(26,26,26,0.06)]">
+                  <Link to="/" className="flex items-center" onClick={closeMenu} aria-label="HORO Egypt — Home">
+                    <BrandLogo variant="dark" />
+                  </Link>
+                  <button
+                    ref={drawerCloseBtnRef}
+                    type="button"
+                    className="material-symbols-outlined relative z-30 inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/90"
+                    aria-label="Close menu"
+                    onClick={closeMenu}
+                  >
+                    close
+                  </button>
+                </div>
+                <nav
+                  className="relative z-0 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-y-contain bg-papyrus px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]"
+                  aria-label="Primary"
+                >
+                  {NAV_DRAWER_LINKS.map(({ path, label, end }) => (
+                    <NavLink
+                      key={path}
+                      to={path}
+                      end={!!end}
+                      className={({ isActive }) => drawerNavLinkClass(isActive)}
+                      onClick={closeMenu}
+                    >
+                      {label}
+                    </NavLink>
+                  ))}
+                  <NavLink
+                    to="/cart"
+                    className={({ isActive }) => drawerNavLinkClass(isActive)}
+                    onClick={closeMenu}
+                    aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
+                  >
+                    Cart{totalQty > 0 ? ` (${totalQty})` : ''}
+                  </NavLink>
+                </nav>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+    </header>
   );
 }

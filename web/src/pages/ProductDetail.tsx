@@ -1049,15 +1049,15 @@ export function ProductDetail() {
         <div className="pdp-lightbox fixed inset-0 z-130 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Enlarged product image">
           <button
             type="button"
-            className="absolute inset-0 bg-obsidian/85"
+            className="absolute inset-0 z-0 bg-obsidian/85"
             aria-label="Close enlarged image"
             onClick={() => setLightboxOpen(false)}
           />
-          <div className="relative z-10 flex max-h-[min(92vh,100%)] max-w-[min(96vw,1200px)] flex-col items-center">
+          <div className="pointer-events-none relative z-10 flex max-h-[min(92vh,100%)] max-w-[min(96vw,1200px)] flex-col items-center">
             <button
               ref={lightboxCloseRef}
               type="button"
-              className="font-label mb-3 shrink-0 rounded-sm border border-white/40 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="pointer-events-auto font-label relative z-20 mb-3 shrink-0 rounded-sm border border-white/40 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               onClick={() => setLightboxOpen(false)}
             >
               Close
@@ -1065,7 +1065,7 @@ export function ProductDetail() {
             <img
               src={imgUrl(mainSrc, 2000)}
               alt={mainGalleryAlt(product.name, photoIndex)}
-              className="max-h-[min(85vh,88vw)] w-auto max-w-full object-contain shadow-2xl"
+              className="pointer-events-none max-h-[min(85vh,88vw)] w-auto max-w-full object-contain shadow-2xl"
               width={1200}
               height={1600}
             />
