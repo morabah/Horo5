@@ -27,11 +27,6 @@ export function Footer() {
                 Limited Drops
               </Link>
             </li>
-            <li>
-              <Link className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" to="/artists">
-                Art Collaborations
-              </Link>
-            </li>
           </ul>
         </div>
         <div>
@@ -43,11 +38,6 @@ export function Footer() {
                 to="/about"
               >
                 Our Story
-              </Link>
-            </li>
-            <li>
-              <Link className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" to="/artists">
-                The Artists
               </Link>
             </li>
             <li>

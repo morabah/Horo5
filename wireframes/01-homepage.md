@@ -1,9 +1,9 @@
 # 01 — Homepage
 
-**Route:** `/` | **Purpose:** Scroll story: hero → feeling → **vibe lookbook + five full editorial stories** → trust → quotes → latest drop → invite  
+**Route:** `/` | **Purpose:** Single-mode shopping story: hero → feeling → **five vibe cards (commerce)** → trust → quotes → latest drop → invite. Long-form vibe editorials live on **`/vibes/:slug`** ([`VibeCollection.tsx`](../web/src/pages/VibeCollection.tsx)), not on the homepage.  
 **Source:** Brand Guidelines v2.3, Section 8.2 + Section 5.2
 
-**Implementation (current):** `web/src/pages/Home.tsx` + `web/src/components/VibeLookbook.tsx`. Five product vibes (**Emotions, Zodiac, Fictious, Career, Trends**) match `web/src/data/site.ts`. Editorial copy and imagery: `web/src/data/homeEditorial.ts`. Nav shows **“Reading · [vibe]”** while a vibe editorial is in view (`useHomeVibeScrollSpy` + `[data-home-vibe-section]`).
+**Implementation (current):** [`web/src/pages/Home.tsx`](../web/src/pages/Home.tsx) + [`web/src/components/HomeVibeGrid.tsx`](../web/src/components/HomeVibeGrid.tsx). Five product vibes (**Emotions, Zodiac, Fictious, Career, Trends**) match `web/src/data/site.ts`. Editorial copy and imagery for vibe pages: `web/src/data/homeEditorial.ts`. **No** scroll-spy, **no** “Reading · [vibe]” in the nav on `/`. Mobile nav search opens a **full-screen search layer** ([`Nav.tsx`](../web/src/components/Nav.tsx)); desktop uses an inline search field.
 
 ---
 
@@ -12,15 +12,15 @@
 | Part           | What Happens                                                                 |
 |----------------|-------------------------------------------------------------------------------|
 | Setup          | Hero: “Wear What You Mean” + **Find Your Design** → `/vibes`                  |
-| Confrontation  | **Vibe cards** (menu) + **stacked editorial blocks** — scroll to read each story |
-| Resolution     | Per-vibe **Shop … →** in each story + **Find Your Design** in hero & invite    |
+| Confrontation  | **Five vibe cards** — each links to **`/vibes/:slug`** with commerce CTA (“See vibe”) |
+| Resolution     | Trust → stories → Just Dropped → **Find Your Design** invite → `/vibes`     |
 
 ### Section order (implemented in `Home.tsx`)
 
 1. **Hero** (`<header>`)  
 2. **The Feeling** — text-only band  
-3. **VibeLookbook** — vibe card row + **five stacked editorial sections** (continuous scroll)  
-4. **Trust** — four badges; `data-home-end-vibes` ends nav “Reading” context for scroll-spy  
+3. **HomeVibeGrid** — five image-led cards → `/vibes/:slug` (no editorials on `/`)  
+4. **Trust** — four badges  
 5. **Stories** — three quote cards  
 6. **Just Dropped** — four products  
 7. **Invite** — headline + **Find Your Design** → `/vibes`  
@@ -33,8 +33,8 @@
 ┌──────────────────────────────────────────────────────────────────────┐
 │ NAV BAR  (frosted glass — Glass White #F8F6F2 @ 25%, blur 16px)    │
 │                                                                      │
-│  [HORO]  [Reading·Vibe]*  [Search]  [menu ☰]  [🔍]  [lang] [♡] [bag] │
-│  *On `/`, md+: shows active vibe editorial when in view (scroll-spy)│
+│  Mobile: [menu ☰]  [HORO]  [🔍 → full-screen search]  [bag]            │
+│  Desktop: [HORO]  [Search field]  [Menu]  [lang] [♡] [bag]           │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
 
@@ -98,36 +98,23 @@
 ╚══════════════════════════════════════════════════════════════════════╝
 
 ╔══════════════════════════════════════════════════════════════════════╗
-║  SECTION 3 — FIND YOUR VIBE (VibeLookbook)    Papyrus #F5F0E8        ║
+║  SECTION 3 — FIND YOUR VIBE (HomeVibeGrid)    Papyrus #F5F0E8        ║
 ║                                                                      ║
-║   Row 1: "FIND YOUR VIBE"  ·  "Volume 01 / Lookbook"                 ║
-║   Helper (responsive):                                               ║
-║     · below `lg`: "Swipe the row, then scroll down — every vibe…"    ║
-║     · `lg`+:  "All five vibes above — scroll down to read each…"     ║
+║   Row 1: "FIND YOUR VIBE"  ·  short helper (commerce copy)            ║
 ║                                                                      ║
-║   ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐   ← 5 cards, same chrome as    ║
-║   │ E  │ │ Z  │ │ F  │ │ C  │ │ T  │     /vibes (Shop by vibe)       ║
+║   ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐   ← 5 cards (responsive grid)    ║
+║   │ E  │ │ Z  │ │ F  │ │ C  │ │ T  │     Link → `/vibes/:slug`        ║
 ║   │ m  │ │ o  │ │ i  │ │ a  │ │ r  │                                 ║
 ║   │ o  │ │ d  │ │ c  │ │ r  │ │ e  │   Emotions · Zodiac · Fictious ║
 ║   │ t  │ │ i  │ │ t  │ │ e  │ │ n  │   · Career · Trends            ║
 ║   │ i  │ │ a  │ │ i  │ │ e  │ │ d  │                                 ║
 ║   │ o  │ │ c  │ │ o  │ │ r  │ │ s  │   Accent dot + name + tagline  ║
-║   │ n  │ │    │ │ u  │ │    │ │    │   CTA: "Read below ↓"          ║
+║   │ n  │ │    │ │ u  │ │    │ │    │   CTA: "See vibe →"             ║
 ║   │ s  │ │    │ │ s  │ │    │ │    │                                 ║
 ║   └────┘ └────┘ └────┘ └────┘ └────┘                                 ║
 ║                                                                      ║
-║   Layout cards:  `lg`+ → CSS grid, 5 equal columns (all visible)   ║
-║                    below `lg` → horizontal scroll, snap-x, chevron L/R║
-║   Tap card: sets `?vibe={slug}` + smooth-scroll to matching story     ║
-║   Active card: teal ring; chevron-on-card when active (desktop)     ║
-║                                                                      ║
-║   ─── Below: five stacked editorial articles (scroll = read all) ───║
-║   Each: kicker · title · tagline · material icon · 21:9 wide image    ║
-║         body (glass) + detail image/caption · Shop {Vibe} → /vibes/slug║
-║   `data-home-vibe-section` + `data-vibe-slug` for nav scroll-spy    ║
-║                                                                      ║
-║   Chrome: fixed "↑ Vibes" FAB + per-article "Vibe menu" (scroll to    ║
-║            #vibe-lookbook-menu); clears `?vibe=` + session return key ║
+║   Layout: responsive grid — no horizontal strip, no `?vibe=` on `/`    ║
+║   Long-form stories: on `/vibes/:slug` only (`VibeEditorialSection`)  ║
 ║                                                                      ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
@@ -306,22 +293,16 @@
 
 ╔═════════════════════════╗
 ║ SECTION 3 — VIBES       ║
-║ (VibeLookbook)          ║
+║ (HomeVibeGrid)          ║
 ║                         ║
 ║ FIND YOUR VIBE          ║
-║ Volume 01 / Lookbook    ║
 ║                         ║
-║ [ horizontal row:       ║
-║   swipe / snap / ◀ ▶ ]  ║
-║   5 cards (E Z F C T)   ║
-║   "Read below ↓"        ║
+║   5 cards (grid)        ║
+║   E Z F C T             ║
+║   "See vibe →"          ║
+║   → /vibes/:slug        ║
 ║                         ║
-║ ─ scroll down ─         ║
-║                         ║
-║ 5 × full editorial      ║
-║ blocks (story + Shop)   ║
-║                         ║
-║ [↑ Vibes] FAB           ║
+║ (no editorials here)    ║
 ╚═════════════════════════╝
 
 ╔═════════════════════════╗
@@ -427,9 +408,10 @@
 ### Navigation Bar
 - **Glass:** `glass-nav` — frosted bar, fixed top (`z-50`)
 - **Logo:** `BrandLogo` → `/`
-- **Home scroll-spy (md+):** When an editorial block with `data-home-vibe-section` is in the reading band on `/`, shows **“Reading”** + active vibe name + accent dot (`useHomeVibeScrollSpy`)
-- **Links:** Collection (`/vibes`), Artists, About — desktop; full-screen sheet on small screens
-- **Utilities:** Search field (sm+), search + cart icons; Material Symbols for menu / icons (no emoji in UI per brand rules — wireframe icons are illustrative)
+- **Mobile:** Menu | Logo | Search (opens full-screen search layer) | Bag — **no** duplicate search field + icon in one row
+- **Desktop:** Logo | Search field | Menu | Language | Wishlist | Bag
+- **Links:** Collection (`/vibes`), Artists, About — inside **Menu** drawer (full-screen sheet)
+- **Utilities:** Material Symbols for menu / icons (no emoji in UI per brand rules — wireframe icons are illustrative)
 
 ### Hero Section
 - **Height:** `min-h-dvh` / `min-h-screen`, `bg-obsidian`
@@ -442,18 +424,14 @@
 - **Featured:** Random product thumbnail after mount (bottom-right) → product page; avoids SSR/client mismatch
 - **Scroll cue:** “The Narrative” + vertical rule (suggests scroll to story below)
 
-### Vibe lookbook (`VibeLookbook`)
-- **Header:** “Find your vibe” + “Volume 01 / Lookbook”; responsive helper line (swipe vs all-five-visible).
-- **Card row:** Five vibes — **Emotions, Zodiac, Fictious, Career, Trends** — same card chrome as **`/vibes`** (`ShopByVibe`): image, gradients, glass footer, accent dot, name, tagline, **“Read below ↓”**.
-- **Layout:** Below `lg` — horizontal `overflow-x`, `snap-x`, chevron buttons, touch pan; **`lg+`** — `grid-cols-5`, all cards visible.
-- **Interaction:** Card is a **button**; sets **`?vibe={slug}`** (replace) and scrolls to `#vibe-editorial-{slug}`. Horizontal strip scroll uses **`scrollTo`** only (no `scrollIntoView` on cards) to avoid vertical scroll fighting.
-- **Highlight:** IntersectionObserver on editorial sections updates active card ring; URL slug also highlights after tap.
-- **Editorial stack:** All five `vibeEditorialBlocks` rendered in order — each article: kicker, title, tagline, material icon, wide image, body + detail image, **Shop {name} →** → `/vibes/:slug`. Attributes `data-home-vibe-section` / `data-vibe-slug` for nav spy.
-- **Return to row:** Floating **↑ / Vibes** control + in-article **“Vibe menu”** → `#vibe-lookbook-menu`; clears **`?vibe=`** and **`sessionStorage`** key `horo_home_vibe` so restore logic does not pull the page back to an editorial.
-- **Deep link / return:** `/?vibe=` for shareable position; session key used when opening Shop from a story then landing on `/` without query (see component).
+### Home vibe grid (`HomeVibeGrid`)
+- **Header:** “Find your vibe” + short helper line (commerce-first).
+- **Cards:** Five vibes — **Emotions, Zodiac, Fictious, Career, Trends** — image-led, glass footer, accent dot, name, tagline, **“See vibe →”** (links to **`/vibes/:slug`**).
+- **Layout:** Responsive grid (`grid-cols-1` → `sm:2` → `lg` / `xl` up to 5 columns). No horizontal snap strip, no FAB, no `?vibe=` on `/`.
+- **Editorials:** Moved to **`/vibes/:slug`** (`VibeEditorialSection` + `vibeEditorialBlocks`).
 
 ### Trust Badges
-- **Section:** `bg-obsidian`; wrapper has `data-home-end-vibes` so homepage vibe scroll-spy clears when this block dominates the viewport
+- **Section:** `bg-obsidian`
 - **Cards:** `glass-trust-badge` — Material Symbols icons (`layers`, `verified`, `history`, `payments`), title + subtitle
 - **Copy (current):** 220 GSM Cotton; Original Licensed Design; Free Exchange 14 Days; COD Available
 - **Layout:** 1 col → `sm:` 2 cols → `lg:` 4 cols

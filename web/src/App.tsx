@@ -1,12 +1,10 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { ShopByVibe } from './pages/ShopByVibe';
 import { VibeCollection } from './pages/VibeCollection';
 import { ShopByOccasion } from './pages/ShopByOccasion';
 import { OccasionCollection } from './pages/OccasionCollection';
-import { BrowseByArtist } from './pages/BrowseByArtist';
-import { ArtistProfile } from './pages/ArtistProfile';
 import { ProductDetail } from './pages/ProductDetail';
 import { Cart } from './pages/Cart';
 import { Checkout } from './pages/Checkout';
@@ -25,8 +23,8 @@ export default function App() {
         <Route path="/vibes/:slug" element={<VibeCollection />} />
         <Route path="/occasions" element={<ShopByOccasion />} />
         <Route path="/occasions/:slug" element={<OccasionCollection />} />
-        <Route path="/artists" element={<BrowseByArtist />} />
-        <Route path="/artists/:slug" element={<ArtistProfile />} />
+        <Route path="/artists" element={<Navigate to="/vibes" replace />} />
+        <Route path="/artists/:slug" element={<Navigate to="/vibes" replace />} />
         <Route path="/products/:slug" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />

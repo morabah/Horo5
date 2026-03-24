@@ -5,14 +5,15 @@ export type Vibe = {
   name: string;
   tagline: string;
   accent: string;
+  manifesto?: string;
 };
 
 export const vibes: Vibe[] = [
-  { slug: 'emotions', name: 'Emotions', tagline: 'Wear the mood you can’t put into words.', accent: '#6B4C8A' },
-  { slug: 'zodiac', name: 'Zodiac', tagline: 'Your sign. Your line. Your look.', accent: '#D4A24E' },
-  { slug: 'fictious', name: 'Fictious', tagline: 'Characters, worlds, and stories you can wear.', accent: '#2B7596' },
-  { slug: 'career', name: 'Career', tagline: 'Ambition, identity, and the work-in-progress you.', accent: '#3A4A3F' },
-  { slug: 'trends', name: 'Trends', tagline: 'What’s moving right now — before it becomes noise.', accent: '#E8593C' },
+  { slug: 'emotions', name: 'Emotions', tagline: 'Wear the mood you can’t put into words.', accent: '#6B4C8A', manifesto: 'For the days when words fail but feelings are loud. Explore designs that capture the unspoken and the unseen.' },
+  { slug: 'zodiac', name: 'Zodiac', tagline: 'Your sign. Your line. Your look.', accent: '#D4A24E', manifesto: 'Written in the stars, woven into reality. Find the pieces that align with your cosmic blueprint and personal energy.' },
+  { slug: 'fiction', name: 'Fiction', tagline: 'Characters, worlds, and stories you can wear.', accent: '#2B7596', manifesto: 'Step beyond the ordinary. A curated collection for those who carry their favorite distant worlds wherever they go.' },
+  { slug: 'career', name: 'Career', tagline: 'Ambition, identity, and the work-in-progress you.', accent: '#3A4A3F', manifesto: 'Dress for the journey, not just the destination. Pieces crafted for the resilient, the ambitious, and the dreamers.' },
+  { slug: 'trends', name: 'Trends', tagline: 'What’s moving right now — before it becomes noise.', accent: '#E8593C', manifesto: 'The pulse of the culture, captured in cloth. Stay ahead of the wave with designs that define the current moment.' },
 ];
 
 export type Occasion = {
@@ -42,6 +43,8 @@ export const artists: Artist[] = [
   { slug: 'layla-farid', name: 'Layla Farid', style: 'Soft gradients and cosmic symbolism.', designCount: 15 },
 ];
 
+export type ProductSizeKey = 'S' | 'M' | 'L' | 'XL' | 'XXL';
+
 export type Product = {
   slug: string;
   name: string;
@@ -55,6 +58,8 @@ export type Product = {
   fitLabel?: string;
   /** Optional scarcity line in quick view */
   stockNote?: string;
+  /** Per-size FOMO / inventory hints on PDP, e.g. { M: "Only 2 left" } */
+  inventoryHintBySize?: Partial<Record<ProductSizeKey, string>>;
 };
 
 export const products: Product[] = [
@@ -62,7 +67,7 @@ export const products: Product[] = [
     slug: 'the-weight-of-light',
     name: 'The Weight of Light',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'fictious',
+    vibeSlug: 'fiction',
     priceEgp: 799,
     story: 'For the one who carries the weight of every feeling and still walks toward the light.',
   },
@@ -76,6 +81,7 @@ export const products: Product[] = [
     merchandisingBadge: 'Bestseller',
     fitLabel: 'Regular',
     stockNote: '9 left from this illustration run',
+    inventoryHintBySize: { M: 'Only 2 left', L: 'Only 4 left' },
   },
   {
     slug: 'quiet-revolt',

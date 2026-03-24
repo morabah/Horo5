@@ -1,7 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getProductMedia, imgUrl } from '../data/images';
-import { getArtist, getProduct, getVibe } from '../data/site';
+import { getProduct, getVibe } from '../data/site';
+import { formatEgp } from '../utils/formatPrice';
 
 const QUICK_VIEW_SIZES = ['M', 'L', 'XL'] as const;
 
@@ -16,13 +17,14 @@ type ProductQuickViewProps = {
 export function ProductQuickView({ open, productSlug, onClose }: ProductQuickViewProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
+  const navigate = useNavigate();
   const titleId = useId();
   const descId = useId();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
+  const [cartNavPending, setCartNavPending] = useState(false);
 
   const p = productSlug ? getProduct(productSlug) : undefined;
-  const artist = p ? getArtist(p.artistSlug) : undefined;
   const vibe = p ? getVibe(p.vibeSlug) : undefined;
   const media = p ? getProductMedia(p.slug) : null;
   const gallery = media?.gallery ?? [];
@@ -32,7 +34,12 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   useEffect(() => {
     setSelectedSize(null);
     setPhotoIndex(0);
+    setCartNavPending(false);
   }, [productSlug]);
+
+  useEffect(() => {
+    if (!open) setCartNavPending(false);
+  }, [open]);
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
@@ -61,12 +68,12 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   };
 
   const showContent = Boolean(open && productSlug);
-  const priceStr = p ? `EGP ${p.priceEgp.toLocaleString('en-EG')}` : '';
+  const priceStr = p ? formatEgp(p.priceEgp) : '';
 
   return (
     <dialog
       ref={dialogRef}
-      className="product-quick-view-dialog w-[min(100vw-1rem,960px)] max-h-[90dvh] overflow-hidden rounded-2xl border border-white/10 bg-obsidian p-0 shadow-2xl"
+      className="product-quick-view-dialog w-[min(100vw-1rem,960px)] max-h-[90dvh] overflow-hidden rounded-2xl border border-white/25 bg-obsidian/75 p-0 shadow-[0_32px_96px_-24px_rgba(0,0,0,0.72)] backdrop-blur-2xl"
       aria-labelledby={showContent ? titleId : undefined}
       aria-describedby={showContent && p ? descId : undefined}
       onCancel={handleCancel}
@@ -129,26 +136,31 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
             </div>
           </div>
 
-          <div className="flex max-h-[min(50dvh,480px)] min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-y-contain bg-black/50 px-5 py-6 text-white sm:px-7 md:max-h-none md:w-1/2 md:py-8">
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-4">
-              <div className="min-w-0 flex-1">
-                {vibe ? (
-                  <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-kohl-gold-bright">
-                    {vibe.name} / {fit}
-                  </p>
-                ) : null}
-                <h2 id={titleId} className="font-headline mt-1 text-2xl font-bold uppercase tracking-tight text-white md:text-3xl">
-                  {p.name}
-                </h2>
+          <div className="flex max-h-[min(50dvh,480px)] min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-y-contain bg-black/40 px-5 py-4 text-white backdrop-blur-2xl sm:px-7 md:max-h-none md:w-1/2 md:py-8">
+            <div className="sticky top-0 z-20 -mx-5 mb-3 border-b border-white/10 bg-black/50 px-5 pb-3 pt-1 backdrop-blur-2xl md:static md:mx-0 md:mb-0 md:border-0 md:bg-transparent md:px-0 md:pb-4 md:pt-0 md:backdrop-blur-none">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  {vibe ? (
+                    <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-kohl-gold-bright">
+                      {vibe.name} / {fit}
+                    </p>
+                  ) : null}
+                  <h2 id={titleId} className="font-headline mt-1 text-xl font-bold uppercase tracking-tight text-white sm:text-2xl md:text-3xl">
+                    {p.name}
+                  </h2>
+                </div>
+                <p className="font-headline shrink-0 text-lg font-bold text-white md:text-xl">{priceStr}</p>
               </div>
-              <p className="font-headline shrink-0 text-lg font-bold text-white md:text-xl">{priceStr}</p>
+              <p className="font-label mt-2 text-[10px] uppercase tracking-[0.18em] text-white/55 md:hidden">
+                Scroll for size &amp; details
+              </p>
             </div>
 
-            <p id={descId} className="font-body mt-4 text-sm leading-relaxed text-white/85">
+            <p id={descId} className="font-body text-sm leading-relaxed text-white/85 md:mt-0">
               {p.story}
             </p>
 
-            <div className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+            <div className="mt-5 rounded-xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-lg">
               <ul className="space-y-3 text-sm text-white/90">
                 <li className="flex gap-3">
                   <span className="material-symbols-outlined mt-0.5 shrink-0 text-lg text-primary" aria-hidden>
@@ -160,7 +172,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                   <span className="material-symbols-outlined mt-0.5 shrink-0 text-lg text-primary" aria-hidden>
                     palette
                   </span>
-                  <span>Original artwork by {artist?.name ?? 'HORO Studio'}</span>
+                  <span>Original illustration</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="material-symbols-outlined mt-0.5 shrink-0 text-lg text-primary" aria-hidden>
@@ -218,14 +230,25 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
             </div>
 
             <div className="mt-6">
+              {cartNavPending ? (
+                <p className="font-label mb-3 text-center text-[11px] font-medium uppercase tracking-wider text-primary" role="status" aria-live="polite">
+                  Added to bag — opening cart…
+                </p>
+              ) : null}
               {selectedSize ? (
-                <Link
-                  to="/cart"
+                <button
+                  type="button"
                   className="font-label flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  onClick={onClose}
+                  onClick={() => {
+                    setCartNavPending(true);
+                    window.setTimeout(() => {
+                      onClose();
+                      navigate('/cart');
+                    }, 420);
+                  }}
                 >
                   Add to cart
-                </Link>
+                </button>
               ) : (
                 <button
                   type="button"

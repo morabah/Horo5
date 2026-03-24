@@ -44,7 +44,7 @@ export const vibeEditorialImagery: Record<string, { wide: string; detail: string
     wide: '/images/tees/bg_vibe_zodiac.png',
     detail: tee.relaxedFit,
   },
-  fictious: {
+  fiction: {
     wide: '/images/tees/bg_vibe_fictious.png',
     detail: tee.studioTee,
   },
@@ -62,7 +62,7 @@ export const vibeEditorialImagery: Record<string, { wide: string; detail: string
 export const vibeCovers: Record<string, string> = {
   emotions: vibeEditorialImagery.emotions.wide,
   zodiac: vibeEditorialImagery.zodiac.wide,
-  fictious: vibeEditorialImagery.fictious.wide,
+  fiction: vibeEditorialImagery.fiction.wide,
   career: vibeEditorialImagery.career.wide,
   trends: vibeEditorialImagery.trends.wide,
 };

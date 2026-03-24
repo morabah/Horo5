@@ -72,6 +72,8 @@
   --font-label: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   /* Wordmark — vector serif (swap to brand SVG paths when available) */
   --font-wordmark: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  /* PDP editorial display (reference layouts) */
+  --font-pdp-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
 
   --radius-sm: 0.125rem;
   --radius-lg: 0.25rem;
@@ -101,12 +103,19 @@
     html {
       scroll-behavior: auto;
     }
-    .home-hover-lift {
+    /* F18 — Global motion reduction: disable all transitions and animations */
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+    .home-hover-lift,
+    .home-hover-lift-featured {
       transition: none !important;
     }
-    .home-hover-lift:hover {
-      transform: none !important;
-    }
+    .home-hover-lift:hover,
     .home-hover-lift-featured:hover {
       transform: none !important;
     }
@@ -145,6 +154,140 @@
     .vibe-art-trends-cap {
       transform: none !important;
     }
+    /* Card hover transforms */
+    .group:hover .absolute {
+      transform: none !important;
+    }
+    /* Homepage scroll-reveal: show immediately without waiting for JS */
+    [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .section-divider-wrap path {
+      stroke-dashoffset: 0 !important;
+    }
+    .hero-scroll-cue {
+      animation: none !important;
+      opacity: 0.45 !important;
+      transform: none !important;
+    }
+    .hero-featured-thumb-float {
+      animation: none !important;
+    }
+  }
+
+  @keyframes hero-feature-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .hero-featured-thumb-float {
+    animation: hero-feature-float 5s ease-in-out infinite;
+  }
+  /* Homepage — editorial scroll-reveal (hero excluded); dividers only draw strokes */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  [data-reveal='divider'] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  [data-reveal].revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  [data-reveal='divider'].revealed {
+    opacity: 1;
+    transform: none;
+  }
+  [data-reveal='stagger-1'] {
+    transition-delay: 0.1s;
+  }
+  [data-reveal='stagger-2'] {
+    transition-delay: 0.2s;
+  }
+  [data-reveal='stagger-3'] {
+    transition-delay: 0.3s;
+  }
+  [data-reveal='stagger-4'] {
+    transition-delay: 0.4s;
+  }
+  [data-reveal='stagger-5'] {
+    transition-delay: 0.5s;
+  }
+  /* Vibe commerce cards — longer ease + subtle zoom (Shop by Vibe + homepage grid) */
+  [data-reveal].vibe-commerce-card {
+    transform: translateY(24px) scale(0.95);
+    transition:
+      opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  [data-reveal].vibe-commerce-card.revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  /* If scroll-reveal JS never runs or is blocked, avoid leaving content invisible forever */
+  @keyframes data-reveal-fallback {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes data-reveal-fallback-vibe {
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    [data-reveal]:not([data-reveal='divider']):not(.revealed):not(.vibe-commerce-card) {
+      animation: data-reveal-fallback 0.01s ease 2s forwards;
+    }
+    [data-reveal].vibe-commerce-card:not([data-reveal='divider']):not(.revealed) {
+      animation: data-reveal-fallback-vibe 0.01s ease 2s forwards;
+    }
+  }
+  @keyframes scroll-cue-breathe {
+    0%,
+    100% {
+      transform: scaleY(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scaleY(1.5);
+      opacity: 0.6;
+    }
+  }
+  .hero-scroll-cue {
+    transform-origin: top center;
+    animation: scroll-cue-breathe 3s ease-in-out infinite;
+  }
+  @keyframes section-divider-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .section-divider-wrap path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: section-divider-draw 1.2s ease-out forwards;
+    animation-play-state: paused;
+  }
+  .section-divider-wrap.revealed path {
+    animation-play-state: running;
   }
   :focus-visible {
     outline: 2px solid var(--color-deep-teal);
@@ -175,6 +318,33 @@
     box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
   }
 
+  /** Vibe collection PLP — offset columns for editorial rhythm */
+  .vibe-product-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem 2rem;
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .vibe-product-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .vibe-product-grid > article:nth-child(2n) {
+      margin-top: 2.25rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .vibe-product-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2rem 1.75rem;
+    }
+    .vibe-product-grid > article:nth-child(3n + 2) {
+      margin-top: 2rem;
+    }
+    .vibe-product-grid > article:nth-child(3n + 3) {
+      margin-top: 3.25rem;
+    }
+  }
+
   .vertical-text {
     writing-mode: vertical-rl;
     text-orientation: mixed;
@@ -190,12 +360,21 @@
 
   /* §3.2 + §8.2 — trust badges on frosted glass (dark section) */
   .glass-trust-badge {
-    background: rgba(227, 239, 245, 0.22);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(227, 239, 245, 0.15);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  }
+
+  /* §3.2 — Merchandising badge (Bestseller, New etc.) on products */
+  .glass-merchandising-badge {
+    background: rgba(255, 245, 230, 0.45);
+    backdrop-filter: blur(12px) saturate(1.1);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
   /** §8.2 — hero headline cluster on dark frosted glass (readability over photography) */
@@ -205,6 +384,40 @@
     -webkit-backdrop-filter: blur(14px) saturate(1.1);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+    /* No nested scroll — entire hero is one viewport “poster” (Finding 19) */
+    overflow: visible;
+    max-height: none;
+  }
+
+  /** Short landscape / very short viewports: keep copy on one plane without internal scroll */
+  @media (max-height: 520px) and (max-width: 900px) {
+    .hero-glass-backdrop {
+      padding: 0.75rem 1rem;
+    }
+    .hero-glass-tight .hero-glass-tight-heading {
+      margin-bottom: 0.35rem;
+      font-size: clamp(1.125rem, 4vw, 1.5rem);
+    }
+    .hero-glass-tight .hero-glass-tight-lead {
+      margin-bottom: 0.35rem;
+      font-size: 0.875rem;
+    }
+    .hero-glass-tight .hero-glass-tight-sub {
+      margin-bottom: 0.35rem;
+      font-size: 0.75rem;
+      line-height: 1.35;
+    }
+    .hero-glass-tight .hero-glass-tight-price {
+      margin-bottom: 0.5rem;
+    }
+    .hero-glass-tight .hero-glass-tight-cta {
+      margin-top: 0.35rem;
+      padding-top: 0.65rem;
+      padding-bottom: 0.65rem;
+    }
+    .hero-glass-tight .hero-glass-tight-trust {
+      margin-top: 0.35rem;
+    }
   }
 
   /* §8.2 — customer quotes on warm-glow glass */
@@ -438,7 +651,33 @@
   }
 
   .product-quick-view-dialog::backdrop {
-    background-color: rgb(0 0 0 / 0.65);
+    background-color: rgb(0 0 0 / 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  @keyframes product-quick-view-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .product-quick-view-dialog[open] {
+      animation: product-quick-view-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation-duration: 0.4s !important;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-quick-view-dialog[open] {
+      animation: none;
+    }
   }
 
   /**
@@ -453,6 +692,7 @@
     box-shadow:
       0 6px 28px rgba(26, 26, 26, 0.22),
       inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   @media (min-width: 768px) {
     .quick-view-pill {
@@ -462,6 +702,10 @@
   }
   .quick-view-pill:hover {
     background: rgba(248, 246, 242, 0.58);
+    transform: scale(1.02);
+  }
+  .quick-view-pill:active {
+    transform: scale(0.98);
   }
   .quick-view-pill:focus-visible {
     outline: 2px solid var(--color-deep-teal);

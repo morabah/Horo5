@@ -1,106 +1,298 @@
 import { Link } from 'react-router-dom';
-import { useState, type CSSProperties } from 'react';
+import { useMemo, useState, type CSSProperties, type FormEvent } from 'react';
 import { getProductMedia } from '../data/images';
 import { TeeImage } from '../components/TeeImage';
+import { formatEgp } from '../utils/formatPrice';
 
 const steps = ['Information', 'Shipping', 'Payment'] as const;
 
+type FieldErrors = Record<string, string>;
+
+function validateStep0(fields: { email: string; phone: string; name: string; line1: string; city: string }): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!fields.email.trim()) errors.email = 'We need your email to send order updates.';
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) errors.email = 'Please enter a valid email address.';
+  if (!fields.phone.trim()) errors.phone = 'Your phone number helps us reach you about delivery.';
+  if (!fields.name.trim()) errors.name = 'We need your full name for the shipping label.';
+  if (!fields.line1.trim()) errors.line1 = 'Where should we deliver your order?';
+  if (!fields.city.trim()) errors.city = 'Which city should we ship to?';
+  return errors;
+}
+
 export function Checkout() {
   const [step, setStep] = useState(0);
+  const [highestCompleted, setHighestCompleted] = useState(-1);
+
+  // Form fields
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [line1, setLine1] = useState('');
+  const [city, setCity] = useState('');
+  const [whatsappOptIn, setWhatsappOptIn] = useState(true);
+  const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard');
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'card'>('cod');
+
+  // Errors
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  const shippingCost = shippingMethod === 'express' ? 120 : 60;
+
+  const step0Complete = useMemo(
+    () => Object.keys(validateStep0({ email, phone, name: fullName, line1, city })).length === 0,
+    [email, phone, fullName, line1, city],
+  );
+
+  function handleStepClick(targetStep: number) {
+    // Allow backward navigation to completed steps only
+    if (targetStep <= highestCompleted) {
+      setStep(targetStep);
+    }
+  }
+
+  function handleContinueToShipping(e: FormEvent) {
+    e.preventDefault();
+    const fieldErrors = validateStep0({ email, phone, name: fullName, line1, city });
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length === 0) {
+      setHighestCompleted(Math.max(highestCompleted, 0));
+      setStep(1);
+    }
+  }
+
+  function handleContinueToPayment() {
+    setHighestCompleted(Math.max(highestCompleted, 1));
+    setStep(2);
+  }
 
   return (
     <div style={{ padding: '2rem 0 3rem', background: 'var(--white)', minHeight: '60vh' }}>
       <div className="container" style={{ maxWidth: '960px' }}>
         <nav style={{ marginBottom: '1.5rem' }}>
-          <Link to="/cart" style={{ color: 'var(--deep-teal)', fontSize: '0.9375rem' }}>
+          <Link to="/cart" style={{ color: 'var(--deep-teal)', fontSize: '0.9375rem', display: 'inline-flex', alignItems: 'center', minHeight: '48px', padding: '0.5rem 0' }}>
             ← Back to cart
           </Link>
         </nav>
 
-        <ol style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', listStyle: 'none', padding: 0, margin: '0 0 2rem', alignItems: 'center' }}>
-          {steps.map((label, i) => (
-            <li key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              {i > 0 && <span aria-hidden style={{ color: 'var(--stone)' }}>—</span>}
-              <button
-                type="button"
-                onClick={() => setStep(i)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '0.9375rem',
-                  color: step === i ? 'var(--obsidian)' : 'var(--clay-earth)',
-                  fontWeight: step === i ? 600 : 400,
-                  borderBottom: step === i ? '2px solid var(--ember)' : '2px solid transparent',
-                  paddingBottom: '0.25rem',
-                }}
-              >
-                {i + 1}. {label}
-              </button>
-            </li>
-          ))}
-        </ol>
+        {/* F11 — Visual progress indicator (dot-and-line) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0', margin: '0 0 2rem' }} role="progressbar" aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={3} aria-label={`Checkout step ${step + 1} of 3: ${steps[step]}`}>
+          {steps.map((label, i) => {
+            const isCompleted = i <= highestCompleted;
+            const isCurrent = i === step;
+            const isClickable = i <= highestCompleted;
+
+            const dotColor = isCurrent
+              ? 'var(--ember)'
+              : isCompleted
+                ? 'var(--obsidian)'
+                : 'var(--stone)';
+
+            const labelColor = isCurrent
+              ? 'var(--obsidian)'
+              : isCompleted
+                ? 'var(--obsidian)'
+                : 'var(--clay-earth)';
+
+            return (
+              <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
+                {i > 0 && (
+                  <div style={{
+                    width: 'clamp(2rem, 8vw, 5rem)',
+                    height: '2px',
+                    background: isCompleted ? 'var(--obsidian)' : 'var(--stone)',
+                    transition: 'background 0.3s ease',
+                  }} />
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleStepClick(i)}
+                  disabled={!isClickable && !isCurrent}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: isClickable ? 'pointer' : 'default',
+                    padding: '0.5rem',
+                    minHeight: '48px',
+                    minWidth: '48px',
+                  }}
+                  aria-label={`Step ${i + 1}: ${label}${isCompleted ? ' (completed)' : isCurrent ? ' (current)' : ''}`}
+                >
+                  <span style={{
+                    width: isCurrent ? '14px' : '12px',
+                    height: isCurrent ? '14px' : '12px',
+                    borderRadius: '50%',
+                    background: dotColor,
+                    transition: 'all 0.3s ease',
+                    boxShadow: isCurrent ? '0 0 0 4px rgba(232, 89, 60, 0.2)' : 'none',
+                    flexShrink: 0,
+                  }} />
+                  <span style={{
+                    fontFamily: 'var(--font-label)',
+                    fontSize: '0.6875rem',
+                    fontWeight: isCurrent ? 600 : 400,
+                    color: labelColor,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {label}
+                  </span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
 
         {step === 0 && (
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
-            <div>
-              <h1 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Contact</h1>
-              <label htmlFor="email" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, marginBottom: '0.35rem', color: 'var(--label-brown)' }}>
-                Email *
-              </label>
-              <input id="email" type="email" autoComplete="email" style={inputStyle} />
-              <label htmlFor="phone" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 500, margin: '1rem 0 0.35rem', color: 'var(--label-brown)' }}>
-                Phone (WhatsApp) *
-              </label>
-              <input id="phone" type="tel" autoComplete="tel" style={inputStyle} />
-              <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', marginTop: '1rem' }}>Guest checkout — no account required.</p>
-              <h2 style={{ fontSize: '1.125rem', margin: '1.5rem 0 1rem' }}>Shipping address</h2>
-              <label htmlFor="name" style={labelStyle}>
-                Full name *
-              </label>
-              <input id="name" type="text" autoComplete="name" style={inputStyle} />
-              <label htmlFor="line1" style={labelStyle}>
-                Address line 1 *
-              </label>
-              <input id="line1" type="text" autoComplete="address-line1" style={inputStyle} />
-              <label htmlFor="city" style={labelStyle}>
-                City *
-              </label>
-              <input id="city" type="text" autoComplete="address-level2" style={inputStyle} />
-              <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }} onClick={() => setStep(1)}>
-                Continue to shipping
-              </button>
+          <form onSubmit={handleContinueToShipping}>
+            <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+              <div>
+                <h1 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Contact</h1>
+                <label htmlFor="email" style={labelStyle}>
+                  Email *
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setErrors((prev) => { const { email: _, ...rest } = prev; return rest; }); }}
+                  style={{ ...inputStyle, ...(errors.email ? errorInputStyle : {}) }}
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? 'email-error' : undefined}
+                />
+                {errors.email && <p id="email-error" style={errorTextStyle}>{errors.email}</p>}
+
+                <label htmlFor="phone" style={{ ...labelStyle, margin: '1rem 0 0.35rem' }}>
+                  Phone (WhatsApp) *
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => { setPhone(e.target.value); setErrors((prev) => { const { phone: _, ...rest } = prev; return rest; }); }}
+                  style={{ ...inputStyle, ...(errors.phone ? errorInputStyle : {}) }}
+                  aria-invalid={!!errors.phone}
+                  aria-describedby={errors.phone ? 'phone-error' : undefined}
+                />
+                {errors.phone && <p id="phone-error" style={errorTextStyle}>{errors.phone}</p>}
+
+                {/* F21 — WhatsApp opt-in */}
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1rem 0', fontSize: '0.875rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={whatsappOptIn}
+                    onChange={(e) => setWhatsappOptIn(e.target.checked)}
+                    style={{ width: '18px', height: '18px', accentColor: 'var(--deep-teal)' }}
+                  />
+                  Send order updates via WhatsApp
+                </label>
+
+                <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--obsidian)', marginTop: '0.5rem' }}>Guest checkout — no account required.</p>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', marginTop: '0.35rem' }}>
+                  Shipping from {formatEgp(60)}; you&apos;ll choose speed on the next step.
+                </p>
+
+                <h2 style={{ fontSize: '1.125rem', margin: '1.5rem 0 1rem' }}>Shipping address</h2>
+                <label htmlFor="name" style={labelStyle}>
+                  Full name *
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(e) => { setFullName(e.target.value); setErrors((prev) => { const { name: _, ...rest } = prev; return rest; }); }}
+                  style={{ ...inputStyle, ...(errors.name ? errorInputStyle : {}) }}
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? 'name-error' : undefined}
+                />
+                {errors.name && <p id="name-error" style={errorTextStyle}>{errors.name}</p>}
+
+                <label htmlFor="line1" style={labelStyle}>
+                  Address line 1 *
+                </label>
+                <input
+                  id="line1"
+                  type="text"
+                  autoComplete="address-line1"
+                  value={line1}
+                  onChange={(e) => { setLine1(e.target.value); setErrors((prev) => { const { line1: _, ...rest } = prev; return rest; }); }}
+                  style={{ ...inputStyle, ...(errors.line1 ? errorInputStyle : {}) }}
+                  aria-invalid={!!errors.line1}
+                  aria-describedby={errors.line1 ? 'line1-error' : undefined}
+                />
+                {errors.line1 && <p id="line1-error" style={errorTextStyle}>{errors.line1}</p>}
+
+                <label htmlFor="city" style={labelStyle}>
+                  City *
+                </label>
+                <input
+                  id="city"
+                  type="text"
+                  autoComplete="address-level2"
+                  value={city}
+                  onChange={(e) => { setCity(e.target.value); setErrors((prev) => { const { city: _, ...rest } = prev; return rest; }); }}
+                  style={{ ...inputStyle, ...(errors.city ? errorInputStyle : {}) }}
+                  aria-invalid={!!errors.city}
+                  aria-describedby={errors.city ? 'city-error' : undefined}
+                />
+                {errors.city && <p id="city-error" style={errorTextStyle}>{errors.city}</p>}
+
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{ width: '100%', marginTop: '1.25rem', minHeight: '48px' }}
+                  disabled={!step0Complete}
+                  aria-disabled={!step0Complete}
+                >
+                  Continue to shipping
+                </button>
+              </div>
+              <OrderSummary shipping={undefined} />
             </div>
-            <OrderSummary />
-          </div>
+          </form>
         )}
 
         {step === 1 && (
           <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
             <div>
               <h1 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Shipping method</h1>
-              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: '1px solid var(--ember)', borderRadius: 'var(--radius-card)', marginBottom: '0.75rem', cursor: 'pointer' }}>
-                <input type="radio" name="ship" defaultChecked />
+              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${shippingMethod === 'standard' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', marginBottom: '0.75rem', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
+                <input type="radio" name="ship" checked={shippingMethod === 'standard'} onChange={() => setShippingMethod('standard')} />
                 <span>
-                  <strong>Standard</strong> — 3–5 business days · 60 EGP
+                  <strong>Standard</strong> — 3–5 business days · {formatEgp(60)}
                 </span>
               </label>
-              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: '1px solid var(--stone)', borderRadius: 'var(--radius-card)', cursor: 'pointer' }}>
-                <input type="radio" name="ship" />
+              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${shippingMethod === 'express' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
+                <input type="radio" name="ship" checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} />
                 <span>
-                  <strong>Express</strong> — 1–2 business days · 120 EGP
+                  <strong>Express</strong> — 1–2 business days · {formatEgp(120)}
                 </span>
               </label>
               <p style={{ marginTop: '1rem' }}>Expected delivery: March 25 – March 27</p>
-              <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }} onClick={() => setStep(2)}>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', marginTop: '0.75rem' }}>
+                Total includes {formatEgp(shippingCost)} shipping. Free exchange within 14 days if size doesn&apos;t fit.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary"
+                style={{ width: '100%', marginTop: '1.25rem', minHeight: '48px' }}
+                onClick={handleContinueToPayment}
+                aria-label="Continue to payment step"
+              >
                 Continue to payment
               </button>
-              <button type="button" style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'var(--deep-teal)', cursor: 'pointer' }} onClick={() => setStep(0)}>
+              <button type="button" style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'var(--deep-teal)', cursor: 'pointer', minHeight: '48px', padding: '0.5rem 0.75rem', fontSize: '0.9375rem' }} onClick={() => setStep(0)}>
                 ← Back to information
               </button>
             </div>
-            <OrderSummary shipping={60} />
+            <OrderSummary shipping={shippingCost} />
           </div>
         )}
 
@@ -108,35 +300,35 @@ export function Checkout() {
           <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
             <div>
               <h1 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Payment</h1>
-              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: '1px solid var(--ember)', borderRadius: 'var(--radius-card)', marginBottom: '0.75rem', cursor: 'pointer' }}>
-                <input type="radio" name="pay" defaultChecked />
+              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${paymentMethod === 'cod' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', marginBottom: '0.75rem', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
+                <input type="radio" name="pay" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
                 <span>
                   <strong>Cash on delivery (COD)</strong>
                   <br />
-                  Pay when your order arrives. Total: 1,658 EGP
+                  Pay when your order arrives. Total: {formatEgp(1598 + shippingCost)}
                 </span>
               </label>
-              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: '1px solid var(--stone)', borderRadius: 'var(--radius-card)', cursor: 'pointer' }}>
-                <input type="radio" name="pay" />
+              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${paymentMethod === 'card' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
+                <input type="radio" name="pay" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
                 <span>
                   <strong>Pay with card</strong>
-                  <span style={{ display: 'block', fontSize: '0.875rem', color: 'var(--kohl-gold-dark)', marginTop: '0.25rem' }}>Save 30 EGP with card payment</span>
+                  <span style={{ display: 'block', fontSize: '0.875rem', color: 'var(--kohl-gold-dark)', marginTop: '0.25rem' }}>Save {formatEgp(30)} with card payment</span>
                 </span>
               </label>
               <p style={{ marginTop: '1.25rem', fontSize: '0.875rem', color: 'var(--clay-earth)' }} lang="ar" dir="rtl">
                 بياناتك آمنة معنا
               </p>
-              <p style={{ fontSize: '0.875rem' }}>
-                <Link to="/">Free exchange within 14 days</Link> if size doesn&apos;t fit.
+              <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                COD or card — pay securely. <Link to="/">Free exchange within 14 days</Link> if size doesn&apos;t fit. WhatsApp updates if you opted in.
               </p>
-              <Link className="btn btn-primary" to="/checkout/success" style={{ width: '100%', marginTop: '1.25rem', display: 'inline-flex' }}>
-                Place order — 1,658 EGP
+              <Link className="btn btn-primary" to="/checkout/success" style={{ width: '100%', marginTop: '1.25rem', display: 'inline-flex', minHeight: '48px', alignItems: 'center', justifyContent: 'center' }}>
+                Place order — {formatEgp(1598 + shippingCost)}
               </Link>
-              <button type="button" style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'var(--deep-teal)', cursor: 'pointer' }} onClick={() => setStep(1)}>
+              <button type="button" style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'var(--deep-teal)', cursor: 'pointer', minHeight: '48px', padding: '0.5rem 0.75rem', fontSize: '0.9375rem' }} onClick={() => setStep(1)}>
                 ← Back to shipping
               </button>
             </div>
-            <OrderSummary shipping={60} />
+            <OrderSummary shipping={shippingCost} />
           </div>
         )}
       </div>
@@ -152,6 +344,19 @@ const inputStyle: CSSProperties = {
   border: '1px solid var(--stone)',
   background: 'var(--white)',
   fontSize: '1rem',
+  transition: 'border-color 0.2s ease',
+};
+
+const errorInputStyle: CSSProperties = {
+  borderColor: 'var(--ember)',
+  boxShadow: '0 0 0 2px rgba(232, 89, 60, 0.15)',
+};
+
+const errorTextStyle: CSSProperties = {
+  fontSize: '0.8125rem',
+  color: 'var(--ember)',
+  margin: '0.35rem 0 0',
+  fontStyle: 'normal',
 };
 
 const labelStyle: CSSProperties = {
@@ -163,38 +368,40 @@ const labelStyle: CSSProperties = {
 };
 
 function OrderSummary({ shipping }: { shipping?: number }) {
+  const subtotal = 1598;
+  const total = subtotal + (shipping ?? 0);
   return (
     <aside style={{ padding: '1.25rem', borderRadius: 'var(--radius-card)', border: '1px solid var(--stone)', background: 'var(--papyrus)' }}>
       <h2 style={{ fontSize: '1rem', margin: '0 0 1rem' }}>Order summary</h2>
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
         <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--stone)' }}>
-          <TeeImage src={getProductMedia('the-weight-of-light').main} alt="" w={128} />
+          <TeeImage src={getProductMedia('the-weight-of-light').main} alt="HORO 'The Weight of Light' graphic tee" w={128} />
         </div>
         <div>
           <p style={{ margin: 0, fontWeight: 500 }}>The Weight of Light</p>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>M · Qty 1 · 799 EGP</p>
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>M · Qty 1 · {formatEgp(799)}</p>
         </div>
       </div>
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
         <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--stone)' }}>
-          <TeeImage src={getProductMedia('midnight-compass').main} alt="" w={128} />
+          <TeeImage src={getProductMedia('midnight-compass').main} alt="HORO 'Midnight Compass' graphic tee" w={128} />
         </div>
         <div>
           <p style={{ margin: 0, fontWeight: 500 }}>Midnight Compass</p>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>L · Qty 1 · 799 EGP</p>
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>L · Qty 1 · {formatEgp(799)}</p>
         </div>
       </div>
       <p style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>Subtotal</span>
-        <span>1,598 EGP</span>
+        <span>{formatEgp(subtotal)}</span>
       </p>
       <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
         <span>Shipping</span>
-        <span>{shipping != null ? `${shipping} EGP` : '—'}</span>
+        <span>{shipping != null ? formatEgp(shipping) : '—'}</span>
       </p>
       <p style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--stone)' }}>
         <span>Total</span>
-        <span>{shipping != null ? '1,658' : '1,598'} EGP</span>
+        <span>{formatEgp(total)}</span>
       </p>
     </aside>
   );

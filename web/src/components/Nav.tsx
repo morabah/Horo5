@@ -1,155 +1,271 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, TransitionEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { BrandLogo } from './BrandLogo';
-import { useHomeVibeScrollSpy } from '../hooks/useHomeVibeScrollSpy';
-import { vibes } from '../data/site';
 
 export function Nav() {
   const [q, setQ] = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuPanelOpen, setMenuPanelOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileSearchQ, setMobileSearchQ] = useState('');
+  const [desktopSearchExpanded, setDesktopSearchExpanded] = useState(false);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+  const desktopSearchInputRef = useRef<HTMLInputElement>(null);
+  const prevMenuVisibleRef = useRef(false);
+  const menuVisibleRef = useRef(menuVisible);
   const navigate = useNavigate();
+  menuVisibleRef.current = menuVisible;
   const { pathname } = useLocation();
 
+  const closeMenu = useCallback(() => {
+    setMenuPanelOpen(false);
+  }, []);
+
+  const openMenu = useCallback(() => {
+    setMenuVisible(true);
+  }, []);
+
+  const toggleMenu = useCallback(() => {
+    if (!menuVisible) {
+      openMenu();
+      return;
+    }
+    if (menuPanelOpen) {
+      closeMenu();
+    } else {
+      setMenuPanelOpen(true);
+    }
+  }, [menuVisible, menuPanelOpen, openMenu, closeMenu]);
+
   useEffect(() => {
-    setMenuOpen(false);
+    if (!menuVisible) {
+      setMenuPanelOpen(false);
+      prevMenuVisibleRef.current = false;
+      return;
+    }
+    if (!prevMenuVisibleRef.current) {
+      prevMenuVisibleRef.current = true;
+      const id = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (menuVisibleRef.current) setMenuPanelOpen(true);
+        });
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [menuVisible]);
+
+  function handlePanelTransitionEnd(e: TransitionEvent<HTMLDivElement>) {
+    if (e.target !== e.currentTarget) return;
+    if (e.propertyName !== 'transform') return;
+    if (!menuPanelOpen) {
+      setMenuVisible(false);
+    }
+  }
+
+  useEffect(() => {
+    setMenuPanelOpen(false);
+    setMenuVisible(false);
+    setSearchOpen(false);
+    setDesktopSearchExpanded(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuVisible) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false);
+      if (e.key === 'Escape') closeMenu();
     };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
-  }, [menuOpen]);
-  const activeVibeSlug = useHomeVibeScrollSpy();
-  const activeVibe = vibes.find((v) => v.slug === activeVibeSlug);
+  }, [menuVisible, closeMenu]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSearchOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    const t = window.setTimeout(() => mobileSearchInputRef.current?.focus(), 0);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+      window.clearTimeout(t);
+    };
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!desktopSearchExpanded) return;
+    const t = window.setTimeout(() => desktopSearchInputRef.current?.focus(), 0);
+    return () => window.clearTimeout(t);
+  }, [desktopSearchExpanded]);
+
+  useEffect(() => {
+    if (!desktopSearchExpanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setDesktopSearchExpanded(false);
+        setQ('');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [desktopSearchExpanded]);
 
   function onSearch(e: FormEvent) {
     e.preventDefault();
     const trimmed = q.trim();
     navigate(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search');
+    setDesktopSearchExpanded(false);
   }
 
   return (
     <nav className="glass-nav fixed top-0 z-50 w-full">
-      <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] sm:gap-3 sm:py-4 sm:pl-6 sm:pr-6 md:pl-8 md:pr-8">
-        <div className="flex min-w-0 shrink-0 items-center gap-3 md:gap-5">
+      {/* Mobile: Menu | Logo | Search | Bag — single search entry (icon only) */}
+      <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:hidden">
+        <button
+          type="button"
+          className="material-symbols-outlined inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/90"
+          aria-expanded={menuVisible && menuPanelOpen}
+          aria-controls="primary-nav-drawer"
+          aria-label={menuVisible && menuPanelOpen ? 'Close menu' : 'Open menu'}
+          onClick={toggleMenu}
+        >
+          {menuVisible && menuPanelOpen ? 'close' : 'menu'}
+        </button>
+        <Link to="/" className="flex min-w-0 flex-1 justify-center drop-shadow-sm" aria-label="HORO Egypt — Home">
+          <BrandLogo variant="dark" />
+        </Link>
+        <button
+          type="button"
+          className="material-symbols-outlined inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
+          aria-label="Search"
+          aria-expanded={searchOpen}
+          aria-controls="mobile-search-layer"
+          onClick={() => setSearchOpen(true)}
+        >
+          search
+        </button>
+        <Link
+          to="/cart"
+          className="material-symbols-outlined inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-obsidian/85"
+          aria-label="Cart"
+        >
+          shopping_bag
+        </Link>
+      </div>
+
+      {/* Desktop: Menu + logo | shortcuts | expandable glass search | cart */}
+      <div className="mx-auto hidden max-w-[1920px] items-center gap-6 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:flex md:gap-8 md:py-4 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
+        <div className="flex shrink-0 items-center gap-4">
+          <button
+            type="button"
+            className="material-symbols-outlined inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/5"
+            aria-expanded={menuVisible && menuPanelOpen}
+            aria-controls="primary-nav-drawer"
+            aria-label={menuVisible && menuPanelOpen ? 'Close menu' : 'Open menu'}
+            onClick={toggleMenu}
+          >
+            {menuVisible && menuPanelOpen ? 'close' : 'menu'}
+          </button>
           <Link to="/" className="flex shrink-0 items-center drop-shadow-sm" aria-label="HORO Egypt — Home">
             <BrandLogo variant="dark" />
           </Link>
-          {activeVibe ? (
-            <div
-              className="hidden min-w-0 md:block md:max-w-[11rem] lg:max-w-[14rem]"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              <p className="font-label mb-0.5 truncate text-[9px] font-medium uppercase tracking-[0.28em] text-label">
-                Reading
-              </p>
-              <p className="font-headline flex items-center gap-2 truncate text-sm font-semibold tracking-tight text-obsidian">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full ring-1 ring-black/15"
-                  style={{ backgroundColor: activeVibe.accent }}
-                  aria-hidden
-                />
-                <span className="truncate">{activeVibe.name}</span>
-              </p>
-            </div>
-          ) : null}
         </div>
-
-        <div className="hidden items-center space-x-10 md:flex lg:space-x-12">
+        <nav
+          className="hidden shrink-0 items-center gap-1 lg:flex"
+          aria-label="Primary shortcuts"
+        >
           <NavLink
             to="/vibes"
             className={({ isActive }) =>
-              `font-label min-h-12 text-xs font-semibold uppercase tracking-widest transition-colors duration-300 ${
-                isActive
-                  ? 'border-b-2 border-primary pb-1 text-primary'
-                  : 'text-obsidian/90 hover:text-primary'
+              `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
+                isActive ? 'text-primary' : 'text-obsidian/90 hover:text-obsidian'
               }`
             }
           >
             Collection
           </NavLink>
           <NavLink
-            to="/artists"
+            to="/occasions"
             className={({ isActive }) =>
-              `font-label min-h-12 text-xs font-semibold uppercase tracking-widest transition-colors duration-300 ${
-                isActive
-                  ? 'border-b-2 border-primary pb-1 text-primary'
-                  : 'text-obsidian/90 hover:text-primary'
+              `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
+                isActive ? 'text-primary' : 'text-obsidian/90 hover:text-obsidian'
               }`
             }
           >
-            Artists
+            Occasions
           </NavLink>
           <NavLink
             to="/about"
             className={({ isActive }) =>
-              `font-label min-h-12 text-xs font-semibold uppercase tracking-widest transition-colors duration-300 ${
-                isActive
-                  ? 'border-b-2 border-primary pb-1 text-primary'
-                  : 'text-obsidian/90 hover:text-primary'
+              `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
+                isActive ? 'text-primary' : 'text-obsidian/90 hover:text-obsidian'
               }`
             }
           >
             About
           </NavLink>
+        </nav>
+        <div className="flex min-w-0 flex-1 justify-center px-2 md:px-4">
+          <div
+            className={`flex items-center justify-center transition-[max-width] duration-300 ease-out ${desktopSearchExpanded ? 'w-full max-w-md' : 'max-w-12'}`}
+          >
+            {!desktopSearchExpanded ? (
+              <button
+                type="button"
+                className="material-symbols-outlined inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-outline-variant/40 bg-white/70 text-obsidian/85 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90"
+                aria-expanded={desktopSearchExpanded}
+                aria-label="Open search"
+                onClick={() => setDesktopSearchExpanded(true)}
+              >
+                search
+              </button>
+            ) : (
+              <form onSubmit={onSearch} className="relative w-full min-w-0">
+                <label htmlFor="nav-search-desktop" className="sr-only">
+                  Search
+                </label>
+                <input
+                  ref={desktopSearchInputRef}
+                  id="nav-search-desktop"
+                  type="search"
+                  placeholder="Search designs, vibes…"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  onBlur={(e) => {
+                    const next = e.relatedTarget as Node | null;
+                    if (!next || !e.currentTarget.parentElement?.contains(next)) {
+                      if (!q.trim()) setDesktopSearchExpanded(false);
+                    }
+                  }}
+                  className="font-body box-border h-12 w-full rounded-sm border border-outline-variant/45 bg-white/85 px-4 pr-12 text-sm leading-normal text-obsidian shadow-sm backdrop-blur-xl placeholder:text-clay/70"
+                />
+                <button
+                  type="button"
+                  className="material-symbols-outlined absolute right-1 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-sm text-obsidian/70 hover:bg-black/5"
+                  aria-label="Close search field"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setQ('');
+                    setDesktopSearchExpanded(false);
+                  }}
+                >
+                  close
+                </button>
+              </form>
+            )}
+          </div>
         </div>
-
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-4 lg:gap-6">
-          <button
-            type="button"
-            className="material-symbols-outlined inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/90 md:hidden"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-primary-nav"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            {menuOpen ? 'close' : 'menu'}
-          </button>
-          <form onSubmit={onSearch} className="hidden max-w-[200px] sm:block">
-            <label htmlFor="nav-search" className="sr-only">
-              Search
-            </label>
-            <input
-              id="nav-search"
-              type="search"
-              placeholder="Search…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="font-body min-h-11 w-full rounded-sm border border-outline-variant/50 bg-white/95 px-3 py-2 text-xs text-obsidian shadow-sm placeholder:text-clay/70"
-            />
-          </form>
-          <button
-            type="button"
-            className="material-symbols-outlined inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/85 sm:hidden"
-            aria-label="Search"
-            onClick={() => navigate('/search')}
-          >
-            search
-          </button>
-          <span
-            className="material-symbols-outlined hidden min-h-11 min-w-11 cursor-pointer items-center justify-center text-obsidian/85 md:inline-flex"
-            aria-hidden
-          >
-            language
-          </span>
-          <span
-            className="material-symbols-outlined inline-flex min-h-11 min-w-11 items-center justify-center text-obsidian/85"
-            aria-hidden
-          >
-            favorite
-          </span>
+        <div className="flex shrink-0 items-center gap-1 md:gap-2 lg:gap-3">
           <Link
             to="/cart"
-            className="material-symbols-outlined inline-flex min-h-11 min-w-11 items-center justify-center text-obsidian/85"
+            className="material-symbols-outlined inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
             aria-label="Cart"
           >
             shopping_bag
@@ -157,77 +273,160 @@ export function Nav() {
         </div>
       </div>
 
-      {/* Mobile primary nav — desktop links are in the bar above */}
-      {menuOpen ? (
+      {searchOpen ? (
         <div
-          id="mobile-primary-nav"
-          className="fixed inset-0 z-[60] flex flex-col bg-papyrus pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] md:hidden"
+          id="mobile-search-layer"
+          className="fixed inset-0 z-70 flex flex-col bg-papyrus/98 backdrop-blur-md md:hidden"
           role="dialog"
           aria-modal="true"
-          aria-label="Main navigation"
+          aria-label="Search"
         >
-          <div className="flex items-center justify-between border-b border-outline-variant/30 px-4 py-3">
-            <Link to="/" className="flex items-center" onClick={() => setMenuOpen(false)} aria-label="HORO Egypt — Home">
-              <BrandLogo variant="dark" />
-            </Link>
+          <div className="flex items-center justify-between border-b border-outline-variant/30 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
+            <span className="font-label text-xs font-semibold uppercase tracking-widest text-obsidian">Search</span>
             <button
               type="button"
-              className="material-symbols-outlined inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/90"
-              aria-label="Close menu"
-              onClick={() => setMenuOpen(false)}
+              className="font-label min-h-11 min-w-11 rounded-sm border border-outline-variant/40 px-2 text-xs uppercase tracking-wider text-obsidian"
+              onClick={() => setSearchOpen(false)}
             >
-              close
+              Close
             </button>
           </div>
-          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-6" aria-label="Primary">
-            <NavLink
-              to="/vibes"
-              className={({ isActive }) =>
-                `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                  isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                }`
-              }
-              onClick={() => setMenuOpen(false)}
-            >
-              Collection
-            </NavLink>
-            <NavLink
-              to="/artists"
-              className={({ isActive }) =>
-                `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                  isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                }`
-              }
-              onClick={() => setMenuOpen(false)}
-            >
-              Artists
-            </NavLink>
-            <NavLink
-              to="/about"
-              className={({ isActive }) =>
-                `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
-                  isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
-                }`
-              }
-              onClick={() => setMenuOpen(false)}
-            >
-              About
-            </NavLink>
-            <Link
-              to="/occasions"
-              className="font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest text-obsidian/90 active:bg-surface-container-high"
-              onClick={() => setMenuOpen(false)}
-            >
-              Occasions
-            </Link>
-            <Link
-              to="/search"
-              className="font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest text-obsidian/90 active:bg-surface-container-high"
-              onClick={() => setMenuOpen(false)}
-            >
+          <form
+            className="flex flex-1 flex-col gap-3 p-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const trimmed = mobileSearchQ.trim();
+              setSearchOpen(false);
+              navigate(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search');
+            }}
+          >
+            <label htmlFor="nav-search-mobile-overlay" className="sr-only">
+              Search designs, vibes
+            </label>
+            <input
+              ref={mobileSearchInputRef}
+              id="nav-search-mobile-overlay"
+              type="search"
+              value={mobileSearchQ}
+              onChange={(e) => setMobileSearchQ(e.target.value)}
+              placeholder="Search designs, vibes…"
+              className="font-body min-h-14 w-full rounded-sm border border-outline-variant/50 bg-white px-4 py-3 text-base text-obsidian shadow-sm placeholder:text-clay/70"
+              autoComplete="off"
+            />
+            <button type="submit" className="btn btn-primary min-h-12 w-full">
               Search
-            </Link>
-          </nav>
+            </button>
+          </form>
+        </div>
+      ) : null}
+
+      {menuVisible ? (
+        <div className="fixed inset-0 z-60">
+          <button
+            type="button"
+            tabIndex={-1}
+            className={`absolute inset-0 bg-black/15 backdrop-blur-sm transition-opacity duration-300 ease-out ${
+              menuPanelOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+            aria-label="Close menu"
+            onClick={closeMenu}
+          />
+          <div
+            id="primary-nav-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Main navigation"
+            className={`absolute left-0 top-0 flex h-full min-h-0 w-full max-w-sm flex-col border-r border-white/25 bg-papyrus/90 shadow-[8px_0_40px_rgba(26,26,26,0.12)] backdrop-blur-xl transition-transform duration-300 ease-out pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] pt-[max(1rem,env(safe-area-inset-top,0px))] ${
+              menuPanelOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+            onTransitionEnd={handlePanelTransitionEnd}
+          >
+            <div className="flex shrink-0 items-center justify-between border-b border-white/20 px-4 py-3">
+              <Link to="/" className="flex items-center" onClick={closeMenu} aria-label="HORO Egypt — Home">
+                <BrandLogo variant="dark" />
+              </Link>
+              <button
+                type="button"
+                className="material-symbols-outlined inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/90"
+                aria-label="Close menu"
+                onClick={closeMenu}
+              >
+                close
+              </button>
+            </div>
+            <nav
+              className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-y-contain px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]"
+              aria-label="Primary"
+            >
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) =>
+                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
+                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
+                  }`
+                }
+                onClick={closeMenu}
+              >
+                Home
+              </NavLink>
+              <NavLink
+                to="/vibes"
+                className={({ isActive }) =>
+                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
+                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
+                  }`
+                }
+                onClick={closeMenu}
+              >
+                Collection
+              </NavLink>
+              <NavLink
+                to="/occasions"
+                className={({ isActive }) =>
+                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
+                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
+                  }`
+                }
+                onClick={closeMenu}
+              >
+                Occasions
+              </NavLink>
+              <NavLink
+                to="/about"
+                className={({ isActive }) =>
+                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
+                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
+                  }`
+                }
+                onClick={closeMenu}
+              >
+                About
+              </NavLink>
+              <NavLink
+                to="/search"
+                className={({ isActive }) =>
+                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
+                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
+                  }`
+                }
+                onClick={closeMenu}
+              >
+                Search
+              </NavLink>
+              <NavLink
+                to="/cart"
+                className={({ isActive }) =>
+                  `font-label min-h-14 rounded-sm px-4 py-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
+                    isActive ? 'bg-primary/15 text-primary' : 'text-obsidian/90 active:bg-surface-container-high'
+                  }`
+                }
+                onClick={closeMenu}
+              >
+                Cart
+              </NavLink>
+            </nav>
+          </div>
         </div>
       ) : null}
     </nav>

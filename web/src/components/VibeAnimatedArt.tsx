@@ -32,8 +32,8 @@ export function VibeAnimatedArt({ slug, accent }: VibeAnimatedArtProps) {
     case 'zodiac':
       inner = <ZodiacLineArt />;
       break;
-    case 'fictious':
-      inner = <FictiousLineArt />;
+    case 'fiction':
+      inner = <FictionLineArt />;
       break;
     case 'career':
       inner = <CareerLineArt />;
@@ -132,7 +132,7 @@ function ZodiacLineArt() {
 }
 
 /** Open book outline */
-function FictiousLineArt() {
+function FictionLineArt() {
   return (
     <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
       <g className="vibe-art-book">
