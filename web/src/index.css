@@ -436,4 +436,50 @@
     transform-box: fill-box;
     animation: vibe-art-cap-pulse 2.4s ease-in-out infinite 0.4s;
   }
+
+  .product-quick-view-dialog::backdrop {
+    background-color: rgb(0 0 0 / 0.65);
+  }
+
+  /**
+   * Quick view control on product imagery — §3.2 Glassmorphism (Glass White #F8F6F2).
+   * Obsidian label text on frosted layer for contrast on varied photography.
+   */
+  .quick-view-pill {
+    background: rgba(248, 246, 242, 0.46);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow:
+      0 6px 28px rgba(26, 26, 26, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+  @media (min-width: 768px) {
+    .quick-view-pill {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  }
+  .quick-view-pill:hover {
+    background: rgba(248, 246, 242, 0.58);
+  }
+  .quick-view-pill:focus-visible {
+    outline: 2px solid var(--color-deep-teal);
+    outline-offset: 2px;
+  }
+
+  /** Tighter quick view on small editorial crops (lookbook detail cards) */
+  .quick-view-pill--compact {
+    min-height: 2.25rem;
+    padding-inline: 0.625rem;
+    padding-block: 0.375rem;
+    font-size: 0.5625rem;
+    letter-spacing: 0.16em;
+  }
+  @media (min-width: 768px) {
+    .quick-view-pill--compact {
+      font-size: 0.625rem;
+      letter-spacing: 0.18em;
+    }
+  }
 }

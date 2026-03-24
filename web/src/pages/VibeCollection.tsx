@@ -38,7 +38,7 @@ export function VibeCollection() {
             }}
             aria-hidden
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" aria-hidden />
+          <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/25 to-transparent" aria-hidden />
           <div className="glass-vibe-card-footer relative z-10 m-4 max-w-2xl rounded-xl px-3 py-3 sm:m-6">
             <div className="glass-text-inner px-5 py-4">
               <span

@@ -17,7 +17,7 @@ export function ShopByVibe() {
               <Link
                 key={v.slug}
                 to={`/vibes/${v.slug}`}
-                className="group flex h-[min(420px,58vh)] flex-col overflow-hidden rounded-2xl shadow-[0_8px_30px_rgba(26,26,26,0.12)] ring-1 ring-black/5 transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(26,26,26,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:h-[440px]"
+                className="group flex h-[min(420px,58vh)] flex-col overflow-hidden rounded-2xl shadow-[0_8px_30px_rgba(26,26,26,0.12)] ring-1 ring-black/5 transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(26,26,26,0.18)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:h-[440px]"
               >
                 {/* Photo — takes all space above the glass strip (~78% of card) */}
                 <div className="relative min-h-0 flex-1">
@@ -28,11 +28,11 @@ export function ShopByVibe() {
                   />
                   {/* Scrim only in lower third so the hero of the image stays bright */}
                   <div
-                    className="pointer-events-none absolute inset-x-0 bottom-0 top-[38%] bg-gradient-to-t from-black/45 via-black/10 to-transparent"
+                    className="pointer-events-none absolute inset-x-0 bottom-0 top-[38%] bg-linear-to-t from-black/45 via-black/10 to-transparent"
                     aria-hidden
                   />
                   <div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-tr opacity-25"
+                    className="pointer-events-none absolute inset-0 bg-linear-to-tr opacity-25"
                     style={{
                       background: `linear-gradient(to top right, ${v.accent}55, transparent 50%)`,
                     }}

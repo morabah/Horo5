@@ -49,6 +49,12 @@ export type Product = {
   vibeSlug: string;
   priceEgp: number;
   story: string;
+  /** Card + quick view merchandising label, e.g. "Bestseller" */
+  merchandisingBadge?: string;
+  /** Shown as "VIBE / FIT" in quick view */
+  fitLabel?: string;
+  /** Optional scarcity line in quick view */
+  stockNote?: string;
 };
 
 export const products: Product[] = [
@@ -67,6 +73,9 @@ export const products: Product[] = [
     vibeSlug: 'zodiac',
     priceEgp: 799,
     story: 'For the one who finds direction in the dark.',
+    merchandisingBadge: 'Bestseller',
+    fitLabel: 'Regular',
+    stockNote: '9 left from this illustration run',
   },
   {
     slug: 'quiet-revolt',
@@ -75,6 +84,9 @@ export const products: Product[] = [
     vibeSlug: 'emotions',
     priceEgp: 899,
     story: 'For the one who speaks softly and still moves rooms.',
+    merchandisingBadge: 'New',
+    fitLabel: 'Oversized',
+    stockNote: 'Limited run — restock soon',
   },
   {
     slug: 'cairo-thread',

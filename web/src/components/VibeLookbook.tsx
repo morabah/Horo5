@@ -3,8 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { vibeEditorialBlocks } from '../data/homeEditorial';
 import type { VibeEditorialBlock } from '../data/homeEditorial';
 import { heroStreet, imgUrl, vibeCovers } from '../data/images';
+import { productsByVibe, vibes } from '../data/site';
+import { ProductQuickView } from './ProductQuickView';
 import { VibeAnimatedArt } from './VibeAnimatedArt';
-import { vibes } from '../data/site';
 
 const VIBE_QUERY = 'vibe';
 const RETURN_VIBE_KEY = 'horo_home_vibe';
@@ -17,6 +18,7 @@ export function VibeLookbook() {
   const cardRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
   const editorialStackRef = useRef<HTMLDivElement>(null);
   const [scrollActiveSlug, setScrollActiveSlug] = useState<string | null>(null);
+  const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
 
   const vibeParam = searchParams.get(VIBE_QUERY);
   const urlSlug = useMemo(
@@ -180,18 +182,18 @@ export function VibeLookbook() {
           className="relative scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] md:scroll-mt-32"
         >
           <div
-            className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-papyrus via-papyrus/80 to-transparent sm:w-12 lg:hidden"
+            className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-linear-to-r from-papyrus via-papyrus/80 to-transparent sm:w-12 lg:hidden"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-papyrus via-papyrus/80 to-transparent sm:w-12 lg:hidden"
+            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-linear-to-l from-papyrus via-papyrus/80 to-transparent sm:w-12 lg:hidden"
             aria-hidden
           />
 
           <button
             type="button"
             onClick={() => scrollStripBy(-320)}
-            className="font-label absolute left-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-label/15 bg-white/95 text-obsidian shadow-md backdrop-blur-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:left-1 lg:hidden"
+            className="font-label absolute left-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-label/15 bg-white/95 text-obsidian shadow-md backdrop-blur-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:left-1 lg:hidden"
             aria-label="Slide vibes left"
           >
             <span className="material-symbols-outlined text-[22px]">chevron_left</span>
@@ -199,7 +201,7 @@ export function VibeLookbook() {
           <button
             type="button"
             onClick={() => scrollStripBy(320)}
-            className="font-label absolute right-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-label/15 bg-white/95 text-obsidian shadow-md backdrop-blur-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:right-1 lg:hidden"
+            className="font-label absolute right-0 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-label/15 bg-white/95 text-obsidian shadow-md backdrop-blur-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:right-1 lg:hidden"
             aria-label="Slide vibes right"
           >
             <span className="material-symbols-outlined text-[22px]">chevron_right</span>
@@ -223,7 +225,7 @@ export function VibeLookbook() {
                   type="button"
                   onClick={() => scrollToEditorial(v.slug)}
                   aria-current={isActive ? 'true' : undefined}
-                  className={`group flex h-[min(360px,50vh)] w-[min(100%,280px)] shrink-0 snap-center snap-always flex-col overflow-hidden rounded-2xl text-left shadow-[0_8px_30px_rgba(26,26,26,0.12)] ring-1 transition-[transform,box-shadow] duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:h-[380px] sm:w-[260px] md:h-[400px] md:w-[240px] lg:h-[min(340px,38vh)] lg:min-w-0 lg:w-full lg:shrink lg:snap-none xl:h-[min(380px,40vh)] ${
+                  className={`group flex h-[min(360px,50vh)] w-[min(100%,280px)] shrink-0 snap-center snap-always flex-col overflow-hidden rounded-2xl text-left shadow-[0_8px_30px_rgba(26,26,26,0.12)] ring-1 transition-[transform,box-shadow] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:h-[380px] sm:w-[260px] md:h-[400px] md:w-[240px] lg:h-[min(340px,38vh)] lg:min-w-0 lg:w-full lg:shrink lg:snap-none xl:h-[min(380px,40vh)] ${
                     isActive
                       ? 'ring-2 ring-deep-teal/50 shadow-[0_16px_48px_rgba(43,117,150,0.18)]'
                       : 'ring-black/5 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(26,26,26,0.18)]'
@@ -236,11 +238,11 @@ export function VibeLookbook() {
                       aria-hidden
                     />
                     <div
-                      className="pointer-events-none absolute inset-x-0 bottom-0 top-[38%] bg-gradient-to-t from-black/45 via-black/10 to-transparent"
+                      className="pointer-events-none absolute inset-x-0 bottom-0 top-[38%] bg-linear-to-t from-black/45 via-black/10 to-transparent"
                       aria-hidden
                     />
                     <div
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-tr opacity-25"
+                      className="pointer-events-none absolute inset-0 bg-linear-to-tr opacity-25"
                       style={{
                         background: `linear-gradient(to top right, ${v.accent}55, transparent 50%)`,
                       }}
@@ -295,6 +297,7 @@ export function VibeLookbook() {
               <VibeEditorialSection
                 block={block}
                 onBackToMenu={scrollToVibeMenu}
+                onQuickView={(slug) => setQuickViewSlug(slug)}
                 onBeforeShopNavigate={() => {
                   try {
                     sessionStorage.setItem(RETURN_VIBE_KEY, block.vibe.slug);
@@ -307,10 +310,12 @@ export function VibeLookbook() {
           ))}
         </div>
 
+        <ProductQuickView open={quickViewSlug !== null} productSlug={quickViewSlug} onClose={() => setQuickViewSlug(null)} />
+
         <button
           type="button"
           onClick={scrollToVibeMenu}
-          className="font-label fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px)+0.5rem)] right-[max(1rem,env(safe-area-inset-right,0px))] z-40 flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-full border border-label/15 bg-white/95 text-obsidian shadow-[0_8px_32px_rgba(26,26,26,0.18)] backdrop-blur-sm transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:bottom-8 md:right-8 md:h-auto md:w-auto md:rounded-2xl md:px-5 md:py-3"
+          className="font-label fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,0px)+0.5rem)] right-[max(1rem,env(safe-area-inset-right,0px))] z-40 flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-full border border-label/15 bg-white/95 text-obsidian shadow-[0_8px_32px_rgba(26,26,26,0.18)] backdrop-blur-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:bottom-8 md:right-8 md:h-auto md:w-auto md:rounded-2xl md:px-5 md:py-3"
           aria-label="Back to vibe cards"
         >
           <span className="material-symbols-outlined text-2xl md:text-[26px]">arrow_upward</span>
@@ -324,12 +329,16 @@ export function VibeLookbook() {
 function VibeEditorialSection({
   block,
   onBackToMenu,
+  onQuickView,
   onBeforeShopNavigate,
 }: {
   block: VibeEditorialBlock;
   onBackToMenu: () => void;
+  onQuickView: (productSlug: string) => void;
   onBeforeShopNavigate: () => void;
 }) {
+  const showcaseProduct = productsByVibe(block.vibe.slug)[0];
+
   return (
     <article
       data-home-vibe-section
@@ -344,7 +353,7 @@ function VibeEditorialSection({
         <button
           type="button"
           onClick={onBackToMenu}
-          className="font-label inline-flex min-h-11 items-center gap-1.5 rounded-full border border-label/15 bg-papyrus/80 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.15em] text-obsidian transition-colors hover:bg-stone/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+          className="font-label inline-flex min-h-11 items-center gap-1.5 rounded-full border border-label/15 bg-papyrus/80 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.15em] text-obsidian transition-colors hover:bg-stone/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
         >
           <span className="material-symbols-outlined text-[18px] leading-none">arrow_upward</span>
           Vibe menu
@@ -364,7 +373,7 @@ function VibeEditorialSection({
           </div>
         </div>
 
-        <div className="editorial-shadow mb-10 aspect-[21/9] overflow-hidden rounded-xl">
+        <div className="editorial-shadow mb-10 aspect-21/9 overflow-hidden rounded-xl">
           <img alt={block.wideAlt} className="h-full w-full object-cover" src={imgUrl(block.wideSrc, 1600)} loading="lazy" />
         </div>
 
@@ -376,16 +385,58 @@ function VibeEditorialSection({
           </div>
           <div className="flex flex-col items-center md:col-span-5">
             {block.detailLayout === 'video' ? (
-              <div className="editorial-shadow aspect-video w-full overflow-hidden rounded-xl">
+              <div className="editorial-shadow relative aspect-video w-full overflow-hidden rounded-xl">
                 <img alt={block.detailAlt} className="h-full w-full object-cover" src={imgUrl(block.detailSrc, 900)} loading="lazy" />
+                {showcaseProduct?.merchandisingBadge ? (
+                  <span className="font-label absolute left-3 top-3 z-10 rounded border border-desert-sand bg-[rgba(255,245,230,0.92)] px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.18em] text-label shadow-sm">
+                    {showcaseProduct.merchandisingBadge}
+                  </span>
+                ) : null}
+                {showcaseProduct ? (
+                  <button
+                    type="button"
+                    onClick={() => onQuickView(showcaseProduct.slug)}
+                    className="quick-view-pill font-label absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg"
+                  >
+                    Quick view
+                  </button>
+                ) : null}
               </div>
             ) : block.detailLayout === 'square' ? (
-              <div className="aspect-square w-48 overflow-hidden rounded-full border border-label/10">
+              <div className="relative aspect-square w-48 overflow-hidden rounded-full border border-label/10">
                 <img alt={block.detailAlt} className="h-full w-full object-cover grayscale" src={imgUrl(block.detailSrc, 600)} loading="lazy" />
+                {showcaseProduct?.merchandisingBadge ? (
+                  <span className="font-label absolute left-2 top-2 z-10 max-w-[calc(100%-1rem)] rounded border border-desert-sand bg-[rgba(255,245,230,0.92)] px-1.5 py-0.5 text-[7px] font-semibold uppercase leading-tight tracking-[0.12em] text-label shadow-sm">
+                    {showcaseProduct.merchandisingBadge}
+                  </span>
+                ) : null}
+                {showcaseProduct ? (
+                  <button
+                    type="button"
+                    onClick={() => onQuickView(showcaseProduct.slug)}
+                    className="quick-view-pill quick-view-pill--compact font-label absolute bottom-2 left-2 right-2 z-10 rounded-full text-center font-medium uppercase text-obsidian transition-shadow hover:shadow-md"
+                  >
+                    Quick view
+                  </button>
+                ) : null}
               </div>
             ) : (
-              <div className="aspect-[3/4] w-48 overflow-hidden rounded-xl">
+              <div className="relative aspect-3/4 w-48 overflow-hidden rounded-xl">
                 <img alt={block.detailAlt} className="h-full w-full object-cover" src={imgUrl(block.detailSrc, 600)} loading="lazy" />
+                {showcaseProduct?.merchandisingBadge ? (
+                  <span className="font-label absolute left-2 top-2 z-10 rounded border border-desert-sand bg-[rgba(255,245,230,0.92)] px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.18em] text-label shadow-sm">
+                    {showcaseProduct.merchandisingBadge}
+                  </span>
+                ) : null}
+                {showcaseProduct ? (
+                  <button
+                    type="button"
+                    onClick={() => onQuickView(showcaseProduct.slug)}
+                    className="quick-view-pill quick-view-pill--compact font-label absolute bottom-2 left-2 right-2 z-10 rounded-full text-center font-medium uppercase text-obsidian transition-shadow hover:shadow-md"
+                  >
+                    Quick view
+                  </button>
+                ) : null}
               </div>
             )}
             <span className="font-label mt-3 text-[10px] font-medium uppercase tracking-widest text-label/60">{block.detailCaption}</span>
@@ -397,7 +448,7 @@ function VibeEditorialSection({
           <Link
             to={`/vibes/${block.vibe.slug}`}
             onClick={onBeforeShopNavigate}
-            className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-obsidian shadow-md transition-all hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+            className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-obsidian shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
             Shop {block.vibe.name} →
           </Link>
