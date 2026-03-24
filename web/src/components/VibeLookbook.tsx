@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { vibeEditorialBlocks } from '../data/homeEditorial';
 import type { VibeEditorialBlock } from '../data/homeEditorial';
 import { heroStreet, imgUrl, vibeCovers } from '../data/images';
-import { getVibeMaterialIcon } from '../data/vibeIcons';
+import { VibeAnimatedArt } from './VibeAnimatedArt';
 import { vibes } from '../data/site';
 
 const VIBE_QUERY = 'vibe';
@@ -330,8 +330,6 @@ function VibeEditorialSection({
   onBackToMenu: () => void;
   onBeforeShopNavigate: () => void;
 }) {
-  const iconName = getVibeMaterialIcon(block.vibe.slug);
-
   return (
     <article
       data-home-vibe-section
@@ -361,19 +359,8 @@ function VibeEditorialSection({
             </h3>
             <p className="font-body mt-3 max-w-xl text-base text-dusk-violet md:text-lg">{block.vibe.tagline}</p>
           </div>
-          <div
-            className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-label/10 bg-papyrus/50 px-6 py-5"
-            aria-hidden
-          >
-            <span
-              className="material-symbols-outlined text-[48px] leading-none md:text-[56px]"
-              style={{
-                color: block.vibe.accent,
-                fontVariationSettings: "'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24",
-              }}
-            >
-              {iconName}
-            </span>
+          <div className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-label/10 bg-papyrus/50 px-4 py-4 md:px-6 md:py-5">
+            <VibeAnimatedArt slug={block.vibe.slug} accent={block.vibe.accent} />
           </div>
         </div>
 

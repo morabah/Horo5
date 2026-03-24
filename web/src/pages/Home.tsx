@@ -23,8 +23,8 @@ export function Home() {
 
   return (
     <>
-      {/* Hero — §8.2 dark, cinematic, warm; glass panel md+ bottom-left so center stays open for the tee */}
-      <header className="relative flex min-h-dvh min-h-screen w-full flex-col justify-end overflow-hidden bg-obsidian pb-10 pt-24 sm:pb-14 sm:pt-28 md:justify-end md:pb-16 md:pt-28 lg:pb-20">
+      {/* Hero — §8.2 dark, cinematic, warm; md+ glass bottom-left; mobile-safe insets + short-viewport scroll */}
+      <header className="relative flex min-h-dvh min-h-screen w-full flex-col justify-end overflow-hidden bg-obsidian pb-[max(2.5rem,calc(env(safe-area-inset-bottom,0px)+1rem))] pt-24 sm:pt-28 md:pb-16 md:pt-28 lg:pb-[max(5rem,calc(env(safe-area-inset-bottom,0px)+1.5rem))]">
         <div className="absolute inset-0">
           <img
             alt="Model wearing a HORO graphic tee in warm editorial photography"
@@ -35,10 +35,10 @@ export function Home() {
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
-        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 md:mx-auto md:w-full md:max-w-7xl md:px-8 lg:px-10">
-          <div className="mx-auto flex max-w-xl flex-col items-center text-center md:mx-0 md:items-start md:text-left">
-            <div className="hero-glass-backdrop relative w-full max-w-xl rounded-2xl px-5 py-7 sm:px-8 sm:py-8 md:px-10 md:py-10">
-              <h1 className="font-headline mb-4 text-[26px] font-semibold leading-[1.2] tracking-[-0.03em] text-white md:text-[32px]">
+        <div className="relative z-10 mx-auto w-full min-w-0 max-w-6xl pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] sm:pl-6 sm:pr-6 md:mx-auto md:max-w-7xl md:pl-8 md:pr-8 lg:pl-10 lg:pr-10">
+          <div className="mx-auto flex min-w-0 max-w-xl flex-col items-center text-center md:mx-0 md:items-start md:text-left">
+            <div className="hero-glass-backdrop relative max-h-[min(72dvh,calc(100dvh-10rem))] w-full max-w-xl overflow-y-auto overscroll-y-contain rounded-2xl px-5 py-6 [-webkit-overflow-scrolling:touch] sm:max-h-none sm:overflow-visible sm:px-8 sm:py-8 md:px-10 md:py-10">
+              <h1 className="font-headline mb-4 text-balance text-[26px] font-semibold leading-[1.2] tracking-[-0.03em] text-white md:text-[32px]">
                 Wear What You Mean
               </h1>
               <p className="font-body mx-auto mb-3 max-w-xl text-[17px] tracking-wide text-stone md:mx-0 md:text-[17px]">
@@ -50,7 +50,7 @@ export function Home() {
               <p className="font-label mb-8 text-xs font-medium uppercase tracking-[0.22em] text-stone">Starting at 799 EGP</p>
               <Link
                 to="/vibes"
-                className="home-hover-lift font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-5 text-sm font-medium uppercase tracking-[0.2em] text-white shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:brightness-95 sm:inline-block sm:w-auto sm:px-12 md:max-w-none"
+                className="home-hover-lift touch-manipulation font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-5 text-sm font-medium uppercase tracking-[0.2em] text-white shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:brightness-95 active:brightness-95 sm:inline-block sm:w-auto sm:px-12 md:max-w-none"
               >
                 Find Your Design
               </Link>
@@ -63,7 +63,7 @@ export function Home() {
         {heroThumbProduct ? (
           <Link
             to={`/products/${heroThumbProduct.slug}`}
-            className={`glass-trust-badge home-hover-lift-featured absolute bottom-32 right-3 z-20 flex h-32 w-24 flex-col overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/15 transition-all duration-700 hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:bottom-28 sm:right-4 sm:h-36 sm:w-28 md:bottom-32 md:right-10 md:h-40 md:w-32 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+            className={`glass-trust-badge home-hover-lift-featured touch-manipulation absolute bottom-[max(11rem,calc(env(safe-area-inset-bottom,0px)+8.5rem))] right-[max(0.75rem,env(safe-area-inset-right,0px))] z-20 flex h-32 w-24 min-h-[128px] min-w-[96px] flex-col overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/15 transition-all duration-700 hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal active:brightness-95 sm:bottom-28 sm:right-[max(1rem,env(safe-area-inset-right,0px))] sm:h-36 sm:w-28 md:bottom-32 md:right-10 md:h-40 md:w-32 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
             aria-label={`Featured tee: ${heroThumbProduct.name}`}
           >
             <div className="relative min-h-0 flex-1">
@@ -81,7 +81,7 @@ export function Home() {
             </span>
           </Link>
         ) : null}
-        <div className="absolute bottom-[max(1.25rem,env(safe-area-inset-bottom,0px)+0.25rem)] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 sm:bottom-10">
+        <div className="absolute bottom-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 sm:bottom-10">
           <span className="font-label text-[10px] font-medium uppercase tracking-[0.3em] text-stone">The Narrative</span>
           <div className="h-12 w-px bg-stone/30" />
         </div>

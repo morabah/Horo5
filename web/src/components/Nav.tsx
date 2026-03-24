@@ -38,7 +38,7 @@ export function Nav() {
 
   return (
     <nav className="glass-nav fixed top-0 z-50 w-full">
-      <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4 md:px-8">
+      <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] sm:gap-3 sm:py-4 sm:pl-6 sm:pr-6 md:pl-8 md:pr-8">
         <div className="flex min-w-0 shrink-0 items-center gap-3 md:gap-5">
           <Link to="/" className="flex shrink-0 items-center drop-shadow-sm" aria-label="HORO Egypt — Home">
             <BrandLogo variant="dark" />
@@ -161,7 +161,7 @@ export function Nav() {
       {menuOpen ? (
         <div
           id="mobile-primary-nav"
-          className="fixed inset-0 z-[60] flex flex-col bg-papyrus pt-[max(1rem,env(safe-area-inset-top))] pb-[env(safe-area-inset-bottom)] md:hidden"
+          className="fixed inset-0 z-[60] flex flex-col bg-papyrus pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] pl-[env(safe-area-inset-left,0px)] pr-[env(safe-area-inset-right,0px)] md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Main navigation"
