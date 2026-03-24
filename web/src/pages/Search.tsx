@@ -65,7 +65,10 @@ export function Search() {
     const needle = debouncedQ.trim();
     if (!needle) return { designs: baseProducts, vibeMatches: baseVibes };
     return {
-      designs: baseProducts.filter((p) => haystackMatches(`${p.name} ${p.story}`, needle)),
+      designs: baseProducts.filter((p) => {
+        const vibe = getVibe(p.vibeSlug);
+        return haystackMatches(`${p.name} ${p.story} ${vibe?.name || ''} ${p.artistSlug.replace('-', ' ')}`, needle);
+      }),
       vibeMatches: baseVibes.filter((v) => haystackMatches(`${v.name} ${v.tagline}`, needle)),
     };
   }, [debouncedQ, scopeVibe]);

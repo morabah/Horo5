@@ -102,102 +102,90 @@ export function VibeCollection() {
 
   return (
     <div className="bg-papyrus pb-16">
-      {/* Cinematic hero — §8.2 dark, warm; typography §3.3 Space Grotesk + Inter */}
-      <section className="relative flex min-h-[calc(100svh-5rem)] w-full flex-col justify-end overflow-hidden bg-obsidian pb-10 pt-6 md:min-h-[min(100svh,56rem)] md:pb-14 md:pt-10">
-        <div className="absolute inset-0">
-          <img
-            alt={`${vibe.name} vibe — warm editorial photography for HORO`}
-            className="h-full w-full object-cover object-top opacity-80"
-            src={imgUrl(heroCover, 1600)}
-            width={1600}
-            height={1067}
-          />
-        </div>
-        <div
-          className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/45 via-black/15 to-obsidian"
-          aria-hidden
-        />
-        <div className="pointer-events-none absolute inset-0 bg-linear-to-tr opacity-30" style={{ background: `linear-gradient(to top right, ${vibe.accent}66, transparent 55%)` }} aria-hidden />
-
-        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center px-6 pb-6 text-center md:pb-10">
-          <h1 className="font-headline max-w-[min(100%,20ch)] text-[clamp(3rem,11vw,9rem)] font-semibold leading-[0.95] tracking-tight text-white drop-shadow-[0_4px_32px_rgba(0,0,0,0.45)]">
-            {vibe.name}
-          </h1>
-          <p className="font-body mt-4 max-w-xl text-lg font-normal leading-relaxed text-stone md:mt-6 md:text-xl">
-            {vibe.tagline}
-          </p>
-          <p className="font-label mt-3 text-[11px] font-medium uppercase tracking-[0.28em] text-stone/90">
-            {list.length >= DESIGN_COUNT_MIN
-              ? `${list.length} designs`
-              : 'Curated selection'}
-          </p>
-        </div>
-
-        <div className="relative z-10 border-t border-white/10 bg-obsidian/35 px-6 py-4 backdrop-blur-md md:px-10">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <nav className="font-body text-[13px] text-stone md:text-sm" aria-label="Breadcrumb">
-              <Link to="/" className="text-desert-sand transition-colors hover:text-white">
-                Home
+      <a
+        href="#vibe-collection-products"
+        className="sr-only left-4 top-[max(0.75rem,env(safe-area-inset-top))] z-250 rounded-sm border border-outline-variant/50 bg-papyrus px-4 py-3 font-label text-[11px] font-semibold uppercase tracking-widest text-obsidian shadow-md outline-none ring-deep-teal focus:not-sr-only focus:fixed focus:ring-2"
+      >
+        Skip to collection
+      </a>
+      {/* Compact collection header — short banner so filters / grid enter first viewport */}
+      <section className="relative w-full overflow-hidden bg-obsidian text-white" aria-labelledby="vibe-collection-title">
+        <div className="relative mx-auto max-w-7xl">
+          <div className="relative h-[min(28vh,10.5rem)] sm:h-[min(30vh,11.5rem)] md:h-[min(32vh,13rem)]">
+            <img
+              alt={`${vibe.name} vibe — HORO lookbook`}
+              className="absolute inset-0 h-full w-full object-cover object-[center_22%] opacity-85"
+              src={imgUrl(heroCover, 1200)}
+              width={1200}
+              height={600}
+              decoding="async"
+            />
+            <div
+              className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/50 via-black/25 to-obsidian/95"
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-35"
+              style={{ background: `linear-gradient(to top right, ${vibe.accent}88, transparent 50%)` }}
+              aria-hidden
+            />
+          </div>
+          <div className="border-t border-white/10 px-6 py-4 md:px-10 md:py-5">
+            <div className="text-center md:text-left">
+              <h1
+                id="vibe-collection-title"
+                className="font-headline text-[clamp(1.65rem,4.2vw,2.75rem)] font-semibold leading-tight tracking-tight text-white"
+              >
+                {vibe.name}
+              </h1>
+              <p className="font-body mx-auto mt-2 max-w-xl text-sm leading-relaxed text-stone md:mx-0 md:text-base">
+                {vibe.tagline}
+              </p>
+              <p className="font-label mt-2 text-[10px] font-medium uppercase tracking-[0.28em] text-stone/90 md:text-[11px]">
+                {list.length >= DESIGN_COUNT_MIN
+                  ? `${list.length} designs`
+                  : 'Curated selection'}
+              </p>
+            </div>
+            <div className="mt-4 flex flex-col gap-3 border-t border-white/10 pt-4 sm:flex-row sm:items-center sm:justify-between md:mt-5">
+              <nav className="font-body text-[13px] text-stone md:text-sm" aria-label="Breadcrumb">
+                <Link to="/" className="text-desert-sand transition-colors hover:text-white">
+                  Home
+                </Link>
+                <span className="text-stone/50" aria-hidden>
+                  {' '}
+                  /{' '}
+                </span>
+                <Link to="/vibes" className="text-desert-sand transition-colors hover:text-white">
+                  Vibes
+                </Link>
+                <span className="text-stone/50" aria-hidden>
+                  {' '}
+                  /{' '}
+                </span>
+                <span className="text-white">{vibe.name}</span>
+              </nav>
+              <Link
+                to={`/?vibe=${encodeURIComponent(slug)}`}
+                className="link-underline-reveal font-label shrink-0 text-[11px] font-medium uppercase tracking-wide text-desert-sand transition-colors hover:text-white"
+              >
+                Back to story
               </Link>
-              <span className="text-stone/50" aria-hidden>
-                {' '}
-                /{' '}
-              </span>
-              <Link to="/vibes" className="text-desert-sand transition-colors hover:text-white">
-                Vibes
-              </Link>
-              <span className="text-stone/50" aria-hidden>
-                {' '}
-                /{' '}
-              </span>
-              <span className="text-white">{vibe.name}</span>
-            </nav>
-            <Link
-              to={`/?vibe=${encodeURIComponent(slug)}`}
-              className="link-underline-reveal font-label shrink-0 text-[11px] font-medium uppercase tracking-wide text-desert-sand transition-colors hover:text-white"
-            >
-              Back to story
-            </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl space-y-16 px-6 py-12 md:space-y-24 md:py-20 lg:space-y-28">
-        {/* Brand story — Papyrus, warm copy (editorial when available) */}
-        <section className="-mt-4 flex flex-col items-center gap-10 md:-mt-2 md:flex-row md:gap-14 lg:gap-20" aria-labelledby="vibe-story-heading">
-          <div className="w-full md:w-1/2">
-            <div className="editorial-shadow overflow-hidden rounded-sm shadow-2xl ring-1 ring-black/5">
-              <img
-                alt={storyImageAlt}
-                className="h-auto w-full object-cover"
-                src={imgUrl(storyImageSrc, 1200)}
-                width={1200}
-                height={900}
-                loading="lazy"
-              />
-            </div>
-          </div>
-          <div className="w-full space-y-4 md:w-1/2">
-            {editorialBlock ? (
-              <h2 id="vibe-story-heading" className="font-label text-[11px] font-medium uppercase tracking-[0.22em] text-label">
-                {editorialBlock.kicker}
-              </h2>
-            ) : (
-              <h2 id="vibe-story-heading" className="font-headline text-xl font-semibold uppercase tracking-tight text-obsidian md:text-2xl">
-                {vibe.name}
-              </h2>
-            )}
-            <p className="font-body max-w-md text-lg leading-relaxed text-warm-charcoal md:text-[17px]">{storyLead}</p>
-            <a
-              href="#vibe-collection-products"
-              className="font-label inline-flex min-h-12 items-center justify-center rounded-sm px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian backdrop-blur-md bg-white/30 border border-white/60 shadow-sm hover:bg-white/50 transition-colors"
-            >
-              Shop the designs
-            </a>
-          </div>
-        </section>
-
+      <div className="mx-auto max-w-7xl space-y-16 px-6 pt-4 pb-12 md:space-y-24 md:pt-6 md:pb-20 lg:space-y-28">
         <section id="vibe-collection-products" className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
+          <p className="mb-4 text-center font-label text-[11px] font-medium uppercase tracking-[0.22em] text-clay md:mb-6">
+            <a
+              href="#vibe-story"
+              className="text-deep-teal underline decoration-deep-teal/30 underline-offset-4 transition-colors hover:text-obsidian hover:decoration-obsidian/40"
+            >
+              Read the story
+            </a>
+          </p>
           {manifestoLine ? (
             <blockquote className="font-pdp-serif mx-auto mb-10 max-w-2xl px-2 text-center text-[clamp(1.125rem,2.5vw,1.5rem)] font-normal italic leading-relaxed tracking-wide text-obsidian md:mb-12">
               <span className="text-clay/80" aria-hidden>
@@ -379,6 +367,44 @@ export function VibeCollection() {
             Explore all vibes
           </Link>
         </div>
+        </section>
+
+        {/* Brand story — below shop; anchor target for “Read the story” */}
+        <section
+          id="vibe-story"
+          className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] flex flex-col items-center gap-10 border-t border-stone/25 pt-12 md:flex-row md:gap-14 md:pt-16 lg:gap-20"
+          aria-labelledby="vibe-story-heading"
+        >
+          <div className="w-full md:w-1/2">
+            <div className="editorial-shadow overflow-hidden rounded-sm shadow-2xl ring-1 ring-black/5">
+              <img
+                alt={storyImageAlt}
+                className="h-auto w-full object-cover"
+                src={imgUrl(storyImageSrc, 1200)}
+                width={1200}
+                height={900}
+                loading="lazy"
+              />
+            </div>
+          </div>
+          <div className="w-full space-y-4 md:w-1/2">
+            {editorialBlock ? (
+              <h2 id="vibe-story-heading" className="font-label text-[11px] font-medium uppercase tracking-[0.22em] text-label">
+                {editorialBlock.kicker}
+              </h2>
+            ) : (
+              <h2 id="vibe-story-heading" className="font-headline text-xl font-semibold uppercase tracking-tight text-obsidian md:text-2xl">
+                {vibe.name}
+              </h2>
+            )}
+            <p className="font-body max-w-md text-lg leading-relaxed text-warm-charcoal md:text-[17px]">{storyLead}</p>
+            <a
+              href="#vibe-collection-products"
+              className="font-label inline-flex min-h-12 items-center justify-center rounded-sm px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian backdrop-blur-md bg-white/30 border border-white/60 shadow-sm hover:bg-white/50 transition-colors"
+            >
+              Shop the designs
+            </a>
+          </div>
         </section>
 
         <section className="mt-14 border-t border-stone/25 pt-12 md:mt-20 md:pt-16">
