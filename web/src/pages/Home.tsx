@@ -53,7 +53,7 @@ export function Home() {
   return (
     <>
       {/* Hero — §8.2 dark, cinematic, warm; md+ glass bottom-left; mobile-safe insets + short-viewport scroll */}
-      <header className="relative flex min-h-dvh w-full flex-col justify-end overflow-hidden bg-obsidian pb-[max(2.5rem,calc(env(safe-area-inset-bottom,0px)+1rem))] pt-24 sm:pt-28 md:pb-16 md:pt-28 lg:pb-[max(5rem,calc(env(safe-area-inset-bottom,0px)+1.5rem))]">
+      <header className="relative flex min-h-dvh w-full flex-col justify-end overflow-hidden bg-obsidian pb-[max(6rem,calc(env(safe-area-inset-bottom,0px)+2rem))] pt-24 sm:pt-28 md:pb-16 md:pt-28 lg:pb-[max(5rem,calc(env(safe-area-inset-bottom,0px)+1.5rem))]">
         <div className="absolute inset-0">
           <img
             alt="Model wearing a HORO graphic tee in warm editorial photography"
@@ -73,7 +73,7 @@ export function Home() {
               <p className="hero-glass-tight-lead font-body mx-auto mb-3 max-w-xl text-[17px] tracking-wide text-stone md:mx-0 md:hidden">
                 Find the design that says it for you.
               </p>
-              <p className="hero-glass-tight-sub font-body mx-auto mb-8 max-w-xl text-[14px] leading-relaxed text-stone/90 md:mx-0 md:hidden">
+              <p className="hero-glass-tight-sub font-body mx-auto mb-8 max-w-xl px-0.5 text-[15px] leading-relaxed text-stone/90 md:mx-0 md:hidden">
                 When nothing in your closet says what you&apos;re thinking.
               </p>
               <p className="font-body mx-auto mb-8 hidden max-w-xl text-[15px] leading-relaxed text-stone md:mx-0 md:mb-6 md:block">
@@ -88,35 +88,35 @@ export function Home() {
               >
                 Find Your Design
               </Link>
-              <p className="hero-glass-tight-trust font-label mt-4 text-[11px] font-medium uppercase tracking-[0.3em] text-stone">
+              <p className="hero-glass-tight-trust font-label mt-4 text-[12px] font-medium uppercase tracking-[0.28em] text-stone md:text-[11px] md:tracking-[0.3em]">
                 COD Available | Free Exchange
               </p>
             </div>
+            {heroThumbProduct ? (
+              <Link
+                to={`/products/${heroThumbProduct.slug}`}
+                className={`glass-trust-badge home-hover-lift-featured touch-manipulation relative z-20 mt-5 flex h-28 w-[5.75rem] min-h-[112px] min-w-[92px] shrink-0 flex-col overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/15 transition-opacity duration-700 hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal active:brightness-95 md:absolute md:mt-0 md:h-40 md:w-32 md:min-h-[160px] md:min-w-[128px] md:max-w-none md:rounded-xl md:bottom-[max(7rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))] md:right-[max(1rem,env(safe-area-inset-right,0px))] lg:bottom-32 lg:right-10 ${isMounted ? 'opacity-100' : 'opacity-0'}`}
+                aria-label={`Featured tee: ${heroThumbProduct.name}`}
+              >
+                <div className="hero-featured-thumb-float flex min-h-0 flex-1 flex-col">
+                  <div className="relative min-h-0 flex-1">
+                    <img
+                      alt={heroThumbProduct ? `HORO “${heroThumbProduct.name}” graphic tee — featured` : 'Featured HORO tee'}
+                      className="h-full w-full object-cover"
+                      src={imgUrl(heroThumbSrc, 400)}
+                      width={160}
+                      height={200}
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" aria-hidden />
+                  </div>
+                  <span className="font-label bg-black/40 px-2 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-frost-blue backdrop-blur-sm">
+                    Featured
+                  </span>
+                </div>
+              </Link>
+            ) : null}
           </div>
         </div>
-        {heroThumbProduct ? (
-          <Link
-            to={`/products/${heroThumbProduct.slug}`}
-            className={`glass-trust-badge home-hover-lift-featured touch-manipulation absolute bottom-[max(11rem,calc(env(safe-area-inset-bottom,0px)+8.5rem))] right-[max(0.75rem,env(safe-area-inset-right,0px))] z-20 flex h-32 w-24 min-h-[128px] min-w-[96px] flex-col overflow-hidden rounded-xl shadow-2xl ring-1 ring-white/15 transition-opacity duration-700 hover:scale-[1.02] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal active:brightness-95 sm:bottom-28 sm:right-[max(1rem,env(safe-area-inset-right,0px))] sm:h-36 sm:w-28 md:bottom-32 md:right-10 md:h-40 md:w-32 ${isMounted ? 'opacity-100' : 'opacity-0'}`}
-            aria-label={`Featured tee: ${heroThumbProduct.name}`}
-          >
-            <div className="hero-featured-thumb-float flex min-h-0 flex-1 flex-col">
-              <div className="relative min-h-0 flex-1">
-                <img
-                  alt={heroThumbProduct ? `HORO “${heroThumbProduct.name}” graphic tee — featured` : 'Featured HORO tee'}
-                  className="h-full w-full object-cover"
-                  src={imgUrl(heroThumbSrc, 400)}
-                  width={160}
-                  height={200}
-                />
-                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" aria-hidden />
-              </div>
-              <span className="font-label bg-black/40 px-2 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-frost-blue backdrop-blur-sm">
-                Featured
-              </span>
-            </div>
-          </Link>
-        ) : null}
         <div className="absolute bottom-[max(1.25rem,calc(env(safe-area-inset-bottom,0px)+0.5rem))] left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 sm:bottom-10">
           <span className="font-label text-[11px] font-medium uppercase tracking-[0.3em] text-stone">The Narrative</span>
           <div className="hero-scroll-cue h-12 w-px bg-stone/30" />

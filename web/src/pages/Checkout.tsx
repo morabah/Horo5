@@ -74,8 +74,32 @@ export function Checkout() {
           </Link>
         </nav>
 
-        {/* F11 — Visual progress indicator (dot-and-line) */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0', margin: '0 0 2rem' }} role="progressbar" aria-valuenow={step + 1} aria-valuemin={1} aria-valuemax={3} aria-label={`Checkout step ${step + 1} of 3: ${steps[step]}`}>
+        {/* F11 — Visual progress indicator (dot-and-line); horizontal scroll on very narrow viewports */}
+        <div
+          style={{
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            margin: '0 0 2rem',
+            width: '100%',
+            maxWidth: '100%',
+          }}
+          role="progressbar"
+          aria-valuenow={step + 1}
+          aria-valuemin={1}
+          aria-valuemax={3}
+          aria-label={`Checkout step ${step + 1} of 3: ${steps[step]}`}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0,
+              width: 'max-content',
+              margin: '0 auto',
+              padding: '0 2px',
+            }}
+          >
           {steps.map((label, i) => {
             const isCompleted = i <= highestCompleted;
             const isCurrent = i === step;
@@ -132,7 +156,7 @@ export function Checkout() {
                   }} />
                   <span style={{
                     fontFamily: 'var(--font-label)',
-                    fontSize: '0.6875rem',
+                    fontSize: 'clamp(0.6875rem, 2.8vw, 0.8125rem)',
                     fontWeight: isCurrent ? 600 : 400,
                     color: labelColor,
                     textTransform: 'uppercase',
@@ -145,6 +169,7 @@ export function Checkout() {
               </div>
             );
           })}
+          </div>
         </div>
 
         {step === 0 && (

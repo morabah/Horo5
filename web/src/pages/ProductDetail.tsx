@@ -277,7 +277,7 @@ export function ProductDetail() {
   const closeSizeGuide = () => setSizeGuideOpen(false);
 
   function handleMissingSize() {
-    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767.98px)').matches) {
       setMobilePurchaseOpen(true);
       return;
     }
@@ -363,10 +363,13 @@ export function ProductDetail() {
       </span>
 
       <nav
-        className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-stone/40 bg-papyrus px-4 py-3 font-body text-[13px] leading-normal text-clay md:px-8 md:py-4 md:text-sm"
+        className="flex min-h-[52px] flex-wrap items-center gap-x-2 gap-y-1 border-b border-stone/40 bg-papyrus px-4 py-2.5 font-body text-[13px] leading-normal text-clay md:min-h-0 md:px-8 md:py-4 md:text-sm"
         aria-label="Breadcrumb"
       >
-        <Link to="/" className="text-clay transition-colors hover:text-ember">
+        <Link
+          to="/"
+          className="-my-1 inline-flex min-h-11 min-w-[44px] items-center rounded-sm px-1.5 text-clay transition-colors hover:text-ember"
+        >
           Home
         </Link>
         <span className="text-clay/50" aria-hidden>
@@ -374,7 +377,10 @@ export function ProductDetail() {
         </span>
         {vibe ? (
           <>
-            <Link to={`/vibes/${vibe.slug}`} className="text-clay transition-colors hover:text-ember">
+            <Link
+              to={`/vibes/${vibe.slug}`}
+              className="-my-1 inline-flex min-h-11 min-w-[44px] max-w-[min(100%,12rem)] items-center truncate rounded-sm px-1.5 text-clay transition-colors hover:text-ember"
+            >
               {vibe.name}
             </Link>
             <span className="text-clay/50" aria-hidden>
@@ -382,7 +388,7 @@ export function ProductDetail() {
             </span>
           </>
         ) : null}
-        <span className="text-warm-charcoal">{product.name}</span>
+        <span className="min-h-11 max-w-[min(100%,100vw-8rem)] truncate py-1.5 text-warm-charcoal">{product.name}</span>
       </nav>
 
       <div className="flex min-h-0 flex-col bg-papyrus md:flex-row md:items-start">
@@ -433,7 +439,7 @@ export function ProductDetail() {
                     aria-selected={photoIndex === i}
                     aria-label={`Show image ${i + 1} — ${viewLabels[i] ?? 'view'}`}
                     onClick={() => setPhotoIndex(i)}
-                    className={`relative h-[4.5rem] w-16 shrink-0 overflow-hidden rounded-sm bg-surface-container-high md:aspect-[3/4] md:h-auto md:w-full ${
+                    className={`relative h-[5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-sm bg-surface-container-high md:aspect-[3/4] md:h-auto md:w-full ${
                       photoIndex === i
                         ? 'ring-2 ring-obsidian ring-offset-2 ring-offset-papyrus'
                         : 'opacity-88 ring-1 ring-stone/70 hover:opacity-100'
@@ -872,7 +878,11 @@ export function ProductDetail() {
         </div>
       </section>
 
-      <div className="product-mobile-bar z-30 md:hidden fixed bottom-6 left-6 right-6 overflow-hidden rounded-2xl border border-white/60 bg-white/45 backdrop-blur-2xl shadow-2xl" role="region" aria-label="Add to cart">
+      <div
+        className="pdp-mobile-cta z-40 md:hidden fixed bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-6 right-6 overflow-hidden rounded-2xl border border-white/60 bg-white/45 backdrop-blur-2xl shadow-2xl"
+        role="region"
+        aria-label="Add to cart"
+      >
         <button
           type="button"
           onClick={() => {

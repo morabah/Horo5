@@ -111,20 +111,20 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
               ) : null}
               <button
                 type="button"
-                className="material-symbols-outlined absolute right-3 top-3 z-10 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-white/20 bg-obsidian/50 text-white backdrop-blur-sm transition-colors hover:bg-obsidian/70"
+                className="material-symbols-outlined absolute left-3 top-3 z-10 inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-white/20 bg-obsidian/50 text-base text-white backdrop-blur-sm transition-colors hover:bg-obsidian/70 md:left-auto md:right-3"
                 aria-label="Close quick view"
                 onClick={onClose}
               >
                 close
               </button>
             </div>
-            <div className="grid shrink-0 grid-cols-5 gap-1.5 border-t border-white/10 bg-black/40 p-2 md:gap-2 md:p-3">
+            <div className="flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 bg-black/40 p-2 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory md:grid md:grid-cols-5 md:gap-2 md:overflow-visible md:p-3 md:pb-3 md:snap-none [&::-webkit-scrollbar]:hidden">
               {gallery.map((src, i) => (
                 <button
                   key={`${p.slug}-qv-${i}`}
                   type="button"
                   onClick={() => setPhotoIndex(i)}
-                  className={`aspect-square overflow-hidden rounded-lg p-0 transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                  className={`aspect-square h-14 w-14 shrink-0 snap-start overflow-hidden rounded-lg p-0 transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:h-auto md:w-full ${
                     photoIndex === i ? 'ring-2 ring-white' : 'ring-1 ring-white/25 opacity-90 hover:opacity-100'
                   }`}
                   aria-label={`View image ${i + 1} of 5`}

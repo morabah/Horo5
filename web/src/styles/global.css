@@ -220,30 +220,10 @@
   color: var(--stone);
 }
 
-.product-mobile-bar {
-  display: none;
-}
-
-@media (max-width: 767px) {
+/* PDP mobile CTA bar: styled in ProductDetail (Tailwind). Keep page padding for fixed bar + thumb home indicator. */
+@media (max-width: 767.98px) {
   .product-page {
     padding-bottom: calc(var(--touch-min) + 1.5rem);
-  }
-
-  .product-mobile-bar {
-    display: block;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 40;
-    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-    background: rgba(248, 246, 242, 0.55);
-    backdrop-filter: blur(18px) saturate(1.2);
-    -webkit-backdrop-filter: blur(18px) saturate(1.2);
-    border-top: 1px solid rgba(255, 255, 255, 0.65);
-    box-shadow:
-      0 -8px 40px rgba(26, 26, 26, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 }
 
@@ -325,7 +305,7 @@
   border-radius: 0.5rem;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
   .pdp-design-story-caption {
     bottom: 1rem;
     left: 1rem;

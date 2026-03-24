@@ -136,7 +136,7 @@ export function Search() {
                   setDebouncedQ(label);
                 }}
                 style={{
-                  minHeight: '40px',
+                  minHeight: '44px',
                   padding: '0.35rem 0.85rem',
                   borderRadius: '999px',
                   border: '1px solid var(--stone)',
@@ -169,7 +169,8 @@ export function Search() {
                 cursor: 'pointer',
                 fontFamily: 'var(--font-body)',
                 fontSize: '0.9375rem',
-                padding: '0.5rem 0.25rem',
+                minHeight: '44px',
+                padding: '0.5rem 0.75rem',
                 color: tab === id ? 'var(--obsidian)' : 'var(--clay-earth)',
                 borderBottom: tab === id ? '2px solid var(--ember)' : '2px solid transparent',
                 marginBottom: '-1px',

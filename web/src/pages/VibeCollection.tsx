@@ -211,13 +211,14 @@ export function VibeCollection() {
           ) : null}
 
           <div
-            className="sticky z-20 -mx-6 mb-8 flex flex-wrap items-center gap-3 border-b border-stone/30 bg-papyrus/95 px-6 py-3 backdrop-blur-sm md:mx-0 md:px-0"
+            className="sticky z-20 -mx-6 mb-8 flex flex-col gap-3 border-b border-stone/30 bg-papyrus/95 px-6 py-3 backdrop-blur-sm sm:flex-row sm:flex-wrap sm:items-center md:mx-0 md:px-0"
             style={{
               top: 'calc(5.5rem + env(safe-area-inset-top, 0px))',
             }}
           >
+          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:flex-1 sm:min-w-0">
           {/* Sort */}
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-initial">
             <label htmlFor="vibe-sort" style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--label-brown)' }}>
               Sort
             </label>
@@ -247,7 +248,7 @@ export function VibeCollection() {
           </div>
 
           {/* R2-2 — Price filter */}
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-initial">
             <label htmlFor="vibe-price" style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--label-brown)' }}>
               Price
             </label>
@@ -278,7 +279,7 @@ export function VibeCollection() {
 
           {/* Artist filter */}
           {artistOptions.length > 1 ? (
-            <div className="flex items-center gap-2">
+            <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto">
               <label htmlFor="vibe-artist" style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--label-brown)' }}>
                 Artist
               </label>
@@ -313,10 +314,11 @@ export function VibeCollection() {
               </div>
             </div>
           ) : null}
+          </div>
 
           <Link
             to={`/search?vibe=${encodeURIComponent(slug)}&focus=1`}
-            className="link-underline-reveal font-label ml-auto text-[11px] font-medium uppercase tracking-wide text-deep-teal md:ml-0"
+            className="link-underline-reveal font-label w-full justify-center text-center text-[11px] font-medium uppercase tracking-wide text-deep-teal sm:ml-auto sm:w-auto sm:justify-end sm:text-left"
             style={{ minHeight: '48px', display: 'inline-flex', alignItems: 'center' }}
           >
             Search in this vibe
