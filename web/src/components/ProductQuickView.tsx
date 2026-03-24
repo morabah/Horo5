@@ -1,7 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getProductMedia, imgUrl } from '../data/images';
-import { getProduct, getVibe } from '../data/site';
+import { getProduct, getVibe, type ProductSizeKey } from '../data/site';
+import { useCart } from '../cart/CartContext';
 import { formatEgp } from '../utils/formatPrice';
 
 const QUICK_VIEW_SIZES = ['M', 'L', 'XL'] as const;
@@ -18,6 +19,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
   const navigate = useNavigate();
+  const { addItem } = useCart();
   const titleId = useId();
   const descId = useId();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -240,7 +242,9 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                   type="button"
                   className="font-label flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   onClick={() => {
+                    if (!p || !selectedSize) return;
                     setCartNavPending(true);
+                    addItem(p.slug, selectedSize as ProductSizeKey, 1);
                     window.setTimeout(() => {
                       onClose();
                       navigate('/cart');

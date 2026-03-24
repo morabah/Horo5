@@ -219,7 +219,7 @@ export function VibeCollection() {
           <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:flex-1 sm:min-w-0">
           {/* Sort */}
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-initial">
-            <label htmlFor="vibe-sort" style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--label-brown)' }}>
+            <label htmlFor="vibe-sort" className="text-xs font-medium text-label">
               Sort
             </label>
             <div className="relative inline-block min-w-0">
@@ -227,17 +227,7 @@ export function VibeCollection() {
                 id="vibe-sort"
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as ProductSortKey)}
-                className="focus-visible:outline-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{
-                  minHeight: '48px',
-                  padding: '0 2rem 0 0.75rem',
-                  borderRadius: '8px',
-                  border: '1px solid var(--stone)',
-                  background: 'var(--white)',
-                  fontSize: '0.875rem',
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                }}
+                className="min-h-12 w-full appearance-none rounded-lg border border-stone bg-white py-0 pl-3 pr-8 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -249,7 +239,7 @@ export function VibeCollection() {
 
           {/* R2-2 — Price filter */}
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:flex-initial">
-            <label htmlFor="vibe-price" style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--label-brown)' }}>
+            <label htmlFor="vibe-price" className="text-xs font-medium text-label">
               Price
             </label>
             <div className="relative inline-block min-w-0">
@@ -257,17 +247,7 @@ export function VibeCollection() {
                 id="vibe-price"
                 value={priceFilter}
                 onChange={(e) => setPriceFilter(e.target.value as PriceFilter)}
-                className="focus-visible:outline-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{
-                  minHeight: '48px',
-                  padding: '0 2rem 0 0.75rem',
-                  borderRadius: '8px',
-                  border: '1px solid var(--stone)',
-                  background: 'var(--white)',
-                  fontSize: '0.875rem',
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                }}
+                className="min-h-12 w-full appearance-none rounded-lg border border-stone bg-white py-0 pl-3 pr-8 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 {PRICE_FILTERS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -280,7 +260,7 @@ export function VibeCollection() {
           {/* Artist filter */}
           {artistOptions.length > 1 ? (
             <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto">
-              <label htmlFor="vibe-artist" style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--label-brown)' }}>
+              <label htmlFor="vibe-artist" className="text-xs font-medium text-label">
                 Artist
               </label>
               <div className="relative inline-block min-w-0">
@@ -288,17 +268,7 @@ export function VibeCollection() {
                   id="vibe-artist"
                   value={artistSlug}
                   onChange={(e) => setArtistSlug(e.target.value)}
-                  className="focus-visible:outline-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2"
-                  style={{
-                    minHeight: '48px',
-                    padding: '0 2rem 0 0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--stone)',
-                    background: 'var(--white)',
-                    fontSize: '0.875rem',
-                    appearance: 'none',
-                    WebkitAppearance: 'none',
-                  }}
+                  className="min-h-12 w-full appearance-none rounded-lg border border-stone bg-white py-0 pl-3 pr-8 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
                   <option value="all">All artists</option>
                   {artistOptions.map((aSlug) => {
@@ -318,8 +288,7 @@ export function VibeCollection() {
 
           <Link
             to={`/search?vibe=${encodeURIComponent(slug)}&focus=1`}
-            className="link-underline-reveal font-label w-full justify-center text-center text-[11px] font-medium uppercase tracking-wide text-deep-teal sm:ml-auto sm:w-auto sm:justify-end sm:text-left"
-            style={{ minHeight: '48px', display: 'inline-flex', alignItems: 'center' }}
+            className="link-underline-reveal font-label w-full justify-center text-center text-[11px] font-medium uppercase tracking-wide text-deep-teal sm:ml-auto sm:w-auto sm:justify-end sm:text-left min-h-12 inline-flex items-center"
           >
             Search in this vibe
           </Link>

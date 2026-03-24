@@ -1,8 +1,10 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { FormEvent, TransitionEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useCart } from '../cart/CartContext';
 import { BrandLogo } from './BrandLogo';
 
 export function Nav() {
+  const { totalQty } = useCart();
   const [q, setQ] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPanelOpen, setMenuPanelOpen] = useState(false);
@@ -153,10 +155,15 @@ export function Nav() {
         </button>
         <Link
           to="/cart"
-          className="material-symbols-outlined inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-obsidian/85"
-          aria-label="Cart"
+          className="material-symbols-outlined relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-obsidian/85"
+          aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
         >
           shopping_bag
+          {totalQty > 0 ? (
+            <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-white">
+              {totalQty > 99 ? '99+' : totalQty}
+            </span>
+          ) : null}
         </Link>
       </div>
 
@@ -265,10 +272,15 @@ export function Nav() {
         <div className="flex shrink-0 items-center gap-1 md:gap-2 lg:gap-3">
           <Link
             to="/cart"
-            className="material-symbols-outlined inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
-            aria-label="Cart"
+            className="material-symbols-outlined relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
+            aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
           >
             shopping_bag
+            {totalQty > 0 ? (
+              <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-white">
+                {totalQty > 99 ? '99+' : totalQty}
+              </span>
+            ) : null}
           </Link>
         </div>
       </div>
@@ -422,8 +434,9 @@ export function Nav() {
                   }`
                 }
                 onClick={closeMenu}
+                aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
               >
-                Cart
+                Cart{totalQty > 0 ? ` (${totalQty})` : ''}
               </NavLink>
             </nav>
           </div>

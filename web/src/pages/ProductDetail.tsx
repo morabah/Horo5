@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { getArtist, getProduct, getVibe, productsByVibe, type ProductSizeKey } from '../data/site';
+import { useCart } from '../cart/CartContext';
 import { getProductMedia, imgUrl } from '../data/images';
 import { TeeImage, TeeImageFrame } from '../components/TeeImage';
 import { ProductQuickView } from '../components/ProductQuickView';
@@ -77,6 +78,7 @@ function IconChevronDown() {
 export function ProductDetail() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
+  const { addItem } = useCart();
   const p = getProduct(slug);
   const { gallery } = p ? getProductMedia(p.slug) : { gallery: [] as string[] };
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -328,6 +330,8 @@ export function ProductDetail() {
       handleMissingSize();
       return;
     }
+    if (!p || !selectedSize) return;
+    addItem(p.slug, selectedSize as ProductSizeKey, 1);
     setMobilePurchaseOpen(false);
     navigate('/cart');
   }
@@ -427,7 +431,7 @@ export function ProductDetail() {
               {/* Mobile Carousel / Thumbnails */}
               <div className="flex flex-col gap-3 md:hidden w-full px-0 pt-2">
                 <div
-                  className="order-2 flex flex-row gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  className="scroll-snap-carousel order-2 flex flex-row gap-2 overflow-x-auto snap-x snap-mandatory pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 role="tablist"
                 aria-label="Product views"
               >
@@ -439,7 +443,7 @@ export function ProductDetail() {
                     aria-selected={photoIndex === i}
                     aria-label={`Show image ${i + 1} — ${viewLabels[i] ?? 'view'}`}
                     onClick={() => setPhotoIndex(i)}
-                    className={`relative h-[5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-sm bg-surface-container-high md:aspect-[3/4] md:h-auto md:w-full ${
+                    className={`snap-start relative h-[5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-sm bg-surface-container-high md:aspect-[3/4] md:h-auto md:w-full ${
                       photoIndex === i
                         ? 'ring-2 ring-obsidian ring-offset-2 ring-offset-papyrus'
                         : 'opacity-88 ring-1 ring-stone/70 hover:opacity-100'
@@ -890,12 +894,11 @@ export function ProductDetail() {
               handleBuyOrScroll();
               return;
             }
-            if (sizeReady) {
-              setMobilePurchaseOpen(false);
-              navigate('/cart');
+            if (!sizeReady) {
+              setMobilePurchaseOpen(true);
               return;
             }
-            setMobilePurchaseOpen(true);
+            handleBuyOrScroll();
           }}
           className={`flex w-full min-h-12 flex-col items-center justify-center gap-0.5 px-2 py-3 text-sm font-semibold uppercase tracking-wider transition-colors focus-visible:outline-none text-obsidian hover:bg-white/30`}
         >

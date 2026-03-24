@@ -1,12 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useMemo, useState, type CSSProperties, type FormEvent } from 'react';
 import { getProductMedia } from '../data/images';
+import { getProduct } from '../data/site';
 import { TeeImage } from '../components/TeeImage';
 import { formatEgp } from '../utils/formatPrice';
+import { useCart } from '../cart/CartContext';
+import { saveLastOrder } from '../cart/lastOrder';
 
 const steps = ['Information', 'Shipping', 'Payment'] as const;
 
 type FieldErrors = Record<string, string>;
+
+const CARD_DISCOUNT_EGP = 30;
 
 function validateStep0(fields: { email: string; phone: string; name: string; line1: string; city: string }): FieldErrors {
   const errors: FieldErrors = {};
@@ -20,6 +25,8 @@ function validateStep0(fields: { email: string; phone: string; name: string; lin
 }
 
 export function Checkout() {
+  const navigate = useNavigate();
+  const { items, subtotalEgp, clearCart } = useCart();
   const [step, setStep] = useState(0);
   const [highestCompleted, setHighestCompleted] = useState(-1);
 
@@ -37,6 +44,9 @@ export function Checkout() {
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const shippingCost = shippingMethod === 'express' ? 120 : 60;
+
+  const cardDiscount = paymentMethod === 'card' ? CARD_DISCOUNT_EGP : 0;
+  const orderTotal = subtotalEgp + shippingCost - cardDiscount;
 
   const step0Complete = useMemo(
     () => Object.keys(validateStep0({ email, phone, name: fullName, line1, city })).length === 0,
@@ -63,6 +73,38 @@ export function Checkout() {
   function handleContinueToPayment() {
     setHighestCompleted(Math.max(highestCompleted, 1));
     setStep(2);
+  }
+
+  function handlePlaceOrder() {
+    const orderId = `HORO-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+    saveLastOrder({
+      orderId,
+      lines: items.map((l) => ({ ...l })),
+      subtotal: subtotalEgp,
+      shipping: shippingCost,
+      cardDiscount,
+      total: orderTotal,
+      paymentMethod,
+      shippingMethod,
+    });
+    clearCart();
+    navigate('/checkout/success');
+  }
+
+  if (items.length === 0) {
+    return (
+      <div style={{ padding: '2rem 0 3rem', background: 'var(--white)', minHeight: '60vh' }}>
+        <div className="container" style={{ maxWidth: '960px' }}>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.75rem' }}>Nothing to check out</h1>
+          <p style={{ color: 'var(--clay-earth)', marginBottom: '1.5rem', maxWidth: '28rem' }}>
+            Your bag is empty. Add a design from the shop, then return here to complete your order.
+          </p>
+          <Link className="btn btn-primary" to="/vibes" style={{ minHeight: '48px', display: 'inline-flex', alignItems: 'center' }}>
+            Shop by vibe
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -279,7 +321,7 @@ export function Checkout() {
                   Continue to shipping
                 </button>
               </div>
-              <OrderSummary shipping={undefined} />
+              <OrderSummary shipping={undefined} paymentMethod={undefined} />
             </div>
           </form>
         )}
@@ -317,7 +359,7 @@ export function Checkout() {
                 ← Back to information
               </button>
             </div>
-            <OrderSummary shipping={shippingCost} />
+            <OrderSummary shipping={shippingCost} paymentMethod={undefined} />
           </div>
         )}
 
@@ -330,14 +372,16 @@ export function Checkout() {
                 <span>
                   <strong>Cash on delivery (COD)</strong>
                   <br />
-                  Pay when your order arrives. Total: {formatEgp(1598 + shippingCost)}
+                  Pay when your order arrives. Total: {formatEgp(subtotalEgp + shippingCost)}
                 </span>
               </label>
               <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${paymentMethod === 'card' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
                 <input type="radio" name="pay" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
                 <span>
                   <strong>Pay with card</strong>
-                  <span style={{ display: 'block', fontSize: '0.875rem', color: 'var(--kohl-gold-dark)', marginTop: '0.25rem' }}>Save {formatEgp(30)} with card payment</span>
+                  <span style={{ display: 'block', fontSize: '0.875rem', color: 'var(--kohl-gold-dark)', marginTop: '0.25rem' }}>
+                    Save {formatEgp(CARD_DISCOUNT_EGP)} with card payment
+                  </span>
                 </span>
               </label>
               <p style={{ marginTop: '1.25rem', fontSize: '0.875rem', color: 'var(--clay-earth)' }} lang="ar" dir="rtl">
@@ -346,14 +390,19 @@ export function Checkout() {
               <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
                 COD or card — pay securely. <Link to="/">Free exchange within 14 days</Link> if size doesn&apos;t fit. WhatsApp updates if you opted in.
               </p>
-              <Link className="btn btn-primary" to="/checkout/success" style={{ width: '100%', marginTop: '1.25rem', display: 'inline-flex', minHeight: '48px', alignItems: 'center', justifyContent: 'center' }}>
-                Place order — {formatEgp(1598 + shippingCost)}
-              </Link>
+              <button
+                type="button"
+                className="btn btn-primary"
+                style={{ width: '100%', marginTop: '1.25rem', display: 'inline-flex', minHeight: '48px', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+                onClick={handlePlaceOrder}
+              >
+                Place order — {formatEgp(orderTotal)}
+              </button>
               <button type="button" style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'var(--deep-teal)', cursor: 'pointer', minHeight: '48px', padding: '0.5rem 0.75rem', fontSize: '0.9375rem' }} onClick={() => setStep(1)}>
                 ← Back to shipping
               </button>
             </div>
-            <OrderSummary shipping={shippingCost} />
+            <OrderSummary shipping={shippingCost} paymentMethod={paymentMethod} />
           </div>
         )}
       </div>
@@ -392,38 +441,52 @@ const labelStyle: CSSProperties = {
   color: 'var(--label-brown)',
 };
 
-function OrderSummary({ shipping }: { shipping?: number }) {
-  const subtotal = 1598;
-  const total = subtotal + (shipping ?? 0);
+function OrderSummary({
+  shipping,
+  paymentMethod,
+}: {
+  shipping?: number;
+  paymentMethod?: 'cod' | 'card';
+}) {
+  const { items, subtotalEgp } = useCart();
+  const cardDiscount = paymentMethod === 'card' ? CARD_DISCOUNT_EGP : 0;
+  const total = subtotalEgp + (shipping ?? 0) - cardDiscount;
+
   return (
     <aside style={{ padding: '1.25rem', borderRadius: 'var(--radius-card)', border: '1px solid var(--stone)', background: 'var(--papyrus)' }}>
       <h2 style={{ fontSize: '1rem', margin: '0 0 1rem' }}>Order summary</h2>
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
-        <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--stone)' }}>
-          <TeeImage src={getProductMedia('the-weight-of-light').main} alt="HORO 'The Weight of Light' graphic tee" w={128} />
-        </div>
-        <div>
-          <p style={{ margin: 0, fontWeight: 500 }}>The Weight of Light</p>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>M · Qty 1 · {formatEgp(799)}</p>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
-        <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--stone)' }}>
-          <TeeImage src={getProductMedia('midnight-compass').main} alt="HORO 'Midnight Compass' graphic tee" w={128} />
-        </div>
-        <div>
-          <p style={{ margin: 0, fontWeight: 500 }}>Midnight Compass</p>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>L · Qty 1 · {formatEgp(799)}</p>
-        </div>
-      </div>
+      {items.map((line) => {
+        const p = getProduct(line.productSlug);
+        if (!p) return null;
+        const lineSub = p.priceEgp * line.qty;
+        return (
+          <div key={`${line.productSlug}-${line.size}`} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--stone)' }}>
+              <TeeImage src={getProductMedia(p.slug).main} alt={`HORO “${p.name}” graphic tee`} w={128} />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontWeight: 500 }}>{p.name}</p>
+              <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
+                {line.size} · Qty {line.qty} · {formatEgp(lineSub)}
+              </p>
+            </div>
+          </div>
+        );
+      })}
       <p style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>Subtotal</span>
-        <span>{formatEgp(subtotal)}</span>
+        <span>{formatEgp(subtotalEgp)}</span>
       </p>
       <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
         <span>Shipping</span>
         <span>{shipping != null ? formatEgp(shipping) : '—'}</span>
       </p>
+      {paymentMethod === 'card' ? (
+        <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
+          <span>Card discount</span>
+          <span>−{formatEgp(CARD_DISCOUNT_EGP)}</span>
+        </p>
+      ) : null}
       <p style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--stone)' }}>
         <span>Total</span>
         <span>{formatEgp(total)}</span>

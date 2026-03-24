@@ -318,6 +318,12 @@
     box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
   }
 
+  .scroll-snap-carousel {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
   /** Vibe collection PLP — offset columns for editorial rhythm */
   .vibe-product-grid {
     display: grid;

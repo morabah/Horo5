@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
-import { products } from '../data/site';
+import { getProduct } from '../data/site';
 import { getProductMedia } from '../data/images';
 import { TeeImageFrame } from '../components/TeeImage';
 import { formatEgp } from '../utils/formatPrice';
+import { useCart } from '../cart/CartContext';
+import { cartLineKey } from '../cart/types';
 
 const ESTIMATED_SHIPPING_EGP = 60;
 
 export function Cart() {
-  const items = products.slice(0, 2);
-  const subtotal = items.reduce((s, p) => s + p.priceEgp, 0);
-  const estimatedOrderTotal = subtotal + ESTIMATED_SHIPPING_EGP;
+  const { items, removeItem, setLineQty, subtotalEgp } = useCart();
+  const estimatedOrderTotal = subtotalEgp + ESTIMATED_SHIPPING_EGP;
   const giftUpsell = items.length === 1;
 
   const upsellBlock =
@@ -36,11 +37,28 @@ export function Cart() {
       </div>
     ) : null;
 
+  if (items.length === 0) {
+    return (
+      <div style={{ padding: '2rem 0 3rem' }}>
+        <div className="container">
+          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.25rem' }}>Your cart</h1>
+          <p style={{ color: 'var(--clay-earth)', marginBottom: '2rem' }}>0 items</p>
+          <p style={{ marginBottom: '1.5rem', maxWidth: '28rem' }}>
+            Your bag is empty. Explore vibes and add a design in your size when you&apos;re ready.
+          </p>
+          <Link className="btn btn-primary" to="/vibes" style={{ minHeight: '48px', display: 'inline-flex', alignItems: 'center' }}>
+            Shop by vibe
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: '2rem 0 3rem' }}>
       <div className="container">
         <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.25rem' }}>Your cart</h1>
-        <p style={{ color: 'var(--clay-earth)', marginBottom: '2rem' }}>{items.length} items</p>
+        <p style={{ color: 'var(--clay-earth)', marginBottom: '2rem' }}>{items.reduce((n, l) => n + l.qty, 0)} items</p>
 
         {/* Mobile: line items → summary+CTA → upsell. Desktop: items+upsell left, summary right (aside spans 2 rows). */}
         <div
@@ -48,24 +66,90 @@ export function Cart() {
           style={{ alignItems: 'stretch' }}
         >
           <div className="order-1 md:col-start-1 md:row-start-1">
-            {items.map((p, idx) => (
-              <div key={p.slug} style={{ display: 'flex', gap: '1rem', paddingBottom: '1.25rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--stone)' }}>
-                <div style={{ width: '100px', flexShrink: 0 }}>
-                  <TeeImageFrame src={getProductMedia(p.slug).main} alt={`HORO “${p.name}” tee in cart`} w={300} aspectRatio="1" borderRadius="12px" />
+            {items.map((line) => {
+              const p = getProduct(line.productSlug);
+              if (!p) return null;
+              const key = cartLineKey(line);
+              const lineTotal = p.priceEgp * line.qty;
+              return (
+                <div
+                  key={key}
+                  style={{ display: 'flex', gap: '1rem', paddingBottom: '1.25rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--stone)' }}
+                >
+                  <div style={{ width: '100px', flexShrink: 0 }}>
+                    <TeeImageFrame
+                      src={getProductMedia(p.slug).main}
+                      alt={`HORO “${p.name}” tee in cart`}
+                      w={300}
+                      aspectRatio="1"
+                      borderRadius="12px"
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, margin: '0 0 0.25rem' }}>{p.name}</p>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', margin: '0 0 0.5rem' }}>
+                      Size: {line.size}
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+                      <label style={{ fontSize: '0.875rem', color: 'var(--clay-earth)' }} htmlFor={`qty-${key}`}>
+                        Qty
+                      </label>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <button
+                          type="button"
+                          id={`qty-${key}`}
+                          aria-label={`Decrease quantity for ${p.name}`}
+                          style={{
+                            minWidth: '44px',
+                            minHeight: '44px',
+                            border: '1px solid var(--stone)',
+                            borderRadius: '8px',
+                            background: 'var(--white)',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => setLineQty(line.productSlug, line.size, line.qty - 1)}
+                        >
+                          −
+                        </button>
+                        <span style={{ minWidth: '2rem', textAlign: 'center', fontWeight: 600 }}>{line.qty}</span>
+                        <button
+                          type="button"
+                          aria-label={`Increase quantity for ${p.name}`}
+                          style={{
+                            minWidth: '44px',
+                            minHeight: '44px',
+                            border: '1px solid var(--stone)',
+                            borderRadius: '8px',
+                            background: 'var(--white)',
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => setLineQty(line.productSlug, line.size, line.qty + 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <p style={{ margin: '0.5rem 0 0', fontWeight: 600 }}>{formatEgp(lineTotal)}</p>
+                    <button
+                      type="button"
+                      style={{
+                        marginTop: '0.5rem',
+                        background: 'none',
+                        border: 'none',
+                        padding: '0.5rem 0',
+                        minHeight: '44px',
+                        color: 'var(--deep-teal)',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                      }}
+                      onClick={() => removeItem(line.productSlug, line.size)}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, margin: '0 0 0.25rem' }}>{p.name}</p>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', margin: '0 0 0.5rem' }}>Size: {idx === 0 ? 'M' : 'L'}</p>
-                  <p style={{ margin: 0, fontWeight: 600 }}>{formatEgp(p.priceEgp)}</p>
-                  <button
-                    type="button"
-                    style={{ marginTop: '0.5rem', background: 'none', border: 'none', padding: '0.5rem 0', minHeight: '44px', color: 'var(--deep-teal)', cursor: 'pointer', fontSize: '0.875rem' }}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <aside className="card-glass order-2 md:sticky md:top-20 md:col-start-2 md:row-start-1 md:row-span-2" style={{ padding: '1.25rem' }}>
@@ -73,18 +157,33 @@ export function Cart() {
               Estimated shipping (standard, Egypt): you&apos;ll confirm speed at checkout.
             </p>
             <p style={{ display: 'flex', justifyContent: 'space-between', margin: '0 0 0.5rem' }}>
-              <span>Subtotal ({items.length} items)</span>
-              <span>{formatEgp(subtotal)}</span>
+              <span>Subtotal ({items.reduce((n, l) => n + l.qty, 0)} items)</span>
+              <span>{formatEgp(subtotalEgp)}</span>
             </p>
             <p style={{ display: 'flex', justifyContent: 'space-between', margin: '0 0 0.75rem', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
               <span>Est. shipping</span>
               <span>{formatEgp(ESTIMATED_SHIPPING_EGP)}</span>
             </p>
-            <p style={{ display: 'flex', justifyContent: 'space-between', margin: '0 0 1.25rem', fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid var(--stone)' }}>
+            <p
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                margin: '0 0 1.25rem',
+                fontFamily: 'var(--font-heading)',
+                fontWeight: 600,
+                fontSize: '1.25rem',
+                paddingTop: '0.75rem',
+                borderTop: '1px solid var(--stone)',
+              }}
+            >
               <span>Est. order total</span>
               <span>{formatEgp(estimatedOrderTotal)}</span>
             </p>
-            <Link className="btn btn-primary" to="/checkout" style={{ width: '100%', marginBottom: '0.75rem', minHeight: '48px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Link
+              className="btn btn-primary"
+              to="/checkout"
+              style={{ width: '100%', marginBottom: '0.75rem', minHeight: '48px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+            >
               Proceed to checkout
             </Link>
             <Link className="btn btn-ghost" to="/vibes" style={{ width: '100%' }}>

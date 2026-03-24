@@ -1,9 +1,29 @@
 import { Link } from 'react-router-dom';
+import { getProduct } from '../data/site';
 import { getProductMedia } from '../data/images';
 import { TeeImage } from '../components/TeeImage';
 import { formatEgp } from '../utils/formatPrice';
+import { loadLastOrder } from '../cart/lastOrder';
+import type { CartLine } from '../cart/types';
 
 export function OrderConfirmation() {
+  const order = loadLastOrder();
+
+  const lines: { line: CartLine; p: NonNullable<ReturnType<typeof getProduct>>; lineSub: number }[] = [];
+  if (order) {
+    for (const line of order.lines) {
+      const p = getProduct(line.productSlug);
+      if (!p) continue;
+      lines.push({ line, p, lineSub: p.priceEgp * line.qty });
+    }
+  }
+
+  const displayOrderId = order?.orderId ?? 'HORO-2026-0847';
+  const displayTotal = order?.total ?? 0;
+  const paymentLabel =
+    order?.paymentMethod === 'card' ? 'Card' : order?.paymentMethod === 'cod' ? 'COD' : 'COD';
+  const shippingLabel = order?.shippingMethod === 'express' ? 'Express' : 'Standard';
+
   return (
     <div style={{ padding: '2rem 0 3rem' }}>
       <div className="container" style={{ maxWidth: '720px' }}>
@@ -34,27 +54,41 @@ export function OrderConfirmation() {
             ✓
           </div>
           <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', margin: '0 0 0.5rem' }}>You completed this design</h1>
-          <p style={{ margin: '0 0 0.5rem' }}>Order #HORO-2026-0847 confirmed.</p>
+          <p style={{ margin: '0 0 0.5rem' }}>Order #{displayOrderId} confirmed.</p>
           <p style={{ margin: 0, color: 'var(--clay-earth)' }}>A WhatsApp confirmation is on its way.</p>
         </div>
 
         <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', marginBottom: '2rem' }}>
           <div>
             <h2 style={{ fontSize: '1.0625rem', marginBottom: '1rem' }}>Order summary</h2>
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-                <TeeImage src={getProductMedia('the-weight-of-light').main} alt="HORO 'The Weight of Light' graphic tee" w={200} />
-              </div>
-              <div>
-                <p style={{ margin: 0, fontWeight: 500 }}>The Weight of Light</p>
-                <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', margin: '0.25rem 0 0' }}>Size M · Qty 1 · {formatEgp(799)}</p>
-              </div>
-            </div>
-            <p style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>Total</span>
-              <strong>{formatEgp(1658)}</strong>
-            </p>
-            <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', marginTop: '1rem' }}>Payment: COD · Delivery: Standard · Cairo</p>
+            {lines.length > 0 ? (
+              <>
+                {lines.map(({ line, p, lineSub }) => (
+                  <div key={`${line.productSlug}-${line.size}`} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+                      <TeeImage src={getProductMedia(p.slug).main} alt={`HORO “${p.name}” graphic tee`} w={200} />
+                    </div>
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 500 }}>{p.name}</p>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', margin: '0.25rem 0 0' }}>
+                        Size {line.size} · Qty {line.qty} · {formatEgp(lineSub)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                <p style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+                  <span>Total</span>
+                  <strong>{formatEgp(displayTotal)}</strong>
+                </p>
+                <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', marginTop: '1rem' }}>
+                  Payment: {paymentLabel} · Delivery: {shippingLabel}
+                </p>
+              </>
+            ) : (
+              <p style={{ color: 'var(--clay-earth)', margin: 0 }}>
+                Thank you for your order. Your order details were sent to your phone.
+              </p>
+            )}
           </div>
           <div>
             <h2 style={{ fontSize: '1.0625rem', marginBottom: '1rem' }}>What&apos;s next</h2>
@@ -67,9 +101,8 @@ export function OrderConfirmation() {
             <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }}>
               Track order
             </button>
-            {/* F21 — WhatsApp track CTA */}
             <a
-              href="https://wa.me/201234567890?text=Track%20order%20%23HORO-2026-0847"
+              href={`https://wa.me/201234567890?text=Track%20order%20%23${encodeURIComponent(displayOrderId)}`}
               target="_blank"
               rel="noreferrer"
               className="btn btn-ghost"
