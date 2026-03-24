@@ -6,6 +6,7 @@ export type LastOrderSnapshot = {
   orderId: string;
   lines: CartLine[];
   subtotal: number;
+  giftWrapEgp?: number;
   shipping: number;
   cardDiscount: number;
   total: number;

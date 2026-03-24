@@ -103,12 +103,15 @@ export function ProductDetail() {
   const mobilePurchaseTitleId = useId();
   const lightboxCloseRef = useRef<HTMLButtonElement | null>(null);
   const mobileDrawerCloseRef = useRef<HTMLButtonElement | null>(null);
+  const mobileCtaRef = useRef<HTMLButtonElement | null>(null);
+  const mobilePurchaseWasOpenRef = useRef(false);
 
   useEffect(() => {
     setPhotoIndex(0);
     setLightboxOpen(false);
     setRelatedQuickViewSlug(null);
     setMobilePurchaseOpen(false);
+    mobilePurchaseWasOpenRef.current = false;
   }, [slug]);
 
   useEffect(() => {
@@ -217,6 +220,17 @@ export function ProductDetail() {
       window.removeEventListener('keydown', onKey);
       window.clearTimeout(t);
     };
+  }, [mobilePurchaseOpen]);
+
+  useEffect(() => {
+    if (mobilePurchaseOpen) {
+      mobilePurchaseWasOpenRef.current = true;
+      return;
+    }
+    if (mobilePurchaseWasOpenRef.current) {
+      mobilePurchaseWasOpenRef.current = false;
+      queueMicrotask(() => mobileCtaRef.current?.focus());
+    }
   }, [mobilePurchaseOpen]);
 
   useEffect(() => {
@@ -888,6 +902,7 @@ export function ProductDetail() {
         aria-label="Add to cart"
       >
         <button
+          ref={mobileCtaRef}
           type="button"
           onClick={() => {
             if (oosSelected) {

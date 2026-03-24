@@ -3,6 +3,7 @@ import { getProduct } from '../data/site';
 import { getProductMedia } from '../data/images';
 import { TeeImage } from '../components/TeeImage';
 import { formatEgp } from '../utils/formatPrice';
+import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { loadLastOrder } from '../cart/lastOrder';
 import type { CartLine } from '../cart/types';
 
@@ -24,8 +25,16 @@ export function OrderConfirmation() {
     order?.paymentMethod === 'card' ? 'Card' : order?.paymentMethod === 'cod' ? 'COD' : 'COD';
   const shippingLabel = order?.shippingMethod === 'express' ? 'Express' : 'Standard';
 
+  const arrivalWindow =
+    order?.shippingMethod === 'express'
+      ? formatDeliveryWindow(1, 2)
+      : formatDeliveryWindow(3, 5);
+
   return (
-    <div style={{ padding: '2rem 0 3rem' }}>
+    <div
+      className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
+      style={{ padding: '2rem 0 3rem' }}
+    >
       <div className="container" style={{ maxWidth: '720px' }}>
         <div
           style={{
@@ -76,6 +85,20 @@ export function OrderConfirmation() {
                     </div>
                   </div>
                 ))}
+                {order?.giftWrapEgp ? (
+                  <p
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      marginTop: '0.5rem',
+                      fontSize: '0.875rem',
+                      color: 'var(--clay-earth)',
+                    }}
+                  >
+                    <span>Gift wrap + story card</span>
+                    <span>{formatEgp(order.giftWrapEgp)}</span>
+                  </p>
+                ) : null}
                 <p style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
                   <span>Total</span>
                   <strong>{formatEgp(displayTotal)}</strong>
@@ -96,23 +119,21 @@ export function OrderConfirmation() {
               <li style={{ marginBottom: '0.5rem' }}>WhatsApp confirmation sent to your phone</li>
               <li style={{ marginBottom: '0.5rem' }}>We prepare your order (1–2 days)</li>
               <li style={{ marginBottom: '0.5rem' }}>Tracking link via WhatsApp</li>
-              <li>Arrives at your door (March 25–27)</li>
+              <li>Arrives at your door (typical window {arrivalWindow}, business days)</li>
             </ol>
-            <button type="button" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem' }}>
-              Track order
-            </button>
             <a
               href={`https://wa.me/201234567890?text=Track%20order%20%23${encodeURIComponent(displayOrderId)}`}
               target="_blank"
               rel="noreferrer"
-              className="btn btn-ghost"
+              className="btn btn-primary"
               style={{
                 width: '100%',
-                marginTop: '0.75rem',
+                marginTop: '1.25rem',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.5rem',
+                minHeight: '48px',
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>

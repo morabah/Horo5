@@ -4,10 +4,12 @@ import { getProductMedia } from '../data/images';
 import { getProduct } from '../data/site';
 import { TeeImage } from '../components/TeeImage';
 import { formatEgp } from '../utils/formatPrice';
+import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { useCart } from '../cart/CartContext';
 import { saveLastOrder } from '../cart/lastOrder';
 
 const steps = ['Information', 'Shipping', 'Payment'] as const;
+const stepsShort = ['Info', 'Ship', 'Pay'] as const;
 
 type FieldErrors = Record<string, string>;
 
@@ -26,7 +28,7 @@ function validateStep0(fields: { email: string; phone: string; name: string; lin
 
 export function Checkout() {
   const navigate = useNavigate();
-  const { items, subtotalEgp, clearCart } = useCart();
+  const { items, subtotalEgp, giftWrapEgp, clearCart } = useCart();
   const [step, setStep] = useState(0);
   const [highestCompleted, setHighestCompleted] = useState(-1);
 
@@ -46,7 +48,15 @@ export function Checkout() {
   const shippingCost = shippingMethod === 'express' ? 120 : 60;
 
   const cardDiscount = paymentMethod === 'card' ? CARD_DISCOUNT_EGP : 0;
-  const orderTotal = subtotalEgp + shippingCost - cardDiscount;
+  const orderTotal = subtotalEgp + giftWrapEgp + shippingCost - cardDiscount;
+
+  const estimatedDeliveryRange = useMemo(
+    () =>
+      shippingMethod === 'express'
+        ? formatDeliveryWindow(1, 2)
+        : formatDeliveryWindow(3, 5),
+    [shippingMethod],
+  );
 
   const step0Complete = useMemo(
     () => Object.keys(validateStep0({ email, phone, name: fullName, line1, city })).length === 0,
@@ -81,6 +91,7 @@ export function Checkout() {
       orderId,
       lines: items.map((l) => ({ ...l })),
       subtotal: subtotalEgp,
+      giftWrapEgp: giftWrapEgp > 0 ? giftWrapEgp : undefined,
       shipping: shippingCost,
       cardDiscount,
       total: orderTotal,
@@ -93,7 +104,10 @@ export function Checkout() {
 
   if (items.length === 0) {
     return (
-      <div style={{ padding: '2rem 0 3rem', background: 'var(--white)', minHeight: '60vh' }}>
+      <div
+        className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
+        style={{ padding: '2rem 0 3rem', background: 'var(--white)', minHeight: '60vh' }}
+      >
         <div className="container" style={{ maxWidth: '960px' }}>
           <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.75rem' }}>Nothing to check out</h1>
           <p style={{ color: 'var(--clay-earth)', marginBottom: '1.5rem', maxWidth: '28rem' }}>
@@ -108,13 +122,23 @@ export function Checkout() {
   }
 
   return (
-    <div style={{ padding: '2rem 0 3rem', background: 'var(--white)', minHeight: '60vh' }}>
+    <div
+      className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
+      style={{ padding: '2rem 0 3rem', background: 'var(--white)', minHeight: '60vh' }}
+    >
       <div className="container" style={{ maxWidth: '960px' }}>
         <nav style={{ marginBottom: '1.5rem' }}>
           <Link to="/cart" style={{ color: 'var(--deep-teal)', fontSize: '0.9375rem', display: 'inline-flex', alignItems: 'center', minHeight: '48px', padding: '0.5rem 0' }}>
             ← Back to cart
           </Link>
         </nav>
+
+        <p
+          className="font-label mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--clay-earth)] sm:text-xs sm:tracking-[0.22em]"
+          aria-live="polite"
+        >
+          Checkout · Step {step + 1} of 3 · {steps[step]}
+        </p>
 
         {/* F11 — Visual progress indicator (dot-and-line); horizontal scroll on very narrow viewports */}
         <div
@@ -196,16 +220,19 @@ export function Checkout() {
                     boxShadow: isCurrent ? '0 0 0 4px rgba(232, 89, 60, 0.2)' : 'none',
                     flexShrink: 0,
                   }} />
-                  <span style={{
-                    fontFamily: 'var(--font-label)',
-                    fontSize: 'clamp(0.6875rem, 2.8vw, 0.8125rem)',
-                    fontWeight: isCurrent ? 600 : 400,
-                    color: labelColor,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.12em',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {label}
+                  <span
+                    className="font-label"
+                    style={{
+                      fontSize: 'clamp(0.6875rem, 2.8vw, 0.8125rem)',
+                      fontWeight: isCurrent ? 600 : 400,
+                      color: labelColor,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.12em',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <span className="hidden sm:inline">{label}</span>
+                    <span className="sm:hidden">{stepsShort[i]}</span>
                   </span>
                 </button>
               </div>
@@ -213,6 +240,9 @@ export function Checkout() {
           })}
           </div>
         </div>
+        <p className="font-label -mt-3 mb-6 text-center text-[10px] uppercase tracking-wider text-[var(--clay-earth)] sm:hidden">
+          Swipe steps above if needed
+        </p>
 
         {step === 0 && (
           <form onSubmit={handleContinueToShipping}>
@@ -342,7 +372,9 @@ export function Checkout() {
                   <strong>Express</strong> — 1–2 business days · {formatEgp(120)}
                 </span>
               </label>
-              <p style={{ marginTop: '1rem' }}>Expected delivery: March 25 – March 27</p>
+              <p style={{ marginTop: '1rem' }}>
+                Expected delivery (business days): {estimatedDeliveryRange}
+              </p>
               <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', marginTop: '0.75rem' }}>
                 Total includes {formatEgp(shippingCost)} shipping. Free exchange within 14 days if size doesn&apos;t fit.
               </p>
@@ -448,9 +480,9 @@ function OrderSummary({
   shipping?: number;
   paymentMethod?: 'cod' | 'card';
 }) {
-  const { items, subtotalEgp } = useCart();
+  const { items, subtotalEgp, giftWrapEgp } = useCart();
   const cardDiscount = paymentMethod === 'card' ? CARD_DISCOUNT_EGP : 0;
-  const total = subtotalEgp + (shipping ?? 0) - cardDiscount;
+  const total = subtotalEgp + giftWrapEgp + (shipping ?? 0) - cardDiscount;
 
   return (
     <aside style={{ padding: '1.25rem', borderRadius: 'var(--radius-card)', border: '1px solid var(--stone)', background: 'var(--papyrus)' }}>
@@ -477,6 +509,12 @@ function OrderSummary({
         <span>Subtotal</span>
         <span>{formatEgp(subtotalEgp)}</span>
       </p>
+      {giftWrapEgp > 0 ? (
+        <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
+          <span>Gift wrap + story card</span>
+          <span>{formatEgp(giftWrapEgp)}</span>
+        </p>
+      ) : null}
       <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
         <span>Shipping</span>
         <span>{shipping != null ? formatEgp(shipping) : '—'}</span>

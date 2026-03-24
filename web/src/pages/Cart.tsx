@@ -3,30 +3,44 @@ import { getProduct } from '../data/site';
 import { getProductMedia } from '../data/images';
 import { TeeImageFrame } from '../components/TeeImage';
 import { formatEgp } from '../utils/formatPrice';
-import { useCart } from '../cart/CartContext';
+import { GIFT_WRAP_PRICE_EGP, useCart } from '../cart/CartContext';
 import { cartLineKey } from '../cart/types';
 
 const ESTIMATED_SHIPPING_EGP = 60;
 
 export function Cart() {
-  const { items, removeItem, setLineQty, subtotalEgp } = useCart();
-  const estimatedOrderTotal = subtotalEgp + ESTIMATED_SHIPPING_EGP;
+  const { items, removeItem, setLineQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp } = useCart();
+  const estimatedOrderTotal = subtotalEgp + giftWrapEgp + ESTIMATED_SHIPPING_EGP;
   const giftUpsell = items.length === 1;
 
   const upsellBlock =
     giftUpsell ? (
-      <div className="card-glass" style={{ padding: '1.25rem', background: 'var(--warm-glow)', marginTop: '0.5rem' }}>
-        <h2 style={{ fontSize: '1.0625rem', margin: '0 0 0.5rem' }}>Make it a gift</h2>
-        <p style={{ margin: '0 0 1rem', fontSize: '0.9375rem' }}>Add story card + gift wrap ({formatEgp(200)}).</p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <button type="button" className="btn btn-primary">
-            Add gift wrap — {formatEgp(200)}
-          </button>
-          <button type="button" className="btn btn-ghost">
-            No thanks
+      giftWrapEgp > 0 ? (
+        <div className="card-glass" style={{ padding: '1.25rem', background: 'var(--warm-glow)', marginTop: '0.5rem' }}>
+          <h2 style={{ fontSize: '1.0625rem', margin: '0 0 0.5rem' }}>Gift add-ons</h2>
+          <p style={{ margin: '0 0 1rem', fontSize: '0.9375rem' }}>
+            Story card + gift wrap ({formatEgp(GIFT_WRAP_PRICE_EGP)}) is included in your estimate.
+          </p>
+          <button type="button" className="btn btn-ghost" onClick={() => setGiftWrapEgp(0)}>
+            Remove gift wrap
           </button>
         </div>
-      </div>
+      ) : (
+        <div className="card-glass" style={{ padding: '1.25rem', background: 'var(--warm-glow)', marginTop: '0.5rem' }}>
+          <h2 style={{ fontSize: '1.0625rem', margin: '0 0 0.5rem' }}>Make it a gift</h2>
+          <p style={{ margin: '0 0 1rem', fontSize: '0.9375rem' }}>
+            Add story card + gift wrap ({formatEgp(GIFT_WRAP_PRICE_EGP)}).
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <button type="button" className="btn btn-primary" onClick={() => setGiftWrapEgp(GIFT_WRAP_PRICE_EGP)}>
+              Add gift wrap — {formatEgp(GIFT_WRAP_PRICE_EGP)}
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={() => setGiftWrapEgp(0)}>
+              No thanks
+            </button>
+          </div>
+        </div>
+      )
     ) : items.length >= 2 ? (
       <div className="card-glass" style={{ padding: '1.25rem', background: 'var(--warm-glow)', marginTop: '0.5rem' }}>
         <h2 style={{ fontSize: '1.0625rem', margin: '0 0 0.5rem' }}>Add a 3rd, save {formatEgp(100)}</h2>
@@ -39,7 +53,10 @@ export function Cart() {
 
   if (items.length === 0) {
     return (
-      <div style={{ padding: '2rem 0 3rem' }}>
+      <div
+        className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
+        style={{ paddingTop: '2rem', paddingBottom: '3rem' }}
+      >
         <div className="container">
           <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.25rem' }}>Your cart</h1>
           <p style={{ color: 'var(--clay-earth)', marginBottom: '2rem' }}>0 items</p>
@@ -55,7 +72,10 @@ export function Cart() {
   }
 
   return (
-    <div style={{ padding: '2rem 0 3rem' }}>
+    <div
+      className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
+      style={{ paddingTop: '2rem', paddingBottom: '3rem' }}
+    >
       <div className="container">
         <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.25rem' }}>Your cart</h1>
         <p style={{ color: 'var(--clay-earth)', marginBottom: '2rem' }}>{items.reduce((n, l) => n + l.qty, 0)} items</p>
@@ -160,6 +180,20 @@ export function Cart() {
               <span>Subtotal ({items.reduce((n, l) => n + l.qty, 0)} items)</span>
               <span>{formatEgp(subtotalEgp)}</span>
             </p>
+            {giftWrapEgp > 0 ? (
+              <p
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  margin: '0 0 0.5rem',
+                  fontSize: '0.875rem',
+                  color: 'var(--clay-earth)',
+                }}
+              >
+                <span>Gift wrap + story card</span>
+                <span>{formatEgp(giftWrapEgp)}</span>
+              </p>
+            ) : null}
             <p style={{ display: 'flex', justifyContent: 'space-between', margin: '0 0 0.75rem', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
               <span>Est. shipping</span>
               <span>{formatEgp(ESTIMATED_SHIPPING_EGP)}</span>

@@ -10,6 +10,30 @@ import {
 import { getProduct, type ProductSizeKey } from '../data/site';
 import { CART_STORAGE_KEY, cartLineKey, type CartLine } from './types';
 
+export const GIFT_WRAP_PRICE_EGP = 200;
+
+const GIFT_WRAP_STORAGE_KEY = 'horo-gift-wrap-v1';
+
+function loadGiftWrapEgp(): number {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const raw = localStorage.getItem(GIFT_WRAP_STORAGE_KEY);
+    if (raw == null) return 0;
+    const n = Number(raw);
+    return n === GIFT_WRAP_PRICE_EGP ? GIFT_WRAP_PRICE_EGP : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function persistGiftWrapEgp(egp: number) {
+  try {
+    localStorage.setItem(GIFT_WRAP_STORAGE_KEY, String(egp));
+  } catch {
+    /* ignore */
+  }
+}
+
 type CartContextValue = {
   items: CartLine[];
   addItem: (productSlug: string, size: ProductSizeKey, qty?: number) => void;
@@ -18,6 +42,8 @@ type CartContextValue = {
   clearCart: () => void;
   totalQty: number;
   subtotalEgp: number;
+  giftWrapEgp: number;
+  setGiftWrapEgp: (egp: 0 | typeof GIFT_WRAP_PRICE_EGP) => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -61,10 +87,15 @@ function persistItems(items: CartLine[]) {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartLine[]>(loadItems);
+  const [giftWrapEgp, setGiftWrapEgpState] = useState(loadGiftWrapEgp);
 
   useEffect(() => {
     persistItems(items);
   }, [items]);
+
+  useEffect(() => {
+    persistGiftWrapEgp(giftWrapEgp);
+  }, [giftWrapEgp]);
 
   const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1) => {
     if (!getProduct(productSlug) || qty < 1) return;
@@ -100,7 +131,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const setGiftWrapEgp = useCallback((egp: 0 | typeof GIFT_WRAP_PRICE_EGP) => {
+    setGiftWrapEgpState(egp);
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setItems([]);
+    setGiftWrapEgpState(0);
+  }, []);
 
   const totalQty = useMemo(() => items.reduce((s, l) => s + l.qty, 0), [items]);
 
@@ -121,8 +159,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart,
       totalQty,
       subtotalEgp,
+      giftWrapEgp,
+      setGiftWrapEgp,
     }),
-    [items, addItem, removeItem, setLineQty, clearCart, totalQty, subtotalEgp],
+    [items, addItem, removeItem, setLineQty, clearCart, totalQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

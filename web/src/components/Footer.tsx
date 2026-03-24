@@ -1,11 +1,33 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { BrandLogo } from './BrandLogo';
+
+function ComingSoonControl({
+  className,
+  children,
+  label,
+}: {
+  className: string;
+  children: ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      className={className}
+      title="Coming soon"
+      aria-label={`${label} (coming soon)`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="bg-obsidian pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 text-[#f5f0e8] sm:pt-32">
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 px-4 font-body sm:gap-20 sm:px-8 md:grid-cols-4 md:px-12">
+      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] font-body sm:gap-20 sm:px-8 md:grid-cols-4 md:px-12">
         <div className="space-y-8">
           <Link to="/" className="inline-flex items-center" aria-label="HORO — Home">
             <BrandLogo variant="light" />
@@ -41,9 +63,12 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <a className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" href="#">
+              <ComingSoonControl
+                label="Sustainability"
+                className="font-label cursor-default border-0 bg-transparent p-0 text-left text-xs uppercase tracking-widest text-secondary"
+              >
                 Sustainability
-              </a>
+              </ComingSoonControl>
             </li>
           </ul>
         </div>
@@ -56,9 +81,12 @@ export function Footer() {
               </a>
             </li>
             <li>
-              <a className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" href="#">
+              <ComingSoonControl
+                label="Facebook"
+                className="font-label cursor-default border-0 bg-transparent p-0 text-left text-xs uppercase tracking-widest text-secondary"
+              >
                 Facebook
-              </a>
+              </ComingSoonControl>
             </li>
             <li>
               <Link className="font-label text-xs uppercase tracking-widest text-secondary transition-colors hover:text-[#f5f0e8]" to="/search">
@@ -68,15 +96,21 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="mx-auto mt-24 flex max-w-[1400px] flex-col items-center justify-between gap-4 border-t border-secondary/20 px-4 pt-10 font-label text-[10px] uppercase tracking-[0.4em] text-secondary sm:mt-40 sm:px-8 md:flex-row md:px-12 md:pt-12">
+      <div className="mx-auto mt-24 flex max-w-[1400px] flex-col items-center justify-between gap-4 border-t border-secondary/20 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-10 font-label text-[10px] uppercase tracking-[0.4em] text-secondary sm:mt-40 sm:px-8 md:flex-row md:px-12 md:pt-12">
         <div>© {year} HORO Egypt. Designed for the Introspective.</div>
-        <div className="flex space-x-12">
-          <a className="transition-colors hover:text-[#f5f0e8]" href="#">
+        <div className="flex flex-wrap justify-center gap-x-12 gap-y-2">
+          <ComingSoonControl
+            label="Privacy Policy"
+            className="cursor-default border-0 bg-transparent p-0 text-[10px] uppercase tracking-[0.4em] text-secondary"
+          >
             Privacy Policy
-          </a>
-          <a className="transition-colors hover:text-[#f5f0e8]" href="#">
+          </ComingSoonControl>
+          <ComingSoonControl
+            label="Terms of Service"
+            className="cursor-default border-0 bg-transparent p-0 text-[10px] uppercase tracking-[0.4em] text-secondary"
+          >
             Terms of Service
-          </a>
+          </ComingSoonControl>
         </div>
       </div>
     </footer>
