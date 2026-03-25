@@ -19,7 +19,7 @@ export function SectionDivider({ variant }: SectionDividerProps) {
 
   if (variant === 'heroFlow') {
     return (
-      <div data-reveal="divider" className={`${common} -my-1 h-14 sm:h-16`} aria-hidden>
+      <div data-reveal="divider" className={`${common} -my-2 h-9 sm:h-10`} aria-hidden>
         <svg className="h-full w-full" viewBox="0 0 320 56" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
           <path
             pathLength="1"
@@ -37,7 +37,7 @@ export function SectionDivider({ variant }: SectionDividerProps) {
 
   if (variant === 'trustDiamond') {
     return (
-      <div data-reveal="divider" className={`${common} -my-2 h-12 text-desert-sand/45`} aria-hidden>
+      <div data-reveal="divider" className={`${common} -my-2 h-8 text-desert-sand/45 sm:h-9`} aria-hidden>
         <svg className="h-full w-full" viewBox="0 0 400 48" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
           <path
             pathLength="1"
@@ -55,7 +55,7 @@ export function SectionDivider({ variant }: SectionDividerProps) {
 
   /* latestFunnel */
   return (
-    <div data-reveal="divider" className={`${common} -my-1 h-14 sm:h-16`} aria-hidden>
+    <div data-reveal="divider" className={`${common} -my-2 h-9 sm:h-10`} aria-hidden>
       <svg className="h-full w-full" viewBox="0 0 320 56" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
         <path
           pathLength="1"

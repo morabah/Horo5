@@ -15,11 +15,13 @@ function ComingSoonControl({
   return (
     <button
       type="button"
-      className={className}
+      disabled
+      className={`${className} cursor-not-allowed opacity-60`}
       title="Coming soon"
       aria-label={`${label} (coming soon)`}
     >
-      {children}
+      <span>{children}</span>
+      <span className="text-stone/70 normal-case tracking-normal"> (coming soon)</span>
     </button>
   );
 }

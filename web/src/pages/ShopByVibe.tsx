@@ -1,35 +1,85 @@
 import { Link } from 'react-router-dom';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
-import { useScrollReveal } from '../hooks/useScrollReveal';
+import { VIBES_SCHEMA } from '../data/domain-config';
+import { imgUrl, vibesHubHeroTiles } from '../data/images';
 import { vibes } from '../data/site';
 
 export function ShopByVibe() {
-  useScrollReveal();
-
   return (
-    <div className="bg-papyrus px-4 py-8 sm:py-10 md:px-8 md:py-12">
-      <div className="container mx-auto max-w-[1200px]">
-        <p className="label mb-2">Shop by vibe</p>
-        <h1 className="font-headline text-obsidian mb-3 text-[clamp(1.5rem,3vw,2rem)] font-medium leading-snug">Which vibe is yours?</h1>
-        <p className="mb-6 max-w-xl text-warm-charcoal sm:mb-8">Every design starts with a feeling. Start with yours.</p>
+    <div className="bg-papyrus pb-16 md:pb-20">
+      <div className="mx-auto flex min-h-[calc(100vh-10rem)] max-w-7xl flex-col gap-10 px-4 pt-8 md:gap-12 md:px-8 md:pt-10">
+        <section
+          className="relative isolate overflow-hidden rounded-[1.75rem] border border-white/65 shadow-[0_28px_68px_-36px_rgba(26,26,26,0.35)]"
+          aria-label={VIBES_SCHEMA.copy.hubHeroAlt}
+        >
+          <div className="grid min-h-[28rem] grid-cols-5 gap-1 bg-obsidian sm:min-h-[32rem] sm:gap-2">
+            {vibesHubHeroTiles.map((tile) => (
+              <img
+                key={tile.slug}
+                src={imgUrl(tile.src, 900)}
+                alt={tile.alt}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: tile.objectPosition }}
+                width={900}
+                height={1200}
+                decoding="async"
+              />
+            ))}
+          </div>
+          <div
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.08)_0%,rgba(18,18,18,0.18)_30%,rgba(18,18,18,0.76)_100%)]"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_34%),radial-gradient(circle_at_top_right,rgba(212,162,78,0.18),transparent_30%)]"
+            aria-hidden
+          />
 
-        <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-          {vibes.map((v, i) => {
-            const stagger = (['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5'] as const)[i] ?? 'stagger-5';
-            return (
-              <VibeCommerceCard key={v.slug} vibe={v} titleTag="h2" variant="explore" className="h-full" data-reveal={stagger} />
-            );
-          })}
-        </div>
+          <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 md:p-8">
+            <div className="max-w-2xl rounded-[1.35rem] border border-white/70 bg-[linear-gradient(135deg,rgba(26,26,26,0.74),rgba(26,26,26,0.42))] px-5 py-5 shadow-[0_18px_48px_-28px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:px-6 sm:py-6 md:px-8 md:py-7">
+              <p className="font-label mb-2 text-[10px] font-medium uppercase tracking-[0.26em] text-white/76 sm:text-[11px]">
+                {VIBES_SCHEMA.copy.hubEyebrow}
+              </p>
+              <h1 className="font-headline text-[clamp(2rem,5vw,4.1rem)] font-semibold leading-[0.94] tracking-tight text-white">
+                {VIBES_SCHEMA.copy.hubTitle}
+              </h1>
+              <p className="mt-3 max-w-xl font-body text-[0.98rem] leading-relaxed text-white/86 sm:mt-4 sm:text-[1.05rem]">
+                {VIBES_SCHEMA.copy.hubSubtitle}
+              </p>
+            </div>
+          </div>
+        </section>
 
-        <div className="mt-10 border-t border-stone/10 pt-5">
-          <p className="font-body text-xs text-clay/75">Or explore another way</p>
-          <div className="mt-2 flex flex-wrap gap-2">
+        <section aria-labelledby="vibes-grid-title">
+          <h2 id="vibes-grid-title" className="sr-only">
+            {VIBES_SCHEMA.copy.hubEyebrow}
+          </h2>
+          <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-6 lg:gap-7">
+            {vibes.map((vibe, index) => {
+              const desktopPosition =
+                index === 3 ? 'lg:col-start-2 lg:col-span-2' : index === 4 ? 'lg:col-start-4 lg:col-span-2' : 'lg:col-span-2';
+
+              return (
+                <VibeCommerceCard
+                  key={vibe.slug}
+                  vibe={vibe}
+                  titleTag="h2"
+                  variant="explore"
+                  className={['h-full min-h-[23rem] sm:min-h-[25rem]', desktopPosition].join(' ')}
+                />
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="border-t border-stone/20 pt-6 md:pt-7">
+          <p className="font-body text-sm text-clay/82">{VIBES_SCHEMA.copy.secondaryNavLabel}</p>
+          <div className="mt-3 flex flex-wrap gap-3">
             <Link className="btn btn-secondary text-sm" to="/occasions">
-              Shop by Occasion
+              {VIBES_SCHEMA.copy.secondaryNavCta}
             </Link>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

@@ -1,8 +1,31 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { getArtist, getProduct, getVibe, productsByVibe, type ProductSizeKey } from '../data/site';
+import {
+  Link,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react';
+import {
+  getArtist,
+  getProduct,
+  getVibe,
+  productsByVibe,
+  type ProductSizeKey,
+} from '../data/site';
 import { useCart } from '../cart/CartContext';
-import { artistAvatars, getProductMedia, imgUrl } from '../data/images';
+import {
+  artistAvatars,
+  getProductMedia,
+  getProductPdpGallery,
+  imgUrl,
+} from '../data/images';
 import { TeeImage, TeeImageFrame } from '../components/TeeImage';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { formatEgp } from '../utils/formatPrice';
@@ -10,11 +33,11 @@ import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
 import { PDP_SCHEMA } from '../data/domain-config';
 import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 
-const { viewLabels, surfacePhrases, sizes, sizeTable, copy, trustStripItems, storyPlanSteps } = PDP_SCHEMA;
+const { sizes, sizeTable, copy } = PDP_SCHEMA;
 
-const featureStripItems = PDP_SCHEMA.features.map((f) => ({
-  label: f.label,
-  Icon: PDP_FEATURE_ICONS[f.icon],
+const featureStripItems = PDP_SCHEMA.features.map((feature) => ({
+  label: feature.label,
+  Icon: PDP_FEATURE_ICONS[feature.icon],
 }));
 
 function formatTitleLines(name: string) {
@@ -27,24 +50,6 @@ function formatTitleLines(name: string) {
       <br />
       {words.slice(mid).join(' ')}
     </>
-  );
-}
-
-function surfacePhraseForView(viewIndex: number): string {
-  return surfacePhrases[viewIndex] ?? surfacePhrases[surfacePhrases.length - 1];
-}
-
-function mainGalleryAlt(productName: string, viewIndex: number): string {
-  const view = viewLabels[viewIndex] ?? 'view';
-  const surface = surfacePhraseForView(viewIndex);
-  return `HORO “${productName}” t-shirt, ${view} on ${surface}.`;
-}
-
-function IconStar({ className }: { className?: string }) {
-  return (
-    <svg className={className ?? 'h-4 w-4 text-obsidian'} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-    </svg>
   );
 }
 
@@ -75,22 +80,15 @@ function IconChevronDown() {
   );
 }
 
-function IconSearch({ className }: { className?: string }) {
+function AccordionSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <svg
-      className={className ?? 'h-5 w-5'}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M21 21l-5.2-5.2M19 11a8 8 0 11-16 0 8 8 0 0116 0z"
-      />
-    </svg>
+    <details className="group border-t border-stone/30">
+      <summary className="font-headline flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-sm font-medium uppercase tracking-wide text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal [&::-webkit-details-marker]:hidden">
+        {title}
+        <IconChevronDown />
+      </summary>
+      <div className="animate-fade-in pb-6 pt-1">{children}</div>
+    </details>
   );
 }
 
@@ -98,8 +96,8 @@ export function ProductDetail() {
   const { slug = '' } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
-  const p = getProduct(slug);
-  const { gallery } = p ? getProductMedia(p.slug) : { gallery: [] as string[] };
+  const product = getProduct(slug);
+
   const [photoIndex, setPhotoIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
@@ -110,58 +108,111 @@ export function ProductDetail() {
   const [notifySuccess, setNotifySuccess] = useState(false);
 
   const sizeGuideTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const mobileSizeGuideTriggerRef = useRef<HTMLButtonElement | null>(null);
   const sizeGuideDialogRef = useRef<HTMLDivElement | null>(null);
   const sizeSectionRef = useRef<HTMLDivElement | null>(null);
-  const notifyFormRef = useRef<HTMLFormElement | null>(null);
+  const notifyFormRef = useRef<HTMLDivElement | null>(null);
   const notifyInputRef = useRef<HTMLInputElement | null>(null);
+  const lightboxCloseRef = useRef<HTMLButtonElement | null>(null);
 
   const sizeGuideWasOpenRef = useRef(false);
   const sizeGuideTitleId = useId();
   const notifyFieldId = useId();
-  const lightboxCloseRef = useRef<HTMLButtonElement | null>(null);
-  const mobileCtaRef = useRef<HTMLButtonElement | null>(null);
-  const mobileSizeStripRef = useRef<HTMLDivElement | null>(null);
-  const productHeaderRef = useRef<HTMLElement | null>(null);
-  const [compactMobileDock, setCompactMobileDock] = useState(false);
 
   useEffect(() => {
     setPhotoIndex(0);
+    setSelectedSize(null);
     setLightboxOpen(false);
     setRelatedQuickViewSlug(null);
-    setCompactMobileDock(false);
   }, [slug]);
+
+  const media = product ? getProductMedia(product.slug) : getProductMedia('');
+  const gallery = product ? getProductPdpGallery(product.name, product.slug) : [];
+  const vibe = product ? getVibe(product.vibeSlug) : undefined;
+  const artist = product ? getArtist(product.artistSlug) : undefined;
+  const related = product
+    ? productsByVibe(product.vibeSlug)
+        .filter((item) => item.slug !== slug)
+        .slice(0, 4)
+    : [];
+
+  const heroView =
+    gallery[photoIndex] ??
+    gallery[0] ?? {
+      key: 'onBody' as const,
+      src: media.main,
+      label: 'image',
+      alt: `HORO “${product?.name ?? 'product'}” t-shirt.`,
+    };
+
+  const detailView = gallery.find((view) => view.key === 'detail') ?? null;
+  const hasGalleryRail = gallery.length > 1;
+  const primaryGallerySrc = gallery[0]?.src ?? media.main;
+
+  const sizeDef = selectedSize ? sizes.find((size) => size.key === selectedSize) : undefined;
+  const oosSelected = Boolean(sizeDef?.disabled);
+  const sizeReady = Boolean(selectedSize && sizeDef && !sizeDef.disabled);
+  const inventoryHint =
+    selectedSize && product?.inventoryHintBySize
+      ? product.inventoryHintBySize[selectedSize as ProductSizeKey]
+      : undefined;
+
+  const trustItems = [
+    '220 GSM cotton',
+    artist ? `Illustrated by ${artist.name}` : 'Illustrated artwork',
+    'Free exchange 14d',
+    'COD available',
+  ];
+
+  const modelLine = copy.modelLineTemplate.replace(
+    '{fit}',
+    product?.fitLabel ? ` — ${product.fitLabel.toLowerCase()} fit` : ''
+  );
 
   useEffect(() => {
     if (gallery.length === 0) return;
-    setPhotoIndex((i) => (i >= gallery.length ? 0 : i));
+    setPhotoIndex((index) => (index >= gallery.length ? 0 : index));
   }, [gallery.length]);
+
+  useEffect(() => {
+    if (!primaryGallerySrc) return;
+
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = imgUrl(primaryGallerySrc, 1200);
+    document.head.appendChild(link);
+
+    return () => link.remove();
+  }, [primaryGallerySrc]);
 
   useEffect(() => {
     if (!sizeGuideOpen) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
         setSizeGuideOpen(false);
         return;
       }
-      if (e.key !== 'Tab' || !sizeGuideDialogRef.current) return;
+
+      if (event.key !== 'Tab' || !sizeGuideDialogRef.current) return;
 
       const focusables = sizeGuideDialogRef.current.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
+
       if (focusables.length === 0) return;
+
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
 
-      if (e.shiftKey) {
+      if (event.shiftKey) {
         if (document.activeElement === first) {
-          e.preventDefault();
+          event.preventDefault();
           last.focus();
         }
       } else if (document.activeElement === last) {
-        e.preventDefault();
+        event.preventDefault();
         first.focus();
       }
     };
@@ -169,15 +220,15 @@ export function ProductDetail() {
     document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
 
-    const t = window.setTimeout(() => {
-      const closeBtn = sizeGuideDialogRef.current?.querySelector<HTMLElement>('[data-size-guide-close]');
-      closeBtn?.focus();
+    const timeout = window.setTimeout(() => {
+      const closeButton = sizeGuideDialogRef.current?.querySelector<HTMLElement>('[data-size-guide-close]');
+      closeButton?.focus();
     }, 0);
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
-      window.clearTimeout(t);
+      window.clearTimeout(timeout);
     };
   }, [sizeGuideOpen]);
 
@@ -186,83 +237,170 @@ export function ProductDetail() {
       sizeGuideWasOpenRef.current = true;
       return;
     }
+
     if (sizeGuideWasOpenRef.current) {
       sizeGuideWasOpenRef.current = false;
       queueMicrotask(() => {
-        const t = sizeGuideTriggerRef.current ?? mobileSizeGuideTriggerRef.current;
-        t?.focus();
+        sizeGuideTriggerRef.current?.focus();
       });
     }
   }, [sizeGuideOpen]);
 
   useEffect(() => {
-    if (!p) return;
-    const g = getProductMedia(p.slug).gallery;
-    if (g.length === 0) return;
-    // Preload only the hero frame; other gallery assets load when the user switches views.
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = imgUrl(g[0], 1200);
-    document.head.appendChild(link);
-    return () => link.remove();
-  }, [p?.slug]);
-
-  useEffect(() => {
-    const el = productHeaderRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setCompactMobileDock(!entry.isIntersecting),
-      { root: null, rootMargin: '-8px 0px 0px 0px', threshold: 0 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [slug]);
-
-  useEffect(() => {
     if (!lightboxOpen) return;
-    const prev = document.body.style.overflow;
+
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLightboxOpen(false);
+
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setLightboxOpen(false);
+      }
+
       if (gallery.length < 2) return;
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        setPhotoIndex((i) => (i <= 0 ? gallery.length - 1 : i - 1));
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setPhotoIndex((index) => (index <= 0 ? gallery.length - 1 : index - 1));
       }
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        setPhotoIndex((i) => (i >= gallery.length - 1 ? 0 : i + 1));
+
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setPhotoIndex((index) => (index >= gallery.length - 1 ? 0 : index + 1));
       }
     };
-    window.addEventListener('keydown', onKey);
-    const t = window.setTimeout(() => lightboxCloseRef.current?.focus(), 0);
+
+    window.addEventListener('keydown', onKeyDown);
+
+    const timeout = window.setTimeout(() => {
+      lightboxCloseRef.current?.focus();
+    }, 0);
+
     return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener('keydown', onKey);
-      window.clearTimeout(t);
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+      window.clearTimeout(timeout);
     };
-  }, [lightboxOpen, gallery.length]);
+  }, [gallery.length, lightboxOpen]);
 
   useEffect(() => {
     setNotifyEmail('');
     setNotifyError(false);
-  }, [slug, selectedSize]);
+  }, [selectedSize, slug]);
 
   useEffect(() => {
-    if (!p || !selectedSize) {
+    if (!product || !selectedSize || !sizeDef?.disabled) {
       setNotifySuccess(false);
       return;
     }
-    const def = sizes.find((s) => s.key === selectedSize);
-    if (!def?.disabled) {
-      setNotifySuccess(false);
-      return;
-    }
-    setNotifySuccess(Boolean(localStorage.getItem(`horo-pdp-notify-${p.slug}-${selectedSize}`)));
-  }, [p, selectedSize]);
 
-  if (!p) {
+    setNotifySuccess(Boolean(localStorage.getItem(`horo-pdp-notify-${product.slug}-${selectedSize}`)));
+  }, [product, selectedSize, sizeDef?.disabled]);
+
+  function closeSizeGuide() {
+    setSizeGuideOpen(false);
+  }
+
+  function nudgeSizeSection() {
+    const element = sizeSectionRef.current;
+    if (!element) return;
+
+    element.classList.add(
+      'ring-2',
+      'ring-ember',
+      'ring-offset-4',
+      'rounded-md',
+      'transition-all',
+      'duration-300',
+      'pdp-size-nudge'
+    );
+
+    window.setTimeout(() => {
+      element.classList.remove(
+        'ring-2',
+        'ring-ember',
+        'ring-offset-4',
+        'rounded-md',
+        'transition-all',
+        'duration-300',
+        'pdp-size-nudge'
+      );
+    }, 1200);
+  }
+
+  function handleMissingSize() {
+    if (!sizeSectionRef.current) return;
+    sizeSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    nudgeSizeSection();
+  }
+
+  function handleNotifySubmit(event: FormEvent) {
+    event.preventDefault();
+    if (!product || !selectedSize || !sizeDef?.disabled) return;
+
+    const email = notifyEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setNotifyError(true);
+      return;
+    }
+
+    setNotifyError(false);
+    notifyRestockSignup({ productSlug: product.slug, size: selectedSize, email });
+    setNotifySuccess(true);
+  }
+
+  function handlePrimaryAction() {
+    if (!product) return;
+
+    if (oosSelected) {
+      notifyFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      window.setTimeout(() => notifyInputRef.current?.focus(), 320);
+      return;
+    }
+
+    if (!sizeReady) {
+      handleMissingSize();
+      return;
+    }
+
+    if (!selectedSize) return;
+    addItem(product.slug, selectedSize as ProductSizeKey, 1);
+    navigate('/cart');
+  }
+
+  function handleGalleryKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (lightboxOpen || gallery.length < 2) return;
+
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      setPhotoIndex((index) => (index <= 0 ? gallery.length - 1 : index - 1));
+    }
+
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      setPhotoIndex((index) => (index >= gallery.length - 1 ? 0 : index + 1));
+    }
+  }
+
+  function primaryCtaLabel() {
+    if (oosSelected) return copy.notifyMeCTA;
+    if (sizeReady) return `${copy.addBtnCTA} — ${formatEgp(product.priceEgp)}`;
+    return copy.selectSizePrompt;
+  }
+
+  const desktopCtaClass = `flex min-h-14 w-full items-center justify-center gap-2 rounded-xl px-4 py-4 text-sm font-semibold uppercase tracking-[0.18em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+    oosSelected
+      ? 'bg-obsidian text-white hover:bg-obsidian/92'
+      : 'bg-ember text-obsidian hover:bg-ember/90'
+  }`;
+
+  const mobileCtaClass = `flex min-h-14 w-full items-center justify-center gap-2 rounded-[16px] px-4 py-4 text-sm font-semibold uppercase tracking-[0.18em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+    oosSelected
+      ? 'bg-obsidian text-white hover:bg-obsidian/92'
+      : 'bg-ember text-obsidian hover:bg-ember/90'
+  }`;
+
+  if (!product) {
     return (
       <div className="bg-papyrus px-4 py-16 text-center">
         <p className="font-body text-warm-charcoal">Product not found.</p>
@@ -273,797 +411,454 @@ export function ProductDetail() {
     );
   }
 
-  const product = p;
-  const vibe = getVibe(product.vibeSlug);
-  const artist = getArtist(product.artistSlug);
-  const related = productsByVibe(product.vibeSlug).filter((x) => x.slug !== slug).slice(0, 4);
-  const mainSrc = gallery[photoIndex] ?? gallery[0];
-  const designStoryImageSrc =
-    gallery.length >= 5
-      ? gallery[4]
-      : gallery.length > 3
-        ? gallery[3]
-        : gallery.length > 0
-          ? gallery[gallery.length - 1]
-          : gallery[0];
-
-  const sizeDef = selectedSize ? sizes.find((s) => s.key === selectedSize) : undefined;
-  const oosSelected = Boolean(sizeDef?.disabled);
-  const sizeReady = Boolean(selectedSize && sizeDef && !sizeDef.disabled);
-
-  const inventoryHint =
-    selectedSize && product.inventoryHintBySize
-      ? product.inventoryHintBySize[selectedSize as ProductSizeKey]
-      : undefined;
-
-  const modelLine = copy.modelLineTemplate.replace(
-    '{fit}',
-    product.fitLabel ? ` — ${product.fitLabel.toLowerCase()} fit` : ''
-  );
-
-  const closeSizeGuide = () => setSizeGuideOpen(false);
-
-  function nudgeSizeSection(el: HTMLElement | null) {
-    if (!el) return;
-    el.classList.add('ring-2', 'ring-ember', 'ring-offset-4', 'rounded-md', 'transition-all', 'duration-300', 'pdp-size-nudge');
-    window.setTimeout(() => {
-      el.classList.remove('ring-2', 'ring-ember', 'ring-offset-4', 'rounded-md', 'pdp-size-nudge');
-    }, 1200);
-  }
-
-  function handleMissingSize() {
-    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767.98px)').matches) {
-      nudgeSizeSection(mobileSizeStripRef.current);
-      return;
-    }
-    if (sizeSectionRef.current) {
-      sizeSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      nudgeSizeSection(sizeSectionRef.current);
-    }
-  }
-
-  function handleNotifySubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!selectedSize || !sizeDef?.disabled) return;
-    const email = notifyEmail.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setNotifyError(true);
-      return;
-    }
-    setNotifyError(false);
-    notifyRestockSignup({ productSlug: product.slug, size: selectedSize, email });
-    setNotifySuccess(true);
-  }
-
-  function handleBuyOrScroll() {
-    if (oosSelected) {
-      if (notifySuccess) return;
-      notifyFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      window.setTimeout(() => notifyInputRef.current?.focus(), 450);
-      return;
-    }
-    if (!sizeReady) {
-      handleMissingSize();
-      return;
-    }
-    if (!p || !selectedSize) return;
-    addItem(p.slug, selectedSize as ProductSizeKey, 1);
-    navigate('/cart');
-  }
-
-  function openLightbox() {
-    setLightboxOpen(true);
-  }
-
-  function primaryCtaLine(): string {
-    if (oosSelected) return copy.notifyMeCTA;
-    if (sizeReady) return copy.addBtnCTA;
-    return copy.selectSizePrompt;
-  }
-
-  function showBrandTagUnderCta(): boolean {
-    return !oosSelected;
-  }
-
-  const ctaClass = `flex w-full min-h-12 flex-col items-center justify-center gap-1 rounded-sm py-4 text-sm font-semibold uppercase tracking-wider md:min-h-14 md:py-5 md:text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-    oosSelected
-      ? 'bg-amber-100 text-obsidian hover:bg-amber-200'
-      : sizeReady
-        ? 'bg-ember text-obsidian shadow-sm hover:bg-ember/90'
-        : 'border-2 border-stone bg-papyrus/80 text-clay opacity-90'
-  }`;
-
-  const wornIndices = PDP_SCHEMA.wornByGalleryIndices.filter((idx) => gallery[idx] != null);
-
-  function resolveWornSrc(galleryIdx: number): string | undefined {
-    return gallery[galleryIdx] ?? gallery[0];
-  }
-
   return (
-    <div
-      className={`product-page bg-papyrus text-obsidian${compactMobileDock ? ' pdp-dock-compact' : ''}`}
-    >
+    <div className="product-page bg-papyrus text-obsidian">
       <span id="pdp-size-hint" className="sr-only">
         {copy.sizeRequiredPrompt}
       </span>
 
       <nav
-        className="flex min-h-[52px] flex-wrap items-center gap-x-2 gap-y-1 border-b border-stone/40 bg-papyrus px-4 py-2.5 font-body text-[13px] leading-normal text-clay md:min-h-0 md:px-8 md:py-4 md:text-sm"
+        className="border-b border-stone/30 bg-papyrus/92 px-4 py-3 font-body text-[12px] text-clay backdrop-blur-sm md:px-8 md:py-3.5"
         aria-label="Breadcrumb"
       >
-        <Link
-          to="/"
-          className="-my-1 inline-flex min-h-11 min-w-[44px] items-center rounded-sm px-1.5 text-clay transition-colors hover:text-ember"
-        >
-          Home
-        </Link>
-        <span className="text-clay/50" aria-hidden>
-          /
-        </span>
-        {vibe ? (
-          <>
-            <Link
-              to={`/vibes/${vibe.slug}`}
-              className="-my-1 inline-flex min-h-11 min-w-[44px] max-w-[min(100%,12rem)] items-center truncate rounded-sm px-1.5 text-clay transition-colors hover:text-ember"
-            >
-              {vibe.name}
-            </Link>
-            <span className="text-clay/50" aria-hidden>
-              /
-            </span>
-          </>
-        ) : null}
-        <span className="min-h-11 max-w-[min(100%,100vw-8rem)] truncate py-1.5 text-warm-charcoal">{product.name}</span>
-      </nav>
-
-      <div className="flex min-h-0 flex-col bg-papyrus md:flex-row md:items-start">
-        <div className="relative w-full shrink-0 md:w-[60%] md:border-r md:border-stone/40">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             to="/"
-            className="font-pdp-serif absolute left-8 top-6 z-10 hidden text-3xl font-semibold tracking-wide text-obsidian md:block"
+            className="inline-flex min-h-11 items-center rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
           >
-            HORO
+            Home
           </Link>
-          <div className="px-0 md:px-0 lg:px-4">
-            <div className="flex flex-col w-full">
-              {/* Desktop Scrollable Stack */}
-              <div className="hidden md:flex flex-col w-full gap-4 pb-12">
-                {gallery.map((src, i) => (
-                  <button
-                    key={`${product.slug}-full-${i}`}
-                    type="button"
-                    className="relative block w-full overflow-hidden border-0 bg-transparent p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                    onClick={() => { setPhotoIndex(i); openLightbox(); }}
-                    aria-label={`Open full screen — ${viewLabels[i] ?? 'view'} (${i + 1} of ${gallery.length})`}
-                  >
-                    <div className="w-full bg-surface-container-high editorial-shadow">
-                      <TeeImage
-                        src={src}
-                        alt={mainGalleryAlt(product.name, i)}
-                        w={1600}
-                        eager={i === 0}
-                        className="h-auto w-full"
-                      />
-                    </div>
-                  </button>
-                ))}
+          <span className="text-clay/50" aria-hidden>
+            /
+          </span>
+          {vibe ? (
+            <>
+              <Link
+                to={`/vibes/${vibe.slug}`}
+                className="inline-flex min-h-11 max-w-[12rem] items-center truncate rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
+              >
+                {vibe.name}
+              </Link>
+              <span className="text-clay/50" aria-hidden>
+                /
+              </span>
+            </>
+          ) : null}
+          <span className="min-h-11 max-w-[min(100%,100vw-8rem)] truncate py-2 text-warm-charcoal">{product.name}</span>
+        </div>
+      </nav>
+
+      <section className="mx-auto grid max-w-[1600px] gap-6 px-4 pb-12 pt-4 md:grid-cols-[minmax(0,1.45fr)_minmax(22rem,30rem)] md:gap-8 md:px-8 md:pb-16 md:pt-6 lg:px-12">
+        <div className="space-y-4 md:space-y-5">
+          <div
+            className="outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+            onKeyDown={handleGalleryKeyDown}
+            tabIndex={0}
+            role="region"
+            aria-label="Product images"
+          >
+            <button
+              type="button"
+              className="block w-full overflow-hidden rounded-[20px] border border-stone/25 bg-surface-container-high focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+              onClick={() => setLightboxOpen(true)}
+              aria-label={`Open full screen — ${heroView.label}`}
+            >
+              <div className="aspect-[4/5] w-full overflow-hidden bg-surface-container-high">
+                <TeeImage
+                  src={heroView.src}
+                  alt={heroView.alt}
+                  w={1600}
+                  eager
+                  className="h-full w-full"
+                />
               </div>
-              
-              {/* Mobile: hero → story hook → thumbnails */}
-              <div className="flex flex-col gap-3 md:hidden w-full px-0 pt-2">
-                <div className="order-1 min-w-0 flex-1">
-                  <button
-                    type="button"
-                    className="relative block w-full overflow-hidden border-0 bg-transparent p-0 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                    onClick={openLightbox}
-                    aria-label={`Open full screen — ${viewLabels[photoIndex] ?? 'view'} (${photoIndex + 1} of ${gallery.length})`}
-                  >
-                    <div className="relative aspect-3/4 w-full bg-surface-container-high editorial-shadow">
-                      {mainSrc ? (
-                        <TeeImage
-                          src={mainSrc}
-                          alt={mainGalleryAlt(product.name, photoIndex)}
-                          w={1600}
-                          eager
-                          className="h-full w-full"
-                        />
-                      ) : null}
-                    </div>
-                  </button>
-                </div>
-                <div
-                  className="glass-morphism-violet order-2 mx-0 px-4 py-2 text-obsidian"
-                  role="region"
-                  aria-labelledby="pdp-story-mobile-heading"
-                >
-                  <p
-                    id="pdp-story-mobile-heading"
-                    className="font-label mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-obsidian"
-                  >
-                    {copy.storyCardHeading}
-                  </p>
-                  <p className="font-pdp-serif text-base font-normal leading-relaxed">{product.story}</p>
-                </div>
-                <div
-                  className="scroll-snap-carousel order-3 flex flex-row gap-2 overflow-x-auto snap-x snap-mandatory pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                  role="tablist"
-                  aria-label="Product views"
-                >
-                  {gallery.slice(0, 5).map((src, i) => (
-                    <button
-                      key={`${product.slug}-th-${i}`}
-                      type="button"
-                      role="tab"
-                      aria-selected={photoIndex === i}
-                      aria-label={`Show image ${i + 1} — ${viewLabels[i] ?? 'view'}`}
-                      onClick={() => setPhotoIndex(i)}
-                      className={`snap-start relative h-[5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-sm bg-surface-container-high md:aspect-[3/4] md:h-auto md:w-full ${
-                        photoIndex === i
-                          ? 'ring-2 ring-obsidian ring-offset-2 ring-offset-papyrus'
-                          : 'opacity-88 ring-1 ring-stone/70 hover:opacity-100'
-                      }`}
-                    >
-                      <TeeImage
-                        src={src}
-                        alt={mainGalleryAlt(product.name, i)}
-                        w={320}
-                        eager
-                        className="h-full w-full"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            </button>
           </div>
+
+          {hasGalleryRail ? (
+            <div className="grid grid-cols-5 gap-2 md:gap-3" aria-label="Product image thumbnails">
+              {gallery.map((view, index) => (
+                <button
+                  key={`${product.slug}-${view.key}`}
+                  type="button"
+                  onClick={() => setPhotoIndex(index)}
+                  className={`min-h-12 overflow-hidden rounded-xl border bg-surface-container-high transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                    photoIndex === index
+                      ? 'border-obsidian shadow-[0_0_0_2px_rgba(26,26,26,0.08)]'
+                      : 'border-stone/45 hover:border-obsidian/55'
+                  }`}
+                  aria-pressed={photoIndex === index}
+                  aria-label={`Show ${view.label}`}
+                >
+                  <div className="aspect-[4/5] w-full">
+                    <TeeImage src={view.src} alt="" w={320} className="h-full w-full" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
-        <div className="pdp-product-rail flex w-full flex-col border-stone/40 bg-papyrus md:w-[40%] md:border-l md:border-stone/40">
-        <nav
-          className="hidden w-full items-center justify-end gap-4 border-b border-transparent px-6 py-3 backdrop-blur-sm md:flex md:sticky md:top-0 md:z-20 md:border-b-0 md:bg-papyrus/95"
-          aria-label="Product page shortcuts"
-        >
-          <div className="flex items-center gap-0 md:ml-0">
-            <Link
-              to="/search"
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian transition-colors hover:text-clay"
-              aria-label="Search products"
-            >
-              <IconSearch />
-            </Link>
-            <Link
-              to="/cart"
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian transition-colors hover:text-clay"
-              aria-label="Bag / shopping cart"
-            >
-              <IconCart />
-            </Link>
-          </div>
-        </nav>
-
-        <div className="flex flex-col px-6 pb-8 pt-2 md:px-8 md:pb-24 lg:px-10 lg:pb-16 lg:pt-2">
-          <div className="pdp-rail-summary md:sticky md:top-0 md:z-[6] md:-mx-0 md:border-b md:border-stone/25 md:bg-papyrus/95 md:px-0 md:pb-3 md:pt-1 md:backdrop-blur-md">
-            <p className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 font-label text-[10px] font-medium uppercase tracking-[0.18em] text-clay">
-              {storyPlanSteps.map((step, i) => (
-                <span key={step} className="inline-flex items-center gap-2">
-                  {i > 0 ? (
-                    <span className="text-clay/45" aria-hidden>
-                      →
-                    </span>
-                  ) : null}
-                  {step}
-                </span>
-              ))}
-            </p>
-            <header ref={productHeaderRef} className="mb-4 space-y-3 md:mb-0 md:space-y-3.5" data-purpose="product-header">
+        <aside className="md:sticky md:top-24 md:self-start">
+          <div className="space-y-6 md:rounded-[24px] md:border md:border-stone/35 md:bg-white/55 md:p-6 md:shadow-[0_24px_70px_-52px_rgba(26,26,26,0.4)] md:backdrop-blur-md lg:p-8">
+            <header className="space-y-4">
               {vibe ? (
                 <Link
                   to={`/vibes/${vibe.slug}`}
-                  className="font-label inline-flex max-w-full items-center rounded-full border border-dusk-violet/45 bg-dusk-violet/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-dusk-violet transition-colors hover:border-dusk-violet/80 hover:bg-dusk-violet/18"
+                  className="font-label inline-flex min-h-11 items-center rounded-full border border-dusk-violet/35 bg-dusk-violet/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet transition-colors hover:border-dusk-violet/60 hover:bg-dusk-violet/14"
                 >
                   {vibe.name}
                 </Link>
               ) : null}
-              <h1 className="font-pdp-serif text-3xl font-semibold uppercase leading-tight tracking-tight text-obsidian md:text-4xl lg:text-5xl">
+
+              <h1 className="font-pdp-serif text-[clamp(2rem,5vw,3.4rem)] font-semibold uppercase leading-[0.95] tracking-tight text-obsidian">
                 {formatTitleLines(product.name)}
               </h1>
+            </header>
 
-              <div
-                className="flex flex-wrap items-center gap-2"
-                aria-label={`Rated ${copy.ratingValue} out of 5, ${copy.reviewCount} reviews`}
+            <section
+              className="glass-morphism-violet rounded-[20px] p-5 text-obsidian md:p-6"
+              aria-labelledby="pdp-story-card-heading"
+            >
+              <p
+                id="pdp-story-card-heading"
+                className="font-label mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-obsidian"
               >
-                <span className="flex gap-0.5" aria-hidden>
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <IconStar
-                      key={i}
-                      className={`h-3.5 w-3.5 md:h-4 md:w-4 ${
-                        i < Math.round(copy.ratingValue) ? 'text-amber-600' : 'text-stone/35'
-                      }`}
-                    />
-                  ))}
-                </span>
-                <span className="font-body text-sm text-warm-charcoal">
-                  <span className="font-medium text-obsidian">{copy.ratingValue.toFixed(1)}</span>
-                  <span className="text-clay"> ({copy.reviewCount} reviews)</span>
-                </span>
-              </div>
+                {copy.storyCardHeading}
+              </p>
+              <p className="font-pdp-serif text-[1.05rem] leading-relaxed md:text-[1.15rem]">{product.story}</p>
+            </section>
 
-              <p className="font-pdp-serif text-2xl font-semibold leading-[1.3] text-obsidian md:text-[26px]">
+            <div className="space-y-5">
+              <p className="font-pdp-serif text-[1.8rem] font-semibold leading-none text-obsidian md:text-[2rem]">
                 {formatEgp(product.priceEgp)}
               </p>
-              <p className="border-t border-stone/30 pt-3 font-body text-[11px] leading-relaxed text-warm-charcoal md:text-xs">
-                {trustStripItems.join(' · ')}
-              </p>
-            </header>
-          </div>
 
-          <div
-            ref={mobileSizeStripRef}
-            className="md:hidden pointer-events-none fixed left-6 right-6 z-90 flex flex-col gap-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
-            style={{ bottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
-            role="region"
-            aria-label="Size and purchase"
-          >
-            <div
-              className={`pointer-events-auto rounded-xl border border-stone/50 bg-papyrus/98 p-3 shadow-lg backdrop-blur-md${compactMobileDock ? ' hidden' : ''}`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-label text-[12px] font-medium uppercase tracking-[0.28em] text-label">Size</p>
-                <button
-                  ref={mobileSizeGuideTriggerRef}
-                  type="button"
-                  onClick={() => setSizeGuideOpen(true)}
-                  className="font-label text-[11px] font-medium uppercase tracking-wide text-deep-teal underline decoration-deep-teal/40 underline-offset-4 hover:text-obsidian"
-                >
-                  {copy.sizeGuideLabel}
-                </button>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Size">
-                {sizes.map(({ key, disabled }) => {
-                  const isSel = selectedSize === key;
-                  return (
-                    <button
-                      key={`mobile-${key}`}
-                      type="button"
-                      onClick={() => setSelectedSize(key)}
-                      aria-pressed={isSel}
-                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border-2 font-headline text-base font-semibold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                        disabled
-                          ? isSel
-                            ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-500/25 line-through decoration-obsidian/30'
-                            : 'border-stone bg-papyrus/50 text-clay line-through decoration-obsidian/30 hover:border-amber-300 hover:text-amber-700'
-                          : isSel
-                            ? 'border-obsidian bg-white text-obsidian shadow-sm ring-2 ring-obsidian/25'
-                            : 'border-stone/80 bg-white text-obsidian hover:border-obsidian'
-                      }`}
-                    >
-                      <span aria-disabled={disabled}>{key}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {inventoryHint ? (
-                <p className="mt-2 font-label text-[10px] font-medium uppercase tracking-wide text-ember">{inventoryHint}</p>
-              ) : null}
-              {oosSelected ? (
-                <p className="mt-1 font-label text-[10px] font-medium uppercase tracking-wide text-amber-800">{copy.lowStockLabel} — out of stock</p>
-              ) : null}
-            </div>
-
-            <div
-              className={`pointer-events-auto overflow-hidden rounded-2xl border shadow-2xl ${
-                oosSelected && notifySuccess
-                  ? 'border-deep-teal/25 bg-frost-blue/40 backdrop-blur-md'
-                  : oosSelected
-                    ? 'border-amber-300/80 bg-amber-100 backdrop-blur-md'
-                    : 'border-obsidian/10 bg-ember backdrop-blur-md'
-              }`}
-            >
-              <button
-                ref={mobileCtaRef}
-                type="button"
-                onClick={() => {
-                  if (oosSelected) {
-                    handleBuyOrScroll();
-                    return;
-                  }
-                  if (!sizeReady) {
-                    handleMissingSize();
-                    return;
-                  }
-                  handleBuyOrScroll();
-                }}
-                className={`flex w-full min-h-12 flex-col items-center justify-center gap-0.5 px-2 py-3 text-sm font-semibold uppercase tracking-wider transition-colors focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                  oosSelected && notifySuccess
-                    ? 'text-obsidian hover:bg-frost-blue/55'
-                    : oosSelected
-                      ? 'text-obsidian hover:bg-amber-200/80'
-                      : 'text-obsidian hover:bg-ember/90'
-                }`}
-              >
-                {oosSelected ? (
-                  notifySuccess ? (
-                    <span className="font-body text-xs font-medium normal-case leading-snug">{copy.notifySuccess}</span>
-                  ) : (
-                    <>
-                      <span className="flex items-center gap-2">
-                        <IconCart />
-                        <span>{copy.notifyMeCTA}</span>
-                      </span>
-                      <span className="text-[10px] font-medium normal-case tracking-normal opacity-80">{copy.notifyEmailPlaceholder}</span>
-                    </>
-                  )
-                ) : (
-                  <>
-                    <span className="flex items-center gap-2">
-                      <IconCart />
-                      <span>{sizeReady ? copy.addBtnCTA : copy.selectSizePrompt}</span>
-                    </span>
-                    <span className="text-[10px] font-medium normal-case tracking-normal text-obsidian">
-                      {formatEgp(product.priceEgp)} · {copy.addBtnTag}
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div ref={sizeSectionRef} className="hidden space-y-3 md:block">
-            <div className="flex items-center justify-between gap-3" aria-label="Size and size guide">
-              <p className="font-label text-[12px] font-medium uppercase tracking-[0.28em] text-label">Size</p>
-              <button
-                ref={sizeGuideTriggerRef}
-                type="button"
-                onClick={() => setSizeGuideOpen(true)}
-                className="font-label text-[11px] font-medium uppercase tracking-wide text-deep-teal underline decoration-deep-teal/40 underline-offset-4 hover:text-obsidian"
-              >
-                {copy.sizeGuideLabel}
-              </button>
-            </div>
-
-            <div className="flex flex-wrap gap-2.5" role="group" aria-label="Size">
-              {sizes.map(({ key, disabled }) => {
-                const isSel = selectedSize === key;
-                return (
+              <div ref={sizeSectionRef} className="space-y-3 border-t border-stone/30 pt-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">Size</p>
                   <button
-                    key={key}
+                    ref={sizeGuideTriggerRef}
                     type="button"
-                    onClick={() => setSelectedSize(key)}
-                    aria-pressed={isSel}
-                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-sm border-2 font-headline text-lg font-semibold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                      disabled
-                        ? isSel
-                          ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm ring-2 ring-amber-500/25 line-through decoration-obsidian/30'
-                          : 'border-stone bg-papyrus/50 text-clay line-through decoration-obsidian/30 hover:border-amber-300 hover:text-amber-700'
-                        : isSel
-                          ? 'border-obsidian bg-white text-obsidian shadow-sm ring-2 ring-obsidian/25'
-                          : 'border-stone/80 bg-white text-obsidian hover:border-obsidian'
-                    }`}
+                    onClick={() => setSizeGuideOpen(true)}
+                    className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
                   >
-                    <span aria-disabled={disabled}>{key}</span>
+                    {copy.sizeGuideLabel}
                   </button>
-                );
-              })}
-            </div>
+                </div>
 
-            {inventoryHint ? (
-              <p className="font-label text-[11px] font-medium uppercase tracking-wide text-ember animate-fade-in">
-                {inventoryHint}
-              </p>
-            ) : null}
+                <div className="flex flex-wrap gap-2.5" role="group" aria-label="Size">
+                  {sizes.map(({ key, disabled }) => {
+                    const isSelected = selectedSize === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setSelectedSize(isSelected ? null : key)}
+                        aria-pressed={isSelected}
+                        className={`flex h-12 min-w-12 items-center justify-center rounded-xl border-2 px-3 font-headline text-base font-semibold transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                          disabled
+                            ? isSelected
+                              ? 'border-obsidian bg-obsidian text-white line-through decoration-white/70'
+                              : 'border-stone bg-papyrus/50 text-clay line-through decoration-obsidian/30 hover:border-obsidian/45'
+                            : isSelected
+                              ? 'border-obsidian bg-white text-obsidian shadow-sm'
+                              : 'border-stone/80 bg-white text-obsidian hover:border-obsidian'
+                        }`}
+                      >
+                        <span aria-disabled={disabled}>{key}</span>
+                      </button>
+                    );
+                  })}
+                </div>
 
-            {oosSelected ? (
-              <p className="font-label text-[11px] font-medium text-amber-800 uppercase tracking-wide animate-fade-in">
-                {copy.lowStockLabel} — out of stock
-              </p>
-            ) : null}
-          </div>
-
-          <div className="mt-6 space-y-2 border-t border-stone/25 pt-6 md:mt-8 md:border-t-0 md:pt-0">
-            <p className="font-body text-[13px] leading-relaxed text-clay md:text-sm">{modelLine}</p>
-            {product.stockNote ? (
-              <p className="font-label text-[11px] font-medium uppercase tracking-wide text-ember">{product.stockNote}</p>
-            ) : null}
-          </div>
-
-          <div className="mt-6 space-y-4">
-            {oosSelected ? (
-              <form ref={notifyFormRef} onSubmit={handleNotifySubmit} className="space-y-3">
-                {notifySuccess ? (
-                  <p className="rounded-sm border border-deep-teal/30 bg-frost-blue/20 px-4 py-3 font-body text-sm text-obsidian">
-                    {copy.notifySuccess}
+                {inventoryHint ? (
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+                    {inventoryHint}
                   </p>
-                ) : (
-                  <>
-                    <label htmlFor={notifyFieldId} className="font-label text-[11px] font-medium uppercase tracking-wide text-label">
-                      {copy.notifyFieldLabel}
-                    </label>
-                    <input
-                      ref={notifyInputRef}
-                      id={notifyFieldId}
-                      type="email"
-                      name="notify-email"
-                      autoComplete="email"
-                      placeholder={copy.notifyEmailPlaceholder}
-                      value={notifyEmail}
-                      onChange={(e) => {
-                        setNotifyEmail(e.target.value);
-                        setNotifyError(false);
-                      }}
-                      className="w-full rounded-sm border border-stone bg-white px-3 py-3 font-body text-sm text-obsidian shadow-sm placeholder:text-clay/80 focus:border-deep-teal focus:outline-none focus:ring-2 focus:ring-deep-teal/25"
-                      aria-invalid={notifyError}
-                      aria-describedby={notifyError ? `${notifyFieldId}-err` : undefined}
-                    />
-                    {notifyError ? (
-                      <p id={`${notifyFieldId}-err`} className="font-body text-xs text-ember">
-                        {copy.notifyInvalidEmail}
-                      </p>
-                    ) : null}
-                    <button type="submit" className={ctaClass}>
-                      <span className="flex items-center justify-center gap-2">
-                        <IconCart />
-                        <span>{copy.notifyMeCTA}</span>
-                      </span>
-                    </button>
-                  </>
-                )}
-              </form>
-            ) : (
-              <button
-                type="button"
-                onClick={handleBuyOrScroll}
-                className={`${ctaClass} hidden md:flex`}
-                aria-describedby={sizeReady ? undefined : 'pdp-size-hint'}
-              >
-                <span className="flex items-center justify-center gap-2">
-                  <IconCart />
-                  <span>{primaryCtaLine()}</span>
-                </span>
-                {showBrandTagUnderCta() ? (
-                  <span
-                    className={`max-w-[95%] text-center text-[11px] font-medium normal-case tracking-normal md:text-xs ${
-                      sizeReady ? 'text-obsidian/80' : 'text-clay/90'
-                    }`}
-                  >
-                    {copy.addBtnTag}
-                  </span>
                 ) : null}
-              </button>
-            )}
 
-            <p className="text-center font-body text-xs leading-snug text-warm-charcoal md:text-sm">{copy.shippingLine}</p>
-          </div>
+                {oosSelected ? (
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+                    Out of stock for this size
+                  </p>
+                ) : null}
+              </div>
 
-          {artist ? (
-            <div className="mt-8 flex items-center gap-3 border-t border-stone/25 pt-8">
-              {artistAvatars[artist.slug] ? (
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/50">
-                  <TeeImage
-                    src={artistAvatars[artist.slug]}
-                    alt={artist.name}
-                    w={160}
-                    eager
-                    className="h-full w-full object-cover"
-                  />
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={handlePrimaryAction}
+                  className={desktopCtaClass}
+                  aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
+                >
+                  <IconCart />
+                  <span>{primaryCtaLabel()}</span>
+                </button>
+
+                {oosSelected ? (
+                  <div ref={notifyFormRef} className="space-y-3">
+                    {notifySuccess ? (
+                      <p
+                        className="rounded-xl border border-deep-teal/25 bg-frost-blue/40 px-4 py-3 font-body text-sm text-obsidian"
+                        role="status"
+                      >
+                        {copy.notifySuccess}
+                      </p>
+                    ) : (
+                      <form onSubmit={handleNotifySubmit} className="space-y-3">
+                        <label
+                          htmlFor={notifyFieldId}
+                          className="font-label block text-[11px] font-medium uppercase tracking-[0.18em] text-label"
+                        >
+                          {copy.notifyFieldLabel}
+                        </label>
+                        <input
+                          ref={notifyInputRef}
+                          id={notifyFieldId}
+                          type="email"
+                          name="notify-email"
+                          autoComplete="email"
+                          placeholder={copy.notifyEmailPlaceholder}
+                          value={notifyEmail}
+                          onChange={(event) => {
+                            setNotifyEmail(event.target.value);
+                            setNotifyError(false);
+                          }}
+                          className="min-h-12 w-full rounded-xl border border-stone bg-white px-4 py-3 font-body text-sm text-obsidian shadow-sm placeholder:text-clay/80 focus:border-deep-teal focus:outline-none focus:ring-2 focus:ring-deep-teal/25"
+                          aria-invalid={notifyError}
+                          aria-describedby={notifyError ? `${notifyFieldId}-error` : undefined}
+                        />
+                        {notifyError ? (
+                          <p id={`${notifyFieldId}-error`} className="font-body text-xs text-obsidian">
+                            {copy.notifyInvalidEmail}
+                          </p>
+                        ) : null}
+                        <button type="submit" className={desktopCtaClass}>
+                          <IconCart />
+                          <span>{copy.notifyMeCTA}</span>
+                        </button>
+                      </form>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="flex flex-wrap gap-2 border-t border-stone/30 pt-5" aria-label="Trust and service highlights">
+                {trustItems.map((item) => (
+                  <span
+                    key={item}
+                    className="font-label rounded-full border border-stone/50 bg-white/70 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-warm-charcoal"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              {artist ? (
+                <div className="flex items-center gap-3 border-t border-stone/30 pt-5">
+                  {artistAvatars[artist.slug] ? (
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/45">
+                      <TeeImage
+                        src={artistAvatars[artist.slug]}
+                        alt={artist.name}
+                        w={160}
+                        eager
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : null}
+                  <p className="font-body text-sm leading-snug text-warm-charcoal">
+                    <span className="text-clay">{copy.illustratedByLabel}</span>{' '}
+                    <Link
+                      to={`/search?q=${encodeURIComponent(artist.name)}`}
+                      className="font-medium text-obsidian underline decoration-obsidian/25 underline-offset-2 transition-colors hover:text-deep-teal"
+                    >
+                      {artist.name}
+                    </Link>
+                  </p>
                 </div>
               ) : null}
-              <p className="font-body text-sm leading-snug text-warm-charcoal">
-                <span className="text-clay">{copy.illustratedByLabel}</span>{' '}
-                <Link
-                  to={`/search?q=${encodeURIComponent(artist.name)}`}
-                  className="font-medium text-obsidian underline decoration-obsidian/25 underline-offset-2 transition-colors hover:text-deep-teal"
-                >
-                  {artist.name}
-                </Link>
-              </p>
             </div>
-          ) : null}
-
-          <div
-            className="glass-morphism-violet mb-6 mt-8 hidden p-5 text-obsidian md:block"
-            role="region"
-            aria-labelledby="pdp-story-short-heading"
-          >
-            <p
-              id="pdp-story-short-heading"
-              className="font-label mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-obsidian"
-            >
-              {copy.storyCardHeading}
-            </p>
-            <p className="font-pdp-serif text-base font-normal leading-relaxed md:text-[17px]">{product.story}</p>
           </div>
+        </aside>
+      </section>
 
-          <div className="mt-4 border-t border-stone/30">
-                <details className="group">
-                  <summary className="font-headline flex cursor-pointer list-none items-center justify-between py-5 text-sm font-medium uppercase tracking-wide text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal [&::-webkit-details-marker]:hidden">
-                    {copy.accordionProductDetails}
-                    <IconChevronDown />
-                  </summary>
-                  <div className="animate-fade-in pb-5 pt-1">
-                    <div className="pdp-feature-strip" role="list">
-                      {featureStripItems.map(({ label, Icon }) => (
-                        <div key={label} className="pdp-feature-item" role="listitem">
-                          <div className="pdp-feature-icon" aria-hidden>
-                            <Icon />
-                          </div>
-                          <p className="font-body text-center text-[11px] font-medium leading-snug text-warm-charcoal md:text-left md:text-xs">
-                            {label}
-                          </p>
-                        </div>
-                      ))}
+      <section className="border-t border-stone/25 bg-papyrus">
+        <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-8 md:py-12 lg:px-12">
+          <div className="max-w-[980px]">
+            <AccordionSection title={copy.accordionProductDetails}>
+              <p className="mb-5 font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
+                {modelLine}
+              </p>
+              <div className="pdp-feature-strip" role="list">
+                {featureStripItems.map(({ label, Icon }) => (
+                  <div key={label} className="pdp-feature-item" role="listitem">
+                    <div className="pdp-feature-icon" aria-hidden>
+                      <Icon />
                     </div>
-                  </div>
-                </details>
-
-                <details className="group border-t border-stone/30">
-                  <summary className="font-headline flex cursor-pointer list-none items-center justify-between py-5 text-sm font-medium uppercase tracking-wide text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal [&::-webkit-details-marker]:hidden">
-                    {copy.accordionDesignStory}
-                    <IconChevronDown />
-                  </summary>
-                  <div className="animate-fade-in pb-5 pt-1">
-                    <figure className="pdp-design-story-figure relative mb-4 overflow-hidden rounded-lg bg-surface-container-high editorial-shadow">
-                      <div className="pdp-design-story-media relative h-[min(400px,70vh)] min-h-[240px] w-full md:h-[400px]">
-                        {designStoryImageSrc ? (
-                          <TeeImage
-                            src={designStoryImageSrc}
-                            alt={`${product.name} — print detail`}
-                            w={1200}
-                            eager
-                            className="h-full w-full object-cover"
-                          />
-                        ) : null}
-                      </div>
-                    </figure>
-                    <p className="font-body text-sm font-medium leading-relaxed text-warm-charcoal md:text-[15px]">
-                      {copy.designStoryAccordionBody}{' '}
-                      <span className="block pt-2 text-warm-charcoal/95">
-                        Part of the{' '}
-                        {vibe ? (
-                          <Link
-                            to={`/vibes/${vibe.slug}`}
-                            className="border-b border-primary font-medium text-obsidian transition-colors hover:text-primary"
-                          >
-                            {vibe.name}
-                          </Link>
-                        ) : (
-                          'collection'
-                        )}{' '}
-                        line — artwork by{' '}
-                        {artist ? (
-                          <Link
-                            to={`/search?q=${encodeURIComponent(artist.name)}`}
-                            className="font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-2 transition-colors hover:text-obsidian"
-                          >
-                            {artist.name}
-                          </Link>
-                        ) : (
-                          'the artist'
-                        )}
-                        .
-                      </span>
+                    <p className="font-body text-center text-[11px] font-medium leading-snug text-warm-charcoal md:text-left md:text-xs">
+                      {label}
                     </p>
                   </div>
-                </details>
-
-                <details className="group border-t border-stone/30">
-                  <summary className="font-headline flex cursor-pointer list-none items-center justify-between py-5 text-sm font-medium uppercase tracking-wide text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal [&::-webkit-details-marker]:hidden">
-                    {copy.accordionShipping}
-                    <IconChevronDown />
-                  </summary>
-                  <div className="animate-fade-in space-y-3 pb-5 pt-1 font-body text-sm text-warm-charcoal">
-                    {copy.shippingSections.map((section) => (
-                      <p key={section.title}>
-                        <strong>{section.title}:</strong> {section.body}
-                      </p>
-                    ))}
-                  </div>
-                </details>
+                ))}
               </div>
-        </div>
-      </div>
-      </div>
+            </AccordionSection>
 
-      <section className="border-t border-stone/25 bg-papyrus px-6 py-10 md:px-10 lg:px-12">
-        <div className="mb-6 flex flex-col gap-2">
-          <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">{copy.wornByEyebrow}</span>
-          <h2 className="font-headline text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">{copy.wornByTitle}</h2>
-        </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-          {wornIndices.map((idx, slot) => {
-            const src = resolveWornSrc(idx);
-            const cap = copy.wornByCaptions[slot] ?? '';
-            if (!src) return null;
-            return (
-              <figure key={`${product.slug}-worn-slot-${idx}`} className="overflow-hidden rounded-lg bg-surface-container-high ring-1 ring-stone/40">
-                <div className="aspect-[3/4] w-full">
-                  <TeeImage src={src} alt={`${product.name} — ${cap}`} w={600} className="h-full w-full object-cover" />
-                </div>
-                <figcaption className="font-label px-2 py-2 text-[10px] font-medium uppercase tracking-wider text-clay">{cap}</figcaption>
-              </figure>
-            );
-          })}
+            <AccordionSection title={copy.accordionDesignStory}>
+              {detailView && detailView.src !== primaryGallerySrc ? (
+                <figure className="mb-4 overflow-hidden rounded-[18px] border border-stone/30 bg-surface-container-high">
+                  <div className="aspect-[4/5] w-full md:aspect-[16/10]">
+                    <TeeImage
+                      src={detailView.src}
+                      alt={detailView.alt}
+                      w={1200}
+                      className="h-full w-full"
+                    />
+                  </div>
+                </figure>
+              ) : null}
+              <p className="font-body text-sm font-medium leading-relaxed text-warm-charcoal md:text-[15px]">
+                {copy.designStoryAccordionBody}{' '}
+                <span className="block pt-2 text-warm-charcoal/95">
+                  Part of the{' '}
+                  {vibe ? (
+                    <Link
+                      to={`/vibes/${vibe.slug}`}
+                      className="border-b border-obsidian/25 font-medium text-obsidian transition-colors hover:text-deep-teal"
+                    >
+                      {vibe.name}
+                    </Link>
+                  ) : (
+                    'collection'
+                  )}{' '}
+                  line — artwork by{' '}
+                  {artist ? (
+                    <Link
+                      to={`/search?q=${encodeURIComponent(artist.name)}`}
+                      className="font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-2 transition-colors hover:text-obsidian"
+                    >
+                      {artist.name}
+                    </Link>
+                  ) : (
+                    'the artist'
+                  )}
+                  .
+                </span>
+              </p>
+            </AccordionSection>
+
+            <AccordionSection title={copy.accordionShipping}>
+              <div className="space-y-3 font-body text-sm text-warm-charcoal">
+                {copy.shippingSections.map((section) => (
+                  <p key={section.title}>
+                    <strong>{section.title}:</strong> {section.body}
+                  </p>
+                ))}
+              </div>
+            </AccordionSection>
+          </div>
         </div>
       </section>
 
       <section className="border-t border-stone/25 bg-papyrus">
-        <div className="flex flex-wrap items-end justify-between gap-4 px-6 pb-2 pt-8 md:px-10 md:pb-3 md:pt-10 lg:px-12">
-          <div>
-            <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">Discovery</span>
-            <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
-              More from {vibe?.name ?? 'this vibe'}
-            </h2>
-            <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
-          </div>
-          {vibe ? (
-            <Link
-              to={`/vibes/${vibe.slug}`}
-              className="font-label rounded-sm border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white"
-            >
-              View all
-            </Link>
-          ) : null}
-        </div>
-        <div className="mx-0 flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden px-6 pb-10 pt-4 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:px-10 md:pb-12 md:pt-2 md:snap-none [&::-webkit-scrollbar]:hidden lg:px-12">
-          {related.map((r) => (
-            <article
-              key={r.slug}
-              className="group relative w-[min(260px,78vw)] shrink-0 snap-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md md:w-auto md:min-w-0 md:shrink md:snap-none"
-            >
+        <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-8 md:px-8 md:pb-12 md:pt-10 lg:px-12">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">Discovery</span>
+              <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
+                More from {vibe?.name ?? 'this vibe'}
+              </h2>
+              <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
+            </div>
+            {vibe ? (
               <Link
-                to={`/products/${r.slug}`}
-                className="absolute inset-0 z-[1] rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                to={`/vibes/${vibe.slug}`}
+                className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
               >
-                <span className="sr-only">
-                  View {r.name}, {formatEgp(r.priceEgp)}
-                </span>
+                View all
               </Link>
-              <div className="pointer-events-none relative z-[2]">
-                <div className="relative overflow-hidden rounded-t-lg">
-                  <div className="transition-transform duration-700 ease-out group-hover:scale-[1.04]">
-                    <TeeImageFrame
-                      src={getProductMedia(r.slug).main}
-                      alt={`HORO “${r.name}” tee`}
-                      w={500}
-                      aspectRatio="3/4"
-                      borderRadius="0.5rem 0.5rem 0 0"
-                      frameStyle={{ marginBottom: 0 }}
-                    />
+            ) : null}
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-4 md:gap-6">
+            {related.map((item) => (
+              <article
+                key={item.slug}
+                className="group relative overflow-hidden rounded-[18px] bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md"
+              >
+                <Link
+                  to={`/products/${item.slug}`}
+                  className="absolute inset-0 z-[1] rounded-[18px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                >
+                  <span className="sr-only">
+                    View {item.name}, {formatEgp(item.priceEgp)}
+                  </span>
+                </Link>
+
+                <div className="pointer-events-none relative z-[2]">
+                  <div className="relative overflow-hidden rounded-t-[18px]">
+                    <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
+                      <TeeImageFrame
+                        src={getProductMedia(item.slug).main}
+                        alt={`HORO “${item.name}” tee`}
+                        w={500}
+                        aspectRatio="4/5"
+                        borderRadius="1.125rem 1.125rem 0 0"
+                        frameStyle={{ marginBottom: 0 }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="quick-view-pill font-label pointer-events-auto absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setRelatedQuickViewSlug(item.slug);
+                      }}
+                      aria-label={`Quick view: ${item.name}`}
+                    >
+                      Quick view
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    className="quick-view-pill font-label pointer-events-auto absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setRelatedQuickViewSlug(r.slug);
-                    }}
-                    aria-label={`Quick view: ${r.name}`}
-                  >
-                    Quick view
-                  </button>
+
+                  <div className="p-4">
+                    <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
+                      {item.name}
+                    </h3>
+                    <p className="font-body mt-1 text-xs text-clay">{formatEgp(item.priceEgp)}</p>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
-                    {r.name}
-                  </h3>
-                  <p className="font-body mt-1 text-xs text-clay">{formatEgp(r.priceEgp)}</p>
-                </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))}
+          </div>
         </div>
       </section>
+
+      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-90 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden">
+        <div className="pointer-events-auto rounded-[20px] border border-obsidian/10 bg-papyrus/92 p-2 shadow-[0_24px_60px_-28px_rgba(26,26,26,0.55)] backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={handlePrimaryAction}
+            className={mobileCtaClass}
+            aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
+          >
+            <IconCart />
+            <span>{primaryCtaLabel()}</span>
+          </button>
+        </div>
+      </div>
 
       {lightboxOpen ? (
         <div
           className="pdp-lightbox fixed inset-0 z-130 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label={`Lightbox — ${viewLabels[photoIndex] ?? 'product'} view`}
+          aria-label={`Lightbox — ${heroView.label}`}
         >
           <button
             type="button"
-            className="absolute inset-0 z-0 bg-obsidian/85"
+            className="absolute inset-0 z-0 bg-obsidian/88"
             aria-label="Close enlarged image"
             onClick={() => setLightboxOpen(false)}
           />
@@ -1071,14 +866,14 @@ export function ProductDetail() {
             <button
               ref={lightboxCloseRef}
               type="button"
-              className="pointer-events-auto font-label relative z-20 mb-3 shrink-0 rounded-sm border border-white/40 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="pointer-events-auto font-label relative z-20 mb-3 min-h-12 rounded-sm border border-white/35 bg-white/10 px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               onClick={() => setLightboxOpen(false)}
             >
               Close
             </button>
             <img
-              src={imgUrl(mainSrc, 2000)}
-              alt={mainGalleryAlt(product.name, photoIndex)}
+              src={imgUrl(heroView.src, 2000)}
+              alt={heroView.alt}
               className="pointer-events-none max-h-[min(85vh,88vw)] w-auto max-w-full object-contain shadow-2xl"
               width={1200}
               height={1600}
@@ -1095,7 +890,7 @@ export function ProductDetail() {
             role="dialog"
             aria-modal="true"
             aria-labelledby={sizeGuideTitleId}
-            className="relative z-10 m-0 w-full max-h-[90vh] overflow-y-auto rounded-t-2xl border border-white/60 bg-frost-blue/25 px-5 py-6 shadow-[0_4px_24px_rgba(26,26,26,0.12)] backdrop-blur-lg sm:m-4 sm:max-w-lg sm:rounded-2xl sm:border-white/65"
+            className="relative z-10 m-0 max-h-[90vh] w-full overflow-y-auto rounded-t-2xl border border-white/60 bg-frost-blue/25 px-5 py-6 shadow-[0_4px_24px_rgba(26,26,26,0.12)] backdrop-blur-lg sm:m-4 sm:max-w-lg sm:rounded-2xl sm:border-white/65"
           >
             <div className="mb-4 flex items-start justify-between gap-4">
               <h2 id={sizeGuideTitleId} className="font-headline text-[17px] font-medium leading-[1.4] text-obsidian">
@@ -1104,12 +899,13 @@ export function ProductDetail() {
               <button
                 type="button"
                 data-size-guide-close
-                className="font-label shrink-0 rounded-sm border border-obsidian px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white"
+                className="font-label min-h-11 shrink-0 rounded-sm border border-obsidian px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white"
                 onClick={closeSizeGuide}
               >
                 Close
               </button>
             </div>
+
             <div className="overflow-x-auto">
               <table className="w-full min-w-[280px] border-collapse font-body text-sm text-warm-charcoal">
                 <thead>
@@ -1132,6 +928,7 @@ export function ProductDetail() {
                 </tbody>
               </table>
             </div>
+
             <p className="mt-4 font-body text-[13px] leading-normal text-clay">{copy.sizeGuideModelNote}</p>
           </div>
         </div>

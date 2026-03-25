@@ -1,20 +1,11 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getProductMedia, imgUrl } from '../data/images';
+import { getProductMedia, getProductPdpGallery, imgUrl } from '../data/images';
 import { getProduct, getVibe, type ProductSizeKey } from '../data/site';
 import { useCart } from '../cart/CartContext';
 import { formatEgp } from '../utils/formatPrice';
 
 const QUICK_VIEW_SIZES = ['M', 'L', 'XL'] as const;
-
-const GALLERY_VIEW_LABELS = ['flat lay', 'on-body', 'lifestyle', 'print detail', 'size reference'] as const;
-
-function galleryViewLabel(photoIndex: number): string {
-  if (photoIndex >= 0 && photoIndex < GALLERY_VIEW_LABELS.length) {
-    return GALLERY_VIEW_LABELS[photoIndex];
-  }
-  return `image ${photoIndex + 1}`;
-}
 
 type ProductQuickViewProps = {
   open: boolean;
@@ -36,10 +27,16 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   const p = productSlug ? getProduct(productSlug) : undefined;
   const vibe = p ? getVibe(p.vibeSlug) : undefined;
   const media = p ? getProductMedia(p.slug) : null;
-  const gallery = media?.gallery ?? [];
+  const gallery = p ? getProductPdpGallery(p.name, p.slug) : [];
   const galleryLen = gallery.length;
   const safePhotoIndex = galleryLen > 0 ? Math.min(photoIndex, galleryLen - 1) : 0;
-  const mainSrc = gallery[safePhotoIndex] ?? gallery[0] ?? '';
+  const mainView =
+    gallery[safePhotoIndex] ??
+    gallery[0] ?? {
+      src: media?.main ?? '',
+      alt: p ? `HORO “${p.name}” t-shirt.` : '',
+      label: 'image',
+    };
   const fit = p?.fitLabel ?? 'Regular';
 
   useEffect(() => {
@@ -109,8 +106,8 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
           <div className="flex w-full shrink-0 flex-col md:min-h-[min(560px,85vh)] md:w-1/2">
             <div className="relative min-h-[240px] flex-1 md:min-h-0">
               <img
-                src={imgUrl(mainSrc, 1000)}
-                alt={`HORO “${p.name}” — ${galleryViewLabel(safePhotoIndex)}`}
+                src={imgUrl(mainView.src, 1000)}
+                alt={mainView.alt}
                 className="h-full min-h-[240px] w-full object-cover md:absolute md:inset-0 md:min-h-full"
                 width={1000}
                 height={1333}
@@ -129,22 +126,24 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                 close
               </button>
             </div>
-            <div className="flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 bg-black/40 p-2 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory md:grid md:grid-cols-5 md:gap-2 md:overflow-visible md:p-3 md:pb-3 md:snap-none [&::-webkit-scrollbar]:hidden">
-              {gallery.map((src, i) => (
-                <button
-                  key={`${p.slug}-qv-${i}`}
-                  type="button"
-                  onClick={() => setPhotoIndex(i)}
-                  className={`aspect-square h-14 w-14 shrink-0 snap-start overflow-hidden rounded-lg p-0 transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:h-auto md:w-full ${
-                    safePhotoIndex === i ? 'ring-2 ring-white' : 'ring-1 ring-white/25 opacity-90 hover:opacity-100'
-                  }`}
-                  aria-label={galleryLen > 0 ? `View image ${i + 1} of ${galleryLen}` : `View image ${i + 1}`}
-                  aria-pressed={safePhotoIndex === i}
-                >
-                  <img src={imgUrl(src, 200)} alt="" className="h-full w-full object-cover" width={200} height={200} />
-                </button>
-              ))}
-            </div>
+            {galleryLen > 1 ? (
+              <div className="flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 bg-black/40 p-2 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory md:grid md:grid-cols-5 md:gap-2 md:overflow-visible md:p-3 md:pb-3 md:snap-none [&::-webkit-scrollbar]:hidden">
+                {gallery.map((view, i) => (
+                  <button
+                    key={`${p.slug}-qv-${view.label}-${i}`}
+                    type="button"
+                    onClick={() => setPhotoIndex(i)}
+                    className={`aspect-square h-14 w-14 shrink-0 snap-start overflow-hidden rounded-lg p-0 transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:h-auto md:w-full ${
+                      safePhotoIndex === i ? 'ring-2 ring-white' : 'ring-1 ring-white/25 opacity-90 hover:opacity-100'
+                    }`}
+                    aria-label={`Show ${view.label}`}
+                    aria-pressed={safePhotoIndex === i}
+                  >
+                    <img src={imgUrl(view.src, 200)} alt="" className="h-full w-full object-cover" width={200} height={200} />
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
 
           <div className="flex max-h-[min(50dvh,480px)] min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-y-contain bg-black/40 px-5 py-4 text-white backdrop-blur-2xl sm:px-7 md:max-h-none md:w-1/2 md:py-8">

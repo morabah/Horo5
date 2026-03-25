@@ -2,6 +2,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { FormEvent, TransitionEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
+import { SEARCH_SCHEMA } from '../data/domain-config';
 import { NAV_DRAWER_LINKS, NAV_PRIMARY_SHORTCUTS } from '../lib/navLinks';
 import { BrandLogo } from './BrandLogo';
 
@@ -47,14 +48,17 @@ export function Nav() {
   const [desktopSearchExpanded, setDesktopSearchExpanded] = useState(false);
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   const desktopSearchInputRef = useRef<HTMLInputElement>(null);
+  const mobileSearchLayerRef = useRef<HTMLDivElement>(null);
   const prevMenuVisibleRef = useRef(false);
   const menuVisibleRef = useRef(menuVisible);
   const menuTriggerFocusRef = useRef<HTMLElement | null>(null);
+  const searchTriggerFocusRef = useRef<HTMLElement | null>(null);
   const drawerPanelRef = useRef<HTMLDivElement>(null);
   const drawerCloseBtnRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
   menuVisibleRef.current = menuVisible;
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname, search } = location;
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const motionClass = prefersReducedMotion ? 'transition-none duration-0 ease-linear' : 'transition-opacity duration-300 ease-out';
@@ -86,6 +90,15 @@ export function Nav() {
       setMenuPanelOpen(true);
     }
   }, [menuVisible, menuPanelOpen, openMenu, closeMenu]);
+
+  const openSearch = useCallback(() => {
+    searchTriggerFocusRef.current = document.activeElement as HTMLElement | null;
+    setSearchOpen(true);
+  }, []);
+
+  const closeSearch = useCallback(() => {
+    setSearchOpen(false);
+  }, []);
 
   useEffect(() => {
     if (!menuVisible) {
@@ -182,7 +195,7 @@ export function Nav() {
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSearchOpen(false);
+      if (e.key === 'Escape') closeSearch();
     };
     window.addEventListener('keydown', onKey);
     const t = window.setTimeout(() => mobileSearchInputRef.current?.focus(), 0);
@@ -191,6 +204,40 @@ export function Nav() {
       window.removeEventListener('keydown', onKey);
       window.clearTimeout(t);
     };
+  }, [searchOpen, closeSearch]);
+
+  useEffect(() => {
+    if (searchOpen) return;
+    const el = searchTriggerFocusRef.current;
+    searchTriggerFocusRef.current = null;
+    el?.focus();
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const panel = mobileSearchLayerRef.current;
+    if (!panel) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const nodes = getFocusableElements(panel);
+      if (nodes.length === 0) return;
+      const first = nodes[0];
+      const last = nodes[nodes.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    panel.addEventListener('keydown', onKeyDown);
+    return () => panel.removeEventListener('keydown', onKeyDown);
   }, [searchOpen]);
 
   useEffect(() => {
@@ -211,25 +258,90 @@ export function Nav() {
     return () => window.removeEventListener('keydown', onKey);
   }, [desktopSearchExpanded]);
 
-  function onSearch(e: FormEvent) {
-    e.preventDefault();
-    const trimmed = q.trim();
-    navigate(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search');
+  useEffect(() => {
+    const currentQuery = pathname === '/search' ? new URLSearchParams(search).get('q') ?? '' : '';
+    setQ((prev) => (prev === currentQuery ? prev : currentQuery));
+    setMobileSearchQ((prev) => (prev === currentQuery ? prev : currentQuery));
+  }, [pathname, search]);
+
+  function buildSearchDestination(rawQuery: string) {
+    const trimmed = rawQuery.trim();
+    const next = new URLSearchParams();
+    if (trimmed) next.set('q', trimmed);
+
+    if (pathname === '/search') {
+      const current = new URLSearchParams(search);
+      const scopedOccasion = current.get('occasion');
+      const scopedVibe = current.get('vibe');
+      if (scopedOccasion) next.set('occasion', scopedOccasion);
+      if (scopedVibe) next.set('vibe', scopedVibe);
+    }
+
+    const queryString = next.toString();
+    return queryString ? `/search?${queryString}` : '/search';
+  }
+
+  function clearDesktopSearch() {
+    const hasValue = q.trim().length > 0;
+    if (hasValue) {
+      setQ('');
+      if (pathname === '/search') navigate(buildSearchDestination(''));
+      return;
+    }
     setDesktopSearchExpanded(false);
   }
 
-  const isDarkHero = pathname === '/';
+  function clearMobileSearch() {
+    setMobileSearchQ('');
+    if (pathname === '/search') navigate(buildSearchDestination(''));
+  }
+
+  function onSearch(e: FormEvent) {
+    e.preventDefault();
+    navigate(buildSearchDestination(q));
+    setDesktopSearchExpanded(false);
+  }
+
+  const isHome = pathname === '/';
+  const [homeHeroSolidNav, setHomeHeroSolidNav] = useState(pathname !== '/');
+
+  useEffect(() => {
+    if (pathname !== '/') {
+      setHomeHeroSolidNav(true);
+      return;
+    }
+    setHomeHeroSolidNav(false);
+    let observer: IntersectionObserver | null = null;
+    const t = window.setTimeout(() => {
+      const el = document.getElementById('home-hero');
+      if (!el) return;
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          setHomeHeroSolidNav(!entry.isIntersecting);
+        },
+        { root: null, rootMargin: '0px', threshold: 0 },
+      );
+      observer.observe(el);
+    }, 0);
+    return () => {
+      window.clearTimeout(t);
+      observer?.disconnect();
+    };
+  }, [pathname]);
+
+  const navOnHeroTransparent = isHome && !homeHeroSolidNav;
+  const logoVariant = navOnHeroTransparent ? 'light' : 'dark';
 
   return (
     <header
-      className={`glass-nav fixed top-0 z-100 w-full ${isDarkHero ? 'glass-nav--on-dark' : ''}`}
+      className={`glass-nav fixed top-0 z-100 w-full ${navOnHeroTransparent ? 'glass-nav--hero-transparent' : ''}`}
       role="banner"
     >
       {/* Mobile: Menu | Logo | Search | Bag — single search entry (icon only) */}
       <div className="mx-auto flex max-w-[1920px] items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:hidden">
         <button
           type="button"
-          className="material-symbols-outlined inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/90"
+          className={`material-symbols-outlined inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${navOnHeroTransparent ? 'text-white/84' : 'text-obsidian/90'}`}
           aria-expanded={menuVisible && menuPanelOpen}
           aria-controls="primary-nav-drawer"
           aria-label={menuVisible && menuPanelOpen ? 'Close menu' : 'Open menu'}
@@ -238,26 +350,26 @@ export function Nav() {
           {menuVisible && menuPanelOpen ? 'close' : 'menu'}
         </button>
         <Link to="/" className="flex min-w-0 flex-1 justify-center drop-shadow-sm" aria-label="HORO Egypt — Home">
-          <BrandLogo variant="dark" />
+          <BrandLogo variant={logoVariant} />
         </Link>
         <button
           type="button"
-          className="material-symbols-outlined inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
+          className={`material-symbols-outlined inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
           aria-label="Search"
           aria-expanded={searchOpen}
           aria-controls="mobile-search-layer"
-          onClick={() => setSearchOpen(true)}
+          onClick={openSearch}
         >
           search
         </button>
         <Link
           to="/cart"
-          className="material-symbols-outlined relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center text-obsidian/85"
+          className={`material-symbols-outlined relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
           aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
         >
           shopping_bag
           {totalQty > 0 ? (
-            <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-white">
+            <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-obsidian">
               {totalQty > 99 ? '99+' : totalQty}
             </span>
           ) : null}
@@ -269,7 +381,7 @@ export function Nav() {
         <div className="flex shrink-0 items-center gap-4">
           <button
             type="button"
-            className="material-symbols-outlined inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/5"
+            className={`material-symbols-outlined inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm transition-colors hover:bg-black/5 ${navOnHeroTransparent ? 'text-white/84 hover:bg-white/6' : 'text-obsidian/85'}`}
             aria-expanded={menuVisible && menuPanelOpen}
             aria-controls="primary-nav-drawer"
             aria-label={menuVisible && menuPanelOpen ? 'Close menu' : 'Open menu'}
@@ -278,7 +390,7 @@ export function Nav() {
             {menuVisible && menuPanelOpen ? 'close' : 'menu'}
           </button>
           <Link to="/" className="flex shrink-0 items-center drop-shadow-sm" aria-label="HORO Egypt — Home">
-            <BrandLogo variant="dark" />
+            <BrandLogo variant={logoVariant} />
           </Link>
         </div>
         <nav className="hidden shrink-0 items-center gap-1 md:flex" aria-label="Primary shortcuts">
@@ -288,7 +400,11 @@ export function Nav() {
               to={path}
               className={({ isActive }) =>
                 `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
-                  isActive ? 'text-primary' : 'text-obsidian/90 hover:text-obsidian'
+                  isActive
+                    ? 'text-primary'
+                    : navOnHeroTransparent
+                      ? 'text-white/80 hover:text-white'
+                      : 'text-obsidian/90 hover:text-obsidian'
                 }`
               }
             >
@@ -303,7 +419,11 @@ export function Nav() {
             {!desktopSearchExpanded ? (
               <button
                 type="button"
-                className="material-symbols-outlined inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border border-outline-variant/40 bg-white/70 text-obsidian/85 shadow-sm backdrop-blur-md transition-colors hover:bg-white/90"
+                className={`material-symbols-outlined inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm border shadow-sm backdrop-blur-md transition-colors ${
+                  navOnHeroTransparent
+                    ? 'border-white/18 bg-white/[0.08] text-white/82 shadow-none hover:bg-white/[0.12]'
+                    : 'border-outline-variant/40 bg-white/70 text-obsidian/85 hover:bg-white/90'
+                }`}
                 aria-expanded={desktopSearchExpanded}
                 aria-label="Open search"
                 onClick={() => setDesktopSearchExpanded(true)}
@@ -319,7 +439,7 @@ export function Nav() {
                   ref={desktopSearchInputRef}
                   id="nav-search-desktop"
                   type="search"
-                  placeholder="Search designs, vibes…"
+                  placeholder={SEARCH_SCHEMA.copy.placeholder}
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   onBlur={(e) => {
@@ -332,12 +452,11 @@ export function Nav() {
                 />
                 <button
                   type="button"
-                  className="material-symbols-outlined absolute right-1 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-sm text-obsidian/70 hover:bg-black/5"
-                  aria-label="Close search field"
+                  className="material-symbols-outlined absolute right-1 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-sm text-obsidian/70 hover:bg-black/5"
+                  aria-label={q.trim() ? 'Clear search field' : 'Close search field'}
                   onMouseDown={(e) => {
                     e.preventDefault();
-                    setQ('');
-                    setDesktopSearchExpanded(false);
+                    clearDesktopSearch();
                   }}
                 >
                   close
@@ -349,12 +468,14 @@ export function Nav() {
         <div className="flex shrink-0 items-center gap-1 md:gap-2 lg:gap-3">
           <Link
             to="/cart"
-            className="material-symbols-outlined relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
+            className={`material-symbols-outlined relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm transition-colors ${
+              navOnHeroTransparent ? 'text-white/82 hover:bg-white/[0.08]' : 'text-obsidian/85 hover:bg-black/4'
+            }`}
             aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
           >
             shopping_bag
             {totalQty > 0 ? (
-              <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-white">
+              <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-obsidian">
                 {totalQty > 99 ? '99+' : totalQty}
               </span>
             ) : null}
@@ -365,6 +486,7 @@ export function Nav() {
       {searchOpen ? (
         <div
           id="mobile-search-layer"
+          ref={mobileSearchLayerRef}
           className="fixed inset-0 z-190 flex flex-col bg-papyrus/98 backdrop-blur-md md:hidden"
           role="dialog"
           aria-modal="true"
@@ -375,7 +497,7 @@ export function Nav() {
             <button
               type="button"
               className="font-label min-h-11 min-w-11 rounded-sm border border-outline-variant/40 px-2 text-xs uppercase tracking-wider text-obsidian"
-              onClick={() => setSearchOpen(false)}
+              onClick={closeSearch}
             >
               Close
             </button>
@@ -384,24 +506,35 @@ export function Nav() {
             className="flex flex-1 flex-col gap-3 p-4"
             onSubmit={(e) => {
               e.preventDefault();
-              const trimmed = mobileSearchQ.trim();
-              setSearchOpen(false);
-              navigate(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search');
+              closeSearch();
+              navigate(buildSearchDestination(mobileSearchQ));
             }}
           >
             <label htmlFor="nav-search-mobile-overlay" className="sr-only">
-              Search designs, vibes
+              {SEARCH_SCHEMA.copy.placeholder}
             </label>
-            <input
-              ref={mobileSearchInputRef}
-              id="nav-search-mobile-overlay"
-              type="search"
-              value={mobileSearchQ}
-              onChange={(e) => setMobileSearchQ(e.target.value)}
-              placeholder="Search designs, vibes…"
-              className="font-body min-h-14 w-full rounded-sm border border-outline-variant/50 bg-white px-4 py-3 text-base text-obsidian shadow-sm placeholder:text-clay/70"
-              autoComplete="off"
-            />
+            <div className="relative">
+              <input
+                ref={mobileSearchInputRef}
+                id="nav-search-mobile-overlay"
+                type="search"
+                value={mobileSearchQ}
+                onChange={(e) => setMobileSearchQ(e.target.value)}
+                placeholder={SEARCH_SCHEMA.copy.placeholder}
+                className="font-body min-h-14 w-full rounded-sm border border-outline-variant/50 bg-white px-4 py-3 pr-14 text-base text-obsidian shadow-sm placeholder:text-clay/70"
+                autoComplete="off"
+              />
+              {mobileSearchQ.trim() ? (
+                <button
+                  type="button"
+                  onClick={clearMobileSearch}
+                  className="material-symbols-outlined absolute right-2 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full text-obsidian/72 transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  aria-label="Clear search"
+                >
+                  close
+                </button>
+              ) : null}
+            </div>
             <button type="submit" className="btn btn-primary min-h-12 w-full">
               Search
             </button>

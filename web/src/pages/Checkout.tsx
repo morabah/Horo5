@@ -1,13 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { flushSync } from 'react-dom';
 import { useMemo, useState, type CSSProperties, type FormEvent } from 'react';
-import { getProductMedia } from '../data/images';
-import { getProduct } from '../data/site';
 import { TeeImage } from '../components/TeeImage';
+import { getCartLineViews } from '../cart/view';
 import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { useCart } from '../cart/CartContext';
 import { saveLastOrder } from '../cart/lastOrder';
+import { CART_SCHEMA } from '../data/domain-config';
 
 const steps = ['Information', 'Shipping', 'Payment'] as const;
 const stepsShort = ['Info', 'Ship', 'Pay'] as const;
@@ -488,25 +488,23 @@ function OrderSummary({
   paymentMethod?: 'cod' | 'card';
 }) {
   const { items, subtotalEgp, giftWrapEgp } = useCart();
+  const lineViews = useMemo(() => getCartLineViews(items), [items]);
   const cardDiscount = paymentMethod === 'card' ? CARD_DISCOUNT_EGP : 0;
   const total = subtotalEgp + giftWrapEgp + (shipping ?? 0) - cardDiscount;
 
   return (
-    <aside style={{ padding: '1.25rem', borderRadius: 'var(--radius-card)', border: '1px solid var(--stone)', background: 'var(--papyrus)' }}>
-      <h2 style={{ fontSize: '1rem', margin: '0 0 1rem' }}>Order summary</h2>
-      {items.map((line) => {
-        const p = getProduct(line.productSlug);
-        if (!p) return null;
-        const lineSub = p.priceEgp * line.qty;
+      <aside style={{ padding: '1.25rem', borderRadius: 'var(--radius-card)', border: '1px solid var(--stone)', background: 'var(--papyrus)' }}>
+        <h2 style={{ fontSize: '1rem', margin: '0 0 1rem' }}>Order summary</h2>
+      {lineViews.map((line) => {
         return (
-          <div key={`${line.productSlug}-${line.size}`} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <div key={line.key} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
             <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--stone)' }}>
-              <TeeImage src={getProductMedia(p.slug).main} alt={`HORO “${p.name}” graphic tee`} w={128} />
+              <TeeImage src={line.imageSrc} alt={line.imageAlt} w={128} />
             </div>
             <div>
-              <p style={{ margin: 0, fontWeight: 500 }}>{p.name}</p>
+              <p style={{ margin: 0, fontWeight: 500 }}>{line.productName}</p>
               <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
-                {line.size} · Qty {line.qty} · {formatEgp(lineSub)}
+                {line.size} · Qty {line.qty} · {formatEgp(line.linePriceEgp)}
               </p>
             </div>
           </div>
@@ -518,7 +516,7 @@ function OrderSummary({
       </p>
       {giftWrapEgp > 0 ? (
         <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
-          <span>Gift wrap + story card</span>
+          <span>{CART_SCHEMA.copy.giftWrapLabel}</span>
           <span>{formatEgp(giftWrapEgp)}</span>
         </p>
       ) : null}

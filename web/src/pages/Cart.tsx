@@ -1,236 +1,366 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getProduct } from '../data/site';
-import { getProductMedia } from '../data/images';
 import { TeeImageFrame } from '../components/TeeImage';
-import { formatEgp } from '../utils/formatPrice';
 import { GIFT_WRAP_PRICE_EGP, useCart } from '../cart/CartContext';
-import { cartLineKey } from '../cart/types';
+import { getCartLineViews, type CartLineView } from '../cart/view';
+import { CART_SCHEMA } from '../data/domain-config';
+import { giftWrapPreview, heroStreet } from '../data/images';
+import { formatEgp } from '../utils/formatPrice';
 
 const ESTIMATED_SHIPPING_EGP = 60;
 
-export function Cart() {
-  const { items, removeItem, setLineQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp } = useCart();
-  const estimatedOrderTotal = subtotalEgp + giftWrapEgp + ESTIMATED_SHIPPING_EGP;
-  const giftUpsell = items.length === 1;
+function formatMessage(template: string, name: string) {
+  return template.replace('{name}', name);
+}
 
-  const upsellBlock =
-    giftUpsell ? (
-      giftWrapEgp > 0 ? (
-        <div className="card-glass" style={{ padding: '1.25rem', background: 'var(--warm-glow)', marginTop: '0.5rem' }}>
-          <h2 style={{ fontSize: '1.0625rem', margin: '0 0 0.5rem' }}>Gift add-ons</h2>
-          <p style={{ margin: '0 0 1rem', fontSize: '0.9375rem' }}>
-            Story card + gift wrap ({formatEgp(GIFT_WRAP_PRICE_EGP)}) is included in your estimate.
-          </p>
-          <button type="button" className="btn btn-ghost" onClick={() => setGiftWrapEgp(0)}>
-            Remove gift wrap
-          </button>
+function formatItemCount(count: number) {
+  const label = count === 1 ? CART_SCHEMA.copy.itemLabelSingular : CART_SCHEMA.copy.itemLabelPlural;
+  return `${count} ${label}`;
+}
+
+function CartUpsell({
+  totalQty,
+  giftWrapSelected,
+  onAddGiftWrap,
+  onDeclineGiftWrap,
+  onRemoveGiftWrap,
+}: {
+  totalQty: number;
+  giftWrapSelected: boolean;
+  onAddGiftWrap: () => void;
+  onDeclineGiftWrap: () => void;
+  onRemoveGiftWrap: () => void;
+}) {
+  const copy = CART_SCHEMA.copy;
+
+  if (totalQty === 1) {
+    return (
+      <section className="cart-upsell card-glass" aria-labelledby="cart-upsell-title">
+        <div className="cart-upsell-media">
+          <img src={giftWrapPreview} alt="Preview of the HORO story card and gift wrap add-on." />
         </div>
-      ) : (
-        <div className="card-glass" style={{ padding: '1.25rem', background: 'var(--warm-glow)', marginTop: '0.5rem' }}>
-          <h2 style={{ fontSize: '1.0625rem', margin: '0 0 0.5rem' }}>Make it a gift</h2>
-          <p style={{ margin: '0 0 1rem', fontSize: '0.9375rem' }}>
-            Add story card + gift wrap ({formatEgp(GIFT_WRAP_PRICE_EGP)}).
+        <div className="cart-upsell-content">
+          <h2 id="cart-upsell-title" className="cart-upsell-title">
+            {giftWrapSelected ? copy.giftUpsellIncludedHeading : copy.giftUpsellHeading}
+          </h2>
+          <p className="cart-upsell-body">
+            {giftWrapSelected ? copy.giftUpsellIncludedBody : `${copy.giftUpsellBody} (${formatEgp(GIFT_WRAP_PRICE_EGP)}).`}
           </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <button type="button" className="btn btn-primary" onClick={() => setGiftWrapEgp(GIFT_WRAP_PRICE_EGP)}>
-              Add gift wrap — {formatEgp(GIFT_WRAP_PRICE_EGP)}
-            </button>
-            <button type="button" className="btn btn-ghost" onClick={() => setGiftWrapEgp(0)}>
-              No thanks
-            </button>
+          <div className="cart-upsell-actions">
+            {giftWrapSelected ? (
+              <button type="button" className="btn btn-ghost" onClick={onRemoveGiftWrap}>
+                {copy.giftUpsellRemove}
+              </button>
+            ) : (
+              <>
+                <button type="button" className="btn btn-primary" onClick={onAddGiftWrap}>
+                  {copy.giftUpsellCta}
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={onDeclineGiftWrap}>
+                  {copy.giftUpsellDecline}
+                </button>
+              </>
+            )}
           </div>
         </div>
-      )
-    ) : items.length >= 2 ? (
-      <div className="card-glass" style={{ padding: '1.25rem', background: 'var(--warm-glow)', marginTop: '0.5rem' }}>
-        <h2 style={{ fontSize: '1.0625rem', margin: '0 0 0.5rem' }}>Add a 3rd, save {formatEgp(100)}</h2>
-        <p style={{ margin: '0 0 1rem' }}>Pick one more design and get {formatEgp(100)} off your order.</p>
-        <Link className="btn btn-ghost" to="/vibes">
-          Browse designs →
+      </section>
+    );
+  }
+
+  if (totalQty >= 2) {
+    return (
+      <section className="cart-upsell card-glass" aria-labelledby="cart-upsell-title">
+        <div className="cart-upsell-content cart-upsell-content--compact">
+          <h2 id="cart-upsell-title" className="cart-upsell-title">
+            {copy.bundleUpsellHeading}
+          </h2>
+          <p className="cart-upsell-body">{copy.bundleUpsellBody}</p>
+          <div className="cart-upsell-actions">
+            <Link className="btn btn-ghost" to="/vibes">
+              {copy.bundleUpsellCta}
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return null;
+}
+
+function CartSummary({
+  itemCount,
+  subtotalEgp,
+  giftWrapEgp,
+  estimatedOrderTotal,
+}: {
+  itemCount: number;
+  subtotalEgp: number;
+  giftWrapEgp: number;
+  estimatedOrderTotal: number;
+}) {
+  const copy = CART_SCHEMA.copy;
+
+  return (
+    <aside className="cart-summary card-glass order-3 md:sticky md:top-20 md:col-start-2 md:row-start-1 md:row-span-2" aria-labelledby="cart-summary-title">
+      <h2 id="cart-summary-title" className="cart-summary-title">
+        {copy.orderSummaryHeading}
+      </h2>
+      <p className="cart-summary-note">{copy.shippingExplainer}</p>
+
+      <div className="cart-summary-rows">
+        <p className="cart-summary-row">
+          <span>
+            {copy.subtotalLabel} ({formatItemCount(itemCount)})
+          </span>
+          <span>{formatEgp(subtotalEgp)}</span>
+        </p>
+        {giftWrapEgp > 0 ? (
+          <p className="cart-summary-row cart-summary-row--meta">
+            <span>{copy.giftWrapLabel}</span>
+            <span>{formatEgp(giftWrapEgp)}</span>
+          </p>
+        ) : null}
+        <p className="cart-summary-row cart-summary-row--meta">
+          <span>{copy.shippingLabel}</span>
+          <span>{formatEgp(ESTIMATED_SHIPPING_EGP)}</span>
+        </p>
+        <p className="cart-summary-total">
+          <span>{copy.totalLabel}</span>
+          <span>{formatEgp(estimatedOrderTotal)}</span>
+        </p>
+      </div>
+
+      <div className="cart-summary-actions">
+        <Link className="btn btn-primary" to="/checkout" style={{ width: '100%' }}>
+          {copy.primaryCta}
+        </Link>
+        <Link className="btn btn-ghost" to="/vibes" style={{ width: '100%' }}>
+          {copy.secondaryCta}
         </Link>
       </div>
-    ) : null;
 
-  if (items.length === 0) {
+      <ul className="cart-trust-strip" aria-label="Cart trust signals">
+        {CART_SCHEMA.trustStripItems.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+function CartLineItem({
+  line,
+  eager = false,
+  onDecrease,
+  onIncrease,
+  onRemove,
+}: {
+  line: CartLineView;
+  eager?: boolean;
+  onDecrease: (line: CartLineView) => void;
+  onIncrease: (line: CartLineView) => void;
+  onRemove: (line: CartLineView) => void;
+}) {
+  const copy = CART_SCHEMA.copy;
+
+  return (
+    <article className="cart-item">
+      <Link className="cart-item-media" to={line.productUrl} aria-label={`Open ${line.productName}`}>
+        <TeeImageFrame
+          src={line.imageSrc}
+          alt={line.imageAlt}
+          w={384}
+          eager={eager}
+          aspectRatio="1"
+          borderRadius="18px"
+          frameStyle={{ height: '100%' }}
+        />
+      </Link>
+
+      <div className="cart-item-content">
+        <div className="cart-item-header">
+          <div>
+            <Link className="cart-item-name" to={line.productUrl}>
+              {line.productName}
+            </Link>
+            {line.artistName ? <p className="cart-item-artist">Illustrated by {line.artistName}</p> : null}
+          </div>
+          <p className="cart-item-price">{formatEgp(line.linePriceEgp)}</p>
+        </div>
+
+        <div className="cart-item-meta">
+          <p className="cart-item-size">Size: {line.size}</p>
+          <div className="cart-item-controls">
+            <span className="cart-item-qty-label">{copy.quantityLabel}</span>
+            <div className="cart-stepper" role="group" aria-label={`Quantity for ${line.productName}`}>
+              <button
+                type="button"
+                className="cart-stepper-button"
+                aria-label={`Decrease quantity for ${line.productName}`}
+                disabled={line.qty <= 1}
+                onClick={() => onDecrease(line)}
+              >
+                −
+              </button>
+              <span className="cart-stepper-value" aria-live="polite" aria-atomic="true">
+                {line.qty}
+              </span>
+              <button
+                type="button"
+                className="cart-stepper-button"
+                aria-label={`Increase quantity for ${line.productName}`}
+                onClick={() => onIncrease(line)}
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" className="cart-remove-button" onClick={() => onRemove(line)}>
+          {copy.removeLabel}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+export function Cart() {
+  const { items, removeItem, setLineQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp } = useCart();
+  const copy = CART_SCHEMA.copy;
+  const [statusMessage, setStatusMessage] = useState('');
+  const [giftUpsellDismissed, setGiftUpsellDismissed] = useState(false);
+
+  const lineViews = useMemo(() => getCartLineViews(items), [items]);
+  const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
+  const estimatedOrderTotal = subtotalEgp + giftWrapEgp + ESTIMATED_SHIPPING_EGP;
+  const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && giftWrapEgp === 0);
+
+  useEffect(() => {
+    if (!statusMessage) return undefined;
+    const timer = window.setTimeout(() => setStatusMessage(''), 2500);
+    return () => window.clearTimeout(timer);
+  }, [statusMessage]);
+
+  useEffect(() => {
+    if (itemCount !== 1 || giftWrapEgp > 0) {
+      setGiftUpsellDismissed(false);
+    }
+  }, [giftWrapEgp, itemCount]);
+
+  const handleDecrease = (line: CartLineView) => {
+    if (line.qty <= 1) {
+      setStatusMessage(formatMessage(copy.quantityMinReached, line.productName));
+      return;
+    }
+
+    setLineQty(line.productSlug, line.size, line.qty - 1);
+    setStatusMessage(formatMessage(copy.quantityUpdated, line.productName));
+  };
+
+  const handleIncrease = (line: CartLineView) => {
+    setLineQty(line.productSlug, line.size, line.qty + 1);
+    setStatusMessage(formatMessage(copy.quantityUpdated, line.productName));
+  };
+
+  const handleRemove = (line: CartLineView) => {
+    removeItem(line.productSlug, line.size);
+    setStatusMessage(formatMessage(copy.itemRemoved, line.productName));
+  };
+
+  const handleAddGiftWrap = () => {
+    setGiftUpsellDismissed(false);
+    setGiftWrapEgp(GIFT_WRAP_PRICE_EGP);
+    setStatusMessage(copy.giftWrapAdded);
+  };
+
+  const handleDeclineGiftWrap = () => {
+    setGiftUpsellDismissed(true);
+  };
+
+  const handleRemoveGiftWrap = () => {
+    setGiftWrapEgp(0);
+    if (giftWrapEgp > 0) {
+      setStatusMessage(copy.giftWrapRemoved);
+    }
+  };
+
+  if (lineViews.length === 0) {
     return (
-      <div
-        className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
-        style={{ paddingTop: '2rem', paddingBottom: '3rem' }}
-      >
-        <div className="container">
-          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.25rem' }}>Your cart</h1>
-          <p style={{ color: 'var(--clay-earth)', marginBottom: '2rem' }}>0 items</p>
-          <p style={{ marginBottom: '1.5rem', maxWidth: '28rem' }}>
-            Your bag is empty. Explore vibes and add a design in your size when you&apos;re ready.
-          </p>
-          <Link className="btn btn-primary" to="/vibes" style={{ minHeight: '48px', display: 'inline-flex', alignItems: 'center' }}>
-            Shop by vibe
-          </Link>
+      <div className="cart-page pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
+        <div className="container cart-page-shell">
+          <section className="cart-empty card-glass" aria-labelledby="cart-empty-title">
+            <div className="cart-empty-media">
+              <TeeImageFrame
+                src={heroStreet}
+                alt="HORO editorial tee image for the empty cart state."
+                w={960}
+                eager
+                aspectRatio="4 / 5"
+                borderRadius="24px"
+                frameStyle={{ height: '100%' }}
+              />
+            </div>
+            <div className="cart-empty-content">
+              <h1 id="cart-empty-title" className="cart-page-title" style={{ marginBottom: '0.375rem' }}>
+                {copy.heading}
+              </h1>
+              <p className="cart-page-count">{formatItemCount(0)}</p>
+              <p className="cart-empty-copy">{copy.emptyBody}</p>
+              <Link className="btn btn-primary" to="/vibes">
+                {copy.emptyCta}
+              </Link>
+            </div>
+          </section>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
-      style={{ paddingTop: '2rem', paddingBottom: '3rem' }}
-    >
-      <div className="container">
-        <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.25rem' }}>Your cart</h1>
-        <p style={{ color: 'var(--clay-earth)', marginBottom: '2rem' }}>{items.reduce((n, l) => n + l.qty, 0)} items</p>
+    <div className="cart-page pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
+      <div className="container cart-page-shell">
+        <header className="cart-page-header">
+          <h1 className="cart-page-title">{copy.heading}</h1>
+          <p className="cart-page-count">{formatItemCount(itemCount)}</p>
+          <p className={`cart-feedback ${statusMessage ? 'is-visible' : ''}`} role="status" aria-live="polite" aria-atomic="true">
+            {statusMessage || ' '}
+          </p>
+        </header>
 
-        {/* Mobile: line items → summary+CTA → upsell. Desktop: items+upsell left, summary right (aside spans 2 rows). */}
-        <div
-          className="flex flex-col gap-8 md:grid md:grid-cols-[1fr_minmax(280px,380px)] md:items-start md:gap-8"
-          style={{ alignItems: 'stretch' }}
-        >
+        <div className="cart-grid">
           <div className="order-1 md:col-start-1 md:row-start-1">
-            {items.map((line) => {
-              const p = getProduct(line.productSlug);
-              if (!p) return null;
-              const key = cartLineKey(line);
-              const lineTotal = p.priceEgp * line.qty;
-              return (
-                <div
-                  key={key}
-                  style={{ display: 'flex', gap: '1rem', paddingBottom: '1.25rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--stone)' }}
-                >
-                  <div style={{ width: '100px', flexShrink: 0 }}>
-                    <TeeImageFrame
-                      src={getProductMedia(p.slug).main}
-                      alt={`HORO “${p.name}” tee in cart`}
-                      w={300}
-                      aspectRatio="1"
-                      borderRadius="12px"
-                    />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 500, margin: '0 0 0.25rem' }}>{p.name}</p>
-                    <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', margin: '0 0 0.5rem' }}>
-                      Size: {line.size}
-                    </p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
-                      <label style={{ fontSize: '0.875rem', color: 'var(--clay-earth)' }} htmlFor={`qty-${key}`}>
-                        Qty
-                      </label>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <button
-                          type="button"
-                          id={`qty-${key}`}
-                          aria-label={`Decrease quantity for ${p.name}`}
-                          style={{
-                            minWidth: '44px',
-                            minHeight: '44px',
-                            border: '1px solid var(--stone)',
-                            borderRadius: '8px',
-                            background: 'var(--white)',
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => setLineQty(line.productSlug, line.size, line.qty - 1)}
-                        >
-                          −
-                        </button>
-                        <span style={{ minWidth: '2rem', textAlign: 'center', fontWeight: 600 }}>{line.qty}</span>
-                        <button
-                          type="button"
-                          aria-label={`Increase quantity for ${p.name}`}
-                          style={{
-                            minWidth: '44px',
-                            minHeight: '44px',
-                            border: '1px solid var(--stone)',
-                            borderRadius: '8px',
-                            background: 'var(--white)',
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => setLineQty(line.productSlug, line.size, line.qty + 1)}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                    <p style={{ margin: '0.5rem 0 0', fontWeight: 600 }}>{formatEgp(lineTotal)}</p>
-                    <button
-                      type="button"
-                      style={{
-                        marginTop: '0.5rem',
-                        background: 'none',
-                        border: 'none',
-                        padding: '0.5rem 0',
-                        minHeight: '44px',
-                        color: 'var(--deep-teal)',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                      }}
-                      onClick={() => removeItem(line.productSlug, line.size)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            {lineViews.map((line, index) => (
+              <CartLineItem
+                key={line.key}
+                line={line}
+                eager={index === 0}
+                onDecrease={handleDecrease}
+                onIncrease={handleIncrease}
+                onRemove={handleRemove}
+              />
+            ))}
           </div>
 
-          <aside className="card-glass order-2 md:sticky md:top-20 md:col-start-2 md:row-start-1 md:row-span-2" style={{ padding: '1.25rem' }}>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', margin: '0 0 1rem', lineHeight: 1.45 }}>
-              Estimated shipping (standard, Egypt): you&apos;ll confirm speed at checkout.
-            </p>
-            <p style={{ display: 'flex', justifyContent: 'space-between', margin: '0 0 0.5rem' }}>
-              <span>Subtotal ({items.reduce((n, l) => n + l.qty, 0)} items)</span>
-              <span>{formatEgp(subtotalEgp)}</span>
-            </p>
-            {giftWrapEgp > 0 ? (
-              <p
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  margin: '0 0 0.5rem',
-                  fontSize: '0.875rem',
-                  color: 'var(--clay-earth)',
-                }}
-              >
-                <span>Gift wrap + story card</span>
-                <span>{formatEgp(giftWrapEgp)}</span>
-              </p>
-            ) : null}
-            <p style={{ display: 'flex', justifyContent: 'space-between', margin: '0 0 0.75rem', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
-              <span>Est. shipping</span>
-              <span>{formatEgp(ESTIMATED_SHIPPING_EGP)}</span>
-            </p>
-            <p
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                margin: '0 0 1.25rem',
-                fontFamily: 'var(--font-heading)',
-                fontWeight: 600,
-                fontSize: '1.25rem',
-                paddingTop: '0.75rem',
-                borderTop: '1px solid var(--stone)',
-              }}
-            >
-              <span>Est. order total</span>
-              <span>{formatEgp(estimatedOrderTotal)}</span>
-            </p>
-            <Link
-              className="btn btn-primary"
-              to="/checkout"
-              style={{ width: '100%', marginBottom: '0.75rem', minHeight: '48px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              Proceed to checkout
-            </Link>
-            <Link className="btn btn-ghost" to="/vibes" style={{ width: '100%' }}>
-              Continue shopping
-            </Link>
-            <p style={{ marginTop: '1.25rem', fontSize: '0.8125rem', color: 'var(--clay-earth)' }}>Free exchange 14d · COD · 220 GSM cotton</p>
-          </aside>
-
-          {upsellBlock ? (
-            <div className="order-3 md:col-start-1 md:row-start-2 md:self-start" style={{ width: '100%' }}>
-              {upsellBlock}
+          {showUpsell ? (
+            <div className="order-2 md:col-start-1 md:row-start-2 md:self-start">
+              <CartUpsell
+                totalQty={itemCount}
+                giftWrapSelected={giftWrapEgp > 0}
+                onAddGiftWrap={handleAddGiftWrap}
+                onDeclineGiftWrap={handleDeclineGiftWrap}
+                onRemoveGiftWrap={handleRemoveGiftWrap}
+              />
             </div>
           ) : null}
+
+          <CartSummary
+            itemCount={itemCount}
+            subtotalEgp={subtotalEgp}
+            giftWrapEgp={giftWrapEgp}
+            estimatedOrderTotal={estimatedOrderTotal}
+          />
         </div>
       </div>
     </div>

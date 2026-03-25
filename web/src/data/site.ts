@@ -20,15 +20,73 @@ export type Occasion = {
   slug: string;
   name: string;
   blurb: string;
+  cardImageSrc: string;
+  cardImageAlt: string;
+  heroImageSrc: string;
+  heroImageAlt: string;
+  isGiftOccasion: boolean;
+  priceHint?: string;
 };
 
 export const occasions: Occasion[] = [
-  { slug: 'gift-something-real', name: 'Gift Something Real', blurb: 'Curated designs with bundle option.' },
-  { slug: 'graduation-season', name: 'Graduation Season', blurb: 'Career pride and achievement themes.' },
-  { slug: 'eid-and-ramadan', name: 'Eid & Ramadan', blurb: 'Seasonal capsule for the moments that matter.' },
-  { slug: 'birthday-pick', name: 'Birthday Pick', blurb: 'Personality-matched collections.' },
-  { slug: 'just-because', name: 'Just Because', blurb: 'Everyday self-treat. No reason needed.' },
+  {
+    slug: 'gift-something-real',
+    name: 'Gift Something Real',
+    blurb: 'Curated designs with bundle option.',
+    cardImageSrc: '/images/tees/bg_tee_friends_tees.png',
+    cardImageAlt: 'Gift Something Real occasion — warm lifestyle image of friends in HORO tees.',
+    heroImageSrc: '/images/tees/bg_tee_friends_tees.png',
+    heroImageAlt: 'Gift Something Real collection hero — warm group styling in HORO graphic tees.',
+    isGiftOccasion: true,
+    priceHint: 'from 999 EGP (bundle)',
+  },
+  {
+    slug: 'graduation-season',
+    name: 'Graduation Season',
+    blurb: 'Career pride and achievement themes.',
+    cardImageSrc: '/images/tees/bg_vibe_career.png',
+    cardImageAlt: 'Graduation Season occasion — career-focused lifestyle tee styling.',
+    heroImageSrc: '/images/tees/career_vibe_2_1774374359412.png',
+    heroImageAlt: 'Graduation Season collection hero — HORO tee styled with a polished, ambitious look.',
+    isGiftOccasion: false,
+    priceHint: 'from 799 EGP',
+  },
+  {
+    slug: 'eid-and-ramadan',
+    name: 'Eid & Ramadan',
+    blurb: 'Seasonal capsule for the moments that matter.',
+    cardImageSrc: '/images/tees/zodiac_vibe_2_1774374153203.png',
+    cardImageAlt: 'Eid and Ramadan occasion — expressive HORO tee styled for a meaningful seasonal gift.',
+    heroImageSrc: '/images/tees/zodiac_vibe_1_1774374128029.png',
+    heroImageAlt: 'Eid and Ramadan collection hero — close editorial styling for a seasonal HORO tee.',
+    isGiftOccasion: true,
+    priceHint: 'Seasonal capsule',
+  },
+  {
+    slug: 'birthday-pick',
+    name: 'Birthday Pick',
+    blurb: 'Personality-matched collections.',
+    cardImageSrc: '/images/tees/bg_tee_man_casual.png',
+    cardImageAlt: 'Birthday Pick occasion — casual graphic-tee styling suited for gift ideas.',
+    heroImageSrc: '/images/tees/bg_tee_man_casual.png',
+    heroImageAlt: 'Birthday Pick collection hero — editorial portrait of a model wearing a HORO tee.',
+    isGiftOccasion: true,
+    priceHint: 'from 799 EGP',
+  },
+  {
+    slug: 'just-because',
+    name: 'Just Because',
+    blurb: 'Everyday self-treat. No reason needed.',
+    cardImageSrc: '/images/tees/bg_tee_outdoor.png',
+    cardImageAlt: 'Just Because occasion — outdoor lifestyle image with a HORO tee.',
+    heroImageSrc: '/images/tees/bg_tee_outdoor.png',
+    heroImageAlt: 'Just Because collection hero — relaxed self-treat styling in a HORO tee.',
+    isGiftOccasion: false,
+    priceHint: 'from 799 EGP',
+  },
 ];
+
+export type OccasionSlug = Occasion['slug'];
 
 export type Artist = {
   slug: string;
@@ -50,6 +108,7 @@ export type Product = {
   name: string;
   artistSlug: string;
   vibeSlug: string;
+  occasionSlugs: OccasionSlug[];
   priceEgp: number;
   story: string;
   /** Card + quick view merchandising label, e.g. "Bestseller" */
@@ -60,6 +119,39 @@ export type Product = {
   stockNote?: string;
   /** Per-size FOMO / inventory hints on PDP, e.g. { M: "Only 2 left" } */
   inventoryHintBySize?: Partial<Record<ProductSizeKey, string>>;
+};
+
+const PRODUCT_OCCASION_TAGS: Record<string, OccasionSlug[]> = {
+  'the-weight-of-light': ['gift-something-real', 'just-because'],
+  'midnight-compass': ['gift-something-real', 'graduation-season', 'eid-and-ramadan'],
+  'quiet-revolt': ['gift-something-real', 'birthday-pick'],
+  'cairo-thread': ['graduation-season', 'eid-and-ramadan'],
+  'signal-line': ['graduation-season', 'just-because'],
+  'emotions-silent-scream': ['gift-something-real', 'birthday-pick'],
+  'emotions-deep-waters': ['birthday-pick'],
+  'emotions-shattered-peace': ['just-because'],
+  'emotions-raw-nerve': ['just-because'],
+  'emotions-unspoken': ['gift-something-real', 'eid-and-ramadan'],
+  'zodiac-astral-body': ['gift-something-real', 'eid-and-ramadan', 'birthday-pick'],
+  'zodiac-star-alignment': ['gift-something-real', 'eid-and-ramadan'],
+  'zodiac-lunar-pull': ['just-because'],
+  'zodiac-solar-flare': ['birthday-pick'],
+  'zodiac-cosmic-dust': ['eid-and-ramadan'],
+  'fiction-neon-dreams': ['birthday-pick'],
+  'fiction-dragon-scale': ['just-because'],
+  'fiction-distant-suns': ['gift-something-real', 'eid-and-ramadan'],
+  'fiction-cyber-ghost': ['just-because'],
+  'fiction-mythic-realm': ['birthday-pick'],
+  'career-hustle-hard': ['graduation-season'],
+  'career-ceo-mindset': ['graduation-season', 'birthday-pick'],
+  'career-climb-the-ladder': ['graduation-season'],
+  'career-office-hours': ['graduation-season', 'eid-and-ramadan'],
+  'career-boardroom-rebel': ['gift-something-real', 'graduation-season'],
+  'trends-viral-moment': ['just-because'],
+  'trends-street-culture': ['birthday-pick', 'just-because'],
+  'trends-hype-check': ['gift-something-real', 'birthday-pick'],
+  'trends-next-wave': ['just-because'],
+  'trends-drop-culture': ['gift-something-real', 'just-because'],
 };
 
 export const products: Product[] = [
@@ -326,7 +418,10 @@ export const products: Product[] = [
     priceEgp: 949,
     story: 'Here today, iconic tomorrow.',
   }
-];
+].map((product) => ({
+  ...product,
+  occasionSlugs: PRODUCT_OCCASION_TAGS[product.slug] ?? ['just-because'],
+}));
 
 export function getVibe(slug: string) {
   return vibes.find((v) => v.slug === slug);
@@ -350,4 +445,8 @@ export function productsByVibe(vibeSlug: string) {
 
 export function productsByArtist(artistSlug: string) {
   return products.filter((p) => p.artistSlug === artistSlug);
+}
+
+export function productsByOccasion(occasionSlug: OccasionSlug) {
+  return products.filter((p) => p.occasionSlugs.includes(occasionSlug));
 }

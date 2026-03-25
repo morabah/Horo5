@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { VIBES_SCHEMA } from '../data/domain-config';
 import type { Vibe } from '../data/site';
 import { glassInteractive } from '../lib/glassInteractive';
 import { heroStreet, imgUrl, vibeCovers } from '../data/images';
@@ -27,15 +28,19 @@ export function VibeCommerceCard({
   'data-reveal': dataReveal,
 }: VibeCommerceCardProps) {
   const cover = vibeCovers[vibe.slug] ?? heroStreet;
-  const ariaLabel =
-    variant === 'explore'
-      ? `Shop the ${vibe.name} vibe collection`
-      : `See the ${vibe.name} vibe collection`;
+  const ctaLabel = variant === 'see-vibe' ? VIBES_SCHEMA.copy.cardSeeVibeCta : VIBES_SCHEMA.copy.cardExploreCta;
+  const ariaLabel = VIBES_SCHEMA.copy.cardAriaTemplate
+    .replace('{cta}', ctaLabel.replace(/\s*→$/, '').trim())
+    .replace('{name}', vibe.name);
 
   const titleClassName = [
     'font-pdp-serif mb-0.5 line-clamp-2 font-normal leading-tight tracking-wide text-[clamp(1rem,5.2cqw,1.375rem)]',
     glassInteractive.title,
   ].join(' ');
+  const footerSurfaceClassName =
+    variant === 'see-vibe'
+      ? 'bg-white/10 shadow-black/18'
+      : 'bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(245,240,232,0.12))] shadow-black/22';
 
   const titleEl =
     titleTag === 'h2' ? (
@@ -52,14 +57,17 @@ export function VibeCommerceCard({
       id={id}
       {...(dataReveal !== undefined ? { 'data-reveal': dataReveal } : {})}
     >
-      <div className="relative @container/vibe-card flex aspect-4/5 w-full flex-1 flex-col overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out motion-safe:group-hover:scale-105 motion-reduce:group-hover:scale-100"
-          style={{ backgroundImage: `url(${imgUrl(cover, 960)})` }}
-          aria-hidden
+      <div className="relative @container/vibe-card flex aspect-[4/5] w-full flex-1 flex-col overflow-hidden">
+        <img
+          src={imgUrl(cover, 960)}
+          alt={`${vibe.name} vibe — editorial HORO styling.`}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-105 motion-reduce:group-hover:scale-100"
+          decoding="async"
+          width={960}
+          height={1200}
         />
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 top-[45%] bg-linear-to-t from-black/80 via-black/25 to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 top-[34%] bg-linear-to-t from-black/78 via-black/18 to-transparent"
           aria-hidden
         />
         <div
@@ -73,7 +81,8 @@ export function VibeCommerceCard({
         <div className="absolute inset-x-0 bottom-0 p-[clamp(0.75rem,3.5cqw,1.25rem)]">
           <div
             className={[
-              'glass-vibe-card-footer relative flex max-h-[min(36cqh,12rem)] flex-col justify-center overflow-hidden rounded-[clamp(0.875rem,3.2cqw,1.25rem)] border border-white/90 px-[clamp(1rem,4cqw,1.25rem)] py-[clamp(0.625rem,2.2cqh,0.875rem)] shadow-2xl shadow-black/20 backdrop-blur-2xl',
+              'glass-vibe-card-footer vibe-card-text-strip relative flex max-h-[min(28cqh,9.75rem)] flex-col justify-center overflow-hidden rounded-[clamp(0.875rem,3.2cqw,1.25rem)] border border-white/90 px-[clamp(0.95rem,4cqw,1.25rem)] py-[clamp(0.625rem,2cqh,0.875rem)] shadow-xl backdrop-blur-xl',
+              footerSurfaceClassName,
               glassInteractive.surfaceBottom,
             ].join(' ')}
           >
@@ -110,27 +119,13 @@ export function VibeCommerceCard({
               ].join(' ')}
             >
               <span className="relative inline-flex items-center gap-1.5 pb-0.5 after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:opacity-90 after:transition-[width] after:duration-300 after:ease-out motion-reduce:after:transition-none group-hover:after:w-full">
-                {variant === 'explore' ? (
-                  <>
-                    Shop vibe
-                    <span
-                      aria-hidden
-                      className="text-[10px] leading-none transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-0.5 motion-reduce:transition-none"
-                    >
-                      →
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    See vibe
-                    <span
-                      aria-hidden
-                      className="text-[10px] leading-none transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-0.5 motion-reduce:transition-none"
-                    >
-                      →
-                    </span>
-                  </>
-                )}
+                {ctaLabel.replace(/\s*→$/, '').trim()}
+                <span
+                  aria-hidden
+                  className="text-[10px] leading-none transition-transform duration-300 ease-out motion-safe:group-hover:translate-x-0.5 motion-reduce:transition-none"
+                >
+                  →
+                </span>
               </span>
             </span>
           </div>
