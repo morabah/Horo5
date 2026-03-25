@@ -4,7 +4,7 @@ import { getProduct, getVibe } from '../data/site';
 import { Nav } from './Nav';
 import { Footer } from './Footer';
 
-const DEFAULT_DOCUMENT_TITLE = 'HORO Egypt | Digital Fashion Lookbook';
+const DEFAULT_DOCUMENT_TITLE = 'HORO Egypt | Passion Wear';
 
 export function Layout() {
   const { pathname } = useLocation();
