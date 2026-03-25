@@ -35,6 +35,36 @@ Provide one blended discovery surface for designs first, then related vibes and 
 - `Shop by Vibe`
 - `Browse All Designs`
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV WITH VISIBLE SEARCH                                                   |
++----------------------------------------------------------------------------------+
+| SEARCH LEAD SPLIT                                                                |
+| [Search Field + Autosuggest + Summary + Chips] | [Large Editorial Query Image]   |
++----------------------------------------------------------------------------------+
+| RESULT CONTROLS                                                                  |
+| [Sort] [Price] [Optional Vibe Filter]                                            |
++----------------------------------------------------------------------------------+
+| DESIGNS                                                                          |
+| [Merch Card] [Merch Card] [Merch Card]                                           |
+| [Merch Card] [Merch Card] [Merch Card]                                           |
++----------------------------------------------------------------------------------+
+| VIBES                                                                            |
+| [Vibe Card] [Vibe Card] [Vibe Card]                                              |
++----------------------------------------------------------------------------------+
+| OCCASIONS                                                                        |
+| [Occasion Card] [Occasion Card] [Occasion Card]                                  |
++----------------------------------------------------------------------------------+
+| NO-RESULTS VARIANT                                                               |
+| message                                                                          |
+| [Shop by Vibe]   [Browse All Designs]                                            |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                           |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - Search supports English input, typo tolerance, Arabic aliases, and hidden legacy vibe labels.

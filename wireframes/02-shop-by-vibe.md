@@ -29,6 +29,27 @@ Desktop uses a six-column grid where each card spans two columns and the final r
 3. **Secondary Navigation**
 Single secondary action: `Shop by Occasion` → `/occasions`
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV                                                                       |
++----------------------------------------------------------------------------------+
+| HERO MONTAGE                                                                     |
+| [Tile] [Tile] [Copy Block: Which vibe is yours?]                                 |
+| [Tile] [Tile] [Tile]                                                             |
++----------------------------------------------------------------------------------+
+| VIBE GRID                                                                        |
+| [Emotions] [Zodiac] [Fiction]                                                    |
+|           [Career]  [Trends]                                                     |
++----------------------------------------------------------------------------------+
+| SECONDARY NAV                                                                    |
+| [Shop by Occasion]                                                               |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                           |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - The full card links to `/vibes/:slug`.

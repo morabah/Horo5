@@ -38,6 +38,35 @@ Bridges checkout into post-purchase.
 - `Shop by Vibe`
 - `New arrivals`
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV                                                                       |
++----------------------------------------------------------------------------------+
+| SUCCESS HERO                                                                     |
+| checkmark / completed-design headline                                            |
+| truthful order state / truthful WhatsApp-help line                               |
++----------------------------------------------------------------------------------+
+| CONTINUITY PANEL                                                                 |
++----------------------------------------------------------------------------------+
+| STATUS CARDS                                                                     |
+| [Order received] [Payment chosen] [Delivery window] [WhatsApp status]            |
++----------------------------------------------------------------------------------+
+| ORDER SUMMARY                                       | WHAT'S NEXT                |
+| items / totals / shipping summary                   | next step text             |
+|                                                     | help explanation           |
++----------------------------------------------------------------------------------+
+| HELP CTA                                                                        |
+| [WhatsApp order help when configured] OR [Exchange policy]                       |
++----------------------------------------------------------------------------------+
+| COMMUNITY / EXPLORE                                                             |
+| [Instagram block when configured] [Shop by Vibe] [New arrivals]                 |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                           |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - Confirmation is driven from the stored last-order snapshot.

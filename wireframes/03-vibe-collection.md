@@ -41,6 +41,35 @@ Shared `MerchProductCard` grid with:
 5. **Explore Other Vibes**
 Four sibling vibe cards below the grid.
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV                                                                       |
++----------------------------------------------------------------------------------+
+| HERO                                                                             |
+| breadcrumb                                                                       |
+| full-bleed editorial image                                                       |
+| vibe title / manifesto / count                                                   |
+| [Shop the designs]   [Read the story]                                            |
++----------------------------------------------------------------------------------+
+| PROOF SECTION                                                                    |
+| [Large Proof Image] | kicker / body copy / 220 GSM / count / [Shop the designs] |
++----------------------------------------------------------------------------------+
+| PRODUCT CONTROLS                                                                 |
+| [Sort] [Price] [Search this vibe]                                                |
++----------------------------------------------------------------------------------+
+| PRODUCT GRID                                                                     |
+| [Merch] [Merch] [Merch]                                                          |
+| [Merch] [Merch] [Merch]                                                          |
++----------------------------------------------------------------------------------+
+| EXPLORE OTHER VIBES                                                              |
+| [Vibe] [Vibe] [Vibe] [Vibe]                                                      |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                           |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - `Search this vibe` routes to `/search?vibe={slug}&focus=1`.

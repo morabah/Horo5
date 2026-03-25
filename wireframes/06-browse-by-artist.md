@@ -10,6 +10,27 @@
 - The route redirects to `/vibes` using `<Navigate to="/vibes" replace />`.
 - No public artist cards, artist listing grid, or artist-first discovery UI exists in the shipped storefront.
 
+## Visual wireframe
+
+```text
++--------------------------------------------+
+| /artists                                   |
+| requested by legacy link                   |
++--------------------------------------------+
+                  |
+                  v
++--------------------------------------------+
+| redirect                                   |
+| <Navigate to="/vibes" replace />           |
++--------------------------------------------+
+                  |
+                  v
++--------------------------------------------+
+| /vibes                                     |
+| live browse hub                            |
++--------------------------------------------+
+```
+
 ## Product rule
 
 Artist remains behind the scenes for browsing and search. Public artist visibility is limited to product-page legitimacy and supporting metadata where already implemented.

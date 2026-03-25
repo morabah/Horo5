@@ -41,6 +41,37 @@ Turn product confidence into purchase action with clear story, clear proof, and 
 6. **Mobile CTA Dock**
 Fixed `Add to Bag` bar at the bottom of the viewport.
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV                                                                       |
++----------------------------------------------------------------------------------+
+| BREADCRUMB: Home / {Vibe} / {Product}                                            |
++----------------------------------------------------------------------------------+
+| [MAIN IMAGE / THUMBNAILS / LIGHTBOX TRIGGER] | [Sticky Purchase Rail]            |
+|                                               | vibe pill                         |
+|                                               | product title                     |
+|                                               | story card                        |
+|                                               | price                             |
+|                                               | size selector                     |
+|                                               | [Add to Bag -- price]             |
+|                                               | [Notify Me when OOS]              |
+|                                               | [WhatsApp Help when configured]   |
+|                                               | trust chips / artist attribution  |
++----------------------------------------------------------------------------------+
+| ACCORDIONS                                                                       |
+| [Product details] [Design story] [Shipping and returns]                          |
++----------------------------------------------------------------------------------+
+| MORE FROM {VIBE}                                                                  |
+| [Merch Card] [Merch Card] [Merch Card] [Merch Card]                              |
++----------------------------------------------------------------------------------+
+| MOBILE ONLY: fixed bottom dock [Add to Bag -- price]                             |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                           |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - Gallery opens a lightbox.

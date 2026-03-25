@@ -39,6 +39,38 @@ Shared `MerchProductCard` grid. For gift occasions the proof chip switches to th
 6. **More Occasions**
 Horizontal carousel on mobile, four-column grid on desktop.
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV                                                                       |
++----------------------------------------------------------------------------------+
+| HERO                                                                             |
+| breadcrumb                                                                       |
+| full-bleed image                                                                 |
+| occasion title / blurb / count                                                   |
+| [Shop the designs]   [Search this occasion]                                      |
++----------------------------------------------------------------------------------+
+| PROOF SECTION                                                                    |
+| [Large Proof Image] | Start with the edit / proof copy / price hint / 220 GSM   |
++----------------------------------------------------------------------------------+
+| OPTIONAL GIFT BANNER                                                             |
+| [Gift Image] | gift-wrap copy / gift-ready chip                                  |
++----------------------------------------------------------------------------------+
+| PRODUCT CONTROLS                                                                 |
+| [Sort] [Price] [Optional Vibe Filter] [Search this occasion]                     |
++----------------------------------------------------------------------------------+
+| PRODUCT GRID                                                                     |
+| [Merch] [Merch] [Merch]                                                          |
+| [Merch] [Merch] [Merch]                                                          |
++----------------------------------------------------------------------------------+
+| MORE OCCASIONS                                                                   |
+| [Occasion] [Occasion] [Occasion] [Occasion]                                      |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                           |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - `Search this occasion` routes to `/search?occasion={slug}&focus=1`.

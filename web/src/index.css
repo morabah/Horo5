@@ -301,6 +301,44 @@
     box-shadow: 0 10px 26px rgba(26, 26, 26, 0.05);
   }
 
+  /** Homepage feeling section — larger frosted frame to bridge copy into browsing */
+  .home-glass-frame {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.3) 0%,
+      rgba(248, 246, 242, 0.72) 100%
+    );
+    backdrop-filter: blur(22px) saturate(1.08);
+    -webkit-backdrop-filter: blur(22px) saturate(1.08);
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    box-shadow:
+      0 24px 56px -32px rgba(26, 26, 26, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.86),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .home-glass-chip {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.38) 0%,
+      rgba(248, 246, 242, 0.7) 100%
+    );
+    backdrop-filter: blur(16px) saturate(1.05);
+    -webkit-backdrop-filter: blur(16px) saturate(1.05);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow:
+      0 12px 28px -22px rgba(26, 26, 26, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.84);
+  }
+
+  .home-glass-chip:hover {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.46) 0%,
+      rgba(248, 246, 242, 0.78) 100%
+    );
+  }
+
   /**
    * Shop-by-vibe cards: text over photography (§3.2 Glass White).
    * Frosted strip + scrim so Obsidian / Warm Charcoal copy stays readable.

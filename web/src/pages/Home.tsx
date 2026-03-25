@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { HomeVibeGrid } from '../components/HomeVibeGrid';
+import { HomeVibeFocusPanel } from '../components/HomeVibeFocusPanel';
 import { AppIcon } from '../components/AppIcon';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { formatEgp } from '../utils/formatPrice';
@@ -116,7 +117,7 @@ export function Home() {
       />
 
       {/* The Feeling */}
-      <section className="relative overflow-hidden bg-papyrus px-4 pb-8 pt-8 sm:px-6 sm:pb-10 md:pb-12 md:pt-12 lg:px-8">
+      <section className="relative overflow-hidden bg-papyrus px-4 pb-4 pt-8 sm:px-6 sm:pb-6 sm:pt-10 md:pt-12 lg:px-8">
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -125,8 +126,8 @@ export function Home() {
           }}
           aria-hidden
         />
-        <div className="mx-auto max-w-5xl" data-reveal>
-          <div className="max-w-3xl">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="max-w-4xl" data-reveal>
             <h2 className="font-headline text-[17px] font-medium uppercase tracking-[0.18em] text-obsidian md:text-[19px]">
               You know that feeling?
             </h2>
@@ -135,6 +136,8 @@ export function Home() {
             </p>
             <p className="font-body mt-4 text-[17px] italic text-clay">We get it. That&apos;s why we&apos;re here.</p>
           </div>
+
+          <HomeVibeFocusPanel />
         </div>
       </section>
 

@@ -10,6 +10,27 @@
 - The route redirects to `/vibes` using `<Navigate to="/vibes" replace />`.
 - No public portfolio page, artist bio page, or artist-specific product listing exists in the shipped storefront.
 
+## Visual wireframe
+
+```text
++------------------------------------------------+
+| /artists/:slug                                 |
+| requested by legacy deep link                  |
++------------------------------------------------+
+                    |
+                    v
++------------------------------------------------+
+| redirect                                       |
+| <Navigate to="/vibes" replace />               |
++------------------------------------------------+
+                    |
+                    v
++------------------------------------------------+
+| /vibes                                         |
+| public browse continues here                   |
++------------------------------------------------+
+```
+
 ## Product rule
 
 Artist information currently lives in:

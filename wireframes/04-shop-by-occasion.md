@@ -30,6 +30,28 @@ Remaining occasions render as image-first editorial cards with:
 3. **Secondary Navigation**
 Bottom section linking back to `/vibes`.
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV                                                                       |
++----------------------------------------------------------------------------------+
+| FEATURED HERO OCCASION                                                           |
+| full-bleed image                                                                 |
+| eyebrow / title / subtitle / optional price hint                                 |
+| [Featured Occasion CTA]   [Shop by Vibe]                                         |
++----------------------------------------------------------------------------------+
+| OCCASION GRID                                                                    |
+| [Occasion Card] [Occasion Card]                                                  |
+| [Occasion Card] [Occasion Card]                                                  |
++----------------------------------------------------------------------------------+
+| SECONDARY NAV                                                                    |
+| [Shop by Vibe]                                                                   |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                           |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - The page is not a utilitarian list of equal cards anymore; it opens with one dominant featured occasion.

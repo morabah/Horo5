@@ -44,6 +44,32 @@ Review selections, keep one clear path to checkout, and show only one upsell mod
 - `Continue shopping`
 - trust pills
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV                                                                       |
++----------------------------------------------------------------------------------+
+| EMPTY STATE                                                                      |
+| [Editorial Image]                                                                |
+| Your cart                                                                        |
+| short explanation                                                                |
+| [Find Your Design]                                                               |
++----------------------------------------------------------------------------------+
+| OR, WHEN FILLED                                                                  |
++----------------------------------------------------------------------------------+
+| CART ITEMS                                          | STICKY SUMMARY             |
+| [Item Image] name / artist / size / qty / price     | subtotal                    |
+| [Item Image] name / artist / size / qty / price     | shipping estimate           |
+|                                                      | estimated total            |
+| UPSSELL MODULE                                       | [Proceed to checkout]      |
+| [Gift wrap] or [Bundle savings]                      | [Continue shopping]        |
+|                                                      | trust pills                |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                           |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - Shipping estimate is visible before checkout.

@@ -45,6 +45,39 @@ Brand reassurance strip above the active step.
 7. **Order Summary Sidebar**
 Visible on every step with product images and live total math.
 
+## Visual wireframe
+
+```text
++----------------------------------------------------------------------------------+
+| GLOBAL NAV                                                                       |
++----------------------------------------------------------------------------------+
+| [Back to cart]                                                                   |
+| PROGRESS: Information -> Shipping -> Payment                                     |
++----------------------------------------------------------------------------------+
+| CONTINUITY PANEL                                                                 |
++----------------------------------------------------------------------------------+
+| ACTIVE STEP FORM                                      | ORDER SUMMARY             |
+|                                                       | product images            |
+| Step 1: Information                                   | subtotal                  |
+| email / phone / WhatsApp opt-in                       | shipping                  |
+| address fields                                        | total                     |
+| [Continue to shipping]                                |                           |
+|                                                       |                           |
+| Step 2: Shipping                                      |                           |
+| ( ) standard   ( ) express                            |                           |
+| delivery window / exchange link                       |                           |
+| [Continue to payment]                                 |                           |
+|                                                       |                           |
+| Step 3: Payment                                       |                           |
+| ( ) COD default                                       |                           |
+| ( ) Card with incentive                               |                           |
+| Arabic reassurance / exchange link                    |                           |
+| [Place order]                                         |                           |
++----------------------------------------------------------------------------------+
+| FOOTER                                                                        |
++----------------------------------------------------------------------------------+
+```
+
 ## Key behaviors
 
 - Step 1 CTA is always clickable; invalid submit reveals inline errors and focuses the first invalid field.
