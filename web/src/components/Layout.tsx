@@ -47,7 +47,7 @@ export function Layout() {
   return (
     <>
       <Nav />
-      <main className={isHome ? '' : 'pt-20 md:pt-24'}>
+      <main className={isHome ? '' : 'pt-32 md:pt-24'}>
         <Outlet />
       </main>
       <Footer />

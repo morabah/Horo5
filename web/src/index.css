@@ -2,55 +2,17 @@
 
 @theme {
   /* Lookbook palette (Material-style tokens from design) */
-  --color-background: #fef9f1;
-  --color-on-tertiary-fixed: #1c1b1b;
-  --color-on-primary-fixed: #3e0500;
-  --color-surface-dim: #ded9d2;
-  --color-on-primary-container: #fffbff;
-  --color-tertiary-fixed-dim: #c8c6c5;
-  --color-surface-tint: #af3017;
-  --color-on-tertiary: #ffffff;
-  --color-error-container: #ffdad6;
   --color-outline: #8d716b;
-  --color-surface-container-highest: #e7e2da;
   --color-secondary-fixed: #fcdebc;
-  --color-secondary-fixed-dim: #dec2a2;
-  --color-surface-bright: #fef9f1;
-  --color-tertiary: #5d5c5b;
-  --color-primary-fixed-dim: #ffb4a4;
-  --color-on-primary: #ffffff;
-  --color-on-secondary-fixed: #281905;
-  --color-error: #ba1a1a;
-  --color-on-secondary-fixed-variant: #57432b;
   /* Brand CTA (§3.2): Ember — primary interactive accent */
   --color-ember: #e8593c;
   --color-primary: #e8593c;
   --color-surface: #fef9f1;
-  --color-surface-variant: #e7e2da;
   --color-on-surface: #1d1c17;
   --color-secondary: #705b41;
-  --color-tertiary-fixed: #e5e2e1;
-  --color-surface-container-lowest: #ffffff;
-  --color-on-secondary-container: #776046;
-  --color-inverse-primary: #ffb4a4;
-  --color-surface-container-low: #f8f3eb;
-  --color-on-tertiary-fixed-variant: #474746;
-  --color-tertiary-container: #757474;
-  --color-on-surface-variant: #59413c;
-  --color-secondary-container: #fcdebc;
   --color-outline-variant: #e1bfb8;
-  --color-on-error: #ffffff;
-  --color-on-error-container: #93000a;
   --color-surface-container-high: #ece8e0;
   --color-surface-container: #f2ede5;
-  --color-primary-container: #cd462b;
-  --color-inverse-on-surface: #f5f0e8;
-  --color-on-primary-fixed-variant: #8d1701;
-  --color-primary-fixed: #ffdad3;
-  --color-on-background: #1d1c17;
-  --color-inverse-surface: #32302b;
-  --color-on-tertiary-container: #f7feff;
-  --color-on-secondary: #ffffff;
 
   /* Brand / wireframe alignment */
   --color-papyrus: #f5f0e8;
@@ -61,19 +23,17 @@
   --color-warm-charcoal: #2c2a26;
   --color-deep-teal: #2b7596;
   --color-dusk-violet: #6b4c8a;
-  --color-nile-dark: #3a4a3f;
   --color-kohl-gold-bright: #d4a24e;
   --color-frost-blue: #e3eff5;
   --color-desert-sand: #c4956a;
 
-  --font-headline: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  /* §3.3 Label: Space Grotesk 500 */
-  --font-label: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  /* Wordmark — vector serif (swap to brand SVG paths when available) */
-  --font-wordmark: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  /* PDP editorial display (reference layouts) */
-  --font-pdp-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-headline: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  /* §3.3 Label: compact sans with strong uppercase rhythm */
+  --font-label: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  /* Wordmark / editorial serif fallbacks without network dependency */
+  --font-wordmark: Georgia, 'Times New Roman', serif;
+  --font-pdp-serif: Georgia, 'Times New Roman', serif;
 
   --radius-sm: 0.125rem;
   --radius-lg: 0.25rem;
@@ -111,12 +71,10 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
     }
-    .home-hover-lift,
-    .home-hover-lift-featured {
+    .home-hover-lift {
       transition: none !important;
     }
-    .home-hover-lift:hover,
-    .home-hover-lift-featured:hover {
+    .home-hover-lift:hover {
       transform: none !important;
     }
     .home-latest-product:hover img {
@@ -169,28 +127,6 @@
     .section-divider-wrap path {
       stroke-dashoffset: 0 !important;
     }
-    .hero-scroll-cue {
-      animation: none !important;
-      opacity: 0.45 !important;
-      transform: none !important;
-    }
-    .hero-featured-thumb-float {
-      animation: none !important;
-    }
-  }
-
-  @keyframes hero-feature-float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-5px);
-    }
-  }
-
-  .hero-featured-thumb-float {
-    animation: hero-feature-float 5s ease-in-out infinite;
   }
   /* Homepage — editorial scroll-reveal (hero excluded); dividers only draw strokes */
   [data-reveal] {
@@ -260,21 +196,6 @@
       animation: data-reveal-fallback-vibe 0.01s ease 2s forwards;
     }
   }
-  @keyframes scroll-cue-breathe {
-    0%,
-    100% {
-      transform: scaleY(1);
-      opacity: 0.3;
-    }
-    50% {
-      transform: scaleY(1.5);
-      opacity: 0.6;
-    }
-  }
-  .hero-scroll-cue {
-    transform-origin: top center;
-    animation: scroll-cue-breathe 3s ease-in-out infinite;
-  }
   @keyframes section-divider-draw {
     from {
       stroke-dashoffset: 1;
@@ -333,13 +254,6 @@
       0 6px 18px rgba(0, 0, 0, 0.12);
   }
 
-  .glass-nav--hero-transparent .material-symbols-outlined {
-    color: rgba(255, 255, 255, 0.88);
-  }
-  .glass-nav--hero-transparent .material-symbols-outlined:hover {
-    background-color: rgba(255, 255, 255, 0.06);
-  }
-
   .editorial-shadow {
     box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
   }
@@ -366,38 +280,6 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 2.75rem 1.75rem;
     }
-  }
-
-  .vertical-text {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-  }
-
-  .material-symbols-outlined {
-    font-variation-settings:
-      'FILL' 0,
-      'wght' 300,
-      'GRAD' 0,
-      'opsz' 24;
-  }
-
-  /* §3.2 + §8.2 — trust badges on frosted glass (dark section) */
-  .glass-trust-badge {
-    background: rgba(227, 239, 245, 0.15);
-    backdrop-filter: blur(24px) saturate(1.2);
-    -webkit-backdrop-filter: blur(24px) saturate(1.2);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-  }
-
-  /* §3.2 — Merchandising badge (Bestseller, New etc.) on products */
-  .glass-merchandising-badge {
-    background: rgba(255, 245, 230, 0.45);
-    backdrop-filter: blur(12px) saturate(1.1);
-    -webkit-backdrop-filter: blur(12px) saturate(1.1);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
   /** Hero — text directly on photography (no glass card); WCAG-friendly contrast via scrim + shadow */
@@ -459,11 +341,6 @@
     border: 1px solid rgba(255, 255, 255, 0.65);
     border-radius: 12px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  }
-
-  /** Glass type polish — subtle lift on headings over glass */
-  .glass-text-heading {
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
   }
 
   /** Soft Violet glass — artist cards & story blocks (§3.2) */
@@ -648,7 +525,7 @@
   @keyframes product-quick-view-in {
     from {
       opacity: 0;
-      transform: translateY(14px) scale(0.985);
+      transform: translateY(10px) scale(0.992);
     }
     to {
       opacity: 1;
@@ -658,8 +535,8 @@
 
   @media (prefers-reduced-motion: no-preference) {
     .product-quick-view-dialog[open] {
-      animation: product-quick-view-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      animation-duration: 0.4s !important;
+      animation: product-quick-view-in 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-duration: 0.24s !important;
     }
   }
 

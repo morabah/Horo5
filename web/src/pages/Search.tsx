@@ -1,29 +1,31 @@
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { AppIcon } from '../components/AppIcon';
+import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
+import { SearchSuggestionPanel } from '../components/SearchSuggestionPanel';
 import { TeeImageFrame } from '../components/TeeImage';
+import { useUiLocale } from '../i18n/ui-locale';
 import { SEARCH_SCHEMA } from '../data/domain-config';
-import { heroStreet, imgUrl, vibeCovers } from '../data/images';
+import { getOccasionCollectionVisual, getVibeCollectionVisual, heroStreet, imgUrl } from '../data/images';
 import { getOccasion, getVibe } from '../data/site';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
   getSearchResults,
-  type SearchArtistCard,
+  getSearchSuggestions,
   type SearchDesignCard,
+  type SearchOccasionCard,
   type SearchPriceFilter,
   type SearchSortKey,
-  type SearchTab,
+  type SearchSuggestion,
   type SearchVibeCard,
 } from '../search/view';
-import { formatEgp } from '../utils/formatPrice';
 
-const SEARCH_DEBOUNCE_MS = 300;
-const POPULAR_SEARCHES = ['Emotions', 'Zodiac', 'Street', 'Gift', 'Coffee', 'HORO'] as const;
+const SEARCH_DEBOUNCE_MS = 250;
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-const TAB_IDS: SearchTab[] = ['designs', 'vibes', 'artists'];
 const SORT_IDS: SearchSortKey[] = ['relevance', 'featured', 'newest', 'price-asc', 'price-desc'];
 const PRICE_IDS: SearchPriceFilter[] = ['all', 'under-800', '800-899', '900+'];
 
@@ -51,6 +53,10 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   });
 }
 
+function flattenSuggestions(groups: ReturnType<typeof getSearchSuggestions>) {
+  return groups.flatMap((group) => group.suggestions);
+}
+
 function ChevronIcon() {
   return (
     <span
@@ -69,68 +75,30 @@ function formatDesignCount(count: number) {
   return `${count} ${count === 1 ? SEARCH_SCHEMA.copy.designSingular : SEARCH_SCHEMA.copy.designPlural}`;
 }
 
+function formatResultCount(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 function SearchProductCard({
   product,
-  isMobile,
   onQuickView,
 }: {
   product: SearchDesignCard;
-  isMobile: boolean;
   onQuickView: (slug: string) => void;
 }) {
   return (
-    <article className="group flex flex-col">
-      <div className="relative mb-4 w-full">
-        <Link
-          to={`/products/${product.slug}`}
-          className="block overflow-hidden rounded-md bg-surface-container-high shadow-sm ring-1 ring-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-        >
-          <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
-            <TeeImageFrame
-              src={product.imageSrc}
-              alt={product.imageAlt}
-              w={700}
-              aspectRatio="4/5"
-              borderRadius="0.375rem"
-              frameStyle={{ marginBottom: 0 }}
-            />
-          </div>
-          {product.merchandisingBadge ? (
-            <span className="font-label absolute left-3 top-3 z-10 rounded-sm border border-white/70 bg-white/78 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm">
-              {product.merchandisingBadge}
-            </span>
-          ) : null}
-        </Link>
-        {!isMobile ? (
-          <button
-            type="button"
-            className="quick-view-pill quick-view-pill--hover font-label absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-            onClick={() => onQuickView(product.slug)}
-            aria-label={`Quick view: ${product.name}`}
-          >
-            {SEARCH_SCHEMA.copy.quickViewCta}
-          </button>
-        ) : null}
-      </div>
-
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          {product.artistName ? <p className="font-body text-xs text-clay-earth">{product.artistName}</p> : null}
-          <Link
-            to={`/products/${product.slug}`}
-            className="font-headline mt-1 block text-[1.08rem] font-semibold leading-snug tracking-[0.01em] text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-          >
-            {product.name}
-          </Link>
-          {product.vibeName ? (
-            <p className="mt-2 font-body text-xs text-warm-charcoal">
-              <span style={{ color: product.vibeAccent ?? 'var(--deep-teal)' }}>●</span> {product.vibeName}
-            </p>
-          ) : null}
-          <p className="font-pdp-serif mt-2 text-[1.125rem] font-normal text-obsidian">{formatEgp(product.priceEgp)}</p>
-        </div>
-      </div>
-    </article>
+    <MerchProductCard
+      slug={product.slug}
+      name={product.name}
+      priceEgp={product.priceEgp}
+      imageSrc={product.imageSrc}
+      imageAlt={product.imageAlt}
+      merchandisingBadge={product.merchandisingBadge}
+      eyebrow={product.vibeName}
+      eyebrowAccent={product.vibeAccent}
+      proofChip="220 GSM cotton"
+      onQuickView={onQuickView}
+    />
   );
 }
 
@@ -157,22 +125,30 @@ function SearchVibeResultCard({ vibe }: { vibe: SearchVibeCard }) {
   );
 }
 
-function SearchArtistResultCard({ artist, to }: { artist: SearchArtistCard; to: string }) {
+function SearchOccasionResultCard({ occasion }: { occasion: SearchOccasionCard }) {
   return (
     <Link
-      to={to}
+      to={`/occasions/${occasion.slug}`}
       className="group block overflow-hidden rounded-[18px] border border-stone/70 bg-white/72 text-inherit no-underline shadow-[0_18px_44px_-28px_rgba(26,26,26,0.24)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
     >
       <div className="overflow-hidden">
-        <TeeImageFrame src={artist.imageSrc} alt={artist.imageAlt} w={640} aspectRatio="4/5" borderRadius="0" />
+        <TeeImageFrame src={occasion.imageSrc} alt={occasion.imageAlt} w={640} aspectRatio="4/5" borderRadius="0" />
       </div>
       <div className="space-y-2 p-4">
-        <p className="font-headline text-lg font-semibold leading-snug text-obsidian">{artist.name}</p>
-        <p className="font-body text-sm leading-relaxed text-warm-charcoal">{artist.style}</p>
-        <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">{formatDesignCount(artist.designCount)}</p>
-        <span className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal">
-          {SEARCH_SCHEMA.copy.viewDesignsCta}
-        </span>
+        <p className="font-headline text-lg font-semibold leading-snug text-obsidian">{occasion.name}</p>
+        <p className="font-body text-sm leading-relaxed text-warm-charcoal">{occasion.blurb}</p>
+        <div className="flex flex-wrap gap-2">
+          {occasion.priceHint ? (
+            <span className="font-label inline-flex min-h-9 items-center rounded-full border border-stone bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-clay-earth shadow-sm">
+              {occasion.priceHint}
+            </span>
+          ) : null}
+          {occasion.isGiftOccasion ? (
+            <span className="font-label inline-flex min-h-9 items-center rounded-full border border-stone bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-clay-earth shadow-sm">
+              Gift-ready
+            </span>
+          ) : null}
+        </div>
       </div>
     </Link>
   );
@@ -180,7 +156,10 @@ function SearchArtistResultCard({ artist, to }: { artist: SearchArtistCard; to: 
 
 export function Search() {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const isMobile = useMediaQuery('(max-width: 767px)');
+  const { copy } = useUiLocale();
+  const searchRootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mobileFilterSheetRef = useRef<HTMLDivElement>(null);
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
@@ -191,31 +170,40 @@ export function Search() {
   const [debouncedQ, setDebouncedQ] = useState(urlQuery);
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
 
-  const tab = TAB_IDS.includes((params.get('tab') ?? '') as SearchTab) ? (params.get('tab') as SearchTab) : 'designs';
   const sortKey = SORT_IDS.includes((params.get('sort') ?? '') as SearchSortKey) ? (params.get('sort') as SearchSortKey) : 'relevance';
   const priceFilter = PRICE_IDS.includes((params.get('price') ?? '') as SearchPriceFilter)
     ? (params.get('price') as SearchPriceFilter)
     : 'all';
-  const artistSlug = params.get('artist') ?? 'all';
   const vibeFilter = params.get('vibeFilter') ?? 'all';
 
   const scopeVibe = useMemo(() => {
     const value = params.get('vibe') ?? '';
-    if (!value.trim()) return null;
-    return getVibe(value) ?? null;
+    return value.trim() ? getVibe(value) ?? null : null;
   }, [params]);
 
   const scopeOccasion = useMemo(() => {
     const value = params.get('occasion') ?? '';
-    if (!value.trim()) return null;
-    return getOccasion(value) ?? null;
+    return value.trim() ? getOccasion(value) ?? null : null;
   }, [params]);
 
   useEffect(() => {
     setQ(urlQuery);
     setDebouncedQ(urlQuery);
+    setSearchFocused(false);
+    setActiveSuggestionIndex(-1);
   }, [urlQuery]);
+
+  useEffect(() => {
+    const legacyArtistTab = params.get('tab') === 'artists';
+    if (!params.has('artist') && !params.has('tab') && !legacyArtistTab) return;
+    const next = new URLSearchParams(params);
+    next.delete('artist');
+    next.delete('tab');
+    setParams(next, { replace: true });
+  }, [params, setParams]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -256,10 +244,8 @@ export function Search() {
         if (
           value == null ||
           value === '' ||
-          (key === 'tab' && value === 'designs') ||
           (key === 'sort' && value === 'relevance') ||
           (key === 'price' && value === 'all') ||
-          (key === 'artist' && value === 'all') ||
           (key === 'vibeFilter' && value === 'all')
         ) {
           next.delete(key);
@@ -335,6 +321,18 @@ export function Search() {
     return () => panel.removeEventListener('keydown', onKeyDown);
   }, [mobileFiltersOpen]);
 
+  useEffect(() => {
+    if (!searchFocused) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (target && searchRootRef.current?.contains(target)) return;
+      setSearchFocused(false);
+      setActiveSuggestionIndex(-1);
+    };
+    window.addEventListener('pointerdown', handlePointerDown);
+    return () => window.removeEventListener('pointerdown', handlePointerDown);
+  }, [searchFocused]);
+
   const searchResults = useMemo(
     () =>
       getSearchResults({
@@ -344,17 +342,35 @@ export function Search() {
         sortKey,
         priceFilter,
         vibeFilter,
-        artistSlug,
       }),
-    [artistSlug, debouncedQ, priceFilter, scopeOccasion?.slug, scopeVibe?.slug, sortKey, vibeFilter],
+    [debouncedQ, priceFilter, scopeOccasion?.slug, scopeVibe?.slug, sortKey, vibeFilter],
   );
 
-  const { baseDesigns, designMatches, vibeMatches, artistMatches, vibeOptions, artistOptions } = searchResults;
-  const totalResults = designMatches.length + vibeMatches.length + artistMatches.length;
+  const suggestionGroups = useMemo(
+    () =>
+      getSearchSuggestions({
+        query: q,
+        scopeOccasionSlug: scopeOccasion?.slug,
+        scopeVibeSlug: scopeVibe?.slug,
+        limitPerGroup: 3,
+      }),
+    [q, scopeOccasion?.slug, scopeVibe?.slug],
+  );
+  const flatSuggestions = useMemo(() => flattenSuggestions(suggestionGroups), [suggestionGroups]);
+  const suggestionsOpen = searchFocused && (suggestionGroups.length > 0 || q.trim().length > 0);
+  const activeSuggestion = activeSuggestionIndex >= 0 ? flatSuggestions[activeSuggestionIndex] : null;
+  const activeSuggestionId = activeSuggestion ? `search-page-suggestions-${activeSuggestionIndex}` : undefined;
+
+  useEffect(() => {
+    setActiveSuggestionIndex(-1);
+  }, [q, suggestionGroups.length]);
+
+  const { baseDesigns, designMatches, vibeMatches, occasionMatches, vibeOptions } = searchResults;
+  const totalResults = designMatches.length + vibeMatches.length + occasionMatches.length;
   const inputEmpty = q.trim().length === 0;
   const hasDebouncedQuery = debouncedQ.trim().length > 0;
-  const hasActiveFilters = sortKey !== 'relevance' || priceFilter !== 'all' || vibeFilter !== 'all' || artistSlug !== 'all';
-  const noResultsAcrossTabs = hasDebouncedQuery && totalResults === 0;
+  const hasActiveFilters = sortKey !== 'relevance' || priceFilter !== 'all' || vibeFilter !== 'all';
+  const noResultsAcrossSections = hasDebouncedQuery && totalResults === 0;
 
   const scopeLabels = [scopeOccasion?.name, scopeVibe?.name].filter(Boolean);
   const scopeSummary = scopeLabels.join(' · ');
@@ -370,58 +386,74 @@ export function Search() {
 
   const leadVisual = useMemo(() => {
     if (scopeOccasion) {
-      return { src: scopeOccasion.heroImageSrc, alt: scopeOccasion.heroImageAlt };
+      const visual = getOccasionCollectionVisual(scopeOccasion.slug).hero;
+      return { src: visual.src, alt: visual.alt };
     }
     if (scopeVibe) {
-      return {
-        src: vibeCovers[scopeVibe.slug] ?? heroStreet,
-        alt: `${scopeVibe.name} vibe — HORO editorial styling.`,
-      };
+      const visual = getVibeCollectionVisual(scopeVibe.slug).cover;
+      return { src: visual.src, alt: visual.alt };
     }
-    if (designMatches[0]) {
-      return { src: designMatches[0].imageSrc, alt: designMatches[0].imageAlt };
-    }
-    if (baseDesigns[0]) {
-      return { src: baseDesigns[0].imageSrc, alt: baseDesigns[0].imageAlt };
-    }
+    if (designMatches[0]) return { src: designMatches[0].imageSrc, alt: designMatches[0].imageAlt };
+    if (baseDesigns[0]) return { src: baseDesigns[0].imageSrc, alt: baseDesigns[0].imageAlt };
     return { src: heroStreet, alt: 'HORO search — editorial styling in a graphic tee.' };
   }, [baseDesigns, designMatches, scopeOccasion, scopeVibe]);
 
   const summaryText = hasDebouncedQuery
-    ? SEARCH_SCHEMA.copy.resultsForQuery
-      .replace('{count}', String(totalResults))
-      .replace('{query}', debouncedQ.trim())
+    ? SEARCH_SCHEMA.copy.resultsForQuery.replace('{count}', String(totalResults)).replace('{query}', debouncedQ.trim())
     : scopeSummary
       ? SEARCH_SCHEMA.copy.scopedResultsFallback.replace('{scope}', scopeSummary)
       : SEARCH_SCHEMA.copy.resultsFallback;
 
-  const activeTabEmptyCopy =
-    tab === 'designs'
-      ? SEARCH_SCHEMA.copy.noDesignResults
-      : tab === 'vibes'
-        ? SEARCH_SCHEMA.copy.noVibeResults
-        : SEARCH_SCHEMA.copy.noArtistResults;
-
-  const buildArtistSearchTo = useCallback(
-    (slug: string) => {
-      const next = new URLSearchParams();
-      if (scopeOccasion?.slug) next.set('occasion', scopeOccasion.slug);
-      if (scopeVibe?.slug) next.set('vibe', scopeVibe.slug);
-      next.set('artist', slug);
-      const queryString = next.toString();
-      return queryString ? `/search?${queryString}` : '/search';
-    },
-    [scopeOccasion?.slug, scopeVibe?.slug],
-  );
+  const popularSearches = useMemo(() => {
+    const suggestions = [
+      ...(scopeOccasion ? [scopeOccasion.name] : []),
+      ...(scopeVibe ? [scopeVibe.name] : []),
+      ...baseDesigns.slice(0, 4).map((design) => design.name),
+      ...vibeMatches.slice(0, 2).map((vibe) => vibe.name),
+      ...occasionMatches.slice(0, 2).map((occasion) => occasion.name),
+      'Gift Something Real',
+      'Midnight Compass',
+    ];
+    return [...new Set(suggestions)].slice(0, 6);
+  }, [baseDesigns, occasionMatches, scopeOccasion, scopeVibe, vibeMatches]);
 
   const resetFilters = useCallback(() => {
     updateParams({
       sort: 'relevance',
       price: 'all',
       vibeFilter: 'all',
-      artist: 'all',
     });
   }, [updateParams]);
+
+  function handleSuggestionSelect(suggestion: SearchSuggestion) {
+    navigate(suggestion.href);
+    setSearchFocused(false);
+    setActiveSuggestionIndex(-1);
+  }
+
+  function handleInputKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!flatSuggestions.length) return;
+      setActiveSuggestionIndex((current) => (current + 1 >= flatSuggestions.length ? 0 : current + 1));
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!flatSuggestions.length) return;
+      setActiveSuggestionIndex((current) => (current <= 0 ? flatSuggestions.length - 1 : current - 1));
+      return;
+    }
+    if (event.key === 'Escape') {
+      setSearchFocused(false);
+      setActiveSuggestionIndex(-1);
+      event.currentTarget.blur();
+    }
+    if (event.key === 'Enter' && activeSuggestion) {
+      event.preventDefault();
+      handleSuggestionSelect(activeSuggestion);
+    }
+  }
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -458,32 +490,55 @@ export function Search() {
                 </div>
               ) : null}
 
-              <div className="relative">
+              <div ref={searchRootRef} className="relative">
                 <label htmlFor="search-page-input" className="sr-only">
                   {SEARCH_SCHEMA.copy.searchLabel}
                 </label>
+                <span className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-obsidian/62" aria-hidden>
+                  <AppIcon name="search" className="h-5 w-5" />
+                </span>
                 <input
                   ref={inputRef}
                   id="search-page-input"
                   type="search"
                   value={q}
                   onChange={(event) => setQ(event.target.value)}
-                  placeholder={SEARCH_SCHEMA.copy.placeholder}
-                  className="font-body min-h-14 w-full rounded-sm border border-stone/80 bg-white/92 px-4 pr-14 text-base text-obsidian shadow-sm placeholder:text-clay/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  onFocus={() => setSearchFocused(true)}
+                  onKeyDown={handleInputKeyDown}
+                  placeholder={copy.nav.searchPlaceholder}
+                  className="font-body min-h-14 w-full rounded-sm border border-stone/80 bg-white/92 px-4 pl-12 pr-14 text-base text-obsidian shadow-sm placeholder:text-clay/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   autoComplete="off"
+                  aria-expanded={suggestionsOpen}
+                  aria-controls="search-page-suggestions"
+                  aria-activedescendant={activeSuggestionId}
+                  role="combobox"
                 />
                 {q.trim() ? (
                   <button
                     type="button"
-                    onClick={() => {
+                    onMouseDown={(event) => {
+                      event.preventDefault();
                       setQ('');
                       setDebouncedQ('');
+                      setActiveSuggestionIndex(-1);
                     }}
-                    className="material-symbols-outlined absolute right-2 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full text-obsidian/72 transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full text-obsidian/72 transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    aria-label={copy.nav.searchClear}
                   >
-                    close
+                    <AppIcon name="close" className="h-5 w-5" />
                   </button>
+                ) : null}
+
+                {suggestionsOpen ? (
+                  <div className="absolute inset-x-0 top-[calc(100%+0.75rem)] z-30">
+                    <SearchSuggestionPanel
+                      groups={suggestionGroups}
+                      activeIndex={activeSuggestionIndex}
+                      listboxId="search-page-suggestions"
+                      onHover={setActiveSuggestionIndex}
+                      onSelect={handleSuggestionSelect}
+                    />
+                  </div>
                 ) : null}
               </div>
 
@@ -494,7 +549,7 @@ export function Search() {
                   <span className="font-label basis-full text-[10px] font-medium uppercase tracking-[0.22em] text-label">
                     {SEARCH_SCHEMA.copy.popularLabel}
                   </span>
-                  {POPULAR_SEARCHES.map((label) => (
+                  {popularSearches.map((label) => (
                     <button
                       key={label}
                       type="button"
@@ -524,159 +579,109 @@ export function Search() {
           </div>
         </section>
 
-        <section id="search-results-panel" className="mt-10 scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] md:mt-12">
-          <div className="mb-6 flex flex-wrap gap-2 border-b border-stone/30 pb-3 md:mb-8">
-            {[
-              ['designs', `${SEARCH_SCHEMA.copy.designsTab} (${designMatches.length})`],
-              ['vibes', `${SEARCH_SCHEMA.copy.vibesTab} (${vibeMatches.length})`],
-              ['artists', `${SEARCH_SCHEMA.copy.artistsTab} (${artistMatches.length})`],
-            ].map(([id, label]) => {
-              const tabId = id as SearchTab;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => updateParams({ tab: tabId })}
-                  className={`font-label inline-flex min-h-12 items-center rounded-full border px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                    tab === tabId
-                      ? 'border-obsidian bg-obsidian text-white shadow-sm'
-                      : 'border-stone bg-white/75 text-obsidian hover:border-desert-sand'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-
-          {tab === 'designs' ? (
-            isMobile ? (
-              <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
+        <section id="search-results-panel" className="mt-10 scroll-mt-[calc(8rem+env(safe-area-inset-top,0px))] md:mt-12">
+          {isMobile ? (
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
+              <button
+                type="button"
+                onClick={openMobileFilters}
+                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+              >
+                {SEARCH_SCHEMA.copy.filterAndSortCta}
+              </button>
+              {hasActiveFilters ? (
                 <button
                   type="button"
-                  onClick={openMobileFilters}
-                  className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  onClick={resetFilters}
+                  className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
-                  {SEARCH_SCHEMA.copy.filterAndSortCta}
+                  {SEARCH_SCHEMA.copy.resetFiltersCta}
                 </button>
-                {hasActiveFilters ? (
-                  <button
-                    type="button"
-                    onClick={resetFilters}
-                    className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  >
-                    {SEARCH_SCHEMA.copy.resetFiltersCta}
-                  </button>
-                ) : null}
-              </div>
-            ) : (
-              <div className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 flex items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm">
-                <div className="flex min-w-0 flex-wrap items-end gap-4">
-                  <div className="flex min-w-[13rem] flex-col gap-2">
-                    <label htmlFor="search-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.sortLabel}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="search-sort"
-                        value={sortKey}
-                        onChange={(event) => updateParams({ sort: event.target.value })}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        {SORT_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronIcon />
-                    </div>
+              ) : null}
+            </div>
+          ) : (
+            <div className="sticky top-[calc(7.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 flex items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm">
+              <div className="flex min-w-0 flex-wrap items-end gap-4">
+                <div className="flex min-w-[13rem] flex-col gap-2">
+                  <label htmlFor="search-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {SEARCH_SCHEMA.copy.sortLabel}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="search-sort"
+                      value={sortKey}
+                      onChange={(event) => updateParams({ sort: event.target.value })}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      {SORT_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
                   </div>
-
-                  <div className="flex min-w-[13rem] flex-col gap-2">
-                    <label htmlFor="search-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.priceLabel}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="search-price"
-                        value={priceFilter}
-                        onChange={(event) => updateParams({ price: event.target.value })}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        {PRICE_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
-
-                  {vibeOptions.length > 1 ? (
-                    <div className="flex min-w-[13rem] flex-col gap-2">
-                      <label htmlFor="search-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                        {SEARCH_SCHEMA.copy.vibeLabel}
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="search-vibe"
-                          value={vibeFilter}
-                          onChange={(event) => updateParams({ vibeFilter: event.target.value })}
-                          className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                        >
-                          <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
-                          {vibeOptions.map((option) => (
-                            <option key={option.slug} value={option.slug}>
-                              {option.name}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronIcon />
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {artistOptions.length > 1 ? (
-                    <div className="flex min-w-[13rem] flex-col gap-2">
-                      <label htmlFor="search-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                        {SEARCH_SCHEMA.copy.artistLabel}
-                      </label>
-                      <div className="relative">
-                        <select
-                          id="search-artist"
-                          value={artistSlug}
-                          onChange={(event) => updateParams({ artist: event.target.value })}
-                          className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                        >
-                          <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
-                          {artistOptions.map((option) => (
-                            <option key={option.slug} value={option.slug}>
-                              {option.name}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronIcon />
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
 
-                {hasActiveFilters ? (
-                  <button
-                    type="button"
-                    onClick={resetFilters}
-                    className="font-label inline-flex min-h-12 shrink-0 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  >
-                    {SEARCH_SCHEMA.copy.resetFiltersCta}
-                  </button>
+                <div className="flex min-w-[13rem] flex-col gap-2">
+                  <label htmlFor="search-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {SEARCH_SCHEMA.copy.priceLabel}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="search-price"
+                      value={priceFilter}
+                      onChange={(event) => updateParams({ price: event.target.value })}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      {PRICE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+
+                {vibeOptions.length > 1 ? (
+                  <div className="flex min-w-[13rem] flex-col gap-2">
+                    <label htmlFor="search-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                      {SEARCH_SCHEMA.copy.vibeLabel}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="search-vibe"
+                        value={vibeFilter}
+                        onChange={(event) => updateParams({ vibeFilter: event.target.value })}
+                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      >
+                        <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
+                        {vibeOptions.map((option) => (
+                          <option key={option.slug} value={option.slug}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
                 ) : null}
               </div>
-            )
-          ) : null}
 
-          {noResultsAcrossTabs ? (
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="font-label inline-flex min-h-12 shrink-0 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                >
+                  {SEARCH_SCHEMA.copy.resetFiltersCta}
+                </button>
+              ) : null}
+            </div>
+          )}
+
+          {noResultsAcrossSections ? (
             <div className="card-glass mt-4 flex flex-col items-center border border-stone/70 px-6 py-10 text-center md:py-12">
               <h2 className="font-headline text-[1.45rem] font-semibold tracking-tight text-obsidian">
                 {SEARCH_SCHEMA.copy.noResultsForQuery.replace('{query}', debouncedQ.trim())}
@@ -695,49 +700,77 @@ export function Search() {
             </div>
           ) : null}
 
-          {!noResultsAcrossTabs && tab === 'designs' ? (
-            <>
-              <div className="vibe-product-grid">
-                {designMatches.map((product) => (
-                  <SearchProductCard key={product.slug} product={product} isMobile={isMobile} onQuickView={setQuickViewSlug} />
-                ))}
-              </div>
-
-              {designMatches.length === 0 ? (
-                <div className="mt-6">
-                  <p className="font-body text-clay">
-                    {hasActiveFilters ? SEARCH_SCHEMA.copy.noFilteredResults : activeTabEmptyCopy}{' '}
-                    {hasActiveFilters ? (
-                      <button type="button" onClick={resetFilters} className="border-0 bg-transparent font-medium text-deep-teal underline">
-                        {SEARCH_SCHEMA.copy.resetFiltersCta}
-                      </button>
-                    ) : null}
-                  </p>
+          {!noResultsAcrossSections ? (
+            <div className="space-y-12">
+              <section aria-labelledby="search-designs-heading">
+                <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{copy.search.designsCount}</p>
+                    <h2 id="search-designs-heading" className="font-headline mt-2 text-[1.55rem] font-semibold tracking-tight text-obsidian">
+                      {copy.search.designsHeading}
+                    </h2>
+                  </div>
+                  <p className="font-body text-sm text-clay">{formatDesignCount(designMatches.length)}</p>
                 </div>
+
+                <div className="vibe-product-grid">
+                  {designMatches.map((product) => (
+                    <SearchProductCard key={product.slug} product={product} onQuickView={setQuickViewSlug} />
+                  ))}
+                </div>
+
+                {designMatches.length === 0 ? (
+                  <div className="mt-6">
+                    <p className="font-body text-clay">
+                      {hasActiveFilters ? SEARCH_SCHEMA.copy.noFilteredResults : SEARCH_SCHEMA.copy.noDesignResults}{' '}
+                      {hasActiveFilters ? (
+                        <button type="button" onClick={resetFilters} className="border-0 bg-transparent font-medium text-deep-teal underline">
+                          {SEARCH_SCHEMA.copy.resetFiltersCta}
+                        </button>
+                      ) : null}
+                    </p>
+                  </div>
+                ) : null}
+              </section>
+
+              {vibeMatches.length > 0 ? (
+                <section aria-labelledby="search-vibes-heading">
+                  <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                      <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{copy.search.relatedVibesHeading}</p>
+                      <h2 id="search-vibes-heading" className="font-headline mt-2 text-[1.55rem] font-semibold tracking-tight text-obsidian">
+                        {copy.search.vibesHeading}
+                      </h2>
+                    </div>
+                    <p className="font-body text-sm text-clay">{formatResultCount(vibeMatches.length, 'vibe', 'vibes')}</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    {vibeMatches.map((vibe) => (
+                      <SearchVibeResultCard key={vibe.slug} vibe={vibe} />
+                    ))}
+                  </div>
+                </section>
               ) : null}
-            </>
-          ) : null}
 
-          {!noResultsAcrossTabs && tab === 'vibes' ? (
-            <>
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {vibeMatches.map((vibe) => (
-                  <SearchVibeResultCard key={vibe.slug} vibe={vibe} />
-                ))}
-              </div>
-              {vibeMatches.length === 0 ? <p className="mt-6 font-body text-warm-charcoal">{activeTabEmptyCopy}</p> : null}
-            </>
-          ) : null}
-
-          {!noResultsAcrossTabs && tab === 'artists' ? (
-            <>
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {artistMatches.map((artist) => (
-                  <SearchArtistResultCard key={artist.slug} artist={artist} to={buildArtistSearchTo(artist.slug)} />
-                ))}
-              </div>
-              {artistMatches.length === 0 ? <p className="mt-6 font-body text-warm-charcoal">{activeTabEmptyCopy}</p> : null}
-            </>
+              {occasionMatches.length > 0 ? (
+                <section aria-labelledby="search-occasions-heading">
+                  <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                      <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{copy.search.relatedOccasionsHeading}</p>
+                      <h2 id="search-occasions-heading" className="font-headline mt-2 text-[1.55rem] font-semibold tracking-tight text-obsidian">
+                        {copy.search.occasionsHeading}
+                      </h2>
+                    </div>
+                    <p className="font-body text-sm text-clay">{formatResultCount(occasionMatches.length, 'occasion', 'occasions')}</p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    {occasionMatches.map((occasion) => (
+                      <SearchOccasionResultCard key={occasion.slug} occasion={occasion} />
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+            </div>
           ) : null}
         </section>
       </div>
@@ -755,7 +788,7 @@ export function Search() {
             >
               <div className="mb-5 flex items-center justify-between gap-4">
                 <div>
-                  <p className="font-label text-[10px] font-medium uppercase tracking-[0.24em] text-label">{SEARCH_SCHEMA.copy.designsTab}</p>
+                  <p className="font-label text-[10px] font-medium uppercase tracking-[0.24em] text-label">{copy.search.designsHeading}</p>
                   <h2 id="mobile-search-filters-title" className="font-headline mt-2 text-2xl font-semibold tracking-tight text-obsidian">
                     {SEARCH_SCHEMA.copy.filterAndSortCta}
                   </h2>
@@ -764,10 +797,10 @@ export function Search() {
                   ref={mobileFilterCloseBtnRef}
                   type="button"
                   onClick={closeMobileFilters}
-                  className="material-symbols-outlined inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-stone bg-white text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-stone bg-white text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   aria-label="Close filters"
                 >
-                  close
+                  <AppIcon name="close" className="h-5 w-5" />
                 </button>
               </div>
 
@@ -828,30 +861,6 @@ export function Search() {
                       >
                         <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
                         {vibeOptions.map((option) => (
-                          <option key={option.slug} value={option.slug}>
-                            {option.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
-                ) : null}
-
-                {artistOptions.length > 1 ? (
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="mobile-search-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.artistLabel}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="mobile-search-artist"
-                        value={artistSlug}
-                        onChange={(event) => updateParams({ artist: event.target.value })}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
-                        {artistOptions.map((option) => (
                           <option key={option.slug} value={option.slug}>
                             {option.name}
                           </option>

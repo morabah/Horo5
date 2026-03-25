@@ -12,6 +12,15 @@ export type LastOrderSnapshot = {
   total: number;
   paymentMethod: 'cod' | 'card';
   shippingMethod: 'standard' | 'express';
+  paymentLabel?: string;
+  shippingLabel?: string;
+  estimatedDeliveryWindow?: string;
+  contactEmail?: string;
+  contactName?: string;
+  contactPhone?: string;
+  shippingLine1?: string;
+  shippingCity?: string;
+  whatsappOptIn?: boolean;
 };
 
 export function saveLastOrder(snapshot: LastOrderSnapshot): void {

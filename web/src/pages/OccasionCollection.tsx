@@ -1,13 +1,14 @@
 import { Link, useParams } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { AppIcon } from '../components/AppIcon';
+import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { TeeImageFrame } from '../components/TeeImage';
 import { OCCASION_SCHEMA } from '../data/domain-config';
-import { getProductMedia, giftWrapPreview, imgUrl } from '../data/images';
-import { getArtist, getOccasion, getVibe, occasions, productsByOccasion, type OccasionSlug, type Product } from '../data/site';
+import { getOccasionCollectionVisual, getProductMedia, giftWrapPreview, imgUrl } from '../data/images';
+import { getOccasion, getVibe, occasions, productsByOccasion, type OccasionSlug, type Product } from '../data/site';
 import { useMediaQuery } from '../hooks/useMediaQuery';
-import { formatEgp } from '../utils/formatPrice';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 
 const FOCUSABLE_SELECTOR =
@@ -72,71 +73,28 @@ function formatDesignCount(count: number) {
 function OccasionProductCard({
   product,
   isGiftOccasion,
-  isMobile,
   onQuickView,
 }: {
   product: Product;
   isGiftOccasion: boolean;
-  isMobile: boolean;
   onQuickView: (slug: string) => void;
 }) {
   const vibe = getVibe(product.vibeSlug);
-  const artist = getArtist(product.artistSlug);
   const { main } = getProductMedia(product.slug);
 
   return (
-    <article className="group flex flex-col">
-      <div className="relative mb-4 w-full">
-        <Link
-          to={`/products/${product.slug}`}
-          className="block overflow-hidden rounded-md bg-surface-container-high shadow-sm ring-1 ring-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-        >
-          <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
-            <TeeImageFrame
-              src={main}
-              alt={`HORO “${product.name}” graphic tee for ${vibe?.name ?? 'the collection'}.`}
-              w={700}
-              aspectRatio="4/5"
-              borderRadius="0.375rem"
-              frameStyle={{ marginBottom: 0 }}
-            />
-          </div>
-          {product.merchandisingBadge ? (
-            <span className="font-label absolute left-3 top-3 z-10 rounded-sm border border-white/70 bg-white/78 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm">
-              {product.merchandisingBadge}
-            </span>
-          ) : null}
-        </Link>
-        {!isMobile ? (
-          <button
-            type="button"
-            className="quick-view-pill quick-view-pill--hover font-label absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-            onClick={() => onQuickView(product.slug)}
-            aria-label={`Quick view: ${product.name}`}
-          >
-            Quick view
-          </button>
-        ) : null}
-      </div>
-
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          {artist ? <p className="font-body text-xs text-clay-earth">{artist.name}</p> : null}
-          <Link
-            to={`/products/${product.slug}`}
-            className="font-headline mt-1 block text-[1.08rem] font-semibold leading-snug tracking-[0.01em] text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-          >
-            {product.name}
-          </Link>
-          <p className="font-pdp-serif mt-2 text-[1.125rem] font-normal text-obsidian">{formatEgp(product.priceEgp)}</p>
-          {isGiftOccasion ? (
-            <p className="font-label mt-3 inline-flex min-h-9 items-center rounded-full border border-stone bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-clay-earth shadow-sm">
-              {OCCASION_SCHEMA.copy.giftBannerChip}
-            </p>
-          ) : null}
-        </div>
-      </div>
-    </article>
+    <MerchProductCard
+      slug={product.slug}
+      name={product.name}
+      priceEgp={product.priceEgp}
+      imageSrc={main}
+      imageAlt={`HORO “${product.name}” graphic tee for ${vibe?.name ?? 'the collection'}.`}
+      merchandisingBadge={product.merchandisingBadge}
+      eyebrow={vibe?.name}
+      eyebrowAccent={vibe?.accent}
+      proofChip={isGiftOccasion ? OCCASION_SCHEMA.copy.giftBannerChip : product.fitLabel ?? '220 GSM cotton'}
+      onQuickView={onQuickView}
+    />
   );
 }
 
@@ -148,7 +106,6 @@ export function OccasionCollection() {
   const [sortKey, setSortKey] = useState<ProductSortKey>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
   const [vibeFilter, setVibeFilter] = useState<string>('all');
-  const [artistSlug, setArtistSlug] = useState<string>('all');
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -163,7 +120,6 @@ export function OccasionCollection() {
     setSortKey('featured');
     setPriceFilter('all');
     setVibeFilter('all');
-    setArtistSlug('all');
     setMobileFiltersOpen(false);
   }, [slug]);
 
@@ -172,10 +128,6 @@ export function OccasionCollection() {
       setMobileFiltersOpen(false);
     }
   }, [isMobile]);
-
-  const artistOptions = useMemo(() => {
-    return [...new Set(baseList.map((product) => product.artistSlug))].sort();
-  }, [baseList]);
 
   const vibeOptions = useMemo(() => {
     return [...new Set(baseList.map((product) => product.vibeSlug))].sort();
@@ -186,11 +138,10 @@ export function OccasionCollection() {
   const list = useMemo(() => {
     let next = filterByPrice(sorted, priceFilter);
     if (vibeFilter !== 'all') next = next.filter((product) => product.vibeSlug === vibeFilter);
-    if (artistSlug !== 'all') next = next.filter((product) => product.artistSlug === artistSlug);
     return next;
-  }, [artistSlug, priceFilter, sorted, vibeFilter]);
+  }, [priceFilter, sorted, vibeFilter]);
 
-  const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || vibeFilter !== 'all' || artistSlug !== 'all';
+  const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || vibeFilter !== 'all';
 
   const siblingOccasions = useMemo(() => {
     return occasions.filter((entry) => entry.slug !== slug);
@@ -261,13 +212,14 @@ export function OccasionCollection() {
       <div className="container py-12">
         <p className="font-body text-warm-charcoal">{OCCASION_SCHEMA.copy.notFoundTitle}</p>
         <Link to="/occasions" className="font-label mt-4 inline-block text-deep-teal underline">
-          {OCCASION_SCHEMA.copy.backToOccasionsCta}
+          Back to Shop by Occasion
         </Link>
       </div>
     );
   }
 
   const scopeSearchTo = `/search?occasion=${encodeURIComponent(occasion.slug)}&focus=1`;
+  const occasionVisuals = getOccasionCollectionVisual(occasion.slug);
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -281,12 +233,13 @@ export function OccasionCollection() {
       <section className="relative isolate overflow-hidden bg-obsidian text-white" aria-labelledby="occasion-collection-title">
         <div className="relative h-[42vh] min-h-[22rem] sm:h-[46vh] md:h-[52vh] md:min-h-[30rem]">
           <img
-            alt={occasion.heroImageAlt}
-            className="absolute inset-0 h-full w-full object-cover object-center"
-            src={imgUrl(occasion.heroImageSrc, 1600)}
+            alt={occasionVisuals.hero.alt}
+            className="absolute inset-0 h-full w-full object-cover"
+            src={imgUrl(occasionVisuals.hero.src, 1600)}
             width={1600}
             height={1200}
             decoding="async"
+            style={occasionVisuals.hero.objectPosition ? { objectPosition: occasionVisuals.hero.objectPosition } : undefined}
           />
           <div
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.24)_0%,rgba(18,18,18,0.44)_46%,rgba(18,18,18,0.88)_100%)]"
@@ -304,7 +257,7 @@ export function OccasionCollection() {
                     /{' '}
                   </span>
                   <Link to="/occasions" className="transition-colors hover:text-white">
-                    Occasions
+                    Shop by Occasion
                   </Link>
                   <span className="text-white/42" aria-hidden>
                     {' '}
@@ -324,6 +277,20 @@ export function OccasionCollection() {
                 <p className="font-label mt-5 text-[10px] font-medium uppercase tracking-[0.24em] text-white/78 md:text-[11px]">
                   {formatDesignCount(baseList.length)}
                 </p>
+                <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                  <a
+                    href="#occasion-collection-products"
+                    className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-[0_18px_38px_-18px_rgba(0,0,0,0.72)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  >
+                    Shop the designs
+                  </a>
+                  <Link
+                    to={scopeSearchTo}
+                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/86 hover:text-white"
+                  >
+                    {OCCASION_SCHEMA.copy.searchThisOccasionCta}
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -331,6 +298,51 @@ export function OccasionCollection() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-12 px-6 pt-8 pb-12 md:space-y-14 md:px-10 md:pt-10 md:pb-16">
+        <section
+          id="occasion-proof"
+          className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-b border-stone/25 pb-10 md:pb-12"
+          aria-labelledby="occasion-proof-heading"
+        >
+          <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-10 lg:gap-14">
+            <div className="overflow-hidden rounded-[1.25rem] border border-stone/70 bg-white/70 shadow-[0_22px_54px_-30px_rgba(26,26,26,0.28)]">
+              <img
+                src={imgUrl(occasionVisuals.proof.src, 1200)}
+                alt={occasionVisuals.proof.alt}
+                className="block h-full w-full object-cover"
+                width={1200}
+                height={900}
+                loading="lazy"
+                style={occasionVisuals.proof.objectPosition ? { objectPosition: occasionVisuals.proof.objectPosition } : undefined}
+              />
+            </div>
+            <div className="min-w-0 space-y-4 md:max-w-lg">
+              <h2 id="occasion-proof-heading" className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
+                Start with the edit
+              </h2>
+              <p className="font-body text-[1.02rem] leading-relaxed text-warm-charcoal md:text-[1.12rem] md:leading-[1.7]">
+                {occasion.blurb} Browse the pieces shaped for this moment first, then refine by vibe or price only if you need to narrow further.
+              </p>
+              {occasion.priceHint ? (
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">
+                  {occasion.priceHint}
+                  <span className="mx-2 text-clay/50" aria-hidden>
+                    |
+                  </span>
+                  220 GSM cotton
+                </p>
+              ) : (
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">220 GSM cotton</p>
+              )}
+              <a
+                href="#occasion-collection-products"
+                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-7 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+              >
+                Shop the designs
+              </a>
+            </div>
+          </div>
+        </section>
+
         {occasion.isGiftOccasion ? (
           <section className="card-glass grid gap-5 overflow-hidden border border-[rgba(212,164,78,0.22)] bg-[linear-gradient(135deg,rgba(255,245,230,0.98),rgba(255,255,255,0.82))] p-4 md:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)] md:items-center md:p-5">
             <div className="overflow-hidden rounded-[18px] border border-stone/60 bg-white/80">
@@ -441,32 +453,6 @@ export function OccasionCollection() {
                   </div>
                 ) : null}
 
-                {artistOptions.length > 1 ? (
-                  <div className="flex min-w-[13rem] flex-col gap-2">
-                    <label htmlFor="occasion-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {OCCASION_SCHEMA.copy.artistLabel}
-                    </label>
-                    <div className="relative inline-block min-w-0">
-                      <select
-                        id="occasion-artist"
-                        value={artistSlug}
-                        onChange={(event) => setArtistSlug(event.target.value)}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        <option value="all">{OCCASION_SCHEMA.copy.allArtistsLabel}</option>
-                        {artistOptions.map((currentArtistSlug) => {
-                          const artist = getArtist(currentArtistSlug);
-                          return (
-                            <option key={currentArtistSlug} value={currentArtistSlug}>
-                              {artist?.name ?? currentArtistSlug}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
-                ) : null}
               </div>
 
               <Link
@@ -484,7 +470,6 @@ export function OccasionCollection() {
                 key={product.slug}
                 product={product}
                 isGiftOccasion={occasion.isGiftOccasion}
-                isMobile={isMobile}
                 onQuickView={setQuickViewSlug}
               />
             ))}
@@ -499,7 +484,6 @@ export function OccasionCollection() {
                   setSortKey('featured');
                   setPriceFilter('all');
                   setVibeFilter('all');
-                  setArtistSlug('all');
                 }}
                 className="border-0 bg-transparent font-medium text-deep-teal underline"
               >
@@ -559,10 +543,10 @@ export function OccasionCollection() {
                   ref={mobileFilterCloseBtnRef}
                   type="button"
                   onClick={closeMobileFilters}
-                  className="material-symbols-outlined inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-stone bg-white text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-stone bg-white text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   aria-label="Close filters"
                 >
-                  close
+                  <AppIcon name="close" className="h-5 w-5" />
                 </button>
               </div>
 
@@ -636,32 +620,6 @@ export function OccasionCollection() {
                   </div>
                 ) : null}
 
-                {artistOptions.length > 1 ? (
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="mobile-occasion-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {OCCASION_SCHEMA.copy.artistLabel}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="mobile-occasion-artist"
-                        value={artistSlug}
-                        onChange={(event) => setArtistSlug(event.target.value)}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        <option value="all">{OCCASION_SCHEMA.copy.allArtistsLabel}</option>
-                        {artistOptions.map((currentArtistSlug) => {
-                          const artist = getArtist(currentArtistSlug);
-                          return (
-                            <option key={currentArtistSlug} value={currentArtistSlug}>
-                              {artist?.name ?? currentArtistSlug}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
-                ) : null}
               </div>
 
               <div className="mt-6 flex flex-col gap-3">
@@ -681,7 +639,6 @@ export function OccasionCollection() {
                       setSortKey('featured');
                       setPriceFilter('all');
                       setVibeFilter('all');
-                      setArtistSlug('all');
                     }}
                     className="font-label inline-flex min-h-11 items-center justify-center rounded-sm border border-stone bg-white px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   >

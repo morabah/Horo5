@@ -84,7 +84,7 @@ Long-term brand strength comes from repeated belonging, not novelty alone. We bu
 | Geography | Urban Egypt, led by Cairo with relevance in other major cities |
 | Spending | Price-aware but willing to pay more for originality, quality, and meaning |
 | Shopping behavior | Mobile-first, social-led discovery, visually driven decisions |
-| Language | English-first brand identity; Arabic-led commerce and customer service |
+| Language | English-first launch; Arabic-ready system UI, search, and customer service |
 | Core need | Clothing that makes identity, mood, or gifting intent visible |
 | Purchase trigger | Recognition (“that’s me”), fit confidence, trust in product quality |
 | Price position | Premium-mid band: 799–899 EGP standard, tiered architecture |
@@ -99,7 +99,7 @@ Within the target demographic, three priority personas guide content, product pa
 | Willingness to pay | 650–950 EGP | 700–1,300 EGP (incl. bundles) | 900–1,550+ EGP |
 | Key objection | “I can print cheaper” | Size or delivery risk | “Artist” must feel real |
 | Language preference | Arabic / bilingual | Arabic | Bilingual / English |
-| Entry point | Shop by Vibe | Shop by Occasion | Browse by Artist |
+| Entry point | Shop by Vibe | Shop by Occasion | Product page + artist credit |
 | Trust need | Print quality proof | Delivery \+ packaging proof | Artist legitimacy proof |
 
 ## **1.7 Competitive Differentiation**
@@ -234,7 +234,7 @@ Every color has a defined role. If a pairing is not listed in this section, it i
 
 | Button Type | Background | Text Color | When to Use |
 | :---- | :---- | :---- | :---- |
-| Primary (on light page) | Ember \#E8593C | Obsidian \#1A1A1A | Add to Cart, Checkout, main CTAs |
+| Primary (on light page) | Ember \#E8593C | Obsidian \#1A1A1A | Add to Bag, Checkout, main CTAs |
 | Primary (on dark page) | Ember \#E8593C | White \#FFFFFF | Hero section, dark section CTAs |
 | Ghost (on light page) | Transparent | Obsidian, Stone border | Continue Shopping, secondary actions |
 
@@ -260,12 +260,14 @@ HORO uses frosted-glass visual effects on interactive UI elements to create dept
 
 | Level | Font & Weight | Size (Desktop / Mobile) | Color | Line Height |
 | :---- | :---- | :---- | :---- | :---- |
-| H1 | Space Grotesk 600 | 32px / 26px | Obsidian | 1.2 |
-| H2 | Space Grotesk 500 | 22px / 19px | Obsidian | 1.3 |
-| H3 | Space Grotesk 500 | 17px / 16px | Obsidian | 1.4 |
-| Body | Inter 400 | 17px / 16px | Warm Charcoal | 1.65 |
-| Caption | Inter 400 | 14px / 13px | Clay Earth | 1.5 |
-| Label | Space Grotesk 500 | 12px / 12px | Label Brown | 1.3, uppercase, wide tracking |
+| H1 | Avenir Next / Segoe UI / Helvetica Neue / Arial 600 | 32px / 26px | Obsidian | 1.2 |
+| H2 | Avenir Next / Segoe UI / Helvetica Neue / Arial 500 | 22px / 19px | Obsidian | 1.3 |
+| H3 | Avenir Next / Segoe UI / Helvetica Neue / Arial 500 | 17px / 16px | Obsidian | 1.4 |
+| Body | Avenir Next / Segoe UI / Helvetica Neue / Arial 400 | 17px / 16px | Warm Charcoal | 1.65 |
+| Caption | Avenir Next / Segoe UI / Helvetica Neue / Arial 400 | 14px / 13px | Clay Earth | 1.5 |
+| Label | Avenir Next / Segoe UI / Helvetica Neue / Arial 500 | 12px / 12px | Label Brown | 1.3, uppercase, wide tracking |
+
+**Launch typography policy:** HORO ships on a local performance-safe stack. Do not restore remote font dependencies. If self-hosted brand fonts are introduced later, they must preserve current performance targets and readability.
 
 ## **3.4 Photography**
 
@@ -282,6 +284,8 @@ HORO uses frosted-glass visual effects on interactive UI elements to create dept
 * Instagram grid: repeating 3-tile rhythm: flat lay → on-body street → theme/mood content.
 
 **Never photograph:** Generic stock images. T-shirt on hanger against white wall. Heavy retouching. Luxury lifestyle staging (yachts, cars). Designs near religious imagery.
+
+**Storefront slot rule:** All major website visuals are assigned through named storefront slots (hero, proof, hub tile, PDP lead). Fill those slots only with approved editorial assets. If final editorial photography is not ready, use the strongest existing warm editorial image in the slot contract rather than adding cold, generic, or obviously generated placeholder art.
 
 # **Section 4: Brand Narrative**
 
@@ -337,7 +341,7 @@ Every customer-facing page must pass this checklist. Not every point appears on 
 | 2\. The problem | “Nothing in my closet says what I’m thinking” | The Feeling section, ad copy, DMs |
 | 3\. The guide (HORO) | Empathy: “We know that feeling.” Authority: quality, artists, proof. | Trust strip, artist credit, testimonials |
 | 4\. A simple plan | Find your vibe → Pick your design → It arrives at your door | Homepage arc, checkout progress |
-| 5\. A clear action | One primary CTA per viewport. “Explore the Collection” / “Add to Cart” | Every page |
+| 5\. A clear action | One primary CTA per viewport. “Shop by Vibe” / “Add to Bag” | Every page |
 | 6\. What goes wrong without it | Stuck in generic tees. Giving forgettable gifts. | Implied in problem framing — never as fake urgency |
 | 7\. What success looks like | “Where’d you get that?” The ownership moment. | Post-purchase, customer stories |
 
@@ -348,8 +352,8 @@ Every page is a miniature story with three parts: setup, confrontation, and reso
 | Page | Setup | Confrontation | Resolution |
 | :---- | :---- | :---- | :---- |
 | Homepage | “Wear What You Mean” | 5 vibes: which one is you? | Explore CTA |
-| Collection | You chose Bold & Loud | 24 designs — which one? | Add to Cart / Quick View |
-| Product Detail | “For the one who…” | Can I trust this? | Select size → Add to Cart |
+| Collection | You chose a vibe | 24 designs — which one? | Add to Bag / Quick View |
+| Product Detail | “For the one who…” | Can I trust this? | Select size → Add to Bag |
 | Cart | You chose well | Is the total right? | Proceed to Checkout |
 | Checkout | Almost done | Payment trust, delivery clarity | Place Order |
 | Confirmation | “You completed this design” | (No tension — pure resolution) | Track order \+ Tag us |
@@ -374,13 +378,13 @@ Products are organized along three navigation axes. Every design is cross-tagged
 
 | Vibe | Tagline | Accent Color |
 | :---- | :---- | :---- |
-| Bold & Loud | “For when you want to be noticed” | Ember \#E8593C |
-| Soft & Thoughtful | “For the quiet ones who feel deeply” | Dusk Violet \#6B4C8A |
-| Proud & Rooted | “Wear where you’re from” | Nile Dark \#3A4A3F |
-| Weird & Wonderful | “For the ones who don’t fit one box” | Deep Teal \#2B7596 |
-| Cosmic | “Your sign. Your style.” | Kohl Gold \#D4A24E |
+| Emotions | “Wear the mood you can’t put into words” | Dusk Violet \#6B4C8A |
+| Zodiac | “Your sign. Your line. Your look.” | Kohl Gold \#D4A24E |
+| Fiction | “Characters, worlds, and stories you can wear” | Deep Teal \#2B7596 |
+| Career | “Ambition, identity, and the work-in-progress you” | Nile Dark \#3A4A3F |
+| Trends | “What’s moving right now — before it becomes noise” | Ember \#E8593C |
 
-These 5 vibes are a **starting point**. After user testing, they may become 6 or 7\. The navigation design must accommodate 5–7 categories without breaking layout.
+These 5 vibes are the current canonical navigation model. Legacy labels from earlier guide versions may remain as hidden search aliases for one transition cycle, but they must not surface in UI or navigation.
 
 ## **6.2 Secondary Axis: Shop by Occasion**
 
@@ -392,9 +396,9 @@ These 5 vibes are a **starting point**. After user testing, they may become 6 or
 | Birthday Pick | Gift buyer — personality-matched collections |
 | Just Because | Self-expression buyer — everyday self-treat |
 
-## **6.3 Tertiary Axis: Browse by Artist**
+## **6.3 Artist Credit (PDP-First, Not a Browse Axis)**
 
-Each artist gets a profile card with portfolio, style description, and available designs. This axis is secondary — never the homepage default — but available for users who want to explore by creator.
+Artist identity remains part of the product truth, but not a public navigation axis. The artist appears on the product page as legitimacy proof and remains in internal product metadata for search relevance and attribution. Artist should not appear as a public tab, collection path, or primary browse route.
 
 ## **6.4 Navigation Rules**
 
@@ -402,9 +406,9 @@ Each artist gets a profile card with portfolio, style description, and available
 
 * Never show more than 5–7 options at any single navigation level.
 
-* Every design is tagged across all three axes simultaneously.
+* Every design is tagged across vibe and occasion. Artist metadata stays attached internally for attribution and search relevance.
 
-* Search bar prominent on every page, supporting English and Arabic.
+* Search bar prominent on every page, supporting English, Arabic aliases, and legacy hidden vibe labels during the transition period.
 
 # **Section 7: Pricing & Language Strategy**
 
@@ -428,13 +432,15 @@ HORO uses a split-language model: English for brand identity, Arabic-led for com
 | Brand name, tagline, logo | English always | Premium positioning, global readability |
 | Product names & themes | English primary | Maintains brand vocabulary metaphor |
 | Packaging & tags | English primary | Quality cue; unboxing experience |
-| Website UI | English primary, Arabic toggle | Bilingual support available |
+| Website UI | English primary; Arabic-ready system UI and search | Public Arabic toggle ships only with full rollout |
 | Social media captions | Bilingual (Arabic-led) | How the audience discovers and engages |
 | Instagram/TikTok ads | Arabic-first | Conversion optimized for reach |
 | DMs & WhatsApp | Arabic-first | Customers ask in Arabic; respond naturally |
-| Product descriptions | Bilingual | Trust-building; removes language barrier |
+| Product descriptions | English primary at launch | Arabic support expands first in commerce-critical surfaces |
 
 **Rule:** Arabic copy is not a translation of English. It is native Arabic that carries the same brand personality — perceptive, warm, culturally grounded.
+
+**Launch rule:** English remains the live browsing language until the Arabic browsing experience is complete. Arabic ships first in support, search normalization, checkout reassurance, and post-purchase states.
 
 # **Section 8: Website & Checkout Standards**
 
@@ -442,7 +448,7 @@ HORO uses a split-language model: English for brand identity, Arabic-led for com
 
 The HORO website must feel like walking through a gallery, not scrolling through a catalog. **The illustration is always the hero. UI exists to frame it, never compete with it.** Every surface trends warm (Papyrus), never cold or clinical.
 
-## **8.2 Homepage: 7-Section Scroll Story**
+## **8.2 Homepage: 8-Section Scroll Story**
 
 1. **Hero:** Full-viewport. “Wear What You Mean” headline \+ subline \+ one primary CTA. Dark, cinematic, warm.
 
@@ -450,13 +456,15 @@ The HORO website must feel like walking through a gallery, not scrolling through
 
 3. **The Vibes:** 5 immersive cards. Asymmetric grid. Each card: background image \+ accent dot \+ name \+ tagline. Hover reveals “Explore →.”
 
-4. **The Proof:** Dark section. 4 trust badges on frosted glass: 220 GSM Cotton, Licensed Artwork, Free Exchange 14 Days, COD Available.
+4. **Latest Drop:** 4-column product grid. Each card: vibe or proof cue, design name, price, and one compact proof signal. No artist line on browse cards.
 
-5. **Real Stories:** 3 customer quote cards on warm-glow glass. Real names \+ cities. Specific, verifiable quotes.
+5. **The Proof:** Dark or grounded trust section. 4 trust badges: 220 GSM Cotton, Licensed Artwork, Free Exchange 14 Days, COD Available.
 
-6. **Latest Drop:** 4-column product grid. Each card: artist name, design name, story teaser, price.
+6. **Real Stories:** 3 customer quote cards on warm-glow glass. Real names \+ cities. Specific, verifiable quotes.
 
-7. **The Invite:** “Find your word.” Closing CTA. Generous whitespace.
+7. **Simple Plan:** Find your vibe → Pick your design → It arrives at your door.
+
+8. **The Invite:** “Find your word.” Closing CTA. Generous whitespace.
 
 ## **8.3 Product Page**
 
@@ -470,9 +478,9 @@ The product page is where trust matters most. It must show both the story and th
 
 * **Size selector:** S/M/L/XL/XXL. Selected state in Ember. Out-of-stock sizes visually struck through.
 
-* **Trust strip below CTA:** 220 GSM • Artist name • Free Exchange 14d • COD Available.
+* **Trust strip below CTA:** 220 GSM cotton • Licensed art • Free Exchange 14d • COD Available.
 
-* **Mobile sticky CTA:** Fixed bar at bottom with “Add to Cart — 799 EGP” in Obsidian text on Ember.
+* **Mobile sticky CTA:** Fixed bar at bottom with “Add to Bag — 799 EGP” in Obsidian text on Ember.
 
 ## **8.4 Checkout (Non-Negotiable Rules)**
 
@@ -483,7 +491,7 @@ The product page is where trust matters most. It must show both the story and th
 | Progress indicator (Step 1 of 3\) | Reduces perceived complexity, builds momentum |
 | COD as default payment option | 98.4% of Egyptian online purchasers prefer cash |
 | Prepaid incentive: “Save 30 EGP with card” | Nudges prepaid without blocking COD buyers |
-| WhatsApp order confirmation | Reduces COD cancellation by making order feel real |
+| WhatsApp order help / confirmation when configured | Adds truthful post-purchase reassurance without fake promises |
 | Order summary with product image at every step | Visual reassurance at payment moment |
 | Exchange policy visible on payment screen | Trust signal at the moment of highest doubt |
 | Mobile: single column, 48px touch targets | Mobile-first market; prevent tap errors |
@@ -507,12 +515,12 @@ The product page is where trust matters most. It must show both the story and th
 | Instagram ad | On-body shot \+ price visible \+ “COD available” |
 | WhatsApp reply | Product photo \+ size guide link \+ delivery timeline \+ exchange policy |
 | Checkout page | Order summary with image / Expected delivery date / COD \+ prepaid options / Exchange link |
-| Post-purchase | Tracking link / “Tag us in your first wear” / WhatsApp delivery updates |
+| Post-purchase | Tracking or order-help link only when live / “Tag us in your first wear” / WhatsApp updates only when configured |
 | Gift bundle | Gift wrap preview / Story card sample / Delivery guarantee messaging |
 
 # **Section 9: Standards & Ethics**
 
-## **9.1 Accessibility (WCAG 2.1 AA)**
+## **9.1 Accessibility (WCAG 2.2 AA)**
 
 These are mandatory design requirements, not suggestions:
 
@@ -564,7 +572,7 @@ Everything in this guide marked as a “starting point” or “hypothesis” mu
 | :---- | :---- | :---- |
 | Price anchor (649 vs 799 vs 899\) | 799 converts at acceptable margin | Contribution margin per unit |
 | Navigation axis order (Vibe-first vs Occasion-first) | Vibe-first matches mental model | Browse-to-purchase rate |
-| CTA text (“Add to Cart” vs “Get This Design”) | Ownership language converts higher | Add-to-cart rate |
+| CTA text (“Add to Bag” vs “Get This Design”) | Ownership language converts higher | Add-to-bag rate |
 | Product card: price visible vs hidden | Price visible reduces bounces | Click-through rate |
 | Checkout: multi-step vs single page | Multi-step builds COD trust | Checkout completion |
 | Trust strip: above fold vs below gallery | Above fold reduces DM questions | DM volume |

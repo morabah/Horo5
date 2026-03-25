@@ -6,13 +6,12 @@ import { VibeAnimatedArt } from './VibeAnimatedArt';
 
 type VibeEditorialSectionProps = {
   block: VibeEditorialBlock;
-  onQuickView: (productSlug: string) => void;
 };
 
 /**
  * Long-form vibe story — lives on /vibes/:slug (moved from homepage lookbook).
  */
-export function VibeEditorialSection({ block, onQuickView }: VibeEditorialSectionProps) {
+export function VibeEditorialSection({ block }: VibeEditorialSectionProps) {
   const showcaseProduct = productsByVibe(block.vibe.slug)[0];
 
   return (
@@ -60,16 +59,6 @@ export function VibeEditorialSection({ block, onQuickView }: VibeEditorialSectio
                     {showcaseProduct.merchandisingBadge}
                   </span>
                 ) : null}
-                {showcaseProduct ? (
-                  <button
-                    type="button"
-                    onClick={() => onQuickView(showcaseProduct.slug)}
-                    className="quick-view-pill font-label absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg"
-                    aria-label={`Quick view: ${showcaseProduct.name}`}
-                  >
-                    Quick view
-                  </button>
-                ) : null}
               </div>
             ) : block.detailLayout === 'square' ? (
               <div className="relative aspect-square w-48 overflow-hidden rounded-full border border-label/10">
@@ -79,16 +68,6 @@ export function VibeEditorialSection({ block, onQuickView }: VibeEditorialSectio
                     {showcaseProduct.merchandisingBadge}
                   </span>
                 ) : null}
-                {showcaseProduct ? (
-                  <button
-                    type="button"
-                    onClick={() => onQuickView(showcaseProduct.slug)}
-                    className="quick-view-pill quick-view-pill--compact font-label absolute bottom-2 left-2 right-2 z-10 rounded-full text-center font-medium uppercase text-obsidian transition-shadow hover:shadow-md"
-                    aria-label={`Quick view: ${showcaseProduct.name}`}
-                  >
-                    Quick view
-                  </button>
-                ) : null}
               </div>
             ) : (
               <div className="relative aspect-3/4 w-48 overflow-hidden rounded-xl">
@@ -97,16 +76,6 @@ export function VibeEditorialSection({ block, onQuickView }: VibeEditorialSectio
                   <span className="font-label absolute left-2 top-2 z-10 rounded border border-desert-sand bg-[rgba(255,245,230,0.92)] px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.18em] text-label shadow-sm">
                     {showcaseProduct.merchandisingBadge}
                   </span>
-                ) : null}
-                {showcaseProduct ? (
-                  <button
-                    type="button"
-                    onClick={() => onQuickView(showcaseProduct.slug)}
-                    className="quick-view-pill quick-view-pill--compact font-label absolute bottom-2 left-2 right-2 z-10 rounded-full text-center font-medium uppercase text-obsidian transition-shadow hover:shadow-md"
-                    aria-label={`Quick view: ${showcaseProduct.name}`}
-                  >
-                    Quick view
-                  </button>
                 ) : null}
               </div>
             )}

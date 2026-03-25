@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { AppIcon } from '../components/AppIcon';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ABOUT_SCHEMA, BRAND_TRUST_POINTS, PDP_SCHEMA } from '../data/domain-config';
 import { aboutBridgeAlt, aboutBridgeImage, aboutHero, aboutHeroAlt, imgUrl } from '../data/images';
@@ -76,9 +77,7 @@ export function About() {
               className="flex items-start gap-4 rounded-[1.5rem] border border-label/10 bg-white/58 px-5 py-5 shadow-[0_12px_32px_rgba(26,26,26,0.05)] backdrop-blur-sm"
             >
               <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-obsidian text-white">
-                <span className="material-symbols-outlined text-[21px]" aria-hidden>
-                  {item.icon}
-                </span>
+                <AppIcon name={item.icon} className="h-[21px] w-[21px]" />
               </span>
               <div className="min-w-0">
                 <span className="font-label block text-[11px] font-semibold uppercase tracking-[0.2em] text-label">{item.title}</span>
@@ -97,9 +96,7 @@ export function About() {
                 className="flex items-center gap-4 rounded-2xl px-2 py-2 md:justify-center"
               >
                 <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/6 text-primary">
-                  <span className="material-symbols-outlined text-[22px]" aria-hidden>
-                    {STORY_PLAN_STEP_ICONS[i]}
-                  </span>
+                  <AppIcon name={STORY_PLAN_STEP_ICONS[i]} className="h-[22px] w-[22px]" />
                 </span>
                 <span className="font-label text-[11px] uppercase tracking-[0.22em] text-label md:text-[12px]">{step}</span>
               </li>

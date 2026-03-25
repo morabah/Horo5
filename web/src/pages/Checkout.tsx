@@ -1,16 +1,19 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { flushSync } from 'react-dom';
 import { useMemo, useState, type CSSProperties, type FormEvent } from 'react';
+import { CommerceContinuityPanel } from '../components/CommerceContinuityPanel';
 import { TeeImage } from '../components/TeeImage';
 import { getCartLineViews } from '../cart/view';
 import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { useCart } from '../cart/CartContext';
 import { saveLastOrder } from '../cart/lastOrder';
-import { CART_SCHEMA } from '../data/domain-config';
+import { CART_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
+import { useUiLocale } from '../i18n/ui-locale';
 
 const steps = ['Information', 'Shipping', 'Payment'] as const;
 const stepsShort = ['Info', 'Ship', 'Pay'] as const;
+const STEP0_FIELD_ORDER = ['email', 'phone', 'name', 'line1', 'city'] as const;
 
 type FieldErrors = Record<string, string>;
 
@@ -30,6 +33,7 @@ function validateStep0(fields: { email: string; phone: string; name: string; lin
 export function Checkout() {
   const navigate = useNavigate();
   const { items, subtotalEgp, giftWrapEgp, clearCart } = useCart();
+  const { copy } = useUiLocale();
   const [step, setStep] = useState(0);
   const [highestCompleted, setHighestCompleted] = useState(-1);
 
@@ -58,11 +62,8 @@ export function Checkout() {
         : formatDeliveryWindow(3, 5),
     [shippingMethod],
   );
-
-  const step0Complete = useMemo(
-    () => Object.keys(validateStep0({ email, phone, name: fullName, line1, city })).length === 0,
-    [email, phone, fullName, line1, city],
-  );
+  const paymentLabel = paymentMethod === 'card' ? 'Card' : 'COD';
+  const shippingLabel = shippingMethod === 'express' ? 'Express' : 'Standard';
 
   function handleStepClick(targetStep: number) {
     // Allow backward navigation to completed steps only
@@ -75,10 +76,17 @@ export function Checkout() {
     e.preventDefault();
     const fieldErrors = validateStep0({ email, phone, name: fullName, line1, city });
     setErrors(fieldErrors);
-    if (Object.keys(fieldErrors).length === 0) {
-      setHighestCompleted(Math.max(highestCompleted, 0));
-      setStep(1);
+    if (Object.keys(fieldErrors).length > 0) {
+      const firstInvalidField = STEP0_FIELD_ORDER.find((field) => fieldErrors[field]);
+      if (firstInvalidField) {
+        requestAnimationFrame(() => {
+          document.getElementById(firstInvalidField)?.focus();
+        });
+      }
+      return;
     }
+    setHighestCompleted(Math.max(highestCompleted, 0));
+    setStep(1);
   }
 
   function handleContinueToPayment() {
@@ -98,6 +106,15 @@ export function Checkout() {
       total: orderTotal,
       paymentMethod,
       shippingMethod,
+      paymentLabel,
+      shippingLabel,
+      estimatedDeliveryWindow: estimatedDeliveryRange,
+      contactEmail: email.trim() || undefined,
+      contactName: fullName.trim() || undefined,
+      contactPhone: phone.trim() || undefined,
+      shippingLine1: line1.trim() || undefined,
+      shippingCity: city.trim() || undefined,
+      whatsappOptIn,
     });
     // Navigate first; defer clearCart so the router commits /checkout/success before cart empties
     // (otherwise Checkout can briefly show the empty state while the URL is already /checkout/success).
@@ -121,7 +138,7 @@ export function Checkout() {
             Your bag is empty. Add a design from the shop, then return here to complete your order.
           </p>
           <Link className="btn btn-primary" to="/vibes" style={{ minHeight: '48px', display: 'inline-flex', alignItems: 'center' }}>
-            Shop by vibe
+            Shop by Vibe
           </Link>
         </div>
       </div>
@@ -251,6 +268,15 @@ export function Checkout() {
           Swipe steps above if needed
         </p>
 
+        <div style={{ marginBottom: '2rem' }}>
+          <CommerceContinuityPanel
+            eyebrow="HORO checkout"
+            title={copy.checkout.paymentContinuityTitle}
+            body={copy.checkout.paymentContinuityBody}
+            chips={PDP_SCHEMA.trustStripItems}
+          />
+        </div>
+
         {step === 0 && (
           <form onSubmit={handleContinueToShipping}>
             <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
@@ -294,10 +320,10 @@ export function Checkout() {
                     onChange={(e) => setWhatsappOptIn(e.target.checked)}
                     style={{ width: '18px', height: '18px', accentColor: 'var(--deep-teal)' }}
                   />
-                  Send order updates via WhatsApp
+                  {copy.checkout.whatsappOptIn}
                 </label>
 
-                <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--obsidian)', marginTop: '0.5rem' }}>Guest checkout — no account required.</p>
+                <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--obsidian)', marginTop: '0.5rem' }}>{copy.checkout.guestCheckout}</p>
                 <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', marginTop: '0.35rem' }}>
                   Shipping from {formatEgp(60)}; you&apos;ll choose speed on the next step.
                 </p>
@@ -352,8 +378,6 @@ export function Checkout() {
                   type="submit"
                   className="btn btn-primary"
                   style={{ width: '100%', marginTop: '1.25rem', minHeight: '48px' }}
-                  disabled={!step0Complete}
-                  aria-disabled={!step0Complete}
                 >
                   Continue to shipping
                 </button>
@@ -380,10 +404,10 @@ export function Checkout() {
                 </span>
               </label>
               <p style={{ marginTop: '1rem' }}>
-                Expected delivery (business days): {estimatedDeliveryRange}
+                {copy.checkout.deliveryLabel} (business days): {estimatedDeliveryRange}
               </p>
               <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', marginTop: '0.75rem' }}>
-                Total includes {formatEgp(shippingCost)} shipping. Free exchange within 14 days if size doesn&apos;t fit.
+                Total includes {formatEgp(shippingCost)} shipping. <Link to="/exchange">Free exchange within 14 days</Link> if size doesn&apos;t fit.
               </p>
               <button
                 type="button"
@@ -424,10 +448,10 @@ export function Checkout() {
                 </span>
               </label>
               <p style={{ marginTop: '1.25rem', fontSize: '0.875rem', color: 'var(--clay-earth)' }} lang="ar" dir="rtl">
-                بياناتك آمنة معنا
+                {copy.checkout.secureDataArabic}
               </p>
               <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                COD or card — pay securely. <Link to="/">Free exchange within 14 days</Link> if size doesn&apos;t fit. WhatsApp updates if you opted in.
+                {copy.checkout.secureData} COD or card. <Link to="/exchange">Free exchange within 14 days</Link> if size doesn&apos;t fit. WhatsApp updates if you opted in.
               </p>
               <button
                 type="button"

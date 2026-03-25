@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "validate:release-config": "node ./scripts/validate-release-config.mjs",
+    "build:release": "npm run validate:release-config && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

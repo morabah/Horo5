@@ -1,11 +1,11 @@
 import { Link, useParams } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { MerchProductCard } from '../components/MerchProductCard';
+import { AppIcon } from '../components/AppIcon';
 import { getEditorialBlockByVibeSlug } from '../data/homeEditorial';
-import { getArtist, getVibe, productsByVibe, vibes } from '../data/site';
-import { getProductMedia, heroStreet, imgUrl, vibeCovers } from '../data/images';
-import { TeeImageFrame } from '../components/TeeImage';
-import { formatEgp } from '../utils/formatPrice';
+import { getVibe, productsByVibe, vibes } from '../data/site';
+import { getProductMedia, getVibeCollectionVisual, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -69,7 +69,6 @@ export function VibeCollection() {
   const baseList = productsByVibe(slug);
   const [sortKey, setSortKey] = useState<ProductSortKey>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
-  const [artistSlug, setArtistSlug] = useState<string>('all');
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -82,7 +81,6 @@ export function VibeCollection() {
   useEffect(() => {
     setSortKey('featured');
     setPriceFilter('all');
-    setArtistSlug('all');
     setMobileFiltersOpen(false);
   }, [slug]);
 
@@ -92,17 +90,8 @@ export function VibeCollection() {
     }
   }, [isMobile]);
 
-  const artistOptions = useMemo(() => {
-    const slugs = [...new Set(baseList.map((p) => p.artistSlug))];
-    return slugs.sort();
-  }, [baseList]);
-
   const sorted = useMemo(() => sortProductList(baseList, sortKey), [baseList, sortKey]);
-  const list = useMemo(() => {
-    let next = filterByPrice(sorted, priceFilter);
-    if (artistSlug !== 'all') next = next.filter((p) => p.artistSlug === artistSlug);
-    return next;
-  }, [sorted, priceFilter, artistSlug]);
+  const list = useMemo(() => filterByPrice(sorted, priceFilter), [sorted, priceFilter]);
 
   const others = vibes.filter((v) => v.slug !== slug).slice(0, 4);
 
@@ -111,19 +100,17 @@ export function VibeCollection() {
       <div className="container py-12">
         <p className="font-body text-warm-charcoal">Vibe not found.</p>
         <Link to="/vibes" className="font-label mt-4 inline-block text-deep-teal underline">
-          Back to vibes
+          Back to Shop by Vibe
         </Link>
       </div>
     );
   }
 
-  const heroCover = vibeCovers[vibe.slug] ?? heroStreet;
-  const storyImageSrc = editorialBlock?.wideSrc ?? heroCover;
-  const storyImageAlt = editorialBlock?.wideAlt ?? `${vibe.name} collection — model in HORO graphic tee`;
+  const vibeVisuals = getVibeCollectionVisual(vibe.slug);
   const storyLead = editorialBlock?.body ?? vibe.tagline;
   const manifestoLine = editorialBlock?.manifesto ?? vibe.manifesto;
   const designCountLabel = baseList.length >= DESIGN_COUNT_MIN ? `${baseList.length} designs` : 'Curated selection';
-  const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || artistSlug !== 'all';
+  const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all';
 
   const closeMobileFilters = useCallback(() => {
     setMobileFiltersOpen(false);
@@ -196,12 +183,13 @@ export function VibeCollection() {
       <section className="relative isolate overflow-hidden bg-obsidian text-white" aria-labelledby="vibe-collection-title">
         <div className="relative h-[44vh] min-h-[24rem] sm:h-[48vh] md:h-[56vh] md:min-h-[32rem] lg:h-[60vh]">
           <img
-            alt={`${vibe.name} vibe — HORO lookbook`}
-            className="absolute inset-0 h-full w-full object-cover object-[center_24%]"
-            src={imgUrl(heroCover, 1600)}
+            alt={vibeVisuals.hero.alt}
+            className="absolute inset-0 h-full w-full object-cover"
+            src={imgUrl(vibeVisuals.hero.src, 1600)}
             width={1600}
             height={1200}
             decoding="async"
+            style={vibeVisuals.hero.objectPosition ? { objectPosition: vibeVisuals.hero.objectPosition } : undefined}
           />
           <div
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.26)_0%,rgba(18,18,18,0.46)_46%,rgba(18,18,18,0.88)_100%)]"
@@ -224,7 +212,7 @@ export function VibeCollection() {
                     /{' '}
                   </span>
                   <Link to="/vibes" className="transition-colors hover:text-white">
-                    Vibes
+                    Shop by Vibe
                   </Link>
                   <span className="text-white/42" aria-hidden>
                     {' '}
@@ -257,7 +245,7 @@ export function VibeCollection() {
                     Shop the designs
                   </a>
                   <a
-                    href="#vibe-story"
+                    href="#vibe-proof"
                     className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/86 hover:text-white"
                   >
                     Read the story
@@ -270,6 +258,55 @@ export function VibeCollection() {
       </section>
 
       <div className="mx-auto max-w-7xl space-y-14 px-6 pt-8 pb-12 md:space-y-16 md:px-10 md:pt-10 md:pb-16">
+        <section
+          id="vibe-proof"
+          className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-b border-stone/25 pb-12 md:pb-14"
+          aria-labelledby="vibe-proof-heading"
+        >
+          <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-12 lg:gap-16">
+            <div className="w-full">
+              <div className="editorial-shadow overflow-hidden rounded-sm shadow-2xl ring-1 ring-black/5">
+                <img
+                  alt={vibeVisuals.proof.alt}
+                  className="h-auto w-full object-cover"
+                  src={imgUrl(vibeVisuals.proof.src, 1200)}
+                  width={1200}
+                  height={900}
+                  loading="lazy"
+                  style={vibeVisuals.proof.objectPosition ? { objectPosition: vibeVisuals.proof.objectPosition } : undefined}
+                />
+              </div>
+            </div>
+            <div className="w-full space-y-4 md:max-w-lg">
+              {editorialBlock ? (
+                <h2 id="vibe-proof-heading" className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
+                  {editorialBlock.kicker}
+                </h2>
+              ) : (
+                <h2 id="vibe-proof-heading" className="font-headline text-xl font-semibold tracking-tight text-obsidian md:text-2xl">
+                  {vibe.name}
+                </h2>
+              )}
+              <p className="font-body text-[1.05rem] leading-relaxed text-warm-charcoal md:text-[1.16rem] md:leading-[1.75]">
+                {storyLead}
+              </p>
+              <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">
+                {designCountLabel}
+                <span className="mx-2 text-clay/50" aria-hidden>
+                  |
+                </span>
+                220 GSM cotton
+              </p>
+              <a
+                href="#vibe-collection-products"
+                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-7 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+              >
+                Shop the designs
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section id="vibe-collection-products" className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
           {isMobile ? (
             <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
@@ -330,32 +367,6 @@ export function VibeCollection() {
                   </div>
                 </div>
 
-                {artistOptions.length > 1 ? (
-                  <div className="flex min-w-[13rem] flex-col gap-2">
-                    <label htmlFor="vibe-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      Artist
-                    </label>
-                    <div className="relative inline-block min-w-0">
-                      <select
-                        id="vibe-artist"
-                        value={artistSlug}
-                        onChange={(e) => setArtistSlug(e.target.value)}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        <option value="all">All artists</option>
-                        {artistOptions.map((aSlug) => {
-                          const a = getArtist(aSlug);
-                          return (
-                            <option key={aSlug} value={aSlug}>
-                              {a?.name ?? aSlug}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
-                ) : null}
               </div>
 
               <Link
@@ -371,71 +382,24 @@ export function VibeCollection() {
             {list.map((p) => {
               const { main } = getProductMedia(p.slug);
               return (
-                <article
+                <MerchProductCard
                   key={p.slug}
-                  className="group flex flex-col"
-                >
-                  <div className="relative mb-4 w-full">
-                    <Link
-                      to={`/products/${p.slug}`}
-                      className="block overflow-hidden rounded-md bg-surface-container-high shadow-sm ring-1 ring-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                    >
-                      <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
-                        <TeeImageFrame
-                          src={main}
-                          alt={`HORO “${p.name}” graphic tee`}
-                          w={700}
-                          aspectRatio="4/5"
-                          borderRadius="0.375rem"
-                          frameStyle={{ marginBottom: 0 }}
-                        />
-                      </div>
-                      {p.merchandisingBadge ? (
-                        <span className="font-label absolute left-3 top-3 z-10 rounded-sm border border-white/70 bg-white/78 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm">
-                          {p.merchandisingBadge}
-                        </span>
-                      ) : null}
-                    </Link>
-                    {!isMobile ? (
-                      <button
-                        type="button"
-                        className="quick-view-pill quick-view-pill--hover font-label absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                        onClick={() => setQuickViewSlug(p.slug)}
-                        aria-label={`Quick view: ${p.name}`}
-                      >
-                        Quick view
-                      </button>
-                    ) : null}
-                  </div>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        to={`/products/${p.slug}`}
-                        className="font-headline block text-[1.08rem] font-semibold leading-snug tracking-[0.01em] text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        {p.name}
-                      </Link>
-                      <p className="font-pdp-serif mt-2 text-[1.125rem] font-normal text-obsidian">
-                        {formatEgp(p.priceEgp)}
-                      </p>
-                    </div>
-                    {isMobile ? (
-                      <button
-                        type="button"
-                        className="font-label inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-stone bg-white px-4 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                        onClick={() => setQuickViewSlug(p.slug)}
-                        aria-label={`Quick view: ${p.name}`}
-                      >
-                        Quick view
-                      </button>
-                    ) : null}
-                  </div>
-                </article>
+                  slug={p.slug}
+                  name={p.name}
+                  priceEgp={p.priceEgp}
+                  imageSrc={main}
+                  imageAlt={`HORO “${p.name}” graphic tee`}
+                  merchandisingBadge={p.merchandisingBadge}
+                  eyebrow={vibe.name}
+                  eyebrowAccent={vibe.accent}
+                  proofChip={p.fitLabel ?? '220 GSM cotton'}
+                  onQuickView={setQuickViewSlug}
+                />
               );
             })}
           </div>
 
-          {list.length === 0 && (priceFilter !== 'all' || artistSlug !== 'all') && (
+          {list.length === 0 && priceFilter !== 'all' && (
             <p className="mt-6 font-body text-clay">
               No designs match these filters.{` `}
               <button
@@ -443,7 +407,6 @@ export function VibeCollection() {
                 onClick={() => {
                   setSortKey('featured');
                   setPriceFilter('all');
-                  setArtistSlug('all');
                 }}
                 className="border-0 bg-transparent font-medium text-deep-teal underline"
               >
@@ -452,50 +415,9 @@ export function VibeCollection() {
             </p>
           )}
 
-          {list.length === 0 && priceFilter === 'all' && artistSlug === 'all' && (
+          {list.length === 0 && priceFilter === 'all' && (
             <p className="mt-6 font-body text-warm-charcoal">No designs in this vibe yet.</p>
           )}
-        </section>
-
-        <section
-          id="vibe-story"
-          className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-t border-stone/25 pt-12 md:pt-14"
-          aria-labelledby="vibe-story-heading"
-        >
-          <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-12 lg:gap-16">
-            <div className="w-full">
-              <div className="editorial-shadow overflow-hidden rounded-sm shadow-2xl ring-1 ring-black/5">
-                <img
-                  alt={storyImageAlt}
-                  className="h-auto w-full object-cover"
-                  src={imgUrl(storyImageSrc, 1200)}
-                  width={1200}
-                  height={900}
-                  loading="lazy"
-                />
-              </div>
-            </div>
-            <div className="w-full space-y-4 md:max-w-lg">
-              {editorialBlock ? (
-                <h2 id="vibe-story-heading" className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
-                  {editorialBlock.kicker}
-                </h2>
-              ) : (
-                <h2 id="vibe-story-heading" className="font-headline text-xl font-semibold tracking-tight text-obsidian md:text-2xl">
-                  {vibe.name}
-                </h2>
-              )}
-              <p className="font-body text-[1.05rem] leading-relaxed text-warm-charcoal md:text-[1.16rem] md:leading-[1.75]">
-                {storyLead}
-              </p>
-              <a
-                href="#vibe-collection-products"
-                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-7 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-              >
-                Back to the designs
-              </a>
-            </div>
-          </div>
         </section>
 
         <section className="border-t border-stone/25 pt-12 md:pt-14">
@@ -511,11 +433,12 @@ export function VibeCollection() {
               >
                 <div className="overflow-hidden">
                   <img
-                    alt={`${v.name} vibe`}
+                    alt={getVibeCollectionVisual(v.slug).cover.alt}
                     className="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                    src={imgUrl(vibeCovers[v.slug] ?? heroStreet, 720)}
+                    src={imgUrl(getVibeCollectionVisual(v.slug).cover.src, 720)}
                     width={720}
                     height={900}
+                    style={getVibeCollectionVisual(v.slug).cover.objectPosition ? { objectPosition: getVibeCollectionVisual(v.slug).cover.objectPosition } : undefined}
                   />
                 </div>
                 <div className="space-y-2 px-4 py-4">
@@ -555,10 +478,10 @@ export function VibeCollection() {
                   ref={mobileFilterCloseBtnRef}
                   type="button"
                   onClick={closeMobileFilters}
-                  className="material-symbols-outlined inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-stone bg-white text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  className="inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-stone bg-white text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   aria-label="Close filters"
                 >
-                  close
+                  <AppIcon name="close" className="h-5 w-5" />
                 </button>
               </div>
 
@@ -601,32 +524,6 @@ export function VibeCollection() {
                   </div>
                 </div>
 
-                {artistOptions.length > 1 ? (
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="mobile-vibe-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      Artist
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="mobile-vibe-artist"
-                        value={artistSlug}
-                        onChange={(e) => setArtistSlug(e.target.value)}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        <option value="all">All artists</option>
-                        {artistOptions.map((aSlug) => {
-                          const a = getArtist(aSlug);
-                          return (
-                            <option key={aSlug} value={aSlug}>
-                              {a?.name ?? aSlug}
-                            </option>
-                          );
-                        })}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
-                ) : null}
               </div>
 
               <div className="mt-6 flex flex-col gap-3">
@@ -643,7 +540,6 @@ export function VibeCollection() {
                     onClick={() => {
                       setSortKey('featured');
                       setPriceFilter('all');
-                      setArtistSlug('all');
                     }}
                     className="font-label inline-flex min-h-11 items-center justify-center rounded-sm border border-stone bg-white px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   >

@@ -1,7 +1,7 @@
 /** Primary routes — keep header, drawer, and footer shop labels in sync. */
 export const NAV_ROUTE = {
-  collection: { path: '/vibes', label: 'Collection' },
-  occasions: { path: '/occasions', label: 'Occasions' },
+  collection: { path: '/vibes', label: 'Shop by Vibe' },
+  occasions: { path: '/occasions', label: 'Shop by Occasion' },
   about: { path: '/about', label: 'About' },
 } as const;
 

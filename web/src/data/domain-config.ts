@@ -78,8 +78,6 @@ export const PDP_SCHEMA = {
     wornByTitle: 'See it styled',
     relatedMoreFromSubtitle: 'Designs from the same vibe.',
     wornByCaptions: ['Studio days', 'Street light', 'Your rotation'],
-    /** WhatsApp quick question (§8.6) — replace placeholder with real number */
-    whatsappHelpUrl: 'https://wa.me/201000000000' as const,
     whatsappHelpLabel: 'Questions? WhatsApp us',
     notifyEmailPlaceholder: 'Email for restock alerts',
     notifyFieldLabel: 'Get notified when this size is back',
@@ -145,13 +143,11 @@ export const OCCASION_SCHEMA = {
     sortLabel: 'Sort',
     priceLabel: 'Price',
     vibeLabel: 'Vibe',
-    artistLabel: 'Artist',
     allPricesLabel: 'All prices',
     under800Label: 'Under 800 EGP',
     between800And899Label: '800–899 EGP',
     over900Label: '900+ EGP',
     allVibesLabel: 'All vibes',
-    allArtistsLabel: 'All artists',
     filterAndSortCta: 'Filter & sort',
     searchThisOccasionCta: 'Search this occasion',
     resetFiltersCta: 'Reset filters',
@@ -189,33 +185,46 @@ export const VIBES_SCHEMA = {
 
 export const ABOUT_SCHEMA = {
   copy: {
-    primaryCta: 'Find Your Vibe',
-    bridgeCta: 'Find Your Vibe',
+    primaryCta: 'Shop by Vibe',
+    bridgeCta: 'Shop by Vibe',
     heroRegionLabel: 'HORO story hero',
     bridgeRegionLabel: 'HORO collection bridge',
   },
 } as const;
 
+export const QUICK_VIEW_SCHEMA = {
+  copy: {
+    openCta: 'Quick view',
+    openAriaTemplate: 'Quick view: {name}',
+    closeLabel: 'Close quick view',
+    chooseSizeCta: 'Choose Size',
+    addToBagCta: 'Add to Bag — {price}',
+    viewBagCta: 'View Bag',
+    continueBrowsingCta: 'Continue browsing',
+    viewFullProductCta: 'View full product',
+    sizeChartLabel: 'Size chart',
+    sizeChartRegionLabel: 'Quick view size chart',
+    addedStatus: 'Added to bag.',
+  },
+} as const;
+
 export const SEARCH_SCHEMA = {
   copy: {
-    placeholder: 'Search designs, vibes, artists...',
+    placeholder: 'Search designs, vibes, or occasions...',
     searchLabel: 'Search',
     searchAllLabel: 'Search all designs',
     searchingInLabel: 'Searching in',
     popularLabel: 'Popular',
     designsTab: 'Designs',
     vibesTab: 'Vibes',
-    artistsTab: 'Artists',
     sortLabel: 'Sort',
     priceLabel: 'Price',
     vibeLabel: 'Vibe',
-    artistLabel: 'Artist',
     allPricesLabel: 'All prices',
     under800Label: 'Under 800 EGP',
     between800And899Label: '800–899 EGP',
     over900Label: '900+ EGP',
     allVibesLabel: 'All vibes',
-    allArtistsLabel: 'All artists',
     filterAndSortCta: 'Filter & sort',
     resetFiltersCta: 'Reset filters',
     quickViewCta: 'Quick view',
@@ -229,13 +238,41 @@ export const SEARCH_SCHEMA = {
     noFilteredResults: 'No designs match these filters.',
     noDesignResults: 'No designs match this search yet.',
     noVibeResults: 'No vibes match this search yet.',
-    noArtistResults: 'No artists match this search yet.',
     resultsFallback: 'Browse everything — or try a popular search below.',
     scopedResultsFallback: 'Browse designs in {scope} — or try a popular search below.',
     resultsForQuery: '{count} results for “{query}”',
     noResultsForQuery: 'No results for “{query}”',
   },
 } as const;
+
+function optionalEnvValue(value: string | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+export const HORO_SUPPORT_CHANNELS = {
+  effectiveDate: optionalEnvValue(import.meta.env.VITE_HORO_SUPPORT_EFFECTIVE_DATE) ?? 'March 25, 2026',
+  instagramUrl: optionalEnvValue(import.meta.env.VITE_HORO_INSTAGRAM_URL),
+  whatsappSupportUrl: optionalEnvValue(import.meta.env.VITE_HORO_WHATSAPP_SUPPORT_URL),
+  whatsappTrackingUrl: optionalEnvValue(import.meta.env.VITE_HORO_WHATSAPP_TRACKING_URL),
+} as const;
+
+export function isConfiguredExternalUrl(url: string | null | undefined): url is string {
+  return typeof url === 'string' && /^https?:\/\/\S+$/i.test(url);
+}
+
+export function withSupportMessage(url: string | null | undefined, message: string): string | null {
+  if (!isConfiguredExternalUrl(url)) return null;
+
+  try {
+    const next = new URL(url);
+    next.searchParams.set('text', message);
+    return next.toString();
+  } catch {
+    return url;
+  }
+}
 
 export type PdpFeatureIconKey = (typeof PDP_SCHEMA.features)[number]['icon'];
 export type PdpTrustIconKey = (typeof PDP_SCHEMA.trustSignals)[number]['icon'];

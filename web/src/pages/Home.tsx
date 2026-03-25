@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { HomeVibeGrid } from '../components/HomeVibeGrid';
+import { AppIcon } from '../components/AppIcon';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { formatEgp } from '../utils/formatPrice';
-import { getProductMedia, heroHomeTee, imgUrl } from '../data/images';
+import { getProductMedia, imgUrl, STOREFRONT_IMAGE_SLOTS } from '../data/images';
 import { getVibe, products } from '../data/site';
 import { BRAND_TRUST_POINTS, PDP_SCHEMA } from '../data/domain-config';
 
@@ -33,7 +35,7 @@ export function Home() {
   useScrollReveal();
   const [searchParams, setSearchParams] = useSearchParams();
   const latestDrops = products.slice(0, 4);
-  const bridgeImage = getProductMedia(latestDrops[1].slug).main;
+  const homeHeroVisual = STOREFRONT_IMAGE_SLOTS.home.hero;
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,14 +69,15 @@ export function Home() {
       >
         <div className="absolute inset-0">
           <img
-            alt="Model wearing a HORO graphic tee in warm editorial photography"
+            alt={homeHeroVisual.alt}
             className="h-full w-full object-cover"
-            src={imgUrl(heroHomeTee, 1920)}
+            src={imgUrl(homeHeroVisual.src, 1920)}
             width={1920}
             height={1080}
             loading="eager"
             fetchPriority="high"
             decoding="async"
+            style={homeHeroVisual.objectPosition ? { objectPosition: homeHeroVisual.objectPosition } : undefined}
           />
         </div>
         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/75 via-black/25 to-black/30" aria-hidden />
@@ -90,7 +93,7 @@ export function Home() {
               to="/vibes"
               className="home-hover-lift touch-manipulation font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-5 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 active:brightness-95 sm:inline-block sm:w-auto sm:px-12"
             >
-              Find Your Vibe
+              Shop by Vibe
             </Link>
             <p className="hero-overlay-ribbon font-label mt-6 max-w-xl text-[11px] font-medium uppercase leading-relaxed tracking-[0.18em] text-white/90 md:mt-7 md:text-[12px] md:tracking-[0.22em]">
               Starting at {formatEgp(799)}
@@ -122,8 +125,8 @@ export function Home() {
           }}
           aria-hidden
         />
-        <div className="mx-auto grid max-w-6xl items-center gap-6 md:gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
-          <div className="max-w-3xl" data-reveal>
+        <div className="mx-auto max-w-5xl" data-reveal>
+          <div className="max-w-3xl">
             <h2 className="font-headline text-[17px] font-medium uppercase tracking-[0.18em] text-obsidian md:text-[19px]">
               You know that feeling?
             </h2>
@@ -132,35 +135,54 @@ export function Home() {
             </p>
             <p className="font-body mt-4 text-[17px] italic text-clay">We get it. That&apos;s why we&apos;re here.</p>
           </div>
-          <div data-reveal="stagger-1" className="mx-auto w-full max-w-sm lg:mx-0 lg:max-w-none">
-            <div className="editorial-shadow relative aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-surface-container-high">
-              <img alt="Model wearing a HORO graphic tee in studio light" className="h-full w-full object-cover" src={imgUrl(bridgeImage, 960)} loading="lazy" />
-            </div>
-          </div>
         </div>
       </section>
 
       <HomeVibeGrid />
 
-      {/* StoryBrand simple plan (domain-config storyPlanSteps) */}
-      <section className="bg-papyrus px-4 pb-8 sm:px-6 sm:pb-10 lg:px-8">
-        <div className="mx-auto max-w-[1400px]">
-          <ol className="grid grid-cols-1 gap-3 border-y border-label/10 py-5 md:grid-cols-3 md:gap-5" data-reveal>
-            {PDP_SCHEMA.storyPlanSteps.map((step, i) => (
-              <li
-                key={step}
-                className="flex items-center gap-4 rounded-2xl px-2 py-2 md:justify-center"
-                data-reveal={(['stagger-1', 'stagger-2', 'stagger-3'] as const)[i]}
-              >
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/6 text-primary">
-                  <span className="material-symbols-outlined text-[22px]" aria-hidden>
-                    {STORY_PLAN_STEP_ICONS[i]}
-                  </span>
-                </span>
-                <span className="font-label text-[11px] uppercase tracking-[0.22em] text-label md:text-[12px]">{step}</span>
-              </li>
-            ))}
-          </ol>
+      {/* Latest drop */}
+      <section className="border-t border-label/10 bg-papyrus px-4 py-14 sm:px-6 md:py-16 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p data-reveal className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">
+                Proof in the product
+              </p>
+              <h2 className="font-headline mt-3 text-[22px] font-medium tracking-tight text-obsidian md:text-[28px] md:leading-[1.3]">
+                Just Dropped
+              </h2>
+            </div>
+            <Link
+              data-reveal="stagger-1"
+              to="/vibes"
+              className="font-label inline-flex min-h-12 w-fit items-center justify-center rounded-sm border-2 border-obsidian/90 bg-transparent px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:border-deep-teal hover:text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+            >
+              Shop by Vibe
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 items-stretch gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            {latestDrops.map((p, i) => {
+              const vibe = getVibe(p.vibeSlug);
+              const main = getProductMedia(p.slug).main;
+              return (
+                <MerchProductCard
+                  key={p.slug}
+                  slug={p.slug}
+                  name={p.name}
+                  priceEgp={p.priceEgp}
+                  imageSrc={main}
+                  imageAlt={`HORO “${p.name}” graphic tee`}
+                  merchandisingBadge={p.merchandisingBadge}
+                  eyebrow={vibe?.name}
+                  eyebrowAccent={vibe?.accent}
+                  proofChip={p.fitLabel ?? '220 GSM cotton'}
+                  onQuickView={setQuickViewSlug}
+                  className="home-latest-product relative h-full"
+                  data-reveal={(['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4'] as const)[i]}
+                />
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -174,9 +196,7 @@ export function Home() {
               className="flex items-start gap-4 rounded-[1.5rem] border border-label/10 bg-white/55 px-5 py-5 shadow-[0_12px_32px_rgba(26,26,26,0.05)] backdrop-blur-sm"
             >
               <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-obsidian text-white">
-                <span className="material-symbols-outlined text-[21px]" aria-hidden>
-                  {item.icon}
-                </span>
+                <AppIcon name={item.icon} className="h-[21px] w-[21px]" />
               </span>
               <div className="min-w-0">
                 <span className="font-label block text-[11px] font-semibold uppercase tracking-[0.2em] text-label">{item.title}</span>
@@ -212,97 +232,27 @@ export function Home() {
         </div>
       </section>
 
-      <ProductQuickView open={quickViewSlug !== null} productSlug={quickViewSlug} onClose={() => setQuickViewSlug(null)} />
-
-      {/* Latest drop */}
-      <section className="border-t border-label/10 bg-papyrus px-4 py-14 sm:px-6 md:py-16 lg:px-8 lg:py-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between">
-            <h2 data-reveal className="font-headline text-[22px] font-medium tracking-tight text-obsidian md:text-[28px] md:leading-[1.3]">
-              Just Dropped
-            </h2>
-            <Link
-              data-reveal="stagger-1"
-              to="/vibes"
-              className="font-label inline-flex min-h-12 w-fit items-center justify-center rounded-sm border-2 border-obsidian/90 bg-transparent px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:border-deep-teal hover:text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-            >
-              View All
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 items-stretch gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-            {latestDrops.map((p, i) => {
-              const vibe = getVibe(p.vibeSlug);
-              const main = getProductMedia(p.slug).main;
-              return (
-                <article
-                  key={p.slug}
-                  data-reveal={(['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4'] as const)[i]}
-                  className="group home-latest-product relative flex h-full flex-col"
-                >
-                  <div className="flex h-full min-h-0 flex-1 flex-col">
-                    <div className="relative mb-5 shrink-0">
-                      <Link
-                        to={`/products/${p.slug}`}
-                        className="block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                        aria-label={`View ${p.name}`}
-                      >
-                        <span className="sr-only">
-                          {p.name}
-                          {vibe?.name ? `, ${vibe.name}` : ''}, {formatEgp(p.priceEgp)}
-                        </span>
-                        <div className="editorial-shadow relative aspect-3/4 overflow-hidden rounded-sm bg-surface-container-high">
-                          {p.merchandisingBadge ? (
-                            <span className="font-label glass-merchandising-badge absolute left-3 top-3 z-10 rounded px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-label">
-                              {p.merchandisingBadge}
-                            </span>
-                          ) : null}
-                          <img
-                            alt={`HORO “${p.name}” graphic tee`}
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            src={imgUrl(main, 800)}
-                            loading="lazy"
-                          />
-                        </div>
-                      </Link>
-                      <button
-                        type="button"
-                        className="quick-view-pill quick-view-pill--compact quick-view-pill--hover font-label absolute bottom-3 right-3 z-10 hidden min-h-11 items-center justify-center rounded-full px-4 py-3 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:inline-flex"
-                        onClick={() => setQuickViewSlug(p.slug)}
-                        aria-label={`Quick view: ${p.name}`}
-                      >
-                        Quick view
-                      </button>
-                    </div>
-                    <div className="flex min-h-0 flex-1 flex-col text-left">
-                      <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-clay">{vibe?.name ?? ''}</p>
-                      <Link
-                        to={`/products/${p.slug}`}
-                        className="font-headline mt-3 text-[17px] font-medium leading-snug text-obsidian transition-colors hover:text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        {p.name}
-                      </Link>
-                      <p className="font-body mt-3 line-clamp-2 min-h-0 flex-1 max-w-prose text-sm leading-relaxed text-warm-charcoal">
-                        {p.story}
-                      </p>
-                      <div className="mt-auto flex items-center justify-between gap-4 pt-4">
-                        <p className="font-headline text-[17px] font-semibold text-obsidian">{formatEgp(p.priceEgp)}</p>
-                        <button
-                          type="button"
-                          className="font-label inline-flex min-h-11 items-center justify-center text-[11px] uppercase tracking-[0.2em] text-clay transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:hidden"
-                          onClick={() => setQuickViewSlug(p.slug)}
-                          aria-label={`Quick view: ${p.name}`}
-                        >
-                          Quick view
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+      {/* StoryBrand simple plan (domain-config storyPlanSteps) */}
+      <section className="bg-papyrus px-4 pb-8 sm:px-6 sm:pb-10 lg:px-8">
+        <div className="mx-auto max-w-[1400px]">
+          <ol className="grid grid-cols-1 gap-3 border-y border-label/10 py-5 md:grid-cols-3 md:gap-5" data-reveal>
+            {PDP_SCHEMA.storyPlanSteps.map((step, i) => (
+              <li
+                key={step}
+                className="flex items-center gap-4 rounded-2xl px-2 py-2 md:justify-center"
+                data-reveal={(['stagger-1', 'stagger-2', 'stagger-3'] as const)[i]}
+              >
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/6 text-primary">
+                  <AppIcon name={STORY_PLAN_STEP_ICONS[i]} className="h-[22px] w-[22px]" />
+                </span>
+                <span className="font-label text-[11px] uppercase tracking-[0.22em] text-label md:text-[12px]">{step}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
+
+      <ProductQuickView open={quickViewSlug !== null} productSlug={quickViewSlug} onClose={() => setQuickViewSlug(null)} />
 
       {/* Invite */}
       <section className="border-t border-label/10 bg-papyrus px-4 py-16 text-center sm:px-6 md:py-20 lg:px-8 lg:py-24">
@@ -315,7 +265,7 @@ export function Home() {
             to="/vibes"
             className="home-hover-lift font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-10 py-6 text-sm font-medium uppercase tracking-[0.25em] text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.03] hover:brightness-95 active:scale-95 sm:inline-block sm:w-auto sm:max-w-none sm:px-16"
           >
-            Find Your Vibe
+            Shop by Vibe
           </Link>
         </div>
       </section>

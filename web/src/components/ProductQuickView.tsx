@@ -1,17 +1,22 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type SyntheticEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getProductMedia, getProductPdpGallery, imgUrl } from '../data/images';
 import { getProduct, getVibe, type ProductSizeKey } from '../data/site';
 import { useCart } from '../cart/CartContext';
+import { PDP_SCHEMA, QUICK_VIEW_SCHEMA } from '../data/domain-config';
 import { formatEgp } from '../utils/formatPrice';
-
-const QUICK_VIEW_SIZES = ['M', 'L', 'XL'] as const;
+import { AppIcon } from './AppIcon';
 
 type ProductQuickViewProps = {
   open: boolean;
   productSlug: string | null;
   onClose: () => void;
 };
+
+const QUICK_VIEW_SIZES = PDP_SCHEMA.sizes.map((size) => ({
+  key: size.key as ProductSizeKey,
+  disabled: Boolean(size.disabled),
+}));
 
 export function ProductQuickView({ open, productSlug, onClose }: ProductQuickViewProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -20,33 +25,45 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   const { addItem } = useCart();
   const titleId = useId();
   const descId = useId();
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const sizeChartId = useId();
+  const [selectedSize, setSelectedSize] = useState<ProductSizeKey | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
-  const [cartNavPending, setCartNavPending] = useState(false);
+  const [addedToBag, setAddedToBag] = useState(false);
+  const [sizeChartOpen, setSizeChartOpen] = useState(false);
 
-  const p = productSlug ? getProduct(productSlug) : undefined;
-  const vibe = p ? getVibe(p.vibeSlug) : undefined;
-  const media = p ? getProductMedia(p.slug) : null;
-  const gallery = p ? getProductPdpGallery(p.name, p.slug) : [];
+  const product = productSlug ? getProduct(productSlug) : undefined;
+  const vibe = product ? getVibe(product.vibeSlug) : undefined;
+  const media = product ? getProductMedia(product.slug) : null;
+  const gallery = product ? getProductPdpGallery(product.name, product.slug) : [];
   const galleryLen = gallery.length;
   const safePhotoIndex = galleryLen > 0 ? Math.min(photoIndex, galleryLen - 1) : 0;
   const mainView =
     gallery[safePhotoIndex] ??
     gallery[0] ?? {
       src: media?.main ?? '',
-      alt: p ? `HORO “${p.name}” t-shirt.` : '',
+      alt: product ? `HORO “${product.name}” t-shirt.` : '',
       label: 'image',
     };
-  const fit = p?.fitLabel ?? 'Regular';
+  const fit = product?.fitLabel ?? 'Regular';
+  const priceStr = product ? formatEgp(product.priceEgp) : '';
+  const primaryCtaLabel = addedToBag
+    ? QUICK_VIEW_SCHEMA.copy.viewBagCta
+    : selectedSize
+      ? QUICK_VIEW_SCHEMA.copy.addToBagCta.replace('{price}', priceStr)
+      : QUICK_VIEW_SCHEMA.copy.chooseSizeCta;
 
   useEffect(() => {
     setSelectedSize(null);
     setPhotoIndex(0);
-    setCartNavPending(false);
+    setAddedToBag(false);
+    setSizeChartOpen(false);
   }, [productSlug]);
 
   useEffect(() => {
-    if (!open) setCartNavPending(false);
+    if (!open) {
+      setAddedToBag(false);
+      setSizeChartOpen(false);
+    }
   }, [open]);
 
   useLayoutEffect(() => {
@@ -62,31 +79,41 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
       if (dialog.open) {
         dialog.close();
       }
-      const el = openerRef.current;
-      if (el instanceof HTMLElement) {
-        el.focus();
+      const opener = openerRef.current;
+      if (opener instanceof HTMLElement) {
+        opener.focus();
         openerRef.current = null;
       }
     }
   }, [open, productSlug]);
 
-  const handleCancel = (e: React.SyntheticEvent<HTMLDialogElement>) => {
-    e.preventDefault();
+  const handleCancel = (event: SyntheticEvent<HTMLDialogElement>) => {
+    event.preventDefault();
     onClose();
   };
 
   const showContent = Boolean(open && productSlug);
-  const priceStr = p ? formatEgp(p.priceEgp) : '';
+
+  const handleAddToBag = () => {
+    if (!product || !selectedSize) return;
+    addItem(product.slug, selectedSize, 1);
+    setAddedToBag(true);
+  };
+
+  const handleViewBag = () => {
+    onClose();
+    navigate('/cart');
+  };
 
   return (
     <dialog
       ref={dialogRef}
-      className="product-quick-view-dialog w-[min(calc(100vw-max(0.5rem,env(safe-area-inset-left,0px))-max(0.5rem,env(safe-area-inset-right,0px))),960px)] max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-0.5rem))] overflow-hidden rounded-2xl border border-white/25 bg-obsidian/75 p-0 shadow-[0_32px_96px_-24px_rgba(0,0,0,0.72)] backdrop-blur-2xl"
+      className="product-quick-view-dialog w-[min(calc(100vw-max(0.5rem,env(safe-area-inset-left,0px))-max(0.5rem,env(safe-area-inset-right,0px))),980px)] max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-0.5rem))] overflow-hidden rounded-2xl border border-white/20 bg-obsidian/88 p-0 shadow-[0_32px_96px_-24px_rgba(0,0,0,0.72)] backdrop-blur-xl"
       aria-labelledby={showContent ? titleId : undefined}
-      aria-describedby={showContent && p ? descId : undefined}
+      aria-describedby={showContent && product ? descId : undefined}
       onCancel={handleCancel}
     >
-      {showContent && !p ? (
+      {showContent && !product ? (
         <div className="p-6 text-white">
           <p id={titleId} className="font-headline text-lg">
             Product not found
@@ -101,197 +128,209 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
         </div>
       ) : null}
 
-      {showContent && p ? (
-        <div className="flex max-h-[min(90dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-0.5rem))] flex-col md:flex-row md:min-h-[min(560px,85dvh)]">
-          <div className="flex w-full shrink-0 flex-col md:min-h-[min(560px,85vh)] md:w-1/2">
-            <div className="relative min-h-[240px] flex-1 md:min-h-0">
+      {showContent && product ? (
+        <div className="relative flex max-h-[min(92dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-0.5rem))] flex-col md:min-h-[min(600px,84dvh)] md:flex-row">
+          <button
+            type="button"
+            className="absolute right-3 top-3 z-30 inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-white/15 bg-black/45 text-lg text-white backdrop-blur-md transition-colors hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            aria-label={QUICK_VIEW_SCHEMA.copy.closeLabel}
+            onClick={onClose}
+          >
+            <AppIcon name="close" className="h-5 w-5" />
+          </button>
+
+          <div className="flex w-full shrink-0 flex-col border-b border-white/10 md:min-h-[min(600px,84dvh)] md:w-[52%] md:border-b-0 md:border-r">
+            <div className="relative min-h-[280px] flex-1 bg-black/10 md:min-h-0">
               <img
-                src={imgUrl(mainView.src, 1000)}
+                src={imgUrl(mainView.src, 1200)}
                 alt={mainView.alt}
-                className="h-full min-h-[240px] w-full object-cover md:absolute md:inset-0 md:min-h-full"
-                width={1000}
-                height={1333}
+                className="h-full min-h-[280px] w-full object-cover md:absolute md:inset-0 md:min-h-full"
+                width={1200}
+                height={1500}
               />
-              {p.merchandisingBadge ? (
-                <span className="font-label absolute left-4 top-4 z-10 max-w-[min(100%,calc(100%-2rem))] rounded-md border border-white/20 bg-obsidian/55 px-3 py-2 text-[10px] font-medium uppercase leading-snug tracking-wide text-white/95 backdrop-blur-md">
-                  {p.merchandisingBadge}
+              {product.merchandisingBadge ? (
+                <span className="font-label absolute left-4 top-4 z-10 max-w-[calc(100%-5rem)] rounded-md border border-white/15 bg-obsidian/55 px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-white/92 backdrop-blur-md">
+                  {product.merchandisingBadge}
                 </span>
               ) : null}
-              <button
-                type="button"
-                className="material-symbols-outlined absolute left-3 top-3 z-10 inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-white/20 bg-obsidian/50 text-base text-white backdrop-blur-sm transition-colors hover:bg-obsidian/70 md:left-auto md:right-3"
-                aria-label="Close quick view"
-                onClick={onClose}
-              >
-                close
-              </button>
             </div>
+
             {galleryLen > 1 ? (
-              <div className="flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 bg-black/40 p-2 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] snap-x snap-mandatory md:grid md:grid-cols-5 md:gap-2 md:overflow-visible md:p-3 md:pb-3 md:snap-none [&::-webkit-scrollbar]:hidden">
-                {gallery.map((view, i) => (
+              <div className="flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 bg-black/35 p-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {gallery.map((view, index) => (
                   <button
-                    key={`${p.slug}-qv-${view.label}-${i}`}
+                    key={`${product.slug}-qv-${view.label}-${index}`}
                     type="button"
-                    onClick={() => setPhotoIndex(i)}
-                    className={`aspect-square h-14 w-14 shrink-0 snap-start overflow-hidden rounded-lg p-0 transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:h-auto md:w-full ${
-                      safePhotoIndex === i ? 'ring-2 ring-white' : 'ring-1 ring-white/25 opacity-90 hover:opacity-100'
+                    onClick={() => setPhotoIndex(index)}
+                    className={`aspect-square h-16 w-16 shrink-0 overflow-hidden rounded-lg p-0 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                      safePhotoIndex === index ? 'ring-2 ring-white' : 'ring-1 ring-white/20 hover:ring-white/45'
                     }`}
                     aria-label={`Show ${view.label}`}
-                    aria-pressed={safePhotoIndex === i}
+                    aria-pressed={safePhotoIndex === index}
                   >
-                    <img src={imgUrl(view.src, 200)} alt="" className="h-full w-full object-cover" width={200} height={200} />
+                    <img src={imgUrl(view.src, 240)} alt="" className="h-full w-full object-cover" width={240} height={240} />
                   </button>
                 ))}
               </div>
             ) : null}
           </div>
 
-          <div className="flex max-h-[min(50dvh,480px)] min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-y-contain bg-black/40 px-5 py-4 text-white backdrop-blur-2xl sm:px-7 md:max-h-none md:w-1/2 md:py-8">
-            <div className="sticky top-0 z-20 -mx-5 mb-3 border-b border-white/10 bg-black/50 px-5 pb-3 pt-1 backdrop-blur-2xl md:static md:mx-0 md:mb-0 md:border-0 md:bg-transparent md:px-0 md:pb-4 md:pt-0 md:backdrop-blur-none">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-black/30 px-5 py-5 text-white sm:px-7 md:px-8 md:py-8">
+            <div className="space-y-5 md:pr-10">
+              <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   {vibe ? (
                     <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-kohl-gold-bright">
                       {vibe.name} / {fit}
                     </p>
                   ) : null}
-                  <h2 id={titleId} className="font-headline mt-1 text-xl font-bold uppercase tracking-tight text-white sm:text-2xl md:text-3xl">
-                    {p.name}
+                  <h2 id={titleId} className="font-headline mt-2 text-[clamp(1.9rem,3vw,3.05rem)] font-bold uppercase leading-[0.95] tracking-tight text-white">
+                    {product.name}
                   </h2>
                 </div>
-                <p className="font-headline shrink-0 text-lg font-bold text-white md:text-xl">{priceStr}</p>
+                <p className="font-headline shrink-0 pt-1 text-lg font-bold text-white md:text-xl">{priceStr}</p>
               </div>
-              <p className="font-label mt-2 text-[10px] uppercase tracking-[0.18em] text-white/55 md:hidden">
-                Scroll for size &amp; details
+
+              <p id={descId} className="font-body max-w-xl text-sm leading-relaxed text-white/78 md:text-[15px]">
+                {product.story}
               </p>
-            </div>
 
-            <p id={descId} className="font-body text-sm leading-relaxed text-white/85 md:mt-0">
-              {p.story}
-            </p>
-
-            <div className="mt-5 rounded-xl border border-white/15 bg-white/[0.07] p-4 backdrop-blur-lg">
-              <ul className="space-y-3 text-sm text-white/90">
-                <li className="flex gap-3">
-                  <span className="material-symbols-outlined mt-0.5 shrink-0 text-lg text-primary" aria-hidden>
-                    checkroom
-                  </span>
-                  <span>220gsm combed cotton, DTF print with sharp detail</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="material-symbols-outlined mt-0.5 shrink-0 text-lg text-primary" aria-hidden>
-                    palette
-                  </span>
-                  <span>Original illustration</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="material-symbols-outlined mt-0.5 shrink-0 text-lg text-primary" aria-hidden>
-                    sync
-                  </span>
-                  <span>Free exchange within 14 days</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="material-symbols-outlined mt-0.5 shrink-0 text-lg text-primary" aria-hidden>
-                    local_shipping
-                  </span>
-                  <span>COD available nationwide</span>
-                </li>
-              </ul>
-            </div>
-
-            <div className="mt-6">
-              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <span className="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-white/90">Select size</span>
-                <Link
-                  to={`/products/${p.slug}`}
-                  className="font-label inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-frost-blue hover:underline"
-                  onClick={onClose}
+              <div>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <span className="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-white/92">Select size</span>
+                  <button
+                    type="button"
+                    className="font-label inline-flex min-h-11 items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-frost-blue transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  aria-expanded={sizeChartOpen}
+                  aria-controls={sizeChartId}
+                  onClick={() => setSizeChartOpen((current) => !current)}
                 >
-                  <span className="material-symbols-outlined text-[16px]" aria-hidden>
-                    straighten
-                  </span>
-                  Size chart
-                </Link>
+                  <AppIcon name="straighten" className="h-4 w-4" />
+                  {QUICK_VIEW_SCHEMA.copy.sizeChartLabel}
+                </button>
+                </div>
+
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Size">
+                  {QUICK_VIEW_SIZES.map((size) => {
+                    const isSelected = selectedSize === size.key;
+                    return (
+                      <button
+                        key={size.key}
+                        type="button"
+                        disabled={size.disabled}
+                        onClick={() => {
+                          setSelectedSize(size.key);
+                          setAddedToBag(false);
+                        }}
+                        className={`font-label min-h-12 min-w-12 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                          size.disabled
+                            ? 'cursor-not-allowed border-white/10 bg-white/[0.04] text-white/25'
+                            : isSelected
+                              ? 'border-white bg-white text-obsidian'
+                              : 'border-white/25 bg-transparent text-white hover:border-white/50'
+                        }`}
+                        aria-pressed={isSelected}
+                      >
+                        {size.key}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {sizeChartOpen ? (
+                  <div
+                    id={sizeChartId}
+                    role="region"
+                    aria-label={QUICK_VIEW_SCHEMA.copy.sizeChartRegionLabel}
+                    className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]"
+                  >
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border-collapse text-left text-xs text-white/85">
+                        <thead className="bg-white/[0.06] text-[10px] uppercase tracking-[0.18em] text-white/58">
+                          <tr>
+                            <th className="px-3 py-3 font-medium">Size</th>
+                            <th className="px-3 py-3 font-medium">Chest</th>
+                            <th className="px-3 py-3 font-medium">Length</th>
+                            <th className="px-3 py-3 font-medium">Sleeve</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {PDP_SCHEMA.sizeTable.map((row) => (
+                            <tr key={row.size} className="border-t border-white/8">
+                              <td className="px-3 py-3 font-semibold text-white">{row.size}</td>
+                              <td className="px-3 py-3">{row.chest}</td>
+                              <td className="px-3 py-3">{row.length}</td>
+                              <td className="px-3 py-3">{row.sleeve}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="font-body border-t border-white/8 px-3 py-3 text-xs text-white/62">
+                      {PDP_SCHEMA.copy.sizeGuideModelNote}
+                    </p>
+                  </div>
+                ) : null}
               </div>
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Size">
-                {QUICK_VIEW_SIZES.map((s) => {
-                  const isSel = selectedSize === s;
-                  return (
+
+              <div className="space-y-3">
+                {addedToBag ? (
+                  <>
+                    <p className="font-label text-center text-[11px] font-medium uppercase tracking-[0.18em] text-primary" role="status" aria-live="polite">
+                      {QUICK_VIEW_SCHEMA.copy.addedStatus}
+                    </p>
                     <button
-                      key={s}
                       type="button"
-                      onClick={() => setSelectedSize(s)}
-                      className={`font-label min-h-11 min-w-11 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                        isSel ? 'border-white bg-white text-obsidian' : 'border-white/25 bg-transparent text-white hover:border-white/50'
-                      }`}
-                      aria-pressed={isSel}
+                      className="font-label flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      onClick={handleViewBag}
                     >
-                      {s}
+                      {primaryCtaLabel}
                     </button>
-                  );
-                })}
+                    <button
+                      type="button"
+                      className="font-label inline-flex min-h-11 w-full items-center justify-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/78 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      onClick={onClose}
+                    >
+                      {QUICK_VIEW_SCHEMA.copy.continueBrowsingCta}
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={!selectedSize}
+                    className={`font-label flex min-h-12 w-full items-center justify-center rounded-lg px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] shadow-md transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                      selectedSize
+                        ? 'bg-primary text-white hover:brightness-95'
+                        : 'cursor-not-allowed border border-white/12 bg-white/[0.08] text-white/38 shadow-none'
+                    }`}
+                    aria-disabled={!selectedSize}
+                    onClick={handleAddToBag}
+                  >
+                    {primaryCtaLabel}
+                  </button>
+                )}
               </div>
-              {p.stockNote ? (
-                <p className="font-body mt-3 flex items-start gap-2 text-xs text-primary">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
-                  {p.stockNote}
-                </p>
-              ) : null}
             </div>
 
-            <div className="mt-6">
-              {cartNavPending ? (
-                <p className="font-label mb-3 text-center text-[11px] font-medium uppercase tracking-wider text-primary" role="status" aria-live="polite">
-                  Added to bag — opening cart…
-                </p>
-              ) : null}
-              {selectedSize ? (
-                <button
-                  type="button"
-                  className="font-label flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  onClick={() => {
-                    if (!p || !selectedSize) return;
-                    setCartNavPending(true);
-                    addItem(p.slug, selectedSize as ProductSizeKey, 1);
-                    window.setTimeout(() => {
-                      onClose();
-                      navigate('/cart');
-                    }, 420);
-                  }}
-                >
-                  Add to cart
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="font-label min-h-12 w-full cursor-not-allowed rounded-lg border border-stone bg-stone/20 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-stone"
-                  aria-disabled="true"
-                >
-                  Select a size
-                </button>
-              )}
-            </div>
+            <div className="mt-5 border-t border-white/10 pt-5">
+              <ul className="flex flex-wrap gap-2">
+                {PDP_SCHEMA.trustStripItems.map((item) => (
+                  <li
+                    key={item}
+                    className="font-label inline-flex min-h-9 items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-white/72"
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
 
-            <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-5 text-[10px] uppercase tracking-wider text-stone">
-              <span className="inline-flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-desert-sand" aria-hidden>
-                  local_shipping
-                </span>
-                Free shipping on prepaid
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-desert-sand" aria-hidden>
-                  payments
-                </span>
-                COD available
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px] text-desert-sand" aria-hidden>
-                  history
-                </span>
-                14-day exchange
-              </span>
+              <Link
+                to={`/products/${product.slug}`}
+                className="font-label mt-4 inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/84 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                onClick={onClose}
+              >
+                {QUICK_VIEW_SCHEMA.copy.viewFullProductCta}
+              </Link>
             </div>
           </div>
         </div>

@@ -28,9 +28,10 @@ import {
 } from '../data/images';
 import { TeeImage, TeeImageFrame } from '../components/TeeImage';
 import { ProductQuickView } from '../components/ProductQuickView';
+import { QuickViewTrigger } from '../components/QuickViewTrigger';
 import { formatEgp } from '../utils/formatPrice';
 import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
-import { PDP_SCHEMA } from '../data/domain-config';
+import { HORO_SUPPORT_CHANNELS, PDP_SCHEMA, isConfiguredExternalUrl } from '../data/domain-config';
 import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 
 const { sizes, sizeTable, copy } = PDP_SCHEMA;
@@ -167,6 +168,9 @@ export function ProductDetail() {
     '{fit}',
     product?.fitLabel ? ` — ${product.fitLabel.toLowerCase()} fit` : ''
   );
+  const whatsappSupportUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
+    ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
+    : null;
 
   useEffect(() => {
     if (gallery.length === 0) return;
@@ -405,7 +409,7 @@ export function ProductDetail() {
       <div className="bg-papyrus px-4 py-16 text-center">
         <p className="font-body text-warm-charcoal">Product not found.</p>
         <Link to="/vibes" className="font-label mt-4 inline-block text-deep-teal underline">
-          Browse vibes
+          Shop by Vibe
         </Link>
       </div>
     );
@@ -642,6 +646,17 @@ export function ProductDetail() {
                     )}
                   </div>
                 ) : null}
+
+                {whatsappSupportUrl ? (
+                  <a
+                    href={whatsappSupportUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-label inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-stone bg-white px-4 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  >
+                    {copy.whatsappHelpLabel}
+                  </a>
+                ) : null}
               </div>
 
               <div className="flex flex-wrap gap-2 border-t border-stone/30 pt-5" aria-label="Trust and service highlights">
@@ -670,12 +685,9 @@ export function ProductDetail() {
                   ) : null}
                   <p className="font-body text-sm leading-snug text-warm-charcoal">
                     <span className="text-clay">{copy.illustratedByLabel}</span>{' '}
-                    <Link
-                      to={`/search?q=${encodeURIComponent(artist.name)}`}
-                      className="font-medium text-obsidian underline decoration-obsidian/25 underline-offset-2 transition-colors hover:text-deep-teal"
-                    >
+                    <span className="font-medium text-obsidian">
                       {artist.name}
-                    </Link>
+                    </span>
                   </p>
                 </div>
               ) : null}
@@ -734,12 +746,9 @@ export function ProductDetail() {
                   )}{' '}
                   line — artwork by{' '}
                   {artist ? (
-                    <Link
-                      to={`/search?q=${encodeURIComponent(artist.name)}`}
-                      className="font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-2 transition-colors hover:text-obsidian"
-                    >
+                    <span className="font-medium text-deep-teal">
                       {artist.name}
-                    </Link>
+                    </span>
                   ) : (
                     'the artist'
                   )}
@@ -776,7 +785,7 @@ export function ProductDetail() {
                 to={`/vibes/${vibe.slug}`}
                 className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
               >
-                View all
+                Shop by Vibe
               </Link>
             ) : null}
           </div>
@@ -808,18 +817,11 @@ export function ProductDetail() {
                         frameStyle={{ marginBottom: 0 }}
                       />
                     </div>
-                    <button
-                      type="button"
-                      className="quick-view-pill font-label pointer-events-auto absolute bottom-3 left-3 right-3 z-10 min-h-12 rounded-full px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.2em] text-obsidian transition-shadow hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setRelatedQuickViewSlug(item.slug);
-                      }}
-                      aria-label={`Quick view: ${item.name}`}
-                    >
-                      Quick view
-                    </button>
+                    <QuickViewTrigger
+                      productName={item.name}
+                      className="pointer-events-auto bottom-3 left-3 right-3"
+                      onClick={() => setRelatedQuickViewSlug(item.slug)}
+                    />
                   </div>
 
                   <div className="p-4">

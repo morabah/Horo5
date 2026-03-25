@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { VIBES_SCHEMA } from '../data/domain-config';
 import type { Vibe } from '../data/site';
 import { glassInteractive } from '../lib/glassInteractive';
-import { heroStreet, imgUrl, vibeCovers } from '../data/images';
+import { getVibeCollectionVisual, imgUrl } from '../data/images';
 
 const linkBaseClass =
   'vibe-commerce-card group flex h-full min-h-0 flex-col overflow-hidden rounded-2xl shadow-xl shadow-black/[0.07] ring-1 ring-black/5 transition-all duration-700 ease-out motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-2xl motion-safe:hover:shadow-black/[0.1] motion-reduce:hover:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
@@ -27,7 +27,7 @@ export function VibeCommerceCard({
   id,
   'data-reveal': dataReveal,
 }: VibeCommerceCardProps) {
-  const cover = vibeCovers[vibe.slug] ?? heroStreet;
+  const cover = getVibeCollectionVisual(vibe.slug).cover;
   const ctaLabel = variant === 'see-vibe' ? VIBES_SCHEMA.copy.cardSeeVibeCta : VIBES_SCHEMA.copy.cardExploreCta;
   const ariaLabel = VIBES_SCHEMA.copy.cardAriaTemplate
     .replace('{cta}', ctaLabel.replace(/\s*→$/, '').trim())
@@ -59,12 +59,13 @@ export function VibeCommerceCard({
     >
       <div className="relative @container/vibe-card flex aspect-[4/5] w-full flex-1 flex-col overflow-hidden">
         <img
-          src={imgUrl(cover, 960)}
-          alt={`${vibe.name} vibe — editorial HORO styling.`}
+          src={imgUrl(cover.src, 960)}
+          alt={cover.alt}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-105 motion-reduce:group-hover:scale-100"
           decoding="async"
           width={960}
           height={1200}
+          style={cover.objectPosition ? { objectPosition: cover.objectPosition } : undefined}
         />
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 top-[34%] bg-linear-to-t from-black/78 via-black/18 to-transparent"
