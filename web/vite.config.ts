@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Plugin } from 'vite';
 import { createRobotsTxt, createSitemapXml } from './src/seo/assets';
+import { resolveSiteUrlForBuild } from './scripts/env-config.mjs';
 
 function horoSeoPlugin(): Plugin {
   let outDir = 'dist';
@@ -17,10 +18,13 @@ function horoSeoPlugin(): Plugin {
       mode = config.mode;
     },
     closeBundle() {
-      const env = loadEnv(mode, process.cwd(), '');
-      const base = env.VITE_SITE_URL?.trim().replace(/\/$/, '');
+      const fileEnv = loadEnv(mode, process.cwd(), '');
+      const merged = { ...process.env, ...fileEnv } as Record<string, string | undefined>;
+      const base = resolveSiteUrlForBuild(merged)?.replace(/\/$/, '');
       if (!base) {
-        throw new Error('[horo-seo-assets] VITE_SITE_URL is required to generate robots.txt and sitemap.xml');
+        throw new Error(
+          '[horo-seo-assets] Set VITE_SITE_URL or build on Vercel (VERCEL_URL) for robots.txt and sitemap.xml',
+        );
       }
       const out = path.resolve(outDir);
       fs.mkdirSync(out, { recursive: true });

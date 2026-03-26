@@ -45,3 +45,23 @@ export function loadMergedEnv(projectRoot) {
 export function isValidUrlValue(value) {
   return URL_PATTERN.test(value.trim());
 }
+
+/**
+ * Production site URL for SEO artifacts (sitemap, robots).
+ * Prefer VITE_SITE_URL; on Vercel, VERCEL_URL is set automatically (hostname, no scheme).
+ */
+export function resolveSiteUrlForBuild(mergedEnv) {
+  const explicit =
+    typeof mergedEnv.VITE_SITE_URL === 'string' ? mergedEnv.VITE_SITE_URL.trim() : '';
+  if (explicit && isValidUrlValue(explicit)) return explicit;
+
+  const vercelHost =
+    typeof mergedEnv.VERCEL_URL === 'string' ? mergedEnv.VERCEL_URL.trim() : '';
+  if (vercelHost) {
+    const host = vercelHost.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+    const withHttps = `https://${host}`;
+    if (isValidUrlValue(withHttps)) return withHttps;
+  }
+
+  return null;
+}
