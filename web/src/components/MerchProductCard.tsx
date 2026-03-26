@@ -14,6 +14,7 @@ type MerchProductCardProps = {
   eyebrowAccent?: string;
   proofChip?: string;
   onQuickView: (slug: string) => void;
+  onProductClick?: () => void;
   className?: string;
   'data-reveal'?: string;
 };
@@ -29,6 +30,7 @@ export function MerchProductCard({
   eyebrowAccent,
   proofChip,
   onQuickView,
+  onProductClick,
   className,
   'data-reveal': dataReveal,
 }: MerchProductCardProps) {
@@ -39,6 +41,7 @@ export function MerchProductCard({
           to={`/products/${slug}`}
           className="block overflow-hidden rounded-md bg-surface-container-high shadow-sm ring-1 ring-black/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           aria-label={`View ${name}`}
+          onClick={onProductClick}
         >
           <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
             <TeeImageFrame src={imageSrc} alt={imageAlt} w={700} aspectRatio="4/5" borderRadius="0.375rem" frameStyle={{ marginBottom: 0 }} />
@@ -62,6 +65,7 @@ export function MerchProductCard({
         <Link
           to={`/products/${slug}`}
           className="font-headline mt-3 block text-[1.08rem] font-semibold leading-snug tracking-[0.01em] text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+          onClick={onProductClick}
         >
           {name}
         </Link>

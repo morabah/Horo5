@@ -19,6 +19,7 @@ import {
   productsByVibe,
   type ProductSizeKey,
 } from '../data/site';
+import { trackViewItem } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
 import {
   artistAvatars,
@@ -26,6 +27,7 @@ import {
   getProductPdpGallery,
   imgUrl,
 } from '../data/images';
+import { ProductJsonLd } from '../components/ProductJsonLd';
 import { TeeImage, TeeImageFrame } from '../components/TeeImage';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { QuickViewTrigger } from '../components/QuickViewTrigger';
@@ -125,6 +127,11 @@ export function ProductDetail() {
     setLightboxOpen(false);
     setRelatedQuickViewSlug(null);
   }, [slug]);
+
+  useEffect(() => {
+    if (!product) return;
+    trackViewItem(product);
+  }, [product]);
 
   const media = product ? getProductMedia(product.slug) : getProductMedia('');
   const gallery = product ? getProductPdpGallery(product.name, product.slug) : [];
@@ -388,7 +395,7 @@ export function ProductDetail() {
 
   function primaryCtaLabel() {
     if (oosSelected) return copy.notifyMeCTA;
-    if (sizeReady) return `${copy.addBtnCTA} — ${formatEgp(product.priceEgp)}`;
+    if (sizeReady && product) return `${copy.addBtnCTA} — ${formatEgp(product.priceEgp)}`;
     return copy.selectSizePrompt;
   }
 
@@ -417,6 +424,7 @@ export function ProductDetail() {
 
   return (
     <div className="product-page bg-papyrus text-obsidian">
+      <ProductJsonLd slug={slug} />
       <span id="pdp-size-hint" className="sr-only">
         {copy.sizeRequiredPrompt}
       </span>

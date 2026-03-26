@@ -1,60 +1,62 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, type ReactNode } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { AnalyticsRoot } from './analytics/AnalyticsRoot';
 import { Layout } from './components/Layout';
-import { Home } from './pages/Home';
 
-const ShopByVibe = lazy(() => import('./pages/ShopByVibe').then((module) => ({ default: module.ShopByVibe })));
-const VibeCollection = lazy(() => import('./pages/VibeCollection').then((module) => ({ default: module.VibeCollection })));
-const ShopByOccasion = lazy(() => import('./pages/ShopByOccasion').then((module) => ({ default: module.ShopByOccasion })));
-const OccasionCollection = lazy(() =>
-  import('./pages/OccasionCollection').then((module) => ({ default: module.OccasionCollection })),
-);
-const ProductDetail = lazy(() => import('./pages/ProductDetail').then((module) => ({ default: module.ProductDetail })));
-const Cart = lazy(() => import('./pages/Cart').then((module) => ({ default: module.Cart })));
-const Checkout = lazy(() => import('./pages/Checkout').then((module) => ({ default: module.Checkout })));
-const OrderConfirmation = lazy(() =>
-  import('./pages/OrderConfirmation').then((module) => ({ default: module.OrderConfirmation })),
-);
-const Search = lazy(() => import('./pages/Search').then((module) => ({ default: module.Search })));
-const NotFound = lazy(() => import('./pages/NotFound').then((module) => ({ default: module.NotFound })));
-const About = lazy(() => import('./pages/About').then((module) => ({ default: module.About })));
-const Exchange = lazy(() => import('./pages/Exchange').then((module) => ({ default: module.Exchange })));
-const Privacy = lazy(() => import('./pages/Privacy').then((module) => ({ default: module.Privacy })));
-const Terms = lazy(() => import('./pages/Terms').then((module) => ({ default: module.Terms })));
+const Home = lazy(async () => ({ default: (await import('./pages/Home')).Home }));
+const ShopByVibe = lazy(async () => ({ default: (await import('./pages/ShopByVibe')).ShopByVibe }));
+const VibeCollection = lazy(async () => ({ default: (await import('./pages/VibeCollection')).VibeCollection }));
+const ShopByOccasion = lazy(async () => ({ default: (await import('./pages/ShopByOccasion')).ShopByOccasion }));
+const OccasionCollection = lazy(async () => ({ default: (await import('./pages/OccasionCollection')).OccasionCollection }));
+const ProductDetail = lazy(async () => ({ default: (await import('./pages/ProductDetail')).ProductDetail }));
+const Cart = lazy(async () => ({ default: (await import('./pages/Cart')).Cart }));
+const Checkout = lazy(async () => ({ default: (await import('./pages/Checkout')).Checkout }));
+const OrderConfirmation = lazy(async () => ({ default: (await import('./pages/OrderConfirmation')).OrderConfirmation }));
+const Search = lazy(async () => ({ default: (await import('./pages/Search')).Search }));
+const NotFound = lazy(async () => ({ default: (await import('./pages/NotFound')).NotFound }));
+const About = lazy(async () => ({ default: (await import('./pages/About')).About }));
+const Exchange = lazy(async () => ({ default: (await import('./pages/Exchange')).Exchange }));
+const Privacy = lazy(async () => ({ default: (await import('./pages/Privacy')).Privacy }));
+const Terms = lazy(async () => ({ default: (await import('./pages/Terms')).Terms }));
 
-function RouteShellFallback() {
+function RouteLoadingFallback() {
   return (
-    <div className="flex min-h-[40vh] items-center justify-center bg-papyrus px-6 py-16">
-      <p className="font-label text-[10px] font-semibold uppercase tracking-[0.24em] text-label">Loading page</p>
+    <div className="container py-12">
+      <p className="font-body text-warm-charcoal">Loading...</p>
     </div>
   );
 }
 
+function RoutePage({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<RouteLoadingFallback />}>{children}</Suspense>;
+}
+
 export default function App() {
   return (
-    <Suspense fallback={<RouteShellFallback />}>
+    <>
+      <AnalyticsRoot />
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/exchange" element={<Exchange />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/vibes" element={<ShopByVibe />} />
-          <Route path="/vibes/:slug" element={<VibeCollection />} />
-          <Route path="/occasions" element={<ShopByOccasion />} />
-          <Route path="/occasions/:slug" element={<OccasionCollection />} />
+          <Route path="/" element={<RoutePage><Home /></RoutePage>} />
+          <Route path="/about" element={<RoutePage><About /></RoutePage>} />
+          <Route path="/exchange" element={<RoutePage><Exchange /></RoutePage>} />
+          <Route path="/privacy" element={<RoutePage><Privacy /></RoutePage>} />
+          <Route path="/terms" element={<RoutePage><Terms /></RoutePage>} />
+          <Route path="/vibes" element={<RoutePage><ShopByVibe /></RoutePage>} />
+          <Route path="/vibes/:slug" element={<RoutePage><VibeCollection /></RoutePage>} />
+          <Route path="/occasions" element={<RoutePage><ShopByOccasion /></RoutePage>} />
+          <Route path="/occasions/:slug" element={<RoutePage><OccasionCollection /></RoutePage>} />
           <Route path="/artists" element={<Navigate to="/vibes" replace />} />
           <Route path="/artists/:slug" element={<Navigate to="/vibes" replace />} />
           <Route path="/products" element={<Navigate to="/search" replace />} />
-          <Route path="/products/:slug" element={<ProductDetail />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/checkout/success" element={<OrderConfirmation />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/products/:slug" element={<RoutePage><ProductDetail /></RoutePage>} />
+          <Route path="/cart" element={<RoutePage><Cart /></RoutePage>} />
+          <Route path="/checkout" element={<RoutePage><Checkout /></RoutePage>} />
+          <Route path="/checkout/success" element={<RoutePage><OrderConfirmation /></RoutePage>} />
+          <Route path="/search" element={<RoutePage><Search /></RoutePage>} />
+          <Route path="*" element={<RoutePage><NotFound /></RoutePage>} />
         </Route>
       </Routes>
-    </Suspense>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { flushSync } from 'react-dom';
-import { useMemo, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { trackBeginCheckout, trackPurchase } from '../analytics/events';
 import { CommerceContinuityPanel } from '../components/CommerceContinuityPanel';
 import { TeeImage } from '../components/TeeImage';
 import { getCartLineViews } from '../cart/view';
@@ -65,6 +66,13 @@ export function Checkout() {
   const paymentLabel = paymentMethod === 'card' ? 'Card' : 'COD';
   const shippingLabel = shippingMethod === 'express' ? 'Express' : 'Standard';
 
+  const beganCheckoutRef = useRef(false);
+  useEffect(() => {
+    if (items.length === 0 || beganCheckoutRef.current) return;
+    beganCheckoutRef.current = true;
+    trackBeginCheckout(items, subtotalEgp, giftWrapEgp);
+  }, [items, subtotalEgp, giftWrapEgp]);
+
   function handleStepClick(targetStep: number) {
     // Allow backward navigation to completed steps only
     if (targetStep <= highestCompleted) {
@@ -96,6 +104,12 @@ export function Checkout() {
 
   function handlePlaceOrder() {
     const orderId = `HORO-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+    trackPurchase({
+      transactionId: orderId,
+      value: orderTotal,
+      currency: 'EGP',
+      lines: items.map((l) => ({ ...l })),
+    });
     saveLastOrder({
       orderId,
       lines: items.map((l) => ({ ...l })),

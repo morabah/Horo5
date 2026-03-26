@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
 import { VIBES_SCHEMA } from '../data/domain-config';
+import { vibeEditorialBlocks } from '../data/homeEditorial';
 import { imgUrl, vibesHubHeroTiles } from '../data/images';
 import { vibes } from '../data/site';
 
@@ -69,6 +70,40 @@ export function ShopByVibe() {
                 />
               );
             })}
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="vibes-editorial-title"
+          className="rounded-[1.5rem] border border-stone/25 bg-white/68 px-5 py-6 shadow-[0_16px_36px_-28px_rgba(26,26,26,0.24)] md:px-7 md:py-7"
+        >
+          <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Crawlable guide</p>
+          <h2 id="vibes-editorial-title" className="font-headline mt-3 text-[1.45rem] font-semibold tracking-tight text-obsidian md:text-[1.8rem]">
+            Graphic tees for every mood and story
+          </h2>
+          <div className="mt-4 space-y-4 font-body text-sm leading-relaxed text-warm-charcoal md:text-[0.98rem]">
+            <p>
+              Start with{' '}
+              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/vibes/${vibeEditorialBlocks[0].vibe.slug}`}>
+                {vibeEditorialBlocks[0].vibe.name} graphic tees
+              </Link>
+              ,{' '}
+              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/vibes/${vibeEditorialBlocks[1].vibe.slug}`}>
+                {vibeEditorialBlocks[1].vibe.name} streetwear
+              </Link>
+              ,{' '}
+              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/vibes/${vibeEditorialBlocks[2].vibe.slug}`}>
+                {vibeEditorialBlocks[2].vibe.name} designs
+              </Link>
+              , or{' '}
+              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/vibes/${vibeEditorialBlocks[3].vibe.slug}`}>
+                {vibeEditorialBlocks[3].vibe.name} oversized tees
+              </Link>
+              {' '}depending on whether you are shopping by feeling, sign, story, or ambition.
+            </p>
+            <p>
+              HORO organizes graphic t-shirts around real browsing intent, so shoppers in Egypt can move from abstract taste to a concrete collection without losing the product story or the practical buying cues.
+            </p>
           </div>
         </section>
 

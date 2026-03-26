@@ -5,14 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run validate:seo-build && vite build && npm run verify:seo-assets",
+    "validate:seo-build": "node ./scripts/validate-seo-build.mjs",
+    "verify:seo-assets": "node ./scripts/verify-seo-assets.mjs",
+    "test:seo": "node ./scripts/test-seo.mjs",
+    "test:analytics": "node ./scripts/test-analytics.mjs",
     "validate:release-config": "node ./scripts/validate-release-config.mjs",
-    "build:release": "npm run validate:release-config && vite build",
+    "build:release": "npm run validate:release-config && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.4.0"
   },
   "devDependencies": {

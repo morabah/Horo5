@@ -30,6 +30,7 @@ export function ShopByOccasion() {
   const featured = occasions[0];
   const featuredVisual = getOccasionCollectionVisual(featured.slug).hero;
   const secondaryOccasions = occasions.filter((occasion) => occasion.slug !== featured.slug);
+  const editorialOccasions = occasions.slice(0, 4);
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -98,6 +99,40 @@ export function ShopByOccasion() {
             <SecondaryOccasionCard key={occasion.slug} {...occasion} />
           ))}
         </div>
+
+        <section
+          aria-labelledby="occasion-editorial-title"
+          className="mt-10 rounded-[1.5rem] border border-stone/25 bg-white/68 px-5 py-6 shadow-[0_16px_36px_-28px_rgba(26,26,26,0.24)] md:px-7 md:py-7"
+        >
+          <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Crawlable guide</p>
+          <h2 id="occasion-editorial-title" className="font-headline mt-3 text-[1.45rem] font-semibold tracking-tight text-obsidian md:text-[1.8rem]">
+            Gift-ready graphic tees for real occasions
+          </h2>
+          <div className="mt-4 space-y-4 font-body text-sm leading-relaxed text-warm-charcoal md:text-[0.98rem]">
+            <p>
+              Browse{' '}
+              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[0].slug}`}>
+                {editorialOccasions[0].name}
+              </Link>
+              ,{' '}
+              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[1].slug}`}>
+                {editorialOccasions[1].name}
+              </Link>
+              ,{' '}
+              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[2].slug}`}>
+                {editorialOccasions[2].name}
+              </Link>
+              , or{' '}
+              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[3].slug}`}>
+                {editorialOccasions[3].name}
+              </Link>
+              {' '}when you need a gift, milestone pick, or just-because streetwear edit.
+            </p>
+            <p>
+              These landing pages turn gifting intent into browseable collections so shoppers can compare vibe, price, and story without dropping into generic search too early.
+            </p>
+          </div>
+        </section>
 
         <div className="mt-10 border-t border-stone/40 pt-6">
           <p className="font-body text-sm text-clay-earth">{OCCASION_SCHEMA.copy.secondaryNavLabel}</p>

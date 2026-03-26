@@ -18,6 +18,8 @@ const QUICK_VIEW_SIZES = PDP_SCHEMA.sizes.map((size) => ({
   disabled: Boolean(size.disabled),
 }));
 
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 export function ProductQuickView({ open, productSlug, onClose }: ProductQuickViewProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
@@ -66,7 +68,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
     }
   }, [open]);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
@@ -327,7 +329,9 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
               <Link
                 to={`/products/${product.slug}`}
                 className="font-label mt-4 inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/84 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                }}
               >
                 {QUICK_VIEW_SCHEMA.copy.viewFullProductCta}
               </Link>

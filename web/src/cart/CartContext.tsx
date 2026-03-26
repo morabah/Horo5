@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { trackAddToCart } from '../analytics/events';
 import { getProduct, type ProductSizeKey } from '../data/site';
 import { CART_STORAGE_KEY, cartLineKey, type CartLine } from './types';
 
@@ -98,7 +99,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [giftWrapEgp]);
 
   const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1) => {
-    if (!getProduct(productSlug) || qty < 1) return;
+    const product = getProduct(productSlug);
+    if (!product || qty < 1) return;
     const add = Math.min(qty, 99);
     setItems((prev) => {
       const key = cartLineKey({ productSlug, size });
@@ -110,6 +112,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, { productSlug, size, qty: add }];
     });
+    queueMicrotask(() => trackAddToCart(product, add, size));
   }, []);
 
   const removeItem = useCallback((productSlug: string, size: ProductSizeKey) => {

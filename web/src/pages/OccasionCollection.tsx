@@ -74,10 +74,12 @@ function OccasionProductCard({
   product,
   isGiftOccasion,
   onQuickView,
+  onProductClick,
 }: {
   product: Product;
   isGiftOccasion: boolean;
   onQuickView: (slug: string) => void;
+  onProductClick?: () => void;
 }) {
   const vibe = getVibe(product.vibeSlug);
   const { main } = getProductMedia(product.slug);
@@ -94,6 +96,7 @@ function OccasionProductCard({
       eyebrowAccent={vibe?.accent}
       proofChip={isGiftOccasion ? OCCASION_SCHEMA.copy.giftBannerChip : product.fitLabel ?? '220 GSM cotton'}
       onQuickView={onQuickView}
+      onProductClick={onProductClick}
     />
   );
 }

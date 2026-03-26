@@ -82,9 +82,11 @@ function formatResultCount(count: number, singular: string, plural: string) {
 function SearchProductCard({
   product,
   onQuickView,
+  onProductClick,
 }: {
   product: SearchDesignCard;
   onQuickView: (slug: string) => void;
+  onProductClick?: () => void;
 }) {
   return (
     <MerchProductCard
@@ -98,6 +100,7 @@ function SearchProductCard({
       eyebrowAccent={product.vibeAccent}
       proofChip="220 GSM cotton"
       onQuickView={onQuickView}
+      onProductClick={onProductClick}
     />
   );
 }
@@ -715,7 +718,11 @@ export function Search() {
 
                 <div className="vibe-product-grid">
                   {designMatches.map((product) => (
-                    <SearchProductCard key={product.slug} product={product} onQuickView={setQuickViewSlug} />
+                    <SearchProductCard
+                      key={product.slug}
+                      product={product}
+                      onQuickView={setQuickViewSlug}
+                    />
                   ))}
                 </div>
 

@@ -1,20 +1,20 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
-import { CartProvider } from './cart/CartContext';
-import { UiLocaleProvider } from './i18n/ui-locale';
+import { AppProviders } from './AppProviders';
 import './index.css';
 import './styles/global.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <UiLocaleProvider>
-        <CartProvider>
+    <HelmetProvider>
+      <BrowserRouter>
+        <AppProviders>
           <App />
-        </CartProvider>
-      </UiLocaleProvider>
-    </BrowserRouter>
-  </StrictMode>
+        </AppProviders>
+      </BrowserRouter>
+    </HelmetProvider>
+  </StrictMode>,
 );
