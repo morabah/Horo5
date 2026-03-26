@@ -1,8 +1,10 @@
 # 01 — Homepage
 
 **Route:** `/`  
-**Implementation:** [`Home.tsx`](../web/src/pages/Home.tsx), [`HomeVibeGrid.tsx`](../web/src/components/HomeVibeGrid.tsx), [`MerchProductCard.tsx`](../web/src/components/MerchProductCard.tsx)  
+**Implementation:** [`Home.tsx`](../web/src/pages/Home.tsx), [`HomeHeroExplosive.tsx`](../web/src/components/HomeHeroExplosive.tsx), [`HomeFeelingExplosion.tsx`](../web/src/components/HomeFeelingExplosion.tsx), [`HomeStickyVibeShowcase.tsx`](../web/src/components/HomeStickyVibeShowcase.tsx), [`MerchProductCard.tsx`](../web/src/components/MerchProductCard.tsx)  
 **Status:** Current authoritative wireframe. Use this over older homepage sequencing notes.
+
+[`HomeVibeGrid.tsx`](../web/src/components/HomeVibeGrid.tsx) is a separate component and is **not** mounted on `/`; the homepage vibe entry is the sticky/accordion showcase only.
 
 ## Purpose
 
@@ -10,14 +12,14 @@ Single-mode shopping story that gets the customer immersed fast, then moves them
 
 ## Current structure
 
-1. **Hero**
-Hero image dominates the first viewport with dark scrim, headline, subline, price/trust ribbon, and one primary CTA: `Shop by Vibe`.
+1. **Hero** ([`HomeHeroExplosive`](../web/src/components/HomeHeroExplosive.tsx))
+Full-viewport cinematic image with dark scrim. Semantic `h1` for split headline (“Wear” / “What you mean”). First-viewport subcopy states problem + action; price / COD / exchange ribbon; one primary CTA: `Shop by Vibe` → `/vibes`.
 
-2. **The Feeling**
-Framed editorial problem block. The copy stays text-led, then lands in a large glass-focus `Find your vibe` panel with five live vibe chips and one handoff CTA into the vibe grid.
+2. **The Feeling** ([`HomeFeelingExplosion`](../web/src/components/HomeFeelingExplosion.tsx))
+Short text-led editorial block: eyebrow, one headline, one supporting sentence. No full-screen product art, no sticky scroll sequence. Target: roughly one viewport height or less on desktop.
 
-3. **HomeVibeGrid**
-Five image-led commerce cards for `Emotions`, `Zodiac`, `Fiction`, `Career`, and `Trends`. Each card routes to `/vibes/:slug`. The grid now begins immediately after the framing rail, without repeating a second intro header.
+3. **Find your vibe** ([`HomeStickyVibeShowcase`](../web/src/components/HomeStickyVibeShowcase.tsx))
+Section intro (“Find your vibe”) plus five image-led cards (`Emotions`, `Zodiac`, `Fiction`, `Career`, `Trends`). **Mobile:** stacked column; each card is a single link to `/vibes/:slug` with visible name, one-line tagline, and Explore affordance. **Desktop (`md+`):** horizontal accordion-style row; hover/focus expands a column; every card shows a visible action at rest. Whole card is keyboard-focusable.
 
 4. **Latest Drop**
 Four shared merch cards using the same browse hierarchy as collection and search surfaces: image, small proof/vibe line, product name, price, quick view. No artist line.
@@ -26,7 +28,7 @@ Four shared merch cards using the same browse hierarchy as collection and search
 Four trust points: cotton weight, licensed design, free exchange, COD.
 
 6. **Stories**
-Three quote cards with real-name / city formatting.
+Three quote cards with real-name / city formatting; neutral eyebrow (“What People Say”); attribution chips link to real product or vibe routes where applicable.
 
 7. **Simple Plan**
 `Find your vibe → Pick your design → It arrives`
@@ -42,17 +44,16 @@ Closing headline plus `Shop by Vibe` CTA.
 |                                                                    [Cart]        |
 +----------------------------------------------------------------------------------+
 | HERO IMAGE                                                                       |
-| headline / subline                                                               |
+| h1 split headline / problem + action subcopy                                     |
 | trust ribbon                                                                     |
 | [Shop by Vibe]                                                                   |
 +----------------------------------------------------------------------------------+
 | THE FEELING                                                                      |
-| problem copy                                                                     |
-| glass focus panel: Find your vibe / five vibe chips / [Shop by Vibe]            |
+| short text: headline + one support line (no sticky frames)                     |
 +----------------------------------------------------------------------------------+
-| VIBE GRID                                                                        |
-| [Emotions] [Zodiac] [Fiction]                                                    |
-|           [Career]  [Trends]                                                     |
+| FIND YOUR VIBE                                                                   |
+| [stacked cards mobile | accordion row desktop]                                   |
+| each: name, tagline, [Explore] -> /vibes/:slug                                   |
 +----------------------------------------------------------------------------------+
 | LATEST DROP                                                                      |
 | [Merch Card] [Merch Card] [Merch Card] [Merch Card]                              |
@@ -80,12 +81,11 @@ Closing headline plus `Shop by Vibe` CTA.
 - Latest-drop cards open quick view from the shared merch-card system.
 - Homepage cards do not surface artist metadata.
 - Footer is not part of `Home.tsx`; it comes from [`Layout.tsx`](../web/src/components/Layout.tsx).
+- Optional deep link `/?vibe=:slug` scrolls to the matching vibe card in the showcase (see `Home.tsx`).
 
 ## Current rules
 
 - Keep the current section order. Do not move trust or stories ahead of `Latest Drop`.
 - Do not reintroduce public artist surfacing on homepage cards.
-- Do not reintroduce a secondary image into `The Feeling`.
-- Keep the glass focus panel attached to the problem block so the section frames the next action instead of ending in dead space.
-- `Find your vibe` should read as the dominant line inside that panel, not as a minor eyebrow above the grid.
+- Do not reintroduce a long sticky / full-screen image “feeling” sequence; the feeling block stays compact and text-led.
 - Homepage is English-first. No public language toggle is present.
