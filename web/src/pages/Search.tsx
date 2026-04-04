@@ -1,7 +1,13 @@
+/**
+ * Result ranking and suggestions use synonym expansion plus Levenshtein-bounded fuzzy
+ * token matching in `search/view.ts` (`expandQueryVariants`, `fuzzyTokenScore`), merged
+ * with `SEARCH_SYNONYMS_SCHEMA` from `domain-config.ts` and `searchSynonyms.ts`.
+ */
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { AppIcon } from '../components/AppIcon';
+import { PageBreadcrumb, type PageBreadcrumbItem } from '../components/PageBreadcrumb';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { SearchSuggestionPanel } from '../components/SearchSuggestionPanel';
@@ -10,10 +16,13 @@ import { useUiLocale } from '../i18n/ui-locale';
 import { SEARCH_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, getVibeCollectionVisual, heroStreet, imgUrl } from '../data/images';
 import { getOccasion, getVibe } from '../data/site';
+import { trackSearchZeroResults } from '../analytics/events';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
+  getSearchFacetOptions,
   getSearchResults,
   getSearchSuggestions,
+  parseSearchSizeFilter,
   type SearchDesignCard,
   type SearchOccasionCard,
   type SearchPriceFilter,
@@ -21,6 +30,7 @@ import {
   type SearchSuggestion,
   type SearchVibeCard,
 } from '../search/view';
+import { defaultCatalogSizeKeys } from '../utils/productSizes';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const FOCUSABLE_SELECTOR =
@@ -28,6 +38,11 @@ const FOCUSABLE_SELECTOR =
 
 const SORT_IDS: SearchSortKey[] = ['relevance', 'featured', 'newest', 'price-asc', 'price-desc'];
 const PRICE_IDS: SearchPriceFilter[] = ['all', 'under-800', '800-899', '900+'];
+
+const SIZE_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'all', label: SEARCH_SCHEMA.copy.allSizesLabel },
+  ...defaultCatalogSizeKeys().map((size) => ({ value: size, label: size })),
+];
 
 const SORT_OPTIONS: { value: SearchSortKey; label: string }[] = [
   { value: 'relevance', label: 'Relevance' },
@@ -181,6 +196,7 @@ export function Search() {
     ? (params.get('price') as SearchPriceFilter)
     : 'all';
   const vibeFilter = params.get('vibeFilter') ?? 'all';
+  const sizeFilter = parseSearchSizeFilter(params.get('size'));
 
   const scopeVibe = useMemo(() => {
     const value = params.get('vibe') ?? '';
@@ -191,6 +207,20 @@ export function Search() {
     const value = params.get('occasion') ?? '';
     return value.trim() ? getOccasion(value) ?? null : null;
   }, [params]);
+
+  const facetOptions = useMemo(
+    () => getSearchFacetOptions(scopeVibe?.slug ?? null, scopeOccasion?.slug ?? null),
+    [scopeOccasion?.slug, scopeVibe?.slug],
+  );
+
+  const rawFilterArtist = params.get('fArtist') ?? 'all';
+  const filterArtist = facetOptions.artistOptions.some((o) => o.slug === rawFilterArtist) ? rawFilterArtist : 'all';
+
+  const rawFilterOccasion = params.get('fOccasion') ?? 'all';
+  const filterOccasion = facetOptions.occasionOptions.some((o) => o.slug === rawFilterOccasion) ? rawFilterOccasion : 'all';
+
+  const rawFilterColor = params.get('fColor') ?? 'all';
+  const filterColor = facetOptions.colorOptions.includes(rawFilterColor) ? rawFilterColor : 'all';
 
   useEffect(() => {
     setQ(urlQuery);
@@ -249,7 +279,11 @@ export function Search() {
           value === '' ||
           (key === 'sort' && value === 'relevance') ||
           (key === 'price' && value === 'all') ||
-          (key === 'vibeFilter' && value === 'all')
+          (key === 'vibeFilter' && value === 'all') ||
+          (key === 'size' && value === 'all') ||
+          (key === 'fArtist' && value === 'all') ||
+          (key === 'fOccasion' && value === 'all') ||
+          (key === 'fColor' && value === 'all')
         ) {
           next.delete(key);
         } else {
@@ -345,8 +379,23 @@ export function Search() {
         sortKey,
         priceFilter,
         vibeFilter,
+        sizeFilter,
+        filterArtist,
+        filterOccasion,
+        filterColor,
       }),
-    [debouncedQ, priceFilter, scopeOccasion?.slug, scopeVibe?.slug, sortKey, vibeFilter],
+    [
+      debouncedQ,
+      filterArtist,
+      filterColor,
+      filterOccasion,
+      priceFilter,
+      scopeOccasion?.slug,
+      scopeVibe?.slug,
+      sortKey,
+      vibeFilter,
+      sizeFilter,
+    ],
   );
 
   const suggestionGroups = useMemo(
@@ -372,7 +421,14 @@ export function Search() {
   const totalResults = designMatches.length + vibeMatches.length + occasionMatches.length;
   const inputEmpty = q.trim().length === 0;
   const hasDebouncedQuery = debouncedQ.trim().length > 0;
-  const hasActiveFilters = sortKey !== 'relevance' || priceFilter !== 'all' || vibeFilter !== 'all';
+  const hasActiveFilters =
+    sortKey !== 'relevance' ||
+    priceFilter !== 'all' ||
+    vibeFilter !== 'all' ||
+    sizeFilter !== 'all' ||
+    filterArtist !== 'all' ||
+    filterOccasion !== 'all' ||
+    filterColor !== 'all';
   const noResultsAcrossSections = hasDebouncedQuery && totalResults === 0;
 
   const scopeLabels = [scopeOccasion?.name, scopeVibe?.name].filter(Boolean);
@@ -425,8 +481,62 @@ export function Search() {
       sort: 'relevance',
       price: 'all',
       vibeFilter: 'all',
+      size: 'all',
+      fArtist: 'all',
+      fOccasion: 'all',
+      fColor: 'all',
     });
   }, [updateParams]);
+
+  const buildSearchWithQuery = useCallback(
+    (term: string) => {
+      const next = new URLSearchParams(params);
+      next.set('q', term);
+      next.delete('focus');
+      const qs = next.toString();
+      return qs ? `/search?${qs}` : '/search';
+    },
+    [params],
+  );
+
+  useEffect(() => {
+    if (!noResultsAcrossSections) return;
+    trackSearchZeroResults({
+      search_term: debouncedQ.trim(),
+      sort: sortKey,
+      price: priceFilter,
+      vibe_filter: vibeFilter,
+      size: sizeFilter,
+      filter_artist: filterArtist,
+      filter_occasion: filterOccasion,
+      filter_color: filterColor,
+      ...(scopeVibe ? { scope_vibe: scopeVibe.slug } : {}),
+      ...(scopeOccasion ? { scope_occasion: scopeOccasion.slug } : {}),
+    });
+  }, [
+    debouncedQ,
+    filterArtist,
+    filterColor,
+    filterOccasion,
+    noResultsAcrossSections,
+    priceFilter,
+    scopeOccasion,
+    scopeVibe,
+    sizeFilter,
+    sortKey,
+    vibeFilter,
+  ]);
+
+  const breadcrumbItems = useMemo((): PageBreadcrumbItem[] => {
+    const items: PageBreadcrumbItem[] = [{ label: 'Home', to: '/' }];
+    if (scopeVibe) {
+      items.push({ label: scopeVibe.name, to: `/vibes/${scopeVibe.slug}` });
+    } else if (scopeOccasion) {
+      items.push({ label: scopeOccasion.name, to: `/occasions/${scopeOccasion.slug}` });
+    }
+    items.push({ label: SEARCH_SCHEMA.copy.searchLabel });
+    return items;
+  }, [scopeOccasion, scopeVibe]);
 
   function handleSuggestionSelect(suggestion: SearchSuggestion) {
     navigate(suggestion.href);
@@ -468,6 +578,7 @@ export function Search() {
       </a>
 
       <div className="mx-auto min-h-[calc(100vh-10rem)] max-w-7xl px-6 pt-8 pb-12 md:px-10 md:pt-10 md:pb-16">
+        <PageBreadcrumb className="mb-6" items={breadcrumbItems} />
         <section className="grid gap-6 lg:grid-cols-[minmax(0,33rem)_minmax(0,1fr)] lg:items-stretch">
           <div className="card-glass border border-white/60 bg-[linear-gradient(145deg,rgba(255,255,255,0.84),rgba(248,246,242,0.72))] p-5 shadow-[0_28px_60px_-36px_rgba(26,26,26,0.35)] md:p-7">
             <div className="flex flex-col gap-5">
@@ -670,6 +781,99 @@ export function Search() {
                     </div>
                   </div>
                 ) : null}
+
+                <div className="flex min-w-[13rem] flex-col gap-2">
+                  <label htmlFor="search-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {SEARCH_SCHEMA.copy.sizeFilterLabel}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="search-size"
+                      value={sizeFilter}
+                      onChange={(event) => updateParams({ size: event.target.value })}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      {SIZE_FILTER_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+
+                {facetOptions.artistOptions.length > 1 ? (
+                  <div className="flex min-w-[13rem] flex-col gap-2">
+                    <label htmlFor="search-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                      {SEARCH_SCHEMA.copy.artistLabel}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="search-artist"
+                        value={filterArtist}
+                        onChange={(event) => updateParams({ fArtist: event.target.value })}
+                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      >
+                        <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
+                        {facetOptions.artistOptions.map((option) => (
+                          <option key={option.slug} value={option.slug}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
+                ) : null}
+
+                {facetOptions.occasionOptions.length > 1 ? (
+                  <div className="flex min-w-[13rem] flex-col gap-2">
+                    <label htmlFor="search-occasion-facet" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                      {SEARCH_SCHEMA.copy.occasionFilterLabel}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="search-occasion-facet"
+                        value={filterOccasion}
+                        onChange={(event) => updateParams({ fOccasion: event.target.value })}
+                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      >
+                        <option value="all">{SEARCH_SCHEMA.copy.allOccasionsFilterLabel}</option>
+                        {facetOptions.occasionOptions.map((option) => (
+                          <option key={option.slug} value={option.slug}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
+                ) : null}
+
+                {facetOptions.colorOptions.length > 1 ? (
+                  <div className="flex min-w-[13rem] flex-col gap-2">
+                    <label htmlFor="search-color" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                      {SEARCH_SCHEMA.copy.colorLabel}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="search-color"
+                        value={filterColor}
+                        onChange={(event) => updateParams({ fColor: event.target.value })}
+                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      >
+                        <option value="all">{SEARCH_SCHEMA.copy.allColorsLabel}</option>
+                        {facetOptions.colorOptions.map((color) => (
+                          <option key={color} value={color}>
+                            {color}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               {hasActiveFilters ? (
@@ -690,15 +894,41 @@ export function Search() {
                 {SEARCH_SCHEMA.copy.noResultsForQuery.replace('{query}', debouncedQ.trim())}
               </h2>
               <p className="mt-3 max-w-xl font-body text-[0.98rem] leading-relaxed text-warm-charcoal">
-                Try a different word, or explore by vibe.
+                Try a shorter phrase, clear filters, or browse by vibe and occasion.
               </p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="font-label mt-4 min-h-12 rounded-sm border border-obsidian px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                >
+                  {SEARCH_SCHEMA.copy.resetFiltersCta}
+                </button>
+              ) : null}
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
                 <Link className="btn btn-primary" to="/vibes">
                   {SEARCH_SCHEMA.copy.shopByVibeCta}
+                </Link>
+                <Link className="btn btn-secondary text-sm" to="/occasions">
+                  {SEARCH_SCHEMA.copy.shopByOccasionCta}
                 </Link>
                 <Link className="btn btn-ghost" to="/search">
                   {SEARCH_SCHEMA.copy.browseAllDesignsCta}
                 </Link>
+              </div>
+              <p className="mt-8 font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">
+                {SEARCH_SCHEMA.copy.zeroResultsSuggestionsHeading}
+              </p>
+              <div className="mt-3 flex max-w-xl flex-wrap justify-center gap-2">
+                {popularSearches.map((term) => (
+                  <Link
+                    key={term}
+                    to={buildSearchWithQuery(term)}
+                    className="font-body inline-flex min-h-11 items-center rounded-full border border-stone/80 bg-white/90 px-4 py-2 text-sm text-obsidian transition-colors hover:border-deep-teal hover:text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  >
+                    {term}
+                  </Link>
+                ))}
               </div>
             </div>
           ) : null}
@@ -870,6 +1100,99 @@ export function Search() {
                         {vibeOptions.map((option) => (
                           <option key={option.slug} value={option.slug}>
                             {option.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="mobile-search-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {SEARCH_SCHEMA.copy.sizeFilterLabel}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="mobile-search-size"
+                      value={sizeFilter}
+                      onChange={(event) => updateParams({ size: event.target.value })}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      {SIZE_FILTER_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+
+                {facetOptions.artistOptions.length > 1 ? (
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="mobile-search-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                      {SEARCH_SCHEMA.copy.artistLabel}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="mobile-search-artist"
+                        value={filterArtist}
+                        onChange={(event) => updateParams({ fArtist: event.target.value })}
+                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      >
+                        <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
+                        {facetOptions.artistOptions.map((option) => (
+                          <option key={option.slug} value={option.slug}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
+                ) : null}
+
+                {facetOptions.occasionOptions.length > 1 ? (
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="mobile-search-occasion-facet" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                      {SEARCH_SCHEMA.copy.occasionFilterLabel}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="mobile-search-occasion-facet"
+                        value={filterOccasion}
+                        onChange={(event) => updateParams({ fOccasion: event.target.value })}
+                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      >
+                        <option value="all">{SEARCH_SCHEMA.copy.allOccasionsFilterLabel}</option>
+                        {facetOptions.occasionOptions.map((option) => (
+                          <option key={option.slug} value={option.slug}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
+                ) : null}
+
+                {facetOptions.colorOptions.length > 1 ? (
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="mobile-search-color" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                      {SEARCH_SCHEMA.copy.colorLabel}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="mobile-search-color"
+                        value={filterColor}
+                        onChange={(event) => updateParams({ fColor: event.target.value })}
+                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      >
+                        <option value="all">{SEARCH_SCHEMA.copy.allColorsLabel}</option>
+                        {facetOptions.colorOptions.map((color) => (
+                          <option key={color} value={color}>
+                            {color}
                           </option>
                         ))}
                       </select>

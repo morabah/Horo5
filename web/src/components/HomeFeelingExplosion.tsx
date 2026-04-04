@@ -2,29 +2,32 @@ export function HomeFeelingExplosion() {
   return (
     <section
       aria-labelledby="home-feeling-title"
-      className="relative overflow-hidden bg-obsidian px-4 py-20 text-white sm:px-6 md:py-24 lg:px-8"
+      className="home-feeling-glow flex min-h-[85vh] items-center border-t border-stone/25 bg-papyrus px-4 py-32 text-center sm:px-6 md:py-48 lg:px-8"
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(232,89,60,0.18),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_55%)]" aria-hidden />
+      <div className="mx-auto max-w-3xl">
+        {/* Decorative accent line */}
+        <div data-reveal className="mx-auto mb-5 h-px w-12 bg-ember/50" aria-hidden="true" />
 
-      <div className="relative mx-auto flex max-w-5xl flex-col gap-6 text-center">
         <p
-          data-reveal
-          className="font-label text-[11px] font-medium uppercase tracking-[0.28em] text-white/62"
+          data-reveal="stagger-1"
+          className="font-label text-[10px] font-medium uppercase tracking-[0.3em] text-label"
         >
           The feeling
         </p>
+
         <h2
           id="home-feeling-title"
-          data-reveal="stagger-1"
-          className="font-headline mx-auto max-w-4xl text-[clamp(2.4rem,6vw,5.25rem)] font-semibold uppercase leading-[0.88] tracking-[-0.04em] text-[#f5f0e8]"
-        >
-          Nothing in your closet says what you&apos;re thinking.
-        </h2>
-        <p
           data-reveal="stagger-2"
-          className="font-body mx-auto max-w-2xl text-[16px] leading-relaxed text-stone sm:text-[18px]"
+          className="font-headline mx-auto mt-6 max-w-2xl text-[clamp(2rem,5.5vw,3.5rem)] font-medium leading-[1.1] tracking-tight text-obsidian md:mt-8"
         >
-          HORO starts with the feeling first, then turns it into a design you can recognize in one glance.
+          You know that feeling when <em className="not-italic text-clay">nothing says what you&apos;re thinking?</em>
+        </h2>
+
+        <p
+          data-reveal="stagger-3"
+          className="mx-auto mt-6 max-w-lg font-body text-[15px] leading-relaxed text-warm-charcoal md:mt-8 md:text-base"
+        >
+          HORO is for when you&apos;re ready to wear the thought out loud.
         </p>
       </div>
     </section>

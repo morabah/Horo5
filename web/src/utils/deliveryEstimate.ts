@@ -32,3 +32,77 @@ export function formatDeliveryWindow(minBusinessDays: number, maxBusinessDays: n
   const end = addBusinessDays(d0, maxBusinessDays);
   return `${shortDate.format(start)} – ${shortDate.format(end)}`;
 }
+
+/** First moment we treat as “next shipping day” at noon (simple weekend skip). */
+export function getNextShippingAnchor(from: Date = new Date()): Date {
+  const d = new Date(from);
+  d.setHours(12, 0, 0, 0);
+  while (isWeekend(d)) {
+    d.setDate(d.getDate() + 1);
+  }
+  return d;
+}
+
+export type PdpDeliveryRules = {
+  cutoffHourLocal: number;
+  cutoffMinuteLocal: number;
+  standardMaxBusinessDays: number;
+};
+
+/**
+ * PDP urgency line + “arrives by” using local same-day cutoff (not holiday-aware).
+ * Templates use {hours}, {cutoffTime}, {date} placeholders.
+ */
+export function buildPdpDeliveryLines(
+  now: Date,
+  rules: PdpDeliveryRules,
+  copy: {
+    beforeCutoffHours: string;
+    tightWindowHours: string;
+    afterCutoff: string;
+    weekendHold: string;
+    arrivesByStandard: string;
+  },
+): { urgencyLine: string; arrivesLine: string } {
+  const anchor = getNextShippingAnchor(now);
+  const cutoff = new Date(anchor);
+  cutoff.setHours(rules.cutoffHourLocal, rules.cutoffMinuteLocal, 0, 0);
+
+  const timeFmt = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+  const cutoffTime = timeFmt.format(cutoff);
+
+  const shipDate = new Date(now);
+  shipDate.setHours(12, 0, 0, 0);
+  if (isWeekend(shipDate)) {
+    const urgency = copy.weekendHold;
+    const nextMon = getNextShippingAnchor(shipDate);
+    const arrivesBy = addBusinessDays(nextMon, rules.standardMaxBusinessDays);
+    return {
+      urgencyLine: urgency,
+      arrivesLine: copy.arrivesByStandard.replace('{date}', shortDate.format(arrivesBy)),
+    };
+  }
+
+  if (now.getTime() <= cutoff.getTime()) {
+    const msLeft = cutoff.getTime() - now.getTime();
+    const hoursLeft = Math.max(1, Math.ceil(msLeft / 3_600_000));
+    const urgency =
+      hoursLeft <= 2
+        ? copy.tightWindowHours.replace('{hours}', String(hoursLeft))
+        : copy.beforeCutoffHours.replace('{hours}', String(hoursLeft)).replace('{cutoffTime}', cutoffTime);
+    const arrivesBy = addBusinessDays(shipDate, rules.standardMaxBusinessDays);
+    return {
+      urgencyLine: urgency,
+      arrivesLine: copy.arrivesByStandard.replace('{date}', shortDate.format(arrivesBy)),
+    };
+  }
+
+  const tomorrow = new Date(shipDate);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const shipStart = getNextShippingAnchor(tomorrow);
+  const arrivesBy = addBusinessDays(shipStart, rules.standardMaxBusinessDays);
+  return {
+    urgencyLine: copy.afterCutoff,
+    arrivesLine: copy.arrivesByStandard.replace('{date}', shortDate.format(arrivesBy)),
+  };
+}

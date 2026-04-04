@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
+import { PageBreadcrumb } from '../components/PageBreadcrumb';
+import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, imgUrl } from '../data/images';
+import { NAV_ROUTE } from '../lib/navLinks';
 import { occasions } from '../data/site';
 
 function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }: (typeof occasions)[number]) {
@@ -34,6 +37,15 @@ export function ShopByOccasion() {
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
+      <div className="mx-auto max-w-7xl px-4 pt-8 md:px-8 md:pt-10">
+        <PageBreadcrumb
+          className="mb-6"
+          items={[
+            { label: 'Home', to: '/' },
+            { label: NAV_ROUTE.occasions.label },
+          ]}
+        />
+      </div>
       <section className="relative isolate overflow-hidden bg-obsidian text-white" aria-labelledby="occasion-hub-title">
         <div className="relative h-[50vh] min-h-[26rem] md:h-[60vh] md:min-h-[34rem]">
           <img
@@ -143,6 +155,8 @@ export function ShopByOccasion() {
           </div>
         </div>
       </section>
+
+      <RecentlyViewedStrip className="border-t border-stone/20" />
     </div>
   );
 }

@@ -1,110 +1,71 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { vibes } from '../data/site';
+import { vibes, productsByVibe } from '../data/site';
 import { getVibeCollectionVisual, imgUrl } from '../data/images';
+import { HOME_COPY } from '../data/homeContent';
+
+const VIBE_COL_SPANS = ['md:col-span-12', 'md:col-span-3', 'md:col-span-3', 'md:col-span-3', 'md:col-span-3'] as const;
 
 export function HomeStickyVibeShowcase() {
-  const [hoveredVibe, setHoveredVibe] = useState<string>(vibes[0].slug);
-
   return (
     <section
       aria-labelledby="home-vibes-title"
-      className="relative w-full overflow-hidden bg-obsidian py-12 md:py-24"
+      className="border-t border-stone/20 bg-papyrus px-4 py-16 sm:px-6 md:py-20 lg:px-8"
     >
-      {/* Background Layer that fades based on hovered vibe */}
-      <div className="absolute inset-0 z-0">
-        {vibes.map((v) => {
-          const visual = getVibeCollectionVisual(v.slug).hero;
-          return (
-            <img
-              key={`bg-${v.slug}`}
-              src={imgUrl(visual.src, 1920)}
-              alt={visual.alt}
-              className={`absolute inset-0 h-full w-full object-cover transition-all duration-[1200ms] ease-[cubic-bezier(0.25,1,0.5,1)] ${
-                hoveredVibe === v.slug ? 'opacity-40 scale-105 blur-sm' : 'opacity-0 scale-100 blur-none'
-              }`}
-            />
-          );
-        })}
-        <div className="absolute inset-0 bg-linear-to-t from-obsidian via-obsidian/30 to-obsidian/70" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col justify-between gap-6 md:mb-12 md:flex-row md:items-end" data-reveal>
-          <div className="max-w-2xl">
-            <h2
-              id="home-vibes-title"
-              className="font-headline text-[38px] font-semibold leading-[0.9] tracking-[-0.05em] text-white md:text-[56px] lg:text-[72px]"
-            >
-              Find your <span className="text-primary italic block md:inline">vibe.</span>
-            </h2>
-            <p className="font-body mt-5 text-[17px] md:text-[19px] text-stone max-w-xl leading-relaxed">
-              Five lines. Five moods. Pick the one that feels closest to you, then drop straight into the edit.
-            </p>
-          </div>
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 max-w-xl md:mb-10" data-reveal>
+          <p className="font-label text-[10px] font-medium uppercase tracking-[0.3em] text-label">
+            {HOME_COPY.vibesEyebrow}
+          </p>
+          <h2
+            id="home-vibes-title"
+            className="font-headline mt-2 text-[clamp(1.5rem,3.5vw,2.25rem)] font-medium leading-tight tracking-tight text-obsidian"
+          >
+            {HOME_COPY.vibesTitle}
+          </h2>
+          <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">{HOME_COPY.vibesBody}</p>
         </div>
 
-        {/* Immersive Accordion Gallery */}
-        <div
-          className="flex flex-col gap-3 md:h-[70vh] md:min-h-[500px] md:max-h-[750px] md:flex-row md:gap-4 md:transition-all md:duration-700"
-          data-reveal="stagger-1"
-        >
-          {vibes.map((v) => {
-            const isHovered = hoveredVibe === v.slug;
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-12 md:gap-4" data-reveal="stagger-1">
+          {vibes.map((v, index) => {
             const visual = getVibeCollectionVisual(v.slug).hero;
+            const designCount = productsByVibe(v.slug).length;
             return (
               <Link
                 key={v.slug}
                 id={`vibe-${v.slug}`}
-                onMouseEnter={() => setHoveredVibe(v.slug)}
-                onFocus={() => setHoveredVibe(v.slug)}
                 to={`/vibes/${v.slug}`}
-                aria-label={`Explore the ${v.name} vibe`}
-                className={`vibe-accent-glow group relative w-full min-h-[20rem] overflow-hidden rounded-[2rem] transition-all duration-700 ease-[cubic-bezier(0.33,1,0.68,1)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white md:min-h-0 md:flex-1 ${
-                  isHovered ? 'md:flex-[2.8]' : 'md:flex-1'
-                }`}
-                style={isHovered ? { boxShadow: `0 0 60px ${v.accent}35, 0 0 120px ${v.accent}15, inset 0 0 30px ${v.accent}10` } : undefined}
+                aria-label={`Open the ${v.name} vibe — ${v.tagline}`}
+                style={{ ['--vibe-accent' as string]: v.accent }}
+                className={`group relative isolate block overflow-hidden transition-[transform] duration-500 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal hover:scale-[1.01] ${index === 0 ? 'min-h-[min(72vh,640px)]' : 'min-h-[min(56vh,420px)]'} ${VIBE_COL_SPANS[index] ?? 'md:col-span-12'}`}
               >
-                {/* Individual Column Image */}
                 <img
-                  src={imgUrl(visual.src, 800)}
-                  alt={visual.alt}
-                  className="absolute inset-0 h-full w-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                  src={imgUrl(visual.src, 1000)}
+                  alt=""
+                  className="vibe-card-img absolute inset-0 h-full w-full object-cover"
                 />
-                
-                {/* Authorized Glassmorphism Overlays */}
-                <div
-                  className={`absolute inset-0 transition-opacity duration-700 ${
-                    isHovered
-                      ? 'bg-gradient-to-t from-obsidian/84 via-obsidian/28 to-transparent'
-                      : 'bg-gradient-to-t from-obsidian/78 via-obsidian/34 to-obsidian/24 group-hover:from-obsidian/72'
-                  }`}
-                />
-                
-                {/* Content */}
-                <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
-                  <div className="flex flex-col items-start h-full">
-                    {/* Spacer to push content to bottom */}
-                    <div className="flex-1 w-full" />
-                    
-                    <h3
-                      className={`font-headline text-2xl md:text-3xl lg:text-4xl font-light uppercase text-white/90 drop-shadow-sm transition-all duration-1000 ease-out [writing-mode:vertical-rl] rotate-180 mb-6 ${
-                        isHovered ? 'tracking-[0.4em]' : 'tracking-[0.25em]'
-                      }`}
-                      style={isHovered ? { color: v.accent, textShadow: `0 0 24px ${v.accent}50`, transform: 'scale(1.02) rotate(180deg)' } : { transform: 'scale(1) rotate(180deg)' }}
+                <div className="glass-vibe-card-footer vibe-card-text-strip absolute inset-x-0 bottom-0 top-[66%] z-1 flex flex-col justify-end px-5 pb-5 pt-3">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="vibe-dot-pulse size-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: v.accent }}
+                      aria-hidden
+                    />
+                    <h3 className="font-headline text-lg font-semibold tracking-tight text-obsidian md:text-xl">{v.name}</h3>
+                  </div>
+                  <p className="mt-1.5 max-w-[22rem] font-body text-sm leading-snug text-warm-charcoal md:text-[15px]">
+                    {v.tagline}
+                  </p>
+                  <div className="mt-2.5 flex items-center justify-between">
+                    <span className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-clay">
+                      {designCount} designs
+                    </span>
+                    <span
+                      className="vibe-card-explore font-label text-[10px] font-semibold uppercase tracking-[0.18em]"
+                      style={{ color: v.accent }}
+                      aria-hidden
                     >
-                      {v.name}
-                    </h3>
-
-                    <div className={`transition-all duration-700 ease-[cubic-bezier(0.33,1,0.68,1)] overflow-hidden w-full ${
-                      isHovered ? 'max-h-20 opacity-100 translate-y-0' : 'max-h-0 opacity-0 translate-y-8'
-                    }`}>
-                      <span
-                        className="font-label inline-flex items-center justify-center rounded-full border border-white/20 bg-black/20 px-6 py-2.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-white backdrop-blur-md hover:bg-white hover:text-black hover:border-white transition-colors duration-300"
-                      >
-                        Explore
-                      </span>
-                    </div>
+                      Explore →
+                    </span>
                   </div>
                 </div>
               </Link>

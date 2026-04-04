@@ -10,7 +10,7 @@ export type LastOrderSnapshot = {
   shipping: number;
   cardDiscount: number;
   total: number;
-  paymentMethod: 'cod' | 'card';
+  paymentMethod: 'cod' | 'card' | 'paypal' | 'fawry' | 'wallet';
   shippingMethod: 'standard' | 'express';
   paymentLabel?: string;
   shippingLabel?: string;

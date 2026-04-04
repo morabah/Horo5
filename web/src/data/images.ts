@@ -4,7 +4,13 @@
  */
 
 /** Hero: urban, warm, model in tee */
-export const heroStreet = '/images/tees/bg_tee_walking_street.png';
+export const heroStreet = '/images/tees/tee_walking_street.png';
+
+/** Home hero: secondary vector artwork */
+export const heroVectorizedV2 = '/images/hero/horo_vectorized_v2.svg';
+
+/** Home hero: model-led editorial cutout */
+export const heroModelHome = '/images/hero/hero-model.png';
 
 /** Models in tees / streetwear — varied angles (used across vibes & PDP) */
 export const tee = {
@@ -13,7 +19,7 @@ export const tee = {
   womanStreet: '/images/tees/bg_tee_woman_street.png',
   manCasual: '/images/tees/bg_tee_man_casual.png',
   womanUrban: '/images/tees/bg_vibe_fictious.png',
-  walkingStreet: '/images/tees/bg_tee_walking_street.png',
+  walkingStreet: '/images/tees/tee_walking_street.png',
   yellowTee: '/images/tees/bg_vibe_trends.png',
   relaxedFit: '/images/tees/bg_vibe_career.png',
   studioTee: '/images/tees/bg_tee_studio_tee.png',
@@ -109,9 +115,9 @@ export const STOREFRONT_IMAGE_SLOTS: {
 } = {
   home: {
     hero: {
-      src: tee.walkingStreet,
-      alt: 'Model wearing a HORO graphic tee in warm editorial photography.',
-      objectPosition: 'center 28%',
+      src: heroModelHome,
+      alt: 'HORO home hero — editorial model wearing a HORO graphic tee.',
+      objectPosition: 'center 18%',
     },
     proof: {
       src: tee.studioTee,
@@ -297,6 +303,32 @@ export const aboutHero = STOREFRONT_IMAGE_SLOTS.about.hero.src;
 export const aboutHeroAlt = STOREFRONT_IMAGE_SLOTS.about.hero.alt;
 export const aboutBridgeImage = STOREFRONT_IMAGE_SLOTS.about.bridge.src;
 export const aboutBridgeAlt = STOREFRONT_IMAGE_SLOTS.about.bridge.alt;
+export const proofCards = {
+  backFit: '/images/proof/back-fit-card.svg',
+  macroDetail: '/images/proof/macro-detail-card.svg',
+  fabricTag: '/images/proof/fabric-tag-card.svg',
+  weightScale: '/images/proof/weight-scale-card.svg',
+  washTest: '/images/proof/wash-test-card.svg',
+} as const;
+
+export const homeProofGallery = [
+  {
+    src: tee.studioTee,
+    alt: 'Studio flat-lay proof image showing a HORO tee with the illustration taking visual priority.',
+    objectPosition: 'center 22%',
+    label: 'Flat lay',
+  },
+  {
+    src: proofCards.weightScale,
+    alt: 'Proof card showing the HORO 220 GSM verification panel.',
+    label: '220 GSM proof',
+  },
+  {
+    src: proofCards.washTest,
+    alt: 'Proof card showing the HORO launch wash-check panel.',
+    label: 'Wash check',
+  },
+] as const;
 
 /**
  * Editorial wide + detail per vibe — every shot is a model wearing a t-shirt,
@@ -365,7 +397,16 @@ export function getOccasionCollectionVisual(slug: string): OccasionStorefrontIma
   return STOREFRONT_IMAGE_SLOTS.occasions[slug] ?? FALLBACK_OCCASION_VISUALS;
 }
 
-export const PDP_VIEW_ORDER = ['flatLay', 'onBody', 'lifestyle', 'detail', 'sizeReference'] as const;
+export const PDP_VIEW_ORDER = [
+  'frontOnBody',
+  'backOnBody',
+  'macroDetail',
+  'fabricTag',
+  'flatLay',
+  'lifestyle',
+  'weightScale',
+  'washTest',
+] as const;
 
 export type ProductPdpViewKey = (typeof PDP_VIEW_ORDER)[number];
 
@@ -384,74 +425,185 @@ export type ProductMedia = {
 };
 
 const PDP_VIEW_LABELS: Record<ProductPdpViewKey, string> = {
+  frontOnBody: 'front on-body',
+  backOnBody: 'back fit card',
+  macroDetail: 'print proof',
+  fabricTag: 'fabric and tag',
   flatLay: 'flat lay',
-  onBody: 'on-body',
   lifestyle: 'lifestyle',
-  detail: 'print detail',
-  sizeReference: 'size reference',
+  weightScale: 'weight proof',
+  washTest: 'wash check',
 };
 
 const PDP_VIEW_ALTS: Record<ProductPdpViewKey, string> = {
+  frontOnBody: 'front on-body view of the full tee',
+  backOnBody: 'back fit verification card used until the real back view is photographed',
+  macroDetail: 'print texture proof card used until the macro shot is photographed',
+  fabricTag: 'fabric and tag proof card used until the inside-label shot is photographed',
   flatLay: 'flat lay on a warm studio surface',
-  onBody: 'worn on body in studio light',
   lifestyle: 'styled in an everyday street setting',
-  detail: 'close-up showing print detail and fabric texture',
-  sizeReference: 'worn on body for size reference',
+  weightScale: '220 GSM verification proof card',
+  washTest: 'launch wash-check proof card',
 };
 
 function product(main: string, pdp: ProductPdpViewMap): ProductMedia {
   return { main, pdp };
 }
 
-function flatLay(main: string): ProductMedia {
-  return product(main, { flatLay: main });
-}
-
-function onBody(main: string): ProductMedia {
-  return product(main, { onBody: main });
-}
-
-function lifestyle(main: string): ProductMedia {
-  return product(main, { lifestyle: main });
+function launchProofMedia(
+  frontOnBody: string,
+  options?: {
+    main?: string;
+    backOnBody?: string;
+    macroDetail?: string;
+    fabricTag?: string;
+    flatLay?: string;
+    lifestyle?: string;
+    weightScale?: string;
+    washTest?: string;
+  },
+): ProductMedia {
+  return product(options?.main ?? frontOnBody, {
+    frontOnBody,
+    backOnBody: options?.backOnBody ?? proofCards.backFit,
+    macroDetail: options?.macroDetail ?? proofCards.macroDetail,
+    fabricTag: options?.fabricTag ?? proofCards.fabricTag,
+    flatLay: options?.flatLay ?? tee.flatLayStyle,
+    lifestyle: options?.lifestyle ?? tee.walkingStreet,
+    weightScale: options?.weightScale ?? proofCards.weightScale,
+    washTest: options?.washTest ?? proofCards.washTest,
+  });
 }
 
 /** Product slug → main card image + structured PDP image views */
 export const productMedia: Record<string, ProductMedia> = {
-  'the-weight-of-light': flatLay(tee.whiteFront),
-  'midnight-compass': onBody(tee.yellowTee),
-  'quiet-revolt': onBody(tee.womanUrban),
-  'cairo-thread': lifestyle(tee.walkingStreet),
-  'signal-line': onBody(tee.streetPose),
+  'the-weight-of-light': launchProofMedia(tee.studioTee, {
+    main: tee.whiteFront,
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.outdoorTee,
+  }),
+  'midnight-compass': launchProofMedia(tee.yellowTee, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.streetPose,
+  }),
+  'quiet-revolt': launchProofMedia(tee.womanUrban, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.womanStreet,
+  }),
+  'cairo-thread': launchProofMedia(tee.walkingStreet, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.relaxedFit,
+  }),
+  'signal-line': launchProofMedia(tee.streetPose, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.outdoorTee,
+  }),
   // --- New Emotions ---
-  'emotions-silent-scream': onBody(newTees.emotions1),
-  'emotions-deep-waters': onBody(newTees.emotions2),
-  'emotions-shattered-peace': onBody(newTees.emotions3),
-  'emotions-raw-nerve': onBody(newTees.emotions4),
-  'emotions-unspoken': onBody(newTees.emotions5),
+  'emotions-silent-scream': launchProofMedia(newTees.emotions1, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.womanSmile,
+  }),
+  'emotions-deep-waters': launchProofMedia(newTees.emotions2, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.womanStreet,
+  }),
+  'emotions-shattered-peace': launchProofMedia(newTees.emotions3, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.womanUrban,
+  }),
+  'emotions-raw-nerve': launchProofMedia(newTees.emotions4, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.outdoorTee,
+  }),
+  'emotions-unspoken': launchProofMedia(newTees.emotions5, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  }),
   // --- New Zodiac ---
-  'zodiac-astral-body': onBody(newTees.zodiac1),
-  'zodiac-star-alignment': onBody(newTees.zodiac2),
-  'zodiac-lunar-pull': onBody(newTees.zodiac3),
-  'zodiac-solar-flare': onBody(newTees.zodiac4),
-  'zodiac-cosmic-dust': onBody(newTees.zodiac5),
+  'zodiac-astral-body': launchProofMedia(newTees.zodiac1, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.streetPose,
+  }),
+  'zodiac-star-alignment': launchProofMedia(newTees.zodiac2, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.yellowTee,
+  }),
+  'zodiac-lunar-pull': launchProofMedia(newTees.zodiac3, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  }),
+  'zodiac-solar-flare': launchProofMedia(newTees.zodiac4, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.outdoorTee,
+  }),
+  'zodiac-cosmic-dust': launchProofMedia(newTees.zodiac5, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.relaxedFit,
+  }),
   // --- New Fiction ---
-  'fiction-neon-dreams': onBody(newTees.fiction1),
-  'fiction-dragon-scale': onBody(newTees.fiction2),
-  'fiction-distant-suns': onBody(newTees.fiction3),
-  'fiction-cyber-ghost': onBody(newTees.fiction4),
-  'fiction-mythic-realm': onBody(newTees.fiction5),
+  'fiction-neon-dreams': launchProofMedia(newTees.fiction1, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.womanUrban,
+  }),
+  'fiction-dragon-scale': launchProofMedia(newTees.fiction2, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.outdoorTee,
+  }),
+  'fiction-distant-suns': launchProofMedia(newTees.fiction3, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  }),
+  'fiction-cyber-ghost': launchProofMedia(newTees.fiction4, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.streetPose,
+  }),
+  'fiction-mythic-realm': launchProofMedia(newTees.fiction5, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.studioTee,
+  }),
   // --- New Career ---
-  'career-hustle-hard': onBody(newTees.career1),
-  'career-ceo-mindset': onBody(newTees.career2),
-  'career-climb-the-ladder': onBody(tee.relaxedFit),
-  'career-office-hours': lifestyle(tee.walkingStreet),
-  'career-boardroom-rebel': flatLay(tee.whiteFront),
+  'career-hustle-hard': launchProofMedia(newTees.career1, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.relaxedFit,
+  }),
+  'career-ceo-mindset': launchProofMedia(newTees.career2, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  }),
+  'career-climb-the-ladder': launchProofMedia(tee.relaxedFit, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  }),
+  'career-office-hours': launchProofMedia(tee.walkingStreet, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.manCasual,
+  }),
+  'career-boardroom-rebel': launchProofMedia(tee.manCasual, {
+    main: tee.whiteFront,
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  }),
   // --- New Trends ---
-  'trends-viral-moment': onBody(tee.yellowTee),
-  'trends-street-culture': onBody(tee.womanStreet),
-  'trends-hype-check': onBody(tee.manCasual),
-  'trends-next-wave': onBody(tee.outdoorTee),
-  'trends-drop-culture': onBody(tee.streetPose),
+  'trends-viral-moment': launchProofMedia(tee.yellowTee, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.outdoorTee,
+  }),
+  'trends-street-culture': launchProofMedia(tee.womanStreet, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  }),
+  'trends-hype-check': launchProofMedia(tee.manCasual, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.outdoorTee,
+  }),
+  'trends-next-wave': launchProofMedia(tee.outdoorTee, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.yellowTee,
+  }),
+  'trends-drop-culture': launchProofMedia(tee.streetPose, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  }),
 };
 
 export function imgUrl(src: string, w: number) {
@@ -460,7 +612,10 @@ export function imgUrl(src: string, w: number) {
 }
 
 export function getProductMedia(slug: string): ProductMedia {
-  return productMedia[slug] ?? flatLay(tee.whiteFront);
+  return productMedia[slug] ?? launchProofMedia(tee.manCasual, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.walkingStreet,
+  });
 }
 
 export function getProductPdpGallery(productName: string, slug: string): ProductPdpGalleryView[] {

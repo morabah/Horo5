@@ -1,10 +1,12 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type SyntheticEvent } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getProductMedia, getProductPdpGallery, imgUrl } from '../data/images';
 import { getProduct, getVibe, type ProductSizeKey } from '../data/site';
 import { useCart } from '../cart/CartContext';
 import { PDP_SCHEMA, QUICK_VIEW_SCHEMA } from '../data/domain-config';
 import { formatEgp } from '../utils/formatPrice';
+import { formatPdpFitModelLine } from '../utils/pdpFitModels';
+import { productAvailableSizes } from '../utils/productSizes';
 import { AppIcon } from './AppIcon';
 
 type ProductQuickViewProps = {
@@ -13,7 +15,7 @@ type ProductQuickViewProps = {
   onClose: () => void;
 };
 
-const QUICK_VIEW_SIZES = PDP_SCHEMA.sizes.map((size) => ({
+const QUICK_VIEW_BASE_SIZES = PDP_SCHEMA.sizes.map((size) => ({
   key: size.key as ProductSizeKey,
   disabled: Boolean(size.disabled),
 }));
@@ -48,6 +50,15 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
     };
   const fit = product?.fitLabel ?? 'Regular';
   const priceStr = product ? formatEgp(product.priceEgp) : '';
+
+  const quickViewSizes = useMemo(() => {
+    if (!product) return QUICK_VIEW_BASE_SIZES;
+    const avail = new Set(productAvailableSizes(product));
+    return QUICK_VIEW_BASE_SIZES.map((size) => ({
+      ...size,
+      disabled: size.disabled || !avail.has(size.key),
+    }));
+  }, [product]);
   const primaryCtaLabel = addedToBag
     ? QUICK_VIEW_SCHEMA.copy.viewBagCta
     : selectedSize
@@ -213,7 +224,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                 </div>
 
                 <div className="flex flex-wrap gap-2" role="group" aria-label="Size">
-                  {QUICK_VIEW_SIZES.map((size) => {
+                  {quickViewSizes.map((size) => {
                     const isSelected = selectedSize === size.key;
                     return (
                       <button
@@ -252,6 +263,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                           <tr>
                             <th className="px-3 py-3 font-medium">Size</th>
                             <th className="px-3 py-3 font-medium">Chest</th>
+                            <th className="px-3 py-3 font-medium">Shoulder</th>
                             <th className="px-3 py-3 font-medium">Length</th>
                             <th className="px-3 py-3 font-medium">Sleeve</th>
                           </tr>
@@ -261,6 +273,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                             <tr key={row.size} className="border-t border-white/8">
                               <td className="px-3 py-3 font-semibold text-white">{row.size}</td>
                               <td className="px-3 py-3">{row.chest}</td>
+                              <td className="px-3 py-3">{row.shoulder}</td>
                               <td className="px-3 py-3">{row.length}</td>
                               <td className="px-3 py-3">{row.sleeve}</td>
                             </tr>
@@ -268,9 +281,13 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                         </tbody>
                       </table>
                     </div>
-                    <p className="font-body border-t border-white/8 px-3 py-3 text-xs text-white/62">
-                      {PDP_SCHEMA.copy.sizeGuideModelNote}
-                    </p>
+                    <div className="font-body border-t border-white/8 px-3 py-3 text-xs text-white/62">
+                      {product.pdpFitModels?.length ? (
+                        product.pdpFitModels.map((m) => <p key={`${m.heightCm}-${m.sizeWorn}`}>{formatPdpFitModelLine(m)}</p>)
+                      ) : (
+                        <p>{PDP_SCHEMA.copy.sizeGuideModelNote}</p>
+                      )}
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -283,7 +300,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                     </p>
                     <button
                       type="button"
-                      className="font-label flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      className="font-label flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-obsidian shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                       onClick={handleViewBag}
                     >
                       {primaryCtaLabel}
@@ -302,7 +319,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                     disabled={!selectedSize}
                     className={`font-label flex min-h-12 w-full items-center justify-center rounded-lg px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] shadow-md transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                       selectedSize
-                        ? 'bg-primary text-white hover:brightness-95'
+                        ? 'bg-primary text-obsidian hover:brightness-95'
                         : 'cursor-not-allowed border border-white/12 bg-white/[0.08] text-white/38 shadow-none'
                     }`}
                     aria-disabled={!selectedSize}

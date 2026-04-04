@@ -12,7 +12,10 @@ export type AppIconName =
   | 'payments'
   | 'explore'
   | 'checkroom'
-  | 'local_shipping';
+  | 'local_shipping'
+  | 'link'
+  | 'share'
+  | 'content_copy';
 
 type AppIconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & {
   name: AppIconName;
@@ -116,6 +119,28 @@ function iconPaths(name: AppIconName) {
           <path d="M14 10h3l2 2.5v3H14z" />
           <circle cx="8" cy="17.5" r="1.5" />
           <circle cx="17" cy="17.5" r="1.5" />
+        </>
+      );
+    case 'link':
+      return (
+        <>
+          <path d="M10 13a5 5 0 007.54.54l2-2a5 5 0 00-7.07-7.07l-1.42 1.41" />
+          <path d="M14 11a5 5 0 00-7.54-.54l-2 2a5 5 0 007.07 7.07l1.41-1.41" />
+        </>
+      );
+    case 'share':
+      return (
+        <>
+          <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+          <path d="M16 6l-4-4-4 4" />
+          <path d="M12 2v15" />
+        </>
+      );
+    case 'content_copy':
+      return (
+        <>
+          <rect x="8" y="8" width="12" height="12" rx="2" />
+          <path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2" />
         </>
       );
     default:

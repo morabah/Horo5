@@ -1,14 +1,16 @@
 // src/data/domain-config.ts
 
 export const PDP_SCHEMA = {
-  viewLabels: ['flat lay', 'on-body', 'lifestyle', 'print detail', 'size reference'],
+  viewLabels: ['front on-body', 'back fit card', 'print proof', 'fabric and tag', 'flat lay', 'lifestyle', 'weight proof', 'wash check'],
   surfacePhrases: [
-    'warm textured surface',
-    'on-body, natural light',
+    'front on-body fit view',
+    'back fit verification card',
+    'print proof panel',
+    'fabric and tag proof panel',
+    'warm textured flat lay',
     'street lifestyle setting',
-    'print texture close-up',
-    'size reference with model',
-    'neutral backdrop',
+    '220 GSM proof card',
+    '3x wash proof card',
   ],
   sizes: [
     { key: 'S' },
@@ -18,14 +20,14 @@ export const PDP_SCHEMA = {
     { key: 'XXL', disabled: true },
   ],
   sizeTable: [
-    { size: 'S', chest: '96 cm', length: '70 cm', sleeve: '20 cm' },
-    { size: 'M', chest: '102 cm', length: '72 cm', sleeve: '21 cm' },
-    { size: 'L', chest: '108 cm', length: '74 cm', sleeve: '22 cm' },
-    { size: 'XL', chest: '114 cm', length: '76 cm', sleeve: '23 cm' },
-    { size: 'XXL', chest: '120 cm', length: '78 cm', sleeve: '24 cm' },
+    { size: 'S', chest: '96 cm', shoulder: '45 cm', length: '70 cm', sleeve: '20 cm' },
+    { size: 'M', chest: '102 cm', shoulder: '47 cm', length: '72 cm', sleeve: '21 cm' },
+    { size: 'L', chest: '108 cm', shoulder: '49 cm', length: '74 cm', sleeve: '22 cm' },
+    { size: 'XL', chest: '114 cm', shoulder: '51 cm', length: '76 cm', sleeve: '23 cm' },
+    { size: 'XXL', chest: '120 cm', shoulder: '53 cm', length: '78 cm', sleeve: '24 cm' },
   ],
   features: [
-    { label: '220 GSM premium cotton', icon: 'FabricIcon' as const },
+    { label: '220 GSM heavyweight cotton', icon: 'FabricIcon' as const },
     { label: 'High-fidelity DTF print', icon: 'PrintIcon' as const },
     { label: 'Relaxed unisex fit', icon: 'SilhouetteIcon' as const },
     { label: 'Machine wash cold', icon: 'CareIcon' as const },
@@ -38,17 +40,40 @@ export const PDP_SCHEMA = {
   /** Persistent PDP trust line (Guidelines §8.3) */
   trustStripItems: ['220 GSM cotton', 'Licensed art', 'Free exchange 14d', 'COD available'] as const,
   /** StoryBrand micro-plan strip */
-  storyPlanSteps: ['Find your vibe', 'Pick your design', 'It arrives'] as const,
+  storyPlanSteps: ['Find your vibe', 'Pick your design', 'It arrives at your door'] as const,
   /** Gallery image indices (0-based) for the “See it styled” grid */
   wornByGalleryIndices: [1, 2, 0] as const,
+  /** Same-day ship cutoff (local) + conservative “arrives by” horizon for PDP copy. */
+  deliveryRules: {
+    cutoffHourLocal: 14,
+    cutoffMinuteLocal: 0,
+    standardMaxBusinessDays: 5,
+  } as const,
   copy: {
     addBtnCTA: 'Add to Bag',
-    addBtnTag: 'Embrace the light',
-    /** Legacy one-line summary; prefer ratingValue + reviewCount for UI */
     shippingLine: 'Express shipping · 14-day hassle-free returns · Secure checkout',
-    reviewSummary: '4.9 (24 reviews)',
-    ratingValue: 4.9,
-    reviewCount: 24,
+    deliveryEyebrow: 'Delivery',
+    deliveryEstimateTitle: 'Estimated arrival',
+    deliveryStandardBadge: 'Standard · 3–5 business days',
+    deliveryExpressBadge: 'Express · 1–2 business days',
+    deliveryEstimateNote: 'Final speed and shipping cost are confirmed at checkout.',
+    deliveryUrgencyBeforeCutoff: 'About {hours}h left to ship today (before {cutoffTime}).',
+    deliveryUrgencyTight: 'Order within the next {hours}h — ships today.',
+    deliveryAfterCutoff: 'Orders placed now ship on the next business day.',
+    deliveryWeekendHold: 'We ship Monday — order anytime; your place in queue is saved.',
+    deliveryArrivesByStandard: 'Standard delivery often arrives by {date} (Egypt).',
+    reviewsSoonEyebrow: 'Reviews',
+    reviewsSoonTitle: 'We’re just getting started',
+    reviewsSoonBody:
+      'Public product reviews aren’t live yet — we’re a new label building trust one shipment at a time. Questions, fit help, or a photo of your tee? Reach us on WhatsApp or Instagram.',
+    reviewsSoonWhatsappCta: 'WhatsApp us',
+    reviewsSoonInstagramCta: 'Instagram',
+    reviewsSoonNoLinks:
+      'Support links are configured via site settings when you’re ready to publish them.',
+    crossSellBundleFbtCta: 'Add pair to bag',
+    crossSellBundleStyleCta: 'Add outfit to bag',
+    crossSellNeedSize: 'Choose a size first to add bundles.',
+    crossSellBundleAdded: 'Bundle added — open bag to review.',
     notifyMeCTA: 'Notify Me',
     lowStockLabel: 'Only a few left',
     sizeGuideLabel: 'Size guide',
@@ -73,21 +98,43 @@ export const PDP_SCHEMA = {
     ],
     trustReturnsLine: '14-day hassle-free returns',
     sizeGuideModelNote: 'Model is 178 cm, wearing size M.',
+    /** Fallback when product has no pdpFitModels */
     modelLineTemplate: "Model is 178 cm / 5'10\", wearing size M{fit}",
     wornByEyebrow: 'Styling',
     wornByTitle: 'See it styled',
     relatedMoreFromSubtitle: 'Designs from the same vibe.',
+    styleItWithTitle: 'Style it with',
+    styleItWithSubtitle: 'Pieces that pair across vibes and occasions.',
+    wearerStoriesEyebrow: 'From the studio',
+    wearerStoriesTitle: 'Why we made this piece',
+    wearerStoriesNote: 'Design intent and craft notes — not customer reviews or verified purchases.',
     wornByCaptions: ['Studio days', 'Street light', 'Your rotation'],
     whatsappHelpLabel: 'Questions? WhatsApp us',
-    notifyEmailPlaceholder: 'Email for restock alerts',
-    notifyFieldLabel: 'Get notified when this size is back',
-    notifySubmitLabel: 'Join waitlist',
-    notifySuccess: 'You’re on the list — we’ll email you when this size is back.',
+    notifyEmailPlaceholder: 'Email for restock reminder',
+    notifyFieldLabel: 'Save this size for a restock reminder',
+    notifySubmitLabel: 'Save reminder',
+    notifySuccess: 'Saved on this device for the restock reminder preview.',
     notifyInvalidEmail: 'Enter a valid email address.',
     inventoryLowFormat: 'Only {n} left',
     /** Accordion “Design story” — making / craft (card above = emotional hook) */
     designStoryAccordionBody:
       'Printed with care using high-fidelity DTF: crisp edges, wash-fast color, and a hand that stays soft after repeat wears. Each piece is inspected before it ships so the graphic matches what you saw in the gallery.',
+    frequentlyBoughtTogetherEyebrow: 'Often paired',
+    frequentlyBoughtTogetherTitle: 'Frequently bought together',
+    frequentlyBoughtTogetherSubtitle: 'Popular pairings from the studio — add each in your size from the product page.',
+    customersAlsoBoughtEyebrow: 'Trending picks',
+    customersAlsoBoughtTitle: 'Customers also bought',
+    customersAlsoBoughtSubtitle: 'Designs others checked out with this one — browse in your size on each product page.',
+    buyNowCta: 'Buy now',
+    lightboxClose: 'Close',
+    lightboxPrev: 'Previous image',
+    lightboxNext: 'Next image',
+    lightboxCounterTemplate: '{current} / {total}',
+    lightboxDialogLabel: 'Enlarged product gallery',
+    videoEyebrow: 'Motion',
+    videoTitle: 'Drape & movement',
+    videoPlaceholderBody: 'Product video placeholder — clip coming soon.',
+    videoAriaLabel: 'Product video area. Motion preview not available yet; still image shown as poster.',
   },
 };
 
@@ -122,8 +169,13 @@ export const CART_SCHEMA = {
     quantityUpdated: 'Quantity updated for {name}.',
     quantityMinReached: '{name} is already at the minimum quantity.',
     itemRemoved: '{name} removed from your cart.',
+    removeUndoPrompt: '{name} removed.',
+    undoRemoveCta: 'Undo',
+    itemRestored: '{name} is back in your bag.',
     giftWrapAdded: 'Gift wrap added to your order estimate.',
     giftWrapRemoved: 'Gift wrap removed from your order estimate.',
+    estimatedDeliveryLabel: 'Est. delivery (standard)',
+    estimatedDeliveryCheckoutNote: 'Express options and exact dates are confirmed at checkout.',
   },
 } as const;
 
@@ -208,6 +260,29 @@ export const QUICK_VIEW_SCHEMA = {
   },
 } as const;
 
+/**
+ * Extra localized / colloquial tokens merged into `expandQueryVariants` (search/view.ts).
+ * Values are expansion phrases scored against catalog text — not SQL column names.
+ */
+export const SEARCH_SYNONYMS_SCHEMA: Record<string, readonly string[]> = {
+  tshirt: ['graphic tee', 't shirt', 't-shirt', 'tee'],
+  tee: ['graphic tee', 't shirt'],
+  shirt: ['graphic tee', 't shirt'],
+  تيشيرت: ['graphic tee', 't shirt', 'tee'],
+  تيشرت: ['graphic tee', 't shirt'],
+  obsidian: ['black', 'dark', 'midnight'],
+  black: ['obsidian', 'midnight', 'dark tee'],
+  'أسود': ['obsidian', 'black', 'midnight'],
+  papyrus: ['off white', 'cream', 'natural'],
+  white: ['papyrus', 'clean white', 'natural tee'],
+  egp: ['price', 'egypt', 'cairo'],
+  cairo: ['egypt', 'shipping', 'giza'],
+  giza: ['cairo', 'egypt'],
+  oversized: ['relaxed unisex fit', 'quiet revolt', 'loose fit'],
+  birthday: ['birthday pick', 'gift something real'],
+  ramadan: ['eid and ramadan', 'eid', 'festive'],
+} as const;
+
 export const SEARCH_SCHEMA = {
   copy: {
     placeholder: 'Search designs, vibes, or occasions...',
@@ -242,7 +317,26 @@ export const SEARCH_SCHEMA = {
     scopedResultsFallback: 'Browse designs in {scope} — or try a popular search below.',
     resultsForQuery: '{count} results for “{query}”',
     noResultsForQuery: 'No results for “{query}”',
+    zeroResultsSuggestionsHeading: 'Try these instead',
+    shopByOccasionCta: 'Shop by Occasion',
+    sizeFilterLabel: 'Size in stock',
+    allSizesLabel: 'All sizes',
+    artistLabel: 'Artist',
+    allArtistsLabel: 'All artists',
+    occasionFilterLabel: 'Occasion',
+    allOccasionsFilterLabel: 'All occasions',
+    colorLabel: 'Tee color',
+    allColorsLabel: 'All colors',
   },
+} as const;
+
+export const CHECKOUT_SCHEMA = {
+  trustStripItems: [
+    'SSL-encrypted checkout',
+    'COD, card, PayPal, Fawry & wallets',
+    '14-day exchange',
+    'Guest checkout',
+  ] as const,
 } as const;
 
 function optionalEnvValue(value: string | undefined): string | null {

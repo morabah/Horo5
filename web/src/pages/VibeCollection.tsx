@@ -8,6 +8,7 @@ import { getVibe, productsByVibe, vibes } from '../data/site';
 import { getProductMedia, getVibeCollectionVisual, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
+import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 
 /** Show numeric design count in hero only when catalog feels substantial */
@@ -240,7 +241,7 @@ export function VibeCollection() {
                 <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                   <a
                     href="#vibe-collection-products"
-                    className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-[0_18px_38px_-18px_rgba(0,0,0,0.72)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="font-label inline-flex min-h-12 items-center justify-center border border-white/20 bg-white/5 backdrop-blur-md px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-white hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     Shop the designs
                   </a>
@@ -313,7 +314,7 @@ export function VibeCollection() {
               <button
                 type="button"
                 onClick={openMobileFilters}
-                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                className="font-label inline-flex items-center justify-center border-b border-obsidian/30 pb-1 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors hover:border-obsidian focus-visible:outline-none"
               >
                 Filter &amp; sort
               </button>
@@ -338,7 +339,7 @@ export function VibeCollection() {
                       id="vibe-sort"
                       value={sortKey}
                       onChange={(e) => setSortKey(e.target.value as ProductSortKey)}
-                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      className="min-h-10 w-full appearance-none border-b border-stone/40 bg-transparent py-0 pl-2 pr-8 text-[13px] text-obsidian transition-colors hover:border-obsidian focus-visible:outline-none"
                     >
                       {SORT_OPTIONS.map((o) => (
                         <option key={o.value} value={o.value}>{o.label}</option>
@@ -357,7 +358,7 @@ export function VibeCollection() {
                       id="vibe-price"
                       value={priceFilter}
                       onChange={(e) => setPriceFilter(e.target.value as PriceFilter)}
-                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      className="min-h-10 w-full appearance-none border-b border-stone/40 bg-transparent py-0 pl-2 pr-8 text-[13px] text-obsidian transition-colors hover:border-obsidian focus-visible:outline-none"
                     >
                       {PRICE_FILTERS.map((o) => (
                         <option key={o.value} value={o.value}>{o.label}</option>
@@ -449,6 +450,8 @@ export function VibeCollection() {
             ))}
           </div>
         </section>
+
+        <RecentlyViewedStrip className="border-t-0 px-0 pt-8 md:pt-10" />
       </div>
 
       {isMobile && mobileFiltersOpen && typeof document !== 'undefined'

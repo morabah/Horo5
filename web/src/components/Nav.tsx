@@ -45,6 +45,8 @@ function flattenSuggestions(groups: ReturnType<typeof getSearchSuggestions>) {
   return groups.flatMap((group) => group.suggestions);
 }
 
+const HOME_HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
+
 export function Nav() {
   const { totalQty } = useCart();
   const { copy } = useUiLocale();
@@ -292,30 +294,76 @@ export function Nav() {
 
   const isHome = pathname === '/';
   const [homeHeroSolidNav, setHomeHeroSolidNav] = useState(pathname !== '/');
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY.current && currentScrollY > headerHeight && currentScrollY > 200) {
+        setIsHeaderHidden(true);
+      } else {
+        setIsHeaderHidden(false);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [headerHeight]);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const updateHeaderHeight = () => {
+      setHeaderHeight(Math.round(header.getBoundingClientRect().height));
+    };
+
+    updateHeaderHeight();
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const observer = new ResizeObserver(() => updateHeaderHeight());
+      observer.observe(header);
+      return () => observer.disconnect();
+    }
+
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, []);
 
   useEffect(() => {
     if (pathname !== '/') {
       setHomeHeroSolidNav(true);
       return;
     }
+
     setHomeHeroSolidNav(false);
     let observer: IntersectionObserver | null = null;
     const t = window.setTimeout(() => {
-      const el = document.getElementById('home-hero');
-      if (!el) return;
+      const sentinel = document.getElementById(HOME_HERO_BOTTOM_SENTINEL_ID);
+      if (!sentinel) return;
+
+      const effectiveHeaderHeight = Math.max(headerHeight, 1);
       observer = new IntersectionObserver(
         ([entry]) => {
           setHomeHeroSolidNav(!entry.isIntersecting);
         },
-        { root: null, rootMargin: '0px', threshold: 0 },
+        {
+          root: null,
+          rootMargin: `-${effectiveHeaderHeight}px 0px 0px 0px`,
+          threshold: 0,
+        },
       );
-      observer.observe(el);
+      observer.observe(sentinel);
     }, 0);
+
     return () => {
       window.clearTimeout(t);
       observer?.disconnect();
     };
-  }, [pathname]);
+  }, [headerHeight, pathname]);
 
   const navOnHeroTransparent = isHome && !homeHeroSolidNav;
   const logoVariant = navOnHeroTransparent ? 'light' : 'dark';
@@ -323,7 +371,7 @@ export function Nav() {
   return (
     <header
       ref={headerRef}
-      className={`glass-nav fixed top-0 z-100 w-full ${navOnHeroTransparent ? 'glass-nav--hero-transparent' : ''}`}
+      className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${navOnHeroTransparent ? 'glass-nav--hero-transparent' : ''} ${isHeaderHidden ? '-translate-y-full' : 'translate-y-0'}`}
       role="banner"
     >
       <div className="mx-auto max-w-[1920px] md:hidden">
@@ -338,7 +386,7 @@ export function Nav() {
           >
             <AppIcon name={menuVisible && menuPanelOpen ? 'close' : 'menu'} className="h-6 w-6" />
           </button>
-          <Link to="/" className="flex min-w-0 flex-1 justify-center drop-shadow-sm" aria-label="HORO Egypt — Home">
+          <Link to="/" className="flex min-w-0 flex-1 justify-center" aria-label="HORO Egypt — Home">
             <BrandLogo variant={logoVariant} />
           </Link>
           <Link
@@ -369,10 +417,10 @@ export function Nav() {
               onFocus={() => setSearchFocused(true)}
               onKeyDown={handleSearchKeyDown}
               placeholder={copy.nav.searchPlaceholder}
-              className={`font-body min-h-12 w-full rounded-[1rem] border px-4 py-3 pr-24 text-sm shadow-sm backdrop-blur-xl placeholder:text-clay/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+              className={`font-body min-h-12 w-full border-b px-2 py-3 pr-24 text-sm placeholder:text-clay/70 transition-colors focus:border-obsidian focus-visible:outline-none bg-transparent ${
                 navOnHeroTransparent
-                  ? 'border-white/16 bg-white/[0.12] text-white placeholder:text-white/60'
-                  : 'border-outline-variant/45 bg-white/92 text-obsidian'
+                  ? 'border-white/20 text-white placeholder:text-white/60 focus:border-white'
+                  : 'border-stone/30 text-obsidian focus:border-obsidian'
               }`}
               autoComplete="off"
               aria-expanded={suggestionsOpen}
@@ -398,7 +446,7 @@ export function Nav() {
               ) : null}
               <button
                 type="submit"
-                className="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-primary px-3 text-obsidian shadow-sm"
+                className={`inline-flex h-10 min-w-10 items-center justify-center rounded-full px-3 transition-colors ${navOnHeroTransparent ? 'text-white hover:bg-white/10' : 'text-obsidian hover:bg-black/5'}`}
                 aria-label={copy.nav.searchSubmit}
               >
                 <AppIcon name="search" className="h-5 w-5" />
@@ -422,19 +470,7 @@ export function Nav() {
 
       <div className="mx-auto hidden max-w-[1920px] items-center gap-6 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:flex md:gap-8 md:py-4 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
         <div className="flex shrink-0 items-center gap-4">
-          <button
-            type="button"
-            className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm transition-colors ${
-              navOnHeroTransparent ? 'text-white/84 hover:bg-white/6' : 'text-obsidian/85 hover:bg-black/5'
-            }`}
-            aria-expanded={menuVisible && menuPanelOpen}
-            aria-controls="primary-nav-drawer"
-            aria-label={menuVisible && menuPanelOpen ? 'Close menu' : 'Open menu'}
-            onClick={toggleMenu}
-          >
-            <AppIcon name={menuVisible && menuPanelOpen ? 'close' : 'menu'} className="h-6 w-6" />
-          </button>
-          <Link to="/" className="flex shrink-0 items-center drop-shadow-sm" aria-label="HORO Egypt — Home">
+          <Link to="/" className="flex shrink-0 items-center" aria-label="HORO Egypt — Home">
             <BrandLogo variant={logoVariant} />
           </Link>
         </div>
@@ -445,9 +481,9 @@ export function Nav() {
               key={path}
               to={path}
               className={({ isActive }) =>
-                `font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
+                `nav-link-underline font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
                   isActive
-                    ? 'text-primary'
+                    ? 'text-primary nav-link-underline--active'
                     : navOnHeroTransparent
                       ? 'text-white/80 hover:text-white'
                       : 'text-obsidian/90 hover:text-obsidian'
@@ -459,8 +495,8 @@ export function Nav() {
           ))}
         </nav>
 
-        <div className="relative flex min-w-0 flex-1 justify-center px-2 md:px-4">
-          <form onSubmit={handleSearchSubmit} className="relative w-full max-w-xl min-w-[18rem]">
+        <div className="relative flex min-w-0 flex-1 justify-end px-2 md:px-4">
+          <form onSubmit={handleSearchSubmit} className={`relative transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${searchFocused || q.trim() ? 'w-full max-w-xl min-w-[18rem]' : 'w-10'}`}>
             <label htmlFor="nav-search-desktop" className="sr-only">
               {copy.nav.searchPlaceholder}
             </label>
@@ -472,11 +508,17 @@ export function Nav() {
               value={q}
               onChange={(event) => setQ(event.target.value)}
               onFocus={() => setSearchFocused(true)}
+              onBlur={() => {
+                // Short timeout to allow suggestion clicks
+                setTimeout(() => {
+                  setSearchFocused(false);
+                }, 200);
+              }}
               onKeyDown={handleSearchKeyDown}
-              className={`font-body box-border h-12 w-full rounded-[1rem] border px-4 pl-12 pr-24 text-sm leading-normal shadow-sm backdrop-blur-xl placeholder:text-clay/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                navOnHeroTransparent
-                  ? 'border-white/18 bg-white/[0.08] text-white placeholder:text-white/60 shadow-none'
-                  : 'border-outline-variant/45 bg-white/85 text-obsidian'
+              className={`font-body box-border h-10 w-full border-b text-[13px] leading-normal transition-all duration-500 bg-transparent outline-none ${
+                searchFocused || q.trim()
+                  ? `px-4 pl-10 pr-20 ${navOnHeroTransparent ? 'border-white/30 text-white placeholder:text-white/60 focus:border-white' : 'border-stone/30 text-obsidian focus:border-obsidian placeholder:text-clay/70'}`
+                  : `px-0 pl-10 border-transparent text-transparent placeholder:text-transparent cursor-pointer`
               }`}
               autoComplete="off"
               aria-expanded={suggestionsOpen}
@@ -485,12 +527,12 @@ export function Nav() {
               role="combobox"
             />
             <span
-              className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 ${navOnHeroTransparent ? 'text-white/70' : 'text-obsidian/62'}`}
+              className={`pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 transition-colors ${navOnHeroTransparent ? 'text-white/70' : 'text-obsidian/62'}`}
               aria-hidden
             >
-              <AppIcon name="search" className="h-5 w-5" />
+              <AppIcon name="search" className="h-[18px] w-[18px]" />
             </span>
-            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+            <div className={`absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1 transition-opacity duration-300 ${searchFocused || q.trim() ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               {q.trim() ? (
                 <button
                   type="button"
@@ -506,7 +548,7 @@ export function Nav() {
                   <AppIcon name="close" className="h-5 w-5" />
                 </button>
               ) : null}
-              <button type="submit" className="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-primary px-3 text-obsidian shadow-sm">
+              <button type="submit" className={`inline-flex h-8 items-center justify-center rounded-full px-3 transition-colors ${navOnHeroTransparent ? 'text-white/90 hover:text-white' : 'text-obsidian/80 hover:text-obsidian'}`}>
                 <span className="font-label text-[10px] font-semibold uppercase tracking-[0.18em]">{copy.nav.searchSubmit}</span>
               </button>
             </div>

@@ -3,9 +3,14 @@ import { Link } from 'react-router-dom';
 import { TeeImageFrame } from '../components/TeeImage';
 import { GIFT_WRAP_PRICE_EGP, useCart } from '../cart/CartContext';
 import { getCartLineViews, type CartLineView } from '../cart/view';
+import { PageBreadcrumb } from '../components/PageBreadcrumb';
+import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
+import type { CartLine } from '../cart/types';
 import { CART_SCHEMA } from '../data/domain-config';
 import { giftWrapPreview, heroStreet } from '../data/images';
+import { getProduct, type ProductSizeKey } from '../data/site';
 import { formatEgp } from '../utils/formatPrice';
+import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 
 const ESTIMATED_SHIPPING_EGP = 60;
 
@@ -125,6 +130,11 @@ function CartSummary({
           <span>{copy.shippingLabel}</span>
           <span>{formatEgp(ESTIMATED_SHIPPING_EGP)}</span>
         </p>
+        <p className="cart-summary-row cart-summary-row--meta">
+          <span>{copy.estimatedDeliveryLabel}</span>
+          <span className="text-right font-body text-sm">{formatDeliveryWindow(3, 5)}</span>
+        </p>
+        <p className="-mt-1 mb-2 font-body text-xs text-warm-charcoal">{copy.estimatedDeliveryCheckoutNote}</p>
         <p className="cart-summary-total">
           <span>{copy.totalLabel}</span>
           <span>{formatEgp(estimatedOrderTotal)}</span>
@@ -227,10 +237,11 @@ function CartLineItem({
 }
 
 export function Cart() {
-  const { items, removeItem, setLineQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp } = useCart();
+  const { items, removeItem, setLineQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp, addItem } = useCart();
   const copy = CART_SCHEMA.copy;
   const [statusMessage, setStatusMessage] = useState('');
   const [giftUpsellDismissed, setGiftUpsellDismissed] = useState(false);
+  const [undoLine, setUndoLine] = useState<CartLine | null>(null);
 
   const lineViews = useMemo(() => getCartLineViews(items), [items]);
   const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
@@ -249,6 +260,14 @@ export function Cart() {
     }
   }, [giftWrapEgp, itemCount]);
 
+  useEffect(() => {
+    if (!undoLine) return undefined;
+    const id = window.setTimeout(() => setUndoLine(null), 5000);
+    return () => window.clearTimeout(id);
+  }, [undoLine]);
+
+  const undoProductName = undoLine ? getProduct(undoLine.productSlug)?.name ?? 'Item' : '';
+
   const handleDecrease = (line: CartLineView) => {
     if (line.qty <= 1) {
       setStatusMessage(formatMessage(copy.quantityMinReached, line.productName));
@@ -265,8 +284,21 @@ export function Cart() {
   };
 
   const handleRemove = (line: CartLineView) => {
+    setUndoLine({
+      productSlug: line.productSlug,
+      size: line.size as ProductSizeKey,
+      qty: line.qty,
+    });
     removeItem(line.productSlug, line.size);
-    setStatusMessage(formatMessage(copy.itemRemoved, line.productName));
+    setStatusMessage('');
+  };
+
+  const handleUndoRemove = () => {
+    if (!undoLine) return;
+    const name = getProduct(undoLine.productSlug)?.name ?? 'Item';
+    addItem(undoLine.productSlug, undoLine.size, undoLine.qty);
+    setUndoLine(null);
+    setStatusMessage(formatMessage(copy.itemRestored, name));
   };
 
   const handleAddGiftWrap = () => {
@@ -286,10 +318,17 @@ export function Cart() {
     }
   };
 
-  if (lineViews.length === 0) {
+  if (lineViews.length === 0 && !undoLine) {
     return (
       <div className="cart-page pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
         <div className="container cart-page-shell">
+          <PageBreadcrumb
+            className="mb-6"
+            items={[
+              { label: 'Home', to: '/' },
+              { label: CART_SCHEMA.copy.heading },
+            ]}
+          />
           <section className="cart-empty card-glass" aria-labelledby="cart-empty-title">
             <div className="cart-empty-media">
               <TeeImageFrame
@@ -313,6 +352,40 @@ export function Cart() {
               </Link>
             </div>
           </section>
+          <RecentlyViewedStrip className="mt-10 border-0 pt-0" />
+        </div>
+      </div>
+    );
+  }
+
+  if (lineViews.length === 0 && undoLine) {
+    return (
+      <div className="cart-page pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
+        <div className="container cart-page-shell max-w-2xl">
+          <PageBreadcrumb
+            className="mb-6"
+            items={[
+              { label: 'Home', to: '/' },
+              { label: copy.heading },
+            ]}
+          />
+          <section
+            className="card-glass flex flex-col gap-4 rounded-2xl border border-stone/60 px-6 py-8"
+            aria-live="polite"
+            role="status"
+          >
+            <h1 className="cart-page-title">{copy.heading}</h1>
+            <p className="font-body text-warm-charcoal">{formatMessage(copy.removeUndoPrompt, undoProductName)}</p>
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className="btn btn-primary min-h-12 px-6" onClick={handleUndoRemove}>
+                {copy.undoRemoveCta}
+              </button>
+              <Link className="btn btn-ghost min-h-12 inline-flex items-center px-6" to="/vibes">
+                {copy.secondaryCta}
+              </Link>
+            </div>
+          </section>
+          <RecentlyViewedStrip className="mt-10 border-0 pt-0" />
         </div>
       </div>
     );
@@ -321,6 +394,32 @@ export function Cart() {
   return (
     <div className="cart-page pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
       <div className="container cart-page-shell">
+        <PageBreadcrumb
+          className="mb-6"
+          items={[
+            { label: 'Home', to: '/' },
+            { label: copy.heading },
+          ]}
+        />
+        {undoLine ? (
+          <div
+            className="pointer-events-none fixed inset-x-0 bottom-0 z-[100] flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-2 sm:px-6"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <div className="pointer-events-auto flex w-full max-w-lg flex-wrap items-center justify-between gap-3 rounded-xl border border-stone/70 bg-white/95 px-4 py-3 shadow-[0_-8px_40px_-12px_rgba(26,26,26,0.35)] backdrop-blur-md">
+              <p className="font-body text-sm text-warm-charcoal">{formatMessage(copy.removeUndoPrompt, undoProductName)}</p>
+              <button
+                type="button"
+                className="font-label min-h-11 shrink-0 rounded-sm border border-obsidian px-4 py-2 text-[11px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                onClick={handleUndoRemove}
+              >
+                {copy.undoRemoveCta}
+              </button>
+            </div>
+          </div>
+        ) : null}
         <header className="cart-page-header">
           <h1 className="cart-page-title">{copy.heading}</h1>
           <p className="cart-page-count">{formatItemCount(itemCount)}</p>

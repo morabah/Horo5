@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { CommerceContinuityPanel } from '../components/CommerceContinuityPanel';
+import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { getProduct } from '../data/site';
 import { getProductMedia } from '../data/images';
 import { TeeImage } from '../components/TeeImage';
@@ -25,7 +26,19 @@ export function OrderConfirmation() {
 
   const displayOrderId = order?.orderId ?? null;
   const displayTotal = order?.total ?? null;
-  const paymentLabel = order?.paymentLabel ?? (order?.paymentMethod === 'card' ? 'Card' : order?.paymentMethod === 'cod' ? 'COD' : null);
+  const paymentLabel =
+    order?.paymentLabel ??
+    (order?.paymentMethod === 'card'
+      ? 'Card'
+      : order?.paymentMethod === 'paypal'
+        ? 'PayPal'
+        : order?.paymentMethod === 'cod'
+          ? 'COD'
+          : order?.paymentMethod === 'fawry'
+            ? 'Fawry'
+            : order?.paymentMethod === 'wallet'
+              ? 'Mobile wallet'
+              : null);
   const shippingLabel = order?.shippingLabel ?? (order?.shippingMethod === 'express' ? 'Express' : order?.shippingMethod === 'standard' ? 'Standard' : null);
 
   const arrivalWindow = order?.estimatedDeliveryWindow ??
@@ -77,6 +90,14 @@ export function OrderConfirmation() {
       style={{ padding: '2rem 0 3rem' }}
     >
       <div className="container" style={{ maxWidth: '720px' }}>
+        <PageBreadcrumb
+          className="mb-6"
+          items={[
+            { label: 'Home', to: '/' },
+            { label: copy.checkout.breadcrumbTitle, to: '/checkout' },
+            { label: copy.confirmation.breadcrumbTitle },
+          ]}
+        />
         <div
           style={{
             textAlign: 'center',

@@ -6,6 +6,7 @@ const sections = [
     body: [
       'We collect the details needed to process and fulfill your order, such as your name, contact information, delivery address, and the products you purchase.',
       'We may also keep basic session and device information that helps the storefront function, remember your cart, and improve the shopping experience.',
+      'The storefront may store a short list of recently viewed product identifiers on your device (browser local storage) so you can return to designs you browsed; this data is not personally identifying and can be cleared with your browser’s site data settings.',
     ],
   },
   {

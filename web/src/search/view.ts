@@ -1,8 +1,26 @@
+import { SEARCH_SYNONYMS_SCHEMA } from '../data/domain-config';
+import {
+  ADDITIONAL_COMMON_QUERY_EXPANSIONS,
+  ADDITIONAL_OCCASION_ALIASES,
+  ADDITIONAL_VIBE_ALIASES,
+} from '../data/searchSynonyms';
 import { getOccasionCollectionVisual, getProductMedia, heroStreet, vibeCovers } from '../data/images';
-import { getArtist, getOccasion, getVibe, occasions, products, vibes, type OccasionSlug, type Product } from '../data/site';
+import {
+  getArtist,
+  getOccasion,
+  getVibe,
+  occasions,
+  products,
+  vibes,
+  type OccasionSlug,
+  type Product,
+  type ProductSizeKey,
+} from '../data/site';
+import { productHasCatalogSize } from '../utils/productSizes';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 
 export type SearchPriceFilter = 'all' | 'under-800' | '800-899' | '900+';
+export type SearchSizeFilter = 'all' | ProductSizeKey;
 export type SearchSortKey = 'relevance' | ProductSortKey;
 export type SearchSuggestionKind = 'design' | 'vibe' | 'occasion';
 export type SearchSuggestionGroupKind = 'designs' | 'vibes' | 'occasions';
@@ -76,7 +94,18 @@ type ScopedSearchParams = {
   sortKey: SearchSortKey;
   priceFilter: SearchPriceFilter;
   vibeFilter: string;
+  sizeFilter: SearchSizeFilter;
+  filterArtist: string;
+  filterOccasion: string;
+  filterColor: string;
 };
+
+const PRODUCT_SIZE_KEYS: ProductSizeKey[] = ['S', 'M', 'L', 'XL', 'XXL'];
+
+export function parseSearchSizeFilter(raw: string | null | undefined): SearchSizeFilter {
+  if (raw == null || raw === '' || raw === 'all') return 'all';
+  return PRODUCT_SIZE_KEYS.includes(raw as ProductSizeKey) ? (raw as ProductSizeKey) : 'all';
+}
 
 type SearchSuggestionsParams = {
   query: string;
@@ -162,6 +191,22 @@ const OCCASION_ALIAS_MAP: Record<OccasionSlug, string[]> = {
   'birthday-pick': ['birthday', 'birthdays', 'party', 'celebration', 'عيد ميلاد', 'ميلاد', 'حفلة'],
   'just-because': ['self gift', 'self-care', 'casual', 'everyday', 'treat', 'بدون سبب', 'على طول', 'كل يوم'],
 };
+
+const VIBE_ALIAS_MERGED: Record<string, string[]> = (() => {
+  const merged: Record<string, string[]> = { ...VIBE_ALIAS_MAP };
+  for (const [k, v] of Object.entries(ADDITIONAL_VIBE_ALIASES)) {
+    merged[k] = [...(merged[k] ?? []), ...v];
+  }
+  return merged;
+})();
+
+const OCCASION_ALIAS_MERGED: Record<string, string[]> = (() => {
+  const merged: Record<string, string[]> = { ...OCCASION_ALIAS_MAP };
+  for (const [k, v] of Object.entries(ADDITIONAL_OCCASION_ALIASES)) {
+    merged[k] = [...(merged[k] ?? []), ...v];
+  }
+  return merged;
+})();
 
 const COMMON_QUERY_EXPANSIONS: Record<string, string[]> = {
   '220 gsm': ['220 gsm cotton', 'graphic tee'],
@@ -264,7 +309,7 @@ function expandQueryVariants(query: string): string[] {
   const variants = new Set<string>([normalizedQuery]);
   const tokens = tokenize(normalizedQuery);
 
-  for (const [slug, aliases] of Object.entries(VIBE_ALIAS_MAP)) {
+  for (const [slug, aliases] of Object.entries(VIBE_ALIAS_MERGED)) {
     const vibe = getVibe(slug);
     if (!vibe) continue;
     const normalizedAliases = uniqueStrings(aliases);
@@ -275,7 +320,7 @@ function expandQueryVariants(query: string): string[] {
     }
   }
 
-  for (const [slug, aliases] of Object.entries(OCCASION_ALIAS_MAP) as [OccasionSlug, string[]][]) {
+  for (const [slug, aliases] of Object.entries(OCCASION_ALIAS_MERGED) as [OccasionSlug, string[]][]) {
     const occasion = getOccasion(slug);
     if (!occasion) continue;
     const normalizedAliases = uniqueStrings(aliases);
@@ -288,6 +333,19 @@ function expandQueryVariants(query: string): string[] {
 
   for (const [term, expansions] of Object.entries(COMMON_QUERY_EXPANSIONS)) {
     if (normalizedQuery.includes(normalizeForSearch(term))) {
+      expansions.forEach((value) => variants.add(normalizeForSearch(value)));
+    }
+  }
+
+  for (const [term, expansions] of Object.entries(ADDITIONAL_COMMON_QUERY_EXPANSIONS)) {
+    if (normalizedQuery.includes(normalizeForSearch(term))) {
+      expansions.forEach((value) => variants.add(normalizeForSearch(value)));
+    }
+  }
+
+  for (const [term, expansions] of Object.entries(SEARCH_SYNONYMS_SCHEMA)) {
+    const nt = normalizeForSearch(term);
+    if (normalizedQuery.includes(nt) || tokens.includes(nt)) {
       expansions.forEach((value) => variants.add(normalizeForSearch(value)));
     }
   }
@@ -339,6 +397,10 @@ function filterByPrice(list: Product[], filter: SearchPriceFilter) {
     default:
       return list;
   }
+}
+
+function productGarmentColorLabels(product: Product): string[] {
+  return product.garmentColors?.length ? [...product.garmentColors] : ['Black'];
 }
 
 function productOccasionNames(product: Product) {
@@ -478,6 +540,34 @@ function getScopedProducts(scopeVibeSlug?: string | null, scopeOccasionSlug?: st
   return baseProducts;
 }
 
+export function getSearchFacetOptions(scopeVibeSlug?: string | null, scopeOccasionSlug?: string | null) {
+  const baseProducts = getScopedProducts(scopeVibeSlug, scopeOccasionSlug);
+  const artistMap = new Map<string, string>();
+  const occasionMap = new Map<OccasionSlug, string>();
+  const colors = new Set<string>();
+
+  for (const p of baseProducts) {
+    const artist = getArtist(p.artistSlug);
+    artistMap.set(p.artistSlug, artist?.name ?? p.artistSlug.replace(/-/g, ' '));
+    for (const o of p.occasionSlugs) {
+      occasionMap.set(o, getOccasion(o)?.name ?? o.replace(/-/g, ' '));
+    }
+    for (const c of productGarmentColorLabels(p)) {
+      colors.add(c);
+    }
+  }
+
+  return {
+    artistOptions: [...artistMap]
+      .map(([slug, name]) => ({ slug, name }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    occasionOptions: [...occasionMap]
+      .map(([slug, name]) => ({ slug, name }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    colorOptions: [...colors].sort((a, b) => a.localeCompare(b)),
+  };
+}
+
 function getScopedCounts(baseProducts: Product[]) {
   const vibeCounts = new Map<string, number>();
   const occasionCounts = new Map<OccasionSlug, number>();
@@ -529,6 +619,10 @@ export function getSearchResults({
   sortKey,
   priceFilter,
   vibeFilter,
+  sizeFilter,
+  filterArtist,
+  filterOccasion,
+  filterColor,
 }: ScopedSearchParams): SearchResults {
   const normalizedQuery = normalizeForSearch(query);
   const queryVariants = expandQueryVariants(normalizedQuery);
@@ -542,10 +636,28 @@ export function getSearchResults({
   const queryMatchedProducts = scoredProducts.map((entry) => entry.product);
   const scoreBySlug = new Map(scoredProducts.map((entry) => [entry.product.slug, entry.score]));
 
-  const filteredProducts = filterByPrice(
-    queryMatchedProducts.filter((product) => (vibeFilter !== 'all' ? product.vibeSlug === vibeFilter : true)),
-    priceFilter,
+  const vibeFiltered = queryMatchedProducts.filter((product) =>
+    vibeFilter !== 'all' ? product.vibeSlug === vibeFilter : true,
   );
+
+  let facetFiltered = vibeFiltered;
+  if (filterArtist && filterArtist !== 'all') {
+    facetFiltered = facetFiltered.filter((p) => p.artistSlug === filterArtist);
+  }
+  if (filterOccasion && filterOccasion !== 'all') {
+    facetFiltered = facetFiltered.filter((p) => p.occasionSlugs.includes(filterOccasion as OccasionSlug));
+  }
+  if (filterColor && filterColor !== 'all') {
+    const target = normalizeForSearch(filterColor);
+    facetFiltered = facetFiltered.filter((p) =>
+      productGarmentColorLabels(p).some((c) => normalizeForSearch(c) === target),
+    );
+  }
+
+  const sizeFiltered =
+    sizeFilter === 'all' ? facetFiltered : facetFiltered.filter((p) => productHasCatalogSize(p, sizeFilter));
+
+  const filteredProducts = filterByPrice(sizeFiltered, priceFilter);
 
   const sortedProducts =
     sortKey === 'relevance'
@@ -584,6 +696,10 @@ export function getSearchSuggestions({
     sortKey: 'relevance',
     priceFilter: 'all',
     vibeFilter: 'all',
+    sizeFilter: 'all',
+    filterArtist: 'all',
+    filterOccasion: 'all',
+    filterColor: 'all',
   });
 
   const groups: SearchSuggestionGroup[] = [];

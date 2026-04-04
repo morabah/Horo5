@@ -103,6 +103,19 @@ export const artists: Artist[] = [
 
 export type ProductSizeKey = 'S' | 'M' | 'L' | 'XL' | 'XXL';
 
+export type PdpFitModel = {
+  heightCm: number;
+  heightImperial: string;
+  sizeWorn: string;
+  fitNote?: string;
+};
+
+export type WearerStory = {
+  quote: string;
+  author: string;
+  rating?: 1 | 2 | 3 | 4 | 5;
+};
+
 export type Product = {
   slug: string;
   name: string;
@@ -119,6 +132,20 @@ export type Product = {
   stockNote?: string;
   /** Per-size FOMO / inventory hints on PDP, e.g. { M: "Only 2 left" } */
   inventoryHintBySize?: Partial<Record<ProductSizeKey, string>>;
+  /** If set, restricts which sizes appear in stock (search filter + PDP). Omit = all non-disabled catalog sizes. */
+  availableSizes?: ProductSizeKey[];
+  /** Optional on-body copy for PDP (e.g. two models). When absent, PDP uses global template + fitLabel. */
+  pdpFitModels?: readonly PdpFitModel[];
+  /** Optional studio / design-intent quotes — not customer reviews (no review schema emitted). */
+  wearerStories?: readonly WearerStory[];
+  /** Merchandising: complementary product slugs for “Style it with”. */
+  complementarySlugs?: string[];
+  /** Merchandising: co-purchase suggestions (1–2 slugs) for “Frequently bought together”. */
+  frequentlyBoughtWithSlugs?: string[];
+  /** Merchandising: social-proof style picks (1–2 slugs) for “Customers also bought”. */
+  customersAlsoBoughtSlugs?: string[];
+  /** Garment/tee body colors for search filtering (display labels, e.g. "Black"). */
+  garmentColors?: readonly string[];
 };
 
 const PRODUCT_OCCASION_TAGS: Record<string, OccasionSlug[]> = {
@@ -160,31 +187,51 @@ export const products: Product[] = [
     name: 'The Weight of Light',
     artistSlug: 'nada-ibrahim',
     vibeSlug: 'fiction',
+    garmentColors: ['Off-white'],
     priceEgp: 799,
     story: 'For the one who carries the weight of every feeling and still walks toward the light.',
+    complementarySlugs: ['fiction-distant-suns', 'midnight-compass', 'emotions-unspoken'],
+    frequentlyBoughtWithSlugs: ['midnight-compass'],
+    customersAlsoBoughtSlugs: ['fiction-distant-suns', 'fiction-neon-dreams'],
   },
   {
     slug: 'midnight-compass',
     name: 'Midnight Compass',
     artistSlug: 'omar-hassan',
     vibeSlug: 'zodiac',
+    garmentColors: ['Black'],
     priceEgp: 799,
     story: 'For the one who finds direction in the dark.',
     merchandisingBadge: 'Bestseller',
     fitLabel: 'Regular',
     stockNote: '9 left from this illustration run',
     inventoryHintBySize: { M: 'Only 2 left', L: 'Only 4 left' },
+    pdpFitModels: [
+      { heightCm: 178, heightImperial: "5'10\"", sizeWorn: 'M', fitNote: 'regular fit' },
+      {
+        heightCm: 165,
+        heightImperial: "5'5\"",
+        sizeWorn: 'S',
+        fitNote: 'relaxed drape on a smaller frame',
+      },
+    ],
+    complementarySlugs: ['quiet-revolt', 'zodiac-star-alignment', 'emotions-silent-scream'],
+    frequentlyBoughtWithSlugs: ['the-weight-of-light'],
+    customersAlsoBoughtSlugs: ['zodiac-star-alignment', 'emotions-unspoken'],
   },
   {
     slug: 'quiet-revolt',
     name: 'Quiet Revolt',
     artistSlug: 'layla-farid',
     vibeSlug: 'emotions',
+    garmentColors: ['Black'],
     priceEgp: 899,
     story: 'For the one who speaks softly and still moves rooms.',
     merchandisingBadge: 'New',
     fitLabel: 'Oversized',
     stockNote: 'Limited run — restock soon',
+    availableSizes: ['S', 'M', 'L'] satisfies ProductSizeKey[],
+    customersAlsoBoughtSlugs: ['cairo-thread', 'emotions-silent-scream'],
   },
   {
     slug: 'cairo-thread',
@@ -193,6 +240,7 @@ export const products: Product[] = [
     vibeSlug: 'career',
     priceEgp: 799,
     story: 'For the one who wears where they’re from.',
+    availableSizes: ['M', 'L', 'XL'] satisfies ProductSizeKey[],
   },
   {
     slug: 'signal-line',

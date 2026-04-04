@@ -177,3 +177,25 @@ export function trackPurchase(payload: {
     });
   }
 }
+
+export type SearchZeroResultsPayload = {
+  search_term: string;
+  sort: string;
+  price: string;
+  vibe_filter: string;
+  size: string;
+  filter_artist: string;
+  filter_occasion: string;
+  filter_color: string;
+  scope_vibe?: string;
+  scope_occasion?: string;
+};
+
+/** GA4 custom event when a debounced search returns zero designs, vibes, and occasions. */
+export function trackSearchZeroResults(payload: SearchZeroResultsPayload) {
+  if (typeof window === 'undefined') return;
+  const gaId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim();
+  if (window.gtag && gaId) {
+    window.gtag('event', 'search_zero_results', payload);
+  }
+}

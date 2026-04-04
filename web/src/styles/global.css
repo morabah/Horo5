@@ -160,10 +160,10 @@
   color: var(--label-brown);
 }
 
-/* PDP mobile CTA bar: keep content clear of the single fixed purchase dock. */
+/* PDP mobile CTA bar: keep content clear of Add to Bag + Buy now fixed dock. */
 @media (max-width: 767.98px) {
   .product-page {
-    padding-bottom: calc(var(--touch-min) + 4.5rem + max(0px, env(safe-area-inset-bottom, 0px)));
+    padding-bottom: calc(var(--touch-min) * 2 + 5.5rem + max(0px, env(safe-area-inset-bottom, 0px)));
   }
 }
 

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1638" viewBox="0 0 2048 1638">
+  <defs>
+    <filter id="orangeGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="18" result="blur"/>
+      <feOffset dx="0" dy="0" result="offset"/>
+      <feFlood flood-color="#ff6432" flood-opacity="0.7" result="color"/>
+      <feComposite in="color" in2="offset" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="distress" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="3" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="mono"/>
+      <feComponentTransfer in="mono" result="alphaMap">
+        <feFuncR type="table" tableValues="1 0.95 0.9 0.8"/>
+        <feFuncG type="table" tableValues="1 0.95 0.9 0.8"/>
+        <feFuncB type="table" tableValues="1 0.95 0.9 0.8"/>
+        <feFuncA type="table" tableValues="0 0.12 0.25 0.35"/>
+      </feComponentTransfer>
+      <feBlend in="SourceGraphic" in2="alphaMap" mode="multiply"/>
+    </filter>
+
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </radialGradient>
+
+    <style>
+      .display {
+        font-family: 'Arial Black', Arial, sans-serif;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+      .nav {
+        font-family: Arial, sans-serif;
+        font-size: 22px;
+        fill: #f5f5f5;
+        letter-spacing: 0.5px;
+      }
+      .tag {
+        font-family: Arial, sans-serif;
+        font-size: 30px;
+        fill: #ededed;
+      }
+      .ctaText {
+        font-family: Arial, sans-serif;
+        font-size: 24px;
+        font-weight: 800;
+        fill: #0e0e0e;
+      }
+    </style>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#050505"/>
+  <rect width="100%" height="100%" fill="url(#vignette)"/>
+
+  <!-- white WEAR -->
+  <g transform="translate(150,1530) rotate(-90)">
+    <text class="display" font-size="520" letter-spacing="-24" fill="#f0ede7">WEAR</text>
+  </g>
+
+  <!-- orange typography -->
+  <g filter="url(#orangeGlow)">
+    <text x="1010" y="360" class="display" font-size="250" letter-spacing="-8" fill="#f55a2e">WHAT</text>
+    <text x="1710" y="350" class="display" font-size="175" letter-spacing="-8" fill="#f55a2e" opacity="0.95">YOU</text>
+    <text x="1165" y="985" class="display" font-size="272" letter-spacing="-10" fill="#f55a2e">MEAN</text>
+    <g transform="translate(1085,1140) rotate(-90)">
+      <text class="display" font-size="210" letter-spacing="-8" fill="#f55a2e" opacity="0.95">YOU</text>
+    </g>
+
+    <!-- glitch bars -->
+    <rect x="1198" y="505" width="250" height="16" fill="#050505" opacity="0.85"/>
+    <rect x="1218" y="530" width="155" height="18" fill="#050505" opacity="0.9"/>
+    <rect x="1245" y="560" width="105" height="10" fill="#050505" opacity="0.7"/>
+
+    <!-- reflected 'YOU' -->
+    <g opacity="0.2" transform="translate(1760,1265) scale(1,-1)">
+      <text class="display" font-size="190" letter-spacing="-8" fill="#f55a2e">YOU</text>
+    </g>
+  </g>
+
+  <!-- nav -->
+  <text x="1540" y="86" class="nav">COLLECTIONS</text>
+  <text x="1870" y="86" class="nav">OUR STORY</text>
+
+  <!-- tagline -->
+  <text x="705" y="1422" class="tag">Characters, worlds, and stories you can wear.</text>
+
+  <!-- CTA -->
+  <g transform="translate(1000,1460)">
+    <rect x="-270" y="-8" width="540" height="110" fill="#efede5" stroke="#d7d2c8" stroke-width="2"/>
+    <text x="0" y="60" text-anchor="middle" class="ctaText">EXPLORE THE COLLECTION</text>
+  </g>
+</svg>

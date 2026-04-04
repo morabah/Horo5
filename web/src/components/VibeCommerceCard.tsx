@@ -5,7 +5,7 @@ import { glassInteractive } from '../lib/glassInteractive';
 import { getVibeCollectionVisual, imgUrl } from '../data/images';
 
 const linkBaseClass =
-  'vibe-commerce-card group flex h-full min-h-0 flex-col overflow-hidden rounded-2xl shadow-xl shadow-black/[0.07] ring-1 ring-black/5 transition-all duration-700 ease-out motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-2xl motion-safe:hover:shadow-black/[0.1] motion-reduce:hover:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
+  'group flex h-full min-h-0 flex-col overflow-hidden transition-all duration-700 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
 
 export type VibeCommerceCardProps = {
   vibe: Vibe;
@@ -39,8 +39,8 @@ export function VibeCommerceCard({
   ].join(' ');
   const footerSurfaceClassName =
     variant === 'see-vibe'
-      ? 'bg-white/10 shadow-black/18'
-      : 'bg-[linear-gradient(135deg,rgba(255,255,255,0.18),rgba(245,240,232,0.12))] shadow-black/22';
+      ? 'bg-transparent'
+      : 'bg-transparent';
 
   const titleEl =
     titleTag === 'h2' ? (
@@ -82,17 +82,11 @@ export function VibeCommerceCard({
         <div className="absolute inset-x-0 bottom-0 p-[clamp(0.75rem,3.5cqw,1.25rem)]">
           <div
             className={[
-              'glass-vibe-card-footer vibe-card-text-strip relative flex max-h-[min(28cqh,9.75rem)] flex-col justify-center overflow-hidden rounded-[clamp(0.875rem,3.2cqw,1.25rem)] border border-white/90 px-[clamp(0.95rem,4cqw,1.25rem)] py-[clamp(0.625rem,2cqh,0.875rem)] shadow-xl backdrop-blur-xl',
+              'relative flex max-h-[min(28cqh,9.75rem)] flex-col justify-center overflow-hidden px-[clamp(0.95rem,4cqw,1.25rem)] py-[clamp(0.625rem,2cqh,0.875rem)] text-white',
               footerSurfaceClassName,
-              glassInteractive.surfaceBottom,
             ].join(' ')}
           >
-            {/* Subtle inner glow for physical glass bevel effect */}
-            <div
-              className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/20"
-              style={{ borderRadius: 'inherit' }}
-              aria-hidden
-            />
+
 
             <div className="relative z-10 flex items-center gap-[clamp(0.5rem,2cqw,0.875rem)]">
               <span

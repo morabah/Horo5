@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { AppIcon } from '../components/AppIcon';
+import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ABOUT_SCHEMA, BRAND_TRUST_POINTS, PDP_SCHEMA } from '../data/domain-config';
 import { aboutBridgeAlt, aboutBridgeImage, aboutHero, aboutHeroAlt, imgUrl } from '../data/images';
@@ -12,6 +13,10 @@ export function About() {
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
       <div className="mx-auto flex min-h-[calc(100vh-10rem)] max-w-7xl flex-col gap-10 px-4 pt-8 md:gap-12 md:px-8 md:pt-10">
+        <PageBreadcrumb
+          className="mb-0 md:-mb-2"
+          items={[{ label: 'Home', to: '/' }, { label: 'About' }]}
+        />
         <section
           aria-label={ABOUT_SCHEMA.copy.heroRegionLabel}
           className="relative isolate overflow-hidden rounded-[1.75rem] border border-white/65 bg-obsidian shadow-[0_28px_68px_-36px_rgba(26,26,26,0.35)]"
@@ -39,8 +44,10 @@ export function About() {
                 <h1 className="font-headline text-[clamp(2.2rem,5vw,4.3rem)] font-semibold leading-[0.94] tracking-tight text-white">Our story</h1>
                 <div className="mt-5 space-y-6 font-body text-[1.02rem] leading-relaxed text-white/88 md:text-[1.08rem]">
                   <p>
-                    HORO exists to give young Egyptians a way to wear their inner world on the outside — by curating original digital illustrations,
-                    organized around the themes that shape identity, and making them accessible at a price that respects the reality of our market.
+                    HORO exists to turn original illustration into graphic tees that feel worth buying in Egypt: meaning first, proof visible, and service clear enough for a first order.
+                  </p>
+                  <p>
+                    The job is simple: choose the artwork carefully, print it on heavyweight cotton, credit it honestly, and deliver it without the fuzzy promises that make new brands feel risky.
                   </p>
                   <p className="text-[1.15rem] text-secondary-fixed md:text-[1.22rem]">Wear what you mean.</p>
                 </div>

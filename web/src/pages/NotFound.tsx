@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
+import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { NAV_ROUTE } from '../lib/navLinks';
 
 export function NotFound() {
   return (
     <div className="container" style={{ padding: '4rem 0', textAlign: 'center' }}>
+      <PageBreadcrumb className="mb-8 text-left" items={[{ label: 'Home', to: '/' }, { label: 'Page not found' }]} />
       <h1 style={{ fontSize: '1.5rem' }}>Page not found</h1>
       <p style={{ color: 'var(--warm-charcoal)' }}>That route doesn&apos;t exist yet.</p>
       <div

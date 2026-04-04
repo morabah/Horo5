@@ -366,9 +366,11 @@ Every conversion-critical page needs three elements. If any is missing, the page
 
 1. **An offer:** What is being presented (the design, the collection, the order).
 
-2. **Supporting information:** Why the offer is worth acting on (images, specs, artist credit, reviews, trust signals).
+2. **Supporting information:** Why the offer is worth acting on (images, specs, artist credit, verified reviews when they are real, trust signals).
 
 3. **A simple response mechanism:** How to act (the CTA button — visible):.
+
+**Launch storefront rule:** until real review volume exists, product cards and homepage modules use proof-first signals (fabric weight, print proof, exchange clarity, COD availability) instead of aggregate star ratings.
 
 # **Section 6: Product Classification & Navigation**
 
@@ -399,6 +401,8 @@ These 5 vibes are the current canonical navigation model. Legacy labels from ear
 ## **6.3 Artist Credit (PDP-First, Not a Browse Axis)**
 
 Artist identity remains part of the product truth, but not a public navigation axis. The artist appears on the product page as legitimacy proof and remains in internal product metadata for search relevance and attribution. Artist should not appear as a public tab, collection path, or primary browse route.
+
+**Website rule:** no public artist landing pages, artist hubs, or homepage artist spotlights. Keep artist visibility to concise PDP proof, product metadata, packaging inserts, and caption/tag attribution.
 
 ## **6.4 Navigation Rules**
 

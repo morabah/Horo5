@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getGaMeasurementId, getMetaPixelId, hasAnySemIds } from './config';
+import { initWebVitalsReporting } from './webVitals';
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -13,12 +14,29 @@ function loadScript(src: string): Promise<void> {
   });
 }
 
+function loadClarity(projectId: string) {
+  if (typeof document === 'undefined') return;
+  if (document.querySelector('script[src*="clarity.ms"]')) return;
+  const inline = document.createElement('script');
+  inline.textContent = `(function(c,l,a,r,i,t,y){
+c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+})(window, document, "clarity", "script", ${JSON.stringify(projectId)});`;
+  document.head.appendChild(inline);
+}
+
 export function AnalyticsRoot() {
   const location = useLocation();
   const gaId = getGaMeasurementId();
   const pixelId = getMetaPixelId();
   const [ready, setReady] = useState(false);
   const initRef = useRef(false);
+
+  useEffect(() => {
+    const clarityId = import.meta.env.VITE_CLARITY_PROJECT_ID?.trim();
+    if (clarityId) loadClarity(clarityId);
+  }, []);
 
   useEffect(() => {
     if (!hasAnySemIds() || initRef.current) return;
@@ -32,6 +50,7 @@ export function AnalyticsRoot() {
           window.dataLayer!.push(args);
         };
         window.gtag('js', new Date());
+        initWebVitalsReporting();
       }
 
       if (pixelId) {

@@ -1,17 +1,18 @@
 /// <reference types="vite/client" />
 
-declare global {
-  interface Window {
-    dataLayer?: unknown[];
-    gtag?: (...args: unknown[]) => void;
-    fbq?: (...args: unknown[]) => void;
-  }
+/** GA4 / GTM + Meta Pixel (loaded dynamically in `analytics/`). */
+interface Window {
+  dataLayer?: unknown[];
+  gtag?: (...args: unknown[]) => void;
+  fbq?: (...args: unknown[]) => void;
 }
 
 interface ImportMetaEnv {
   readonly VITE_SITE_URL?: string;
   readonly VITE_GA_MEASUREMENT_ID?: string;
   readonly VITE_META_PIXEL_ID?: string;
+  /** Microsoft Clarity project ID (optional session replay / heatmaps). */
+  readonly VITE_CLARITY_PROJECT_ID?: string;
   readonly VITE_HORO_SUPPORT_EFFECTIVE_DATE?: string;
   readonly VITE_HORO_INSTAGRAM_URL?: string;
   readonly VITE_HORO_WHATSAPP_SUPPORT_URL?: string;

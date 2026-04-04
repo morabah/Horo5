@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { AppIcon } from '../components/AppIcon';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
+import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, getProductMedia, giftWrapPreview, imgUrl } from '../data/images';
@@ -522,6 +523,8 @@ export function OccasionCollection() {
             ))}
           </div>
         </section>
+
+        <RecentlyViewedStrip className="border-t-0 px-0 pt-8 md:pt-10" />
       </div>
 
       {isMobile && mobileFiltersOpen && typeof document !== 'undefined'

@@ -1,15 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { flushSync } from 'react-dom';
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { trackBeginCheckout, trackPurchase } from '../analytics/events';
 import { CommerceContinuityPanel } from '../components/CommerceContinuityPanel';
+import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { getCartLineViews } from '../cart/view';
 import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { useCart } from '../cart/CartContext';
 import { saveLastOrder } from '../cart/lastOrder';
-import { CART_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
+import { CART_SCHEMA, CHECKOUT_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
 
 const steps = ['Information', 'Shipping', 'Payment'] as const;
@@ -19,6 +20,12 @@ const STEP0_FIELD_ORDER = ['email', 'phone', 'name', 'line1', 'city'] as const;
 type FieldErrors = Record<string, string>;
 
 const CARD_DISCOUNT_EGP = 30;
+
+const inputBaseClass =
+  'w-full min-h-12 rounded-lg border border-stone bg-white px-3 text-base text-obsidian transition-[border-color,box-shadow] focus-visible:border-deep-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-deep-teal/25';
+const inputErrorClass = 'border-ember shadow-[0_0_0_2px_rgba(232,89,60,0.15)]';
+const labelClass = 'mb-1.5 mt-4 block text-xs font-medium text-label first:mt-0';
+const errTextClass = 'mt-1.5 text-[0.8125rem] text-ember';
 
 function validateStep0(fields: { email: string; phone: string; name: string; line1: string; city: string }): FieldErrors {
   const errors: FieldErrors = {};
@@ -31,14 +38,21 @@ function validateStep0(fields: { email: string; phone: string; name: string; lin
   return errors;
 }
 
+function radioCardClass(active: boolean) {
+  return [
+    'flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-4 transition-colors',
+    active ? 'border-ember' : 'border-stone hover:border-stone/80',
+  ].join(' ');
+}
+
 export function Checkout() {
   const navigate = useNavigate();
   const { items, subtotalEgp, giftWrapEgp, clearCart } = useCart();
   const { copy } = useUiLocale();
   const [step, setStep] = useState(0);
   const [highestCompleted, setHighestCompleted] = useState(-1);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
-  // Form fields
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
@@ -46,10 +60,12 @@ export function Checkout() {
   const [city, setCity] = useState('');
   const [whatsappOptIn, setWhatsappOptIn] = useState(true);
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard');
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'card'>('cod');
+  /** Demo storefront: PayPal/Fawry/wallet are selectable for UX; no live PSP integration in this repo. */
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'card' | 'paypal' | 'fawry' | 'wallet'>('cod');
 
-  // Errors
   const [errors, setErrors] = useState<FieldErrors>({});
+  /** Demo: express row sets preferred payment before the payment step. */
+  const [expressNote, setExpressNote] = useState<string | null>(null);
 
   const shippingCost = shippingMethod === 'express' ? 120 : 60;
 
@@ -63,7 +79,16 @@ export function Checkout() {
         : formatDeliveryWindow(3, 5),
     [shippingMethod],
   );
-  const paymentLabel = paymentMethod === 'card' ? 'Card' : 'COD';
+  const paymentLabel =
+    paymentMethod === 'card'
+      ? 'Card'
+      : paymentMethod === 'paypal'
+        ? 'PayPal'
+        : paymentMethod === 'fawry'
+          ? 'Fawry'
+          : paymentMethod === 'wallet'
+            ? 'Mobile wallet'
+            : 'COD';
   const shippingLabel = shippingMethod === 'express' ? 'Express' : 'Standard';
 
   const beganCheckoutRef = useRef(false);
@@ -74,7 +99,6 @@ export function Checkout() {
   }, [items, subtotalEgp, giftWrapEgp]);
 
   function handleStepClick(targetStep: number) {
-    // Allow backward navigation to completed steps only
     if (targetStep <= highestCompleted) {
       setStep(targetStep);
     }
@@ -102,56 +126,68 @@ export function Checkout() {
     setStep(2);
   }
 
-  function handlePlaceOrder() {
-    const orderId = `HORO-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
-    trackPurchase({
-      transactionId: orderId,
-      value: orderTotal,
-      currency: 'EGP',
-      lines: items.map((l) => ({ ...l })),
-    });
-    saveLastOrder({
-      orderId,
-      lines: items.map((l) => ({ ...l })),
-      subtotal: subtotalEgp,
-      giftWrapEgp: giftWrapEgp > 0 ? giftWrapEgp : undefined,
-      shipping: shippingCost,
-      cardDiscount,
-      total: orderTotal,
-      paymentMethod,
-      shippingMethod,
-      paymentLabel,
-      shippingLabel,
-      estimatedDeliveryWindow: estimatedDeliveryRange,
-      contactEmail: email.trim() || undefined,
-      contactName: fullName.trim() || undefined,
-      contactPhone: phone.trim() || undefined,
-      shippingLine1: line1.trim() || undefined,
-      shippingCity: city.trim() || undefined,
-      whatsappOptIn,
-    });
-    // Navigate first; defer clearCart so the router commits /checkout/success before cart empties
-    // (otherwise Checkout can briefly show the empty state while the URL is already /checkout/success).
-    flushSync(() => {
-      navigate('/checkout/success');
-    });
-    setTimeout(() => {
-      clearCart();
-    }, 0);
+  async function handlePlaceOrder() {
+    if (placingOrder) return;
+    setPlacingOrder(true);
+    try {
+      await new Promise((r) => setTimeout(r, 500));
+      const orderId = `HORO-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+      trackPurchase({
+        transactionId: orderId,
+        value: orderTotal,
+        currency: 'EGP',
+        lines: items.map((l) => ({ ...l })),
+      });
+      saveLastOrder({
+        orderId,
+        lines: items.map((l) => ({ ...l })),
+        subtotal: subtotalEgp,
+        giftWrapEgp: giftWrapEgp > 0 ? giftWrapEgp : undefined,
+        shipping: shippingCost,
+        cardDiscount,
+        total: orderTotal,
+        paymentMethod,
+        shippingMethod,
+        paymentLabel,
+        shippingLabel,
+        estimatedDeliveryWindow: estimatedDeliveryRange,
+        contactEmail: email.trim() || undefined,
+        contactName: fullName.trim() || undefined,
+        contactPhone: phone.trim() || undefined,
+        shippingLine1: line1.trim() || undefined,
+        shippingCity: city.trim() || undefined,
+        whatsappOptIn,
+      });
+      flushSync(() => {
+        navigate('/checkout/success');
+      });
+      setTimeout(() => {
+        clearCart();
+      }, 0);
+    } catch {
+      setPlacingOrder(false);
+    }
   }
+
+  const checkoutBreadcrumbItems = useMemo(
+    () => [
+      { label: 'Home', to: '/' as const },
+      { label: CART_SCHEMA.copy.heading, to: '/cart' as const },
+      { label: copy.checkout.breadcrumbTitle },
+    ],
+    [copy.checkout.breadcrumbTitle],
+  );
 
   if (items.length === 0) {
     return (
-      <div
-        className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
-        style={{ padding: '2rem 0 3rem', background: 'var(--white)', minHeight: '60vh' }}
-      >
-        <div className="container" style={{ maxWidth: '960px' }}>
-          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', marginBottom: '0.75rem' }}>Nothing to check out</h1>
-          <p style={{ color: 'var(--clay-earth)', marginBottom: '1.5rem', maxWidth: '28rem' }}>
+      <div className="min-h-[60vh] bg-papyrus py-8 pb-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:py-10 md:pb-16">
+        <div className="container mx-auto max-w-3xl px-4 md:px-8">
+          <PageBreadcrumb className="mb-6" items={checkoutBreadcrumbItems} />
+          <h1 className="font-headline text-[clamp(1.5rem,3vw,2rem)] font-semibold text-obsidian">Nothing to check out</h1>
+          <p className="mt-3 max-w-md font-body text-sm text-clay md:text-base">
             Your bag is empty. Add a design from the shop, then return here to complete your order.
           </p>
-          <Link className="btn btn-primary" to="/vibes" style={{ minHeight: '48px', display: 'inline-flex', alignItems: 'center' }}>
+          <Link className="btn btn-primary mt-6 inline-flex min-h-12 items-center" to="/vibes">
             Shop by Vibe
           </Link>
         </div>
@@ -160,129 +196,94 @@ export function Checkout() {
   }
 
   return (
-    <div
-      className="pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]"
-      style={{ padding: '2rem 0 3rem', background: 'var(--white)', minHeight: '60vh' }}
-    >
-      <div className="container" style={{ maxWidth: '960px' }}>
-        <nav style={{ marginBottom: '1.5rem' }}>
-          <Link to="/cart" style={{ color: 'var(--deep-teal)', fontSize: '0.9375rem', display: 'inline-flex', alignItems: 'center', minHeight: '48px', padding: '0.5rem 0' }}>
-            ← Back to cart
-          </Link>
-        </nav>
+    <div className="min-h-[60vh] bg-papyrus py-8 pb-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:py-10 md:pb-16">
+      <div className="container mx-auto max-w-3xl px-4 md:px-8">
+        <PageBreadcrumb className="mb-4" items={checkoutBreadcrumbItems} />
+
+        <Link
+          to="/cart"
+          className="font-body mb-6 inline-flex min-h-12 items-center text-sm text-deep-teal transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+        >
+          {copy.checkout.backToCart}
+        </Link>
 
         <p
-          className="font-label mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--clay-earth)] sm:text-xs sm:tracking-[0.22em]"
+          className="font-label mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-clay sm:text-xs sm:tracking-[0.22em]"
           aria-live="polite"
         >
           Checkout · Step {step + 1} of 3 · {steps[step]}
         </p>
 
-        {/* F11 — Visual progress indicator (dot-and-line); horizontal scroll on very narrow viewports */}
         <div
-          style={{
-            overflowX: 'auto',
-            WebkitOverflowScrolling: 'touch',
-            margin: '0 0 2rem',
-            width: '100%',
-            maxWidth: '100%',
-          }}
+          className="mb-8 w-full max-w-full overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]"
           role="progressbar"
           aria-valuenow={step + 1}
           aria-valuemin={1}
           aria-valuemax={3}
           aria-label={`Checkout step ${step + 1} of 3: ${steps[step]}`}
         >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 0,
-              width: 'max-content',
-              margin: '0 auto',
-              padding: '0 2px',
-            }}
-          >
-          {steps.map((label, i) => {
-            const isCompleted = i <= highestCompleted;
-            const isCurrent = i === step;
-            const isClickable = i <= highestCompleted;
+          <div className="mx-auto flex w-max items-center justify-center gap-0 px-0.5">
+            {steps.map((label, i) => {
+              const isCompleted = i <= highestCompleted;
+              const isCurrent = i === step;
+              const isClickable = i <= highestCompleted;
 
-            const dotColor = isCurrent
-              ? 'var(--ember)'
-              : isCompleted
-                ? 'var(--obsidian)'
-                : 'var(--stone)';
+              const dotClass = isCurrent
+                ? 'h-3.5 w-3.5 bg-ember shadow-[0_0_0_4px_rgba(232,89,60,0.2)]'
+                : isCompleted
+                  ? 'h-3 w-3 bg-obsidian'
+                  : 'h-3 w-3 bg-stone';
 
-            const labelColor = isCurrent
-              ? 'var(--obsidian)'
-              : isCompleted
-                ? 'var(--obsidian)'
-                : 'var(--clay-earth)';
+              const labelClassInner = isCurrent || isCompleted ? 'text-obsidian' : 'text-clay';
 
-            return (
-              <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
-                {i > 0 && (
-                  <div style={{
-                    width: 'clamp(2rem, 8vw, 5rem)',
-                    height: '2px',
-                    background: isCompleted ? 'var(--obsidian)' : 'var(--stone)',
-                    transition: 'background 0.3s ease',
-                  }} />
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleStepClick(i)}
-                  disabled={!isClickable && !isCurrent}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    background: 'none',
-                    border: 'none',
-                    cursor: isClickable ? 'pointer' : 'default',
-                    padding: '0.5rem',
-                    minHeight: '48px',
-                    minWidth: '48px',
-                  }}
-                  aria-label={`Step ${i + 1}: ${label}${isCompleted ? ' (completed)' : isCurrent ? ' (current)' : ''}`}
-                >
-                  <span style={{
-                    width: isCurrent ? '14px' : '12px',
-                    height: isCurrent ? '14px' : '12px',
-                    borderRadius: '50%',
-                    background: dotColor,
-                    transition: 'all 0.3s ease',
-                    boxShadow: isCurrent ? '0 0 0 4px rgba(232, 89, 60, 0.2)' : 'none',
-                    flexShrink: 0,
-                  }} />
-                  <span
-                    className="font-label"
-                    style={{
-                      fontSize: 'clamp(0.6875rem, 2.8vw, 0.8125rem)',
-                      fontWeight: isCurrent ? 600 : 400,
-                      color: labelColor,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.12em',
-                      whiteSpace: 'nowrap',
-                    }}
+              return (
+                <div key={label} className="flex items-center">
+                  {i > 0 ? (
+                    <div
+                      className={`h-0.5 w-[clamp(2rem,8vw,5rem)] transition-colors ${isCompleted ? 'bg-obsidian' : 'bg-stone'}`}
+                      aria-hidden
+                    />
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => handleStepClick(i)}
+                    disabled={!isClickable && !isCurrent}
+                    className={`flex min-h-12 min-w-12 flex-col items-center gap-2 border-0 bg-transparent px-2 py-2 ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
+                    aria-label={`Step ${i + 1}: ${label}${isCompleted ? ' (completed)' : isCurrent ? ' (current)' : ''}`}
                   >
-                    <span className="hidden sm:inline">{label}</span>
-                    <span className="sm:hidden">{stepsShort[i]}</span>
-                  </span>
-                </button>
-              </div>
-            );
-          })}
+                    <span className={`shrink-0 rounded-full transition-all ${dotClass}`} />
+                    <span className={`font-label text-[clamp(0.6875rem,2.8vw,0.8125rem)] uppercase tracking-[0.12em] ${isCurrent ? 'font-semibold' : 'font-normal'} ${labelClassInner}`}>
+                      <span className="hidden sm:inline">{label}</span>
+                      <span className="sm:hidden">{stepsShort[i]}</span>
+                    </span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
-        <p className="font-label -mt-3 mb-6 text-center text-[10px] uppercase tracking-wider text-[var(--clay-earth)] sm:hidden">
+        <p className="font-label -mt-5 mb-6 text-center text-[10px] uppercase tracking-wider text-clay sm:hidden">
           Swipe steps above if needed
         </p>
 
-        <div style={{ marginBottom: '2rem' }}>
+        <ul className="cart-trust-strip mb-6" aria-label="Checkout trust signals">
+          {CHECKOUT_SCHEMA.trustStripItems.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <p className="mb-8 font-body text-xs text-clay">
+          <Link to="/privacy" className="text-deep-teal underline decoration-deep-teal/30 underline-offset-2 hover:text-obsidian">
+            Privacy policy
+          </Link>
+          <span aria-hidden className="px-2 text-stone">
+            ·
+          </span>
+          <Link to="/terms" className="text-deep-teal underline decoration-deep-teal/30 underline-offset-2 hover:text-obsidian">
+            Terms
+          </Link>
+        </p>
+
+        <div className="mb-8">
           <CommerceContinuityPanel
             eyebrow="HORO checkout"
             title={copy.checkout.paymentContinuityTitle}
@@ -293,10 +294,53 @@ export function Checkout() {
 
         {step === 0 && (
           <form onSubmit={handleContinueToShipping}>
-            <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+            <div className="mb-8 rounded-2xl border border-stone/60 bg-white/70 p-4 shadow-sm md:p-5">
+              <p className="font-headline text-base font-semibold text-obsidian">{copy.checkout.expressHeading}</p>
+              <p className="mt-1.5 font-body text-sm leading-relaxed text-clay">{copy.checkout.expressSub}</p>
+              {expressNote ? (
+                <p className="mt-3 rounded-lg border border-deep-teal/20 bg-frost-blue/35 px-3 py-2 font-body text-sm text-obsidian" role="status">
+                  {expressNote}
+                </p>
+              ) : null}
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="font-label inline-flex min-h-12 min-w-[8.5rem] flex-1 items-center justify-center rounded-xl border border-obsidian bg-obsidian px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-obsidian/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:flex-none"
+                  onClick={() => {
+                    setPaymentMethod('wallet');
+                    setExpressNote(`${copy.checkout.expressPickedPrefix}: ${copy.checkout.applePayLabel}`);
+                  }}
+                >
+                  {copy.checkout.applePayLabel}
+                </button>
+                <button
+                  type="button"
+                  className="font-label inline-flex min-h-12 min-w-[8.5rem] flex-1 items-center justify-center rounded-xl border border-stone bg-white px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:flex-none"
+                  onClick={() => {
+                    setPaymentMethod('wallet');
+                    setExpressNote(`${copy.checkout.expressPickedPrefix}: ${copy.checkout.googlePayLabel}`);
+                  }}
+                >
+                  {copy.checkout.googlePayLabel}
+                </button>
+                <button
+                  type="button"
+                  className="font-label inline-flex min-h-12 min-w-[8.5rem] flex-1 items-center justify-center rounded-xl border border-stone bg-white px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:flex-none"
+                  onClick={() => {
+                    setPaymentMethod('paypal');
+                    setExpressNote(`${copy.checkout.expressPickedPrefix}: ${copy.checkout.paypalExpressLabel}`);
+                  }}
+                >
+                  {copy.checkout.paypalExpressLabel}
+                </button>
+              </div>
+              <p className="mt-3 font-body text-[11px] leading-snug text-clay">{copy.checkout.expressWalletHint}</p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
               <div>
-                <h1 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Contact</h1>
-                <label htmlFor="email" style={labelStyle}>
+                <h1 className="font-headline text-xl font-semibold text-obsidian">Contact</h1>
+                <label htmlFor="email" className={labelClass}>
                   Email *
                 </label>
                 <input
@@ -304,14 +348,24 @@ export function Checkout() {
                   type="email"
                   autoComplete="email"
                   value={email}
-                  onChange={(e) => { setEmail(e.target.value); setErrors((prev) => { const { email: _, ...rest } = prev; return rest; }); }}
-                  style={{ ...inputStyle, ...(errors.email ? errorInputStyle : {}) }}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrors((prev) => {
+                      const { email: _, ...rest } = prev;
+                      return rest;
+                    });
+                  }}
+                  className={`${inputBaseClass} ${errors.email ? inputErrorClass : ''}`}
                   aria-invalid={!!errors.email}
                   aria-describedby={errors.email ? 'email-error' : undefined}
                 />
-                {errors.email && <p id="email-error" style={errorTextStyle}>{errors.email}</p>}
+                {errors.email ? (
+                  <p id="email-error" className={errTextClass}>
+                    {errors.email}
+                  </p>
+                ) : null}
 
-                <label htmlFor="phone" style={{ ...labelStyle, margin: '1rem 0 0.35rem' }}>
+                <label htmlFor="phone" className={labelClass}>
                   Phone (WhatsApp) *
                 </label>
                 <input
@@ -319,31 +373,40 @@ export function Checkout() {
                   type="tel"
                   autoComplete="tel"
                   value={phone}
-                  onChange={(e) => { setPhone(e.target.value); setErrors((prev) => { const { phone: _, ...rest } = prev; return rest; }); }}
-                  style={{ ...inputStyle, ...(errors.phone ? errorInputStyle : {}) }}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    setErrors((prev) => {
+                      const { phone: _, ...rest } = prev;
+                      return rest;
+                    });
+                  }}
+                  className={`${inputBaseClass} ${errors.phone ? inputErrorClass : ''}`}
                   aria-invalid={!!errors.phone}
                   aria-describedby={errors.phone ? 'phone-error' : undefined}
                 />
-                {errors.phone && <p id="phone-error" style={errorTextStyle}>{errors.phone}</p>}
+                {errors.phone ? (
+                  <p id="phone-error" className={errTextClass}>
+                    {errors.phone}
+                  </p>
+                ) : null}
 
-                {/* F21 — WhatsApp opt-in */}
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '1rem 0', fontSize: '0.875rem', cursor: 'pointer' }}>
+                <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm text-obsidian">
                   <input
                     type="checkbox"
                     checked={whatsappOptIn}
                     onChange={(e) => setWhatsappOptIn(e.target.checked)}
-                    style={{ width: '18px', height: '18px', accentColor: 'var(--deep-teal)' }}
+                    className="h-[18px] w-[18px] accent-deep-teal"
                   />
                   {copy.checkout.whatsappOptIn}
                 </label>
 
-                <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--obsidian)', marginTop: '0.5rem' }}>{copy.checkout.guestCheckout}</p>
-                <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', marginTop: '0.35rem' }}>
+                <p className="mt-3 text-[0.9375rem] font-semibold text-obsidian">{copy.checkout.guestCheckout}</p>
+                <p className="mt-1.5 text-sm text-clay">
                   Shipping from {formatEgp(60)}; you&apos;ll choose speed on the next step.
                 </p>
 
-                <h2 style={{ fontSize: '1.125rem', margin: '1.5rem 0 1rem' }}>Shipping address</h2>
-                <label htmlFor="name" style={labelStyle}>
+                <h2 className="font-headline mt-8 text-lg font-semibold text-obsidian">Shipping address</h2>
+                <label htmlFor="name" className={labelClass}>
                   Full name *
                 </label>
                 <input
@@ -351,14 +414,24 @@ export function Checkout() {
                   type="text"
                   autoComplete="name"
                   value={fullName}
-                  onChange={(e) => { setFullName(e.target.value); setErrors((prev) => { const { name: _, ...rest } = prev; return rest; }); }}
-                  style={{ ...inputStyle, ...(errors.name ? errorInputStyle : {}) }}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    setErrors((prev) => {
+                      const { name: _, ...rest } = prev;
+                      return rest;
+                    });
+                  }}
+                  className={`${inputBaseClass} ${errors.name ? inputErrorClass : ''}`}
                   aria-invalid={!!errors.name}
                   aria-describedby={errors.name ? 'name-error' : undefined}
                 />
-                {errors.name && <p id="name-error" style={errorTextStyle}>{errors.name}</p>}
+                {errors.name ? (
+                  <p id="name-error" className={errTextClass}>
+                    {errors.name}
+                  </p>
+                ) : null}
 
-                <label htmlFor="line1" style={labelStyle}>
+                <label htmlFor="line1" className={labelClass}>
                   Address line 1 *
                 </label>
                 <input
@@ -366,14 +439,24 @@ export function Checkout() {
                   type="text"
                   autoComplete="address-line1"
                   value={line1}
-                  onChange={(e) => { setLine1(e.target.value); setErrors((prev) => { const { line1: _, ...rest } = prev; return rest; }); }}
-                  style={{ ...inputStyle, ...(errors.line1 ? errorInputStyle : {}) }}
+                  onChange={(e) => {
+                    setLine1(e.target.value);
+                    setErrors((prev) => {
+                      const { line1: _, ...rest } = prev;
+                      return rest;
+                    });
+                  }}
+                  className={`${inputBaseClass} ${errors.line1 ? inputErrorClass : ''}`}
                   aria-invalid={!!errors.line1}
                   aria-describedby={errors.line1 ? 'line1-error' : undefined}
                 />
-                {errors.line1 && <p id="line1-error" style={errorTextStyle}>{errors.line1}</p>}
+                {errors.line1 ? (
+                  <p id="line1-error" className={errTextClass}>
+                    {errors.line1}
+                  </p>
+                ) : null}
 
-                <label htmlFor="city" style={labelStyle}>
+                <label htmlFor="city" className={labelClass}>
                   City *
                 </label>
                 <input
@@ -381,18 +464,24 @@ export function Checkout() {
                   type="text"
                   autoComplete="address-level2"
                   value={city}
-                  onChange={(e) => { setCity(e.target.value); setErrors((prev) => { const { city: _, ...rest } = prev; return rest; }); }}
-                  style={{ ...inputStyle, ...(errors.city ? errorInputStyle : {}) }}
+                  onChange={(e) => {
+                    setCity(e.target.value);
+                    setErrors((prev) => {
+                      const { city: _, ...rest } = prev;
+                      return rest;
+                    });
+                  }}
+                  className={`${inputBaseClass} ${errors.city ? inputErrorClass : ''}`}
                   aria-invalid={!!errors.city}
                   aria-describedby={errors.city ? 'city-error' : undefined}
                 />
-                {errors.city && <p id="city-error" style={errorTextStyle}>{errors.city}</p>}
+                {errors.city ? (
+                  <p id="city-error" className={errTextClass}>
+                    {errors.city}
+                  </p>
+                ) : null}
 
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  style={{ width: '100%', marginTop: '1.25rem', minHeight: '48px' }}
-                >
+                <button type="submit" className="btn btn-primary mt-6 min-h-12 w-full">
                   Continue to shipping
                 </button>
               </div>
@@ -402,37 +491,44 @@ export function Checkout() {
         )}
 
         {step === 1 && (
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
             <div>
-              <h1 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Shipping method</h1>
-              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${shippingMethod === 'standard' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', marginBottom: '0.75rem', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
+              <h1 className="font-headline text-xl font-semibold text-obsidian">Shipping method</h1>
+              <label className={`${radioCardClass(shippingMethod === 'standard')} mb-3 mt-4`}>
                 <input type="radio" name="ship" checked={shippingMethod === 'standard'} onChange={() => setShippingMethod('standard')} />
-                <span>
+                <span className="font-body text-sm text-obsidian">
                   <strong>Standard</strong> — 3–5 business days · {formatEgp(60)}
                 </span>
               </label>
-              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${shippingMethod === 'express' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
+              <label className={radioCardClass(shippingMethod === 'express')}>
                 <input type="radio" name="ship" checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} />
-                <span>
+                <span className="font-body text-sm text-obsidian">
                   <strong>Express</strong> — 1–2 business days · {formatEgp(120)}
                 </span>
               </label>
-              <p style={{ marginTop: '1rem' }}>
+              <p className="mt-4 font-body text-sm text-obsidian">
                 {copy.checkout.deliveryLabel} (business days): {estimatedDeliveryRange}
               </p>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--clay-earth)', marginTop: '0.75rem' }}>
-                Total includes {formatEgp(shippingCost)} shipping. <Link to="/exchange">Free exchange within 14 days</Link> if size doesn&apos;t fit.
+              <p className="mt-3 text-sm text-clay">
+                Total includes {formatEgp(shippingCost)} shipping.{' '}
+                <Link to="/exchange" className="text-deep-teal underline decoration-deep-teal/30 underline-offset-2 hover:text-obsidian">
+                  Free exchange within 14 days
+                </Link>{' '}
+                if size doesn&apos;t fit.
               </p>
               <button
                 type="button"
-                className="btn btn-primary"
-                style={{ width: '100%', marginTop: '1.25rem', minHeight: '48px' }}
+                className="btn btn-primary mt-6 min-h-12 w-full"
                 onClick={handleContinueToPayment}
                 aria-label="Continue to payment step"
               >
                 Continue to payment
               </button>
-              <button type="button" style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'var(--deep-teal)', cursor: 'pointer', minHeight: '48px', padding: '0.5rem 0.75rem', fontSize: '0.9375rem' }} onClick={() => setStep(0)}>
+              <button
+                type="button"
+                className="mt-3 min-h-12 bg-transparent px-1 text-sm text-deep-teal hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                onClick={() => setStep(0)}
+              >
                 ← Back to information
               </button>
             </div>
@@ -441,41 +537,72 @@ export function Checkout() {
         )}
 
         {step === 2 && (
-          <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
             <div>
-              <h1 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Payment</h1>
-              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${paymentMethod === 'cod' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', marginBottom: '0.75rem', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
+              <h1 className="font-headline text-xl font-semibold text-obsidian">Payment</h1>
+              <p className="font-label mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">Pay on delivery or card</p>
+              <label className={`${radioCardClass(paymentMethod === 'cod')} mb-3 mt-2`}>
                 <input type="radio" name="pay" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
-                <span>
+                <span className="font-body text-sm text-obsidian">
                   <strong>Cash on delivery (COD)</strong>
                   <br />
                   Pay when your order arrives. Total: {formatEgp(subtotalEgp + shippingCost)}
                 </span>
               </label>
-              <label style={{ display: 'flex', gap: '0.75rem', padding: '1rem', border: `1px solid ${paymentMethod === 'card' ? 'var(--ember)' : 'var(--stone)'}`, borderRadius: 'var(--radius-card)', cursor: 'pointer', minHeight: '48px', alignItems: 'center' }}>
+              <label className={`${radioCardClass(paymentMethod === 'card')} mb-3`}>
                 <input type="radio" name="pay" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
-                <span>
+                <span className="font-body text-sm text-obsidian">
                   <strong>Pay with card</strong>
-                  <span style={{ display: 'block', fontSize: '0.875rem', color: 'var(--kohl-gold-dark)', marginTop: '0.25rem' }}>
-                    Save {formatEgp(CARD_DISCOUNT_EGP)} with card payment
-                  </span>
+                  <span className="mt-1 block text-sm text-kohl-gold-dark">Save {formatEgp(CARD_DISCOUNT_EGP)} with card payment</span>
                 </span>
               </label>
-              <p style={{ marginTop: '1.25rem', fontSize: '0.875rem', color: 'var(--clay-earth)' }} lang="ar" dir="rtl">
+              <p className="font-label mt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">Digital wallets &amp; Egypt methods</p>
+              <label className={`${radioCardClass(paymentMethod === 'paypal')} mb-3 mt-2`}>
+                <input type="radio" name="pay" checked={paymentMethod === 'paypal'} onChange={() => setPaymentMethod('paypal')} />
+                <span className="font-body text-sm text-obsidian">
+                  <strong>{copy.checkout.payPayPalTitle}</strong>
+                  <span className="mt-1 block text-sm text-kohl-gold-dark">{copy.checkout.payPayPalBody}</span>
+                </span>
+              </label>
+              <label className={`${radioCardClass(paymentMethod === 'fawry')} mb-3`}>
+                <input type="radio" name="pay" checked={paymentMethod === 'fawry'} onChange={() => setPaymentMethod('fawry')} />
+                <span className="font-body text-sm text-obsidian">
+                  <strong>{copy.checkout.payFawryTitle}</strong>
+                  <span className="mt-1 block text-sm text-kohl-gold-dark">{copy.checkout.payFawryBody}</span>
+                </span>
+              </label>
+              <label className={`${radioCardClass(paymentMethod === 'wallet')} mb-3`}>
+                <input type="radio" name="pay" checked={paymentMethod === 'wallet'} onChange={() => setPaymentMethod('wallet')} />
+                <span className="font-body text-sm text-obsidian">
+                  <strong>{copy.checkout.payWalletTitle}</strong>
+                  <span className="mt-1 block text-sm text-kohl-gold-dark">{copy.checkout.payWalletBody}</span>
+                </span>
+              </label>
+              <p className="mt-6 text-sm text-clay" lang="ar" dir="rtl">
                 {copy.checkout.secureDataArabic}
               </p>
-              <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                {copy.checkout.secureData} COD or card. <Link to="/exchange">Free exchange within 14 days</Link> if size doesn&apos;t fit. WhatsApp updates if you opted in.
+              <p className="mt-2 text-sm text-obsidian">
+                {copy.checkout.paymentExtraSecureLine}{' '}
+                <Link to="/exchange" className="text-deep-teal underline decoration-deep-teal/30 underline-offset-2 hover:text-obsidian">
+                  Free exchange within 14 days
+                </Link>{' '}
+                if size doesn&apos;t fit. WhatsApp updates if you opted in.
               </p>
               <button
                 type="button"
-                className="btn btn-primary"
-                style={{ width: '100%', marginTop: '1.25rem', display: 'inline-flex', minHeight: '48px', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
-                onClick={handlePlaceOrder}
+                className="btn btn-primary mt-6 inline-flex min-h-12 w-full items-center justify-center disabled:pointer-events-none disabled:opacity-60"
+                onClick={() => void handlePlaceOrder()}
+                disabled={placingOrder}
+                aria-busy={placingOrder}
               >
-                Place order — {formatEgp(orderTotal)}
+                {placingOrder ? copy.checkout.placingOrder : `Place order — ${formatEgp(orderTotal)}`}
               </button>
-              <button type="button" style={{ marginTop: '0.75rem', background: 'none', border: 'none', color: 'var(--deep-teal)', cursor: 'pointer', minHeight: '48px', padding: '0.5rem 0.75rem', fontSize: '0.9375rem' }} onClick={() => setStep(1)}>
+              <button
+                type="button"
+                className="mt-3 min-h-12 bg-transparent px-1 text-sm text-deep-teal hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal disabled:opacity-50"
+                onClick={() => setStep(1)}
+                disabled={placingOrder}
+              >
                 ← Back to shipping
               </button>
             </div>
@@ -487,43 +614,12 @@ export function Checkout() {
   );
 }
 
-const inputStyle: CSSProperties = {
-  width: '100%',
-  minHeight: '48px',
-  padding: '0 0.75rem',
-  borderRadius: '8px',
-  border: '1px solid var(--stone)',
-  background: 'var(--white)',
-  fontSize: '1rem',
-  transition: 'border-color 0.2s ease',
-};
-
-const errorInputStyle: CSSProperties = {
-  borderColor: 'var(--ember)',
-  boxShadow: '0 0 0 2px rgba(232, 89, 60, 0.15)',
-};
-
-const errorTextStyle: CSSProperties = {
-  fontSize: '0.8125rem',
-  color: 'var(--ember)',
-  margin: '0.35rem 0 0',
-  fontStyle: 'normal',
-};
-
-const labelStyle: CSSProperties = {
-  display: 'block',
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  margin: '1rem 0 0.35rem',
-  color: 'var(--label-brown)',
-};
-
 function OrderSummary({
   shipping,
   paymentMethod,
 }: {
   shipping?: number;
-  paymentMethod?: 'cod' | 'card';
+  paymentMethod?: 'cod' | 'card' | 'paypal' | 'fawry' | 'wallet';
 }) {
   const { items, subtotalEgp, giftWrapEgp } = useCart();
   const lineViews = useMemo(() => getCartLineViews(items), [items]);
@@ -531,44 +627,42 @@ function OrderSummary({
   const total = subtotalEgp + giftWrapEgp + (shipping ?? 0) - cardDiscount;
 
   return (
-      <aside style={{ padding: '1.25rem', borderRadius: 'var(--radius-card)', border: '1px solid var(--stone)', background: 'var(--papyrus)' }}>
-        <h2 style={{ fontSize: '1rem', margin: '0 0 1rem' }}>Order summary</h2>
-      {lineViews.map((line) => {
-        return (
-          <div key={line.key} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <div style={{ width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'var(--stone)' }}>
-              <TeeImage src={line.imageSrc} alt={line.imageAlt} w={128} />
-            </div>
-            <div>
-              <p style={{ margin: 0, fontWeight: 500 }}>{line.productName}</p>
-              <p style={{ margin: '0.25rem 0 0', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
-                {line.size} · Qty {line.qty} · {formatEgp(line.linePriceEgp)}
-              </p>
-            </div>
+    <aside className="h-fit rounded-xl border border-stone bg-papyrus/90 p-5 shadow-sm lg:sticky lg:top-28">
+      <h2 className="font-headline mb-4 text-base font-semibold text-obsidian">Order summary</h2>
+      {lineViews.map((line) => (
+        <div key={line.key} className="mb-3 flex gap-3">
+          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-stone">
+            <TeeImage src={line.imageSrc} alt={line.imageAlt} w={128} />
           </div>
-        );
-      })}
-      <p style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-obsidian">{line.productName}</p>
+            <p className="mt-1 text-sm text-clay">
+              {line.size} · Qty {line.qty} · {formatEgp(line.linePriceEgp)}
+            </p>
+          </div>
+        </div>
+      ))}
+      <p className="flex justify-between font-body text-sm text-obsidian">
         <span>Subtotal</span>
         <span>{formatEgp(subtotalEgp)}</span>
       </p>
       {giftWrapEgp > 0 ? (
-        <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
+        <p className="mt-2 flex justify-between text-sm text-clay">
           <span>{CART_SCHEMA.copy.giftWrapLabel}</span>
           <span>{formatEgp(giftWrapEgp)}</span>
         </p>
       ) : null}
-      <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
+      <p className="mt-2 flex justify-between text-sm text-clay">
         <span>Shipping</span>
         <span>{shipping != null ? formatEgp(shipping) : '—'}</span>
       </p>
       {paymentMethod === 'card' ? (
-        <p style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--clay-earth)' }}>
+        <p className="mt-2 flex justify-between text-sm text-clay">
           <span>Card discount</span>
           <span>−{formatEgp(CARD_DISCOUNT_EGP)}</span>
         </p>
       ) : null}
-      <p style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--stone)' }}>
+      <p className="mt-4 flex justify-between border-t border-stone pt-4 font-semibold text-obsidian">
         <span>Total</span>
         <span>{formatEgp(total)}</span>
       </p>

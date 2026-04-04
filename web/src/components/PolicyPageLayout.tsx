@@ -3,7 +3,7 @@ import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-c
 
 type PolicySection = {
   title: string;
-  body: string[];
+  body: readonly string[];
 };
 
 export function PolicyPageLayout({

@@ -1,16 +1,26 @@
 import { Link } from 'react-router-dom';
+import { PageBreadcrumb } from '../components/PageBreadcrumb';
+import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
 import { VIBES_SCHEMA } from '../data/domain-config';
 import { vibeEditorialBlocks } from '../data/homeEditorial';
 import { imgUrl, vibesHubHeroTiles } from '../data/images';
+import { NAV_ROUTE } from '../lib/navLinks';
 import { vibes } from '../data/site';
 
 export function ShopByVibe() {
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
       <div className="mx-auto flex min-h-[calc(100vh-10rem)] max-w-7xl flex-col gap-10 px-4 pt-8 md:gap-12 md:px-8 md:pt-10">
+        <PageBreadcrumb
+          className="mb-0 md:-mb-2"
+          items={[
+            { label: 'Home', to: '/' },
+            { label: NAV_ROUTE.collection.label },
+          ]}
+        />
         <section
-          className="relative isolate overflow-hidden rounded-[1.75rem] border border-white/65 shadow-[0_28px_68px_-36px_rgba(26,26,26,0.35)]"
+          className="relative isolate overflow-hidden"
           aria-label={VIBES_SCHEMA.copy.hubHeroAlt}
         >
           <div className="grid min-h-[28rem] grid-cols-5 gap-1 bg-obsidian sm:min-h-[32rem] sm:gap-2">
@@ -37,7 +47,7 @@ export function ShopByVibe() {
           />
 
           <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 md:p-8">
-            <div className="max-w-2xl rounded-[1.35rem] border border-white/70 bg-[linear-gradient(135deg,rgba(26,26,26,0.74),rgba(26,26,26,0.42))] px-5 py-5 shadow-[0_18px_48px_-28px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:px-6 sm:py-6 md:px-8 md:py-7">
+            <div className="max-w-2xl px-2 py-4">
               <p className="font-label mb-2 text-[10px] font-medium uppercase tracking-[0.26em] text-white/76 sm:text-[11px]">
                 {VIBES_SCHEMA.copy.hubEyebrow}
               </p>
@@ -75,7 +85,7 @@ export function ShopByVibe() {
 
         <section
           aria-labelledby="vibes-editorial-title"
-          className="rounded-[1.5rem] border border-stone/25 bg-white/68 px-5 py-6 shadow-[0_16px_36px_-28px_rgba(26,26,26,0.24)] md:px-7 md:py-7"
+          className="px-2 py-6 md:py-7"
         >
           <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Crawlable guide</p>
           <h2 id="vibes-editorial-title" className="font-headline mt-3 text-[1.45rem] font-semibold tracking-tight text-obsidian md:text-[1.8rem]">
@@ -116,6 +126,8 @@ export function ShopByVibe() {
           </div>
         </section>
       </div>
+
+      <RecentlyViewedStrip className="border-t border-stone/20" />
     </div>
   );
 }

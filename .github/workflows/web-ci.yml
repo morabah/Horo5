@@ -1,0 +1,40 @@
+name: Web CI
+
+on:
+  push:
+    paths:
+      - "web/**"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    paths:
+      - "web/**"
+
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Typecheck, build, accessibility audit
+        env:
+          VITE_SITE_URL: https://example.com
+        run: |
+          npx tsc --noEmit
+          npm run build
+          npm run test:a11y

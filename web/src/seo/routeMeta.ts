@@ -79,7 +79,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       '/about',
       'About HORO Egypt | Graphic Tees & Streetwear',
-      'Meet HORO Egypt, a streetwear label curating graphic tees, original artwork, COD-friendly checkout, and exchange-ready shopping for Egypt.',
+      'Meet HORO Egypt, where original illustration becomes graphic tees with clear product proof, COD-friendly checkout, and exchange-ready shopping in Egypt.',
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },

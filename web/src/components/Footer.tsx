@@ -13,13 +13,22 @@ export function Footer() {
     : null;
   return (
     <footer className="bg-obsidian pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 text-[#f5f0e8] sm:pt-32">
+      {/* Brand manifesto — cinematic closing typography */}
+      <div className="mx-auto max-w-[1400px] px-[max(1rem,env(safe-area-inset-left,0px))] sm:px-8 md:px-12 mb-16 sm:mb-24">
+        <p
+          className="footer-watermark-a11y-exempt font-headline text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1.05] tracking-tight text-clean-white/[0.08] select-none"
+          aria-hidden="true"
+        >
+          Wear What You Mean.
+        </p>
+      </div>
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] font-body sm:gap-20 sm:px-8 md:grid-cols-4 md:px-12">
         <div className="space-y-8">
           <Link to="/" className="inline-flex items-center" aria-label="HORO — Home">
             <BrandLogo variant="light" />
           </Link>
           <p className="max-w-xs text-sm leading-relaxed text-stone">
-            A digital atelier curating the intersection of wearable art and Egyptian heritage. Vol 01: The Inner Dialogue.
+            Artist-made graphic tees for Egypt, built around original illustration, 220 GSM cotton, and a checkout that stays clear.
           </p>
         </div>
         <div>

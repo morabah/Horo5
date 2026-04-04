@@ -4,37 +4,24 @@ type QuickViewTriggerProps = {
   productName: string;
   onClick: () => void;
   className?: string;
-  compact?: boolean;
+
+  visibilityMode?: 'desktop-hover' | 'mobile-inline';
 };
 
 export function QuickViewTrigger({
   productName,
   onClick,
   className = '',
-  compact = false,
+
+  visibilityMode = 'desktop-hover',
 }: QuickViewTriggerProps) {
+  const desktopHover = visibilityMode === 'desktop-hover';
   const triggerClassName = [
-    'quick-view-pill',
-    'quick-view-pill--hover',
-    compact ? 'quick-view-pill--compact' : '',
     'font-label',
-    'absolute',
-    'z-10',
-    'hidden',
-    'items-center',
-    'justify-center',
-    'rounded-full',
-    'text-center',
-    'font-medium',
     'uppercase',
-    'text-obsidian',
-    'transition-shadow',
-    'hover:shadow-lg',
-    'focus-visible:outline-2',
-    'focus-visible:outline-offset-2',
-    'focus-visible:outline-deep-teal',
-    'md:inline-flex',
-    compact ? 'min-h-11 px-4 py-3 text-[11px] tracking-[0.2em]' : 'min-h-12 px-4 py-3 text-xs tracking-[0.2em]',
+    'transition-all duration-300 ease-out',
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal',
+    desktopHover ? 'absolute z-10 hidden items-center justify-center bottom-3 left-3 text-[10px] tracking-[0.18em] font-medium text-obsidian bg-transparent border-b border-transparent hover:border-obsidian md:inline-flex opacity-0 group-hover:opacity-100' : 'relative inline-flex items-center text-[10px] tracking-[0.18em] font-medium text-obsidian underline decoration-stone/50 hover:decoration-obsidian w-fit md:hidden mt-1',
     className,
   ]
     .filter(Boolean)
@@ -47,7 +34,7 @@ export function QuickViewTrigger({
       onClick={onClick}
       aria-label={QUICK_VIEW_SCHEMA.copy.openAriaTemplate.replace('{name}', productName)}
     >
-      {QUICK_VIEW_SCHEMA.copy.openCta}
+      + {QUICK_VIEW_SCHEMA.copy.openCta}
     </button>
   );
 }
