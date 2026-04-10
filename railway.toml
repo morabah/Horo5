@@ -4,7 +4,7 @@
 # If you set Root Directory to `medusa-backend` instead, use `/medusa-backend/railway.toml`.
 
 [deploy]
-preDeployCommand = ["npm", "run", "migrate"]
+preDeployCommand = ["npm run migrate"]
 startCommand = "npm run start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
