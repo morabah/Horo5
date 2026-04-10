@@ -46,7 +46,7 @@ What this seeds:
 
 **If Railway shows “Railpack could not determine how to build the app”:** the service is building from the **repository root** (monorepo) instead of only `medusa-backend`. Fix it in either of these ways:
 
-- **Recommended:** Leave the service **root directory** empty (repo root). The repository includes a root [`Dockerfile`](../Dockerfile) and [`railway.toml`](../railway.toml) so Railway builds Medusa with Docker and runs `npm run migrate` before start.
+- **Recommended:** Leave the service **root directory** empty (repo root). The repository includes a root [`Dockerfile`](../Dockerfile) and [`railway.toml`](../railway.toml) so Railway builds Medusa with Docker and runs `npm run migrate` before start. The root [`.dockerignore`](../.dockerignore) excludes other apps and large folders (e.g. `shopify-headless`, `Guidelines `) so the Docker build context stays small and builds are less likely to hit **timeouts** on first `npm ci` / `medusa build`.
 - **Alternative:** Set **Root Directory** to **`medusa-backend`** so Railpack detects Node from `package.json`. Set **Custom Config File** to **`/medusa-backend/railway.toml`** if deploy settings are not applied. (Egypt seed images use `../web/public/...`; use the root `Dockerfile` flow if those files must be in the image.)
 
 ---
