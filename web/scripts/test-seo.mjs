@@ -27,7 +27,7 @@ test('sitemap and robots helpers only contain indexable public routes', () => {
   const robots = seo.createRobotsTxt('https://example.com');
 
   assert.ok(paths.includes('/search'));
-  assert.match(sitemap, /\/vibes<\/loc>/);
+  assert.match(sitemap, /\/feelings<\/loc>/);
   assert.match(sitemap, /\/products\/midnight-compass<\/loc>/);
   assert.match(sitemap, /\/search<\/loc>/);
   assert.doesNotMatch(sitemap, /\/cart<\/loc>/);

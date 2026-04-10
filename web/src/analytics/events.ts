@@ -1,5 +1,6 @@
 import type { CartLine } from '../cart/types';
-import { getOccasion, getProduct, getVibe, type Product, type ProductSizeKey } from '../data/site';
+import { getFeeling, getOccasion, getProduct, type Product, type ProductSizeKey } from '../data/site';
+import { HYPOTHESIS_PRIMARY_SEGMENT } from './hypothesisContext';
 
 type AnalyticsItemContext = {
   occasionSlug?: string;
@@ -26,13 +27,13 @@ export function shouldSuppressDuplicateEvent(name: string, key: string, now = Da
 }
 
 export function buildAnalyticsItem(product: Product, quantity: number, context: AnalyticsItemContext = {}) {
-  const vibe = getVibe(product.vibeSlug);
+  const feeling = getFeeling(product.feelingSlug);
   const occasion = getOccasion(context.occasionSlug ?? product.occasionSlugs[0] ?? '');
   return {
     item_id: product.slug,
     item_name: product.name,
     item_brand: 'HORO Egypt',
-    ...(vibe ? { item_category: vibe.name } : {}),
+    ...(feeling ? { item_category: feeling.name } : {}),
     ...(occasion ? { item_category2: occasion.name } : {}),
     ...(context.size ? { item_variant: context.size } : {}),
     price: product.priceEgp,
@@ -102,7 +103,7 @@ export function trackViewItem(product: Product) {
   const payload = createViewItemPayload(product);
 
   if (window.gtag && gaId) {
-    window.gtag('event', 'view_item', payload);
+    window.gtag('event', 'view_item', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
   if (window.fbq && pixelId) {
     window.fbq('track', 'ViewContent', {
@@ -120,7 +121,7 @@ export function trackAddToCart(product: Product, quantity: number, size: Product
   const pixelId = import.meta.env.VITE_META_PIXEL_ID?.trim();
   const payload = createAddToCartPayload(product, quantity, size);
   if (window.gtag && gaId) {
-    window.gtag('event', 'add_to_cart', payload);
+    window.gtag('event', 'add_to_cart', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
   if (window.fbq && pixelId) {
     window.fbq('track', 'AddToCart', {
@@ -141,7 +142,7 @@ export function trackBeginCheckout(lines: CartLine[], subtotalEgp: number, giftW
   if (payload.items.length === 0) return;
 
   if (window.gtag && gaId) {
-    window.gtag('event', 'begin_checkout', payload);
+    window.gtag('event', 'begin_checkout', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
   if (window.fbq && pixelId) {
     window.fbq('track', 'InitiateCheckout', {
@@ -167,7 +168,7 @@ export function trackPurchase(payload: {
   if (eventPayload.items.length === 0) return;
 
   if (window.gtag && gaId) {
-    window.gtag('event', 'purchase', eventPayload);
+    window.gtag('event', 'purchase', { ...eventPayload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
   if (window.fbq && pixelId) {
     window.fbq('track', 'Purchase', {
@@ -188,6 +189,7 @@ export type SearchZeroResultsPayload = {
   filter_occasion: string;
   filter_color: string;
   scope_vibe?: string;
+  scope_feeling?: string;
   scope_occasion?: string;
 };
 
@@ -196,6 +198,6 @@ export function trackSearchZeroResults(payload: SearchZeroResultsPayload) {
   if (typeof window === 'undefined') return;
   const gaId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim();
   if (window.gtag && gaId) {
-    window.gtag('event', 'search_zero_results', payload);
+    window.gtag('event', 'search_zero_results', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
 }

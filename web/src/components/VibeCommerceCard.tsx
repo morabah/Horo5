@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
 import { VIBES_SCHEMA } from '../data/domain-config';
-import type { Vibe } from '../data/site';
+import type { Feeling } from '../data/site';
 import { glassInteractive } from '../lib/glassInteractive';
-import { getVibeCollectionVisual, imgUrl } from '../data/images';
+import { getFeelingCollectionVisual, imgUrl } from '../data/images';
 
 const linkBaseClass =
   'group flex h-full min-h-0 flex-col overflow-hidden transition-all duration-700 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
 
 export type VibeCommerceCardProps = {
-  vibe: Vibe;
+  feeling: Feeling;
   titleTag: 'h2' | 'h3';
   variant: 'explore' | 'see-vibe';
   /** Appended to the shared card link classes (e.g. scroll-mt, data-reveal) */
@@ -19,7 +19,7 @@ export type VibeCommerceCardProps = {
 };
 
 export function VibeCommerceCard({
-  vibe,
+  feeling,
   titleTag,
   variant,
   linkClassName,
@@ -27,14 +27,14 @@ export function VibeCommerceCard({
   id,
   'data-reveal': dataReveal,
 }: VibeCommerceCardProps) {
-  const cover = getVibeCollectionVisual(vibe.slug).cover;
+  const cover = getFeelingCollectionVisual(feeling.slug).cover;
   const ctaLabel = variant === 'see-vibe' ? VIBES_SCHEMA.copy.cardSeeVibeCta : VIBES_SCHEMA.copy.cardExploreCta;
   const ariaLabel = VIBES_SCHEMA.copy.cardAriaTemplate
     .replace('{cta}', ctaLabel.replace(/\s*→$/, '').trim())
-    .replace('{name}', vibe.name);
+    .replace('{name}', feeling.name);
 
   const titleClassName = [
-    'font-pdp-serif mb-0.5 line-clamp-2 font-normal leading-tight tracking-wide text-[clamp(1rem,5.2cqw,1.375rem)]',
+    'font-headline mb-0.5 line-clamp-2 font-semibold leading-tight tracking-tight text-[clamp(1rem,5.2cqw,1.375rem)]',
     glassInteractive.title,
   ].join(' ');
   const footerSurfaceClassName =
@@ -44,14 +44,14 @@ export function VibeCommerceCard({
 
   const titleEl =
     titleTag === 'h2' ? (
-      <h2 className={titleClassName}>{vibe.name}</h2>
+      <h2 className={titleClassName}>{feeling.name}</h2>
     ) : (
-      <h3 className={titleClassName}>{vibe.name}</h3>
+      <h3 className={titleClassName}>{feeling.name}</h3>
     );
 
   return (
     <Link
-      to={`/vibes/${vibe.slug}`}
+      to={`/feelings/${feeling.slug}`}
       aria-label={ariaLabel}
       className={[linkBaseClass, linkClassName, className].filter(Boolean).join(' ')}
       id={id}
@@ -74,7 +74,7 @@ export function VibeCommerceCard({
         <div
           className="pointer-events-none absolute inset-0 bg-linear-to-tr opacity-25"
           style={{
-            background: `linear-gradient(to top right, ${vibe.accent}55, transparent 50%)`,
+            background: `linear-gradient(to top right, ${feeling.accent}55, transparent 50%)`,
           }}
           aria-hidden
         />
@@ -94,7 +94,7 @@ export function VibeCommerceCard({
                   'mt-0.5 h-[clamp(0.375rem,1.8cqw,0.5rem)] w-[clamp(0.375rem,1.8cqw,0.5rem)] shrink-0 rounded-full shadow-md',
                   glassInteractive.accentDot,
                 ].join(' ')}
-                style={{ backgroundColor: vibe.accent }}
+                style={{ backgroundColor: feeling.accent }}
                 aria-hidden
               />
               {titleEl}
@@ -105,11 +105,11 @@ export function VibeCommerceCard({
                 glassInteractive.body,
               ].join(' ')}
             >
-              {vibe.tagline}
+              {feeling.tagline}
             </p>
             <span
               className={[
-                'relative z-10 font-label mt-2 inline-flex items-center gap-1.5 pl-[clamp(1.125rem,5cqw,1.375rem)] text-[clamp(0.5625rem,2.4cqw,0.625rem)] font-medium uppercase tracking-[0.25em]',
+                'relative z-10 font-body mt-2 inline-flex items-center gap-1.5 pl-[clamp(1.125rem,5cqw,1.375rem)] text-[clamp(0.75rem,2.7cqw,0.82rem)] font-medium',
                 glassInteractive.cta,
               ].join(' ')}
             >

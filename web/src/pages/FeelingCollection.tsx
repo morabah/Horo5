@@ -3,13 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { AppIcon } from '../components/AppIcon';
-import { getEditorialBlockByVibeSlug } from '../data/homeEditorial';
-import { getVibe, productsByVibe, vibes } from '../data/site';
-import { getProductMedia, getVibeCollectionVisual, imgUrl } from '../data/images';
+import { getEditorialBlockByFeelingSlug } from '../data/homeEditorial';
+import { getFeeling, productsByFeeling, feelings } from '../data/site';
+import { getFeelingCollectionVisual, getProductMedia, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useUiLocale } from '../i18n/ui-locale';
 
 /** Show numeric design count in hero only when catalog feels substantial */
 const DESIGN_COUNT_MIN = 4;
@@ -64,10 +65,11 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   });
 }
 
-export function VibeCollection() {
+export function FeelingCollection() {
   const { slug = '' } = useParams();
-  const vibe = getVibe(slug);
-  const baseList = productsByVibe(slug);
+  const { copy } = useUiLocale();
+  const feeling = getFeeling(slug);
+  const baseList = productsByFeeling(slug);
   const [sortKey, setSortKey] = useState<ProductSortKey>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
@@ -77,7 +79,7 @@ export function VibeCollection() {
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
   const mobileFilterTriggerRef = useRef<HTMLElement | null>(null);
 
-  const editorialBlock = useMemo(() => getEditorialBlockByVibeSlug(slug), [slug]);
+  const editorialBlock = useMemo(() => getEditorialBlockByFeelingSlug(slug), [slug]);
 
   useEffect(() => {
     setSortKey('featured');
@@ -94,22 +96,22 @@ export function VibeCollection() {
   const sorted = useMemo(() => sortProductList(baseList, sortKey), [baseList, sortKey]);
   const list = useMemo(() => filterByPrice(sorted, priceFilter), [sorted, priceFilter]);
 
-  const others = vibes.filter((v) => v.slug !== slug).slice(0, 4);
+  const others = feelings.filter((f) => f.slug !== slug).slice(0, 4);
 
-  if (!vibe) {
+  if (!feeling) {
     return (
       <div className="container py-12">
-        <p className="font-body text-warm-charcoal">Vibe not found.</p>
-        <Link to="/vibes" className="font-label mt-4 inline-block text-deep-teal underline">
-          Back to Shop by Vibe
+        <p className="font-body text-warm-charcoal">Feeling not found.</p>
+        <Link to="/feelings" className="font-label mt-4 inline-block text-deep-teal underline">
+          {copy.shell.shopByFeeling}
         </Link>
       </div>
     );
   }
 
-  const vibeVisuals = getVibeCollectionVisual(vibe.slug);
-  const storyLead = editorialBlock?.body ?? vibe.tagline;
-  const manifestoLine = editorialBlock?.manifesto ?? vibe.manifesto;
+  const feelingVisuals = getFeelingCollectionVisual(feeling.slug);
+  const storyLead = editorialBlock?.body ?? feeling.tagline;
+  const manifestoLine = editorialBlock?.manifesto ?? feeling.manifesto;
   const designCountLabel = baseList.length >= DESIGN_COUNT_MIN ? `${baseList.length} designs` : 'Curated selection';
   const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all';
 
@@ -175,79 +177,79 @@ export function VibeCollection() {
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
       <a
-        href="#vibe-collection-products"
+        href="#feeling-collection-products"
         className="sr-only left-4 top-[max(0.75rem,env(safe-area-inset-top))] z-250 rounded-sm border border-outline-variant/50 bg-papyrus px-4 py-3 font-label text-[11px] font-semibold uppercase tracking-widest text-obsidian shadow-md outline-none ring-deep-teal focus:not-sr-only focus:fixed focus:ring-2"
       >
         Skip to collection
       </a>
 
-      <section className="relative isolate overflow-hidden bg-obsidian text-white" aria-labelledby="vibe-collection-title">
+      <section className="relative isolate overflow-hidden bg-obsidian text-white" aria-labelledby="feeling-collection-title">
         <div className="relative h-[44vh] min-h-[24rem] sm:h-[48vh] md:h-[56vh] md:min-h-[32rem] lg:h-[60vh]">
           <img
-            alt={vibeVisuals.hero.alt}
+            alt={feelingVisuals.hero.alt}
             className="absolute inset-0 h-full w-full object-cover"
-            src={imgUrl(vibeVisuals.hero.src, 1600)}
+            src={imgUrl(feelingVisuals.hero.src, 1600)}
             width={1600}
             height={1200}
             decoding="async"
-            style={vibeVisuals.hero.objectPosition ? { objectPosition: vibeVisuals.hero.objectPosition } : undefined}
+            style={feelingVisuals.hero.objectPosition ? { objectPosition: feelingVisuals.hero.objectPosition } : undefined}
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.26)_0%,rgba(18,18,18,0.46)_46%,rgba(18,18,18,0.88)_100%)]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.32)_0%,rgba(18,18,18,0.52)_42%,rgba(18,18,18,0.92)_100%)]"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-0 opacity-40"
-            style={{ background: `linear-gradient(135deg, ${vibe.accent}66, transparent 42%)` }}
+            className="pointer-events-none absolute inset-0 opacity-[0.22]"
+            style={{ background: `linear-gradient(135deg, ${feeling.accent}55, transparent 48%)` }}
             aria-hidden
           />
           <div className="absolute inset-x-0 bottom-0">
             <div className="mx-auto max-w-7xl px-6 pb-8 md:px-10 md:pb-12 lg:pb-14">
-              <div className="max-w-2xl">
-                <nav className="font-body mb-4 text-[13px] text-white/76 md:mb-5 md:text-sm" aria-label="Breadcrumb">
+              <div className="max-w-2xl rounded-2xl border border-white/12 bg-obsidian/82 px-5 py-5 shadow-[0_24px_56px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md md:px-7 md:py-7">
+                <nav className="font-body mb-4 text-[13px] text-white/90 md:mb-5 md:text-sm" aria-label={copy.shell.breadcrumb}>
                   <Link to="/" className="transition-colors hover:text-white">
-                    Home
+                    {copy.shell.home}
                   </Link>
-                  <span className="text-white/42" aria-hidden>
+                  <span className="text-white/60" aria-hidden>
                     {' '}
                     /{' '}
                   </span>
-                  <Link to="/vibes" className="transition-colors hover:text-white">
-                    Shop by Vibe
+                  <Link to="/feelings" className="transition-colors hover:text-white">
+                    {copy.shell.shopByFeeling}
                   </Link>
-                  <span className="text-white/42" aria-hidden>
+                  <span className="text-white/60" aria-hidden>
                     {' '}
                     /{' '}
                   </span>
-                  <span className="text-white">{vibe.name}</span>
+                  <span className="text-white">{feeling.name}</span>
                 </nav>
-                <p className="font-label mb-3 text-[10px] font-medium uppercase tracking-[0.28em] text-white/78 md:text-[11px]">
+                <p className="font-label mb-3 text-[10px] font-medium uppercase tracking-[0.28em] text-stone md:text-[11px]">
                   {designCountLabel}
                 </p>
                 <h1
-                  id="vibe-collection-title"
+                  id="feeling-collection-title"
                   className="font-headline text-[clamp(2.4rem,6vw,4.9rem)] font-semibold leading-[0.94] tracking-tight text-white"
                 >
-                  {vibe.name}
+                  {feeling.name}
                 </h1>
-                <p className="font-body mt-4 max-w-xl text-base leading-relaxed text-white/88 md:text-[1.0625rem]">
-                  {vibe.tagline}
+                <p className="font-body mt-4 max-w-xl text-base leading-relaxed text-white/95 md:text-[1.0625rem]">
+                  {feeling.tagline}
                 </p>
                 {manifestoLine ? (
-                  <p className="font-pdp-serif mt-5 max-w-xl text-[1.125rem] italic leading-relaxed text-white/92 md:text-[1.3rem]">
+                  <p className="font-body mt-5 max-w-xl text-[1.05rem] italic leading-relaxed text-white/95 md:text-[1.16rem]">
                     &ldquo;{manifestoLine}&rdquo;
                   </p>
                 ) : null}
                 <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                   <a
-                    href="#vibe-collection-products"
-                    className="font-label inline-flex min-h-12 items-center justify-center border border-white/20 bg-white/5 backdrop-blur-md px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-white hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    href="#feeling-collection-products"
+                    className="font-label inline-flex min-h-12 items-center justify-center border border-white/25 bg-white/10 backdrop-blur-md px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-white hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     Shop the designs
                   </a>
                   <a
-                    href="#vibe-proof"
-                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/86 hover:text-white"
+                    href="#feeling-proof"
+                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/92 hover:text-white"
                   >
                     Read the story
                   </a>
@@ -260,34 +262,34 @@ export function VibeCollection() {
 
       <div className="mx-auto max-w-7xl space-y-14 px-6 pt-8 pb-12 md:space-y-16 md:px-10 md:pt-10 md:pb-16">
         <section
-          id="vibe-proof"
+          id="feeling-proof"
           className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-b border-stone/25 pb-12 md:pb-14"
-          aria-labelledby="vibe-proof-heading"
+          aria-labelledby="feeling-proof-heading"
         >
           <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-12 lg:gap-16">
             <div className="w-full">
               <div className="editorial-shadow overflow-hidden rounded-sm shadow-2xl ring-1 ring-black/5">
                 <img
-                  alt={vibeVisuals.proof.alt}
+                  alt={feelingVisuals.proof.alt}
                   className="h-auto w-full object-cover"
-                  src={imgUrl(vibeVisuals.proof.src, 1200)}
+                  src={imgUrl(feelingVisuals.proof.src, 1200)}
                   width={1200}
                   height={900}
                   loading="lazy"
-                  style={vibeVisuals.proof.objectPosition ? { objectPosition: vibeVisuals.proof.objectPosition } : undefined}
+                  style={feelingVisuals.proof.objectPosition ? { objectPosition: feelingVisuals.proof.objectPosition } : undefined}
                 />
               </div>
             </div>
             <div className="w-full space-y-4 md:max-w-lg">
               {editorialBlock ? (
-                <h2 id="vibe-proof-heading" className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
-                  {editorialBlock.kicker}
-                </h2>
-              ) : (
-                <h2 id="vibe-proof-heading" className="font-headline text-xl font-semibold tracking-tight text-obsidian md:text-2xl">
-                  {vibe.name}
-                </h2>
-              )}
+                <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">{editorialBlock.kicker}</p>
+              ) : null}
+              <h2
+                id="feeling-proof-heading"
+                className={`font-headline text-xl font-semibold tracking-tight text-obsidian md:text-2xl ${editorialBlock ? 'mt-2' : ''}`}
+              >
+                {feeling.name}
+              </h2>
               <p className="font-body text-[1.05rem] leading-relaxed text-warm-charcoal md:text-[1.16rem] md:leading-[1.75]">
                 {storyLead}
               </p>
@@ -299,7 +301,7 @@ export function VibeCollection() {
                 220 GSM cotton
               </p>
               <a
-                href="#vibe-collection-products"
+                href="#feeling-collection-products"
                 className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-7 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 Shop the designs
@@ -308,7 +310,7 @@ export function VibeCollection() {
           </div>
         </section>
 
-        <section id="vibe-collection-products" className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
+        <section id="feeling-collection-products" className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
           {isMobile ? (
             <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
               <button
@@ -319,10 +321,10 @@ export function VibeCollection() {
                 Filter &amp; sort
               </button>
               <Link
-                to={`/search?vibe=${encodeURIComponent(slug)}&focus=1`}
+                to={`/search?feeling=${encodeURIComponent(slug)}&focus=1`}
                 className="link-underline-reveal font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
               >
-                Search this vibe
+                Search this feeling
               </Link>
             </div>
           ) : (
@@ -371,10 +373,10 @@ export function VibeCollection() {
               </div>
 
               <Link
-                to={`/search?vibe=${encodeURIComponent(slug)}&focus=1`}
+                to={`/search?feeling=${encodeURIComponent(slug)}&focus=1`}
                 className="link-underline-reveal font-label inline-flex min-h-12 shrink-0 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
               >
-                Search this vibe
+                Search this feeling
               </Link>
             </div>
           )}
@@ -391,8 +393,8 @@ export function VibeCollection() {
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
                   merchandisingBadge={p.merchandisingBadge}
-                  eyebrow={vibe.name}
-                  eyebrowAccent={vibe.accent}
+                  eyebrow={feeling.name}
+                  eyebrowAccent={feeling.accent}
                   proofChip={p.fitLabel ?? '220 GSM cotton'}
                   onQuickView={setQuickViewSlug}
                 />
@@ -417,29 +419,33 @@ export function VibeCollection() {
           )}
 
           {list.length === 0 && priceFilter === 'all' && (
-            <p className="mt-6 font-body text-warm-charcoal">No designs in this vibe yet.</p>
+            <p className="mt-6 font-body text-warm-charcoal">No designs in this feeling yet.</p>
           )}
         </section>
 
         <section className="border-t border-stone/25 pt-12 md:pt-14">
-          <h2 className="font-pdp-serif mb-8 text-center text-[clamp(1.18rem,2.4vw,1.7rem)] font-normal uppercase tracking-[0.24em] text-obsidian md:mb-10">
-            Explore other vibes
+          <h2 className="font-headline mb-8 text-center text-[clamp(1.18rem,2.4vw,1.7rem)] font-semibold tracking-tight text-obsidian md:mb-10">
+            Explore other feelings
           </h2>
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {others.map((v) => (
               <Link
                 key={v.slug}
-                to={`/vibes/${v.slug}`}
+                to={`/feelings/${v.slug}`}
                 className="group overflow-hidden rounded-sm border border-stone/70 bg-white text-inherit no-underline shadow-sm transition-transform hover:-translate-y-1 hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 <div className="overflow-hidden">
                   <img
-                    alt={getVibeCollectionVisual(v.slug).cover.alt}
+                    alt={getFeelingCollectionVisual(v.slug).cover.alt}
                     className="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                    src={imgUrl(getVibeCollectionVisual(v.slug).cover.src, 720)}
+                    src={imgUrl(getFeelingCollectionVisual(v.slug).cover.src, 720)}
                     width={720}
                     height={900}
-                    style={getVibeCollectionVisual(v.slug).cover.objectPosition ? { objectPosition: getVibeCollectionVisual(v.slug).cover.objectPosition } : undefined}
+                    style={
+                      getFeelingCollectionVisual(v.slug).cover.objectPosition
+                        ? { objectPosition: getFeelingCollectionVisual(v.slug).cover.objectPosition }
+                        : undefined
+                    }
                   />
                 </div>
                 <div className="space-y-2 px-4 py-4">
@@ -471,7 +477,7 @@ export function VibeCollection() {
               <div className="mb-5 flex items-center justify-between gap-4">
                 <div>
                   <p className="font-label text-[10px] font-medium uppercase tracking-[0.24em] text-label">
-                    {vibe.name}
+                    {feeling.name}
                   </p>
                   <h2 id="mobile-vibe-filters-title" className="font-headline mt-2 text-2xl font-semibold tracking-tight text-obsidian">
                     Filter &amp; sort

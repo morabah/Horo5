@@ -1,17 +1,18 @@
 import { SEARCH_SYNONYMS_SCHEMA } from '../data/domain-config';
 import {
   ADDITIONAL_COMMON_QUERY_EXPANSIONS,
+  ADDITIONAL_FEELING_ALIASES,
   ADDITIONAL_OCCASION_ALIASES,
-  ADDITIONAL_VIBE_ALIASES,
 } from '../data/searchSynonyms';
-import { getOccasionCollectionVisual, getProductMedia, heroStreet, vibeCovers } from '../data/images';
+import { feelingCovers, getOccasionCollectionVisual, getProductMedia, heroStreet } from '../data/images';
 import {
   getArtist,
+  getFeeling,
   getOccasion,
-  getVibe,
+  LEGACY_VIBE_SLUG_TO_FEELING_SLUG,
   occasions,
   products,
-  vibes,
+  feelings,
   type OccasionSlug,
   type Product,
   type ProductSizeKey,
@@ -28,9 +29,9 @@ export type SearchSuggestionGroupKind = 'designs' | 'vibes' | 'occasions';
 export type SearchDesignCard = {
   slug: string;
   name: string;
-  vibeSlug: string;
-  vibeName?: string;
-  vibeAccent?: string;
+  feelingSlug: string;
+  feelingName?: string;
+  feelingAccent?: string;
   priceEgp: number;
   imageSrc: string;
   imageAlt: string;
@@ -89,11 +90,11 @@ export type SearchResults = {
 
 type ScopedSearchParams = {
   query: string;
-  scopeVibeSlug?: string | null;
+  scopeFeelingSlug?: string | null;
   scopeOccasionSlug?: string | null;
   sortKey: SearchSortKey;
   priceFilter: SearchPriceFilter;
-  vibeFilter: string;
+  feelingFilter: string;
   sizeFilter: SearchSizeFilter;
   filterArtist: string;
   filterOccasion: string;
@@ -109,7 +110,7 @@ export function parseSearchSizeFilter(raw: string | null | undefined): SearchSiz
 
 type SearchSuggestionsParams = {
   query: string;
-  scopeVibeSlug?: string | null;
+  scopeFeelingSlug?: string | null;
   scopeOccasionSlug?: string | null;
   limitPerGroup?: number;
 };
@@ -119,8 +120,8 @@ type ScoredProduct = {
   score: number;
 };
 
-const VIBE_ALIAS_MAP: Record<string, string[]> = {
-  emotions: [
+const FEELING_ALIAS_MAP: Record<string, string[]> = {
+  'soft-quiet': [
     'emotion',
     'emotional',
     'feelings',
@@ -129,6 +130,7 @@ const VIBE_ALIAS_MAP: Record<string, string[]> = {
     'moods',
     'soft thoughtful',
     'soft and thoughtful',
+    'emotions',
     'مشاعر',
     'احاسيس',
     'أحاسيس',
@@ -136,14 +138,27 @@ const VIBE_ALIAS_MAP: Record<string, string[]> = {
     'أحاسيسي',
     'مزاج',
   ],
-  zodiac: ['astro', 'astrology', 'sign', 'signs', 'cosmic', 'horoscope', 'ابراج', 'أبراج', 'برج', 'فلك'],
-  fiction: [
+  'warm-romantic': [
+    'astro',
+    'astrology',
+    'sign',
+    'signs',
+    'cosmic',
+    'horoscope',
+    'zodiac',
+    'ابراج',
+    'أبراج',
+    'برج',
+    'فلك',
+  ],
+  'playful-offbeat': [
     'story',
     'stories',
     'fantasy',
     'character',
     'characters',
     'fictional',
+    'fiction',
     'weird wonderful',
     'weird and wonderful',
     'خيال',
@@ -152,7 +167,7 @@ const VIBE_ALIAS_MAP: Record<string, string[]> = {
     'قصة',
     'قصص',
   ],
-  career: [
+  'grounded-everyday': [
     'work',
     'office',
     'ambition',
@@ -168,13 +183,14 @@ const VIBE_ALIAS_MAP: Record<string, string[]> = {
     'تخرج',
     'نجاح',
   ],
-  trends: [
+  'bold-electric': [
     'trend',
     'trending',
     'streetwear',
     'viral',
     'hype',
     'fashion',
+    'trends',
     'bold loud',
     'bold and loud',
     'ترند',
@@ -192,9 +208,9 @@ const OCCASION_ALIAS_MAP: Record<OccasionSlug, string[]> = {
   'just-because': ['self gift', 'self-care', 'casual', 'everyday', 'treat', 'بدون سبب', 'على طول', 'كل يوم'],
 };
 
-const VIBE_ALIAS_MERGED: Record<string, string[]> = (() => {
-  const merged: Record<string, string[]> = { ...VIBE_ALIAS_MAP };
-  for (const [k, v] of Object.entries(ADDITIONAL_VIBE_ALIASES)) {
+const FEELING_ALIAS_MERGED: Record<string, string[]> = (() => {
+  const merged: Record<string, string[]> = { ...FEELING_ALIAS_MAP };
+  for (const [k, v] of Object.entries(ADDITIONAL_FEELING_ALIASES)) {
     merged[k] = [...(merged[k] ?? []), ...v];
   }
   return merged;
@@ -309,14 +325,14 @@ function expandQueryVariants(query: string): string[] {
   const variants = new Set<string>([normalizedQuery]);
   const tokens = tokenize(normalizedQuery);
 
-  for (const [slug, aliases] of Object.entries(VIBE_ALIAS_MERGED)) {
-    const vibe = getVibe(slug);
-    if (!vibe) continue;
+  for (const [slug, aliases] of Object.entries(FEELING_ALIAS_MERGED)) {
+    const feeling = getFeeling(slug);
+    if (!feeling) continue;
     const normalizedAliases = uniqueStrings(aliases);
     if (normalizedAliases.some((alias) => normalizedQuery.includes(alias) || tokens.includes(alias))) {
-      variants.add(normalizeForSearch(vibe.name));
+      variants.add(normalizeForSearch(feeling.name));
       variants.add(normalizeForSearch(slug.replace(/-/g, ' ')));
-      variants.add(normalizeForSearch(vibe.tagline));
+      variants.add(normalizeForSearch(feeling.tagline));
     }
   }
 
@@ -410,14 +426,14 @@ function productOccasionNames(product: Product) {
 }
 
 function productSearchTerms(product: Product) {
-  const vibe = getVibe(product.vibeSlug);
+  const feeling = getFeeling(product.feelingSlug);
   const occasionNames = productOccasionNames(product);
   const aliases = [
-    ...(VIBE_ALIAS_MAP[product.vibeSlug] ?? []),
+    ...(FEELING_ALIAS_MAP[product.feelingSlug] ?? []),
     ...product.occasionSlugs.flatMap((occasionSlug) => OCCASION_ALIAS_MAP[occasionSlug] ?? []),
   ];
 
-  return [product.name, vibe?.name ?? product.vibeSlug, vibe?.tagline ?? '', occasionNames, product.story, '220 GSM cotton graphic tee', ...aliases]
+  return [product.name, feeling?.name ?? product.feelingSlug, feeling?.tagline ?? '', occasionNames, product.story, '220 GSM cotton graphic tee', ...aliases]
     .filter(Boolean)
     .join(' ');
 }
@@ -425,7 +441,7 @@ function productSearchTerms(product: Product) {
 function productScore(product: Product, queryVariants: string[]): number {
   if (queryVariants.length === 0) return 0;
   const artist = getArtist(product.artistSlug);
-  const vibe = getVibe(product.vibeSlug);
+  const feeling = getFeeling(product.feelingSlug);
 
   return (
     fieldScore(product.name, queryVariants, { exact: 180, includes: 132, token: 24, allTokens: 28, fuzzy: 14 }) +
@@ -437,7 +453,7 @@ function productScore(product: Product, queryVariants: string[]): number {
       allTokens: 16,
       fuzzy: 10,
     }) +
-    fieldScore(vibe?.name ?? product.vibeSlug.replace(/-/g, ' '), queryVariants, {
+    fieldScore(feeling?.name ?? product.feelingSlug.replace(/-/g, ' '), queryVariants, {
       exact: 72,
       includes: 54,
       token: 12,
@@ -447,14 +463,14 @@ function productScore(product: Product, queryVariants: string[]): number {
   );
 }
 
-function vibeScore(vibeSlug: string, queryVariants: string[]): number {
-  const vibe = getVibe(vibeSlug);
-  if (!vibe || queryVariants.length === 0) return 0;
+function feelingScore(feelingSlug: string, queryVariants: string[]): number {
+  const feeling = getFeeling(feelingSlug);
+  if (!feeling || queryVariants.length === 0) return 0;
 
   return (
-    fieldScore(vibe.name, queryVariants, { exact: 120, includes: 88, token: 18, allTokens: 22, fuzzy: 10 }) +
-    fieldScore(vibe.tagline, queryVariants, { exact: 36, includes: 26, token: 8, allTokens: 10, fuzzy: 6 }) +
-    fieldScore(VIBE_ALIAS_MAP[vibeSlug]?.join(' ') ?? '', queryVariants, {
+    fieldScore(feeling.name, queryVariants, { exact: 120, includes: 88, token: 18, allTokens: 22, fuzzy: 10 }) +
+    fieldScore(feeling.tagline, queryVariants, { exact: 36, includes: 26, token: 8, allTokens: 10, fuzzy: 6 }) +
+    fieldScore(FEELING_ALIAS_MAP[feelingSlug]?.join(' ') ?? '', queryVariants, {
       exact: 62,
       includes: 44,
       token: 10,
@@ -482,34 +498,34 @@ function occasionScore(occasionSlug: OccasionSlug, queryVariants: string[]): num
 }
 
 function mapDesignCard(product: Product): SearchDesignCard {
-  const vibe = getVibe(product.vibeSlug);
+  const feeling = getFeeling(product.feelingSlug);
   const media = getProductMedia(product.slug);
 
   return {
     slug: product.slug,
     name: product.name,
-    vibeSlug: product.vibeSlug,
-    vibeName: vibe?.name,
-    vibeAccent: vibe?.accent,
+    feelingSlug: product.feelingSlug,
+    feelingName: feeling?.name,
+    feelingAccent: feeling?.accent,
     priceEgp: product.priceEgp,
     imageSrc: media.main,
-    imageAlt: `HORO “${product.name}” graphic tee${vibe ? ` in the ${vibe.name} vibe` : ''}.`,
+    imageAlt: `HORO “${product.name}” graphic tee${feeling ? ` — ${feeling.name}` : ''}.`,
     merchandisingBadge: product.merchandisingBadge,
   };
 }
 
-function mapVibeCard(vibeSlug: string, designCount: number): SearchVibeCard | null {
-  const vibe = getVibe(vibeSlug);
-  if (!vibe) return null;
+function mapVibeCard(feelingSlug: string, designCount: number): SearchVibeCard | null {
+  const feeling = getFeeling(feelingSlug);
+  if (!feeling) return null;
 
   return {
-    slug: vibe.slug,
-    name: vibe.name,
-    tagline: vibe.tagline,
-    accent: vibe.accent,
+    slug: feeling.slug,
+    name: feeling.name,
+    tagline: feeling.tagline,
+    accent: feeling.accent,
     designCount,
-    imageSrc: vibeCovers[vibe.slug] ?? heroStreet,
-    imageAlt: `${vibe.name} vibe — HORO editorial styling.`,
+    imageSrc: feelingCovers[feeling.slug] ?? heroStreet,
+    imageAlt: `${feeling.name} — HORO editorial styling.`,
   };
 }
 
@@ -530,18 +546,25 @@ function mapOccasionCard(occasionSlug: OccasionSlug, designCount: number): Searc
 }
 
 function optionName(slug: string): string {
-  return getVibe(slug)?.name ?? slug;
+  return getFeeling(slug)?.name ?? slug;
 }
 
-function getScopedProducts(scopeVibeSlug?: string | null, scopeOccasionSlug?: string | null) {
+function resolveFeelingSlugParam(raw: string) {
+  return LEGACY_VIBE_SLUG_TO_FEELING_SLUG[raw] ?? raw;
+}
+
+function getScopedProducts(scopeFeelingSlug?: string | null, scopeOccasionSlug?: string | null) {
   let baseProducts = products;
-  if (scopeVibeSlug) baseProducts = baseProducts.filter((product) => product.vibeSlug === scopeVibeSlug);
+  if (scopeFeelingSlug) {
+    const resolved = resolveFeelingSlugParam(scopeFeelingSlug);
+    baseProducts = baseProducts.filter((product) => product.feelingSlug === resolved);
+  }
   if (scopeOccasionSlug) baseProducts = baseProducts.filter((product) => product.occasionSlugs.includes(scopeOccasionSlug as OccasionSlug));
   return baseProducts;
 }
 
-export function getSearchFacetOptions(scopeVibeSlug?: string | null, scopeOccasionSlug?: string | null) {
-  const baseProducts = getScopedProducts(scopeVibeSlug, scopeOccasionSlug);
+export function getSearchFacetOptions(scopeFeelingSlug?: string | null, scopeOccasionSlug?: string | null) {
+  const baseProducts = getScopedProducts(scopeFeelingSlug, scopeOccasionSlug);
   const artistMap = new Map<string, string>();
   const occasionMap = new Map<OccasionSlug, string>();
   const colors = new Set<string>();
@@ -573,7 +596,7 @@ function getScopedCounts(baseProducts: Product[]) {
   const occasionCounts = new Map<OccasionSlug, number>();
 
   for (const product of baseProducts) {
-    vibeCounts.set(product.vibeSlug, (vibeCounts.get(product.vibeSlug) ?? 0) + 1);
+    vibeCounts.set(product.feelingSlug, (vibeCounts.get(product.feelingSlug) ?? 0) + 1);
     for (const occasionSlug of product.occasionSlugs) {
       occasionCounts.set(occasionSlug, (occasionCounts.get(occasionSlug) ?? 0) + 1);
     }
@@ -584,13 +607,13 @@ function getScopedCounts(baseProducts: Product[]) {
 
 function getMatchedVibes(vibeCounts: Map<string, number>, queryVariants: string[]) {
   const matchedVibeSlugs = queryVariants.length
-    ? vibes
-      .filter((vibe) => vibeCounts.has(vibe.slug))
-      .map((vibe) => ({ vibe, score: vibeScore(vibe.slug, queryVariants) }))
+    ? feelings
+      .filter((feeling) => vibeCounts.has(feeling.slug))
+      .map((feeling) => ({ feeling, score: feelingScore(feeling.slug, queryVariants) }))
       .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score || a.vibe.name.localeCompare(b.vibe.name))
-      .map((entry) => entry.vibe.slug)
-    : vibes.filter((vibe) => vibeCounts.has(vibe.slug)).map((vibe) => vibe.slug);
+      .sort((a, b) => b.score - a.score || a.feeling.name.localeCompare(b.feeling.name))
+      .map((entry) => entry.feeling.slug)
+    : feelings.filter((feeling) => vibeCounts.has(feeling.slug)).map((feeling) => feeling.slug);
 
   return matchedVibeSlugs
     .map((slug) => mapVibeCard(slug, vibeCounts.get(slug) ?? 0))
@@ -614,11 +637,11 @@ function getMatchedOccasions(occasionCounts: Map<OccasionSlug, number>, queryVar
 
 export function getSearchResults({
   query,
-  scopeVibeSlug,
+  scopeFeelingSlug,
   scopeOccasionSlug,
   sortKey,
   priceFilter,
-  vibeFilter,
+  feelingFilter,
   sizeFilter,
   filterArtist,
   filterOccasion,
@@ -626,7 +649,7 @@ export function getSearchResults({
 }: ScopedSearchParams): SearchResults {
   const normalizedQuery = normalizeForSearch(query);
   const queryVariants = expandQueryVariants(normalizedQuery);
-  const baseProducts = getScopedProducts(scopeVibeSlug, scopeOccasionSlug);
+  const baseProducts = getScopedProducts(scopeFeelingSlug, scopeOccasionSlug);
   const { vibeCounts, occasionCounts } = getScopedCounts(baseProducts);
 
   const scoredProducts: ScoredProduct[] = baseProducts
@@ -637,7 +660,7 @@ export function getSearchResults({
   const scoreBySlug = new Map(scoredProducts.map((entry) => [entry.product.slug, entry.score]));
 
   const vibeFiltered = queryMatchedProducts.filter((product) =>
-    vibeFilter !== 'all' ? product.vibeSlug === vibeFilter : true,
+    feelingFilter !== 'all' ? product.feelingSlug === resolveFeelingSlugParam(feelingFilter) : true,
   );
 
   let facetFiltered = vibeFiltered;
@@ -669,7 +692,7 @@ export function getSearchResults({
       })
       : sortProductList(filteredProducts, sortKey);
 
-  const vibeOptions = [...new Set(queryMatchedProducts.map((product) => product.vibeSlug))]
+  const vibeOptions = [...new Set(queryMatchedProducts.map((product) => product.feelingSlug))]
     .sort((a, b) => optionName(a).localeCompare(optionName(b)))
     .map((slug) => ({ slug, name: optionName(slug) }));
 
@@ -686,16 +709,16 @@ export function getSearchResults({
 export function getSearchSuggestions({
   query,
   scopeOccasionSlug,
-  scopeVibeSlug,
+  scopeFeelingSlug,
   limitPerGroup = 3,
 }: SearchSuggestionsParams): SearchSuggestionGroup[] {
   const results = getSearchResults({
     query,
     scopeOccasionSlug,
-    scopeVibeSlug,
+    scopeFeelingSlug,
     sortKey: 'relevance',
     priceFilter: 'all',
-    vibeFilter: 'all',
+    feelingFilter: 'all',
     sizeFilter: 'all',
     filterArtist: 'all',
     filterOccasion: 'all',
@@ -708,11 +731,11 @@ export function getSearchSuggestions({
     id: `design-${product.slug}`,
     kind: 'design' as const,
     label: product.name,
-    meta: product.vibeName ?? 'Design',
+    meta: product.feelingName ?? 'Design',
     href: `/products/${product.slug}`,
     imageSrc: product.imageSrc,
     imageAlt: product.imageAlt,
-    accent: product.vibeAccent,
+    accent: product.feelingAccent,
   }));
   if (designSuggestions.length > 0) {
     groups.push({ kind: 'designs', suggestions: designSuggestions });
@@ -723,7 +746,7 @@ export function getSearchSuggestions({
     kind: 'vibe' as const,
     label: vibe.name,
     meta: `${vibe.designCount} design${vibe.designCount === 1 ? '' : 's'}`,
-    href: `/vibes/${vibe.slug}`,
+    href: `/feelings/${vibe.slug}`,
     imageSrc: vibe.imageSrc,
     imageAlt: vibe.imageAlt,
     accent: vibe.accent,

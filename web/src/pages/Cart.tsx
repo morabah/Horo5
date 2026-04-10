@@ -8,6 +8,7 @@ import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import type { CartLine } from '../cart/types';
 import { CART_SCHEMA } from '../data/domain-config';
 import { giftWrapPreview, heroStreet } from '../data/images';
+import { useUiLocale } from '../i18n/ui-locale';
 import { getProduct, type ProductSizeKey } from '../data/site';
 import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
@@ -81,7 +82,7 @@ function CartUpsell({
           </h2>
           <p className="cart-upsell-body">{copy.bundleUpsellBody}</p>
           <div className="cart-upsell-actions">
-            <Link className="btn btn-ghost" to="/vibes">
+            <Link className="btn btn-ghost" to="/feelings">
               {copy.bundleUpsellCta}
             </Link>
           </div>
@@ -145,7 +146,7 @@ function CartSummary({
         <Link className="btn btn-primary" to="/checkout" style={{ width: '100%' }}>
           {copy.primaryCta}
         </Link>
-        <Link className="btn btn-ghost" to="/vibes" style={{ width: '100%' }}>
+        <Link className="btn btn-ghost" to="/feelings" style={{ width: '100%' }}>
           {copy.secondaryCta}
         </Link>
       </div>
@@ -238,6 +239,7 @@ function CartLineItem({
 
 export function Cart() {
   const { items, removeItem, setLineQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp, addItem } = useCart();
+  const { copy: shellCopy } = useUiLocale();
   const copy = CART_SCHEMA.copy;
   const [statusMessage, setStatusMessage] = useState('');
   const [giftUpsellDismissed, setGiftUpsellDismissed] = useState(false);
@@ -325,7 +327,7 @@ export function Cart() {
           <PageBreadcrumb
             className="mb-6"
             items={[
-              { label: 'Home', to: '/' },
+              { label: shellCopy.shell.home, to: '/' },
               { label: CART_SCHEMA.copy.heading },
             ]}
           />
@@ -347,7 +349,7 @@ export function Cart() {
               </h1>
               <p className="cart-page-count">{formatItemCount(0)}</p>
               <p className="cart-empty-copy">{copy.emptyBody}</p>
-              <Link className="btn btn-primary" to="/vibes">
+              <Link className="btn btn-primary" to="/feelings">
                 {copy.emptyCta}
               </Link>
             </div>
@@ -365,7 +367,7 @@ export function Cart() {
           <PageBreadcrumb
             className="mb-6"
             items={[
-              { label: 'Home', to: '/' },
+              { label: shellCopy.shell.home, to: '/' },
               { label: copy.heading },
             ]}
           />
@@ -380,7 +382,7 @@ export function Cart() {
               <button type="button" className="btn btn-primary min-h-12 px-6" onClick={handleUndoRemove}>
                 {copy.undoRemoveCta}
               </button>
-              <Link className="btn btn-ghost min-h-12 inline-flex items-center px-6" to="/vibes">
+              <Link className="btn btn-ghost min-h-12 inline-flex items-center px-6" to="/feelings">
                 {copy.secondaryCta}
               </Link>
             </div>
@@ -397,7 +399,7 @@ export function Cart() {
         <PageBreadcrumb
           className="mb-6"
           items={[
-            { label: 'Home', to: '/' },
+            { label: shellCopy.shell.home, to: '/' },
             { label: copy.heading },
           ]}
         />

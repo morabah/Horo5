@@ -4,7 +4,7 @@ import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, imgUrl } from '../data/images';
-import { NAV_ROUTE } from '../lib/navLinks';
+import { useUiLocale } from '../i18n/ui-locale';
 import { occasions } from '../data/site';
 
 function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }: (typeof occasions)[number]) {
@@ -30,6 +30,7 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
 }
 
 export function ShopByOccasion() {
+  const { copy } = useUiLocale();
   const featured = occasions[0];
   const featuredVisual = getOccasionCollectionVisual(featured.slug).hero;
   const secondaryOccasions = occasions.filter((occasion) => occasion.slug !== featured.slug);
@@ -41,8 +42,8 @@ export function ShopByOccasion() {
         <PageBreadcrumb
           className="mb-6"
           items={[
-            { label: 'Home', to: '/' },
-            { label: NAV_ROUTE.occasions.label },
+            { label: copy.shell.home, to: '/' },
+            { label: copy.shell.shopByMoment },
           ]}
         />
       </div>
@@ -58,23 +59,23 @@ export function ShopByOccasion() {
             style={featuredVisual.objectPosition ? { objectPosition: featuredVisual.objectPosition } : undefined}
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.2)_0%,rgba(18,18,18,0.42)_48%,rgba(18,18,18,0.9)_100%)]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.28)_0%,rgba(18,18,18,0.48)_45%,rgba(18,18,18,0.92)_100%)]"
             aria-hidden
           />
           <div className="absolute inset-x-0 bottom-0">
             <div className="mx-auto max-w-7xl px-6 pb-8 md:px-10 md:pb-12">
-              <div className="max-w-2xl">
-                <p className="font-label mb-3 text-[10px] font-medium uppercase tracking-[0.24em] text-white/78 md:text-[11px]">
+              <div className="max-w-2xl rounded-2xl border border-white/12 bg-obsidian/82 px-5 py-5 shadow-[0_24px_56px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md md:px-7 md:py-7">
+                <p className="font-label mb-3 text-[10px] font-medium uppercase tracking-[0.24em] text-stone md:text-[11px]">
                   {OCCASION_SCHEMA.copy.hubEyebrow}
                 </p>
                 <h1 id="occasion-hub-title" className="font-headline text-[clamp(2.3rem,5vw,4.4rem)] font-semibold leading-[0.95] tracking-tight text-white">
                   {OCCASION_SCHEMA.copy.hubTitle}
                 </h1>
-                <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-white/88 md:text-[1.0625rem]">
+                <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-white/95 md:text-[1.0625rem]">
                   {OCCASION_SCHEMA.copy.hubSubtitle}
                 </p>
                 {featured.priceHint ? (
-                  <p className="font-label mt-5 text-[10px] font-medium uppercase tracking-[0.22em] text-white/74 md:text-[11px]">
+                  <p className="font-label mt-5 text-[10px] font-medium uppercase tracking-[0.22em] text-stone md:text-[11px]">
                     {featured.priceHint}
                   </p>
                 ) : null}
@@ -86,8 +87,8 @@ export function ShopByOccasion() {
                     {OCCASION_SCHEMA.copy.featuredCta}
                   </Link>
                   <Link
-                    to="/vibes"
-                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/86 hover:text-white"
+                    to="/feelings"
+                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/92 hover:text-white"
                   >
                     {OCCASION_SCHEMA.copy.secondaryNavCta}
                   </Link>
@@ -141,7 +142,7 @@ export function ShopByOccasion() {
               {' '}when you need a gift, milestone pick, or just-because streetwear edit.
             </p>
             <p>
-              These landing pages turn gifting intent into browseable collections so shoppers can compare vibe, price, and story without dropping into generic search too early.
+              These landing pages turn gifting intent into browseable collections so shoppers can compare feeling, price, and story without dropping into generic search too early.
             </p>
           </div>
         </section>
@@ -149,7 +150,7 @@ export function ShopByOccasion() {
         <div className="mt-10 border-t border-stone/40 pt-6">
           <p className="font-body text-sm text-clay-earth">{OCCASION_SCHEMA.copy.secondaryNavLabel}</p>
           <div className="mt-3 flex flex-wrap gap-3">
-            <Link className="btn btn-ghost" to="/vibes">
+            <Link className="btn btn-ghost" to="/feelings">
               {OCCASION_SCHEMA.copy.secondaryNavCta}
             </Link>
           </div>

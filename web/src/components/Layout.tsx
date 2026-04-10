@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { AppErrorBoundary } from './AppErrorBoundary';
+import { FunnelNavigationTracker } from './FunnelNavigationTracker';
 import { Nav } from './Nav';
 import { Footer } from './Footer';
 import { SeoHead } from './SeoHead';
@@ -10,6 +11,7 @@ export function Layout() {
 
   return (
     <>
+      <FunnelNavigationTracker />
       <SeoHead />
       <a
         href="#main-content"

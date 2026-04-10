@@ -15,7 +15,9 @@
     "validate:release-config": "node ./scripts/validate-release-config.mjs",
     "build:release": "npm run validate:release-config && npm run build",
     "preview": "vite preview",
-    "preview:a11y": "vite preview --port 4173 --strictPort --host localhost"
+    "preview:a11y": "vite preview --port 4173 --strictPort --host localhost",
+    "preview:e2e": "vite preview --port 4174 --strictPort --host localhost",
+    "test:e2e": "VITE_SITE_URL=${VITE_SITE_URL:-https://horo.local} npm run build && node ./scripts/test-e2e-tasks.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",

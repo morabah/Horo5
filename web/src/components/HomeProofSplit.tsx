@@ -1,8 +1,11 @@
 import { AppIcon } from './AppIcon';
 import { imgUrl } from '../data/images';
 import { HOME_COPY, HOME_PROOF_MACRO, HOME_TRUST_BADGES } from '../data/homeContent';
+import { useUiLocale } from '../i18n/ui-locale';
 
 export function HomeProofSplit() {
+  const { copy } = useUiLocale();
+
   return (
     <section
       aria-labelledby="home-trust-title"
@@ -17,7 +20,7 @@ export function HomeProofSplit() {
             id="home-trust-title"
             className="font-headline mt-3 text-[clamp(1.5rem,3vw,2.25rem)] font-medium leading-snug tracking-tight text-clean-white"
           >
-            {HOME_COPY.proofTitle}
+            {copy.home.trustTitle}
           </h2>
           <p className="mt-3 font-body text-sm leading-relaxed text-stone md:text-[15px]">{HOME_COPY.proofBody}</p>
         </div>

@@ -8,7 +8,8 @@ import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, getProductMedia, giftWrapPreview, imgUrl } from '../data/images';
-import { getOccasion, getVibe, occasions, productsByOccasion, type OccasionSlug, type Product } from '../data/site';
+import { useUiLocale } from '../i18n/ui-locale';
+import { getFeeling, getOccasion, occasions, productsByOccasion, type OccasionSlug, type Product } from '../data/site';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 
@@ -82,7 +83,7 @@ function OccasionProductCard({
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
 }) {
-  const vibe = getVibe(product.vibeSlug);
+  const feeling = getFeeling(product.feelingSlug);
   const { main } = getProductMedia(product.slug);
 
   return (
@@ -91,10 +92,10 @@ function OccasionProductCard({
       name={product.name}
       priceEgp={product.priceEgp}
       imageSrc={main}
-      imageAlt={`HORO “${product.name}” graphic tee for ${vibe?.name ?? 'the collection'}.`}
+      imageAlt={`HORO “${product.name}” graphic tee for ${feeling?.name ?? 'the collection'}.`}
       merchandisingBadge={product.merchandisingBadge}
-      eyebrow={vibe?.name}
-      eyebrowAccent={vibe?.accent}
+      eyebrow={feeling?.name}
+      eyebrowAccent={feeling?.accent}
       proofChip={isGiftOccasion ? OCCASION_SCHEMA.copy.giftBannerChip : product.fitLabel ?? '220 GSM cotton'}
       onQuickView={onQuickView}
       onProductClick={onProductClick}
@@ -104,6 +105,7 @@ function OccasionProductCard({
 
 export function OccasionCollection() {
   const { slug = '' } = useParams();
+  const { copy } = useUiLocale();
   const occasion = getOccasion(slug);
   const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -134,14 +136,14 @@ export function OccasionCollection() {
   }, [isMobile]);
 
   const vibeOptions = useMemo(() => {
-    return [...new Set(baseList.map((product) => product.vibeSlug))].sort();
+    return [...new Set(baseList.map((product) => product.feelingSlug))].sort();
   }, [baseList]);
 
   const sorted = useMemo(() => sortProductList(baseList, sortKey), [baseList, sortKey]);
 
   const list = useMemo(() => {
     let next = filterByPrice(sorted, priceFilter);
-    if (vibeFilter !== 'all') next = next.filter((product) => product.vibeSlug === vibeFilter);
+    if (vibeFilter !== 'all') next = next.filter((product) => product.feelingSlug === vibeFilter);
     return next;
   }, [priceFilter, sorted, vibeFilter]);
 
@@ -216,7 +218,7 @@ export function OccasionCollection() {
       <div className="container py-12">
         <p className="font-body text-warm-charcoal">{OCCASION_SCHEMA.copy.notFoundTitle}</p>
         <Link to="/occasions" className="font-label mt-4 inline-block text-deep-teal underline">
-          Back to Shop by Occasion
+          {copy.shell.shopByMoment}
         </Link>
       </div>
     );
@@ -246,24 +248,24 @@ export function OccasionCollection() {
             style={occasionVisuals.hero.objectPosition ? { objectPosition: occasionVisuals.hero.objectPosition } : undefined}
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.24)_0%,rgba(18,18,18,0.44)_46%,rgba(18,18,18,0.88)_100%)]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.32)_0%,rgba(18,18,18,0.52)_42%,rgba(18,18,18,0.92)_100%)]"
             aria-hidden
           />
           <div className="absolute inset-x-0 bottom-0">
             <div className="mx-auto max-w-7xl px-6 pb-8 md:px-10 md:pb-12">
-              <div className="max-w-2xl">
-                <nav className="font-body mb-4 text-[13px] text-white/76 md:text-sm" aria-label={OCCASION_SCHEMA.copy.breadcrumbLabel}>
+              <div className="max-w-2xl rounded-2xl border border-white/12 bg-obsidian/82 px-5 py-5 shadow-[0_24px_56px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md md:px-7 md:py-7">
+                <nav className="font-body mb-4 text-[13px] text-white/90 md:text-sm" aria-label={OCCASION_SCHEMA.copy.breadcrumbLabel}>
                   <Link to="/" className="transition-colors hover:text-white">
-                    Home
+                    {copy.shell.home}
                   </Link>
-                  <span className="text-white/42" aria-hidden>
+                  <span className="text-white/60" aria-hidden>
                     {' '}
                     /{' '}
                   </span>
                   <Link to="/occasions" className="transition-colors hover:text-white">
-                    Shop by Occasion
+                    {copy.shell.shopByMoment}
                   </Link>
-                  <span className="text-white/42" aria-hidden>
+                  <span className="text-white/60" aria-hidden>
                     {' '}
                     /{' '}
                   </span>
@@ -275,10 +277,10 @@ export function OccasionCollection() {
                 >
                   {occasion.name}
                 </h1>
-                <p className="font-body mt-4 max-w-xl text-base leading-relaxed text-white/88 md:text-[1.0625rem]">
+                <p className="font-body mt-4 max-w-xl text-base leading-relaxed text-white/95 md:text-[1.0625rem]">
                   {occasion.blurb}
                 </p>
-                <p className="font-label mt-5 text-[10px] font-medium uppercase tracking-[0.24em] text-white/78 md:text-[11px]">
+                <p className="font-label mt-5 text-[10px] font-medium uppercase tracking-[0.24em] text-stone md:text-[11px]">
                   {formatDesignCount(baseList.length)}
                 </p>
                 <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
@@ -290,7 +292,7 @@ export function OccasionCollection() {
                   </a>
                   <Link
                     to={scopeSearchTo}
-                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/86 hover:text-white"
+                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/92 hover:text-white"
                   >
                     {OCCASION_SCHEMA.copy.searchThisOccasionCta}
                   </Link>
@@ -324,7 +326,7 @@ export function OccasionCollection() {
                 Start with the edit
               </h2>
               <p className="font-body text-[1.02rem] leading-relaxed text-warm-charcoal md:text-[1.12rem] md:leading-[1.7]">
-                {occasion.blurb} Browse the pieces shaped for this moment first, then refine by vibe or price only if you need to narrow further.
+                {occasion.blurb} Browse the pieces shaped for this moment first, then refine by feeling or price only if you need to narrow further.
               </p>
               {occasion.priceHint ? (
                 <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">
@@ -443,11 +445,11 @@ export function OccasionCollection() {
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
                         <option value="all">{OCCASION_SCHEMA.copy.allVibesLabel}</option>
-                        {vibeOptions.map((vibeSlug) => {
-                          const vibe = getVibe(vibeSlug);
+                        {vibeOptions.map((feelingSlug) => {
+                          const f = getFeeling(feelingSlug);
                           return (
-                            <option key={vibeSlug} value={vibeSlug}>
-                              {vibe?.name ?? vibeSlug}
+                            <option key={feelingSlug} value={feelingSlug}>
+                              {f?.name ?? feelingSlug}
                             </option>
                           );
                         })}
@@ -612,11 +614,11 @@ export function OccasionCollection() {
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
                         <option value="all">{OCCASION_SCHEMA.copy.allVibesLabel}</option>
-                        {vibeOptions.map((vibeSlug) => {
-                          const vibe = getVibe(vibeSlug);
+                        {vibeOptions.map((feelingSlug) => {
+                          const f = getFeeling(feelingSlug);
                           return (
-                            <option key={vibeSlug} value={vibeSlug}>
-                              {vibe?.name ?? vibeSlug}
+                            <option key={feelingSlug} value={feelingSlug}>
+                              {f?.name ?? feelingSlug}
                             </option>
                           );
                         })}

@@ -19,7 +19,7 @@ const DIST_INDEX = path.join(webRoot, 'dist', 'index.html');
 
 const URLS = [
   `${BASE}/`,
-  `${BASE}/vibes`,
+  `${BASE}/feelings`,
   `${BASE}/search`,
   `${BASE}/products/the-weight-of-light`,
   `${BASE}/cart`,

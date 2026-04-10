@@ -14,8 +14,8 @@ import { SearchSuggestionPanel } from '../components/SearchSuggestionPanel';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useUiLocale } from '../i18n/ui-locale';
 import { SEARCH_SCHEMA } from '../data/domain-config';
-import { getOccasionCollectionVisual, getVibeCollectionVisual, heroStreet, imgUrl } from '../data/images';
-import { getOccasion, getVibe } from '../data/site';
+import { getFeelingCollectionVisual, getOccasionCollectionVisual, heroStreet, imgUrl } from '../data/images';
+import { getFeeling, getOccasion } from '../data/site';
 import { trackSearchZeroResults } from '../analytics/events';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
@@ -111,8 +111,8 @@ function SearchProductCard({
       imageSrc={product.imageSrc}
       imageAlt={product.imageAlt}
       merchandisingBadge={product.merchandisingBadge}
-      eyebrow={product.vibeName}
-      eyebrowAccent={product.vibeAccent}
+      eyebrow={product.feelingName}
+      eyebrowAccent={product.feelingAccent}
       proofChip="220 GSM cotton"
       onQuickView={onQuickView}
       onProductClick={onProductClick}
@@ -123,7 +123,7 @@ function SearchProductCard({
 function SearchVibeResultCard({ vibe }: { vibe: SearchVibeCard }) {
   return (
     <Link
-      to={`/vibes/${vibe.slug}`}
+      to={`/feelings/${vibe.slug}`}
       className="group block overflow-hidden rounded-[18px] border border-stone/70 bg-white/72 text-inherit no-underline shadow-[0_18px_44px_-28px_rgba(26,26,26,0.24)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
     >
       <div className="overflow-hidden">
@@ -195,12 +195,12 @@ export function Search() {
   const priceFilter = PRICE_IDS.includes((params.get('price') ?? '') as SearchPriceFilter)
     ? (params.get('price') as SearchPriceFilter)
     : 'all';
-  const vibeFilter = params.get('vibeFilter') ?? 'all';
+  const feelingFilter = params.get('feelingFilter') ?? params.get('vibeFilter') ?? 'all';
   const sizeFilter = parseSearchSizeFilter(params.get('size'));
 
-  const scopeVibe = useMemo(() => {
-    const value = params.get('vibe') ?? '';
-    return value.trim() ? getVibe(value) ?? null : null;
+  const scopeFeeling = useMemo(() => {
+    const value = (params.get('feeling') ?? params.get('vibe') ?? '').trim();
+    return value ? getFeeling(value) ?? null : null;
   }, [params]);
 
   const scopeOccasion = useMemo(() => {
@@ -209,8 +209,8 @@ export function Search() {
   }, [params]);
 
   const facetOptions = useMemo(
-    () => getSearchFacetOptions(scopeVibe?.slug ?? null, scopeOccasion?.slug ?? null),
-    [scopeOccasion?.slug, scopeVibe?.slug],
+    () => getSearchFacetOptions(scopeFeeling?.slug ?? null, scopeOccasion?.slug ?? null),
+    [scopeOccasion?.slug, scopeFeeling?.slug],
   );
 
   const rawFilterArtist = params.get('fArtist') ?? 'all';
@@ -279,6 +279,7 @@ export function Search() {
           value === '' ||
           (key === 'sort' && value === 'relevance') ||
           (key === 'price' && value === 'all') ||
+          (key === 'feelingFilter' && value === 'all') ||
           (key === 'vibeFilter' && value === 'all') ||
           (key === 'size' && value === 'all') ||
           (key === 'fArtist' && value === 'all') ||
@@ -375,10 +376,10 @@ export function Search() {
       getSearchResults({
         query: debouncedQ,
         scopeOccasionSlug: scopeOccasion?.slug,
-        scopeVibeSlug: scopeVibe?.slug,
+        scopeFeelingSlug: scopeFeeling?.slug,
         sortKey,
         priceFilter,
-        vibeFilter,
+        feelingFilter,
         sizeFilter,
         filterArtist,
         filterOccasion,
@@ -391,9 +392,9 @@ export function Search() {
       filterOccasion,
       priceFilter,
       scopeOccasion?.slug,
-      scopeVibe?.slug,
+      scopeFeeling?.slug,
       sortKey,
-      vibeFilter,
+      feelingFilter,
       sizeFilter,
     ],
   );
@@ -403,10 +404,10 @@ export function Search() {
       getSearchSuggestions({
         query: q,
         scopeOccasionSlug: scopeOccasion?.slug,
-        scopeVibeSlug: scopeVibe?.slug,
+        scopeFeelingSlug: scopeFeeling?.slug,
         limitPerGroup: 3,
       }),
-    [q, scopeOccasion?.slug, scopeVibe?.slug],
+    [q, scopeOccasion?.slug, scopeFeeling?.slug],
   );
   const flatSuggestions = useMemo(() => flattenSuggestions(suggestionGroups), [suggestionGroups]);
   const suggestionsOpen = searchFocused && (suggestionGroups.length > 0 || q.trim().length > 0);
@@ -424,18 +425,19 @@ export function Search() {
   const hasActiveFilters =
     sortKey !== 'relevance' ||
     priceFilter !== 'all' ||
-    vibeFilter !== 'all' ||
+    feelingFilter !== 'all' ||
     sizeFilter !== 'all' ||
     filterArtist !== 'all' ||
     filterOccasion !== 'all' ||
     filterColor !== 'all';
   const noResultsAcrossSections = hasDebouncedQuery && totalResults === 0;
 
-  const scopeLabels = [scopeOccasion?.name, scopeVibe?.name].filter(Boolean);
+  const scopeLabels = [scopeOccasion?.name, scopeFeeling?.name].filter(Boolean);
   const scopeSummary = scopeLabels.join(' · ');
 
   const clearScopeTo = useMemo(() => {
     const next = new URLSearchParams(params);
+    next.delete('feeling');
     next.delete('vibe');
     next.delete('occasion');
     next.delete('focus');
@@ -448,14 +450,14 @@ export function Search() {
       const visual = getOccasionCollectionVisual(scopeOccasion.slug).hero;
       return { src: visual.src, alt: visual.alt };
     }
-    if (scopeVibe) {
-      const visual = getVibeCollectionVisual(scopeVibe.slug).cover;
+    if (scopeFeeling) {
+      const visual = getFeelingCollectionVisual(scopeFeeling.slug).cover;
       return { src: visual.src, alt: visual.alt };
     }
     if (designMatches[0]) return { src: designMatches[0].imageSrc, alt: designMatches[0].imageAlt };
     if (baseDesigns[0]) return { src: baseDesigns[0].imageSrc, alt: baseDesigns[0].imageAlt };
     return { src: heroStreet, alt: 'HORO search — editorial styling in a graphic tee.' };
-  }, [baseDesigns, designMatches, scopeOccasion, scopeVibe]);
+  }, [baseDesigns, designMatches, scopeOccasion, scopeFeeling]);
 
   const summaryText = hasDebouncedQuery
     ? SEARCH_SCHEMA.copy.resultsForQuery.replace('{count}', String(totalResults)).replace('{query}', debouncedQ.trim())
@@ -466,7 +468,7 @@ export function Search() {
   const popularSearches = useMemo(() => {
     const suggestions = [
       ...(scopeOccasion ? [scopeOccasion.name] : []),
-      ...(scopeVibe ? [scopeVibe.name] : []),
+      ...(scopeFeeling ? [scopeFeeling.name] : []),
       ...baseDesigns.slice(0, 4).map((design) => design.name),
       ...vibeMatches.slice(0, 2).map((vibe) => vibe.name),
       ...occasionMatches.slice(0, 2).map((occasion) => occasion.name),
@@ -474,13 +476,14 @@ export function Search() {
       'Midnight Compass',
     ];
     return [...new Set(suggestions)].slice(0, 6);
-  }, [baseDesigns, occasionMatches, scopeOccasion, scopeVibe, vibeMatches]);
+  }, [baseDesigns, occasionMatches, scopeOccasion, scopeFeeling, vibeMatches]);
 
   const resetFilters = useCallback(() => {
     updateParams({
       sort: 'relevance',
       price: 'all',
-      vibeFilter: 'all',
+      feelingFilter: 'all',
+      vibeFilter: null,
       size: 'all',
       fArtist: 'all',
       fOccasion: 'all',
@@ -505,12 +508,12 @@ export function Search() {
       search_term: debouncedQ.trim(),
       sort: sortKey,
       price: priceFilter,
-      vibe_filter: vibeFilter,
+      vibe_filter: feelingFilter,
       size: sizeFilter,
       filter_artist: filterArtist,
       filter_occasion: filterOccasion,
       filter_color: filterColor,
-      ...(scopeVibe ? { scope_vibe: scopeVibe.slug } : {}),
+      ...(scopeFeeling ? { scope_feeling: scopeFeeling.slug } : {}),
       ...(scopeOccasion ? { scope_occasion: scopeOccasion.slug } : {}),
     });
   }, [
@@ -521,22 +524,22 @@ export function Search() {
     noResultsAcrossSections,
     priceFilter,
     scopeOccasion,
-    scopeVibe,
+    scopeFeeling,
     sizeFilter,
     sortKey,
-    vibeFilter,
+    feelingFilter,
   ]);
 
   const breadcrumbItems = useMemo((): PageBreadcrumbItem[] => {
-    const items: PageBreadcrumbItem[] = [{ label: 'Home', to: '/' }];
-    if (scopeVibe) {
-      items.push({ label: scopeVibe.name, to: `/vibes/${scopeVibe.slug}` });
+    const items: PageBreadcrumbItem[] = [{ label: copy.shell.home, to: '/' }];
+    if (scopeFeeling) {
+      items.push({ label: scopeFeeling.name, to: `/feelings/${scopeFeeling.slug}` });
     } else if (scopeOccasion) {
       items.push({ label: scopeOccasion.name, to: `/occasions/${scopeOccasion.slug}` });
     }
-    items.push({ label: SEARCH_SCHEMA.copy.searchLabel });
+    items.push({ label: copy.shell.search });
     return items;
-  }, [scopeOccasion, scopeVibe]);
+  }, [copy.shell.home, copy.shell.search, scopeOccasion, scopeFeeling]);
 
   function handleSuggestionSelect(suggestion: SearchSuggestion) {
     navigate(suggestion.href);
@@ -766,8 +769,8 @@ export function Search() {
                     <div className="relative">
                       <select
                         id="search-vibe"
-                        value={vibeFilter}
-                        onChange={(event) => updateParams({ vibeFilter: event.target.value })}
+                        value={feelingFilter}
+                        onChange={(event) => updateParams({ feelingFilter: event.target.value, vibeFilter: null })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
                         <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
@@ -894,7 +897,7 @@ export function Search() {
                 {SEARCH_SCHEMA.copy.noResultsForQuery.replace('{query}', debouncedQ.trim())}
               </h2>
               <p className="mt-3 max-w-xl font-body text-[0.98rem] leading-relaxed text-warm-charcoal">
-                Try a shorter phrase, clear filters, or browse by vibe and occasion.
+                Try a shorter phrase, clear filters, or browse by feeling and occasion.
               </p>
               {hasActiveFilters ? (
                 <button
@@ -906,7 +909,7 @@ export function Search() {
                 </button>
               ) : null}
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
-                <Link className="btn btn-primary" to="/vibes">
+                <Link className="btn btn-primary" to="/feelings">
                   {SEARCH_SCHEMA.copy.shopByVibeCta}
                 </Link>
                 <Link className="btn btn-secondary text-sm" to="/occasions">
@@ -979,7 +982,7 @@ export function Search() {
                         {copy.search.vibesHeading}
                       </h2>
                     </div>
-                    <p className="font-body text-sm text-clay">{formatResultCount(vibeMatches.length, 'vibe', 'vibes')}</p>
+                    <p className="font-body text-sm text-clay">{formatResultCount(vibeMatches.length, 'feeling', 'feelings')}</p>
                   </div>
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                     {vibeMatches.map((vibe) => (
@@ -1092,8 +1095,8 @@ export function Search() {
                     <div className="relative">
                       <select
                         id="mobile-search-vibe"
-                        value={vibeFilter}
-                        onChange={(event) => updateParams({ vibeFilter: event.target.value })}
+                        value={feelingFilter}
+                        onChange={(event) => updateParams({ feelingFilter: event.target.value, vibeFilter: null })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
                         <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>

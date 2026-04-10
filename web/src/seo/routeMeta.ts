@@ -1,5 +1,5 @@
 import { matchPath } from 'react-router-dom';
-import { getOccasion, getProduct, getVibe } from '../data/site';
+import { getFeeling, getOccasion, getProduct } from '../data/site';
 import { DEFAULT_SITE_DESCRIPTION, DEFAULT_SITE_TITLE } from './constants';
 import { stripLocalePrefix } from './locale';
 
@@ -68,7 +68,7 @@ function nonIndexablePage(
 
 export function resolveRouteMeta(pathname: string): RouteSeoMeta {
   const { pathname: normalizedPathname } = stripLocalePrefix(pathname);
-  const vibeMatch = matchPath({ path: '/vibes/:slug', end: true }, normalizedPathname);
+  const feelingMatch = matchPath({ path: '/feelings/:slug', end: true }, normalizedPathname);
   const productMatch = matchPath({ path: '/products/:slug', end: true }, normalizedPathname);
   const occasionMatch = matchPath({ path: '/occasions/:slug', end: true }, normalizedPathname);
 
@@ -88,31 +88,31 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
       },
     );
   }
-  if (normalizedPathname === '/vibes') {
+  if (normalizedPathname === '/feelings') {
     return indexablePage(
-      '/vibes',
-      'Shop Graphic Tees by Vibe | HORO Egypt',
-      'Shop HORO graphic tees by vibe. Explore oversized streetwear across Emotions, Zodiac, Fiction, Career, and Trends with COD and 14-day exchange in Egypt.',
+      '/feelings',
+      'Shop Graphic Tees by Feeling | HORO Egypt',
+      'Shop HORO artist-made graphic tees by feeling and moment — soft, bold, warm, grounded, and playful edits with COD and 14-day exchange in Egypt.',
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },
-          { name: 'Shop by Vibe', path: '/vibes' },
+          { name: 'Shop by Feeling', path: '/feelings' },
         ]),
       },
     );
   }
-  if (vibeMatch?.params.slug) {
-    const v = getVibe(vibeMatch.params.slug);
+  if (feelingMatch?.params.slug) {
+    const v = getFeeling(feelingMatch.params.slug);
     if (!v) return nonIndexablePage('Page not found | HORO Egypt', DEFAULT_SITE_DESCRIPTION);
     return indexablePage(
-      `/vibes/${v.slug}`,
+      `/feelings/${v.slug}`,
       `${v.name} Graphic Tees | HORO Egypt`,
-      `Shop ${v.name.toLowerCase()} graphic tees and oversized streetwear from HORO Egypt. ${v.tagline} COD and 14-day exchange available in Egypt.`,
+      `Shop ${v.name.toLowerCase()} graphic tees from HORO Egypt. ${v.tagline} COD and 14-day exchange available in Egypt.`,
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },
-          { name: 'Shop by Vibe', path: '/vibes' },
-          { name: v.name, path: `/vibes/${v.slug}` },
+          { name: 'Shop by Feeling', path: '/feelings' },
+          { name: v.name, path: `/feelings/${v.slug}` },
         ]),
       },
     );
@@ -149,18 +149,18 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
   if (productMatch?.params.slug) {
     const p = getProduct(productMatch.params.slug);
     if (!p) return nonIndexablePage('Page not found | HORO Egypt', DEFAULT_SITE_DESCRIPTION);
-    const vibe = getVibe(p.vibeSlug);
+    const feeling = getFeeling(p.feelingSlug);
     const fitLabel = p.fitLabel?.toLowerCase() === 'oversized' ? 'oversized t-shirt' : 'graphic tee';
     return indexablePage(
       `/products/${p.slug}`,
       `${p.name} Graphic Tee | HORO Egypt`,
-      `Shop ${p.name}, a ${fitLabel} from HORO Egypt${vibe ? ` in the ${vibe.name} vibe` : ''}. ${p.priceEgp} EGP streetwear with COD and 14-day exchange in Egypt.`,
+      `Shop ${p.name}, a ${fitLabel} from HORO Egypt${feeling ? ` — ${feeling.name}` : ''}. ${p.priceEgp} EGP streetwear with COD and 14-day exchange in Egypt.`,
       {
         ogType: 'product',
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },
-          { name: 'Shop by Vibe', path: '/vibes' },
-          ...(vibe ? [{ name: vibe.name, path: `/vibes/${vibe.slug}` }] : []),
+          { name: 'Shop by Feeling', path: '/feelings' },
+          ...(feeling ? [{ name: feeling.name, path: `/feelings/${feeling.slug}` }] : []),
           { name: p.name, path: `/products/${p.slug}` },
         ]),
       },
@@ -191,7 +191,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       '/search',
       'Search Graphic Tees | HORO Egypt',
-      'Search HORO graphic tees, streetwear vibes, and gift occasions in Egypt.',
+      'Search HORO graphic tees, feelings, moments, and gift occasions in Egypt.',
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },

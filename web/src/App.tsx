@@ -2,10 +2,11 @@ import { Suspense, lazy, type ReactNode } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AnalyticsRoot } from './analytics/AnalyticsRoot';
 import { Layout } from './components/Layout';
+import { LegacyVibeCollectionRedirect } from './routes/LegacyVibeRedirect';
 
 const Home = lazy(async () => ({ default: (await import('./pages/Home')).Home }));
-const ShopByVibe = lazy(async () => ({ default: (await import('./pages/ShopByVibe')).ShopByVibe }));
-const VibeCollection = lazy(async () => ({ default: (await import('./pages/VibeCollection')).VibeCollection }));
+const ShopByFeeling = lazy(async () => ({ default: (await import('./pages/ShopByFeeling')).ShopByFeeling }));
+const FeelingCollection = lazy(async () => ({ default: (await import('./pages/FeelingCollection')).FeelingCollection }));
 const ShopByOccasion = lazy(async () => ({ default: (await import('./pages/ShopByOccasion')).ShopByOccasion }));
 const OccasionCollection = lazy(async () => ({ default: (await import('./pages/OccasionCollection')).OccasionCollection }));
 const ProductDetail = lazy(async () => ({ default: (await import('./pages/ProductDetail')).ProductDetail }));
@@ -42,12 +43,14 @@ export default function App() {
           <Route path="/exchange" element={<RoutePage><Exchange /></RoutePage>} />
           <Route path="/privacy" element={<RoutePage><Privacy /></RoutePage>} />
           <Route path="/terms" element={<RoutePage><Terms /></RoutePage>} />
-          <Route path="/vibes" element={<RoutePage><ShopByVibe /></RoutePage>} />
-          <Route path="/vibes/:slug" element={<RoutePage><VibeCollection /></RoutePage>} />
+          <Route path="/feelings" element={<RoutePage><ShopByFeeling /></RoutePage>} />
+          <Route path="/feelings/:slug" element={<RoutePage><FeelingCollection /></RoutePage>} />
+          <Route path="/vibes" element={<Navigate to="/feelings" replace />} />
+          <Route path="/vibes/:slug" element={<LegacyVibeCollectionRedirect />} />
           <Route path="/occasions" element={<RoutePage><ShopByOccasion /></RoutePage>} />
           <Route path="/occasions/:slug" element={<RoutePage><OccasionCollection /></RoutePage>} />
-          <Route path="/artists" element={<Navigate to="/vibes" replace />} />
-          <Route path="/artists/:slug" element={<Navigate to="/vibes" replace />} />
+          <Route path="/artists" element={<Navigate to="/feelings" replace />} />
+          <Route path="/artists/:slug" element={<Navigate to="/feelings" replace />} />
           <Route path="/products" element={<Navigate to="/search" replace />} />
           <Route path="/products/:slug" element={<RoutePage><ProductDetail /></RoutePage>} />
           <Route path="/cart" element={<RoutePage><Cart /></RoutePage>} />

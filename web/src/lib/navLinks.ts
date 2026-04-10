@@ -1,22 +1,15 @@
 /** Primary routes — keep header, drawer, and footer shop labels in sync. */
 export const NAV_ROUTE = {
-  collection: { path: '/vibes', label: 'Shop by Vibe' },
-  occasions: { path: '/occasions', label: 'Shop by Occasion' },
-  about: { path: '/about', label: 'About' },
+  home: { path: '/', end: true },
+  collection: { path: '/feelings', end: false },
+  occasions: { path: '/occasions', end: false },
+  about: { path: '/about', end: false },
+  search: { path: '/search', end: false },
+  cart: { path: '/cart', end: false },
 } as const;
 
-export const NAV_PRIMARY_SHORTCUTS = [
-  NAV_ROUTE.collection,
-  NAV_ROUTE.occasions,
-  NAV_ROUTE.about,
-] as const;
+export const NAV_PRIMARY_ROUTE_KEYS = ['collection', 'occasions', 'about'] as const;
 
-export type NavDrawerLink = { path: string; label: string; end?: boolean };
+export type NavRouteKey = keyof typeof NAV_ROUTE;
 
-export const NAV_DRAWER_LINKS: readonly NavDrawerLink[] = [
-  { path: '/', label: 'Home', end: true },
-  NAV_ROUTE.collection,
-  NAV_ROUTE.occasions,
-  NAV_ROUTE.about,
-  { path: '/search', label: 'Search' },
-];
+export const NAV_DRAWER_ROUTE_KEYS = ['home', 'collection', 'occasions', 'about', 'search'] as const;

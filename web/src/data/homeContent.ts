@@ -6,7 +6,7 @@ export type HomeOrientationStep = {
 export const HOME_ORIENTATION_STEPS: HomeOrientationStep[] = [
   {
     title: 'Choose the feeling',
-    body: 'Start with the vibe that sounds most like you, then drop into the matching edit.',
+    body: 'Start with the feeling that sounds most like you, then drop into the matching edit.',
   },
   {
     title: 'Pick the design',
@@ -46,7 +46,7 @@ export const HOME_PROOF_PANELS: HomeProofPanel[] = [
   },
 ];
 
-export type HomeEvidenceCard = {
+export type HomeProofCard = {
   eyebrow: string;
   title: string;
   body: string;
@@ -54,24 +54,24 @@ export type HomeEvidenceCard = {
   imageAlt: string;
 };
 
-export const HOME_EVIDENCE_CARDS: HomeEvidenceCard[] = [
+export const HOME_PROOF_CARDS: HomeProofCard[] = [
   {
     eyebrow: 'Launch proof',
-    title: 'No fake customer quotes before delivery',
-    body: 'Until first-wear photos are real, the homepage shows the product checks instead of invented praise.',
+    title: 'Proof comes before public praise',
+    body: 'Until customer stories are real, the homepage shows fabric, print, fit, and packaging proof instead of invented reviews.',
     imageSrc: '/images/proof/wash-test-card.svg',
     imageAlt: 'Proof card representing the launch wash-test comparison for HORO products.',
   },
   {
     eyebrow: 'Fit clarity',
-    title: 'Back view stays part of the proof pack',
+    title: 'Fit proof stays in view',
     body: 'Shoppers need the drape and hem read from more than one angle before sizing feels safe.',
     imageSrc: '/images/proof/back-fit-card.svg',
     imageAlt: 'Proof card representing the missing back-view fit check for a HORO tee.',
   },
   {
     eyebrow: 'Gift-ready',
-    title: 'The drop still has to arrive well',
+    title: 'Gifting has to arrive ready',
     body: 'Meaning only works when the tee, packaging, and exchange path feel reliable from the first order.',
     imageSrc: '/images/cart/gift-wrap-story-card-preview.svg',
     imageAlt: 'Preview of the HORO story card and gift-wrap add-on for gift-ready orders.',
@@ -108,54 +108,24 @@ export const HOME_PROOF_MACRO = {
   imageAlt: 'Close studio view of a HORO graphic tee showing print clarity on cotton.',
 } as const;
 
-export type HomeStoryQuote = {
-  quote: string;
-  name: string;
-  city: string;
-};
-
-export const HOME_STORY_QUOTES: HomeStoryQuote[] = [
-  {
-    quote:
-      'The shirt actually feels heavy in a good way — and the print still looks sharp after a few washes. Finally something that matches the mood I wanted.',
-    name: 'Yasmin H.',
-    city: 'Cairo',
-  },
-  {
-    quote:
-      'I ordered COD, swapped the size once, and the exchange was straightforward. The design is even better in person.',
-    name: 'Omar F.',
-    city: 'Alexandria',
-  },
-  {
-    quote:
-      'It’s the first graphic tee I’ve worn where people stop and read the line. Feels personal without being loud.',
-    name: 'Layla M.',
-    city: 'Giza',
-  },
-];
-
 export const HOME_COPY = {
   heroSupportLine:
-    'Original illustration. Heavyweight cotton. Delivered across Egypt.',
+    'Artist-made illustration for feelings, moments, and meaningful giving. Heavyweight cotton, delivered across Egypt.',
   proofEyebrow: 'The proof',
-  proofTitle: 'Facts you can hold onto.',
+  proofTitle: 'Why trust HORO',
   proofBody:
-    'Before hype, there is fabric weight, honest art credit, a clear exchange window, and payment options that respect how people actually shop in Egypt.',
-  vibesEyebrow: 'The vibes',
-  vibesTitle: 'Five lines. One wardrobe.',
-  vibesBody: 'Each mood has its own color — follow the dot to the collection that sounds like you.',
-  storiesEyebrow: 'Real stories',
-  storiesTitle: 'What people say after the first wear',
-  storiesBody: 'Short notes from shoppers who wanted the tee to say the quiet part out loud.',
+    'Before praise, there is fabric weight, honest art credit, exchange clarity, and payment options that respect how people actually shop in Egypt.',
+  vibesEyebrow: 'Feelings',
+  vibesTitle: 'Choose by feeling',
+  vibesBody: 'Start with the feeling that fits the moment, then move into the edit that matches it.',
   planEyebrow: 'Simple plan',
   planTitle: 'How it works',
-  evidenceEyebrow: 'Launch proof',
-  evidenceTitle: 'Customer stories come after delivery. Until then, show the work.',
-  evidenceBody:
-    'The homepage stays truthful by replacing invented testimonials with the checks that make a first order feel safer.',
+  studioEyebrow: 'Studio proof',
+  studioTitle: 'Proof before public praise',
+  studioBody:
+    'Until reviews and wear stories are real, the homepage stays factual: fabric, fit, print, and gift-readiness proof first.',
   inviteBody:
-    'Be first when the next drop opens. This preview saves your email on this device until live notification channels are connected.',
+    'Be first when the next drop opens. This preview only saves your contact on this device until live notification channels are connected.',
   waitlistPlaceholder: 'Email for next-drop alert',
   waitlistSubmit: 'Save my spot',
   waitlistSuccess: 'Saved on this device for the next-drop alert preview.',

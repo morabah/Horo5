@@ -2,6 +2,7 @@ import {
   Link,
   useNavigate,
   useParams,
+  useSearchParams,
 } from 'react-router-dom';
 import {
   useEffect,
@@ -15,9 +16,10 @@ import {
 } from 'react';
 import {
   getArtist,
+  getFeeling,
+  getOccasion,
   getProduct,
-  getVibe,
-  productsByVibe,
+  productsByFeeling,
   type Product,
   type ProductSizeKey,
 } from '../data/site';
@@ -36,6 +38,7 @@ import { ProductJsonLd } from '../components/ProductJsonLd';
 import { TeeImage, TeeImageFrame } from '../components/TeeImage';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { QuickViewTrigger } from '../components/QuickViewTrigger';
+import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
 import { HORO_SUPPORT_CHANNELS, PDP_SCHEMA, isConfiguredExternalUrl } from '../data/domain-config';
@@ -122,6 +125,8 @@ function AccordionSection({ title, children }: { title: string; children: ReactN
 
 export function ProductDetail() {
   const { slug = '' } = useParams();
+  const { copy: shellCopy } = useUiLocale();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { recordView } = useRecentlyViewed();
@@ -176,13 +181,20 @@ export function ProductDetail() {
 
   const media = product ? getProductMedia(product.slug) : getProductMedia('');
   const gallery = product ? getProductPdpGallery(product.name, product.slug) : [];
-  const vibe = product ? getVibe(product.vibeSlug) : undefined;
+  const feeling = product ? getFeeling(product.feelingSlug) : undefined;
   const artist = product ? getArtist(product.artistSlug) : undefined;
   const related = product
-    ? productsByVibe(product.vibeSlug)
+    ? productsByFeeling(product.feelingSlug)
         .filter((item) => item.slug !== slug)
         .slice(0, 4)
     : [];
+
+  const compactPdp = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      searchParams.get('compact') === '1' || sessionStorage.getItem('horo_home_compact') === '1'
+    );
+  }, [searchParams]);
 
   const styleWithProducts = useMemo(() => {
     if (!product?.complementarySlugs?.length) return [];
@@ -592,16 +604,16 @@ export function ProductDetail() {
     return copy.selectSizePrompt;
   }
 
-  const desktopCtaClass = `flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+  const desktopCtaClass = `cta-clay flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
     oosSelected
-      ? 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90'
-      : 'border-obsidian bg-obsidian text-white hover:bg-white hover:text-obsidian'
+      ? 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90 opacity-90'
+      : 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90'
   }`;
 
-  const mobileCtaClass = `flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+  const mobileCtaClass = `cta-clay flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
     oosSelected
-      ? 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90'
-      : 'border-obsidian bg-obsidian text-white hover:bg-white hover:text-obsidian'
+      ? 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90 opacity-90'
+      : 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90'
   }`;
 
   const desktopBuyNowClass =
@@ -624,8 +636,8 @@ export function ProductDetail() {
     return (
       <div className="bg-papyrus px-4 py-16 text-center">
         <p className="font-body text-warm-charcoal">Product not found.</p>
-        <Link to="/vibes" className="font-label mt-4 inline-block text-deep-teal underline">
-          Shop by Vibe
+        <Link to="/feelings" className="font-label mt-4 inline-block text-deep-teal underline">
+          {shellCopy.shell.shopByFeeling}
         </Link>
       </div>
     );
@@ -640,25 +652,25 @@ export function ProductDetail() {
 
       <nav
         className="bg-papyrus px-4 pb-2 pt-6 font-body text-[11px] uppercase tracking-wider text-clay md:px-8 md:pb-4 md:pt-8"
-        aria-label="Breadcrumb"
+        aria-label={shellCopy.shell.breadcrumb}
       >
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             to="/"
             className="inline-flex min-h-11 items-center rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
           >
-            Home
+            {shellCopy.shell.home}
           </Link>
           <span className="text-clay/50" aria-hidden>
             /
           </span>
-          {vibe ? (
+          {feeling ? (
             <>
               <Link
-                to={`/vibes/${vibe.slug}`}
+                to={`/feelings/${feeling.slug}`}
                 className="inline-flex min-h-11 max-w-[12rem] items-center truncate rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
               >
-                {vibe.name}
+                {feeling.name}
               </Link>
               <span className="text-clay/50" aria-hidden>
                 /
@@ -844,7 +856,7 @@ export function ProductDetail() {
             </div>
           </section>
 
-          {frequentlyBoughtWithProducts.length > 0 || styleWithProducts.length > 0 ? (
+          {!compactPdp && (frequentlyBoughtWithProducts.length > 0 || styleWithProducts.length > 0) ? (
             <CrossSellWidget
               frequentlyBoughtWith={frequentlyBoughtWithProducts}
               styleWith={styleWithProducts}
@@ -873,18 +885,50 @@ export function ProductDetail() {
         <aside className="md:sticky md:top-24 md:self-start">
           <div className="space-y-6 md:p-4 lg:p-6">
             <header className="space-y-4">
-              {vibe ? (
+              {feeling ? (
                 <Link
-                  to={`/vibes/${vibe.slug}`}
+                  to={`/feelings/${feeling.slug}`}
                   className="font-label inline-flex min-h-11 items-center rounded-full border border-dusk-violet/35 bg-dusk-violet/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet transition-colors hover:border-dusk-violet/60 hover:bg-dusk-violet/14"
                 >
-                  {vibe.name}
+                  {feeling.name}
                 </Link>
               ) : null}
 
-              <h1 className="font-pdp-serif text-[clamp(2rem,5vw,3.4rem)] font-semibold uppercase leading-[0.95] tracking-tight text-obsidian">
+              <h1 className="font-headline text-[clamp(2rem,5vw,3.2rem)] font-semibold leading-[1.02] tracking-tight text-obsidian">
                 {formatTitleLines(product.name)}
               </h1>
+
+              {feeling || product.occasionSlugs.length ? (
+                <div className="space-y-3 rounded-xl border border-stone/40 bg-papyrus/90 px-4 py-3">
+                  {feeling ? (
+                    <div>
+                      <p className="font-label text-[10px] uppercase tracking-wider text-label">Feels like</p>
+                      <p className="mt-1 font-body text-sm leading-relaxed text-warm-charcoal">{feeling.tagline}</p>
+                    </div>
+                  ) : null}
+                  {product.occasionSlugs.length ? (
+                    <div>
+                      <p className="font-label text-[10px] uppercase tracking-wider text-label">Works for</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {product.occasionSlugs.map((slug) => {
+                          const o = getOccasion(slug);
+                          return (
+                            <span
+                              key={slug}
+                              className="font-label rounded-full border border-stone/55 bg-white/90 px-3 py-1.5 text-[10px] uppercase tracking-wider text-obsidian"
+                            >
+                              {o?.name ?? slug}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+                  {product.capsuleSlugs?.includes('zodiac') ? (
+                    <p className="font-label text-[10px] uppercase tracking-wider text-moon-gold">Zodiac capsule</p>
+                  ) : null}
+                </div>
+              ) : null}
             </header>
 
             <section
@@ -897,11 +941,11 @@ export function ProductDetail() {
               >
                 {copy.storyCardHeading}
               </p>
-              <p className="font-pdp-serif text-[1.05rem] leading-relaxed md:text-[1.15rem]">{product.story}</p>
+              <p className="font-body text-[1rem] leading-relaxed text-warm-charcoal md:text-[1.08rem]">{product.story}</p>
             </section>
 
             <div className="space-y-5">
-              <p className="font-pdp-serif text-[1.8rem] font-semibold leading-none text-obsidian md:text-[2rem]">
+              <p className="font-headline text-[1.8rem] font-semibold leading-none text-obsidian md:text-[2rem]">
                 {formatEgp(product.priceEgp)}
               </p>
 
@@ -1078,7 +1122,7 @@ export function ProductDetail() {
                 <p className="font-body text-xs leading-snug text-clay">{copy.deliveryEstimateNote}</p>
               </div>
 
-              <PdpShareStrip productName={product.name} productSlug={product.slug} />
+              {!compactPdp ? <PdpShareStrip productName={product.name} productSlug={product.slug} /> : null}
 
               {artist ? (
                 <div className="flex items-center gap-3 border-t border-stone/30 pt-5">
@@ -1188,12 +1232,12 @@ export function ProductDetail() {
                 {copy.designStoryAccordionBody}{' '}
                 <span className="block pt-2 text-warm-charcoal/95">
                   Part of the{' '}
-                  {vibe ? (
+                  {feeling ? (
                     <Link
-                      to={`/vibes/${vibe.slug}`}
+                      to={`/feelings/${feeling.slug}`}
                       className="border-b border-obsidian/25 font-medium text-obsidian transition-colors hover:text-deep-teal"
                     >
-                      {vibe.name}
+                      {feeling.name}
                     </Link>
                   ) : (
                     'collection'
@@ -1346,16 +1390,16 @@ export function ProductDetail() {
             <div>
               <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">Discovery</span>
               <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
-                More from {vibe?.name ?? 'this vibe'}
+                More from {feeling?.name ?? 'this feeling'}
               </h2>
               <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
             </div>
-            {vibe ? (
+            {feeling ? (
               <Link
-                to={`/vibes/${vibe.slug}`}
+                to={`/feelings/${feeling.slug}`}
                 className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
               >
-                Shop by Vibe
+                {shellCopy.shell.shopByFeeling}
               </Link>
             ) : null}
           </div>
@@ -1599,7 +1643,7 @@ export function ProductDetail() {
         </div>
       ) : null}
 
-      <RecentlyViewedStrip excludeSlug={slug} />
+      {!compactPdp ? <RecentlyViewedStrip excludeSlug={slug} /> : null}
 
       <ProductQuickView
         open={relatedQuickViewSlug !== null}

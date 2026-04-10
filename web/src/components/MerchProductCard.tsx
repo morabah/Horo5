@@ -13,6 +13,8 @@ type MerchProductCardProps = {
   eyebrow?: string;
   eyebrowAccent?: string;
   proofChip?: string;
+  useCase?: string;
+  artistCredit?: string;
   compareAtPriceEgp?: number;
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
@@ -32,6 +34,8 @@ export function MerchProductCard({
   eyebrow,
   eyebrowAccent,
   proofChip,
+  useCase,
+  artistCredit,
   compareAtPriceEgp,
   onQuickView,
   onProductClick,
@@ -97,13 +101,23 @@ export function MerchProductCard({
         >
           {name}
         </Link>
+        {useCase ? (
+          <p className={`mt-2 font-body text-sm leading-relaxed text-warm-charcoal ${minimal ? '' : 'max-w-[20rem]'}`}>
+            {useCase}
+          </p>
+        ) : null}
+        {artistCredit ? (
+          <p className="mt-2 font-body text-[0.8rem] text-clay">
+            {artistCredit}
+          </p>
+        ) : null}
         <div className={`mt-auto flex flex-wrap items-center gap-3 ${minimal ? 'pt-2.5' : 'pt-4'}`}>
           <div className="flex items-center gap-2">
-            <p className={`font-pdp-serif font-normal text-obsidian ${minimal ? 'text-[1rem]' : 'text-[1.125rem]'}`}>
+            <p className={`font-headline font-semibold text-obsidian ${minimal ? 'text-[1rem]' : 'text-[1.125rem]'}`}>
               {formatEgp(priceEgp)}
             </p>
             {compareAtPriceEgp ? (
-              <p className="font-pdp-serif text-[0.95rem] text-stone line-through">{formatEgp(compareAtPriceEgp)}</p>
+              <p className="font-headline text-[0.95rem] text-stone line-through">{formatEgp(compareAtPriceEgp)}</p>
             ) : null}
           </div>
           {!minimal && proofChip ? (

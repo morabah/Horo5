@@ -3,6 +3,8 @@
  * so page sections stop pulling from an ad hoc shared pool.
  */
 
+import { LEGACY_VIBE_SLUG_TO_FEELING_SLUG } from './site';
+
 /** Hero: urban, warm, model in tee */
 export const heroStreet = '/images/tees/tee_walking_street.png';
 
@@ -56,7 +58,7 @@ export type StorefrontImageSlot = {
   objectPosition?: string;
 };
 
-type VibeStorefrontImages = {
+export type FeelingStorefrontImages = {
   cover: StorefrontImageSlot;
   hero: StorefrontImageSlot;
   proof: StorefrontImageSlot;
@@ -67,20 +69,20 @@ type OccasionStorefrontImages = {
   proof: StorefrontImageSlot;
 };
 
-const FALLBACK_VIBE_VISUALS: VibeStorefrontImages = {
+const FALLBACK_FEELING_VISUALS: FeelingStorefrontImages = {
   cover: {
     src: heroStreet,
-    alt: 'HORO vibe cover — editorial styling in a graphic tee.',
+    alt: 'HORO feeling cover — editorial styling in a graphic tee.',
     objectPosition: 'center 24%',
   },
   hero: {
     src: heroStreet,
-    alt: 'HORO vibe collection hero — editorial styling in a graphic tee.',
+    alt: 'HORO feeling collection hero — editorial styling in a graphic tee.',
     objectPosition: 'center 24%',
   },
   proof: {
     src: heroStreet,
-    alt: 'HORO vibe proof image — editorial styling in a graphic tee.',
+    alt: 'HORO feeling proof image — editorial styling in a graphic tee.',
     objectPosition: 'center 24%',
   },
 };
@@ -103,7 +105,7 @@ export const STOREFRONT_IMAGE_SLOTS: {
     hero: StorefrontImageSlot;
     proof: StorefrontImageSlot;
   };
-  vibes: Record<string, VibeStorefrontImages>;
+  feelings: Record<string, FeelingStorefrontImages>;
   occasions: Record<string, OccasionStorefrontImages>;
   gifts: {
     proof: StorefrontImageSlot;
@@ -125,89 +127,89 @@ export const STOREFRONT_IMAGE_SLOTS: {
       objectPosition: 'center 24%',
     },
   },
-  vibes: {
-    emotions: {
+  feelings: {
+    'soft-quiet': {
       cover: {
         src: '/images/tees/bg_vibe_emotions.png',
-        alt: 'Emotions vibe — expressive editorial styling in a HORO tee.',
+        alt: 'Soft / Quiet — calm editorial styling in a HORO tee.',
         objectPosition: 'center 24%',
       },
       hero: {
         src: '/images/tees/bg_vibe_emotions.png',
-        alt: 'Emotions collection hero — expressive editorial styling in a HORO tee.',
+        alt: 'Soft / Quiet collection — reflective mood, HORO tee.',
         objectPosition: 'center 24%',
       },
       proof: {
         src: tee.whiteFront,
-        alt: 'Emotions collection proof image — a HORO tee styled with quiet studio focus.',
+        alt: 'Soft / Quiet proof — HORO tee with quiet studio focus.',
         objectPosition: 'center 20%',
       },
     },
-    zodiac: {
+    'warm-romantic': {
       cover: {
         src: '/images/tees/bg_vibe_zodiac.png',
-        alt: 'Zodiac vibe — cosmic editorial styling in a HORO tee.',
+        alt: 'Warm / Romantic — gift-ready editorial styling in a HORO tee.',
         objectPosition: 'center 18%',
       },
       hero: {
         src: '/images/tees/bg_vibe_zodiac.png',
-        alt: 'Zodiac collection hero — cosmic editorial styling in a HORO tee.',
+        alt: 'Warm / Romantic collection hero — thoughtful gifting mood.',
         objectPosition: 'center 18%',
       },
       proof: {
         src: tee.relaxedFit,
-        alt: 'Zodiac collection proof image — relaxed-fit HORO tee with celestial mood.',
+        alt: 'Warm / Romantic proof — relaxed-fit HORO tee.',
         objectPosition: 'center 18%',
       },
     },
-    fiction: {
+    'playful-offbeat': {
       cover: {
         src: '/images/tees/bg_vibe_fictious.png',
-        alt: 'Fiction vibe — story-led editorial styling in a HORO tee.',
+        alt: 'Playful / Offbeat — expressive editorial styling in a HORO tee.',
         objectPosition: 'center 26%',
       },
       hero: {
         src: '/images/tees/bg_vibe_fictious.png',
-        alt: 'Fiction collection hero — story-led editorial styling in a HORO tee.',
+        alt: 'Playful / Offbeat collection hero — character-led HORO tee.',
         objectPosition: 'center 26%',
       },
       proof: {
         src: tee.studioTee,
-        alt: 'Fiction collection proof image — studio-lit HORO tee with story-led artwork.',
+        alt: 'Playful / Offbeat proof — studio-lit HORO tee.',
         objectPosition: 'center 18%',
       },
     },
-    career: {
+    'grounded-everyday': {
       cover: {
         src: '/images/tees/bg_vibe_career.png',
-        alt: 'Career vibe — grounded editorial styling in a HORO tee.',
+        alt: 'Grounded / Everyday — repeat-wear editorial styling in a HORO tee.',
         objectPosition: 'center 20%',
       },
       hero: {
         src: '/images/tees/bg_vibe_career.png',
-        alt: 'Career collection hero — grounded editorial styling in a HORO tee.',
+        alt: 'Grounded / Everyday collection hero — daily confidence.',
         objectPosition: 'center 20%',
       },
       proof: {
         src: tee.walkingStreet,
-        alt: 'Career collection proof image — city-led HORO styling with polished momentum.',
+        alt: 'Grounded / Everyday proof — city-led HORO styling.',
         objectPosition: 'center 24%',
       },
     },
-    trends: {
+    'bold-electric': {
       cover: {
         src: '/images/tees/bg_vibe_trends.png',
-        alt: 'Trends vibe — street-led editorial styling in a HORO tee.',
+        alt: 'Bold / Electric — going-out editorial styling in a HORO tee.',
         objectPosition: 'center 18%',
       },
       hero: {
         src: '/images/tees/bg_vibe_trends.png',
-        alt: 'Trends collection hero — street-led editorial styling in a HORO tee.',
+        alt: 'Bold / Electric collection hero — visible statement.',
         objectPosition: 'center 18%',
       },
       proof: {
         src: tee.outdoorTee,
-        alt: 'Trends collection proof image — outdoor HORO styling with modern streetwear energy.',
+        alt: 'Bold / Electric proof — outdoor HORO styling.',
         objectPosition: 'center 22%',
       },
     },
@@ -331,67 +333,79 @@ export const homeProofGallery = [
 ] as const;
 
 /**
- * Editorial wide + detail per vibe — every shot is a model wearing a t-shirt,
- * chosen to match the vibe (mood / night-out / bold graphic / pro casual / street trend).
+ * Editorial wide + detail per feeling — model-led shots matched to §6.1 pillars.
  */
-export const vibeEditorialImagery: Record<string, { wide: string; detail: string }> = {
-  emotions: {
-    wide: STOREFRONT_IMAGE_SLOTS.vibes.emotions.hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.vibes.emotions.proof.src,
+export const feelingEditorialImagery: Record<string, { wide: string; detail: string }> = {
+  'soft-quiet': {
+    wide: STOREFRONT_IMAGE_SLOTS.feelings['soft-quiet'].hero.src,
+    detail: STOREFRONT_IMAGE_SLOTS.feelings['soft-quiet'].proof.src,
   },
-  zodiac: {
-    wide: STOREFRONT_IMAGE_SLOTS.vibes.zodiac.hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.vibes.zodiac.proof.src,
+  'warm-romantic': {
+    wide: STOREFRONT_IMAGE_SLOTS.feelings['warm-romantic'].hero.src,
+    detail: STOREFRONT_IMAGE_SLOTS.feelings['warm-romantic'].proof.src,
   },
-  fiction: {
-    wide: STOREFRONT_IMAGE_SLOTS.vibes.fiction.hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.vibes.fiction.proof.src,
+  'playful-offbeat': {
+    wide: STOREFRONT_IMAGE_SLOTS.feelings['playful-offbeat'].hero.src,
+    detail: STOREFRONT_IMAGE_SLOTS.feelings['playful-offbeat'].proof.src,
   },
-  career: {
-    wide: STOREFRONT_IMAGE_SLOTS.vibes.career.hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.vibes.career.proof.src,
+  'grounded-everyday': {
+    wide: STOREFRONT_IMAGE_SLOTS.feelings['grounded-everyday'].hero.src,
+    detail: STOREFRONT_IMAGE_SLOTS.feelings['grounded-everyday'].proof.src,
   },
-  trends: {
-    wide: STOREFRONT_IMAGE_SLOTS.vibes.trends.hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.vibes.trends.proof.src,
+  'bold-electric': {
+    wide: STOREFRONT_IMAGE_SLOTS.feelings['bold-electric'].hero.src,
+    detail: STOREFRONT_IMAGE_SLOTS.feelings['bold-electric'].proof.src,
   },
 };
 
-/** Vibe listing cards — same wide image as editorial for consistency */
-export const vibeCovers: Record<string, string> = {
-  emotions: STOREFRONT_IMAGE_SLOTS.vibes.emotions.cover.src,
-  zodiac: STOREFRONT_IMAGE_SLOTS.vibes.zodiac.cover.src,
-  fiction: STOREFRONT_IMAGE_SLOTS.vibes.fiction.cover.src,
-  career: STOREFRONT_IMAGE_SLOTS.vibes.career.cover.src,
-  trends: STOREFRONT_IMAGE_SLOTS.vibes.trends.cover.src,
+/** @deprecated Use feelingEditorialImagery */
+export const vibeEditorialImagery = feelingEditorialImagery;
+
+/** Listing card covers per feeling */
+export const feelingCovers: Record<string, string> = {
+  'soft-quiet': STOREFRONT_IMAGE_SLOTS.feelings['soft-quiet'].cover.src,
+  'warm-romantic': STOREFRONT_IMAGE_SLOTS.feelings['warm-romantic'].cover.src,
+  'playful-offbeat': STOREFRONT_IMAGE_SLOTS.feelings['playful-offbeat'].cover.src,
+  'grounded-everyday': STOREFRONT_IMAGE_SLOTS.feelings['grounded-everyday'].cover.src,
+  'bold-electric': STOREFRONT_IMAGE_SLOTS.feelings['bold-electric'].cover.src,
 };
 
-export const vibesHubHeroTiles = [
+/** @deprecated Use feelingCovers */
+export const vibeCovers = feelingCovers;
+
+export const feelingsHubHeroTiles = [
   {
-    slug: 'emotions',
-    ...STOREFRONT_IMAGE_SLOTS.vibes.emotions.cover,
+    slug: 'soft-quiet',
+    ...STOREFRONT_IMAGE_SLOTS.feelings['soft-quiet'].cover,
   },
   {
-    slug: 'zodiac',
-    ...STOREFRONT_IMAGE_SLOTS.vibes.zodiac.cover,
+    slug: 'warm-romantic',
+    ...STOREFRONT_IMAGE_SLOTS.feelings['warm-romantic'].cover,
   },
   {
-    slug: 'fiction',
-    ...STOREFRONT_IMAGE_SLOTS.vibes.fiction.cover,
+    slug: 'playful-offbeat',
+    ...STOREFRONT_IMAGE_SLOTS.feelings['playful-offbeat'].cover,
   },
   {
-    slug: 'career',
-    ...STOREFRONT_IMAGE_SLOTS.vibes.career.cover,
+    slug: 'grounded-everyday',
+    ...STOREFRONT_IMAGE_SLOTS.feelings['grounded-everyday'].cover,
   },
   {
-    slug: 'trends',
-    ...STOREFRONT_IMAGE_SLOTS.vibes.trends.cover,
+    slug: 'bold-electric',
+    ...STOREFRONT_IMAGE_SLOTS.feelings['bold-electric'].cover,
   },
 ] as const;
 
-export function getVibeCollectionVisual(slug: string): VibeStorefrontImages {
-  return STOREFRONT_IMAGE_SLOTS.vibes[slug] ?? FALLBACK_VIBE_VISUALS;
+/** @deprecated Use feelingsHubHeroTiles */
+export const vibesHubHeroTiles = feelingsHubHeroTiles;
+
+export function getFeelingCollectionVisual(slug: string): FeelingStorefrontImages {
+  const resolved = LEGACY_VIBE_SLUG_TO_FEELING_SLUG[slug] ?? slug;
+  return STOREFRONT_IMAGE_SLOTS.feelings[resolved] ?? FALLBACK_FEELING_VISUALS;
 }
+
+/** @deprecated Use getFeelingCollectionVisual */
+export const getVibeCollectionVisual = getFeelingCollectionVisual;
 
 export function getOccasionCollectionVisual(slug: string): OccasionStorefrontImages {
   return STOREFRONT_IMAGE_SLOTS.occasions[slug] ?? FALLBACK_OCCASION_VISUALS;

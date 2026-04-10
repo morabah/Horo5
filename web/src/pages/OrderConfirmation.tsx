@@ -12,7 +12,8 @@ import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, withSupportMessage } fr
 import { useUiLocale } from '../i18n/ui-locale';
 
 export function OrderConfirmation() {
-  const { copy } = useUiLocale();
+  const { locale, copy } = useUiLocale();
+  const isArabic = locale === 'ar';
   const order = loadLastOrder();
 
   const lines: { line: CartLine; p: NonNullable<ReturnType<typeof getProduct>>; lineSub: number }[] = [];
@@ -29,24 +30,30 @@ export function OrderConfirmation() {
   const paymentLabel =
     order?.paymentLabel ??
     (order?.paymentMethod === 'card'
-      ? 'Card'
+      ? isArabic ? 'بطاقة' : 'Card'
       : order?.paymentMethod === 'paypal'
-        ? 'PayPal'
+        ? isArabic ? 'باي بال' : 'PayPal'
         : order?.paymentMethod === 'cod'
-          ? 'COD'
+          ? isArabic ? 'الدفع عند الاستلام' : 'COD'
           : order?.paymentMethod === 'fawry'
-            ? 'Fawry'
+            ? isArabic ? 'فوري' : 'Fawry'
             : order?.paymentMethod === 'wallet'
-              ? 'Mobile wallet'
+              ? isArabic ? 'محفظة إلكترونية' : 'Mobile wallet'
               : null);
-  const shippingLabel = order?.shippingLabel ?? (order?.shippingMethod === 'express' ? 'Express' : order?.shippingMethod === 'standard' ? 'Standard' : null);
+  const shippingLabel =
+    order?.shippingLabel ??
+    (order?.shippingMethod === 'express'
+      ? isArabic ? 'سريع' : 'Express'
+      : order?.shippingMethod === 'standard'
+        ? isArabic ? 'عادي' : 'Standard'
+        : null);
 
   const arrivalWindow = order?.estimatedDeliveryWindow ??
     (order
       ? order.shippingMethod === 'express'
         ? formatDeliveryWindow(1, 2)
         : formatDeliveryWindow(3, 5)
-      : 'Pending');
+      : isArabic ? 'قيد التأكيد' : 'Pending');
   const instagramUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.instagramUrl)
     ? HORO_SUPPORT_CHANNELS.instagramUrl
     : null;
@@ -64,23 +71,31 @@ export function OrderConfirmation() {
   const statusCards = [
     {
       label: copy.confirmation.orderReceived,
-      value: displayOrderId ? `Order #${displayOrderId}` : 'Received',
-      detail: order?.contactName ? `For ${order.contactName}` : 'Your order is now in the fulfillment queue.',
+      value: displayOrderId ? `Order #${displayOrderId}` : isArabic ? 'تم الاستلام' : 'Received',
+      detail: order?.contactName
+        ? isArabic ? `باسم ${order.contactName}` : `For ${order.contactName}`
+        : isArabic ? 'طلبك الآن ضمن قائمة التجهيز.' : 'Your order is now in the fulfillment queue.',
     },
     {
       label: copy.confirmation.paymentChosen,
-      value: paymentLabel ?? 'Pending',
-      detail: shippingLabel ? `${shippingLabel} delivery selected` : 'Delivery speed will follow your checkout selection.',
+      value: paymentLabel ?? (isArabic ? 'قيد التأكيد' : 'Pending'),
+      detail: shippingLabel
+        ? isArabic ? `تم اختيار شحن ${shippingLabel}` : `${shippingLabel} delivery selected`
+        : isArabic ? 'سيتم اتباع سرعة التوصيل التي اخترتها عند الدفع.' : 'Delivery speed will follow your checkout selection.',
     },
     {
       label: copy.confirmation.deliveryWindow,
       value: arrivalWindow,
-      detail: order?.shippingCity ? `Shipping to ${order.shippingCity}` : 'We will confirm handoff with the details saved at checkout.',
+      detail: order?.shippingCity
+        ? isArabic ? `الشحن إلى ${order.shippingCity}` : `Shipping to ${order.shippingCity}`
+        : isArabic ? 'سنؤكد التسليم باستخدام التفاصيل المحفوظة عند الدفع.' : 'We will confirm handoff with the details saved at checkout.',
     },
     {
       label: copy.confirmation.whatsappStatus,
       value: order?.whatsappOptIn ? copy.confirmation.whatsappEnabled : copy.confirmation.whatsappDisabled,
-      detail: canReferenceWhatsapp ? 'Use the order help link below for this purchase.' : copy.confirmation.followUpFallback,
+      detail: canReferenceWhatsapp
+        ? isArabic ? 'استخدم رابط المساعدة بالأسفل لهذا الطلب.' : 'Use the order help link below for this purchase.'
+        : copy.confirmation.followUpFallback,
     },
   ] as const;
 
@@ -93,7 +108,7 @@ export function OrderConfirmation() {
         <PageBreadcrumb
           className="mb-6"
           items={[
-            { label: 'Home', to: '/' },
+            { label: copy.shell.home, to: '/' },
             { label: copy.checkout.breadcrumbTitle, to: '/checkout' },
             { label: copy.confirmation.breadcrumbTitle },
           ]}
@@ -124,30 +139,32 @@ export function OrderConfirmation() {
           >
             ✓
           </div>
-          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', margin: '0 0 0.5rem' }}>You completed this design</h1>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', margin: '0 0 0.5rem' }}>{copy.confirmation.breadcrumbTitle}</h1>
           <p style={{ margin: '0 0 0.5rem' }}>
-            {displayOrderId ? `Order #${displayOrderId} confirmed.` : 'Your order was received.'}
+            {displayOrderId
+              ? isArabic ? `تم تأكيد الطلب #${displayOrderId}.` : `Order #${displayOrderId} confirmed.`
+              : isArabic ? 'تم استلام طلبك.' : 'Your order was received.'}
           </p>
           <p style={{ margin: 0, color: 'var(--clay-earth)' }}>
             {canReferenceWhatsapp
-              ? 'WhatsApp order help is available for this purchase.'
+              ? copy.confirmation.whatsappOrderHelp
               : copy.confirmation.followUpFallback}
           </p>
         </div>
 
         <div style={{ marginBottom: '2rem' }}>
           <CommerceContinuityPanel
-            eyebrow="After checkout"
+            eyebrow={copy.checkout.breadcrumbTitle}
             title={copy.confirmation.continuityTitle}
             body={copy.confirmation.continuityBody}
-            chips={['Order received', paymentLabel ?? 'Payment selected', arrivalWindow]}
+            chips={[copy.confirmation.orderReceived, paymentLabel ?? copy.confirmation.paymentChosen, arrivalWindow]}
           />
         </div>
 
         <section style={{ marginBottom: '2rem' }} aria-labelledby="order-status-heading">
           <div style={{ marginBottom: '1rem' }}>
             <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{copy.confirmation.statusHeading}</p>
-            <h2 id="order-status-heading" style={{ fontSize: '1.25rem', margin: '0.5rem 0 0' }}>Status at a glance</h2>
+            <h2 id="order-status-heading" style={{ fontSize: '1.25rem', margin: '0.5rem 0 0' }}>{copy.confirmation.statusAtGlance}</h2>
           </div>
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
             {statusCards.map((card) => (
@@ -162,7 +179,7 @@ export function OrderConfirmation() {
 
         <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', marginBottom: '2rem' }}>
           <div>
-            <h2 style={{ fontSize: '1.0625rem', marginBottom: '1rem' }}>Order summary</h2>
+            <h2 style={{ fontSize: '1.0625rem', marginBottom: '1rem' }}>{copy.confirmation.summaryHeading}</h2>
             {hasOrderSummary ? (
               <>
                 {lines.map(({ line, p, lineSub }) => (
@@ -173,7 +190,9 @@ export function OrderConfirmation() {
                     <div>
                       <p style={{ margin: 0, fontWeight: 500 }}>{p.name}</p>
                       <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', margin: '0.25rem 0 0' }}>
-                        Size {line.size} · Qty {line.qty} · {formatEgp(lineSub)}
+                        {isArabic
+                          ? `المقاس ${line.size} · الكمية ${line.qty} · ${formatEgp(lineSub)}`
+                          : `Size ${line.size} · Qty ${line.qty} · ${formatEgp(lineSub)}`}
                       </p>
                     </div>
                   </div>
@@ -188,17 +207,17 @@ export function OrderConfirmation() {
                       color: 'var(--clay-earth)',
                     }}
                   >
-                    <span>Gift wrap + story card</span>
+                    <span>{isArabic ? 'تغليف هدية + بطاقة القصة' : 'Gift wrap + story card'}</span>
                     <span>{formatEgp(order.giftWrapEgp)}</span>
                   </p>
                 ) : null}
                 <p style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-                  <span>Total</span>
-                  <strong>{displayTotal != null ? formatEgp(displayTotal) : 'Pending'}</strong>
+                  <span>{isArabic ? 'الإجمالي' : 'Total'}</span>
+                  <strong>{displayTotal != null ? formatEgp(displayTotal) : isArabic ? 'قيد التأكيد' : 'Pending'}</strong>
                 </p>
                 {paymentLabel && shippingLabel ? (
                   <p style={{ fontSize: '0.875rem', color: 'var(--clay-earth)', marginTop: '1rem' }}>
-                    Payment: {paymentLabel} · Delivery: {shippingLabel}
+                    {isArabic ? `الدفع: ${paymentLabel} · التوصيل: ${shippingLabel}` : `Payment: ${paymentLabel} · Delivery: ${shippingLabel}`}
                   </p>
                 ) : null}
                 {order?.contactEmail || order?.shippingLine1 || order?.shippingCity ? (
@@ -211,23 +230,37 @@ export function OrderConfirmation() {
               </>
             ) : (
               <p style={{ color: 'var(--clay-earth)', margin: 0 }}>
-                Your latest order summary is not available in this session. If you just checked out, keep this page open until the confirmation flow finishes.
+                {isArabic
+                  ? 'ملخص طلبك الأخير غير متاح في هذه الجلسة. إذا أكملت الدفع الآن، اترك هذه الصفحة مفتوحة حتى ينتهي مسار التأكيد.'
+                  : 'Your latest order summary is not available in this session. If you just checked out, keep this page open until the confirmation flow finishes.'}
               </p>
             )}
           </div>
           <div>
-            <h2 style={{ fontSize: '1.0625rem', marginBottom: '1rem' }}>What&apos;s next</h2>
+            <h2 style={{ fontSize: '1.0625rem', marginBottom: '1rem' }}>{copy.confirmation.nextHeading}</h2>
             <ol style={{ margin: 0, paddingLeft: '1.25rem', color: 'var(--warm-charcoal)' }}>
               {canReferenceWhatsapp ? (
-                <li style={{ marginBottom: '0.5rem' }}>WhatsApp support is available for this order</li>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  {isArabic ? 'دعم واتساب متاح لهذا الطلب' : 'WhatsApp support is available for this order'}
+                </li>
               ) : (
-                <li style={{ marginBottom: '0.5rem' }}>We review your order details and prepare fulfillment</li>
+                <li style={{ marginBottom: '0.5rem' }}>
+                  {isArabic ? 'نراجع تفاصيل الطلب ونبدأ التجهيز' : 'We review your order details and prepare fulfillment'}
+                </li>
               )}
-              <li style={{ marginBottom: '0.5rem' }}>We prepare your order (1–2 days)</li>
               <li style={{ marginBottom: '0.5rem' }}>
-                {canReferenceWhatsapp ? 'Order help is available on WhatsApp' : 'Delivery handoff follows once your order is packed'}
+                {isArabic ? 'نجهز طلبك خلال 1–2 يوم' : 'We prepare your order (1–2 days)'}
               </li>
-              <li>Arrives at your door (typical window {arrivalWindow}, business days)</li>
+              <li style={{ marginBottom: '0.5rem' }}>
+                {canReferenceWhatsapp
+                  ? isArabic ? 'مساعدة الطلب متاحة على واتساب' : 'Order help is available on WhatsApp'
+                  : isArabic ? 'يتم تسليم الشحنة بمجرد الانتهاء من التجهيز' : 'Delivery handoff follows once your order is packed'}
+              </li>
+              <li>
+                {isArabic
+                  ? `يصل إلى بابك خلال النافذة المعتادة (${arrivalWindow}) في أيام العمل`
+                  : `Arrives at your door (typical window ${arrivalWindow}, business days)`}
+              </li>
             </ol>
             {whatsappOrderUrl ? (
               <a
@@ -248,7 +281,7 @@ export function OrderConfirmation() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
-                Order Help on WhatsApp
+                {copy.confirmation.whatsappOrderHelp}
               </a>
             ) : (
               <Link
@@ -263,7 +296,7 @@ export function OrderConfirmation() {
                   minHeight: '48px',
                 }}
               >
-                Review Exchange Policy
+                {copy.confirmation.exchangeCta}
               </Link>
             )}
           </div>
@@ -271,22 +304,26 @@ export function OrderConfirmation() {
 
         {instagramUrl ? (
           <div className="card-glass" style={{ padding: '1.5rem', textAlign: 'center', background: 'var(--warm-glow)', marginBottom: '2rem' }}>
-            <h2 style={{ fontSize: '1.25rem', margin: '0 0 0.5rem' }}>Tag us in your first wear</h2>
-            <p style={{ margin: '0 0 1rem' }}>Snap a photo, tag @horoegypt on Instagram.</p>
+            <h2 style={{ fontSize: '1.25rem', margin: '0 0 0.5rem' }}>
+              {isArabic ? 'شاركنا أول ظهور لها' : 'Tag us in your first wear'}
+            </h2>
+            <p style={{ margin: '0 0 1rem' }}>{copy.confirmation.instagramPrompt}</p>
             <a className="btn btn-ghost" href={instagramUrl} target="_blank" rel="noreferrer">
-              Follow @horoegypt →
+              {isArabic ? 'تابع @horoegypt →' : 'Follow @horoegypt →'}
             </a>
           </div>
         ) : null}
 
         <div style={{ textAlign: 'center' }}>
-          <p style={{ marginBottom: '0.75rem', fontWeight: 500 }}>Keep exploring</p>
+          <p style={{ marginBottom: '0.75rem', fontWeight: 500 }}>
+            {isArabic ? 'واصل الاستكشاف' : 'Keep exploring'}
+          </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center' }}>
-            <Link className="btn btn-ghost" to="/vibes">
-              Shop by Vibe
+            <Link className="btn btn-ghost" to="/feelings">
+              {copy.shell.shopByFeeling}
             </Link>
             <Link className="btn btn-ghost" to="/">
-              New arrivals
+              {copy.confirmation.continueShopping}
             </Link>
           </div>
         </div>

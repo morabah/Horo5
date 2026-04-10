@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
+import { useUiLocale } from '../i18n/ui-locale';
 import { NAV_ROUTE } from '../lib/navLinks';
 
 export function NotFound() {
+  const { copy } = useUiLocale();
+
   return (
     <div className="container" style={{ padding: '4rem 0', textAlign: 'center' }}>
-      <PageBreadcrumb className="mb-8 text-left" items={[{ label: 'Home', to: '/' }, { label: 'Page not found' }]} />
-      <h1 style={{ fontSize: '1.5rem' }}>Page not found</h1>
+      <PageBreadcrumb className="mb-8 text-left" items={[{ label: copy.shell.home, to: '/' }, { label: copy.shell.pageNotFound }]} />
+      <h1 style={{ fontSize: '1.5rem' }}>{copy.shell.pageNotFound}</h1>
       <p style={{ color: 'var(--warm-charcoal)' }}>That route doesn&apos;t exist yet.</p>
       <div
         style={{
@@ -21,10 +24,10 @@ export function NotFound() {
           Back home
         </Link>
         <Link className="btn btn-secondary text-sm" to="/search">
-          Search
+          {copy.shell.search}
         </Link>
         <Link className="btn btn-secondary text-sm" to={NAV_ROUTE.collection.path}>
-          {NAV_ROUTE.collection.label}
+          {copy.shell.shopByFeeling}
         </Link>
       </div>
     </div>

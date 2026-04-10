@@ -13,8 +13,6 @@ import { saveLastOrder } from '../cart/lastOrder';
 import { CART_SCHEMA, CHECKOUT_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
 
-const steps = ['Information', 'Shipping', 'Payment'] as const;
-const stepsShort = ['Info', 'Ship', 'Pay'] as const;
 const STEP0_FIELD_ORDER = ['email', 'phone', 'name', 'line1', 'city'] as const;
 
 type FieldErrors = Record<string, string>;
@@ -27,14 +25,17 @@ const inputErrorClass = 'border-ember shadow-[0_0_0_2px_rgba(232,89,60,0.15)]';
 const labelClass = 'mb-1.5 mt-4 block text-xs font-medium text-label first:mt-0';
 const errTextClass = 'mt-1.5 text-[0.8125rem] text-ember';
 
-function validateStep0(fields: { email: string; phone: string; name: string; line1: string; city: string }): FieldErrors {
+function validateStep0(
+  fields: { email: string; phone: string; name: string; line1: string; city: string },
+  isArabic: boolean,
+): FieldErrors {
   const errors: FieldErrors = {};
-  if (!fields.email.trim()) errors.email = 'We need your email to send order updates.';
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) errors.email = 'Please enter a valid email address.';
-  if (!fields.phone.trim()) errors.phone = 'Your phone number helps us reach you about delivery.';
-  if (!fields.name.trim()) errors.name = 'We need your full name for the shipping label.';
-  if (!fields.line1.trim()) errors.line1 = 'Where should we deliver your order?';
-  if (!fields.city.trim()) errors.city = 'Which city should we ship to?';
+  if (!fields.email.trim()) errors.email = isArabic ? 'نحتاج بريدك الإلكتروني لإرسال تحديثات الطلب.' : 'We need your email to send order updates.';
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) errors.email = isArabic ? 'يرجى إدخال بريد إلكتروني صحيح.' : 'Please enter a valid email address.';
+  if (!fields.phone.trim()) errors.phone = isArabic ? 'رقم الهاتف يساعدنا على التواصل بخصوص التوصيل.' : 'Your phone number helps us reach you about delivery.';
+  if (!fields.name.trim()) errors.name = isArabic ? 'نحتاج الاسم الكامل لملصق الشحن.' : 'We need your full name for the shipping label.';
+  if (!fields.line1.trim()) errors.line1 = isArabic ? 'إلى أين نرسل طلبك؟' : 'Where should we deliver your order?';
+  if (!fields.city.trim()) errors.city = isArabic ? 'ما المدينة التي نشحن إليها؟' : 'Which city should we ship to?';
   return errors;
 }
 
@@ -48,7 +49,10 @@ function radioCardClass(active: boolean) {
 export function Checkout() {
   const navigate = useNavigate();
   const { items, subtotalEgp, giftWrapEgp, clearCart } = useCart();
-  const { copy } = useUiLocale();
+  const { locale, copy } = useUiLocale();
+  const isArabic = locale === 'ar';
+  const steps = [copy.checkout.stepInformation, copy.checkout.stepShipping, copy.checkout.stepPayment] as const;
+  const stepsShort = steps;
   const [step, setStep] = useState(0);
   const [highestCompleted, setHighestCompleted] = useState(-1);
   const [placingOrder, setPlacingOrder] = useState(false);
@@ -81,15 +85,15 @@ export function Checkout() {
   );
   const paymentLabel =
     paymentMethod === 'card'
-      ? 'Card'
+      ? isArabic ? 'بطاقة' : 'Card'
       : paymentMethod === 'paypal'
-        ? 'PayPal'
+        ? copy.checkout.payPayPalTitle
         : paymentMethod === 'fawry'
-          ? 'Fawry'
+          ? copy.checkout.payFawryTitle
           : paymentMethod === 'wallet'
-            ? 'Mobile wallet'
-            : 'COD';
-  const shippingLabel = shippingMethod === 'express' ? 'Express' : 'Standard';
+            ? copy.checkout.payWalletTitle
+            : isArabic ? 'الدفع عند الاستلام' : 'COD';
+  const shippingLabel = shippingMethod === 'express' ? (isArabic ? 'سريع' : 'Express') : (isArabic ? 'عادي' : 'Standard');
 
   const beganCheckoutRef = useRef(false);
   useEffect(() => {
@@ -106,7 +110,7 @@ export function Checkout() {
 
   function handleContinueToShipping(e: FormEvent) {
     e.preventDefault();
-    const fieldErrors = validateStep0({ email, phone, name: fullName, line1, city });
+    const fieldErrors = validateStep0({ email, phone, name: fullName, line1, city }, isArabic);
     setErrors(fieldErrors);
     if (Object.keys(fieldErrors).length > 0) {
       const firstInvalidField = STEP0_FIELD_ORDER.find((field) => fieldErrors[field]);
@@ -171,11 +175,11 @@ export function Checkout() {
 
   const checkoutBreadcrumbItems = useMemo(
     () => [
-      { label: 'Home', to: '/' as const },
+      { label: copy.shell.home, to: '/' as const },
       { label: CART_SCHEMA.copy.heading, to: '/cart' as const },
       { label: copy.checkout.breadcrumbTitle },
     ],
-    [copy.checkout.breadcrumbTitle],
+    [copy.checkout.breadcrumbTitle, copy.shell.home],
   );
 
   if (items.length === 0) {
@@ -183,12 +187,16 @@ export function Checkout() {
       <div className="min-h-[60vh] bg-papyrus py-8 pb-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:py-10 md:pb-16">
         <div className="container mx-auto max-w-3xl px-4 md:px-8">
           <PageBreadcrumb className="mb-6" items={checkoutBreadcrumbItems} />
-          <h1 className="font-headline text-[clamp(1.5rem,3vw,2rem)] font-semibold text-obsidian">Nothing to check out</h1>
+          <h1 className="font-headline text-[clamp(1.5rem,3vw,2rem)] font-semibold text-obsidian">
+            {isArabic ? 'لا يوجد ما يمكن إتمامه الآن' : 'Nothing to check out'}
+          </h1>
           <p className="mt-3 max-w-md font-body text-sm text-clay md:text-base">
-            Your bag is empty. Add a design from the shop, then return here to complete your order.
+            {isArabic
+              ? 'سلتك فارغة. أضف تصميماً من المتجر ثم عد هنا لإتمام طلبك.'
+              : 'Your bag is empty. Add a design from the shop, then return here to complete your order.'}
           </p>
-          <Link className="btn btn-primary mt-6 inline-flex min-h-12 items-center" to="/vibes">
-            Shop by Vibe
+          <Link className="btn btn-primary mt-6 inline-flex min-h-12 items-center" to="/feelings">
+            {copy.shell.shopByFeeling}
           </Link>
         </div>
       </div>
@@ -211,7 +219,9 @@ export function Checkout() {
           className="font-label mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-clay sm:text-xs sm:tracking-[0.22em]"
           aria-live="polite"
         >
-          Checkout · Step {step + 1} of 3 · {steps[step]}
+          {isArabic
+            ? `إتمام الشراء · الخطوة ${step + 1} من 3 · ${steps[step]}`
+            : `Checkout · Step ${step + 1} of 3 · ${steps[step]}`}
         </p>
 
         <div
@@ -220,7 +230,7 @@ export function Checkout() {
           aria-valuenow={step + 1}
           aria-valuemin={1}
           aria-valuemax={3}
-          aria-label={`Checkout step ${step + 1} of 3: ${steps[step]}`}
+          aria-label={isArabic ? `الخطوة ${step + 1} من 3: ${steps[step]}` : `Checkout step ${step + 1} of 3: ${steps[step]}`}
         >
           <div className="mx-auto flex w-max items-center justify-center gap-0 px-0.5">
             {steps.map((label, i) => {
@@ -339,9 +349,9 @@ export function Checkout() {
 
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
               <div>
-                <h1 className="font-headline text-xl font-semibold text-obsidian">Contact</h1>
+                <h1 className="font-headline text-xl font-semibold text-obsidian">{copy.checkout.headingContact}</h1>
                 <label htmlFor="email" className={labelClass}>
-                  Email *
+                  {isArabic ? 'البريد الإلكتروني *' : 'Email *'}
                 </label>
                 <input
                   id="email"
@@ -366,7 +376,7 @@ export function Checkout() {
                 ) : null}
 
                 <label htmlFor="phone" className={labelClass}>
-                  Phone (WhatsApp) *
+                  {isArabic ? 'الهاتف (واتساب) *' : 'Phone (WhatsApp) *'}
                 </label>
                 <input
                   id="phone"
@@ -402,12 +412,14 @@ export function Checkout() {
 
                 <p className="mt-3 text-[0.9375rem] font-semibold text-obsidian">{copy.checkout.guestCheckout}</p>
                 <p className="mt-1.5 text-sm text-clay">
-                  Shipping from {formatEgp(60)}; you&apos;ll choose speed on the next step.
+                  {isArabic
+                    ? `الشحن يبدأ من ${formatEgp(60)}، وستختار السرعة في الخطوة التالية.`
+                    : `Shipping from ${formatEgp(60)}; you'll choose speed on the next step.`}
                 </p>
 
-                <h2 className="font-headline mt-8 text-lg font-semibold text-obsidian">Shipping address</h2>
+                <h2 className="font-headline mt-8 text-lg font-semibold text-obsidian">{copy.checkout.headingShippingAddress}</h2>
                 <label htmlFor="name" className={labelClass}>
-                  Full name *
+                  {isArabic ? 'الاسم الكامل *' : 'Full name *'}
                 </label>
                 <input
                   id="name"
@@ -432,7 +444,7 @@ export function Checkout() {
                 ) : null}
 
                 <label htmlFor="line1" className={labelClass}>
-                  Address line 1 *
+                  {isArabic ? 'العنوان *' : 'Address line 1 *'}
                 </label>
                 <input
                   id="line1"
@@ -457,7 +469,7 @@ export function Checkout() {
                 ) : null}
 
                 <label htmlFor="city" className={labelClass}>
-                  City *
+                  {isArabic ? 'المدينة *' : 'City *'}
                 </label>
                 <input
                   id="city"
@@ -482,7 +494,7 @@ export function Checkout() {
                 ) : null}
 
                 <button type="submit" className="btn btn-primary mt-6 min-h-12 w-full">
-                  Continue to shipping
+                  {isArabic ? 'المتابعة إلى الشحن' : 'Continue to shipping'}
                 </button>
               </div>
               <OrderSummary shipping={undefined} paymentMethod={undefined} />
@@ -493,43 +505,45 @@ export function Checkout() {
         {step === 1 && (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
             <div>
-              <h1 className="font-headline text-xl font-semibold text-obsidian">Shipping method</h1>
+              <h1 className="font-headline text-xl font-semibold text-obsidian">{copy.checkout.headingShippingMethod}</h1>
               <label className={`${radioCardClass(shippingMethod === 'standard')} mb-3 mt-4`}>
                 <input type="radio" name="ship" checked={shippingMethod === 'standard'} onChange={() => setShippingMethod('standard')} />
                 <span className="font-body text-sm text-obsidian">
-                  <strong>Standard</strong> — 3–5 business days · {formatEgp(60)}
+                  <strong>{isArabic ? 'عادي' : 'Standard'}</strong> — {isArabic ? '3–5 أيام عمل' : '3–5 business days'} · {formatEgp(60)}
                 </span>
               </label>
               <label className={radioCardClass(shippingMethod === 'express')}>
                 <input type="radio" name="ship" checked={shippingMethod === 'express'} onChange={() => setShippingMethod('express')} />
                 <span className="font-body text-sm text-obsidian">
-                  <strong>Express</strong> — 1–2 business days · {formatEgp(120)}
+                  <strong>{isArabic ? 'سريع' : 'Express'}</strong> — {isArabic ? '1–2 يوم عمل' : '1–2 business days'} · {formatEgp(120)}
                 </span>
               </label>
               <p className="mt-4 font-body text-sm text-obsidian">
-                {copy.checkout.deliveryLabel} (business days): {estimatedDeliveryRange}
+                {isArabic
+                  ? `${copy.checkout.deliveryLabel} (أيام العمل): ${estimatedDeliveryRange}`
+                  : `${copy.checkout.deliveryLabel} (business days): ${estimatedDeliveryRange}`}
               </p>
               <p className="mt-3 text-sm text-clay">
-                Total includes {formatEgp(shippingCost)} shipping.{' '}
+                {isArabic ? `الإجمالي يشمل ${formatEgp(shippingCost)} للشحن. ` : `Total includes ${formatEgp(shippingCost)} shipping. `}
                 <Link to="/exchange" className="text-deep-teal underline decoration-deep-teal/30 underline-offset-2 hover:text-obsidian">
-                  Free exchange within 14 days
+                  {isArabic ? 'استبدال مجاني خلال 14 يوماً' : 'Free exchange within 14 days'}
                 </Link>{' '}
-                if size doesn&apos;t fit.
+                {isArabic ? 'إذا لم يكن المقاس مناسباً.' : "if size doesn't fit."}
               </p>
               <button
                 type="button"
                 className="btn btn-primary mt-6 min-h-12 w-full"
                 onClick={handleContinueToPayment}
-                aria-label="Continue to payment step"
+                aria-label={isArabic ? 'المتابعة إلى خطوة الدفع' : 'Continue to payment step'}
               >
-                Continue to payment
+                {isArabic ? 'المتابعة إلى الدفع' : 'Continue to payment'}
               </button>
               <button
                 type="button"
                 className="mt-3 min-h-12 bg-transparent px-1 text-sm text-deep-teal hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 onClick={() => setStep(0)}
               >
-                ← Back to information
+                {isArabic ? '→ العودة إلى البيانات' : '← Back to information'}
               </button>
             </div>
             <OrderSummary shipping={shippingCost} paymentMethod={undefined} />
@@ -539,24 +553,34 @@ export function Checkout() {
         {step === 2 && (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
             <div>
-              <h1 className="font-headline text-xl font-semibold text-obsidian">Payment</h1>
-              <p className="font-label mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">Pay on delivery or card</p>
+              <h1 className="font-headline text-xl font-semibold text-obsidian">{copy.checkout.headingPayment}</h1>
+              <p className="font-label mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">
+                {isArabic ? 'الدفع عند الاستلام أو بالبطاقة' : 'Pay on delivery or card'}
+              </p>
               <label className={`${radioCardClass(paymentMethod === 'cod')} mb-3 mt-2`}>
                 <input type="radio" name="pay" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} />
                 <span className="font-body text-sm text-obsidian">
-                  <strong>Cash on delivery (COD)</strong>
+                  <strong>{isArabic ? 'الدفع عند الاستلام' : 'Cash on delivery (COD)'}</strong>
                   <br />
-                  Pay when your order arrives. Total: {formatEgp(subtotalEgp + shippingCost)}
+                  {isArabic
+                    ? `ادفع عند وصول طلبك. الإجمالي: ${formatEgp(subtotalEgp + shippingCost)}`
+                    : `Pay when your order arrives. Total: ${formatEgp(subtotalEgp + shippingCost)}`}
                 </span>
               </label>
               <label className={`${radioCardClass(paymentMethod === 'card')} mb-3`}>
                 <input type="radio" name="pay" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
                 <span className="font-body text-sm text-obsidian">
-                  <strong>Pay with card</strong>
-                  <span className="mt-1 block text-sm text-kohl-gold-dark">Save {formatEgp(CARD_DISCOUNT_EGP)} with card payment</span>
+                  <strong>{isArabic ? 'الدفع بالبطاقة' : 'Pay with card'}</strong>
+                  <span className="mt-1 block text-sm text-kohl-gold-dark">
+                    {isArabic
+                      ? `وفّر ${formatEgp(CARD_DISCOUNT_EGP)} عند الدفع بالبطاقة`
+                      : `Save ${formatEgp(CARD_DISCOUNT_EGP)} with card payment`}
+                  </span>
                 </span>
               </label>
-              <p className="font-label mt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">Digital wallets &amp; Egypt methods</p>
+              <p className="font-label mt-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">
+                {isArabic ? 'المحافظ الرقمية وطرق الدفع في مصر' : 'Digital wallets & Egypt methods'}
+              </p>
               <label className={`${radioCardClass(paymentMethod === 'paypal')} mb-3 mt-2`}>
                 <input type="radio" name="pay" checked={paymentMethod === 'paypal'} onChange={() => setPaymentMethod('paypal')} />
                 <span className="font-body text-sm text-obsidian">
@@ -584,9 +608,9 @@ export function Checkout() {
               <p className="mt-2 text-sm text-obsidian">
                 {copy.checkout.paymentExtraSecureLine}{' '}
                 <Link to="/exchange" className="text-deep-teal underline decoration-deep-teal/30 underline-offset-2 hover:text-obsidian">
-                  Free exchange within 14 days
+                  {isArabic ? 'استبدال مجاني خلال 14 يوماً' : 'Free exchange within 14 days'}
                 </Link>{' '}
-                if size doesn&apos;t fit. WhatsApp updates if you opted in.
+                {isArabic ? 'إذا لم يكن المقاس مناسباً. وتصل تحديثات واتساب إذا اخترت ذلك.' : "if size doesn't fit. WhatsApp updates if you opted in."}
               </p>
               <button
                 type="button"
@@ -595,7 +619,7 @@ export function Checkout() {
                 disabled={placingOrder}
                 aria-busy={placingOrder}
               >
-                {placingOrder ? copy.checkout.placingOrder : `Place order — ${formatEgp(orderTotal)}`}
+                {placingOrder ? copy.checkout.placingOrder : isArabic ? `أكّد الطلب — ${formatEgp(orderTotal)}` : `Place order — ${formatEgp(orderTotal)}`}
               </button>
               <button
                 type="button"
@@ -603,7 +627,7 @@ export function Checkout() {
                 onClick={() => setStep(1)}
                 disabled={placingOrder}
               >
-                ← Back to shipping
+                {isArabic ? '→ العودة إلى الشحن' : '← Back to shipping'}
               </button>
             </div>
             <OrderSummary shipping={shippingCost} paymentMethod={paymentMethod} />
@@ -621,6 +645,8 @@ function OrderSummary({
   shipping?: number;
   paymentMethod?: 'cod' | 'card' | 'paypal' | 'fawry' | 'wallet';
 }) {
+  const { locale, copy } = useUiLocale();
+  const isArabic = locale === 'ar';
   const { items, subtotalEgp, giftWrapEgp } = useCart();
   const lineViews = useMemo(() => getCartLineViews(items), [items]);
   const cardDiscount = paymentMethod === 'card' ? CARD_DISCOUNT_EGP : 0;
@@ -628,7 +654,7 @@ function OrderSummary({
 
   return (
     <aside className="h-fit rounded-xl border border-stone bg-papyrus/90 p-5 shadow-sm lg:sticky lg:top-28">
-      <h2 className="font-headline mb-4 text-base font-semibold text-obsidian">Order summary</h2>
+      <h2 className="font-headline mb-4 text-base font-semibold text-obsidian">{copy.checkout.orderSummaryHeading}</h2>
       {lineViews.map((line) => (
         <div key={line.key} className="mb-3 flex gap-3">
           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-stone">
@@ -637,13 +663,15 @@ function OrderSummary({
           <div className="min-w-0">
             <p className="truncate font-medium text-obsidian">{line.productName}</p>
             <p className="mt-1 text-sm text-clay">
-              {line.size} · Qty {line.qty} · {formatEgp(line.linePriceEgp)}
+              {isArabic
+                ? `المقاس ${line.size} · الكمية ${line.qty} · ${formatEgp(line.linePriceEgp)}`
+                : `${line.size} · Qty ${line.qty} · ${formatEgp(line.linePriceEgp)}`}
             </p>
           </div>
         </div>
       ))}
       <p className="flex justify-between font-body text-sm text-obsidian">
-        <span>Subtotal</span>
+        <span>{isArabic ? 'الإجمالي الفرعي' : 'Subtotal'}</span>
         <span>{formatEgp(subtotalEgp)}</span>
       </p>
       {giftWrapEgp > 0 ? (
@@ -653,17 +681,17 @@ function OrderSummary({
         </p>
       ) : null}
       <p className="mt-2 flex justify-between text-sm text-clay">
-        <span>Shipping</span>
+        <span>{isArabic ? 'الشحن' : 'Shipping'}</span>
         <span>{shipping != null ? formatEgp(shipping) : '—'}</span>
       </p>
       {paymentMethod === 'card' ? (
         <p className="mt-2 flex justify-between text-sm text-clay">
-          <span>Card discount</span>
+          <span>{isArabic ? 'خصم البطاقة' : 'Card discount'}</span>
           <span>−{formatEgp(CARD_DISCOUNT_EGP)}</span>
         </p>
       ) : null}
       <p className="mt-4 flex justify-between border-t border-stone pt-4 font-semibold text-obsidian">
-        <span>Total</span>
+        <span>{isArabic ? 'الإجمالي' : 'Total'}</span>
         <span>{formatEgp(total)}</span>
       </p>
     </aside>

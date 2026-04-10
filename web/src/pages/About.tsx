@@ -2,20 +2,23 @@ import { Link } from 'react-router-dom';
 import { AppIcon } from '../components/AppIcon';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import { BRAND_COPY } from '../data/brand';
 import { ABOUT_SCHEMA, BRAND_TRUST_POINTS, PDP_SCHEMA } from '../data/domain-config';
 import { aboutBridgeAlt, aboutBridgeImage, aboutHero, aboutHeroAlt, imgUrl } from '../data/images';
+import { useUiLocale } from '../i18n/ui-locale';
 
 const STORY_PLAN_STEP_ICONS = ['explore', 'checkroom', 'local_shipping'] as const;
 
 export function About() {
   useScrollReveal();
+  const { copy } = useUiLocale();
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
       <div className="mx-auto flex min-h-[calc(100vh-10rem)] max-w-7xl flex-col gap-10 px-4 pt-8 md:gap-12 md:px-8 md:pt-10">
         <PageBreadcrumb
           className="mb-0 md:-mb-2"
-          items={[{ label: 'Home', to: '/' }, { label: 'About' }]}
+          items={[{ label: copy.shell.home, to: '/' }, { label: copy.shell.about }]}
         />
         <section
           aria-label={ABOUT_SCHEMA.copy.heroRegionLabel}
@@ -44,18 +47,18 @@ export function About() {
                 <h1 className="font-headline text-[clamp(2.2rem,5vw,4.3rem)] font-semibold leading-[0.94] tracking-tight text-white">Our story</h1>
                 <div className="mt-5 space-y-6 font-body text-[1.02rem] leading-relaxed text-white/88 md:text-[1.08rem]">
                   <p>
-                    HORO exists to turn original illustration into graphic tees that feel worth buying in Egypt: meaning first, proof visible, and service clear enough for a first order.
+                    {BRAND_COPY.aboutLead}
                   </p>
                   <p>
-                    The job is simple: choose the artwork carefully, print it on heavyweight cotton, credit it honestly, and deliver it without the fuzzy promises that make new brands feel risky.
+                    {BRAND_COPY.aboutSupport}
                   </p>
-                  <p className="text-[1.15rem] text-secondary-fixed md:text-[1.22rem]">Wear what you mean.</p>
+                  <p className="text-[1.15rem] text-secondary-fixed md:text-[1.22rem]">{BRAND_COPY.aboutClose}</p>
                 </div>
 
                 <div className="mt-7 flex flex-col gap-5">
                   <Link
-                    to="/vibes"
-                    className="font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium uppercase tracking-[0.22em] text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
+                    to="/feelings"
+                    className="font-body inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
                   >
                     {ABOUT_SCHEMA.copy.primaryCta}
                   </Link>
@@ -130,9 +133,9 @@ export function About() {
             />
             <div className="relative z-10 flex min-h-[20rem] items-end justify-center p-5 sm:min-h-[24rem] sm:p-8">
               <Link
-                to="/vibes"
+                to="/feelings"
                 data-reveal="stagger-1"
-                className="font-label inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium uppercase tracking-[0.22em] text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
+                className="font-body inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
               >
                 {ABOUT_SCHEMA.copy.bridgeCta}
               </Link>

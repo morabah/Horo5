@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { getProductPdpGallery, getProductMedia } from '../data/images';
-import { getOccasion, getProduct, getVibe } from '../data/site';
+import { getFeeling, getOccasion, getProduct } from '../data/site';
 import { getSiteUrl } from '../seo/siteUrl';
 
 function jsonLdString(data: unknown) {
@@ -20,7 +20,7 @@ export function buildProductJsonLd(slug: string) {
     new Set([media.main, ...gallery.map((view) => view.src)].map((src) => src.split('?')[0])),
   ).map((imagePath) => (siteUrl ? `${siteUrl}${imagePath}` : imagePath));
   const productUrl = siteUrl ? `${siteUrl}/products/${product.slug}` : `/products/${product.slug}`;
-  const vibe = getVibe(product.vibeSlug);
+  const feeling = getFeeling(product.feelingSlug);
   const occasionNames = product.occasionSlugs
     .map((occasionSlug) => getOccasion(occasionSlug)?.name)
     .filter(Boolean);
@@ -37,7 +37,7 @@ export function buildProductJsonLd(slug: string) {
       '@type': 'Brand',
       name: 'HORO Egypt',
     },
-    ...(vibe ? { category: `${vibe.name} graphic tee` } : {}),
+    ...(feeling ? { category: `${feeling.name} graphic tee` } : {}),
     ...(occasionNames.length > 0 ? { keywords: occasionNames.join(', ') } : {}),
     offers: {
       '@type': 'Offer',

@@ -17,20 +17,23 @@ export const ADDITIONAL_COMMON_QUERY_EXPANSIONS: Record<string, string[]> = {
   'تي شيرت': ['graphic tee', 't shirt', 'tee'],
   سويتشيرت: ['graphic tee', 'hoodie', 'heavyweight'],
   oversized: ['oversized', 'relaxed unisex fit', 'quiet revolt'],
-  astrology: ['zodiac', 'astro', 'cosmic'],
-  space: ['zodiac', 'fiction', 'cosmic'],
-  office: ['career', 'work', 'professional'],
-  street: ['trends', 'streetwear', 'viral'],
+  astrology: ['soft quiet', 'warm romantic'],
+  space: ['playful offbeat', 'soft quiet'],
+  office: ['grounded everyday', 'work', 'professional'],
+  street: ['bold electric', 'streetwear', 'viral'],
 };
 
-/** Merged into vibe alias map by slug (must match `vibes` in site). */
-export const ADDITIONAL_VIBE_ALIASES: Record<string, string[]> = {
-  emotions: ['heartfelt', 'sensitive', 'vulnerable', 'قلب', 'مشاعري'],
-  zodiac: ['stars', 'moon', 'sun sign', 'برجي', 'فلكي'],
-  fiction: ['sci fi', 'scifi', 'novel', 'game', 'ألعاب', 'رواية'],
-  career: ['job', 'linkedin', 'promotion', 'ترقية', 'شغلي'],
-  trends: ['tiktok', 'instagram', 'hypebeast', 'انستجرام'],
+/** Merged into feeling alias map by slug (must match `feelings` in site). */
+export const ADDITIONAL_FEELING_ALIASES: Record<string, string[]> = {
+  'soft-quiet': ['heartfelt', 'sensitive', 'vulnerable', 'emotions', 'قلب', 'مشاعري'],
+  'warm-romantic': ['stars', 'moon', 'romantic', 'gift', 'حب', 'هدية'],
+  'playful-offbeat': ['sci fi', 'scifi', 'novel', 'game', 'fiction', 'ألعاب', 'رواية'],
+  'grounded-everyday': ['job', 'linkedin', 'promotion', 'career', 'ترقية', 'شغلي'],
+  'bold-electric': ['tiktok', 'instagram', 'hypebeast', 'trends', 'انستجرام'],
 };
+
+/** @deprecated Use ADDITIONAL_FEELING_ALIASES */
+export const ADDITIONAL_VIBE_ALIASES = ADDITIONAL_FEELING_ALIASES;
 
 /** Optional extra occasion aliases (slug keys match `occasions` in site). */
 export const ADDITIONAL_OCCASION_ALIASES: Record<string, string[]> = {

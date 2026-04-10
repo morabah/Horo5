@@ -2,50 +2,54 @@
 
 @theme {
   /*
-   * HORO unified palette — Guidelines v2.3 §3.2 + brand hierarchy:
-   * Signature: Papyrus, Obsidian, Warm Charcoal, Clean White.
-   * Primary action: Ember (light CTAs: Ember + Obsidian text; dark CTAs: Ember + Clean White).
-   * Supporting: Desert Sand, Clay Earth, Stone, Nile Dark, Deep Teal, Dusk Violet, Kohl Gold (+ Dark).
-   * Glass (UI layers only): Glass White, Frost Blue, Soft Violet, Warm Glow, Mint Frost.
+   * HORO — Brand Guidelines v2.6 §3.3 (Chalk / Linen / Ink / Clay CTAs / restrained accents).
+   * Primary action: Clay + Ink text. Accents: Dusk Plum, Moon Gold, Moss, River (links/info).
+   * Legacy aliases: papyrus≈chalk, obsidian≈ink (Tailwind class names unchanged for smaller diff).
    */
-  --color-outline: #876749;
-  --color-secondary-fixed: #fcdebc;
-  --color-ember: #e8593c;
-  --color-primary: #e8593c;
-  --color-surface: #fef9f1;
-  --color-on-surface: #2c2a26;
-  --color-secondary: #705b41;
-  --color-outline-variant: #e1bfb8;
-  --color-surface-container-high: #ece8e0;
-  --color-surface-container: #f2ede5;
+  --color-chalk: #f4efe7;
+  --color-linen: #e6ddd1;
+  --color-ink: #1f1c1a;
+  --color-warm-charcoal: #4b4641;
+  --color-dusk-plum: #6a5b76;
+  --color-moon-gold: #c5a15c;
+  --color-clay-action: #b77a67;
+  --color-moss: #7d8771;
+  --color-river: #556f73;
 
-  /* Signature */
-  --color-papyrus: #f5f0e8;
+  --color-outline: #6b5540;
+  --color-secondary-fixed: #e8dfd4;
+  --color-ember: #b77a67;
+  --color-primary: #b77a67;
+  --color-surface: #f4efe7;
+  --color-on-surface: #1f1c1a;
+  --color-secondary: #4b4641;
+  --color-outline-variant: #d4ccc0;
+  --color-surface-container-high: #e6ddd1;
+  --color-surface-container: #ebe3d8;
+
+  /* Aliased to v2.6 neutrals */
+  --color-papyrus: #f4efe7;
   --color-clean-white: #ffffff;
-  --color-obsidian: #1a1a1a;
-  --color-warm-charcoal: #2c2a26;
+  --color-obsidian: #1f1c1a;
+  --color-stone: #d4ccc0;
+  --color-clay: #4b4641;
+  --color-label: #4b4641;
+  --color-desert-sand: #c5a15c;
+  --color-deep-teal: #556f73;
+  --color-dusk-violet: #6a5b76;
+  --color-nile-dark: #556f73;
+  --color-kohl-gold-bright: #c5a15c;
+  --color-kohl-gold-dark: #8a7349;
 
-  /* Supporting expression (roles per v2.3) */
-  --color-stone: #d4cfc5;
-  /* Darkened from #816a4f for ≥4.5:1 on papyrus (WCAG AA body text) */
-  --color-clay: #5c4a38;
-  --color-label: #6b5540;
-  --color-desert-sand: #c4956a;
-  --color-deep-teal: #2b7596;
-  --color-dusk-violet: #6b4c8a;
-  --color-nile-dark: #3a4a3f;
-  --color-kohl-gold-bright: #d4a24e;
-  --color-kohl-gold-dark: #896832;
+  /* Matte-friendly UI tints (glass used sparingly §3.5) */
+  --color-glass-white: #f4efe7;
+  --color-frost-blue: #e8e4df;
+  --color-soft-violet: #ebe5ef;
+  --color-warm-glow: #f2ebe0;
+  --color-mint-frost: #e8ede6;
 
-  /* Glass UI layers (not signature) */
-  --color-glass-white: #f8f6f2;
-  --color-frost-blue: #e3eff5;
-  --color-soft-violet: #ede5f5;
-  --color-warm-glow: #fff5e6;
-  --color-mint-frost: #e6f5ef;
-
-  /* Typography — editorial serif for headlines (self-hosted, no network dependency per §3.3) */
-  --font-headline: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  /* Typography — calm sans-led system for commerce and shell */
+  --font-headline: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --font-body: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   /* §3.3 Label: compact sans with strong uppercase rhythm */
   --font-label: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -101,41 +105,6 @@
       transform: none !important;
     }
     .home-latest-product:hover img {
-      transform: none !important;
-    }
-    .vibe-animated-art,
-    .vibe-animated-art * {
-      animation: none !important;
-    }
-    .animate-fade-in {
-      animation: none !important;
-    }
-    .vibe-art-trends-line {
-      stroke-dashoffset: 0 !important;
-    }
-    .vibe-art-career-bar {
-      transform: scaleY(1) !important;
-    }
-    .vibe-art-emotions-wrap {
-      transform: none !important;
-    }
-    .vibe-art-emotions-ring {
-      opacity: 0.85 !important;
-      stroke-dashoffset: 0 !important;
-    }
-    .vibe-art-zodiac-orbit {
-      transform: none !important;
-    }
-    .vibe-art-zodiac-orbit-ring {
-      stroke-dashoffset: 0 !important;
-    }
-    .vibe-art-zodiac-constellation {
-      opacity: 0.55 !important;
-    }
-    .vibe-art-book {
-      transform: none !important;
-    }
-    .vibe-art-trends-cap {
       transform: none !important;
     }
     /* Card hover transforms */
@@ -208,7 +177,7 @@
   [data-reveal='stagger-5'] {
     transition-delay: 0.6s;
   }
-  /* Vibe commerce cards — longer ease + subtle zoom (Shop by Vibe + homepage grid) */
+  /* Feeling commerce cards — longer ease + subtle zoom (Shop by Feeling + homepage grid) */
   [data-reveal].vibe-commerce-card {
     transform: translateY(24px) scale(0.95);
     transition:
@@ -258,7 +227,7 @@
     animation-play-state: running;
   }
   :focus-visible {
-    outline: 2px solid var(--color-deep-teal);
+    outline: 2px solid var(--color-river);
     outline-offset: 2px;
   }
 }
@@ -269,33 +238,25 @@
    */
   .glass-nav {
     padding-top: env(safe-area-inset-top, 0px);
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.88) 0%,
-      rgba(248, 246, 242, 0.82) 100%
-    );
-    backdrop-filter: blur(20px) saturate(1.15);
-    -webkit-backdrop-filter: blur(20px) saturate(1.15);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.95);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.75) inset,
-      0 4px 24px rgba(26, 26, 26, 0.08);
+    background: color-mix(in srgb, var(--color-chalk) 96%, var(--color-ink) 4%);
+    backdrop-filter: blur(8px) saturate(1.02);
+    -webkit-backdrop-filter: blur(8px) saturate(1.02);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-linen) 85%, var(--color-ink) 8%);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--color-clean-white) 70%, transparent) inset;
   }
 
   /** Homepage hero — transparent bar until user scrolls past #home-hero */
   .glass-nav--hero-transparent {
     background: linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.28) 0%,
-      rgba(0, 0, 0, 0.05) 58%,
+      rgba(0, 0, 0, 0.35) 0%,
+      rgba(0, 0, 0, 0.08) 58%,
       transparent 100%
     );
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(8px) saturate(1.02);
-    -webkit-backdrop-filter: blur(8px) saturate(1.02);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.04) inset,
-      0 6px 18px rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(6px) saturate(1.02);
+    -webkit-backdrop-filter: blur(6px) saturate(1.02);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
   }
 
   .editorial-shadow {
@@ -473,61 +434,35 @@
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(245, 240, 232, 0.08) 100%);
   }
 
-  /* §3.2 Warm Glow glass — customer quotes (20–30% opacity) */
+  /* Matte editorial surfaces (v2.6 — minimal blur, glass as occasional support §3.5) */
   .warm-glow-glass {
-    background: color-mix(in srgb, var(--color-warm-glow) 26%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 0.5px solid color-mix(in srgb, var(--color-stone) 82%, transparent);
+    background: color-mix(in srgb, var(--color-linen) 92%, var(--color-moon-gold) 8%);
+    border: 1px solid color-mix(in srgb, var(--color-stone) 75%, transparent);
     border-radius: 16px;
-    box-shadow: 0 10px 26px rgba(26, 26, 26, 0.05);
+    box-shadow: 0 8px 24px rgba(31, 28, 26, 0.06);
   }
 
-  /** §3.2 Frost Blue — trust badges / info panels (15–25%) */
   .home-trust-glass {
-    background: color-mix(in srgb, var(--color-frost-blue) 20%, transparent);
-    backdrop-filter: blur(16px) saturate(1.06);
-    -webkit-backdrop-filter: blur(16px) saturate(1.06);
-    border: 0.5px solid color-mix(in srgb, var(--color-desert-sand) 42%, transparent);
-    box-shadow: 0 12px 32px rgba(26, 26, 26, 0.05);
+    background: color-mix(in srgb, var(--color-linen) 88%, var(--color-clean-white) 12%);
+    border: 1px solid color-mix(in srgb, var(--color-stone) 70%, transparent);
+    box-shadow: 0 8px 24px rgba(31, 28, 26, 0.05);
   }
 
-  /** Homepage feeling section — larger frosted frame to bridge copy into browsing */
   .home-glass-frame {
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.3) 0%,
-      rgba(248, 246, 242, 0.72) 100%
-    );
-    backdrop-filter: blur(22px) saturate(1.08);
-    -webkit-backdrop-filter: blur(22px) saturate(1.08);
-    border: 1px solid rgba(255, 255, 255, 0.82);
-    box-shadow:
-      0 24px 56px -32px rgba(26, 26, 26, 0.28),
-      inset 0 1px 0 rgba(255, 255, 255, 0.86),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+    background: linear-gradient(180deg, var(--color-clean-white) 0%, var(--color-linen) 100%);
+    border: 1px solid color-mix(in srgb, var(--color-stone) 65%, transparent);
+    box-shadow: 0 16px 40px -24px rgba(31, 28, 26, 0.12);
   }
 
   .home-glass-chip {
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.38) 0%,
-      rgba(248, 246, 242, 0.7) 100%
-    );
-    backdrop-filter: blur(16px) saturate(1.05);
-    -webkit-backdrop-filter: blur(16px) saturate(1.05);
-    border: 1px solid rgba(255, 255, 255, 0.72);
-    box-shadow:
-      0 12px 28px -22px rgba(26, 26, 26, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.84);
+    background: color-mix(in srgb, var(--color-clean-white) 88%, var(--color-linen) 12%);
+    border: 1px solid color-mix(in srgb, var(--color-stone) 55%, transparent);
+    box-shadow: 0 6px 18px rgba(31, 28, 26, 0.06);
   }
 
   .home-glass-chip:hover {
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.46) 0%,
-      rgba(248, 246, 242, 0.78) 100%
-    );
+    background: color-mix(in srgb, var(--color-clean-white) 92%, var(--color-linen) 8%);
+    border-color: color-mix(in srgb, var(--color-dusk-plum) 22%, var(--color-stone) 78%);
   }
 
   /**
@@ -535,18 +470,23 @@
    * Frosted strip + scrim so Obsidian / Warm Charcoal copy stays readable.
    */
   .glass-vibe-card-footer {
-    background: color-mix(in srgb, var(--color-glass-white) 24%, transparent);
-    backdrop-filter: blur(16px) saturate(1.08);
-    -webkit-backdrop-filter: blur(16px) saturate(1.08);
-    border: 0.5px solid color-mix(in srgb, var(--color-clean-white) 80%, transparent);
-    box-shadow:
-      0 -10px 28px rgba(26, 26, 26, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.68),
-      inset 0 -1px 0 rgba(255, 255, 255, 0.28);
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--color-ink) 82%, transparent) 0%,
+      color-mix(in srgb, var(--color-ink) 35%, transparent) 45%,
+      transparent 100%
+    );
+    border-top: 1px solid color-mix(in srgb, var(--color-clean-white) 18%, transparent);
+    box-shadow: 0 -8px 24px rgba(31, 28, 26, 0.14);
   }
 
   .group:hover .glass-vibe-card-footer {
-    background: color-mix(in srgb, var(--color-glass-white) 30%, transparent);
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--color-ink) 88%, transparent) 0%,
+      color-mix(in srgb, var(--color-ink) 40%, transparent) 48%,
+      transparent 100%
+    );
   }
 
   /** Shop-by-vibe: cap text band so photography stays primary (~70%+). */
@@ -556,186 +496,20 @@
 
   /** Inner glass “lens” for typography — extra depth on card footers */
   .glass-text-inner {
-    background: rgba(255, 255, 255, 0.38);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.65);
+    background: color-mix(in srgb, var(--color-linen) 94%, var(--color-dusk-plum) 6%);
+    border: 1px solid color-mix(in srgb, var(--color-stone) 60%, transparent);
     border-radius: 12px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-clean-white) 55%, transparent);
   }
 
-  /** Glass: Soft Violet layer (§3.2 — mood / story cards) */
   .glass-morphism-violet {
-    background: color-mix(in srgb, var(--color-soft-violet) 42%, transparent);
-    backdrop-filter: blur(16px) saturate(1.08);
-    -webkit-backdrop-filter: blur(16px) saturate(1.08);
-    border: 1px solid rgba(255, 255, 255, 0.65);
+    background: color-mix(in srgb, var(--color-linen) 90%, var(--color-dusk-plum) 10%);
+    border: 1px solid color-mix(in srgb, var(--color-dusk-plum) 18%, var(--color-stone) 82%);
     border-radius: 16px;
-    box-shadow:
-      0 4px 24px rgba(107, 76, 138, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    box-shadow: 0 4px 20px rgba(31, 28, 26, 0.06);
   }
 
-  /* —— VibeAnimatedArt line art (editorial headers) —— */
-  @keyframes vibe-art-emotions-drift {
-    0%,
-    100% {
-      transform: translate(0, 0);
-    }
-    50% {
-      transform: translate(2px, -3px);
-    }
-  }
-  @keyframes vibe-art-ring-shimmer {
-    0%,
-    100% {
-      opacity: 0.55;
-      stroke-dashoffset: 0;
-    }
-    50% {
-      opacity: 1;
-      stroke-dashoffset: 24;
-    }
-  }
-  .vibe-art-emotions-wrap {
-    transform-origin: 50px 50px;
-    animation: vibe-art-emotions-drift 6s ease-in-out infinite;
-  }
-  .vibe-art-emotions-ring {
-    stroke-dasharray: 18 200;
-  }
-  .vibe-art-emotions-ring--a {
-    animation: vibe-art-ring-shimmer 5s ease-in-out infinite;
-  }
-  .vibe-art-emotions-ring--b {
-    animation: vibe-art-ring-shimmer 5.5s ease-in-out infinite 0.35s;
-  }
-  .vibe-art-emotions-ring--c {
-    animation: vibe-art-ring-shimmer 4.8s ease-in-out infinite 0.7s;
-  }
 
-  @keyframes vibe-art-orbit-ring-drift {
-    to {
-      stroke-dashoffset: -48;
-    }
-  }
-  .vibe-art-zodiac-orbit-ring {
-    animation: vibe-art-orbit-ring-drift 24s linear infinite;
-  }
-
-  @keyframes vibe-art-zodiac-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  .vibe-art-zodiac-orbit {
-    animation: vibe-art-zodiac-spin 36s linear infinite;
-  }
-  @keyframes vibe-art-constellation-pulse {
-    0%,
-    100% {
-      opacity: 0.35;
-    }
-    50% {
-      opacity: 0.65;
-    }
-  }
-  .vibe-art-zodiac-constellation {
-    animation: vibe-art-constellation-pulse 4s ease-in-out infinite;
-  }
-  @keyframes vibe-art-twinkle {
-    0%,
-    100% {
-      opacity: 0.55;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-  .vibe-art-zodiac-node {
-    animation: vibe-art-twinkle 2.8s ease-in-out infinite;
-  }
-  .vibe-art-zodiac-node--d1 {
-    animation-delay: 0.4s;
-  }
-  .vibe-art-zodiac-node--d2 {
-    animation-delay: 0.9s;
-  }
-  .vibe-art-zodiac-node--d3 {
-    animation-delay: 1.4s;
-  }
-  .vibe-art-zodiac-node--d4 {
-    animation-delay: 1.9s;
-  }
-
-  @keyframes vibe-art-book-sway {
-    0%,
-    100% {
-      transform: rotate(-5deg);
-    }
-    50% {
-      transform: rotate(5deg);
-    }
-  }
-  .vibe-art-book {
-    transform-origin: 50px 50px;
-    animation: vibe-art-book-sway 6s ease-in-out infinite;
-  }
-
-  @keyframes vibe-art-bar-grow {
-    0%,
-    100% {
-      transform: scaleY(0.62);
-    }
-    50% {
-      transform: scaleY(1);
-    }
-  }
-  .vibe-art-career-bar {
-    transform-origin: center bottom;
-    transform-box: fill-box;
-    animation: vibe-art-bar-grow 2.4s ease-in-out infinite;
-  }
-  .vibe-art-career-bar--d1 {
-    animation-delay: 0.2s;
-  }
-  .vibe-art-career-bar--d2 {
-    animation-delay: 0.4s;
-  }
-  .vibe-art-career-bar--d3 {
-    animation-delay: 0.6s;
-  }
-
-  @keyframes vibe-art-dash-draw {
-    0% {
-      stroke-dashoffset: 88;
-    }
-    55%,
-    100% {
-      stroke-dashoffset: 0;
-    }
-  }
-  @keyframes vibe-art-cap-pulse {
-    0%,
-    100% {
-      transform: scale(1);
-      opacity: 0.75;
-    }
-    50% {
-      transform: scale(1.12);
-      opacity: 1;
-    }
-  }
-  .vibe-art-trends-line {
-    stroke-dasharray: 88;
-    stroke-dashoffset: 88;
-    animation: vibe-art-dash-draw 3.2s ease-out infinite;
-  }
-  .vibe-art-trends-cap {
-    transform-origin: 86px 28px;
-    transform-box: fill-box;
-    animation: vibe-art-cap-pulse 2.4s ease-in-out infinite 0.4s;
-  }
 
   .product-quick-view-dialog::backdrop {
     background-color: rgb(0 0 0 / 0.78);
@@ -1047,14 +821,14 @@
     box-shadow: 0 16px 40px -12px rgba(26, 26, 26, 0.15);
   }
 
-  /* ——— CTA button glow on hover ——— */
-  .cta-ember-glow {
+  /* ——— CTA — Clay (v2.6 §3.3), subtle hover lift ——— */
+  .cta-clay {
     transition:
       background-color 200ms ease,
       box-shadow 300ms cubic-bezier(0.33, 1, 0.68, 1);
   }
-  .cta-ember-glow:hover {
-    box-shadow: 0 0 24px rgba(232, 89, 60, 0.3), 0 8px 20px -4px rgba(232, 89, 60, 0.2);
+  .cta-clay:hover {
+    box-shadow: 0 0 20px rgba(183, 122, 103, 0.28), 0 8px 20px -4px rgba(183, 122, 103, 0.18);
   }
 
   /* ——— Mobile quote snap carousel ——— */
@@ -1112,7 +886,7 @@
     .merch-card-lift:hover {
       transform: none !important;
     }
-    .cta-ember-glow:hover {
+    .cta-clay:hover {
       box-shadow: none !important;
     }
   }

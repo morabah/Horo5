@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useUiLocale } from '../i18n/ui-locale';
 
 export type PageBreadcrumbItem = {
   label: string;
@@ -14,12 +15,13 @@ type PageBreadcrumbProps = {
  * Shared trail: last item is current page (no link). Matches policy/PDP breadcrumb tone.
  */
 export function PageBreadcrumb({ items, className = '' }: PageBreadcrumbProps) {
+  const { copy } = useUiLocale();
   if (items.length === 0) return null;
 
   return (
     <nav
       className={`font-body text-sm text-clay ${className}`.trim()}
-      aria-label="Breadcrumb"
+      aria-label={copy.shell.breadcrumb}
     >
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {items.map((item, index) => {

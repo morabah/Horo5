@@ -1,15 +1,14 @@
-import { vibeEditorialImagery } from './images';
-import { vibes } from './site';
-import type { Vibe } from './site';
+import { feelingEditorialImagery } from './images';
+import { feelings } from './site';
+import type { Feeling } from './site';
 
-/** Editorial homepage blocks — one per vibe axis (Emotions, Zodiac, Fiction, Career, Trends) */
+/** Editorial blocks — one per §6.1 feeling pillar */
 export type EditorialDetailLayout = 'square' | 'video' | 'portrait';
 
-export type VibeEditorialBlock = {
-  vibe: Vibe;
+export type FeelingEditorialBlock = {
+  feeling: Feeling;
   kicker: string;
   body: string;
-  /** Optional pull-quote for vibe collection gallery (exhibition-style). */
   manifesto?: string;
   cta: string;
   wideSrc: string;
@@ -20,79 +19,93 @@ export type VibeEditorialBlock = {
   detailLayout: EditorialDetailLayout;
 };
 
-export const vibeEditorialBlocks: VibeEditorialBlock[] = [
+/** @deprecated Use FeelingEditorialBlock */
+export type VibeEditorialBlock = FeelingEditorialBlock;
+
+export const feelingEditorialBlocks: FeelingEditorialBlock[] = [
   {
-    vibe: vibes[0],
+    feeling: feelings[0],
     kicker: 'Name the feeling',
     body:
-      'Mood-first graphics for when your chest is loud and your mouth is quiet. Heavyweight cotton and art that tracks the real feeling — not the feed.',
-    manifesto: 'Wear the feeling — not the caption.',
-    cta: 'Explore Emotions',
-    wideSrc: vibeEditorialImagery.emotions.wide,
-    wideAlt: 'Model wearing a graphic t-shirt — Emotions collection',
-    detailSrc: vibeEditorialImagery.emotions.detail,
-    detailAlt: 'Model in a t-shirt, front view — Emotions',
+      'For reflective moods and slower days — graphics that land without shouting. Heavyweight cotton and art you can place in real life.',
+    manifesto: 'Quiet enough to live in. Clear enough to recognize.',
+    cta: 'Explore Soft / Quiet',
+    wideSrc: feelingEditorialImagery['soft-quiet'].wide,
+    wideAlt: 'Model wearing a graphic tee — Soft / Quiet collection',
+    detailSrc: feelingEditorialImagery['soft-quiet'].detail,
+    detailAlt: 'Model in a tee, front view — Soft / Quiet',
     detailCaption: 'Print detail',
     detailLayout: 'square',
   },
   {
-    vibe: vibes[1],
-    kicker: 'Written in the sky',
+    feeling: feelings[1],
+    kicker: 'Turn the volume up',
     body:
-      'Signs and symbols you can wear — a nod to how you read the stars and yourself. Identity, not horoscope fluff.',
-    manifesto: 'Identity you can read in the light.',
-    cta: 'Explore Zodiac',
-    wideSrc: vibeEditorialImagery.zodiac.wide,
-    wideAlt: 'Model wearing a t-shirt on the street at dusk — Zodiac collection',
-    detailSrc: vibeEditorialImagery.zodiac.detail,
-    detailAlt: 'Model in a relaxed-fit t-shirt — Zodiac',
-    detailCaption: 'Glyph study',
+      'For going out and nights when the tee should read from across the room — without turning the site into a hype poster.',
+    manifesto: 'Visible when you want it to be.',
+    cta: 'Explore Bold / Electric',
+    wideSrc: feelingEditorialImagery['bold-electric'].wide,
+    wideAlt: 'Model in a bold graphic tee — Bold / Electric',
+    detailSrc: feelingEditorialImagery['bold-electric'].detail,
+    detailAlt: 'Model outdoors in a HORO tee — Bold / Electric',
+    detailCaption: 'Drop detail',
+    detailLayout: 'square',
+  },
+  {
+    feeling: feelings[2],
+    kicker: 'Chosen for someone you love',
+    body:
+      'Birthdays, Eid tables, and “I thought of you” moments — pieces that feel personal, with packaging and proof that respect gifting in Egypt.',
+    manifesto: 'Gift-ready, not generic.',
+    cta: 'Explore Warm / Romantic',
+    wideSrc: feelingEditorialImagery['warm-romantic'].wide,
+    wideAlt: 'Model wearing a HORO tee — Warm / Romantic',
+    detailSrc: feelingEditorialImagery['warm-romantic'].detail,
+    detailAlt: 'Relaxed-fit HORO tee — Warm / Romantic',
+    detailCaption: 'Texture',
     detailLayout: 'portrait',
   },
   {
-    vibe: vibes[2],
-    kicker: 'Wear the story',
+    feeling: feelings[3],
+    kicker: 'Daily reset',
     body:
-      'Archetypes and “what if” energy — tees that feel like a scene you stepped out of. For readers, watchers, and daydreamers.',
-    manifesto: 'The scene you stepped out of.',
-    cta: 'Explore Fiction',
-    wideSrc: vibeEditorialImagery.fiction.wide,
-    wideAlt: 'Model wearing a bold graphic t-shirt — Fiction collection',
-    detailSrc: vibeEditorialImagery.fiction.detail,
-    detailAlt: 'Model in a graphic tee, studio — Fiction',
-    detailCaption: 'Line & ink',
-    detailLayout: 'portrait',
-  },
-  {
-    vibe: vibes[3],
-    kicker: 'The work you’re becoming',
-    body:
-      'Career is motion, not just a title. Graphics for ambition, reinvention, and the quiet grind — street-clean, story-honest.',
-    manifesto: 'Motion over title.',
-    cta: 'Explore Career',
-    wideSrc: vibeEditorialImagery.career.wide,
-    wideAlt: 'Model wearing a plain t-shirt — Career collection',
-    detailSrc: vibeEditorialImagery.career.detail,
-    detailAlt: 'Full-length model in a t-shirt, street — Career',
+      'Coffee runs, creative work, and the pieces you reach for twice a week — easy to pair, easy to explain, built for repeat wear.',
+    manifesto: 'Grounded, not boring.',
+    cta: 'Explore Grounded / Everyday',
+    wideSrc: feelingEditorialImagery['grounded-everyday'].wide,
+    wideAlt: 'Model in a HORO tee — Grounded / Everyday',
+    detailSrc: feelingEditorialImagery['grounded-everyday'].detail,
+    detailAlt: 'Street context — Grounded / Everyday',
     detailCaption: 'City context',
     detailLayout: 'video',
   },
   {
-    vibe: vibes[4],
-    kicker: 'Right now',
+    feeling: feelings[4],
+    kicker: 'Character, not costume',
     body:
-      'What people are wearing and sharing right now — distilled into a drop that still sounds like you, without the disposable feel.',
-    manifesto: 'Right now — still you.',
-    cta: 'Explore Trends',
-    wideSrc: vibeEditorialImagery.trends.wide,
-    wideAlt: 'Model posing in a t-shirt — Trends collection',
-    detailSrc: vibeEditorialImagery.trends.detail,
-    detailAlt: 'Model in a t-shirt outdoors — Trends',
-    detailCaption: 'Drop detail',
-    detailLayout: 'square',
+      'Niche references and expressive capsules — for the wearer who likes a story on the shirt and a normal conversation everywhere else.',
+    manifesto: 'Specific beats random.',
+    cta: 'Explore Playful / Offbeat',
+    wideSrc: feelingEditorialImagery['playful-offbeat'].wide,
+    wideAlt: 'Model in a story-led graphic tee — Playful / Offbeat',
+    detailSrc: feelingEditorialImagery['playful-offbeat'].detail,
+    detailAlt: 'Studio — Playful / Offbeat',
+    detailCaption: 'Line and ink',
+    detailLayout: 'portrait',
   },
 ];
 
-export function getEditorialBlockByVibeSlug(slug: string): VibeEditorialBlock | undefined {
-  return vibeEditorialBlocks.find((b) => b.vibe.slug === slug);
+/** @deprecated Use feelingEditorialBlocks */
+export const vibeEditorialBlocks = feelingEditorialBlocks.map((b) => ({
+  ...b,
+  vibe: b.feeling,
+}));
+
+export function getEditorialBlockByFeelingSlug(slug: string): FeelingEditorialBlock | undefined {
+  return feelingEditorialBlocks.find((b) => b.feeling.slug === slug);
+}
+
+/** @deprecated Use getEditorialBlockByFeelingSlug */
+export function getEditorialBlockByVibeSlug(slug: string): FeelingEditorialBlock | undefined {
+  return getEditorialBlockByFeelingSlug(slug);
 }

@@ -3,14 +3,14 @@ import { FormEvent, TransitionEvent, useCallback, useEffect, useMemo, useRef, us
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
 import { useUiLocale } from '../i18n/ui-locale';
-import { NAV_DRAWER_LINKS, NAV_PRIMARY_SHORTCUTS } from '../lib/navLinks';
+import { NAV_DRAWER_ROUTE_KEYS, NAV_PRIMARY_ROUTE_KEYS, NAV_ROUTE, type NavRouteKey } from '../lib/navLinks';
 import { getSearchSuggestions, type SearchSuggestion } from '../search/view';
 import { AppIcon } from './AppIcon';
 import { BrandLogo } from './BrandLogo';
 import { SearchSuggestionPanel } from './SearchSuggestionPanel';
 
 function drawerNavLinkClass(isActive: boolean) {
-  return `font-label box-border flex min-h-14 w-full items-center rounded-sm py-4 pl-4 pr-4 text-sm font-semibold uppercase tracking-widest transition-colors ${
+  return `font-body box-border flex min-h-14 w-full items-center rounded-sm py-4 pl-4 pr-4 text-[0.98rem] font-medium transition-colors ${
     isActive
       ? 'border-l-[3px] border-primary bg-primary/8 text-primary'
       : 'border-l-[3px] border-transparent text-obsidian/90 active:bg-surface-container-high'
@@ -47,9 +47,52 @@ function flattenSuggestions(groups: ReturnType<typeof getSearchSuggestions>) {
 
 const HOME_HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
+function LocaleToggle({
+  locale,
+  setLocale,
+  tone,
+  label,
+}: {
+  locale: 'en' | 'ar';
+  setLocale: (locale: 'en' | 'ar') => void;
+  tone: 'light' | 'dark';
+  label: string;
+}) {
+  const wrapperClass =
+    tone === 'light'
+      ? 'border-white/18 bg-white/6 text-white'
+      : 'border-stone/70 bg-white/90 text-obsidian';
+  const activeClass =
+    tone === 'light'
+      ? 'bg-white text-obsidian'
+      : 'bg-obsidian text-white';
+  const inactiveClass =
+    tone === 'light'
+      ? 'text-white/78 hover:text-white'
+      : 'text-clay hover:text-obsidian';
+
+  return (
+    <div className={`inline-flex items-center gap-1 rounded-full border px-1 py-1 ${wrapperClass}`} aria-label={label}>
+      {(['en', 'ar'] as const).map((value) => (
+        <button
+          key={value}
+          type="button"
+          onClick={() => setLocale(value)}
+          className={`min-h-9 rounded-full px-3 font-body text-[0.82rem] font-medium transition-colors ${
+            locale === value ? activeClass : inactiveClass
+          }`}
+          aria-pressed={locale === value}
+        >
+          {value.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function Nav() {
   const { totalQty } = useCart();
-  const { copy } = useUiLocale();
+  const { locale, copy, setLocale } = useUiLocale();
   const [q, setQ] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPanelOpen, setMenuPanelOpen] = useState(false);
@@ -76,11 +119,11 @@ export function Nav() {
     : 'transition-transform duration-300 ease-out';
 
   const scopeParams = useMemo(() => {
-    if (pathname !== '/search') return { occasion: null as string | null, vibe: null as string | null };
+    if (pathname !== '/search') return { occasion: null as string | null, feeling: null as string | null };
     const current = new URLSearchParams(search);
     return {
       occasion: current.get('occasion'),
-      vibe: current.get('vibe'),
+      feeling: current.get('feeling') ?? current.get('vibe'),
     };
   }, [pathname, search]);
 
@@ -89,15 +132,23 @@ export function Nav() {
       getSearchSuggestions({
         query: q,
         scopeOccasionSlug: scopeParams.occasion,
-        scopeVibeSlug: scopeParams.vibe,
+        scopeFeelingSlug: scopeParams.feeling,
         limitPerGroup: 3,
       }),
-    [q, scopeParams.occasion, scopeParams.vibe],
+    [q, scopeParams.occasion, scopeParams.feeling],
   );
   const flatSuggestions = useMemo(() => flattenSuggestions(suggestionGroups), [suggestionGroups]);
   const suggestionsOpen = searchFocused && (suggestionGroups.length > 0 || q.trim().length > 0);
   const activeSuggestion = activeSuggestionIndex >= 0 ? flatSuggestions[activeSuggestionIndex] : null;
   const activeSuggestionId = activeSuggestion ? `nav-search-suggestions-${activeSuggestionIndex}` : undefined;
+  const routeLabelByKey: Record<NavRouteKey, string> = {
+    home: copy.shell.home,
+    collection: copy.shell.shopByFeeling,
+    occasions: copy.shell.shopByMoment,
+    about: copy.shell.about,
+    search: copy.shell.search,
+    cart: copy.shell.cart,
+  };
 
   const closeMenu = useCallback(() => {
     setMenuPanelOpen(false);
@@ -236,7 +287,7 @@ export function Nav() {
 
     if (pathname === '/search') {
       if (scopeParams.occasion) next.set('occasion', scopeParams.occasion);
-      if (scopeParams.vibe) next.set('vibe', scopeParams.vibe);
+      if (scopeParams.feeling) next.set('feeling', scopeParams.feeling);
     }
 
     const queryString = next.toString();
@@ -381,18 +432,18 @@ export function Nav() {
             className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${navOnHeroTransparent ? 'text-white/84' : 'text-obsidian/90'}`}
             aria-expanded={menuVisible && menuPanelOpen}
             aria-controls="primary-nav-drawer"
-            aria-label={menuVisible && menuPanelOpen ? 'Close menu' : 'Open menu'}
+            aria-label={menuVisible && menuPanelOpen ? copy.shell.closeMenu : copy.shell.openMenu}
             onClick={toggleMenu}
           >
             <AppIcon name={menuVisible && menuPanelOpen ? 'close' : 'menu'} className="h-6 w-6" />
           </button>
-          <Link to="/" className="flex min-w-0 flex-1 justify-center" aria-label="HORO Egypt — Home">
+          <Link to="/" className="flex min-w-0 flex-1 justify-center" aria-label={copy.shell.home}>
             <BrandLogo variant={logoVariant} />
           </Link>
           <Link
             to="/cart"
             className={`relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
-            aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
+            aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
           >
             <AppIcon name="shopping_bag" className="h-6 w-6" />
             {totalQty > 0 ? (
@@ -470,18 +521,18 @@ export function Nav() {
 
       <div className="mx-auto hidden max-w-[1920px] items-center gap-6 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:flex md:gap-8 md:py-4 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
         <div className="flex shrink-0 items-center gap-4">
-          <Link to="/" className="flex shrink-0 items-center" aria-label="HORO Egypt — Home">
+          <Link to="/" className="flex shrink-0 items-center" aria-label={copy.shell.home}>
             <BrandLogo variant={logoVariant} />
           </Link>
         </div>
 
         <nav className="hidden shrink-0 items-center gap-1 md:flex" aria-label="Primary shortcuts">
-          {NAV_PRIMARY_SHORTCUTS.map(({ path, label }) => (
+          {NAV_PRIMARY_ROUTE_KEYS.map((routeKey) => (
             <NavLink
-              key={path}
-              to={path}
+              key={routeKey}
+              to={NAV_ROUTE[routeKey].path}
               className={({ isActive }) =>
-                `nav-link-underline font-label rounded-sm px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] transition-colors lg:px-3 ${
+                `nav-link-underline font-body rounded-sm px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
                   isActive
                     ? 'text-primary nav-link-underline--active'
                     : navOnHeroTransparent
@@ -490,7 +541,7 @@ export function Nav() {
                 }`
               }
             >
-              {label}
+              {routeLabelByKey[routeKey]}
             </NavLink>
           ))}
         </nav>
@@ -567,13 +618,21 @@ export function Nav() {
           ) : null}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1 md:gap-2 lg:gap-3">
+        <div className="flex shrink-0 items-center gap-2 md:gap-2 lg:gap-3">
+          <div className="hidden lg:flex">
+            <LocaleToggle
+              locale={locale}
+              setLocale={setLocale}
+              tone={navOnHeroTransparent ? 'light' : 'dark'}
+              label={copy.shell.language}
+            />
+          </div>
           <Link
             to="/cart"
             className={`relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm transition-colors ${
               navOnHeroTransparent ? 'text-white/82 hover:bg-white/[0.08]' : 'text-obsidian/85 hover:bg-black/4'
             }`}
-            aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
+            aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
           >
             <AppIcon name="shopping_bag" className="h-6 w-6" />
             {totalQty > 0 ? (
@@ -592,7 +651,7 @@ export function Nav() {
               type="button"
               tabIndex={-1}
               className={`absolute inset-0 bg-obsidian/45 backdrop-blur-[2px] ${motionClass} ${menuPanelOpen ? 'opacity-100' : 'opacity-0'}`}
-              aria-label="Close menu"
+              aria-label={copy.shell.closeMenu}
               onClick={closeMenu}
             />
             <div
@@ -607,17 +666,17 @@ export function Nav() {
               onTransitionEnd={handlePanelTransitionEnd}
             >
               <h2 id="primary-nav-drawer-title" className="sr-only">
-                Menu
+                {copy.shell.menu}
               </h2>
               <div className="relative z-20 flex shrink-0 items-center justify-between border-b border-stone/25 bg-papyrus px-4 py-3 shadow-[0_1px_0_rgba(26,26,26,0.06)]">
-                <Link to="/" className="flex items-center" onClick={closeMenu} aria-label="HORO Egypt — Home">
+                <Link to="/" className="flex items-center" onClick={closeMenu} aria-label={copy.shell.home}>
                   <BrandLogo variant="dark" />
                 </Link>
                 <button
                   ref={drawerCloseBtnRef}
                   type="button"
                   className="relative z-30 inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/90"
-                  aria-label="Close menu"
+                  aria-label={copy.shell.closeMenu}
                   onClick={closeMenu}
                 >
                   <AppIcon name="close" className="h-6 w-6" />
@@ -625,26 +684,31 @@ export function Nav() {
               </div>
               <nav
                 className="relative z-0 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overscroll-y-contain bg-papyrus px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]"
-                aria-label="Primary"
+                aria-label={copy.shell.menu}
               >
-                {NAV_DRAWER_LINKS.map(({ path, label, end }) => (
+                <div className="mb-6 border-b border-stone/20 pb-5">
+                  <p className="mb-3 font-body text-sm font-medium text-warm-charcoal">{copy.shell.language}</p>
+                  <LocaleToggle locale={locale} setLocale={setLocale} tone="dark" label={copy.shell.language} />
+                </div>
+                {NAV_DRAWER_ROUTE_KEYS.map((routeKey) => (
                   <NavLink
-                    key={path}
-                    to={path}
-                    end={!!end}
+                    key={routeKey}
+                    to={NAV_ROUTE[routeKey].path}
+                    end={Boolean(NAV_ROUTE[routeKey].end)}
                     className={({ isActive }) => drawerNavLinkClass(isActive)}
                     onClick={closeMenu}
                   >
-                    {label}
+                    {routeLabelByKey[routeKey]}
                   </NavLink>
                 ))}
                 <NavLink
                   to="/cart"
                   className={({ isActive }) => drawerNavLinkClass(isActive)}
                   onClick={closeMenu}
-                  aria-label={totalQty > 0 ? `Cart, ${totalQty} items` : 'Cart'}
+                  aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
                 >
-                  Cart{totalQty > 0 ? ` (${totalQty})` : ''}
+                  {copy.shell.cart}
+                  {totalQty > 0 ? ` (${totalQty})` : ''}
                 </NavLink>
               </nav>
             </div>

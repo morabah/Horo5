@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
+import { BRAND_COPY } from '../data/brand';
 import { heroModelHome } from '../data/images';
-import { HOME_COPY } from '../data/homeContent';
+import { useUiLocale } from '../i18n/ui-locale';
 
 const HERO_NAV_OFFSET =
   'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
 export function HomeHeroWearMean() {
+  const { copy } = useUiLocale();
+
   return (
     <section
       id="home-hero"
@@ -33,22 +36,22 @@ export function HomeHeroWearMean() {
             aria-describedby="home-hero-support"
             className="font-headline text-[clamp(2.5rem,7vw,4.5rem)] font-medium leading-[1.04] tracking-tight text-papyrus"
           >
-            Wear what you mean
+            {BRAND_COPY.mantra}
           </h1>
           <p
             id="home-hero-support"
             className="max-w-md font-body text-sm leading-relaxed text-stone md:text-[15px]"
           >
-            {HOME_COPY.heroSupportLine}
+            {BRAND_COPY.heroSupportLine}
           </p>
           {/* Decorative accent line */}
-          <div className="h-px w-8 bg-ember/40" aria-hidden="true" />
+          <div className="h-px w-8 bg-primary/40" aria-hidden="true" />
           <div>
             <Link
-              to="/vibes"
-              className="font-label inline-flex min-h-11 items-center justify-center border border-white/40 bg-white/5 px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+              to="/feelings"
+              className="font-body inline-flex min-h-11 items-center justify-center border border-white/40 bg-white/5 px-8 py-3.5 text-sm font-medium text-white transition-all duration-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
             >
-              Shop by vibe
+              {copy.home.heroCta}
             </Link>
           </div>
         </div>

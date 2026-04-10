@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getProductMedia, getProductPdpGallery, imgUrl } from '../data/images';
-import { getProduct, getVibe, type ProductSizeKey } from '../data/site';
+import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
 import { useCart } from '../cart/CartContext';
 import { PDP_SCHEMA, QUICK_VIEW_SCHEMA } from '../data/domain-config';
 import { formatEgp } from '../utils/formatPrice';
@@ -36,7 +36,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
 
   const product = productSlug ? getProduct(productSlug) : undefined;
-  const vibe = product ? getVibe(product.vibeSlug) : undefined;
+  const feeling = product ? getFeeling(product.feelingSlug) : undefined;
   const media = product ? getProductMedia(product.slug) : null;
   const gallery = product ? getProductPdpGallery(product.name, product.slug) : [];
   const galleryLen = gallery.length;
@@ -192,9 +192,9 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
             <div className="space-y-5 md:pr-10">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  {vibe ? (
+                  {feeling ? (
                     <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-kohl-gold-bright">
-                      {vibe.name} / {fit}
+                      {feeling.name} / {fit}
                     </p>
                   ) : null}
                   <h2 id={titleId} className="font-headline mt-2 text-[clamp(1.9rem,3vw,3.05rem)] font-bold uppercase leading-[0.95] tracking-tight text-white">
@@ -204,7 +204,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                 <p className="font-headline shrink-0 pt-1 text-lg font-bold text-white md:text-xl">{priceStr}</p>
               </div>
 
-              <p id={descId} className="font-body max-w-xl text-sm leading-relaxed text-white/78 md:text-[15px]">
+              <p id={descId} className="font-body max-w-xl text-sm leading-relaxed text-white/92 md:text-[15px]">
                 {product.story}
               </p>
 
@@ -258,8 +258,8 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                     className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]"
                   >
                     <div className="overflow-x-auto">
-                      <table className="min-w-full border-collapse text-left text-xs text-white/85">
-                        <thead className="bg-white/[0.06] text-[10px] uppercase tracking-[0.18em] text-white/58">
+                      <table className="min-w-full border-collapse text-left text-xs text-white/92">
+                        <thead className="bg-white/[0.08] text-[10px] uppercase tracking-[0.18em] text-white/80">
                           <tr>
                             <th className="px-3 py-3 font-medium">Size</th>
                             <th className="px-3 py-3 font-medium">Chest</th>
@@ -281,7 +281,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                         </tbody>
                       </table>
                     </div>
-                    <div className="font-body border-t border-white/8 px-3 py-3 text-xs text-white/62">
+                    <div className="font-body border-t border-white/8 px-3 py-3 text-xs text-white/82">
                       {product.pdpFitModels?.length ? (
                         product.pdpFitModels.map((m) => <p key={`${m.heightCm}-${m.sizeWorn}`}>{formatPdpFitModelLine(m)}</p>)
                       ) : (
@@ -307,7 +307,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                     </button>
                     <button
                       type="button"
-                      className="font-label inline-flex min-h-11 w-full items-center justify-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/78 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      className="font-label inline-flex min-h-11 w-full items-center justify-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/90 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                       onClick={onClose}
                     >
                       {QUICK_VIEW_SCHEMA.copy.continueBrowsingCta}
@@ -320,7 +320,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                     className={`font-label flex min-h-12 w-full items-center justify-center rounded-lg px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] shadow-md transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                       selectedSize
                         ? 'bg-primary text-obsidian hover:brightness-95'
-                        : 'cursor-not-allowed border border-white/12 bg-white/[0.08] text-white/38 shadow-none'
+                        : 'cursor-not-allowed border border-white/12 bg-white/[0.08] text-white/48 shadow-none'
                     }`}
                     aria-disabled={!selectedSize}
                     onClick={handleAddToBag}
@@ -336,7 +336,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                 {PDP_SCHEMA.trustStripItems.map((item) => (
                   <li
                     key={item}
-                    className="font-label inline-flex min-h-9 items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-white/72"
+                    className="font-label inline-flex min-h-9 items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-white/85"
                   >
                     {item}
                   </li>
@@ -345,7 +345,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
 
               <Link
                 to={`/products/${product.slug}`}
-                className="font-label mt-4 inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/84 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="font-label mt-4 inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/92 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 onClick={() => {
                   onClose();
                 }}

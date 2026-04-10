@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { MerchProductCard } from './MerchProductCard';
 import { ProductQuickView } from './ProductQuickView';
 import { getProductMedia } from '../data/images';
-import { getProduct, getVibe } from '../data/site';
+import { getFeeling, getProduct } from '../data/site';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+import { useUiLocale } from '../i18n/ui-locale';
 
 type RecentlyViewedStripProps = {
   /** Hide current PDP product from the strip */
@@ -14,6 +15,7 @@ type RecentlyViewedStripProps = {
 
 export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyViewedStripProps) {
   const { slugs } = useRecentlyViewed();
+  const { copy } = useUiLocale();
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
 
   const cards = useMemo(() => {
@@ -35,21 +37,21 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
         <div className="mx-auto max-w-6xl">
           <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Recently viewed</p>
+              <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{copy.home.recentHeading}</p>
               <h2 id="recently-viewed-heading" className="font-headline mt-2 text-xl font-semibold tracking-tight text-obsidian md:text-2xl">
                 Pick up where you left off
               </h2>
             </div>
             <Link
               to="/search"
-              className="font-label inline-flex min-h-11 items-center text-[11px] font-semibold uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
+              className="font-body inline-flex min-h-11 items-center text-sm font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
             >
-              Browse all designs
+              {copy.home.recentCta}
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
             {cards.map((p) => {
-              const vibe = getVibe(p.vibeSlug);
+              const feeling = getFeeling(p.feelingSlug);
               const main = getProductMedia(p.slug).main;
               return (
                 <MerchProductCard
@@ -60,8 +62,8 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
                   merchandisingBadge={p.merchandisingBadge}
-                  eyebrow={vibe?.name}
-                  eyebrowAccent={vibe?.accent}
+                  eyebrow={feeling?.name}
+                  eyebrowAccent={feeling?.accent}
                   proofChip="220 GSM cotton"
                   variant="minimal"
                   onQuickView={setQuickViewSlug}

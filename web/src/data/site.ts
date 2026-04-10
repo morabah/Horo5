@@ -1,6 +1,7 @@
 /** Mock catalog — wireframe-aligned placeholders */
 
-export type Vibe = {
+/** Brand Guidelines v2.6 §6.1 — Shop by Feeling pillars */
+export type Feeling = {
   slug: string;
   name: string;
   tagline: string;
@@ -8,13 +9,63 @@ export type Vibe = {
   manifesto?: string;
 };
 
-export const vibes: Vibe[] = [
-  { slug: 'emotions', name: 'Emotions', tagline: 'Wear the mood you can’t put into words.', accent: '#6B4C8A', manifesto: 'For the days when words fail but feelings are loud. Explore designs that capture the unspoken and the unseen.' },
-  { slug: 'zodiac', name: 'Zodiac', tagline: 'Your sign. Your line. Your look.', accent: '#D4A24E', manifesto: 'Written in the stars, woven into reality. Find the pieces that align with your cosmic blueprint and personal energy.' },
-  { slug: 'fiction', name: 'Fiction', tagline: 'Characters, worlds, and stories you can wear.', accent: '#2B7596', manifesto: 'Step beyond the ordinary. A curated collection for those who carry their favorite distant worlds wherever they go.' },
-  { slug: 'career', name: 'Career', tagline: 'Ambition, identity, and the work-in-progress you.', accent: '#3A4A3F', manifesto: 'Dress for the journey, not just the destination. Pieces crafted for the resilient, the ambitious, and the dreamers.' },
-  { slug: 'trends', name: 'Trends', tagline: 'What’s moving right now — before it becomes noise.', accent: '#E8593C', manifesto: 'The pulse of the culture, captured in cloth. Stay ahead of the wave with designs that define the current moment.' },
+export const feelings: Feeling[] = [
+  {
+    slug: 'soft-quiet',
+    name: 'Soft / Quiet',
+    tagline: 'For reflective moods, slower days, and calmer styling.',
+    accent: '#6A5B76',
+    manifesto:
+      'Pieces for when you want a quiet statement — understated gifting, slower days, and feelings you do not have to explain loudly.',
+  },
+  {
+    slug: 'bold-electric',
+    name: 'Bold / Electric',
+    tagline: 'For going out, visible statements, and higher-contrast pieces.',
+    accent: '#B77A67',
+    manifesto:
+      'For nights when you want the graphic to do the talking — social energy, city evenings, and clear presence without noise for noise’s sake.',
+  },
+  {
+    slug: 'warm-romantic',
+    name: 'Warm / Romantic',
+    tagline: 'For affectionate gifting, birthdays, and emotionally open pieces.',
+    accent: '#C5A15C',
+    manifesto:
+      'Chosen for the person on your mind — birthdays, thoughtful gifts, and pieces that feel intimate without sounding theatrical.',
+  },
+  {
+    slug: 'grounded-everyday',
+    name: 'Grounded / Everyday',
+    tagline: 'For repeat wear, daily reset, and versatile styling.',
+    accent: '#7D8771',
+    manifesto:
+      'The repeat-wear layer — coffee runs, creative work, and the days you want easy confidence that still feels considered.',
+  },
+  {
+    slug: 'playful-offbeat',
+    name: 'Playful / Offbeat',
+    tagline: 'For character, humor, niche references, and expressive capsules.',
+    accent: '#556F73',
+    manifesto:
+      'For the designs with personality — story-led references, humor, and capsules that feel specific instead of generic.',
+  },
 ];
+
+/** @deprecated Use Feeling */
+export type Vibe = Feeling;
+
+/** @deprecated Use feelings */
+export const vibes = feelings;
+
+/** Old storefront URLs `/vibes/:slug` → `/feelings/:slug` */
+export const LEGACY_VIBE_SLUG_TO_FEELING_SLUG: Record<string, string> = {
+  emotions: 'soft-quiet',
+  zodiac: 'warm-romantic',
+  fiction: 'playful-offbeat',
+  career: 'grounded-everyday',
+  trends: 'bold-electric',
+};
 
 export type Occasion = {
   slug: string;
@@ -120,13 +171,17 @@ export type Product = {
   slug: string;
   name: string;
   artistSlug: string;
-  vibeSlug: string;
+  feelingSlug: string;
+  /** Short merchandising cue for featured/home cards */
+  useCase?: string;
+  /** Recurring capsules (e.g. zodiac) — not top-level browse pillars §6.4 */
+  capsuleSlugs?: string[];
   occasionSlugs: OccasionSlug[];
   priceEgp: number;
   story: string;
   /** Card + quick view merchandising label, e.g. "Bestseller" */
   merchandisingBadge?: string;
-  /** Shown as "VIBE / FIT" in quick view */
+  /** Shown as "FEELING / FIT" in quick view */
   fitLabel?: string;
   /** Optional scarcity line in quick view */
   stockNote?: string;
@@ -186,7 +241,8 @@ export const products: Product[] = [
     slug: 'the-weight-of-light',
     name: 'The Weight of Light',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'fiction',
+    feelingSlug: 'playful-offbeat',
+    useCase: 'For quiet gifting and slower nights that still need personality.',
     garmentColors: ['Off-white'],
     priceEgp: 799,
     story: 'For the one who carries the weight of every feeling and still walks toward the light.',
@@ -198,7 +254,8 @@ export const products: Product[] = [
     slug: 'midnight-compass',
     name: 'Midnight Compass',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'zodiac',
+    feelingSlug: 'warm-romantic',
+    useCase: 'For birthdays, shared dinners, and gifts that need emotional accuracy.',
     garmentColors: ['Black'],
     priceEgp: 799,
     story: 'For the one who finds direction in the dark.',
@@ -223,7 +280,8 @@ export const products: Product[] = [
     slug: 'quiet-revolt',
     name: 'Quiet Revolt',
     artistSlug: 'layla-farid',
-    vibeSlug: 'emotions',
+    feelingSlug: 'soft-quiet',
+    useCase: 'For everyday resets, calmer styling, and understated confidence.',
     garmentColors: ['Black'],
     priceEgp: 899,
     story: 'For the one who speaks softly and still moves rooms.',
@@ -237,7 +295,8 @@ export const products: Product[] = [
     slug: 'cairo-thread',
     name: 'Cairo Thread',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'career',
+    feelingSlug: 'grounded-everyday',
+    useCase: 'For repeat wear, city days, and a gift that still feels chosen.',
     priceEgp: 799,
     story: 'For the one who wears where they’re from.',
     availableSizes: ['M', 'L', 'XL'] satisfies ProductSizeKey[],
@@ -246,7 +305,7 @@ export const products: Product[] = [
     slug: 'signal-line',
     name: 'Signal Line',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'trends',
+    feelingSlug: 'bold-electric',
     priceEgp: 799,
     story: 'For the one who catches the wave before it’s everyone’s feed.',
   },
@@ -255,7 +314,7 @@ export const products: Product[] = [
     slug: 'emotions-silent-scream',
     name: 'Silent Scream',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'emotions',
+    feelingSlug: 'soft-quiet',
     priceEgp: 849,
     story: 'For the ones whose silence speaks volumes.',
   },
@@ -263,7 +322,7 @@ export const products: Product[] = [
     slug: 'emotions-deep-waters',
     name: 'Deep Waters',
     artistSlug: 'layla-farid',
-    vibeSlug: 'emotions',
+    feelingSlug: 'soft-quiet',
     priceEgp: 799,
     story: 'Dive into the uncharted depths of human connection.',
   },
@@ -271,7 +330,7 @@ export const products: Product[] = [
     slug: 'emotions-shattered-peace',
     name: 'Shattered Peace',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'emotions',
+    feelingSlug: 'soft-quiet',
     priceEgp: 899,
     story: 'Finding beauty in the fragments.',
     merchandisingBadge: 'New',
@@ -280,7 +339,7 @@ export const products: Product[] = [
     slug: 'emotions-raw-nerve',
     name: 'Raw Nerve',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'emotions',
+    feelingSlug: 'soft-quiet',
     priceEgp: 799,
     story: 'Wear it inside out.',
     fitLabel: 'Oversized',
@@ -289,7 +348,7 @@ export const products: Product[] = [
     slug: 'emotions-unspoken',
     name: 'Unspoken',
     artistSlug: 'layla-farid',
-    vibeSlug: 'emotions',
+    feelingSlug: 'soft-quiet',
     priceEgp: 949,
     story: 'When words fail, art speaks.',
   },
@@ -298,7 +357,7 @@ export const products: Product[] = [
     slug: 'zodiac-astral-body',
     name: 'Astral Body',
     artistSlug: 'layla-farid',
-    vibeSlug: 'zodiac',
+    feelingSlug: 'warm-romantic',
     priceEgp: 849,
     story: 'A cosmic map tracing your energetic blueprint.',
   },
@@ -306,7 +365,7 @@ export const products: Product[] = [
     slug: 'zodiac-star-alignment',
     name: 'Star Alignment',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'zodiac',
+    feelingSlug: 'warm-romantic',
     priceEgp: 799,
     story: 'When the universe shifts in your favor.',
     merchandisingBadge: 'Bestseller',
@@ -315,7 +374,7 @@ export const products: Product[] = [
     slug: 'zodiac-lunar-pull',
     name: 'Lunar Pull',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'zodiac',
+    feelingSlug: 'warm-romantic',
     priceEgp: 799,
     story: 'Guided by the phases of the moon.',
   },
@@ -323,7 +382,7 @@ export const products: Product[] = [
     slug: 'zodiac-solar-flare',
     name: 'Solar Flare',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'zodiac',
+    feelingSlug: 'warm-romantic',
     priceEgp: 899,
     story: 'Blazing energy that cannot be contained.',
     fitLabel: 'Regular',
@@ -332,7 +391,7 @@ export const products: Product[] = [
     slug: 'zodiac-cosmic-dust',
     name: 'Cosmic Dust',
     artistSlug: 'layla-farid',
-    vibeSlug: 'zodiac',
+    feelingSlug: 'warm-romantic',
     priceEgp: 749,
     story: 'We are all made of the same golden starlight.',
   },
@@ -341,7 +400,7 @@ export const products: Product[] = [
     slug: 'fiction-neon-dreams',
     name: 'Neon Dreams',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'fiction',
+    feelingSlug: 'playful-offbeat',
     priceEgp: 899,
     story: 'A cyberpunk reality painted in midnight blue.',
   },
@@ -349,7 +408,7 @@ export const products: Product[] = [
     slug: 'fiction-dragon-scale',
     name: 'Dragon Scale',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'fiction',
+    feelingSlug: 'playful-offbeat',
     priceEgp: 799,
     story: 'Armour for the modern fantasy seeker.',
     merchandisingBadge: 'Staff Pick',
@@ -358,7 +417,7 @@ export const products: Product[] = [
     slug: 'fiction-distant-suns',
     name: 'Distant Suns',
     artistSlug: 'layla-farid',
-    vibeSlug: 'fiction',
+    feelingSlug: 'playful-offbeat',
     priceEgp: 849,
     story: 'Looking beyond our orbit.',
   },
@@ -366,7 +425,7 @@ export const products: Product[] = [
     slug: 'fiction-cyber-ghost',
     name: 'Cyber Ghost',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'fiction',
+    feelingSlug: 'playful-offbeat',
     priceEgp: 949,
     story: 'Wandering the digital wasteland in style.',
     fitLabel: 'Oversized',
@@ -376,7 +435,7 @@ export const products: Product[] = [
     slug: 'fiction-mythic-realm',
     name: 'Mythic Realm',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'fiction',
+    feelingSlug: 'playful-offbeat',
     priceEgp: 799,
     story: 'Legends woven into every thread.',
   },
@@ -385,7 +444,7 @@ export const products: Product[] = [
     slug: 'career-hustle-hard',
     name: 'Hustle Hard',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'career',
+    feelingSlug: 'grounded-everyday',
     priceEgp: 749,
     story: 'For the endless ambition.',
   },
@@ -393,7 +452,7 @@ export const products: Product[] = [
     slug: 'career-ceo-mindset',
     name: 'CEO Mindset',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'career',
+    feelingSlug: 'grounded-everyday',
     priceEgp: 899,
     story: 'Lead from the front, dress for the top.',
   },
@@ -401,7 +460,7 @@ export const products: Product[] = [
     slug: 'career-climb-the-ladder',
     name: 'Climb The Ladder',
     artistSlug: 'layla-farid',
-    vibeSlug: 'career',
+    feelingSlug: 'grounded-everyday',
     priceEgp: 799,
     story: 'Step by step, defining your own success.',
     merchandisingBadge: 'Trending',
@@ -410,7 +469,7 @@ export const products: Product[] = [
     slug: 'career-office-hours',
     name: 'Office Hours',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'career',
+    feelingSlug: 'grounded-everyday',
     priceEgp: 849,
     story: 'When the work speaks for itself.',
     fitLabel: 'Regular',
@@ -419,7 +478,7 @@ export const products: Product[] = [
     slug: 'career-boardroom-rebel',
     name: 'Boardroom Rebel',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'career',
+    feelingSlug: 'grounded-everyday',
     priceEgp: 999,
     story: 'Disrupting the status quo intentionally.',
   },
@@ -428,7 +487,7 @@ export const products: Product[] = [
     slug: 'trends-viral-moment',
     name: 'Viral Moment',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'trends',
+    feelingSlug: 'bold-electric',
     priceEgp: 799,
     story: 'Catching the algorithm before it changes.',
   },
@@ -436,7 +495,7 @@ export const products: Product[] = [
     slug: 'trends-street-culture',
     name: 'Street Culture',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'trends',
+    feelingSlug: 'bold-electric',
     priceEgp: 899,
     story: 'The pavement is the runway.',
     merchandisingBadge: 'Hot',
@@ -445,7 +504,7 @@ export const products: Product[] = [
     slug: 'trends-hype-check',
     name: 'Hype Check',
     artistSlug: 'layla-farid',
-    vibeSlug: 'trends',
+    feelingSlug: 'bold-electric',
     priceEgp: 849,
     story: 'Validated by the culture.',
   },
@@ -453,7 +512,7 @@ export const products: Product[] = [
     slug: 'trends-next-wave',
     name: 'Next Wave',
     artistSlug: 'nada-ibrahim',
-    vibeSlug: 'trends',
+    feelingSlug: 'bold-electric',
     priceEgp: 799,
     story: 'Riding the crest of modern streetwear.',
     fitLabel: 'Oversized',
@@ -462,17 +521,28 @@ export const products: Product[] = [
     slug: 'trends-drop-culture',
     name: 'Drop Culture',
     artistSlug: 'omar-hassan',
-    vibeSlug: 'trends',
+    feelingSlug: 'bold-electric',
     priceEgp: 949,
     story: 'Here today, iconic tomorrow.',
   }
 ].map((product) => ({
   ...product,
   occasionSlugs: PRODUCT_OCCASION_TAGS[product.slug] ?? ['just-because'],
+  ...(product.slug.startsWith('zodiac-') ? { capsuleSlugs: ['zodiac'] as const } : {}),
 }));
 
-export function getVibe(slug: string) {
-  return vibes.find((v) => v.slug === slug);
+const resolveFeelingSlug = (slug: string) => LEGACY_VIBE_SLUG_TO_FEELING_SLUG[slug] ?? slug;
+
+export function getFeeling(slug: string) {
+  return feelings.find((f) => f.slug === resolveFeelingSlug(slug));
+}
+
+/** @deprecated Use getFeeling */
+export const getVibe = getFeeling;
+
+export function productsByFeeling(feelingSlug: string) {
+  const resolved = resolveFeelingSlug(feelingSlug);
+  return products.filter((p) => p.feelingSlug === resolved);
 }
 
 export function getOccasion(slug: string) {
@@ -487,9 +557,8 @@ export function getProduct(slug: string) {
   return products.find((p) => p.slug === slug);
 }
 
-export function productsByVibe(vibeSlug: string) {
-  return products.filter((p) => p.vibeSlug === vibeSlug);
-}
+/** @deprecated Use productsByFeeling */
+export const productsByVibe = productsByFeeling;
 
 export function productsByArtist(artistSlug: string) {
   return products.filter((p) => p.artistSlug === artistSlug);
