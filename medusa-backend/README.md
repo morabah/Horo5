@@ -58,6 +58,7 @@ What this seeds:
    - `STORE_CORS` — Vercel storefront origin(s), comma-separated, e.g. `https://your-app.vercel.app`
    - `ADMIN_CORS` / `AUTH_CORS` — align with Medusa admin and your Vercel origins
    - `JWT_SECRET`, `COOKIE_SECRET`, `MEDUSA_ADMIN_ONBOARDING_TYPE`
+   - If logs show `http.jwtSecret not found`, **`JWT_SECRET` is missing** in Railway (and often `COOKIE_SECRET`). Add both (e.g. `openssl rand -hex 32` each), then redeploy.
 3. After the first successful deploy (migrations run automatically), optionally seed the Egypt catalog **once** against production:
 
 ```bash
