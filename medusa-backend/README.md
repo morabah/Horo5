@@ -44,15 +44,21 @@ What this seeds:
 
 ## 3) Deploy on Railway (PostgreSQL + Node)
 
+**If Railway shows “Railpack could not determine how to build the app”:** the service is building from the **repository root** (monorepo) instead of only `medusa-backend`. Fix it in either of these ways:
+
+- **Recommended:** Leave the service **root directory** empty (repo root). The repository includes a root [`Dockerfile`](../Dockerfile) and [`railway.toml`](../railway.toml) so Railway builds Medusa with Docker and runs `npm run migrate` before start.
+- **Alternative:** Set **Root Directory** to **`medusa-backend`** so Railpack detects Node from `package.json`. Set **Custom Config File** to **`/medusa-backend/railway.toml`** if deploy settings are not applied. (Egypt seed images use `../web/public/...`; use the root `Dockerfile` flow if those files must be in the image.)
+
+---
+
 1. Create a Railway project and add **PostgreSQL**. Copy its connection string into `DATABASE_URL` on the Medusa service (use Railway’s guidance for direct vs pooled URLs).
-2. Add a **Node** service from this repo with **root directory** `medusa-backend`. Build/start are defined in [`railway.toml`](railway.toml) (`npm ci && npm run build`, `npm run start`). `preDeployCommand` runs `npm run migrate` before each deploy.
-3. Set environment variables on the Medusa service (see [`.env.template`](.env.template)):
+2. Set environment variables on the Medusa service (see [`.env.template`](.env.template)):
    - `DATABASE_URL`
    - `MEDUSA_BACKEND_URL` — public `https://` URL of this Railway service (no trailing slash)
    - `STORE_CORS` — Vercel storefront origin(s), comma-separated, e.g. `https://your-app.vercel.app`
    - `ADMIN_CORS` / `AUTH_CORS` — align with Medusa admin and your Vercel origins
    - `JWT_SECRET`, `COOKIE_SECRET`, `MEDUSA_ADMIN_ONBOARDING_TYPE`
-4. After the first successful deploy (migrations run automatically), optionally seed the Egypt catalog **once** against production:
+3. After the first successful deploy (migrations run automatically), optionally seed the Egypt catalog **once** against production:
 
 ```bash
 # With production DATABASE_URL and Medusa env loaded (e.g. Railway CLI shell):

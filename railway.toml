@@ -1,0 +1,11 @@
+# Used when the Medusa service builds from the repository root (monorepo).
+# A `Dockerfile` at the repo root makes Railway build with Docker (see Railway Dockerfile docs),
+# so Railpack does not try to infer a single app from the whole monorepo.
+# If you set Root Directory to `medusa-backend` instead, use `/medusa-backend/railway.toml`.
+
+[deploy]
+preDeployCommand = ["npm", "run", "migrate"]
+startCommand = "npm run start"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

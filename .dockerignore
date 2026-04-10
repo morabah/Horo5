@@ -1,0 +1,11 @@
+.git
+.github
+tmp
+audits
+**/node_modules
+web/dist
+web-next/.next
+shopify-headless/.next
+**/.env
+**/.env.*
+!**/.env.example
