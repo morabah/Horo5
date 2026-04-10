@@ -1,0 +1,3 @@
+# Pin Node 20+ for Medusa (see package.json engines).
+[variables]
+NIXPACKS_NODE_VERSION = "20"

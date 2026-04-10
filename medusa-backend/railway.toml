@@ -1,0 +1,14 @@
+# Config-as-code for Railway: set service root to `medusa-backend` in the dashboard,
+# or point "Custom config file" at this path.
+# https://docs.railway.app/deploy/config-as-code
+
+[build]
+builder = "nixpacks"
+buildCommand = "npm ci && npm run build"
+
+[deploy]
+preDeployCommand = ["npm run migrate"]
+startCommand = "npm run start"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"

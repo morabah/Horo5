@@ -1,93 +1,26 @@
 # 10 — Checkout
 
 **Route:** `/checkout`  
-**Implementation:** [`Checkout.tsx`](../web/src/pages/Checkout.tsx), [`CommerceContinuityPanel.tsx`](../web/src/components/CommerceContinuityPanel.tsx)  
-**Status:** Current authoritative checkout wireframe.
+**Implementation:** Not implemented as a local page; checkout is hosted by Shopify via `cart.checkoutUrl`  
+**Status:** Current behavior documented.
 
-## Purpose
+## Current behavior
 
-Collect shipping and payment information with maximum clarity and truthful reassurance.
-
-## Current structure
-
-1. **Shared Shell + Local Back Link**
-The global app shell remains visible. Inside the page body there is also a `Back to cart` link.
-
-2. **Progress Indicator**
-Three-step indicator:
-- `Information`
-- `Shipping`
-- `Payment`
-
-3. **Continuity Panel**
-Brand reassurance strip above the active step.
-
-4. **Step 1 — Information**
-- email
-- phone
-- WhatsApp opt-in
-- guest-checkout reassurance
-- shipping address fields
-- submit-first validation
-
-5. **Step 2 — Shipping**
-- standard and express radio options
-- delivery window
-- exchange link
-
-6. **Step 3 — Payment**
-- COD default
-- card option with 30 EGP incentive
-- Arabic security reassurance
-- exchange link
-- final `Place order`
-
-7. **Order Summary Sidebar**
-Visible on every step with product images and live total math.
+- There is no `shopify-headless/src/app/checkout/page.tsx`.
+- Clicking `Proceed to secure checkout` on `/cart` navigates to Shopify-hosted checkout URL.
+- The local app only handles return status via `/checkout/return`.
 
 ## Visual wireframe
 
 ```text
-+----------------------------------------------------------------------------------+
-| GLOBAL NAV                                                                       |
-+----------------------------------------------------------------------------------+
-| [Back to cart]                                                                   |
-| PROGRESS: Information -> Shipping -> Payment                                     |
-+----------------------------------------------------------------------------------+
-| CONTINUITY PANEL                                                                 |
-+----------------------------------------------------------------------------------+
-| ACTIVE STEP FORM                                      | ORDER SUMMARY             |
-|                                                       | product images            |
-| Step 1: Information                                   | subtotal                  |
-| email / phone / WhatsApp opt-in                       | shipping                  |
-| address fields                                        | total                     |
-| [Continue to shipping]                                |                           |
-|                                                       |                           |
-| Step 2: Shipping                                      |                           |
-| ( ) standard   ( ) express                            |                           |
-| delivery window / exchange link                       |                           |
-| [Continue to payment]                                 |                           |
-|                                                       |                           |
-| Step 3: Payment                                       |                           |
-| ( ) COD default                                       |                           |
-| ( ) Card with incentive                               |                           |
-| Arabic reassurance / exchange link                    |                           |
-| [Place order]                                         |                           |
-+----------------------------------------------------------------------------------+
-| FOOTER                                                                        |
-+----------------------------------------------------------------------------------+
++--------------------------------------------+
+| /cart                                      |
+| [Proceed to secure checkout]               |
++--------------------------------------------+
+                    |
+                    v
++--------------------------------------------+
+| Shopify-hosted checkout                    |
+| (outside local Next.js app)                |
++--------------------------------------------+
 ```
-
-## Key behaviors
-
-- Step 1 CTA is always clickable; invalid submit reveals inline errors and focuses the first invalid field.
-- Guest checkout is supported by default.
-- Shipping price is visible before payment.
-- Order summary includes product images throughout the flow.
-- No glass form fields are used in checkout.
-
-## Current rules
-
-- Keep the current three-step flow.
-- Keep COD as default.
-- Keep Arabic reassurance in the payment step, but do not add a public language toggle here.

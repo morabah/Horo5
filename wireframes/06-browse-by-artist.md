@@ -1,40 +1,25 @@
 # 06 — Browse by Artist
 
 **Route:** `/artists`  
-**Implementation:** [`App.tsx`](../web/src/App.tsx)  
-**Status:** Deprecated public wireframe.
+**Implementation:** Not implemented in `shopify-headless/src/app`  
+**Status:** Not part of current storefront design.
 
 ## Current behavior
 
-- `/artists` is not a live browse hub.
-- The route redirects to `/vibes` using `<Navigate to="/vibes" replace />`.
-- No public artist cards, artist listing grid, or artist-first discovery UI exists in the shipped storefront.
+- No `/artists` route is defined in the current Next.js app.
+- There is no artist-based navigation in `StoreHeader`.
+- Visiting `/artists` returns not-found behavior (no redirect implemented).
 
 ## Visual wireframe
 
 ```text
 +--------------------------------------------+
 | /artists                                   |
-| requested by legacy link                   |
+| no route in current storefront             |
 +--------------------------------------------+
-                  |
-                  v
+                    |
+                    v
 +--------------------------------------------+
-| redirect                                   |
-| <Navigate to="/vibes" replace />           |
-+--------------------------------------------+
-                  |
-                  v
-+--------------------------------------------+
-| /vibes                                     |
-| live browse hub                            |
+| Next.js not-found behavior                 |
 +--------------------------------------------+
 ```
-
-## Product rule
-
-Artist remains behind the scenes for browsing and search. Public artist visibility is limited to product-page legitimacy and supporting metadata where already implemented.
-
-## Documentation rule
-
-Do not create new public artist-hub designs from this file. If legacy links exist, they should continue redirecting to `/vibes`.

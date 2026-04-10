@@ -1,72 +1,38 @@
-# 08 — Product Detail Page
+# 08 — Product Detail
 
-**Route:** `/products/:slug`  
-**Implementation:** [`ProductDetail.tsx`](../web/src/pages/ProductDetail.tsx), [`ProductQuickView.tsx`](../web/src/components/ProductQuickView.tsx)  
-**Status:** Current authoritative PDP wireframe.
+**Route:** `/products/:handle`  
+**Implementation:** `shopify-headless/src/app/products/[handle]/page.tsx`, `shopify-headless/src/components/cart/add-to-cart-button.tsx`  
+**Status:** Current live PDP wireframe.
 
 ## Purpose
 
-Turn product confidence into purchase action with clear story, clear proof, and minimal distraction.
+Display core product information and allow direct cart addition using the default variant.
 
 ## Current structure
 
-1. **Breadcrumb**
-`Home / {vibe} / {product}`
+1. **Main two-column layout**
+- Left: single hero image (`featuredImage` fallback to first product image)
+- Right: title, price, description, and add-to-cart action
 
-2. **Primary Product Layout**
-- left: main image with optional thumbnail rail
-- right: sticky purchase rail on desktop
+2. **Product meta**
+- Page metadata generated per product handle
+- Canonical URL and Open Graph image when available
 
-3. **Purchase Rail**
-- vibe pill
-- large product title
-- violet story card
-- price
-- size selector
-- size guide modal trigger
-- primary CTA `Add to Bag — {price}` or `Choose Size`
-- out-of-stock path: `Notify Me` restock form
-- optional WhatsApp support button when configured
-- trust chips
-- artist attribution with avatar
-
-4. **Accordion Section**
-- product details and fit
-- design story
-- shipping and returns
-
-5. **Related Products**
-`More from {vibe}` grid with quick view support.
-
-6. **Mobile CTA Dock**
-Fixed `Add to Bag` bar at the bottom of the viewport.
+3. **Purchase action**
+- `Add to cart` button adds quantity `1`
+- Uses first available variant as default
+- If no variant exists, page shows a non-purchasable warning
 
 ## Visual wireframe
 
 ```text
 +----------------------------------------------------------------------------------+
-| GLOBAL NAV                                                                       |
+| GLOBAL HEADER                                                                     |
 +----------------------------------------------------------------------------------+
-| BREADCRUMB: Home / {Vibe} / {Product}                                            |
-+----------------------------------------------------------------------------------+
-| [MAIN IMAGE / THUMBNAILS / LIGHTBOX TRIGGER] | [Sticky Purchase Rail]            |
-|                                               | vibe pill                         |
-|                                               | product title                     |
-|                                               | story card                        |
-|                                               | price                             |
-|                                               | size selector                     |
-|                                               | [Add to Bag -- price]             |
-|                                               | [Notify Me when OOS]              |
-|                                               | [WhatsApp Help when configured]   |
-|                                               | trust chips / artist attribution  |
-+----------------------------------------------------------------------------------+
-| ACCORDIONS                                                                       |
-| [Product details] [Design story] [Shipping and returns]                          |
-+----------------------------------------------------------------------------------+
-| MORE FROM {VIBE}                                                                  |
-| [Merch Card] [Merch Card] [Merch Card] [Merch Card]                              |
-+----------------------------------------------------------------------------------+
-| MOBILE ONLY: fixed bottom dock [Add to Bag -- price]                             |
+| [HERO IMAGE]                                     | PRODUCT TITLE                  |
+|                                                  | PRICE                          |
+|                                                  | DESCRIPTION                    |
+|                                                  | [Add to cart]                  |
 +----------------------------------------------------------------------------------+
 | FOOTER                                                                           |
 +----------------------------------------------------------------------------------+
@@ -74,14 +40,6 @@ Fixed `Add to Bag` bar at the bottom of the viewport.
 
 ## Key behaviors
 
-- Gallery opens a lightbox.
-- Thumbnail rail appears only when multiple images exist.
-- Current asset layer does not guarantee five distinct PDP images for every product; the wireframe must reflect the real gallery contract, not the earlier aspirational one.
-- Artist remains visible here as legitimacy proof.
-- If support URLs are unset, the WhatsApp button hides instead of falling back.
-
-## Current rules
-
-- Keep artist attribution on PDP.
-- Keep browse surfaces artist-light, but PDP may show artist in trust chips and attribution.
-- Keep the sticky mobile CTA and the related-products quick view.
+- Unknown handles return not-found via `notFound()`.
+- Product view analytics are tracked with `ProductViewTracker`.
+- No breadcrumbs, accordions, related products, quick view, or sticky mobile dock in current implementation.

@@ -1,45 +1,25 @@
 # 07 — Artist Profile
 
 **Route:** `/artists/:slug`  
-**Implementation:** [`App.tsx`](../web/src/App.tsx)  
-**Status:** Deprecated public wireframe.
+**Implementation:** Not implemented in `shopify-headless/src/app`  
+**Status:** Not part of current storefront design.
 
 ## Current behavior
 
-- `/artists/:slug` is not a live public profile page.
-- The route redirects to `/vibes` using `<Navigate to="/vibes" replace />`.
-- No public portfolio page, artist bio page, or artist-specific product listing exists in the shipped storefront.
+- Dynamic artist profile routes are not defined.
+- The current product detail page focuses on product data only.
+- Requests to `/artists/:slug` resolve to not-found.
 
 ## Visual wireframe
 
 ```text
 +------------------------------------------------+
 | /artists/:slug                                 |
-| requested by legacy deep link                  |
+| no dynamic route implemented                   |
 +------------------------------------------------+
-                    |
-                    v
+                      |
+                      v
 +------------------------------------------------+
-| redirect                                       |
-| <Navigate to="/vibes" replace />               |
-+------------------------------------------------+
-                    |
-                    v
-+------------------------------------------------+
-| /vibes                                         |
-| public browse continues here                   |
+| Next.js not-found behavior                     |
 +------------------------------------------------+
 ```
-
-## Product rule
-
-Artist information currently lives in:
-- PDP trust and attribution surfaces
-- internal product metadata
-- internal search relevance logic
-
-It does not live as a public destination page.
-
-## Documentation rule
-
-If artist storytelling expands later, create a new spec from current product direction instead of reviving the old browse-by-artist model.

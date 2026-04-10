@@ -1,83 +1,52 @@
 # 09 — Cart
 
 **Route:** `/cart`  
-**Implementation:** [`Cart.tsx`](../web/src/pages/Cart.tsx)  
-**Status:** Current authoritative cart wireframe.
+**Implementation:** `shopify-headless/src/app/cart/page.tsx`, `shopify-headless/src/components/cart/cart-view.tsx`  
+**Status:** Current live cart wireframe.
 
 ## Purpose
 
-Review selections, keep one clear path to checkout, and show only one upsell module at a time.
+Show cart lines, allow quantity updates, and redirect users to Shopify-hosted checkout.
 
 ## Current structure
 
-1. **Empty State**
-- editorial image
-- heading `Your cart`
-- explanatory copy
-- CTA `Find Your Design` → `/vibes`
+1. **Empty state**
+- Card with heading `Your cart is empty`
+- Supporting text: add products from shop page
 
-2. **Filled Cart Layout**
-- left column: cart items
-- right column: sticky order summary
-- upsell module appears between items and summary flow
+2. **Filled cart**
+- Heading `Your Cart`
+- List of line items with image, product title, variant title, line total
+- Quantity stepper (`-` and `+`) per line
 
-3. **Cart Item Row**
-- image linking to PDP
-- product name
-- artist line when available
-- size
-- quantity stepper
-- line price
-- remove action
-
-4. **Single Upsell Rule**
-- 1 tee: gift wrap + story card upsell
-- 2+ tees: bundle savings upsell
-- never both
-
-5. **Order Summary**
-- subtotal
-- gift-wrap fee when selected
-- shipping estimate
-- estimated total
-- `Proceed to checkout`
-- `Continue shopping`
-- trust pills
+3. **Summary block**
+- Subtotal amount
+- Primary CTA: `Proceed to secure checkout`
 
 ## Visual wireframe
 
 ```text
 +----------------------------------------------------------------------------------+
-| GLOBAL NAV                                                                       |
+| GLOBAL HEADER                                                                     |
 +----------------------------------------------------------------------------------+
-| EMPTY STATE                                                                      |
-| [Editorial Image]                                                                |
-| Your cart                                                                        |
-| short explanation                                                                |
-| [Find Your Design]                                                               |
+| EMPTY STATE                                                                       |
+| Your cart is empty                                                                |
+| Add products from the shop page to continue.                                      |
 +----------------------------------------------------------------------------------+
-| OR, WHEN FILLED                                                                  |
+| OR, WHEN FILLED                                                                   |
 +----------------------------------------------------------------------------------+
-| CART ITEMS                                          | STICKY SUMMARY             |
-| [Item Image] name / artist / size / qty / price     | subtotal                    |
-| [Item Image] name / artist / size / qty / price     | shipping estimate           |
-|                                                      | estimated total            |
-| UPSSELL MODULE                                       | [Proceed to checkout]      |
-| [Gift wrap] or [Bundle savings]                      | [Continue shopping]        |
-|                                                      | trust pills                |
+| [Line] image / title / variant / qty stepper / line total                         |
+| [Line] image / title / variant / qty stepper / line total                         |
+|----------------------------------------------------------------------------------|
+| Subtotal                                                                          |
+| [Proceed to secure checkout]                                                      |
 +----------------------------------------------------------------------------------+
-| FOOTER                                                                           |
+| FOOTER                                                                            |
 +----------------------------------------------------------------------------------+
 ```
 
 ## Key behaviors
 
-- Shipping estimate is visible before checkout.
-- No recommendation grid competes with the checkout CTA.
-- Summary uses the shared cart trust copy and stays sticky on desktop.
-
-## Current rules
-
-- Keep only one upsell module visible.
-- Keep `Proceed to checkout` as the dominant action.
-- Do not add unrelated discovery modules here.
+- Cart is restored from `localStorage` cart ID when available.
+- Quantity changes call `/api/cart/lines`.
+- Checkout button redirects browser to `cart.checkoutUrl`.

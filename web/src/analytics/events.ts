@@ -61,7 +61,16 @@ export function createBeginCheckoutPayload(lines: CartLine[], subtotalEgp: numbe
   const items = lines
     .map((line) => {
       const product = getProduct(line.productSlug);
-      if (!product) return null;
+      if (!product) {
+        return {
+          item_id: line.variantId ?? line.productSlug,
+          item_name: line.productName ?? line.productSlug,
+          item_brand: 'HORO Egypt',
+          item_variant: line.size,
+          price: line.unitPriceEgp ?? 0,
+          quantity: line.qty,
+        };
+      }
       return buildAnalyticsItem(product, line.qty, { size: line.size });
     })
     .filter(Boolean);
@@ -82,7 +91,16 @@ export function createPurchasePayload(payload: {
   const items = payload.lines
     .map((line) => {
       const product = getProduct(line.productSlug);
-      if (!product) return null;
+      if (!product) {
+        return {
+          item_id: line.variantId ?? line.productSlug,
+          item_name: line.productName ?? line.productSlug,
+          item_brand: 'HORO Egypt',
+          item_variant: line.size,
+          price: line.unitPriceEgp ?? 0,
+          quantity: line.qty,
+        };
+      }
       return buildAnalyticsItem(product, line.qty, { size: line.size });
     })
     .filter(Boolean);

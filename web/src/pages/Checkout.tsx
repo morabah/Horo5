@@ -10,8 +10,10 @@ import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { useCart } from '../cart/CartContext';
 import { saveLastOrder } from '../cart/lastOrder';
+import { MEDUSA_CART_ID_STORAGE_KEY } from '../cart/types';
 import { CART_SCHEMA, CHECKOUT_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
+import { completeCart, createPaymentSessions, updateCart } from '../lib/medusa/client';
 
 const STEP0_FIELD_ORDER = ['email', 'phone', 'name', 'line1', 'city'] as const;
 
@@ -134,8 +136,36 @@ export function Checkout() {
     if (placingOrder) return;
     setPlacingOrder(true);
     try {
-      await new Promise((r) => setTimeout(r, 500));
-      const orderId = `HORO-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+      const localCartId = typeof window !== 'undefined' ? localStorage.getItem(MEDUSA_CART_ID_STORAGE_KEY) : null;
+      let medusaOrderId: string | undefined;
+      let orderId = `HORO-${new Date().getFullYear()}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+      if (localCartId) {
+        await updateCart(localCartId, {
+          email: email.trim(),
+          shipping_address: {
+            first_name: fullName.trim(),
+            address_1: line1.trim(),
+            city: city.trim(),
+            phone: phone.trim(),
+            country_code: 'eg',
+          },
+          billing_address: {
+            first_name: fullName.trim(),
+            address_1: line1.trim(),
+            city: city.trim(),
+            phone: phone.trim(),
+            country_code: 'eg',
+          },
+        });
+        await createPaymentSessions(localCartId);
+        const completion = await completeCart(localCartId);
+        if (completion.type === 'order' && completion.order) {
+          medusaOrderId = completion.order.id;
+          orderId = completion.order.display_id
+            ? `HORO-${completion.order.display_id}`
+            : completion.order.id;
+        }
+      }
       trackPurchase({
         transactionId: orderId,
         value: orderTotal,
@@ -144,6 +174,8 @@ export function Checkout() {
       });
       saveLastOrder({
         orderId,
+        cartId: localCartId ?? undefined,
+        medusaOrderId,
         lines: items.map((l) => ({ ...l })),
         subtotal: subtotalEgp,
         giftWrapEgp: giftWrapEgp > 0 ? giftWrapEgp : undefined,

@@ -531,6 +531,16 @@ export const products: Product[] = [
   ...(product.slug.startsWith('zodiac-') ? { capsuleSlugs: ['zodiac'] as const } : {}),
 }));
 
+let runtimeProducts: Product[] | null = null;
+
+export function setRuntimeProducts(next: Product[] | null) {
+  runtimeProducts = next;
+}
+
+function getCatalog(): Product[] {
+  return runtimeProducts && runtimeProducts.length > 0 ? runtimeProducts : products;
+}
+
 const resolveFeelingSlug = (slug: string) => LEGACY_VIBE_SLUG_TO_FEELING_SLUG[slug] ?? slug;
 
 export function getFeeling(slug: string) {
@@ -542,7 +552,7 @@ export const getVibe = getFeeling;
 
 export function productsByFeeling(feelingSlug: string) {
   const resolved = resolveFeelingSlug(feelingSlug);
-  return products.filter((p) => p.feelingSlug === resolved);
+  return getCatalog().filter((p) => p.feelingSlug === resolved);
 }
 
 export function getOccasion(slug: string) {
@@ -554,16 +564,16 @@ export function getArtist(slug: string) {
 }
 
 export function getProduct(slug: string) {
-  return products.find((p) => p.slug === slug);
+  return getCatalog().find((p) => p.slug === slug);
 }
 
 /** @deprecated Use productsByFeeling */
 export const productsByVibe = productsByFeeling;
 
 export function productsByArtist(artistSlug: string) {
-  return products.filter((p) => p.artistSlug === artistSlug);
+  return getCatalog().filter((p) => p.artistSlug === artistSlug);
 }
 
 export function productsByOccasion(occasionSlug: OccasionSlug) {
-  return products.filter((p) => p.occasionSlugs.includes(occasionSlug));
+  return getCatalog().filter((p) => p.occasionSlugs.includes(occasionSlug));
 }

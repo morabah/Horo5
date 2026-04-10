@@ -5,6 +5,8 @@ export const LAST_ORDER_STORAGE_KEY = 'horo-last-order-v1';
 export type LastOrderSnapshot = {
   orderId: string;
   lines: CartLine[];
+  cartId?: string;
+  medusaOrderId?: string;
   subtotal: number;
   giftWrapEgp?: number;
   shipping: number;

@@ -16,20 +16,24 @@ export type CartLineView = CartLine & {
 
 export function getCartLineView(line: CartLine): CartLineView | null {
   const product = getProduct(line.productSlug);
-  if (!product) return null;
+  if (!product && !line.productName) return null;
 
-  const artist = getArtist(product.artistSlug);
+  const artist = product ? getArtist(product.artistSlug) : undefined;
+  const unitPrice = line.unitPriceEgp ?? product?.priceEgp ?? 0;
+  const productName = line.productName ?? product?.name ?? line.productSlug;
+  const productUrl = product ? `/products/${product.slug}` : '/search';
+  const imageSrc = line.imageSrc ?? (product ? getProductMedia(product.slug).main : '/images/hero/hero-model.png');
 
   return {
     ...line,
     key: cartLineKey(line),
-    productName: product.name,
-    productUrl: `/products/${product.slug}`,
+    productName,
+    productUrl,
     artistName: artist?.name,
-    imageSrc: getProductMedia(product.slug).main,
-    imageAlt: `HORO “${product.name}” tee shown for order reference.`,
-    unitPriceEgp: product.priceEgp,
-    linePriceEgp: product.priceEgp * line.qty,
+    imageSrc,
+    imageAlt: `HORO “${productName}” tee shown for order reference.`,
+    unitPriceEgp: unitPrice,
+    linePriceEgp: unitPrice * line.qty,
   };
 }
 
