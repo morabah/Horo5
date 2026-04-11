@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 
+/* Tailwind v4: scan shared UI + Next app so utilities exist when web-next imports this file */
+@source "./";
+@source "../../web-next/src";
+
 @theme {
   /*
    * HORO — Brand Guidelines v2.6 §3.3 (Chalk / Linen / Ink / Clay CTAs / restrained accents).
