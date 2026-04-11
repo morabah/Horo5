@@ -1,6 +1,6 @@
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type SyntheticEvent } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getProductMedia, getProductPdpGallery, imgUrl } from '../data/images';
+import { buildProductPdpGallery, getProductMedia, imgUrl } from '../data/images';
 import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
 import { useCart } from '../cart/CartContext';
 import { PDP_SCHEMA, QUICK_VIEW_SCHEMA } from '../data/domain-config';
@@ -20,8 +20,6 @@ const QUICK_VIEW_BASE_SIZES = PDP_SCHEMA.sizes.map((size) => ({
   disabled: Boolean(size.disabled),
 }));
 
-const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
-
 export function ProductQuickView({ open, productSlug, onClose }: ProductQuickViewProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
@@ -36,9 +34,29 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
 
   const product = productSlug ? getProduct(productSlug) : undefined;
-  const feeling = product ? getFeeling(product.feelingSlug) : undefined;
-  const media = product ? getProductMedia(product.slug) : null;
-  const gallery = product ? getProductPdpGallery(product.name, product.slug) : [];
+  const feelingSlug = product?.primaryFeelingSlug ?? product?.feelingSlug;
+  const feeling = feelingSlug ? getFeeling(feelingSlug) : undefined;
+  const media = useMemo(() => {
+    if (!product) return null;
+    const fallbackMedia = getProductMedia(product.slug);
+    const backendGallery = Array.from(
+      new Set([
+        product.media?.main ?? undefined,
+        ...(product.media?.gallery ?? []),
+        product.thumbnail ?? undefined,
+      ].filter((value): value is string => Boolean(value))),
+    );
+
+    if (backendGallery.length === 0) {
+      return fallbackMedia;
+    }
+
+    return {
+      gallery: backendGallery,
+      main: product.media?.main ?? backendGallery[0] ?? fallbackMedia.main,
+    };
+  }, [product]);
+  const gallery = product && media ? buildProductPdpGallery(product.name, media) : [];
   const galleryLen = gallery.length;
   const safePhotoIndex = galleryLen > 0 ? Math.min(photoIndex, galleryLen - 1) : 0;
   const mainView =
@@ -49,14 +67,28 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
       label: 'image',
     };
   const fit = product?.fitLabel ?? 'Regular';
-  const priceStr = product ? formatEgp(product.priceEgp) : '';
+  const selectedVariant =
+    selectedSize && product?.variantsBySize
+      ? product.variantsBySize[selectedSize]
+      : undefined;
+  const displayPriceEgp = selectedVariant?.priceEgp ?? product?.priceEgp ?? 0;
+  const priceStr = product ? formatEgp(displayPriceEgp) : '';
 
   const quickViewSizes = useMemo(() => {
     if (!product) return QUICK_VIEW_BASE_SIZES;
     const avail = new Set(productAvailableSizes(product));
+    const definedSizes = new Set<ProductSizeKey>(
+      product.availableSizes?.length
+        ? product.availableSizes
+        : (Object.keys(product.variantsBySize || {}) as ProductSizeKey[]),
+    );
+    const hasDefinedSizes = definedSizes.size > 0;
     return QUICK_VIEW_BASE_SIZES.map((size) => ({
       ...size,
-      disabled: size.disabled || !avail.has(size.key),
+      disabled:
+        size.disabled ||
+        (hasDefinedSizes && !definedSizes.has(size.key)) ||
+        !avail.has(size.key),
     }));
   }, [product]);
   const primaryCtaLabel = addedToBag
@@ -79,7 +111,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
     }
   }, [open]);
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 

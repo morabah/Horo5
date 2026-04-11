@@ -6,7 +6,6 @@ import { AppErrorBoundary } from "../../../web/src/components/AppErrorBoundary";
 import { FunnelNavigationTracker } from "../../../web/src/components/FunnelNavigationTracker";
 import { Nav } from "../../../web/src/components/Nav";
 import { Footer } from "../../../web/src/components/Footer";
-import { SeoHead } from "../../../web/src/components/SeoHead";
 
 /**
  * Same chrome as `web/src/components/Layout.tsx` but uses page `children` instead of
@@ -19,7 +18,6 @@ export function StorefrontChrome({ children }: { children: ReactNode }) {
   return (
     <>
       <FunnelNavigationTracker />
-      <SeoHead />
       <a
         href="#main-content"
         className="sr-only left-4 top-[max(0.75rem,env(safe-area-inset-top))] z-[300] rounded-sm border border-outline-variant/50 bg-papyrus px-4 py-3 font-label text-[11px] font-semibold uppercase tracking-widest text-obsidian shadow-md outline-none ring-deep-teal focus:not-sr-only focus:fixed focus:ring-2"

@@ -54,6 +54,23 @@ async function main() {
   }
   console.log("GET /store/products OK (publishable key)");
 
+  const storefrontCatalog = await fetch(`${base}/storefront/catalog`, {
+    headers: { "x-publishable-api-key": key },
+  });
+  if (!storefrontCatalog.ok) {
+    const body = await storefrontCatalog.text();
+    console.error(
+      `GET /storefront/catalog failed: ${storefrontCatalog.status} ${body.slice(0, 400)}`,
+    );
+    process.exit(1);
+  }
+  const catalogJson = await storefrontCatalog.json();
+  const productCount = Array.isArray(catalogJson?.products) ? catalogJson.products.length : 0;
+  const lineCount = Array.isArray(catalogJson?.feelingLines) ? catalogJson.feelingLines.length : "?";
+  console.log(
+    `GET /storefront/catalog OK (products=${productCount}, occasions=${Array.isArray(catalogJson?.occasions) ? catalogJson.occasions.length : "?"}, feelingLines=${lineCount})`,
+  );
+
   const preflight = await fetch(`${base}/store/products?limit=1`, {
     method: "OPTIONS",
     headers: {

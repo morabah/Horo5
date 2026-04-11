@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">HORO fabric and tag proof card</title>
+  <desc id="desc">A proof panel describing fabric weight, care tag, and size label checks for a HORO tee.</desc>
+  <rect width="1200" height="1500" fill="#fee5e2"/>
+  <rect x="90" y="90" width="1020" height="1320" rx="52" fill="#fffaf3" stroke="#d4cfc5" stroke-width="8"/>
+  <g transform="translate(180 270)">
+    <rect x="0" y="0" width="420" height="720" rx="28" fill="#1a1a1a"/>
+    <rect x="56" y="72" width="308" height="130" rx="20" fill="#fee5e2"/>
+    <text x="94" y="150" fill="#1a1a1a" font-family="Georgia, Times New Roman, serif" font-size="72" letter-spacing="-3">HORO</text>
+    <text x="76" y="266" fill="#fee5e2" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="600" letter-spacing="4">SIZE / M</text>
+    <text x="76" y="334" fill="#fee5e2" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="32">220 GSM cotton</text>
+    <text x="76" y="394" fill="#fee5e2" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="32">Made in Egypt</text>
+    <path d="M77 464h266M77 524h266M77 584h266" stroke="#c75f76" stroke-width="10" stroke-linecap="round"/>
+  </g>
+  <g fill="#2c2a26" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif">
+    <text x="144" y="192" font-size="42" font-weight="600" letter-spacing="8">FABRIC AND TAG</text>
+    <text x="672" y="424" font-size="34" font-weight="600" letter-spacing="2">Proof checklist</text>
+    <text x="672" y="496" font-size="28">Brand label visible</text>
+    <text x="672" y="550" font-size="28">Size and composition readable</text>
+    <text x="672" y="604" font-size="28">Care instructions kept honest</text>
+    <text x="672" y="688" font-size="28">Replace with the photographed inside-label shot when ready.</text>
+    <text x="144" y="1248" font-size="28">Launch stand-in card for the missing label/detail photo.</text>
+  </g>
+</svg>

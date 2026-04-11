@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { trackHomeScrollMilestone, trackHomeView, trackHoroFunnelStep } from '../analytics/funnel';
 import { MerchProductCard } from '../components/MerchProductCard';
@@ -9,8 +9,8 @@ import { HomeGiftBlock } from '../components/HomeGiftBlock';
 import { HomeProofSplit } from '../components/HomeProofSplit';
 import { HomeStudioProof } from '../components/HomeStudioProof';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { getProductMedia, feelingCovers } from '../data/images';
-import { getArtist, getFeeling, feelings, products } from '../data/site';
+import { getFeelingCollectionVisual, getProductMedia } from '../data/images';
+import { getArtist, getFeeling, getFeelings, getProducts, type Product } from '../data/site';
 import { BRAND_COPY } from '../data/brand';
 import { HOME_COPY, HOME_ORIENTATION_STEPS } from '../data/homeContent';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -19,18 +19,19 @@ import { notifyHomeWaitlistSignup } from '../utils/homeWaitlist';
 const COMPACT_HOME_STORAGE = 'horo_home_compact';
 const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
 
-export function Home() {
+export function Home({ initialProducts }: { initialProducts?: Product[] } = {}) {
   useScrollReveal();
   const { copy } = useUiLocale();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const compactHome = useMemo(() => {
-    if (typeof window === 'undefined') return false;
+  const [compactHome, setCompactHome] = useState(false);
+
+  useEffect(() => {
     const q = searchParams.get('compact');
     if (q === '1') sessionStorage.setItem(COMPACT_HOME_STORAGE, '1');
-    return q === '1' || sessionStorage.getItem(COMPACT_HOME_STORAGE) === '1';
+    setCompactHome(q === '1' || sessionStorage.getItem(COMPACT_HOME_STORAGE) === '1');
   }, [searchParams]);
-  const latestDrops = products.slice(0, 4);
+  const latestDrops = (initialProducts ?? getProducts()).slice(0, 4);
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
   const [waitlistContact, setWaitlistContact] = useState('');
   const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -123,8 +124,8 @@ export function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {feelings.map((feeling, i) => {
-              const coverSrc = feelingCovers[feeling.slug];
+            {getFeelings().map((feeling, i) => {
+              const coverSrc = getFeelingCollectionVisual(feeling.slug).cover.src;
               return (
                 <Link
                   key={feeling.slug}
@@ -202,9 +203,9 @@ export function Home() {
           </div>
           <div className="grid grid-cols-1 items-stretch gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
             {latestDrops.map((p, i) => {
-              const feeling = getFeeling(p.feelingSlug);
+              const feeling = getFeeling(p.primaryFeelingSlug ?? p.feelingSlug);
               const artist = getArtist(p.artistSlug);
-              const main = getProductMedia(p.slug).main;
+              const main = p.media?.main ?? getProductMedia(p.slug).main;
               return (
                 <MerchProductCard
                   key={p.slug}

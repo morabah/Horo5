@@ -20,7 +20,7 @@ export function buildProductJsonLd(slug: string) {
     new Set([media.main, ...gallery.map((view) => view.src)].map((src) => src.split('?')[0])),
   ).map((imagePath) => (siteUrl ? `${siteUrl}${imagePath}` : imagePath));
   const productUrl = siteUrl ? `${siteUrl}/products/${product.slug}` : `/products/${product.slug}`;
-  const feeling = getFeeling(product.feelingSlug);
+  const feeling = getFeeling(product.primaryFeelingSlug ?? product.feelingSlug);
   const occasionNames = product.occasionSlugs
     .map((occasionSlug) => getOccasion(occasionSlug)?.name)
     .filter(Boolean);

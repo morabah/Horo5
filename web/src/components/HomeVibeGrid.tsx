@@ -1,5 +1,5 @@
 import { VibeCommerceCard } from './VibeCommerceCard';
-import { feelings } from '../data/site';
+import { getFeelings } from '../data/site';
 
 /**
  * Homepage-only: five commerce cards → /feelings/:slug (no editorial stack, no scroll-spy).
@@ -13,7 +13,7 @@ export function HomeVibeGrid() {
         </h2>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3 2xl:grid-cols-5">
-          {feelings.map((f, i) => {
+          {getFeelings().map((f, i) => {
             const stagger = (['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5'] as const)[i] ?? 'stagger-5';
             return (
               <VibeCommerceCard

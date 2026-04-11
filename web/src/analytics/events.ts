@@ -27,7 +27,7 @@ export function shouldSuppressDuplicateEvent(name: string, key: string, now = Da
 }
 
 export function buildAnalyticsItem(product: Product, quantity: number, context: AnalyticsItemContext = {}) {
-  const feeling = getFeeling(product.feelingSlug);
+  const feeling = getFeeling(product.primaryFeelingSlug ?? product.feelingSlug);
   const occasion = getOccasion(context.occasionSlug ?? product.occasionSlugs[0] ?? '');
   return {
     item_id: product.slug,

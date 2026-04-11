@@ -5,9 +5,14 @@ import { TeeImageFrame } from '../components/TeeImage';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
-import { occasions } from '../data/site';
+import { getOccasions, type Occasion } from '../data/site';
 
-function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }: (typeof occasions)[number]) {
+type ShopByOccasionProps = {
+  /** When set (e.g. from Next RSC), replaces runtime/static getOccasions() for first paint. */
+  initialOccasions?: Occasion[];
+};
+
+function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }: Occasion) {
   return (
     <Link
       to={`/occasions/${slug}`}
@@ -29,8 +34,9 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
   );
 }
 
-export function ShopByOccasion() {
+export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
   const { copy } = useUiLocale();
+  const occasions = initialOccasions && initialOccasions.length > 0 ? initialOccasions : getOccasions();
   const featured = occasions[0];
   const featuredVisual = getOccasionCollectionVisual(featured.slug).hero;
   const secondaryOccasions = occasions.filter((occasion) => occasion.slug !== featured.slug);
@@ -122,25 +128,27 @@ export function ShopByOccasion() {
             Gift-ready graphic tees for real occasions
           </h2>
           <div className="mt-4 space-y-4 font-body text-sm leading-relaxed text-warm-charcoal md:text-[0.98rem]">
-            <p>
-              Browse{' '}
-              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[0].slug}`}>
-                {editorialOccasions[0].name}
-              </Link>
-              ,{' '}
-              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[1].slug}`}>
-                {editorialOccasions[1].name}
-              </Link>
-              ,{' '}
-              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[2].slug}`}>
-                {editorialOccasions[2].name}
-              </Link>
-              , or{' '}
-              <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[3].slug}`}>
-                {editorialOccasions[3].name}
-              </Link>
-              {' '}when you need a gift, milestone pick, or just-because streetwear edit.
-            </p>
+            {editorialOccasions.length >= 4 ? (
+              <p>
+                Browse{' '}
+                <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[0].slug}`}>
+                  {editorialOccasions[0].name}
+                </Link>
+                ,{' '}
+                <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[1].slug}`}>
+                  {editorialOccasions[1].name}
+                </Link>
+                ,{' '}
+                <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[2].slug}`}>
+                  {editorialOccasions[2].name}
+                </Link>
+                , or{' '}
+                <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[3].slug}`}>
+                  {editorialOccasions[3].name}
+                </Link>
+                {' '}when you need a gift, milestone pick, or just-because streetwear edit.
+              </p>
+            ) : null}
             <p>
               These landing pages turn gifting intent into browseable collections so shoppers can compare feeling, price, and story without dropping into generic search too early.
             </p>

@@ -3,10 +3,12 @@ import { BRAND_COPY } from '../data/brand';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
 import { NAV_ROUTE } from '../lib/navLinks';
+import { useRenderTime } from '../runtime/render-time';
 import { BrandLogo } from './BrandLogo';
 
 export function Footer() {
-  const year = new Date().getFullYear();
+  const renderTime = useRenderTime();
+  const year = renderTime.getFullYear();
   const { copy } = useUiLocale();
   const instagramUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.instagramUrl)
     ? HORO_SUPPORT_CHANNELS.instagramUrl

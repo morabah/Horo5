@@ -9,6 +9,7 @@ import type { CartLine } from '../cart/types';
 import { CART_SCHEMA } from '../data/domain-config';
 import { giftWrapPreview, heroStreet } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
+import { useStableNow } from '../runtime/render-time';
 import { getProduct, type ProductSizeKey } from '../data/site';
 import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
@@ -99,11 +100,13 @@ function CartSummary({
   subtotalEgp,
   giftWrapEgp,
   estimatedOrderTotal,
+  now,
 }: {
   itemCount: number;
   subtotalEgp: number;
   giftWrapEgp: number;
   estimatedOrderTotal: number;
+  now: Date;
 }) {
   const copy = CART_SCHEMA.copy;
 
@@ -133,7 +136,7 @@ function CartSummary({
         </p>
         <p className="cart-summary-row cart-summary-row--meta">
           <span>{copy.estimatedDeliveryLabel}</span>
-          <span className="text-right font-body text-sm">{formatDeliveryWindow(3, 5)}</span>
+          <span className="text-right font-body text-sm">{formatDeliveryWindow(3, 5, now)}</span>
         </p>
         <p className="-mt-1 mb-2 font-body text-xs text-warm-charcoal">{copy.estimatedDeliveryCheckoutNote}</p>
         <p className="cart-summary-total">
@@ -240,6 +243,7 @@ function CartLineItem({
 export function Cart() {
   const { items, removeItem, setLineQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp, addItem } = useCart();
   const { copy: shellCopy } = useUiLocale();
+  const now = useStableNow();
   const copy = CART_SCHEMA.copy;
   const [statusMessage, setStatusMessage] = useState('');
   const [giftUpsellDismissed, setGiftUpsellDismissed] = useState(false);
@@ -461,6 +465,7 @@ export function Cart() {
             subtotalEgp={subtotalEgp}
             giftWrapEgp={giftWrapEgp}
             estimatedOrderTotal={estimatedOrderTotal}
+            now={now}
           />
         </div>
       </div>

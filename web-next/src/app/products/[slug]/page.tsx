@@ -1,14 +1,71 @@
-"use client";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
-import { ProductDetail } from "../../../../../web/src/pages/ProductDetail";
-import { RouterContextProvider } from "@/lib/router-context";
-import { useParams } from "next/navigation";
+import { ProductDetailPage } from "@/components/product-detail-page";
+import {
+  buildProductJsonLd,
+  buildProductMetadata,
+  fetchStorefrontCatalogServer,
+  fetchStorefrontProductServer,
+} from "@/lib/storefront-server";
 
-export default function Page() {
-  const params = useParams();
+type ProductPageProps = {
+  params: Promise<{
+    slug: string;
+  }>;
+};
+
+function jsonLdString(data: unknown) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
+export async function generateMetadata({
+  params,
+}: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const [product, catalog] = await Promise.all([
+    fetchStorefrontProductServer(slug),
+    fetchStorefrontCatalogServer().catch(() => null),
+  ]);
+
+  if (!product) {
+    return {
+      title: "Page not found | HORO Egypt",
+      robots: {
+        index: false,
+        follow: true,
+      },
+    };
+  }
+
+  return buildProductMetadata(product, catalog ?? undefined);
+}
+
+export default async function Page({ params }: ProductPageProps) {
+  const { slug } = await params;
+  const [product, catalog] = await Promise.all([
+    fetchStorefrontProductServer(slug),
+    fetchStorefrontCatalogServer().catch(() => null),
+  ]);
+
+  if (!product) {
+    notFound();
+  }
+
+  const jsonLd = buildProductJsonLd(product, catalog ?? undefined);
+
   return (
-    <RouterContextProvider params={params}>
-      <ProductDetail />
-    </RouterContextProvider>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
+      />
+      <ProductDetailPage
+        slug={slug}
+        product={product}
+        catalog={catalog}
+        catalogProducts={catalog?.products}
+      />
+    </>
   );
 }

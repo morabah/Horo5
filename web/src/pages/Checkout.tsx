@@ -14,6 +14,7 @@ import { MEDUSA_CART_ID_STORAGE_KEY } from '../cart/types';
 import { CART_SCHEMA, CHECKOUT_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
 import { completeCart, createPaymentSessions, updateCart } from '../lib/medusa/client';
+import { useStableNow } from '../runtime/render-time';
 
 const STEP0_FIELD_ORDER = ['email', 'phone', 'name', 'line1', 'city'] as const;
 
@@ -52,6 +53,7 @@ export function Checkout() {
   const navigate = useNavigate();
   const { items, subtotalEgp, giftWrapEgp, clearCart } = useCart();
   const { locale, copy } = useUiLocale();
+  const now = useStableNow();
   const isArabic = locale === 'ar';
   const steps = [copy.checkout.stepInformation, copy.checkout.stepShipping, copy.checkout.stepPayment] as const;
   const stepsShort = steps;
@@ -81,9 +83,9 @@ export function Checkout() {
   const estimatedDeliveryRange = useMemo(
     () =>
       shippingMethod === 'express'
-        ? formatDeliveryWindow(1, 2)
-        : formatDeliveryWindow(3, 5),
-    [shippingMethod],
+        ? formatDeliveryWindow(1, 2, now)
+        : formatDeliveryWindow(3, 5, now),
+    [now, shippingMethod],
   );
   const paymentLabel =
     paymentMethod === 'card'

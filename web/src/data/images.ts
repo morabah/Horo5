@@ -3,7 +3,8 @@
  * so page sections stop pulling from an ad hoc shared pool.
  */
 
-import { LEGACY_VIBE_SLUG_TO_FEELING_SLUG } from './site';
+import { mapLegacyFeelingSlug } from './legacy-slugs';
+import { getFeeling, getFeelings, getOccasion, getProduct } from './site.ts';
 
 /** Hero: urban, warm, model in tee */
 export const heroStreet = '/images/tees/tee_walking_street.png';
@@ -128,88 +129,88 @@ export const STOREFRONT_IMAGE_SLOTS: {
     },
   },
   feelings: {
-    'soft-quiet': {
+    mood: {
       cover: {
         src: '/images/tees/bg_vibe_emotions.png',
-        alt: 'Soft / Quiet — calm editorial styling in a HORO tee.',
+        alt: 'Mood — calm editorial styling in a HORO tee.',
         objectPosition: 'center 24%',
       },
       hero: {
         src: '/images/tees/bg_vibe_emotions.png',
-        alt: 'Soft / Quiet collection — reflective mood, HORO tee.',
+        alt: 'Mood collection — reflective emotional energy, HORO tee.',
         objectPosition: 'center 24%',
       },
       proof: {
         src: tee.whiteFront,
-        alt: 'Soft / Quiet proof — HORO tee with quiet studio focus.',
+        alt: 'Mood proof — HORO tee with quiet studio focus.',
         objectPosition: 'center 20%',
       },
     },
-    'warm-romantic': {
+    zodiac: {
       cover: {
         src: '/images/tees/bg_vibe_zodiac.png',
-        alt: 'Warm / Romantic — gift-ready editorial styling in a HORO tee.',
+        alt: 'Zodiac — gift-ready editorial styling in a HORO tee.',
         objectPosition: 'center 18%',
       },
       hero: {
         src: '/images/tees/bg_vibe_zodiac.png',
-        alt: 'Warm / Romantic collection hero — thoughtful gifting mood.',
+        alt: 'Zodiac collection hero — thoughtful gifting mood.',
         objectPosition: 'center 18%',
       },
       proof: {
         src: tee.relaxedFit,
-        alt: 'Warm / Romantic proof — relaxed-fit HORO tee.',
+        alt: 'Zodiac proof — relaxed-fit HORO tee.',
         objectPosition: 'center 18%',
       },
     },
-    'playful-offbeat': {
+    fiction: {
       cover: {
         src: '/images/tees/bg_vibe_fictious.png',
-        alt: 'Playful / Offbeat — expressive editorial styling in a HORO tee.',
+        alt: 'Fiction — expressive editorial styling in a HORO tee.',
         objectPosition: 'center 26%',
       },
       hero: {
         src: '/images/tees/bg_vibe_fictious.png',
-        alt: 'Playful / Offbeat collection hero — character-led HORO tee.',
+        alt: 'Fiction collection hero — character-led HORO tee.',
         objectPosition: 'center 26%',
       },
       proof: {
         src: tee.studioTee,
-        alt: 'Playful / Offbeat proof — studio-lit HORO tee.',
+        alt: 'Fiction proof — studio-lit HORO tee.',
         objectPosition: 'center 18%',
       },
     },
-    'grounded-everyday': {
+    career: {
       cover: {
         src: '/images/tees/bg_vibe_career.png',
-        alt: 'Grounded / Everyday — repeat-wear editorial styling in a HORO tee.',
+        alt: 'Career — repeat-wear editorial styling in a HORO tee.',
         objectPosition: 'center 20%',
       },
       hero: {
         src: '/images/tees/bg_vibe_career.png',
-        alt: 'Grounded / Everyday collection hero — daily confidence.',
+        alt: 'Career collection hero — daily confidence.',
         objectPosition: 'center 20%',
       },
       proof: {
         src: tee.walkingStreet,
-        alt: 'Grounded / Everyday proof — city-led HORO styling.',
+        alt: 'Career proof — city-led HORO styling.',
         objectPosition: 'center 24%',
       },
     },
-    'bold-electric': {
+    trends: {
       cover: {
         src: '/images/tees/bg_vibe_trends.png',
-        alt: 'Bold / Electric — going-out editorial styling in a HORO tee.',
+        alt: 'Trends — going-out editorial styling in a HORO tee.',
         objectPosition: 'center 18%',
       },
       hero: {
         src: '/images/tees/bg_vibe_trends.png',
-        alt: 'Bold / Electric collection hero — visible statement.',
+        alt: 'Trends collection hero — visible statement.',
         objectPosition: 'center 18%',
       },
       proof: {
         src: tee.outdoorTee,
-        alt: 'Bold / Electric proof — outdoor HORO styling.',
+        alt: 'Trends proof — outdoor HORO styling.',
         objectPosition: 'center 22%',
       },
     },
@@ -332,99 +333,82 @@ export const homeProofGallery = [
   },
 ] as const;
 
-/**
- * Editorial wide + detail per feeling — model-led shots matched to §6.1 pillars.
- */
-export const feelingEditorialImagery: Record<string, { wide: string; detail: string }> = {
-  'soft-quiet': {
-    wide: STOREFRONT_IMAGE_SLOTS.feelings['soft-quiet'].hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.feelings['soft-quiet'].proof.src,
-  },
-  'warm-romantic': {
-    wide: STOREFRONT_IMAGE_SLOTS.feelings['warm-romantic'].hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.feelings['warm-romantic'].proof.src,
-  },
-  'playful-offbeat': {
-    wide: STOREFRONT_IMAGE_SLOTS.feelings['playful-offbeat'].hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.feelings['playful-offbeat'].proof.src,
-  },
-  'grounded-everyday': {
-    wide: STOREFRONT_IMAGE_SLOTS.feelings['grounded-everyday'].hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.feelings['grounded-everyday'].proof.src,
-  },
-  'bold-electric': {
-    wide: STOREFRONT_IMAGE_SLOTS.feelings['bold-electric'].hero.src,
-    detail: STOREFRONT_IMAGE_SLOTS.feelings['bold-electric'].proof.src,
-  },
-};
-
-/** @deprecated Use feelingEditorialImagery */
-export const vibeEditorialImagery = feelingEditorialImagery;
-
-/** Listing card covers per feeling */
-export const feelingCovers: Record<string, string> = {
-  'soft-quiet': STOREFRONT_IMAGE_SLOTS.feelings['soft-quiet'].cover.src,
-  'warm-romantic': STOREFRONT_IMAGE_SLOTS.feelings['warm-romantic'].cover.src,
-  'playful-offbeat': STOREFRONT_IMAGE_SLOTS.feelings['playful-offbeat'].cover.src,
-  'grounded-everyday': STOREFRONT_IMAGE_SLOTS.feelings['grounded-everyday'].cover.src,
-  'bold-electric': STOREFRONT_IMAGE_SLOTS.feelings['bold-electric'].cover.src,
-};
-
-/** @deprecated Use feelingCovers */
-export const vibeCovers = feelingCovers;
-
-export const feelingsHubHeroTiles = [
-  {
-    slug: 'soft-quiet',
-    ...STOREFRONT_IMAGE_SLOTS.feelings['soft-quiet'].cover,
-  },
-  {
-    slug: 'warm-romantic',
-    ...STOREFRONT_IMAGE_SLOTS.feelings['warm-romantic'].cover,
-  },
-  {
-    slug: 'playful-offbeat',
-    ...STOREFRONT_IMAGE_SLOTS.feelings['playful-offbeat'].cover,
-  },
-  {
-    slug: 'grounded-everyday',
-    ...STOREFRONT_IMAGE_SLOTS.feelings['grounded-everyday'].cover,
-  },
-  {
-    slug: 'bold-electric',
-    ...STOREFRONT_IMAGE_SLOTS.feelings['bold-electric'].cover,
-  },
-] as const;
-
-/** @deprecated Use feelingsHubHeroTiles */
-export const vibesHubHeroTiles = feelingsHubHeroTiles;
+function resolveFeelingVisualKey(slug: string): string {
+  return mapLegacyFeelingSlug(slug);
+}
 
 export function getFeelingCollectionVisual(slug: string): FeelingStorefrontImages {
-  const resolved = LEGACY_VIBE_SLUG_TO_FEELING_SLUG[slug] ?? slug;
-  return STOREFRONT_IMAGE_SLOTS.feelings[resolved] ?? FALLBACK_FEELING_VISUALS;
+  const feeling = getFeeling(slug);
+  const runtimeCover =
+    feeling?.cardImageSrc || feeling?.heroImageSrc
+      ? {
+          cover: {
+            src: feeling.cardImageSrc ?? feeling.heroImageSrc ?? heroStreet,
+            alt: feeling.cardImageAlt ?? `${feeling.name} cover`,
+          },
+          hero: {
+            src: feeling.heroImageSrc ?? feeling.cardImageSrc ?? heroStreet,
+            alt: feeling.heroImageAlt ?? `${feeling.name} hero`,
+          },
+          proof: {
+            src: feeling.heroImageSrc ?? feeling.cardImageSrc ?? heroStreet,
+            alt: feeling.heroImageAlt ?? `${feeling.name} proof`,
+          },
+        }
+      : null;
+
+  return runtimeCover ?? STOREFRONT_IMAGE_SLOTS.feelings[resolveFeelingVisualKey(slug)] ?? FALLBACK_FEELING_VISUALS;
 }
 
 /** @deprecated Use getFeelingCollectionVisual */
 export const getVibeCollectionVisual = getFeelingCollectionVisual;
 
 export function getOccasionCollectionVisual(slug: string): OccasionStorefrontImages {
-  return STOREFRONT_IMAGE_SLOTS.occasions[slug] ?? FALLBACK_OCCASION_VISUALS;
+  const occasion = getOccasion(slug);
+  const runtimeVisuals =
+    occasion?.cardImageSrc || occasion?.heroImageSrc
+      ? {
+          hero: {
+            src: occasion.heroImageSrc ?? occasion.cardImageSrc,
+            alt: occasion.heroImageAlt,
+          },
+          proof: {
+            src: occasion.cardImageSrc ?? occasion.heroImageSrc,
+            alt: occasion.cardImageAlt,
+          },
+        }
+      : null;
+
+  return runtimeVisuals ?? STOREFRONT_IMAGE_SLOTS.occasions[slug] ?? FALLBACK_OCCASION_VISUALS;
+}
+
+export function getFeelingsHubHeroTiles() {
+  return getFeelings().map((feeling) => ({
+    slug: feeling.slug,
+    ...getFeelingCollectionVisual(feeling.slug).cover,
+  }));
+}
+
+export function getFeelingEditorialImagery(slug: string) {
+  const visuals = getFeelingCollectionVisual(slug);
+  return {
+    wide: visuals.hero.src,
+    detail: visuals.proof.src,
+  };
 }
 
 export const PDP_VIEW_ORDER = [
-  'frontOnBody',
-  'backOnBody',
-  'macroDetail',
-  'fabricTag',
-  'flatLay',
-  'lifestyle',
-  'weightScale',
-  'washTest',
+  'hero',
+  'gallery-1',
+  'gallery-2',
+  'gallery-3',
+  'gallery-4',
+  'gallery-5',
+  'gallery-6',
+  'gallery-7',
 ] as const;
 
 export type ProductPdpViewKey = (typeof PDP_VIEW_ORDER)[number];
-
-export type ProductPdpViewMap = Partial<Record<ProductPdpViewKey, string>>;
 
 export type ProductPdpGalleryView = {
   key: ProductPdpViewKey;
@@ -434,191 +418,16 @@ export type ProductPdpGalleryView = {
 };
 
 export type ProductMedia = {
+  gallery?: string[];
   main: string;
-  pdp: ProductPdpViewMap;
 };
 
-const PDP_VIEW_LABELS: Record<ProductPdpViewKey, string> = {
-  frontOnBody: 'front on-body',
-  backOnBody: 'back fit card',
-  macroDetail: 'print proof',
-  fabricTag: 'fabric and tag',
-  flatLay: 'flat lay',
-  lifestyle: 'lifestyle',
-  weightScale: 'weight proof',
-  washTest: 'wash check',
-};
-
-const PDP_VIEW_ALTS: Record<ProductPdpViewKey, string> = {
-  frontOnBody: 'front on-body view of the full tee',
-  backOnBody: 'back fit verification card used until the real back view is photographed',
-  macroDetail: 'print texture proof card used until the macro shot is photographed',
-  fabricTag: 'fabric and tag proof card used until the inside-label shot is photographed',
-  flatLay: 'flat lay on a warm studio surface',
-  lifestyle: 'styled in an everyday street setting',
-  weightScale: '220 GSM verification proof card',
-  washTest: 'launch wash-check proof card',
-};
-
-function product(main: string, pdp: ProductPdpViewMap): ProductMedia {
-  return { main, pdp };
-}
-
-function launchProofMedia(
-  frontOnBody: string,
-  options?: {
-    main?: string;
-    backOnBody?: string;
-    macroDetail?: string;
-    fabricTag?: string;
-    flatLay?: string;
-    lifestyle?: string;
-    weightScale?: string;
-    washTest?: string;
-  },
-): ProductMedia {
-  return product(options?.main ?? frontOnBody, {
-    frontOnBody,
-    backOnBody: options?.backOnBody ?? proofCards.backFit,
-    macroDetail: options?.macroDetail ?? proofCards.macroDetail,
-    fabricTag: options?.fabricTag ?? proofCards.fabricTag,
-    flatLay: options?.flatLay ?? tee.flatLayStyle,
-    lifestyle: options?.lifestyle ?? tee.walkingStreet,
-    weightScale: options?.weightScale ?? proofCards.weightScale,
-    washTest: options?.washTest ?? proofCards.washTest,
-  });
-}
-
-/** Product slug → main card image + structured PDP image views */
-export const productMedia: Record<string, ProductMedia> = {
-  'the-weight-of-light': launchProofMedia(tee.studioTee, {
-    main: tee.whiteFront,
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
-  }),
-  'midnight-compass': launchProofMedia(tee.yellowTee, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.streetPose,
-  }),
-  'quiet-revolt': launchProofMedia(tee.womanUrban, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanStreet,
-  }),
-  'cairo-thread': launchProofMedia(tee.walkingStreet, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.relaxedFit,
-  }),
-  'signal-line': launchProofMedia(tee.streetPose, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
-  }),
-  // --- New Emotions ---
-  'emotions-silent-scream': launchProofMedia(newTees.emotions1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanSmile,
-  }),
-  'emotions-deep-waters': launchProofMedia(newTees.emotions2, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanStreet,
-  }),
-  'emotions-shattered-peace': launchProofMedia(newTees.emotions3, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanUrban,
-  }),
-  'emotions-raw-nerve': launchProofMedia(newTees.emotions4, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
-  }),
-  'emotions-unspoken': launchProofMedia(newTees.emotions5, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  }),
-  // --- New Zodiac ---
-  'zodiac-astral-body': launchProofMedia(newTees.zodiac1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.streetPose,
-  }),
-  'zodiac-star-alignment': launchProofMedia(newTees.zodiac2, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.yellowTee,
-  }),
-  'zodiac-lunar-pull': launchProofMedia(newTees.zodiac3, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  }),
-  'zodiac-solar-flare': launchProofMedia(newTees.zodiac4, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
-  }),
-  'zodiac-cosmic-dust': launchProofMedia(newTees.zodiac5, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.relaxedFit,
-  }),
-  // --- New Fiction ---
-  'fiction-neon-dreams': launchProofMedia(newTees.fiction1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanUrban,
-  }),
-  'fiction-dragon-scale': launchProofMedia(newTees.fiction2, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
-  }),
-  'fiction-distant-suns': launchProofMedia(newTees.fiction3, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  }),
-  'fiction-cyber-ghost': launchProofMedia(newTees.fiction4, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.streetPose,
-  }),
-  'fiction-mythic-realm': launchProofMedia(newTees.fiction5, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.studioTee,
-  }),
-  // --- New Career ---
-  'career-hustle-hard': launchProofMedia(newTees.career1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.relaxedFit,
-  }),
-  'career-ceo-mindset': launchProofMedia(newTees.career2, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  }),
-  'career-climb-the-ladder': launchProofMedia(tee.relaxedFit, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  }),
-  'career-office-hours': launchProofMedia(tee.walkingStreet, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.manCasual,
-  }),
-  'career-boardroom-rebel': launchProofMedia(tee.manCasual, {
-    main: tee.whiteFront,
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  }),
-  // --- New Trends ---
-  'trends-viral-moment': launchProofMedia(tee.yellowTee, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
-  }),
-  'trends-street-culture': launchProofMedia(tee.womanStreet, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  }),
-  'trends-hype-check': launchProofMedia(tee.manCasual, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
-  }),
-  'trends-next-wave': launchProofMedia(tee.outdoorTee, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.yellowTee,
-  }),
-  'trends-drop-culture': launchProofMedia(tee.streetPose, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  }),
-};
+const FALLBACK_PRODUCT_GALLERY = [
+  tee.studioTee,
+  tee.flatLayStyle,
+  tee.walkingStreet,
+  proofCards.macroDetail,
+];
 
 export function imgUrl(src: string, w: number) {
   const sep = src.includes('?') ? '&' : '?';
@@ -626,34 +435,27 @@ export function imgUrl(src: string, w: number) {
 }
 
 export function getProductMedia(slug: string): ProductMedia {
-  return productMedia[slug] ?? launchProofMedia(tee.manCasual, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
-  });
+  const product = getProduct(slug);
+  const runtimeGallery = product?.media?.gallery?.filter(Boolean) ?? [];
+  const main = product?.media?.main ?? runtimeGallery[0] ?? product?.thumbnail ?? FALLBACK_PRODUCT_GALLERY[0];
+
+  return {
+    gallery: runtimeGallery.length > 0 ? runtimeGallery : FALLBACK_PRODUCT_GALLERY,
+    main,
+  };
+}
+
+export function buildProductPdpGallery(productName: string, media: ProductMedia): ProductPdpGalleryView[] {
+  const ordered = Array.from(new Set([media.main, ...(media.gallery ?? [])].filter(Boolean)));
+
+  return ordered.map((src, index) => ({
+    alt: `HORO “${productName}” t-shirt gallery image ${index + 1}.`,
+    key: (PDP_VIEW_ORDER[index] ?? `gallery-${index}`) as ProductPdpViewKey,
+    label: index === 0 ? 'hero image' : `gallery image ${index + 1}`,
+    src,
+  }));
 }
 
 export function getProductPdpGallery(productName: string, slug: string): ProductPdpGalleryView[] {
-  const media = getProductMedia(slug);
-  const seen = new Set<string>();
-
-  return PDP_VIEW_ORDER.flatMap((key) => {
-    const src = media.pdp[key];
-    if (!src || seen.has(src)) return [];
-    seen.add(src);
-    return [
-      {
-        key,
-        src,
-        label: PDP_VIEW_LABELS[key],
-        alt: `HORO “${productName}” t-shirt, ${PDP_VIEW_ALTS[key]}.`,
-      },
-    ];
-  });
+  return buildProductPdpGallery(productName, getProductMedia(slug));
 }
-
-/** Artist listing avatars — people in casual / graphic tees */
-export const artistAvatars: Record<string, string> = {
-  'nada-ibrahim': tee.womanSmile,
-  'omar-hassan': tee.manCasual,
-  'layla-farid': tee.womanUrban,
-};

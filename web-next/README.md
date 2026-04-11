@@ -11,7 +11,7 @@ This is the **HORO storefront on Next.js** (`web-next`). Page UI is imported fro
 | `/cart`, `/checkout`, `/checkout/success` | Same |
 | `/search` | Same |
 | `/vibes` → feelings | `redirect("/feelings")` |
-| `/vibes/:slug` | `redirect` using `LEGACY_VIBE_SLUG_TO_FEELING_SLUG` from [`site.ts`](../web/src/data/site.ts) |
+| `/vibes/:slug` | `redirect` using `LEGACY_VIBE_SLUG_TO_FEELING_SLUG` from [`legacy-slugs.ts`](../web/src/data/legacy-slugs.ts) |
 | `/artists` / `/artists/:slug` → feelings | `redirect("/feelings")` |
 | `/products` (list) → search | `redirect("/search")` |
 | `*` | [`not-found.tsx`](./src/app/not-found.tsx) |

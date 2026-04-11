@@ -3,13 +3,15 @@ import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
 import { VIBES_SCHEMA } from '../data/domain-config';
-import { feelingEditorialBlocks } from '../data/homeEditorial';
-import { feelingsHubHeroTiles, imgUrl } from '../data/images';
+import { getFeelingEditorialBlocks } from '../data/homeEditorial';
+import { getFeelingCollectionVisual, getFeelingsHubHeroTiles, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
-import { feelings } from '../data/site';
+import { getFeelings, getFeelingLines } from '../data/site';
 
 export function ShopByFeeling() {
   const { copy } = useUiLocale();
+  const feelingEditorialBlocks = getFeelingEditorialBlocks();
+  const heroTiles = getFeelingsHubHeroTiles();
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -26,7 +28,7 @@ export function ShopByFeeling() {
           aria-label={VIBES_SCHEMA.copy.hubHeroAlt}
         >
           <div className="grid min-h-[28rem] grid-cols-5 gap-1 bg-obsidian sm:min-h-[32rem] sm:gap-2">
-            {feelingsHubHeroTiles.map((tile) => (
+            {heroTiles.map((tile) => (
               <img
                 key={tile.slug}
                 src={imgUrl(tile.src, 900)}
@@ -59,12 +61,55 @@ export function ShopByFeeling() {
           </div>
         </section>
 
+        <section aria-labelledby="feeling-lines-heading" className="px-1">
+          <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Browse by line</p>
+          <h2
+            id="feeling-lines-heading"
+            className="font-headline mt-2 text-[1.35rem] font-semibold tracking-tight text-obsidian md:text-[1.6rem]"
+          >
+            Mood, zodiac, career, trends, and more
+          </h2>
+          <p className="mt-2 max-w-2xl font-body text-sm text-warm-charcoal md:text-[0.98rem]">
+            Each line maps to a parent feeling. Open a line to see designs tagged in Medusa — same exchange path and proof standards.
+          </p>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-5">
+            {getFeelingLines().map((line) => (
+              <Link
+                key={line.slug}
+                to={`/feelings/${line.feelingSlug}/${line.slug}`}
+                className="group relative isolate flex min-h-[14rem] flex-col overflow-hidden rounded-2xl border border-stone/20 bg-obsidian shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:min-h-[16rem]"
+              >
+                <img
+                  src={imgUrl(line.cardImageSrc ?? getFeelingCollectionVisual(line.feelingSlug).cover.src, 720)}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                  width={720}
+                  height={960}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div
+                  className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.1)_0%,rgba(18,18,18,0.45)_40%,rgba(18,18,18,0.88)_100%)]"
+                  aria-hidden
+                />
+                <div className="relative mt-auto p-4 md:p-5">
+                  <p className="font-headline text-lg font-semibold leading-tight text-white md:text-xl">{line.name}</p>
+                  <p className="mt-2 font-body text-[13px] leading-snug text-white/92 line-clamp-3 md:text-sm">{line.blurb}</p>
+                  <span className="font-label mt-3 inline-flex items-center text-[10px] font-semibold uppercase tracking-[0.2em] text-white/95">
+                    {VIBES_SCHEMA.copy.cardExploreCta}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <section aria-labelledby="feelings-grid-title">
           <h2 id="feelings-grid-title" className="sr-only">
             {VIBES_SCHEMA.copy.hubEyebrow}
           </h2>
           <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-6 lg:gap-7">
-            {feelings.map((feeling, index) => {
+            {getFeelings().map((feeling, index) => {
               const desktopPosition =
                 index === 3 ? 'lg:col-start-2 lg:col-span-2' : index === 4 ? 'lg:col-start-4 lg:col-span-2' : 'lg:col-span-2';
 

@@ -9,6 +9,19 @@ export function defaultCatalogSizeKeys(): ProductSizeKey[] {
 
 export function productAvailableSizes(product: Product): ProductSizeKey[] {
   const base = defaultCatalogSizeKeys();
+  const variantEntries = Object.entries(product.variantsBySize || {}) as Array<
+    [ProductSizeKey, NonNullable<Product['variantsBySize']>[ProductSizeKey]]
+  >;
+
+  if (variantEntries.length > 0) {
+    const available = new Set(
+      variantEntries
+        .filter(([, variant]) => Boolean(variant?.available))
+        .map(([size]) => size),
+    );
+    return base.filter((key) => available.has(key));
+  }
+
   if (!product.availableSizes?.length) return base;
   const allow = new Set(product.availableSizes);
   return base.filter((k) => allow.has(k));

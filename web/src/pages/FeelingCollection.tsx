@@ -1,10 +1,10 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { AppIcon } from '../components/AppIcon';
 import { getEditorialBlockByFeelingSlug } from '../data/homeEditorial';
-import { getFeeling, productsByFeeling, feelings } from '../data/site';
+import { getFeeling, getFeelings, getSubfeelingsByFeeling, productsByFeeling } from '../data/site';
 import { getFeelingCollectionVisual, getProductMedia, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
@@ -66,10 +66,23 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 }
 
 export function FeelingCollection() {
-  const { slug = '' } = useParams();
+  const { slug = '', subfeelingSlug = '' } = useParams<{ slug?: string; subfeelingSlug?: string }>();
+  const [searchParams] = useSearchParams();
+  const lineFromQuery = searchParams.get('line')?.trim() || '';
+  const lineParam = subfeelingSlug || lineFromQuery;
   const { copy } = useUiLocale();
   const feeling = getFeeling(slug);
-  const baseList = productsByFeeling(slug);
+  const activeLine = lineParam ? getSubfeelingsByFeeling(slug).find((line) => line.slug === lineParam) : undefined;
+
+  const baseList = useMemo(() => {
+    let list = productsByFeeling(slug);
+    if (lineParam) {
+      list = list.filter(
+        (product) => (product.primarySubfeelingSlug ?? product.lineSlug) === lineParam
+      );
+    }
+    return list;
+  }, [slug, lineParam]);
   const [sortKey, setSortKey] = useState<ProductSortKey>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
@@ -85,7 +98,7 @@ export function FeelingCollection() {
     setSortKey('featured');
     setPriceFilter('all');
     setMobileFiltersOpen(false);
-  }, [slug]);
+  }, [slug, lineParam]);
 
   useEffect(() => {
     if (!isMobile) {
@@ -96,7 +109,7 @@ export function FeelingCollection() {
   const sorted = useMemo(() => sortProductList(baseList, sortKey), [baseList, sortKey]);
   const list = useMemo(() => filterByPrice(sorted, priceFilter), [sorted, priceFilter]);
 
-  const others = feelings.filter((f) => f.slug !== slug).slice(0, 4);
+  const others = getFeelings().filter((f) => f.slug !== slug).slice(0, 4);
 
   if (!feeling) {
     return (
@@ -113,7 +126,7 @@ export function FeelingCollection() {
   const storyLead = editorialBlock?.body ?? feeling.tagline;
   const manifestoLine = editorialBlock?.manifesto ?? feeling.manifesto;
   const designCountLabel = baseList.length >= DESIGN_COUNT_MIN ? `${baseList.length} designs` : 'Curated selection';
-  const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all';
+  const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || Boolean(lineParam);
 
   const closeMobileFilters = useCallback(() => {
     setMobileFiltersOpen(false);
@@ -259,6 +272,21 @@ export function FeelingCollection() {
           </div>
         </div>
       </section>
+
+      {activeLine ? (
+        <div className="border-b border-stone/25 bg-linen/90 px-6 py-4 md:px-10">
+          <p className="font-body text-sm text-obsidian md:text-[0.98rem]">
+            <span className="font-semibold">{activeLine.name}</span>
+            <span className="text-warm-charcoal"> — {activeLine.blurb} </span>
+            <Link
+              to={`/feelings/${slug}`}
+              className="font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
+            >
+              Show all in {feeling.name}
+            </Link>
+          </p>
+        </div>
+      ) : null}
 
       <div className="mx-auto max-w-7xl space-y-14 px-6 pt-8 pb-12 md:space-y-16 md:px-10 md:pt-10 md:pb-16">
         <section

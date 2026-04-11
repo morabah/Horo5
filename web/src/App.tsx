@@ -44,6 +44,7 @@ export default function App() {
           <Route path="/privacy" element={<RoutePage><Privacy /></RoutePage>} />
           <Route path="/terms" element={<RoutePage><Terms /></RoutePage>} />
           <Route path="/feelings" element={<RoutePage><ShopByFeeling /></RoutePage>} />
+          <Route path="/feelings/:slug/:subfeelingSlug" element={<RoutePage><FeelingCollection /></RoutePage>} />
           <Route path="/feelings/:slug" element={<RoutePage><FeelingCollection /></RoutePage>} />
           <Route path="/vibes" element={<Navigate to="/feelings" replace />} />
           <Route path="/vibes/:slug" element={<LegacyVibeCollectionRedirect />} />

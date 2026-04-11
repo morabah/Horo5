@@ -4,15 +4,15 @@ import {
   ADDITIONAL_FEELING_ALIASES,
   ADDITIONAL_OCCASION_ALIASES,
 } from '../data/searchSynonyms';
-import { feelingCovers, getOccasionCollectionVisual, getProductMedia, heroStreet } from '../data/images';
+import { getFeelingCollectionVisual, getOccasionCollectionVisual, getProductMedia, heroStreet } from '../data/images';
+import { LEGACY_VIBE_SLUG_TO_FEELING_SLUG } from '../data/legacy-slugs';
 import {
   getArtist,
   getFeeling,
+  getFeelings,
   getOccasion,
-  LEGACY_VIBE_SLUG_TO_FEELING_SLUG,
-  occasions,
-  products,
-  feelings,
+  getOccasions,
+  getProducts,
   type OccasionSlug,
   type Product,
   type ProductSizeKey,
@@ -121,7 +121,7 @@ type ScoredProduct = {
 };
 
 const FEELING_ALIAS_MAP: Record<string, string[]> = {
-  'soft-quiet': [
+  mood: [
     'emotion',
     'emotional',
     'feelings',
@@ -138,7 +138,7 @@ const FEELING_ALIAS_MAP: Record<string, string[]> = {
     'أحاسيسي',
     'مزاج',
   ],
-  'warm-romantic': [
+  zodiac: [
     'astro',
     'astrology',
     'sign',
@@ -151,7 +151,7 @@ const FEELING_ALIAS_MAP: Record<string, string[]> = {
     'برج',
     'فلك',
   ],
-  'playful-offbeat': [
+  fiction: [
     'story',
     'stories',
     'fantasy',
@@ -167,7 +167,7 @@ const FEELING_ALIAS_MAP: Record<string, string[]> = {
     'قصة',
     'قصص',
   ],
-  'grounded-everyday': [
+  career: [
     'work',
     'office',
     'ambition',
@@ -183,7 +183,7 @@ const FEELING_ALIAS_MAP: Record<string, string[]> = {
     'تخرج',
     'نجاح',
   ],
-  'bold-electric': [
+  trends: [
     'trend',
     'trending',
     'streetwear',
@@ -237,8 +237,12 @@ const COMMON_QUERY_EXPANSIONS: Record<string, string[]> = {
   هديه: ['gift something real', 'birthday pick'],
 };
 
+function productFeelingSlug(product: Product): string {
+  return product.primaryFeelingSlug ?? product.feelingSlug;
+}
+
 function catalogIndex(product: Product): number {
-  const index = products.findIndex((entry) => entry.slug === product.slug);
+  const index = getProducts().findIndex((entry) => entry.slug === product.slug);
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
@@ -426,14 +430,15 @@ function productOccasionNames(product: Product) {
 }
 
 function productSearchTerms(product: Product) {
-  const feeling = getFeeling(product.feelingSlug);
+  const feelingSlug = productFeelingSlug(product);
+  const feeling = getFeeling(feelingSlug);
   const occasionNames = productOccasionNames(product);
   const aliases = [
-    ...(FEELING_ALIAS_MAP[product.feelingSlug] ?? []),
+    ...(FEELING_ALIAS_MAP[feelingSlug] ?? []),
     ...product.occasionSlugs.flatMap((occasionSlug) => OCCASION_ALIAS_MAP[occasionSlug] ?? []),
   ];
 
-  return [product.name, feeling?.name ?? product.feelingSlug, feeling?.tagline ?? '', occasionNames, product.story, '220 GSM cotton graphic tee', ...aliases]
+  return [product.name, feeling?.name ?? feelingSlug, feeling?.tagline ?? '', occasionNames, product.story, '220 GSM cotton graphic tee', ...aliases]
     .filter(Boolean)
     .join(' ');
 }
@@ -441,7 +446,8 @@ function productSearchTerms(product: Product) {
 function productScore(product: Product, queryVariants: string[]): number {
   if (queryVariants.length === 0) return 0;
   const artist = getArtist(product.artistSlug);
-  const feeling = getFeeling(product.feelingSlug);
+  const feelingSlug = productFeelingSlug(product);
+  const feeling = getFeeling(feelingSlug);
 
   return (
     fieldScore(product.name, queryVariants, { exact: 180, includes: 132, token: 24, allTokens: 28, fuzzy: 14 }) +
@@ -453,7 +459,7 @@ function productScore(product: Product, queryVariants: string[]): number {
       allTokens: 16,
       fuzzy: 10,
     }) +
-    fieldScore(feeling?.name ?? product.feelingSlug.replace(/-/g, ' '), queryVariants, {
+    fieldScore(feeling?.name ?? feelingSlug.replace(/-/g, ' '), queryVariants, {
       exact: 72,
       includes: 54,
       token: 12,
@@ -498,13 +504,14 @@ function occasionScore(occasionSlug: OccasionSlug, queryVariants: string[]): num
 }
 
 function mapDesignCard(product: Product): SearchDesignCard {
-  const feeling = getFeeling(product.feelingSlug);
+  const feelingSlug = productFeelingSlug(product);
+  const feeling = getFeeling(feelingSlug);
   const media = getProductMedia(product.slug);
 
   return {
     slug: product.slug,
     name: product.name,
-    feelingSlug: product.feelingSlug,
+    feelingSlug,
     feelingName: feeling?.name,
     feelingAccent: feeling?.accent,
     priceEgp: product.priceEgp,
@@ -524,7 +531,7 @@ function mapVibeCard(feelingSlug: string, designCount: number): SearchVibeCard |
     tagline: feeling.tagline,
     accent: feeling.accent,
     designCount,
-    imageSrc: feelingCovers[feeling.slug] ?? heroStreet,
+    imageSrc: getFeelingCollectionVisual(feeling.slug).cover.src || heroStreet,
     imageAlt: `${feeling.name} — HORO editorial styling.`,
   };
 }
@@ -554,10 +561,10 @@ function resolveFeelingSlugParam(raw: string) {
 }
 
 function getScopedProducts(scopeFeelingSlug?: string | null, scopeOccasionSlug?: string | null) {
-  let baseProducts = products;
+  let baseProducts = getProducts();
   if (scopeFeelingSlug) {
     const resolved = resolveFeelingSlugParam(scopeFeelingSlug);
-    baseProducts = baseProducts.filter((product) => product.feelingSlug === resolved);
+    baseProducts = baseProducts.filter((product) => productFeelingSlug(product) === resolved);
   }
   if (scopeOccasionSlug) baseProducts = baseProducts.filter((product) => product.occasionSlugs.includes(scopeOccasionSlug as OccasionSlug));
   return baseProducts;
@@ -596,7 +603,8 @@ function getScopedCounts(baseProducts: Product[]) {
   const occasionCounts = new Map<OccasionSlug, number>();
 
   for (const product of baseProducts) {
-    vibeCounts.set(product.feelingSlug, (vibeCounts.get(product.feelingSlug) ?? 0) + 1);
+    const feelingSlug = productFeelingSlug(product);
+    vibeCounts.set(feelingSlug, (vibeCounts.get(feelingSlug) ?? 0) + 1);
     for (const occasionSlug of product.occasionSlugs) {
       occasionCounts.set(occasionSlug, (occasionCounts.get(occasionSlug) ?? 0) + 1);
     }
@@ -606,14 +614,15 @@ function getScopedCounts(baseProducts: Product[]) {
 }
 
 function getMatchedVibes(vibeCounts: Map<string, number>, queryVariants: string[]) {
+  const feelingList = getFeelings();
   const matchedVibeSlugs = queryVariants.length
-    ? feelings
+    ? feelingList
       .filter((feeling) => vibeCounts.has(feeling.slug))
       .map((feeling) => ({ feeling, score: feelingScore(feeling.slug, queryVariants) }))
       .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score || a.feeling.name.localeCompare(b.feeling.name))
       .map((entry) => entry.feeling.slug)
-    : feelings.filter((feeling) => vibeCounts.has(feeling.slug)).map((feeling) => feeling.slug);
+    : feelingList.filter((feeling) => vibeCounts.has(feeling.slug)).map((feeling) => feeling.slug);
 
   return matchedVibeSlugs
     .map((slug) => mapVibeCard(slug, vibeCounts.get(slug) ?? 0))
@@ -621,14 +630,15 @@ function getMatchedVibes(vibeCounts: Map<string, number>, queryVariants: string[
 }
 
 function getMatchedOccasions(occasionCounts: Map<OccasionSlug, number>, queryVariants: string[]) {
+  const occasionList = getOccasions();
   const matchedOccasionSlugs = queryVariants.length
-    ? occasions
+    ? occasionList
       .filter((occasion) => occasionCounts.has(occasion.slug))
       .map((occasion) => ({ occasion, score: occasionScore(occasion.slug, queryVariants) }))
       .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score || a.occasion.name.localeCompare(b.occasion.name))
       .map((entry) => entry.occasion.slug)
-    : occasions.filter((occasion) => occasionCounts.has(occasion.slug)).map((occasion) => occasion.slug);
+    : occasionList.filter((occasion) => occasionCounts.has(occasion.slug)).map((occasion) => occasion.slug);
 
   return matchedOccasionSlugs
     .map((slug) => mapOccasionCard(slug, occasionCounts.get(slug) ?? 0))
@@ -660,7 +670,7 @@ export function getSearchResults({
   const scoreBySlug = new Map(scoredProducts.map((entry) => [entry.product.slug, entry.score]));
 
   const vibeFiltered = queryMatchedProducts.filter((product) =>
-    feelingFilter !== 'all' ? product.feelingSlug === resolveFeelingSlugParam(feelingFilter) : true,
+    feelingFilter !== 'all' ? productFeelingSlug(product) === resolveFeelingSlugParam(feelingFilter) : true,
   );
 
   let facetFiltered = vibeFiltered;
@@ -692,7 +702,7 @@ export function getSearchResults({
       })
       : sortProductList(filteredProducts, sortKey);
 
-  const vibeOptions = [...new Set(queryMatchedProducts.map((product) => product.feelingSlug))]
+  const vibeOptions = [...new Set(queryMatchedProducts.map((product) => productFeelingSlug(product)))]
     .sort((a, b) => optionName(a).localeCompare(optionName(b)))
     .map((slug) => ({ slug, name: optionName(slug) }));
 

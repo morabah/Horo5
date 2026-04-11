@@ -74,6 +74,11 @@ export function useParams<T extends Record<string, string | undefined>>() {
   return { ...(nextParams as Record<string, string>), ...ctx.params } as T;
 }
 
+type SetSearchParamsNavigateOpts = {
+  replace?: boolean;
+  state?: unknown;
+};
+
 export function useSearchParams() {
   const nextParams = useNextSearchParams();
   const router = useRouter();
@@ -86,7 +91,7 @@ export function useSearchParams() {
         | string
         | Record<string, string>
         | ((prev: URLSearchParams) => URLSearchParams | string | Record<string, string>),
-      _options?: { replace?: boolean; state?: unknown },
+      navigateOpts?: SetSearchParamsNavigateOpts,
     ) => {
       const resolved = typeof next === "function" ? next(new URLSearchParams(nextParams.toString())) : next;
       const params =
@@ -96,9 +101,14 @@ export function useSearchParams() {
             ? new URLSearchParams(resolved)
             : new URLSearchParams(Object.entries(resolved));
       const qs = params.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname);
+      const url = qs ? `${pathname}?${qs}` : pathname;
+      if (navigateOpts?.replace === true) {
+        router.replace(url);
+      } else {
+        router.push(url);
+      }
     },
-    [pathname, router],
+    [nextParams, pathname, router],
   );
 
   return [new URLSearchParams(nextParams.toString()), setSearchParams] as const;

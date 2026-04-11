@@ -23,13 +23,13 @@ export const ADDITIONAL_COMMON_QUERY_EXPANSIONS: Record<string, string[]> = {
   street: ['bold electric', 'streetwear', 'viral'],
 };
 
-/** Merged into feeling alias map by slug (must match `feelings` in site). */
+/** Merged into feeling alias map by slug (must match canonical feeling slugs in Medusa). */
 export const ADDITIONAL_FEELING_ALIASES: Record<string, string[]> = {
-  'soft-quiet': ['heartfelt', 'sensitive', 'vulnerable', 'emotions', 'قلب', 'مشاعري'],
-  'warm-romantic': ['stars', 'moon', 'romantic', 'gift', 'حب', 'هدية'],
-  'playful-offbeat': ['sci fi', 'scifi', 'novel', 'game', 'fiction', 'ألعاب', 'رواية'],
-  'grounded-everyday': ['job', 'linkedin', 'promotion', 'career', 'ترقية', 'شغلي'],
-  'bold-electric': ['tiktok', 'instagram', 'hypebeast', 'trends', 'انستجرام'],
+  mood: ['heartfelt', 'sensitive', 'vulnerable', 'emotions', 'قلب', 'مشاعري'],
+  zodiac: ['stars', 'moon', 'romantic', 'gift', 'حب', 'هدية'],
+  fiction: ['sci fi', 'scifi', 'novel', 'game', 'fiction', 'ألعاب', 'رواية'],
+  career: ['job', 'linkedin', 'promotion', 'career', 'ترقية', 'شغلي'],
+  trends: ['tiktok', 'instagram', 'hypebeast', 'trends', 'انستجرام'],
 };
 
 /** @deprecated Use ADDITIONAL_FEELING_ALIASES */

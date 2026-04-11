@@ -285,7 +285,11 @@ function resolveInitialLocale(): UiLocale {
 }
 
 export function UiLocaleProvider({ children }: PropsWithChildren) {
-  const [locale, setLocaleState] = useState<UiLocale>(() => resolveInitialLocale());
+  const [locale, setLocaleState] = useState<UiLocale>('en');
+
+  useEffect(() => {
+    setLocaleState(resolveInitialLocale());
+  }, []);
 
   const setLocale = (nextLocale: UiLocale) => {
     setLocaleState(nextLocale);

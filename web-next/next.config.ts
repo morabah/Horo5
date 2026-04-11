@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "node:path";
+import webpack from "webpack";
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -11,7 +12,6 @@ const nextConfig: NextConfig = {
       "react-router-dom": path.resolve(__dirname, "src/lib/react-router-dom-shim.tsx"),
       "react-helmet-async": path.resolve(__dirname, "src/lib/react-helmet-async-shim.tsx"),
     };
-    const webpack = require("webpack");
     config.plugins = config.plugins || [];
     config.plugins.push(
       new webpack.DefinePlugin({

@@ -1,10 +1,10 @@
 import type { Product } from '../data/site';
-import { products } from '../data/site';
+import { getProducts } from '../data/site';
 
 export type ProductSortKey = 'featured' | 'newest' | 'price-asc' | 'price-desc';
 
 function catalogIndex(p: Product): number {
-  const i = products.findIndex((x) => x.slug === p.slug);
+  const i = getProducts().findIndex((x) => x.slug === p.slug);
   return i === -1 ? 0 : i;
 }
 

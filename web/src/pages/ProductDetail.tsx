@@ -8,6 +8,7 @@ import {
   useEffect,
   useId,
   useMemo,
+  useCallback,
   useRef,
   useState,
   type FormEvent,
@@ -22,13 +23,13 @@ import {
   productsByFeeling,
   type Product,
   type ProductSizeKey,
+  type RuntimeCatalog,
 } from '../data/site';
 import { trackViewItem } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
 import {
-  artistAvatars,
+  buildProductPdpGallery,
   getProductMedia,
-  getProductPdpGallery,
   imgUrl,
 } from '../data/images';
 import { CrossSellWidget } from '../components/CrossSellWidget';
@@ -44,6 +45,7 @@ import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
 import { HORO_SUPPORT_CHANNELS, PDP_SCHEMA, isConfiguredExternalUrl } from '../data/domain-config';
 import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+import { useStableNow } from '../runtime/render-time';
 import { defaultPdpModelParagraph, formatPdpFitModelLine, formatPdpFitModelLines } from '../utils/pdpFitModels';
 import { productAvailableSizes } from '../utils/productSizes';
 import { buildPdpDeliveryLines, formatDeliveryWindow } from '../utils/deliveryEstimate';
@@ -123,14 +125,56 @@ function AccordionSection({ title, children }: { title: string; children: ReactN
   );
 }
 
-export function ProductDetail() {
-  const { slug = '' } = useParams();
+type ProductDetailProps = {
+  catalogSnapshot?: Partial<Pick<RuntimeCatalog, 'artists' | 'feelings' | 'occasions' | 'products'>> | null;
+  catalogProducts?: Product[];
+  initialProduct?: Product | null;
+  initialSlug?: string;
+  renderJsonLd?: boolean;
+};
+
+export function ProductDetail({
+  catalogSnapshot,
+  catalogProducts,
+  initialProduct,
+  initialSlug,
+  renderJsonLd = true,
+}: ProductDetailProps = {}) {
+  const { slug: routeSlug = '' } = useParams();
+  const slug = initialSlug ?? routeSlug;
   const { copy: shellCopy } = useUiLocale();
+  const now = useStableNow();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
   const { recordView } = useRecentlyViewed();
-  const product = getProduct(slug);
+  const preferBackendCatalog = Boolean(initialProduct || catalogSnapshot);
+  const catalogProductsSnapshot = catalogProducts ?? catalogSnapshot?.products ?? [];
+  const catalogFeelings = catalogSnapshot?.feelings ?? [];
+  const catalogArtists = catalogSnapshot?.artists ?? [];
+  const catalogOccasions = catalogSnapshot?.occasions ?? [];
+
+  const productLookup = useMemo(() => {
+    return new Map(catalogProductsSnapshot.map((entry) => [entry.slug, entry]));
+  }, [catalogProductsSnapshot]);
+
+  const feelingLookup = useMemo(() => {
+    return new Map(catalogFeelings.map((entry) => [entry.slug, entry]));
+  }, [catalogFeelings]);
+
+  const artistLookup = useMemo(() => {
+    return new Map(catalogArtists.map((entry) => [entry.slug, entry]));
+  }, [catalogArtists]);
+
+  const occasionLookup = useMemo(() => {
+    return new Map(catalogOccasions.map((entry) => [entry.slug, entry]));
+  }, [catalogOccasions]);
+
+  const lookupProduct = useCallback((productSlug: string) => {
+    return productLookup.get(productSlug) ?? (!preferBackendCatalog ? getProduct(productSlug) : undefined);
+  }, [preferBackendCatalog, productLookup]);
+
+  const product = initialProduct ?? lookupProduct(slug);
 
   const [photoIndex, setPhotoIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -179,68 +223,121 @@ export function ProductDetail() {
     recordView(product.slug);
   }, [product, recordView]);
 
-  const media = product ? getProductMedia(product.slug) : getProductMedia('');
-  const gallery = product ? getProductPdpGallery(product.name, product.slug) : [];
-  const feeling = product ? getFeeling(product.feelingSlug) : undefined;
-  const artist = product ? getArtist(product.artistSlug) : undefined;
+  const media = useMemo(() => {
+    if (!product) {
+      return getProductMedia('');
+    }
+
+    const backendGallery = Array.from(
+      new Set([
+        product.media?.main ?? undefined,
+        ...(product.media?.gallery ?? []),
+        product.thumbnail ?? undefined,
+      ].filter((value): value is string => Boolean(value))),
+    );
+
+    if (backendGallery.length === 0) {
+      if (preferBackendCatalog) {
+        return {
+          gallery: product.thumbnail ? [product.thumbnail] : [],
+          main: product.thumbnail ?? '',
+        };
+      }
+
+      return getProductMedia(product.slug);
+    }
+
+    return {
+      gallery: backendGallery,
+      main: product.media?.main ?? backendGallery[0] ?? product.thumbnail ?? '',
+    };
+  }, [preferBackendCatalog, product]);
+  const gallery = product ? buildProductPdpGallery(product.name, media) : [];
+  const feelingSlug = product?.primaryFeelingSlug ?? product?.feelingSlug;
+  const feeling = feelingSlug
+    ? feelingLookup.get(feelingSlug) ?? (!preferBackendCatalog ? getFeeling(feelingSlug) : undefined)
+    : undefined;
+  const artist = product
+    ? artistLookup.get(product.artistSlug) ?? (!preferBackendCatalog ? getArtist(product.artistSlug) : undefined)
+    : undefined;
   const related = product
-    ? productsByFeeling(product.feelingSlug)
+    ? (((catalogProductsSnapshot.length > 0
+        ? catalogProductsSnapshot
+        : preferBackendCatalog
+          ? []
+          : productsByFeeling(product.primaryFeelingSlug ?? product.feelingSlug))))
         .filter((item) => item.slug !== slug)
         .slice(0, 4)
     : [];
 
-  const compactPdp = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return (
-      searchParams.get('compact') === '1' || sessionStorage.getItem('horo_home_compact') === '1'
-    );
+  const [compactPdp, setCompactPdp] = useState(false);
+
+  useEffect(() => {
+    const q = searchParams.get('compact');
+    if (q === '1') sessionStorage.setItem('horo_home_compact', '1');
+    setCompactPdp(q === '1' || sessionStorage.getItem('horo_home_compact') === '1');
   }, [searchParams]);
 
   const styleWithProducts = useMemo(() => {
     if (!product?.complementarySlugs?.length) return [];
     return product.complementarySlugs
-      .map((s) => getProduct(s))
+      .map((s) => lookupProduct(s))
       .filter((p): p is NonNullable<ReturnType<typeof getProduct>> => Boolean(p))
       .slice(0, 4);
-  }, [product]);
+  }, [lookupProduct, product]);
 
   const frequentlyBoughtWithProducts = useMemo(() => {
     if (!product?.frequentlyBoughtWithSlugs?.length) return [];
     return product.frequentlyBoughtWithSlugs
-      .map((s) => getProduct(s))
+      .map((s) => lookupProduct(s))
       .filter((p): p is NonNullable<ReturnType<typeof getProduct>> => Boolean(p))
       .slice(0, 2);
-  }, [product]);
+  }, [lookupProduct, product]);
 
   const customersAlsoBoughtProducts = useMemo(() => {
     if (!product?.customersAlsoBoughtSlugs?.length) return [];
     const fbtSlugs = new Set(product.frequentlyBoughtWithSlugs ?? []);
     return product.customersAlsoBoughtSlugs
       .filter((s) => !fbtSlugs.has(s))
-      .map((s) => getProduct(s))
+      .map((s) => lookupProduct(s))
       .filter((p): p is NonNullable<ReturnType<typeof getProduct>> => Boolean(p))
       .slice(0, 2);
-  }, [product]);
+  }, [lookupProduct, product]);
 
   const heroView =
     gallery[photoIndex] ??
     gallery[0] ?? {
-      key: 'frontOnBody' as const,
+      key: 'hero' as const,
       src: media.main,
       label: 'image',
       alt: `HORO “${product?.name ?? 'product'}” t-shirt.`,
     };
 
-  const detailView = gallery.find((view) => view.key === 'macroDetail') ?? null;
+  const detailView = gallery[1] ?? null;
   const hasGalleryRail = gallery.length > 1;
   const primaryGallerySrc = gallery[0]?.src ?? media.main;
+  const selectedVariant =
+    selectedSize && product?.variantsBySize
+      ? product.variantsBySize[selectedSize as ProductSizeKey]
+      : undefined;
+  const displayPriceEgp = selectedVariant?.priceEgp ?? product?.priceEgp ?? 0;
 
   const sizeButtons = useMemo(() => {
     if (!product) return PDP_SCHEMA.sizes;
     const avail = new Set(productAvailableSizes(product));
+    const definedSizes = new Set<ProductSizeKey>(
+      product.availableSizes?.length
+        ? product.availableSizes
+        : (Object.keys(product.variantsBySize || {}) as ProductSizeKey[]),
+    );
+    const hasDefinedSizes = definedSizes.size > 0;
+
     return PDP_SCHEMA.sizes.map(({ key, disabled }) => ({
       key,
-      disabled: Boolean(disabled) || !avail.has(key as ProductSizeKey),
+      disabled:
+        Boolean(disabled) ||
+        (hasDefinedSizes && !definedSizes.has(key as ProductSizeKey)) ||
+        !avail.has(key as ProductSizeKey),
     }));
   }, [product]);
 
@@ -594,13 +691,13 @@ export function ProductDetail() {
 
   function primaryCtaLabel() {
     if (oosSelected) return copy.notifyMeCTA;
-    if (sizeReady && product) return `${copy.addBtnCTA} — ${formatEgp(product.priceEgp)}`;
+    if (sizeReady && product) return `${copy.addBtnCTA} — ${formatEgp(displayPriceEgp)}`;
     return copy.selectSizePrompt;
   }
 
   function buyNowCtaLabel() {
     if (oosSelected) return copy.notifyMeCTA;
-    if (sizeReady && product) return `${copy.buyNowCta} — ${formatEgp(product.priceEgp)}`;
+    if (sizeReady && product) return `${copy.buyNowCta} — ${formatEgp(displayPriceEgp)}`;
     return copy.selectSizePrompt;
   }
 
@@ -623,7 +720,7 @@ export function ProductDetail() {
     'flex min-h-12 w-full items-center justify-center border-2 border-obsidian bg-white px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
 
   const deliveryDynamic = product
-    ? buildPdpDeliveryLines(new Date(), PDP_SCHEMA.deliveryRules, {
+    ? buildPdpDeliveryLines(now, PDP_SCHEMA.deliveryRules, {
         beforeCutoffHours: copy.deliveryUrgencyBeforeCutoff,
         tightWindowHours: copy.deliveryUrgencyTight,
         afterCutoff: copy.deliveryAfterCutoff,
@@ -645,7 +742,7 @@ export function ProductDetail() {
 
   return (
     <div className="product-page bg-papyrus text-obsidian">
-      <ProductJsonLd slug={slug} />
+      {renderJsonLd ? <ProductJsonLd slug={product.slug} /> : null}
       <span id="pdp-size-hint" className="sr-only">
         {copy.sizeRequiredPrompt}
       </span>
@@ -911,7 +1008,7 @@ export function ProductDetail() {
                       <p className="font-label text-[10px] uppercase tracking-wider text-label">Works for</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {product.occasionSlugs.map((slug) => {
-                          const o = getOccasion(slug);
+                          const o = occasionLookup.get(slug) ?? (!preferBackendCatalog ? getOccasion(slug) : undefined);
                           return (
                             <span
                               key={slug}
@@ -946,7 +1043,7 @@ export function ProductDetail() {
 
             <div className="space-y-5">
               <p className="font-headline text-[1.8rem] font-semibold leading-none text-obsidian md:text-[2rem]">
-                {formatEgp(product.priceEgp)}
+                {formatEgp(displayPriceEgp)}
               </p>
 
               <div ref={sizeSectionRef} className="space-y-3 border-t border-stone/30 pt-5">
@@ -1112,11 +1209,11 @@ export function ProductDetail() {
                 <p className="font-body text-sm leading-relaxed text-warm-charcoal">
                   <span className="block">
                     <span className="font-medium text-obsidian">{copy.deliveryStandardBadge}</span>{' '}
-                    <span className="text-obsidian">{formatDeliveryWindow(3, 5)}</span>
+                    <span className="text-obsidian">{formatDeliveryWindow(3, 5, now)}</span>
                   </span>
                   <span className="mt-1.5 block">
                     <span className="font-medium text-obsidian">{copy.deliveryExpressBadge}</span>{' '}
-                    <span className="text-obsidian">{formatDeliveryWindow(1, 2)}</span>
+                    <span className="text-obsidian">{formatDeliveryWindow(1, 2, now)}</span>
                   </span>
                 </p>
                 <p className="font-body text-xs leading-snug text-clay">{copy.deliveryEstimateNote}</p>
@@ -1126,10 +1223,10 @@ export function ProductDetail() {
 
               {artist ? (
                 <div className="flex items-center gap-3 border-t border-stone/30 pt-5">
-                  {artistAvatars[artist.slug] ? (
+                  {artist.avatarSrc ? (
                     <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/45">
                       <TeeImage
-                        src={artistAvatars[artist.slug]}
+                        src={artist.avatarSrc}
                         alt={artist.name}
                         w={160}
                         eager
@@ -1263,11 +1360,11 @@ export function ProductDetail() {
                   </p>
                   <p className="mt-1.5 leading-relaxed">
                     <span className="font-medium text-obsidian">{copy.deliveryStandardBadge}:</span>{' '}
-                    {formatDeliveryWindow(3, 5)}
+                    {formatDeliveryWindow(3, 5, now)}
                   </p>
                   <p className="mt-1 leading-relaxed">
                     <span className="font-medium text-obsidian">{copy.deliveryExpressBadge}:</span>{' '}
-                    {formatDeliveryWindow(1, 2)}
+                    {formatDeliveryWindow(1, 2, now)}
                   </p>
                   <p className="mt-2 text-xs text-clay">{copy.deliveryEstimateNote}</p>
                 </div>
@@ -1315,7 +1412,7 @@ export function ProductDetail() {
                     <div className="relative overflow-hidden rounded-t-[18px]">
                       <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
                         <TeeImageFrame
-                          src={getProductMedia(item.slug).main}
+                          src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
                           alt={`HORO “${item.name}” tee`}
                           w={400}
                           aspectRatio="4/5"
@@ -1423,7 +1520,7 @@ export function ProductDetail() {
                   <div className="relative overflow-hidden rounded-t-[18px]">
                     <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
                       <TeeImageFrame
-                        src={getProductMedia(item.slug).main}
+                        src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
                         alt={`HORO “${item.name}” tee`}
                         w={500}
                         aspectRatio="4/5"

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CommerceContinuityPanel } from '../components/CommerceContinuityPanel';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
@@ -6,15 +7,21 @@ import { getProductMedia } from '../data/images';
 import { TeeImage } from '../components/TeeImage';
 import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
-import { loadLastOrder } from '../cart/lastOrder';
+import { loadLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import type { CartLine } from '../cart/types';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, withSupportMessage } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
+import { useStableNow } from '../runtime/render-time';
 
 export function OrderConfirmation() {
   const { locale, copy } = useUiLocale();
+  const now = useStableNow();
   const isArabic = locale === 'ar';
-  const order = loadLastOrder();
+  const [order, setOrder] = useState<LastOrderSnapshot | null>(null);
+
+  useEffect(() => {
+    setOrder(loadLastOrder());
+  }, []);
 
   const lines: { line: CartLine; p: NonNullable<ReturnType<typeof getProduct>>; lineSub: number }[] = [];
   if (order) {
@@ -51,8 +58,8 @@ export function OrderConfirmation() {
   const arrivalWindow = order?.estimatedDeliveryWindow ??
     (order
       ? order.shippingMethod === 'express'
-        ? formatDeliveryWindow(1, 2)
-        : formatDeliveryWindow(3, 5)
+        ? formatDeliveryWindow(1, 2, now)
+        : formatDeliveryWindow(3, 5, now)
       : isArabic ? 'قيد التأكيد' : 'Pending');
   const instagramUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.instagramUrl)
     ? HORO_SUPPORT_CHANNELS.instagramUrl

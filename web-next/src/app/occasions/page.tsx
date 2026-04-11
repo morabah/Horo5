@@ -1,12 +1,26 @@
-"use client";
+import type { Metadata } from "next";
 
-import { ShopByOccasion } from "../../../../web/src/pages/ShopByOccasion";
-import { RouterContextProvider } from "@/lib/router-context";
+import { ShopByOccasionPage } from "@/components/shop-by-occasion-page";
+import { fetchStorefrontCatalogServer } from "@/lib/storefront-server";
 
-export default function Page() {
-  return (
-    <RouterContextProvider>
-      <ShopByOccasion />
-    </RouterContextProvider>
-  );
+const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ?? "";
+
+export const metadata: Metadata = {
+  title: "Shop by moment | HORO Egypt",
+  description:
+    "Browse HORO graphic tees by occasion — gifts, milestones, and everyday streetwear with COD and exchange in Egypt.",
+  alternates: site ? { canonical: `${site}/occasions` } : undefined,
+  openGraph: {
+    title: "Shop by moment | HORO Egypt",
+    description:
+      "Browse HORO graphic tees by occasion — gifts, milestones, and everyday streetwear with COD and exchange in Egypt.",
+    url: site ? `${site}/occasions` : undefined,
+    type: "website",
+  },
+};
+
+export default async function Page() {
+  const catalog = await fetchStorefrontCatalogServer().catch(() => null);
+
+  return <ShopByOccasionPage initialOccasions={catalog?.occasions} />;
 }

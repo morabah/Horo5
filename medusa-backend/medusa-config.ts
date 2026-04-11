@@ -13,6 +13,23 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET!,
     }
   },
+  modules: [
+    {
+      resolve: "./src/modules/feeling",
+    },
+    {
+      resolve: "./src/modules/subfeeling",
+    },
+    {
+      resolve: "./src/modules/artist",
+    },
+    {
+      resolve: "./src/modules/occasion",
+    },
+    {
+      resolve: "./src/modules/merch-event",
+    },
+  ],
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL,
   },

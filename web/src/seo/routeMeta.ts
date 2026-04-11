@@ -149,7 +149,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
   if (productMatch?.params.slug) {
     const p = getProduct(productMatch.params.slug);
     if (!p) return nonIndexablePage('Page not found | HORO Egypt', DEFAULT_SITE_DESCRIPTION);
-    const feeling = getFeeling(p.feelingSlug);
+    const feeling = getFeeling(p.primaryFeelingSlug ?? p.feelingSlug);
     const fitLabel = p.fitLabel?.toLowerCase() === 'oversized' ? 'oversized t-shirt' : 'graphic tee';
     return indexablePage(
       `/products/${p.slug}`,

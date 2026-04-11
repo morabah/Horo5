@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AppIcon } from './AppIcon';
-import { absoluteUrl } from '../seo/siteUrl';
+import { absoluteUrl, getSiteUrl } from '../seo/siteUrl';
 
 type PdpShareStripProps = {
   productName: string;
@@ -9,7 +9,9 @@ type PdpShareStripProps = {
 
 export function PdpShareStrip({ productName, productSlug }: PdpShareStripProps) {
   const [copied, setCopied] = useState(false);
-  const shareUrl = absoluteUrl(`/products/${productSlug}`);
+  /** After mount only — avoids SSR vs client mismatch when `navigator.share` exists. */
+  const [shareUiReady, setShareUiReady] = useState(false);
+  const [shareUrl, setShareUrl] = useState(() => absoluteUrl(`/products/${productSlug}`));
   const shareText = `HORO — ${productName}`;
 
   const handleCopy = useCallback(async () => {
@@ -31,6 +33,12 @@ export function PdpShareStrip({ productName, productSlug }: PdpShareStripProps) 
     }
   }, [shareText, shareUrl]);
 
+  useEffect(() => {
+    setShareUiReady(true);
+    if (getSiteUrl()) return;
+    setShareUrl(`${window.location.origin}/products/${productSlug}`);
+  }, [productSlug]);
+
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${shareUrl}`)}`;
 
   const btnClass =
@@ -44,7 +52,7 @@ export function PdpShareStrip({ productName, productSlug }: PdpShareStripProps) 
       <button type="button" className={btnClass} onClick={handleCopy} aria-label={copied ? 'Link copied' : 'Copy product link'}>
         <AppIcon name="content_copy" className="h-5 w-5" />
       </button>
-      {typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? (
+      {shareUiReady && typeof navigator.share === 'function' ? (
         <button type="button" className={btnClass} onClick={() => void handleNativeShare()} aria-label="Share using your device">
           <AppIcon name="share" className="h-5 w-5" />
         </button>

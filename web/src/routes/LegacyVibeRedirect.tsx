@@ -1,5 +1,5 @@
 import { Navigate, useParams } from 'react-router-dom';
-import { LEGACY_VIBE_SLUG_TO_FEELING_SLUG } from '../data/site';
+import { LEGACY_VIBE_SLUG_TO_FEELING_SLUG } from '../data/legacy-slugs';
 
 /** `/vibes/:slug` → `/feelings/:resolvedSlug` (§6.4 migration) */
 export function LegacyVibeCollectionRedirect() {

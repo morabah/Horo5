@@ -1,12 +1,8 @@
-"use client";
+import { HomePage } from "@/components/home-page";
+import { fetchStorefrontCatalogServer } from "@/lib/storefront-server";
 
-import { Home } from "../../../web/src/pages/Home";
-import { RouterContextProvider } from "@/lib/router-context";
+export default async function Page() {
+  const catalog = await fetchStorefrontCatalogServer().catch(() => null);
 
-export default function Page() {
-  return (
-    <RouterContextProvider>
-      <Home />
-    </RouterContextProvider>
-  );
+  return <HomePage initialProducts={catalog?.products} />;
 }

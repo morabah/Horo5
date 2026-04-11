@@ -2,7 +2,6 @@
 export function getSiteUrl(): string {
   const fromEnv = import.meta.env.VITE_SITE_URL?.trim().replace(/\/$/, '');
   if (fromEnv) return fromEnv;
-  if (typeof window !== 'undefined') return window.location.origin;
   return '';
 }
 

@@ -62,7 +62,7 @@ function MiniCards({
             <div className="relative overflow-hidden rounded-t-[14px]">
               <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
                 <TeeImageFrame
-                  src={getProductMedia(item.slug).main}
+                  src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
                   alt={`HORO “${item.name}” tee`}
                   w={360}
                   aspectRatio="4/5"

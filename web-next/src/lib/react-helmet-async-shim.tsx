@@ -6,7 +6,6 @@ export function HelmetProvider({ children }: { children: React.ReactNode }) {
 
 export function Helmet({
   children,
-  ..._rest
 }: {
   children?: React.ReactNode;
   /** Next shim ignores this; real react-helmet-async uses it for ordering */

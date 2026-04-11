@@ -9,7 +9,15 @@ import { TeeImageFrame } from '../components/TeeImage';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, getProductMedia, giftWrapPreview, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
-import { getFeeling, getOccasion, occasions, productsByOccasion, type OccasionSlug, type Product } from '../data/site';
+import {
+  getFeeling,
+  getOccasion,
+  getOccasions,
+  productsByOccasion,
+  type Occasion,
+  type OccasionSlug,
+  type Product,
+} from '../data/site';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 
@@ -83,7 +91,7 @@ function OccasionProductCard({
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
 }) {
-  const feeling = getFeeling(product.feelingSlug);
+  const feeling = getFeeling(product.primaryFeelingSlug ?? product.feelingSlug);
   const { main } = getProductMedia(product.slug);
 
   return (
@@ -103,10 +111,17 @@ function OccasionProductCard({
   );
 }
 
-export function OccasionCollection() {
-  const { slug = '' } = useParams();
+type OccasionCollectionProps = {
+  /** When set from Next RSC, avoids client-only lookup for this occasion. */
+  initialOccasion?: Occasion | null;
+  initialSlug?: string;
+};
+
+export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCollectionProps = {}) {
+  const { slug: routeSlug = '' } = useParams();
+  const slug = initialSlug ?? routeSlug;
   const { copy } = useUiLocale();
-  const occasion = getOccasion(slug);
+  const occasion = initialOccasion !== undefined ? initialOccasion : getOccasion(slug);
   const isMobile = useMediaQuery('(max-width: 767px)');
 
   const [sortKey, setSortKey] = useState<ProductSortKey>('featured');
@@ -136,21 +151,23 @@ export function OccasionCollection() {
   }, [isMobile]);
 
   const vibeOptions = useMemo(() => {
-    return [...new Set(baseList.map((product) => product.feelingSlug))].sort();
+    return [...new Set(baseList.map((product) => product.primaryFeelingSlug ?? product.feelingSlug))].sort();
   }, [baseList]);
 
   const sorted = useMemo(() => sortProductList(baseList, sortKey), [baseList, sortKey]);
 
   const list = useMemo(() => {
     let next = filterByPrice(sorted, priceFilter);
-    if (vibeFilter !== 'all') next = next.filter((product) => product.feelingSlug === vibeFilter);
+    if (vibeFilter !== 'all') {
+      next = next.filter((product) => (product.primaryFeelingSlug ?? product.feelingSlug) === vibeFilter);
+    }
     return next;
   }, [priceFilter, sorted, vibeFilter]);
 
   const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || vibeFilter !== 'all';
 
   const siblingOccasions = useMemo(() => {
-    return occasions.filter((entry) => entry.slug !== slug);
+    return getOccasions().filter((entry) => entry.slug !== slug);
   }, [slug]);
 
   const closeMobileFilters = useCallback(() => {

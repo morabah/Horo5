@@ -74,3 +74,26 @@ npm run seed:egypt
 - Each product has 5 variants (`S/M/L/XL/XXL`)
 - Every variant price is `799 EGP`
 - Product media URLs resolve
+
+### Storefront DTO routes (HORO Next.js)
+
+After `npm run dev` (or production URL), with **`x-publishable-api-key`** set:
+
+- `GET /storefront/catalog` — products, occasions, events for the storefront
+- `GET /storefront/products/:handle` — single product DTO
+- `GET /storefront/occasions/:slug` — single occasion
+
+From the monorepo **`web-next`** app (same env as the storefront):
+
+```bash
+cd ../web-next
+MEDUSA_BACKEND_URL=http://localhost:9000 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_... npm run smoke:medusa
+```
+
+This extends the basic `/health` + `/store/products` check with **`GET /storefront/catalog`**.
+
+### First-time or fresh database
+
+1. `npm run migrate`
+2. `npm run seed:egypt` (when `DATABASE_URL` points at the target DB)
+3. Start Medusa, then run the `web-next` smoke command above
