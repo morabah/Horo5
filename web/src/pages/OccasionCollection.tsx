@@ -98,6 +98,7 @@ function OccasionProductCard({
     <MerchProductCard
       slug={product.slug}
       name={product.name}
+      compareAtPriceEgp={product.originalPriceEgp ?? undefined}
       priceEgp={product.priceEgp}
       imageSrc={main}
       imageAlt={`HORO “${product.name}” graphic tee for ${feeling?.name ?? 'the collection'}.`}

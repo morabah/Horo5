@@ -107,6 +107,7 @@ function SearchProductCard({
     <MerchProductCard
       slug={product.slug}
       name={product.name}
+      compareAtPriceEgp={product.originalPriceEgp ?? undefined}
       priceEgp={product.priceEgp}
       imageSrc={product.imageSrc}
       imageAlt={product.imageAlt}

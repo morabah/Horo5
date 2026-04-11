@@ -4,6 +4,7 @@ import { getProductMedia } from '../data/images';
 import { TeeImageFrame } from './TeeImage';
 import { QuickViewTrigger } from './QuickViewTrigger';
 import { formatEgp } from '../utils/formatPrice';
+import { compareAtPrice } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
 
 type CrossSellWidgetProps = {
@@ -80,7 +81,14 @@ function MiniCards({
               <h3 className="font-headline text-[10px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal sm:text-[11px]">
                 {item.name}
               </h3>
-              <p className="font-body mt-0.5 text-[11px] text-clay">{formatEgp(item.priceEgp)}</p>
+              <div className="mt-0.5 flex flex-wrap items-center gap-2">
+                <p className="font-body text-[11px] text-clay">{formatEgp(item.priceEgp)}</p>
+                {compareAtPrice(item.priceEgp, item.originalPriceEgp) ? (
+                  <p className="font-body text-[10px] text-clay/80 line-through">
+                    {formatEgp(compareAtPrice(item.priceEgp, item.originalPriceEgp) ?? 0)}
+                  </p>
+                ) : null}
+              </div>
             </div>
           </div>
         </article>

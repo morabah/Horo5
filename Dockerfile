@@ -24,7 +24,11 @@ COPY web/public/images /web/public/images
 ENV NODE_OPTIONS=--max-old-space-size=6144
 RUN npm run build
 
+# Medusa v2 production: start from `.medusa/server` (see https://docs.medusajs.com/learn/build )
 ENV NODE_ENV=production
+RUN cd .medusa/server && npm install --omit=dev --no-audit --no-fund
+
+WORKDIR /app/.medusa/server
 EXPOSE 9000
 
 CMD ["npm", "run", "start"]

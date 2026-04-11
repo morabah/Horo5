@@ -58,6 +58,7 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
                   key={p.slug}
                   slug={p.slug}
                   name={p.name}
+                  compareAtPriceEgp={p.originalPriceEgp ?? undefined}
                   priceEgp={p.priceEgp}
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}

@@ -18,7 +18,9 @@ type StorefrontVariantResponse = {
   currency_code: string;
   id: string;
   inventory_quantity: number | null;
+  is_discounted: boolean;
   manage_inventory: boolean;
+  original_price_egp: number | null;
   price_egp: number;
   size: string;
   sku?: string | null;
@@ -44,7 +46,9 @@ type StorefrontProductResponse = {
   merchandisingBadge?: string;
   name: string;
   occasionSlugs: string[];
+  originalPriceEgp?: number | null;
   pdpFitModels?: Product["pdpFitModels"];
+  defaultPriceSize?: string;
   primaryFeelingSlug: string;
   primaryOccasionSlug?: string;
   primarySubfeelingSlug: string;
@@ -112,8 +116,10 @@ function normalizeVariantMap(
         id: variant.id,
         size: size as ProductSizeKey,
         sku: variant.sku ?? null,
+        originalPriceEgp: variant.original_price_egp,
         priceEgp: variant.price_egp,
         currencyCode: variant.currency_code,
+        isDiscounted: variant.is_discounted,
         manageInventory: variant.manage_inventory,
         allowBackorder: variant.allow_backorder,
         available: variant.available,
@@ -144,7 +150,9 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     merchandisingBadge: product.merchandisingBadge,
     name: product.name,
     occasionSlugs: product.occasionSlugs,
+    originalPriceEgp: product.originalPriceEgp,
     pdpFitModels: product.pdpFitModels,
+    defaultPriceSize: product.defaultPriceSize as Product["defaultPriceSize"],
     primaryFeelingSlug: product.primaryFeelingSlug,
     primaryOccasionSlug: product.primaryOccasionSlug,
     primarySubfeelingSlug: product.primarySubfeelingSlug,

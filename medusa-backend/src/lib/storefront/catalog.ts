@@ -87,6 +87,7 @@ type QueryVariant = {
   calculated_price?: {
     calculated_amount?: number | null
     currency_code?: string | null
+    original_amount?: number | null
   } | null
   id: string
   inventory_items?: Array<{
@@ -224,6 +225,7 @@ const PRODUCT_QUERY_FIELDS = [
 ]
 
 const DEFAULT_APPAREL_CATEGORY_PATH = "apparel/tops/t-shirts"
+const DEFAULT_SIZE_ORDER = ["S", "M", "L", "XL", "XXL"] as const
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {}
@@ -326,14 +328,40 @@ function inventoryQuantity(variant: QueryVariant): number | null {
   return total
 }
 
-function variantPrice(variant: QueryVariant, fallbackPriceEgp?: number): { currency_code: string; price_egp: number } {
+function sortVariantList(variants: StorefrontVariantDTO[]): StorefrontVariantDTO[] {
+  return [...variants].sort((left, right) => {
+    const leftIndex = DEFAULT_SIZE_ORDER.indexOf(left.size as (typeof DEFAULT_SIZE_ORDER)[number])
+    const rightIndex = DEFAULT_SIZE_ORDER.indexOf(right.size as (typeof DEFAULT_SIZE_ORDER)[number])
+    const normalizedLeft = leftIndex === -1 ? DEFAULT_SIZE_ORDER.length : leftIndex
+    const normalizedRight = rightIndex === -1 ? DEFAULT_SIZE_ORDER.length : rightIndex
+
+    if (normalizedLeft !== normalizedRight) {
+      return normalizedLeft - normalizedRight
+    }
+
+    return left.size.localeCompare(right.size)
+  })
+}
+
+function variantPrice(
+  variant: QueryVariant,
+  fallbackPriceEgp?: number
+): { currency_code: string; is_discounted: boolean; original_price_egp: number | null; price_egp: number } {
   const calculatedAmount = variant.calculated_price?.calculated_amount
   const calculatedCurrency = variant.calculated_price?.currency_code
+  const originalAmount = variant.calculated_price?.original_amount
 
   if (typeof calculatedAmount === "number") {
+    const priceEgp = Math.round(calculatedAmount / 100)
+    const originalPriceEgp =
+      typeof originalAmount === "number" ? Math.round(originalAmount / 100) : null
+    const hasDiscount = typeof originalPriceEgp === "number" && originalPriceEgp > priceEgp
+
     return {
       currency_code: calculatedCurrency || "egp",
-      price_egp: Math.round(calculatedAmount / 100),
+      is_discounted: hasDiscount,
+      original_price_egp: hasDiscount ? originalPriceEgp : null,
+      price_egp: priceEgp,
     }
   }
 
@@ -342,18 +370,22 @@ function variantPrice(variant: QueryVariant, fallbackPriceEgp?: number): { curre
   if (typeof egpPrice?.amount === "number") {
     return {
       currency_code: "egp",
+      is_discounted: false,
+      original_price_egp: null,
       price_egp: Math.round(egpPrice.amount / 100),
     }
   }
 
   return {
     currency_code: "egp",
+    is_discounted: false,
+    original_price_egp: null,
     price_egp: fallbackPriceEgp ?? 0,
   }
 }
 
 function mapVariant(variant: QueryVariant, fallbackPriceEgp?: number): StorefrontVariantDTO {
-  const { currency_code, price_egp } = variantPrice(variant, fallbackPriceEgp)
+  const { currency_code, is_discounted, original_price_egp, price_egp } = variantPrice(variant, fallbackPriceEgp)
   const qty = inventoryQuantity(variant)
   const allowBackorder = Boolean(variant.allow_backorder)
   const manageInventory = Boolean(variant.manage_inventory)
@@ -364,7 +396,9 @@ function mapVariant(variant: QueryVariant, fallbackPriceEgp?: number): Storefron
     currency_code,
     id: variant.id,
     inventory_quantity: qty,
+    is_discounted,
     manage_inventory: manageInventory,
+    original_price_egp,
     price_egp,
     size: variantSize(variant),
     sku: variant.sku || null,
@@ -415,13 +449,9 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
   const metadata = asRecord(product.metadata)
   const legacyMedia = asMedia(metadata.media)
   const legacyPrice = typeof metadata.priceEgp === "number" ? metadata.priceEgp : undefined
-  const variantsBySize = Object.fromEntries(
-    (product.variants || []).map((variant) => {
-      const mapped = mapVariant(variant, legacyPrice)
-      return [mapped.size, mapped]
-    })
-  )
-  const firstVariant = Object.values(variantsBySize)[0]
+  const mappedVariants = sortVariantList((product.variants || []).map((variant) => mapVariant(variant, legacyPrice)))
+  const variantsBySize = Object.fromEntries(mappedVariants.map((variant) => [variant.size, variant]))
+  const defaultVariant = mappedVariants.find((variant) => variant.available) || mappedVariants[0]
   const gallery = orderedUniqueStrings([
     ...(product.images || []).map((image) => image.url || undefined),
     ...galleryFromLegacyMedia(legacyMedia),
@@ -446,12 +476,13 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
     apparelCategoryPath: apparelPath,
     artistSlug: asString(metadata.artistSlug) || "nada-ibrahim",
     artworkSlug: asString(metadata.artworkSlug),
-    availableSizes: asStringArray(metadata.availableSizes) || Object.keys(variantsBySize),
+    availableSizes: mappedVariants.length > 0 ? mappedVariants.map((variant) => variant.size) : asStringArray(metadata.availableSizes),
     capsuleSlugs: asStringArray(metadata.capsuleSlugs),
     complementarySlugs: asStringArray(metadata.complementarySlugs),
     customersAlsoBoughtSlugs: asStringArray(metadata.customersAlsoBoughtSlugs),
     decorationType,
-    description: product.description || undefined,
+    defaultPriceSize: defaultVariant?.size,
+    description: product.description || asString(metadata.story) || undefined,
     feelingSlug: primaryFeelingSlug,
     fitLabel: asString(metadata.fitLabel),
     frequentlyBoughtWithSlugs: asStringArray(metadata.frequentlyBoughtWithSlugs),
@@ -468,11 +499,12 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
     merchandisingBadge: asString(metadata.merchandisingBadge),
     name: product.title,
     occasionSlugs: asStringArray(metadata.occasionSlugs) || [],
+    originalPriceEgp: defaultVariant?.original_price_egp ?? null,
     pdpFitModels: asObjectArray(metadata.pdpFitModels),
     primaryFeelingSlug,
     primaryOccasionSlug: asString(metadata.primaryOccasionSlug),
     primarySubfeelingSlug,
-    priceEgp: firstVariant?.price_egp ?? legacyPrice ?? 0,
+    priceEgp: defaultVariant?.price_egp ?? legacyPrice ?? 0,
     slug: product.handle,
     stockNote: asString(metadata.stockNote),
     story: asString(metadata.story) || product.description || "",
@@ -639,11 +671,6 @@ async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQ
         take,
       },
       context,
-    },
-    {
-      cache: {
-        enable: true,
-      },
     }
   )
 

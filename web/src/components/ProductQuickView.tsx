@@ -6,6 +6,7 @@ import { useCart } from '../cart/CartContext';
 import { PDP_SCHEMA, QUICK_VIEW_SCHEMA } from '../data/domain-config';
 import { formatEgp } from '../utils/formatPrice';
 import { formatPdpFitModelLine } from '../utils/pdpFitModels';
+import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
 import { AppIcon } from './AppIcon';
 
@@ -67,12 +68,23 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
       label: 'image',
     };
   const fit = product?.fitLabel ?? 'Regular';
-  const selectedVariant =
-    selectedSize && product?.variantsBySize
-      ? product.variantsBySize[selectedSize]
-      : undefined;
-  const displayPriceEgp = selectedVariant?.priceEgp ?? product?.priceEgp ?? 0;
+  const displayPriceSelection = product
+    ? getDisplayPriceSelection(product, selectedSize)
+    : { isSelected: false, size: null, variant: null };
+  const displayPriceEgp = displayPriceSelection.variant?.priceEgp ?? product?.priceEgp ?? 0;
+  const displayOriginalPriceEgp = displayPriceSelection.variant
+    ? compareAtPrice(displayPriceSelection.variant.priceEgp, displayPriceSelection.variant.originalPriceEgp)
+    : compareAtPrice(product?.priceEgp ?? 0, product?.originalPriceEgp);
+  const pricingVariesBySize = product ? productHasVariablePricing(product) : false;
+  const priceSizeLabel = displayPriceSelection.size
+    ? displayPriceSelection.isSelected
+      ? `Selected size ${displayPriceSelection.size}`
+      : pricingVariesBySize
+        ? `Price shown for size ${displayPriceSelection.size}`
+        : null
+    : null;
   const priceStr = product ? formatEgp(displayPriceEgp) : '';
+  const descriptionText = product?.description ?? product?.story ?? '';
 
   const quickViewSizes = useMemo(() => {
     if (!product) return QUICK_VIEW_BASE_SIZES;
@@ -233,11 +245,21 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                     {product.name}
                   </h2>
                 </div>
-                <p className="font-headline shrink-0 pt-1 text-lg font-bold text-white md:text-xl">{priceStr}</p>
+                <div className="shrink-0 pt-1 text-right">
+                  <div className="flex flex-wrap items-end justify-end gap-2">
+                    {displayOriginalPriceEgp ? (
+                      <p className="font-headline text-sm text-white/55 line-through md:text-base">{formatEgp(displayOriginalPriceEgp)}</p>
+                    ) : null}
+                    <p className="font-headline text-lg font-bold text-white md:text-xl">{priceStr}</p>
+                  </div>
+                  {priceSizeLabel ? (
+                    <p className="font-label mt-1 text-[10px] uppercase tracking-[0.18em] text-white/72">{priceSizeLabel}</p>
+                  ) : null}
+                </div>
               </div>
 
               <p id={descId} className="font-body max-w-xl text-sm leading-relaxed text-white/92 md:text-[15px]">
-                {product.story}
+                {descriptionText}
               </p>
 
               <div>

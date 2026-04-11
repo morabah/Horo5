@@ -32,6 +32,7 @@ export type SearchDesignCard = {
   feelingSlug: string;
   feelingName?: string;
   feelingAccent?: string;
+  originalPriceEgp?: number | null;
   priceEgp: number;
   imageSrc: string;
   imageAlt: string;
@@ -514,6 +515,7 @@ function mapDesignCard(product: Product): SearchDesignCard {
     feelingSlug,
     feelingName: feeling?.name,
     feelingAccent: feeling?.accent,
+    originalPriceEgp: product.originalPriceEgp,
     priceEgp: product.priceEgp,
     imageSrc: media.main,
     imageAlt: `HORO “${product.name}” graphic tee${feeling ? ` — ${feeling.name}` : ''}.`,

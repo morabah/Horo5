@@ -44,7 +44,9 @@ type StorefrontVariantResponse = {
   currency_code: string;
   id: string;
   inventory_quantity: number | null;
+  is_discounted: boolean;
   manage_inventory: boolean;
+  original_price_egp: number | null;
   price_egp: number;
   size: string;
   sku?: string | null;
@@ -70,7 +72,9 @@ type StorefrontProductResponse = {
   merchandisingBadge?: string;
   name: string;
   occasionSlugs: string[];
+  originalPriceEgp?: number | null;
   pdpFitModels?: Product["pdpFitModels"];
+  defaultPriceSize?: string;
   primaryFeelingSlug: string;
   primaryOccasionSlug?: string;
   primarySubfeelingSlug: string;
@@ -109,9 +113,8 @@ const baseUrl = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost
 const publishableApiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
 function catalogFetchOptions(tags: string[] = []): NextFetchOptions {
-  return {
-    next: { revalidate: 60, tags: ["catalog", "taxonomy", ...tags] },
-  };
+  void tags;
+  return { cache: "no-store" };
 }
 
 const CATALOG_FETCH_OPTIONS: NextFetchOptions = catalogFetchOptions();
@@ -148,8 +151,10 @@ function normalizeVariantMap(
         id: variant.id,
         size: size as ProductSizeKey,
         sku: variant.sku ?? null,
+        originalPriceEgp: variant.original_price_egp,
         priceEgp: variant.price_egp,
         currencyCode: variant.currency_code,
+        isDiscounted: variant.is_discounted,
         manageInventory: variant.manage_inventory,
         allowBackorder: variant.allow_backorder,
         available: variant.available,
@@ -180,7 +185,9 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     merchandisingBadge: product.merchandisingBadge,
     name: product.name,
     occasionSlugs: product.occasionSlugs,
+    originalPriceEgp: product.originalPriceEgp,
     pdpFitModels: product.pdpFitModels,
+    defaultPriceSize: product.defaultPriceSize as Product["defaultPriceSize"],
     primaryFeelingSlug: product.primaryFeelingSlug,
     primaryOccasionSlug: product.primaryOccasionSlug,
     primarySubfeelingSlug: product.primarySubfeelingSlug,
@@ -259,7 +266,7 @@ async function fetchStorefrontProductServerImpl(
 /** Per-request dedupe for metadata + page. Source of truth: Medusa storefront API only. */
 export const fetchStorefrontProductServer = cache((slug: string) =>
   fetchStorefrontProductServerImpl(slug, {
-    next: { revalidate: 60, tags: ["catalog", "taxonomy", `catalog:product:${slug}`] },
+    cache: "no-store",
   })
 );
 

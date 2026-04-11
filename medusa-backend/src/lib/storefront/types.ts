@@ -4,7 +4,9 @@ export type StorefrontVariantDTO = {
   currency_code: string
   id: string
   inventory_quantity: number | null
+  is_discounted: boolean
   manage_inventory: boolean
+  original_price_egp: number | null
   price_egp: number
   size: string
   sku: string | null
@@ -45,7 +47,9 @@ export type StorefrontProductDTO = {
   merchandisingBadge?: string
   name: string
   occasionSlugs: string[]
+  originalPriceEgp?: number | null
   pdpFitModels?: Array<Record<string, unknown>>
+  defaultPriceSize?: string
   primaryFeelingSlug: string
   primaryOccasionSlug?: string
   primarySubfeelingSlug: string

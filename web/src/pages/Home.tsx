@@ -211,6 +211,7 @@ export function Home({ initialProducts }: { initialProducts?: Product[] } = {}) 
                   key={p.slug}
                   slug={p.slug}
                   name={p.name}
+                  compareAtPriceEgp={p.originalPriceEgp ?? undefined}
                   priceEgp={p.priceEgp}
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}

@@ -29,7 +29,7 @@ export function buildProductJsonLd(slug: string) {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
-    description: product.story,
+    description: product.description || product.story,
     image: imageUrls,
     sku: product.slug,
     url: productUrl,

@@ -47,6 +47,7 @@ import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useStableNow } from '../runtime/render-time';
 import { defaultPdpModelParagraph, formatPdpFitModelLine, formatPdpFitModelLines } from '../utils/pdpFitModels';
+import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
 import { buildPdpDeliveryLines, formatDeliveryWindow } from '../utils/deliveryEstimate';
 
@@ -316,11 +317,22 @@ export function ProductDetail({
   const detailView = gallery[1] ?? null;
   const hasGalleryRail = gallery.length > 1;
   const primaryGallerySrc = gallery[0]?.src ?? media.main;
-  const selectedVariant =
-    selectedSize && product?.variantsBySize
-      ? product.variantsBySize[selectedSize as ProductSizeKey]
-      : undefined;
-  const displayPriceEgp = selectedVariant?.priceEgp ?? product?.priceEgp ?? 0;
+  const displayPriceSelection = product
+    ? getDisplayPriceSelection(product, selectedSize as ProductSizeKey | null)
+    : { isSelected: false, size: null, variant: null };
+  const displayPriceEgp = displayPriceSelection.variant?.priceEgp ?? product?.priceEgp ?? 0;
+  const displayOriginalPriceEgp = displayPriceSelection.variant
+    ? compareAtPrice(displayPriceSelection.variant.priceEgp, displayPriceSelection.variant.originalPriceEgp)
+    : compareAtPrice(product?.priceEgp ?? 0, product?.originalPriceEgp);
+  const pricingVariesBySize = product ? productHasVariablePricing(product) : false;
+  const priceSizeLabel = displayPriceSelection.size
+    ? displayPriceSelection.isSelected
+      ? `Selected size ${displayPriceSelection.size}`
+      : pricingVariesBySize
+        ? `Price shown for size ${displayPriceSelection.size}`
+        : null
+    : null;
+  const productDescription = product?.description ?? product?.story ?? '';
 
   const sizeButtons = useMemo(() => {
     if (!product) return PDP_SCHEMA.sizes;
@@ -1038,13 +1050,27 @@ export function ProductDetail({
               >
                 {copy.storyCardHeading}
               </p>
-              <p className="font-body text-[1rem] leading-relaxed text-warm-charcoal md:text-[1.08rem]">{product.story}</p>
+              <p className="font-body text-[1rem] leading-relaxed text-warm-charcoal md:text-[1.08rem]">{productDescription}</p>
             </section>
 
             <div className="space-y-5">
-              <p className="font-headline text-[1.8rem] font-semibold leading-none text-obsidian md:text-[2rem]">
-                {formatEgp(displayPriceEgp)}
-              </p>
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-end gap-3">
+                  {displayOriginalPriceEgp ? (
+                    <p className="font-headline text-[1.05rem] font-medium text-clay line-through md:text-[1.15rem]">
+                      {formatEgp(displayOriginalPriceEgp)}
+                    </p>
+                  ) : null}
+                  <p className="font-headline text-[1.8rem] font-semibold leading-none text-obsidian md:text-[2rem]">
+                    {formatEgp(displayPriceEgp)}
+                  </p>
+                </div>
+                {priceSizeLabel ? (
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-label">
+                    {priceSizeLabel}
+                  </p>
+                ) : null}
+              </div>
 
               <div ref={sizeSectionRef} className="space-y-3 border-t border-stone/30 pt-5">
                 <div className="flex items-center justify-between gap-3">
@@ -1430,7 +1456,14 @@ export function ProductDetail({
                       <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
                         {item.name}
                       </h3>
-                      <p className="font-body mt-1 text-xs text-clay">{formatEgp(item.priceEgp)}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <p className="font-body text-xs text-clay">{formatEgp(item.priceEgp)}</p>
+                        {compareAtPrice(item.priceEgp, item.originalPriceEgp) ? (
+                          <p className="font-body text-[11px] text-clay/80 line-through">
+                            {formatEgp(compareAtPrice(item.priceEgp, item.originalPriceEgp) ?? 0)}
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -1535,15 +1568,22 @@ export function ProductDetail({
                     />
                   </div>
 
-                  <div className="p-4">
-                    <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
-                      {item.name}
-                    </h3>
-                    <p className="font-body mt-1 text-xs text-clay">{formatEgp(item.priceEgp)}</p>
+                    <div className="p-4">
+                      <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
+                        {item.name}
+                      </h3>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <p className="font-body text-xs text-clay">{formatEgp(item.priceEgp)}</p>
+                        {compareAtPrice(item.priceEgp, item.originalPriceEgp) ? (
+                          <p className="font-body text-[11px] text-clay/80 line-through">
+                            {formatEgp(compareAtPrice(item.priceEgp, item.originalPriceEgp) ?? 0)}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              ))}
           </div>
         </div>
       </section>

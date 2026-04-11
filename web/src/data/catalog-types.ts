@@ -83,8 +83,10 @@ export type ProductVariantRecord = {
   id: string;
   size: ProductSizeKey;
   sku?: string | null;
+  originalPriceEgp?: number | null;
   priceEgp: number;
   currencyCode?: string;
+  isDiscounted?: boolean;
   manageInventory: boolean;
   allowBackorder: boolean;
   available: boolean;
@@ -110,6 +112,8 @@ export type Product = {
   /** Recurring capsules (e.g. zodiac) — not top-level browse pillars §6.4 */
   capsuleSlugs?: string[];
   occasionSlugs: OccasionSlug[];
+  defaultPriceSize?: ProductSizeKey;
+  originalPriceEgp?: number | null;
   priceEgp: number;
   story: string;
   /** Card + quick view merchandising label, e.g. "Bestseller" */
