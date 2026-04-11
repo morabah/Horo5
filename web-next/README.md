@@ -1,4 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is the **HORO storefront on Next.js** (`web-next`). Page UI is imported from the shared [`web/`](../web) package (Vite app) via `externalDir`; shell (Nav, Footer, SEO, analytics) matches [`web/src/App.tsx`](../web/src/App.tsx) + [`Layout`](../web/src/components/Layout.tsx).
+
+### Route parity with `web` (Vite)
+
+| Vite (`web`) | `web-next` |
+|--------------|------------|
+| `/`, `/about`, `/exchange`, `/privacy`, `/terms` | Same path, same page component |
+| `/feelings`, `/feelings/:slug` | Same |
+| `/occasions`, `/occasions/:slug` | Same |
+| `/products/:slug` | Same |
+| `/cart`, `/checkout`, `/checkout/success` | Same |
+| `/search` | Same |
+| `/vibes` → feelings | `redirect("/feelings")` |
+| `/vibes/:slug` | `redirect` using `LEGACY_VIBE_SLUG_TO_FEELING_SLUG` from [`site.ts`](../web/src/data/site.ts) |
+| `/artists` / `/artists/:slug` → feelings | `redirect("/feelings")` |
+| `/products` (list) → search | `redirect("/search")` |
+| `*` | [`not-found.tsx`](./src/app/not-found.tsx) |
+
+### Medusa (`medusa-backend`)
+
+1. Run API: `cd medusa-backend && npm run dev` (default `http://localhost:9000`).
+2. Copy [`.env.example`](./.env.example) → `.env.local` and set **`NEXT_PUBLIC_MEDUSA_BACKEND_URL`** and **`NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`** (publishable key from Medusa Admin).
+3. On the Medusa service, **`STORE_CORS`** / **`AUTH_CORS`** must include your storefront origin (e.g. `http://localhost:3000`).
+4. Catalog: [`AppProviders`](../web/src/AppProviders.tsx) calls **`hydrateRuntimeCatalog()`** on load; products merge into runtime data when the Store API is reachable ([`web/src/lib/medusa/catalog.ts`](../web/src/lib/medusa/catalog.ts)).
+
+`next.config.ts` maps `NEXT_PUBLIC_*` → `import.meta.env.VITE_*` for shared `web` code.
+
+---
 
 ## Getting Started
 

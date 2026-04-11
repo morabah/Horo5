@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
           VITE_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "",
           VITE_META_PIXEL_ID: process.env.NEXT_PUBLIC_META_PIXEL_ID || "",
           VITE_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "",
+          VITE_CLARITY_PROJECT_ID: process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID || "",
         }),
       }),
     );
