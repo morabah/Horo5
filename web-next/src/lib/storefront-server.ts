@@ -109,8 +109,15 @@ type StorefrontCatalogResponse = {
   subfeelings?: StorefrontSubfeelingResponse[];
 };
 
-const baseUrl = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "");
-const publishableApiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
+const baseUrl = (
+  process.env.MEDUSA_BACKEND_URL ||
+  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+  "http://localhost:9000"
+).replace(/\/+$/, "");
+const publishableApiKey =
+  process.env.MEDUSA_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
+  "";
 const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
 function catalogFetchOptions(tags: string[] = []): NextFetchOptions {
   void tags;
@@ -137,6 +144,10 @@ async function storefrontRequest<T>(path: string, init: NextFetchOptions = {}): 
   }
 
   return (await response.json()) as T;
+}
+
+export function getStorefrontServerBaseUrl() {
+  return baseUrl;
 }
 
 function normalizeVariantMap(

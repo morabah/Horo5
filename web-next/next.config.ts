@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 import path from "node:path";
 import webpack from "webpack";
 
+const medusaBackendUrl =
+  process.env.MEDUSA_BACKEND_URL ||
+  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+  "http://localhost:9000";
+const medusaPublishableKey =
+  process.env.MEDUSA_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
+  "";
+
 const nextConfig: NextConfig = {
   /** Monorepo: trace shared `../web` from repo root (root + web-next lockfiles). */
   outputFileTracingRoot: path.join(__dirname, ".."),
@@ -28,8 +37,8 @@ const nextConfig: NextConfig = {
     config.plugins.push(
       new webpack.DefinePlugin({
         "import.meta.env": JSON.stringify({
-          VITE_MEDUSA_BACKEND_URL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000",
-          VITE_MEDUSA_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+          VITE_MEDUSA_BACKEND_URL: medusaBackendUrl,
+          VITE_MEDUSA_PUBLISHABLE_KEY: medusaPublishableKey,
           VITE_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "",
           VITE_META_PIXEL_ID: process.env.NEXT_PUBLIC_META_PIXEL_ID || "",
           VITE_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || "",

@@ -7,6 +7,7 @@ import {
   buildProductMetadata,
   fetchStorefrontCatalogServer,
   fetchStorefrontProductServer,
+  getStorefrontServerBaseUrl,
 } from "@/lib/storefront-server";
 
 type ProductPageProps = {
@@ -25,7 +26,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const [product, catalog] = await Promise.all([
     fetchStorefrontProductServer(slug),
-    fetchStorefrontCatalogServer().catch(() => null),
+    fetchStorefrontCatalogServer().catch((error) => {
+      console.error("[storefront] Failed to fetch catalog for product metadata", {
+        baseUrl: getStorefrontServerBaseUrl(),
+        slug,
+        error,
+      });
+      return null;
+    }),
   ]);
 
   if (!product) {
@@ -45,7 +53,14 @@ export default async function Page({ params }: ProductPageProps) {
   const { slug } = await params;
   const [product, catalog] = await Promise.all([
     fetchStorefrontProductServer(slug),
-    fetchStorefrontCatalogServer().catch(() => null),
+    fetchStorefrontCatalogServer().catch((error) => {
+      console.error("[storefront] Failed to fetch catalog for product page", {
+        baseUrl: getStorefrontServerBaseUrl(),
+        slug,
+        error,
+      });
+      return null;
+    }),
   ]);
 
   if (!product) {

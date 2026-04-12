@@ -1,8 +1,14 @@
 import { HomePage } from "@/components/home-page";
-import { fetchStorefrontCatalogServer } from "@/lib/storefront-server";
+import { fetchStorefrontCatalogServer, getStorefrontServerBaseUrl } from "@/lib/storefront-server";
 
 export default async function Page() {
-  const catalog = await fetchStorefrontCatalogServer().catch(() => null);
+  const catalog = await fetchStorefrontCatalogServer().catch((error) => {
+    console.error("[storefront] Failed to fetch home catalog", {
+      baseUrl: getStorefrontServerBaseUrl(),
+      error,
+    });
+    return null;
+  });
 
   return <HomePage initialCatalog={catalog ?? undefined} />;
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { ShopByOccasionPage } from "@/components/shop-by-occasion-page";
-import { fetchStorefrontCatalogServer } from "@/lib/storefront-server";
+import { fetchStorefrontCatalogServer, getStorefrontServerBaseUrl } from "@/lib/storefront-server";
 
 const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ?? "";
 
@@ -20,7 +20,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const catalog = await fetchStorefrontCatalogServer().catch(() => null);
+  const catalog = await fetchStorefrontCatalogServer().catch((error) => {
+    console.error("[storefront] Failed to fetch occasions catalog", {
+      baseUrl: getStorefrontServerBaseUrl(),
+      error,
+    });
+    return null;
+  });
 
   return <ShopByOccasionPage initialOccasions={catalog?.occasions} />;
 }
