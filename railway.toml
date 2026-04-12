@@ -5,7 +5,7 @@
 
 [deploy]
 # Migrate uses the project root CLI + config; the running app must start from `.medusa/server` (see root Dockerfile).
-preDeployCommand = ["cd /app && npm run migrate"]
+preDeployCommand = ["sh", "-c", "cd /app && npm run migrate"]
 startCommand = "sh -c 'cd /app/.medusa/server && exec npm run start'"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
