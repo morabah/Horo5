@@ -64,12 +64,6 @@ module.exports = defineConfig({
   modules: [
     ...(fileModule ? [fileModule] : []),
     {
-      resolve: "./src/modules/feeling",
-    },
-    {
-      resolve: "./src/modules/subfeeling",
-    },
-    {
       resolve: "./src/modules/artist",
     },
     {

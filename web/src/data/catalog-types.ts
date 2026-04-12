@@ -99,6 +99,8 @@ export type Product = {
   name: string;
   artistSlug: string;
   primaryFeelingSlug?: string;
+  /** From Medusa catalog: false = omit from /feelings browse when category taxonomy is incomplete (strict mode). */
+  feelingBrowseEligible?: boolean;
   primarySubfeelingSlug?: string;
   primaryOccasionSlug?: string;
   feelingSlug: string;

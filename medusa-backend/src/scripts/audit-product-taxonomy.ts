@@ -1,12 +1,14 @@
 import type { ExecArgs } from "@medusajs/framework/types"
-import { Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
-import { FEELING_MODULE } from "../modules/feeling"
-import type FeelingModuleService from "../modules/feeling/service"
+import { FEELINGS_ROOT_HANDLE } from "../lib/storefront/feeling-category-metadata"
+import type { CategoryNode } from "../lib/storefront/feeling-category-tree"
+import {
+  categoryAncestorHandlesFromLeaf,
+  derivePrimaryFeelingSlugsFromProductCategories,
+} from "../lib/storefront/feeling-category-tree"
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
-import { SUBFEELING_MODULE } from "../modules/subfeeling"
-import type SubfeelingModuleService from "../modules/subfeeling/service"
 import { listProductsForTaxonomyLinkScan } from "../lib/storefront/taxonomy-product-links"
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -26,50 +28,54 @@ function asStringArray(value: unknown): string[] {
 }
 
 /**
- * Lists products (up to 500) and prints TSV: handle, primaryFeelingSlug, feeling_ok, primarySubfeelingSlug, sub_ok, occasionSlugs, invalid_occasions
+ * Lists products (up to 500) and prints TSV: handle, derived feeling/sub, category_ok, occasionSlugs, invalid_occasions
  * Run: npx medusa exec ./src/scripts/audit-product-taxonomy.ts
  */
 export default async function auditProductTaxonomy({ container }: ExecArgs) {
-  const feelingService = container.resolve<FeelingModuleService>(FEELING_MODULE)
-  const subfeelingService = container.resolve<SubfeelingModuleService>(SUBFEELING_MODULE)
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
   const occasionService = container.resolve<OccasionModuleService>(OCCASION_MODULE)
 
   const rows = await listProductsForTaxonomyLinkScan(container, 500)
 
   const header =
-    "handle\tprimaryFeelingSlug\tfeeling_ok\tprimarySubfeelingSlug\tsub_ok\toccasionSlugs\tinvalid_occasions"
+    "handle\tderivedFeeling\tderivedSub\tcategory_ok\toccasionSlugs\tinvalid_occasions"
   // eslint-disable-next-line no-console
   console.log(header)
 
   for (const row of rows) {
     const metadata = asRecord(row.metadata)
-    const primaryFeelingSlug = asString(metadata.primaryFeelingSlug) || asString(metadata.feelingSlug)
-    const primarySubfeelingSlug =
-      asString(metadata.primarySubfeelingSlug) || asString(metadata.lineSlug)
     const occasionSlugs = asStringArray(metadata.occasionSlugs)
     const invalidOccasions: string[] = []
 
-    let feelingOk = "yes"
-    if (!primaryFeelingSlug) {
-      feelingOk = "missing"
-    } else {
-      const feelings = await feelingService.listFeelings({ slug: primaryFeelingSlug })
-      const feeling = (feelings as Array<{ slug?: string }>)[0]
-      if (!feeling) {
-        feelingOk = "no"
-      }
-    }
+    const { data: productRow } = await query.graph({
+      entity: "product",
+      fields: [
+        "id",
+        "categories.handle",
+        "categories.parent_category.handle",
+        "categories.parent_category.parent_category.handle",
+      ],
+      filters: { id: row.id },
+      pagination: { take: 1 },
+    })
 
-    let subOk = "yes"
-    if (!primarySubfeelingSlug) {
-      subOk = "missing"
+    const categories = ((productRow || [])[0] as { categories?: CategoryNode[] | null } | undefined)
+      ?.categories
+
+    const derived = derivePrimaryFeelingSlugsFromProductCategories(categories, FEELINGS_ROOT_HANDLE)
+    const derivedFeeling = derived?.primaryFeelingSlug ?? ""
+    const derivedSub = derived?.primarySubfeelingSlug ?? ""
+
+    let categoryOk = "yes"
+    if (!categories?.length) {
+      categoryOk = "missing_categories"
     } else {
-      const subfeelings = await subfeelingService.listSubfeelings({ slug: primarySubfeelingSlug })
-      const sub = (subfeelings as Array<{ feeling_slug?: string }>)[0]
-      if (!sub) {
-        subOk = "no"
-      } else if (primaryFeelingSlug && sub.feeling_slug && sub.feeling_slug !== primaryFeelingSlug) {
-        subOk = "mismatch"
+      const chains = (categories || []).map((c) => categoryAncestorHandlesFromLeaf(c))
+      const underFeelings = chains.filter((chain) => chain.includes(FEELINGS_ROOT_HANDLE))
+      if (underFeelings.length === 0) {
+        categoryOk = "no_feelings_branch"
+      } else if (underFeelings.length > 1) {
+        categoryOk = "multiple_branches"
       }
     }
 
@@ -87,7 +93,7 @@ export default async function auditProductTaxonomy({ container }: ExecArgs) {
 
     // eslint-disable-next-line no-console
     console.log(
-      `${handle}\t${primaryFeelingSlug ?? ""}\t${feelingOk}\t${primarySubfeelingSlug ?? ""}\t${subOk}\t${occJoined}\t${invalidJoined}`
+      `${handle}\t${derivedFeeling}\t${derivedSub}\t${categoryOk}\t${occJoined}\t${invalidJoined}`
     )
   }
 }

@@ -27,6 +27,23 @@ describe("taxonomy-product-links", () => {
     expect(productReferencesSubfeelingSlug({ id: "1", metadata: { lineSlug: "i-care" } }, "i-care")).toBe(true)
   })
 
+  it("detects subfeeling from product_category path under feelings", () => {
+    const row = {
+      id: "1",
+      categories: [
+        {
+          handle: "i-care",
+          parent_category: {
+            handle: "mood",
+            parent_category: { handle: "feelings", parent_category: null },
+          },
+        },
+      ],
+    }
+    expect(productReferencesSubfeelingSlug(row, "i-care")).toBe(true)
+    expect(productReferencesFeelingSlug(row, "mood")).toBe(true)
+  })
+
   it("detects occasion in list or primary", () => {
     expect(
       productReferencesOccasionSlug(

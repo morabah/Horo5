@@ -28,6 +28,7 @@ export function VibeCommerceCard({
   'data-reveal': dataReveal,
 }: VibeCommerceCardProps) {
   const cover = getFeelingCollectionVisual(feeling.slug).cover;
+  const bodyCopy = feeling.blurb || feeling.tagline || '';
   const ctaLabel = variant === 'see-vibe' ? VIBES_SCHEMA.copy.cardSeeVibeCta : VIBES_SCHEMA.copy.cardExploreCta;
   const ariaLabel = VIBES_SCHEMA.copy.cardAriaTemplate
     .replace('{cta}', ctaLabel.replace(/\s*→$/, '').trim())
@@ -105,7 +106,7 @@ export function VibeCommerceCard({
                 glassInteractive.body,
               ].join(' ')}
             >
-              {feeling.tagline}
+              {bodyCopy}
             </p>
             <span
               className={[

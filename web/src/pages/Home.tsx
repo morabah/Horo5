@@ -10,7 +10,15 @@ import { HomeProofSplit } from '../components/HomeProofSplit';
 import { HomeStudioProof } from '../components/HomeStudioProof';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { getFeelingCollectionVisual, getProductMedia } from '../data/images';
-import { getArtist, getFeeling, getFeelings, getProducts, type Product } from '../data/site';
+import type { RuntimeCatalog } from '../data/catalog-types';
+import {
+  getArtist,
+  getFeeling,
+  getFeelings,
+  getProducts,
+  setRuntimeCatalog,
+  type Product,
+} from '../data/site';
 import { BRAND_COPY } from '../data/brand';
 import { HOME_COPY, HOME_ORIENTATION_STEPS } from '../data/homeContent';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -19,7 +27,16 @@ import { notifyHomeWaitlistSignup } from '../utils/homeWaitlist';
 const COMPACT_HOME_STORAGE = 'horo_home_compact';
 const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
 
-export function Home({ initialProducts }: { initialProducts?: Product[] } = {}) {
+export function Home({
+  initialCatalog,
+  initialProducts,
+}: { initialCatalog?: RuntimeCatalog | null; initialProducts?: Product[] } = {}) {
+  if (initialCatalog) {
+    setRuntimeCatalog(initialCatalog);
+  } else if (initialProducts?.length) {
+    setRuntimeCatalog({ products: initialProducts });
+  }
+
   useScrollReveal();
   const { copy } = useUiLocale();
   const location = useLocation();
@@ -125,7 +142,9 @@ export function Home({ initialProducts }: { initialProducts?: Product[] } = {}) 
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {getFeelings().map((feeling, i) => {
-              const coverSrc = getFeelingCollectionVisual(feeling.slug).cover.src;
+              const cover = getFeelingCollectionVisual(feeling.slug).cover;
+              const coverSrc = cover.src;
+              const description = (feeling.blurb || feeling.tagline || '').trim();
               return (
                 <Link
                   key={feeling.slug}
@@ -134,7 +153,14 @@ export function Home({ initialProducts }: { initialProducts?: Product[] } = {}) 
                   className="group relative flex min-h-[16rem] flex-col overflow-hidden rounded-[18px] bg-white ring-1 ring-stone/30 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
                   <div className="relative aspect-[4/5] w-full overflow-hidden bg-stone/5">
-                     {coverSrc && <img src={coverSrc} className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" alt="" loading="lazy" />}
+                     {coverSrc && (
+                       <img
+                         src={coverSrc}
+                         className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                         alt={feeling.cardImageAlt || cover.alt || feeling.name}
+                         loading="lazy"
+                       />
+                     )}
                   </div>
                   <div className="flex flex-1 flex-col p-6 bg-papyrus/20">
                     <div 
@@ -143,7 +169,7 @@ export function Home({ initialProducts }: { initialProducts?: Product[] } = {}) 
                       aria-hidden
                     />
                     <h3 className="font-headline text-lg font-semibold tracking-tight text-obsidian transition-colors group-hover:text-deep-teal">{feeling.name}</h3>
-                    <p className="mt-2 flex-1 font-body text-[13px] leading-relaxed text-clay transition-colors group-hover:text-warm-charcoal">{feeling.tagline}</p>
+                    <p className="mt-2 flex-1 font-body text-[13px] leading-relaxed text-clay transition-colors group-hover:text-warm-charcoal">{description}</p>
                     <span className="font-label mt-4 text-[10px] uppercase tracking-widest text-deep-teal opacity-0 transition-opacity group-hover:opacity-100">Explore &rarr;</span>
                   </div>
                 </Link>

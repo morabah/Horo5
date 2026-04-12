@@ -1,12 +1,17 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
-import { Modules } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 
-import { FEELING_MODULE } from "../modules/feeling"
-import type FeelingModuleService from "../modules/feeling/service"
+import { fetchChildCategoriesOfParent } from "../lib/storefront/catalog"
+import { FEELINGS_ROOT_HANDLE } from "../lib/storefront/feeling-category-metadata"
+import type { CategoryNode } from "../lib/storefront/feeling-category-tree"
+import {
+  categoryAncestorHandlesFromLeaf,
+  collectFeelingSubtreeAssignments,
+  feelingBranchSegments,
+  validateProductFeelingCategoryAssignments,
+} from "../lib/storefront/feeling-category-tree"
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
-import { SUBFEELING_MODULE } from "../modules/subfeeling"
-import type SubfeelingModuleService from "../modules/subfeeling/service"
 
 type ProductPayload = { id: string }
 
@@ -53,27 +58,67 @@ export default async function validateProductTaxonomySubscriber({
 
     const product = await productModule.retrieveProduct(productId, {})
     const metadata = asRecord(product?.metadata)
-    const primaryFeelingSlug = asString(metadata.primaryFeelingSlug) || asString(metadata.feelingSlug)
-    const primarySubfeelingSlug =
-      asString(metadata.primarySubfeelingSlug) || asString(metadata.lineSlug)
     const occasionSlugs = asStringArray(metadata.occasionSlugs)
     const primaryOccasionSlug = asString(metadata.primaryOccasionSlug)
     const decorationType = asString(metadata.decorationType)
     const artworkSlug = asString(metadata.artworkSlug)
 
-    if (!primaryFeelingSlug) {
-      const msg = `[taxonomy] Product ${productId} is missing primaryFeelingSlug / feelingSlug in metadata.`
+    const query = container.resolve(ContainerRegistrationKeys.QUERY)
+    const { data } = await query.graph({
+      entity: "product",
+      fields: [
+        "id",
+        "categories.id",
+        "categories.handle",
+        "categories.parent_category.id",
+        "categories.parent_category.handle",
+        "categories.parent_category.parent_category.id",
+        "categories.parent_category.parent_category.handle",
+      ],
+      filters: { id: productId },
+      pagination: {
+        take: 1,
+      },
+    })
+
+    const row = (data || [])[0] as { categories?: CategoryNode[] | null } | undefined
+    const categories = row?.categories || []
+
+    const feelingCheck = validateProductFeelingCategoryAssignments(categories, FEELINGS_ROOT_HANDLE)
+    if (feelingCheck.errors.includes("missing_feeling_branch")) {
+      const msg = `[taxonomy] Product ${productId} has no product_category assignment under "${FEELINGS_ROOT_HANDLE}".`
       logger.warn(msg)
       if (hardEnforce) {
         hardErrors.push(msg)
       }
     }
 
-    if (!primarySubfeelingSlug) {
-      const msg = `[taxonomy] Product ${productId} is missing primarySubfeelingSlug / lineSlug in metadata.`
+    if (feelingCheck.errors.includes("multiple_feeling_branches")) {
+      const msg = `[taxonomy] Product ${productId} has multiple feeling-branch category assignments.`
       logger.warn(msg)
       if (hardEnforce) {
         hardErrors.push(msg)
+      }
+    }
+
+    if (feelingCheck.feelingBranchCount === 1) {
+      const assignments = collectFeelingSubtreeAssignments(categories, FEELINGS_ROOT_HANDLE)
+      const branch = assignments[0]
+      const chain = categoryAncestorHandlesFromLeaf(branch)
+      const segments = feelingBranchSegments(chain, FEELINGS_ROOT_HANDLE)
+
+      if (branch?.id && segments.length === 1) {
+        const activeChildren = (await fetchChildCategoriesOfParent(container, branch.id)).filter(
+          (child) => child.is_active !== false
+        )
+
+        if (activeChildren.length > 0) {
+          const msg = `[taxonomy] Product ${productId} is assigned to parent feeling "${segments[0]}" but subcategories exist — assign a leaf subcategory instead.`
+          logger.warn(msg)
+          if (hardEnforce) {
+            hardErrors.push(msg)
+          }
+        }
       }
     }
 
@@ -91,49 +136,7 @@ export default async function validateProductTaxonomySubscriber({
       logger.warn(`[taxonomy] Product ${productId} has decorationType plain but artworkSlug is set.`)
     }
 
-    const feelingService = container.resolve<FeelingModuleService>(FEELING_MODULE)
-    const subfeelingService = container.resolve<SubfeelingModuleService>(SUBFEELING_MODULE)
     const occasionService = container.resolve<OccasionModuleService>(OCCASION_MODULE)
-
-    if (primaryFeelingSlug) {
-      const feelings = await feelingService.listFeelings({ slug: primaryFeelingSlug })
-      const feeling = (feelings as Array<{ slug?: string; active?: boolean }>)[0]
-
-      if (!feeling) {
-        const msg = `[taxonomy] Product ${productId} references unknown feeling slug "${primaryFeelingSlug}".`
-        logger.warn(msg)
-        if (hardEnforce) {
-          hardErrors.push(msg)
-        }
-      } else if (feeling.active === false) {
-        logger.warn(`[taxonomy] Product ${productId} references inactive feeling "${primaryFeelingSlug}".`)
-      }
-    }
-
-    if (primarySubfeelingSlug) {
-      const subfeelings = await subfeelingService.listSubfeelings({ slug: primarySubfeelingSlug })
-      const sub = (subfeelings as Array<{ slug?: string; feeling_slug?: string; active?: boolean }>)[0]
-
-      if (!sub) {
-        const msg = `[taxonomy] Product ${productId} references unknown subfeeling slug "${primarySubfeelingSlug}".`
-        logger.warn(msg)
-        if (hardEnforce) {
-          hardErrors.push(msg)
-        }
-      } else {
-        if (sub.active === false) {
-          logger.warn(`[taxonomy] Product ${productId} references inactive subfeeling "${primarySubfeelingSlug}".`)
-        }
-
-        if (primaryFeelingSlug && sub.feeling_slug && sub.feeling_slug !== primaryFeelingSlug) {
-          const msg = `[taxonomy] Product ${productId} subfeeling "${primarySubfeelingSlug}" does not belong to feeling "${primaryFeelingSlug}".`
-          logger.warn(msg)
-          if (hardEnforce) {
-            hardErrors.push(msg)
-          }
-        }
-      }
-    }
 
     for (const slug of occasionSlugs) {
       const occasions = await occasionService.listOccasions({ slug })

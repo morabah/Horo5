@@ -526,15 +526,16 @@ function mapDesignCard(product: Product): SearchDesignCard {
 function mapVibeCard(feelingSlug: string, designCount: number): SearchVibeCard | null {
   const feeling = getFeeling(feelingSlug);
   if (!feeling) return null;
+  const visual = getFeelingCollectionVisual(feeling.slug).cover;
 
   return {
     slug: feeling.slug,
     name: feeling.name,
-    tagline: feeling.tagline,
+    tagline: feeling.blurb || feeling.tagline || '',
     accent: feeling.accent,
     designCount,
-    imageSrc: getFeelingCollectionVisual(feeling.slug).cover.src || heroStreet,
-    imageAlt: `${feeling.name} — HORO editorial styling.`,
+    imageSrc: visual.src || heroStreet,
+    imageAlt: visual.alt || `${feeling.name} category image.`,
   };
 }
 
@@ -562,11 +563,18 @@ function resolveFeelingSlugParam(raw: string) {
   return LEGACY_VIBE_SLUG_TO_FEELING_SLUG[raw] ?? raw;
 }
 
+function isFeelingBrowseEligible(product: Product): boolean {
+  return product.feelingBrowseEligible !== false;
+}
+
 function getScopedProducts(scopeFeelingSlug?: string | null, scopeOccasionSlug?: string | null) {
   let baseProducts = getProducts();
   if (scopeFeelingSlug) {
     const resolved = resolveFeelingSlugParam(scopeFeelingSlug);
-    baseProducts = baseProducts.filter((product) => productFeelingSlug(product) === resolved);
+    baseProducts = baseProducts.filter(
+      (product) =>
+        isFeelingBrowseEligible(product) && productFeelingSlug(product) === resolved
+    );
   }
   if (scopeOccasionSlug) baseProducts = baseProducts.filter((product) => product.occasionSlugs.includes(scopeOccasionSlug as OccasionSlug));
   return baseProducts;
@@ -605,6 +613,9 @@ function getScopedCounts(baseProducts: Product[]) {
   const occasionCounts = new Map<OccasionSlug, number>();
 
   for (const product of baseProducts) {
+    if (!isFeelingBrowseEligible(product)) {
+      continue;
+    }
     const feelingSlug = productFeelingSlug(product);
     vibeCounts.set(feelingSlug, (vibeCounts.get(feelingSlug) ?? 0) + 1);
     for (const occasionSlug of product.occasionSlugs) {
@@ -671,9 +682,12 @@ export function getSearchResults({
   const queryMatchedProducts = scoredProducts.map((entry) => entry.product);
   const scoreBySlug = new Map(scoredProducts.map((entry) => [entry.product.slug, entry.score]));
 
-  const vibeFiltered = queryMatchedProducts.filter((product) =>
-    feelingFilter !== 'all' ? productFeelingSlug(product) === resolveFeelingSlugParam(feelingFilter) : true,
-  );
+  const vibeFiltered = queryMatchedProducts.filter((product) => {
+    if (!isFeelingBrowseEligible(product)) {
+      return false;
+    }
+    return feelingFilter !== 'all' ? productFeelingSlug(product) === resolveFeelingSlugParam(feelingFilter) : true;
+  });
 
   let facetFiltered = vibeFiltered;
   if (filterArtist && filterArtist !== 'all') {

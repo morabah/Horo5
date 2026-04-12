@@ -4,16 +4,13 @@ import path from "node:path"
 import type { ExecArgs } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 
+import { FEELINGS_ROOT_HANDLE } from "../lib/storefront/feeling-category-metadata"
 import { ARTIST_MODULE } from "../modules/artist"
 import type ArtistModuleService from "../modules/artist/service"
-import { FEELING_MODULE } from "../modules/feeling"
-import type FeelingModuleService from "../modules/feeling/service"
 import { MERCH_EVENT_MODULE } from "../modules/merch-event"
 import type MerchEventModuleService from "../modules/merch-event/service"
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
-import { SUBFEELING_MODULE } from "../modules/subfeeling"
-import type SubfeelingModuleService from "../modules/subfeeling/service"
 
 type CatRow = {
   id: string
@@ -75,8 +72,6 @@ export default async function paritySnapshot({ container }: ExecArgs) {
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
   const storeModule = container.resolve(Modules.STORE)
 
-  const feelingService = container.resolve<FeelingModuleService>(FEELING_MODULE)
-  const subfeelingService = container.resolve<SubfeelingModuleService>(SUBFEELING_MODULE)
   const occasionService = container.resolve<OccasionModuleService>(OCCASION_MODULE)
   const artistService = container.resolve<ArtistModuleService>(ARTIST_MODULE)
   const merchEventService = container.resolve<MerchEventModuleService>(MERCH_EVENT_MODULE)
@@ -100,8 +95,45 @@ export default async function paritySnapshot({ container }: ExecArgs) {
   const stores = await storeModule.listStores()
   const store = stores[0]
 
-  const feelings = (await feelingService.listFeelings({})) as Array<{ slug?: string }>
-  const subfeelings = (await subfeelingService.listSubfeelings({})) as Array<{ slug?: string }>
+  const { data: feelingsRootRows } = await query.graph({
+    entity: "product_category",
+    fields: ["id"],
+    filters: { handle: FEELINGS_ROOT_HANDLE },
+  })
+  const feelingsRootId = (feelingsRootRows as Array<{ id: string }> | undefined)?.[0]?.id
+
+  const feelingSlugs: string[] = []
+  const subfeelingSlugs: string[] = []
+
+  if (feelingsRootId) {
+    const { data: topFeelings } = await query.graph({
+      entity: "product_category",
+      fields: ["id", "handle"],
+      filters: { parent_category_id: feelingsRootId },
+    })
+    for (const row of (topFeelings || []) as Array<{ handle: string }>) {
+      if (row.handle) {
+        feelingSlugs.push(row.handle)
+      }
+    }
+
+    for (const row of (topFeelings || []) as Array<{ id: string }>) {
+      const { data: subs } = await query.graph({
+        entity: "product_category",
+        fields: ["handle"],
+        filters: { parent_category_id: row.id },
+      })
+      for (const sub of (subs || []) as Array<{ handle: string }>) {
+        if (sub.handle) {
+          subfeelingSlugs.push(sub.handle)
+        }
+      }
+    }
+  }
+
+  feelingSlugs.sort()
+  subfeelingSlugs.sort()
+
   const occasions = (await occasionService.listOccasions({})) as Array<{ slug?: string }>
   const artists = (await artistService.listArtists({})) as Array<{ slug?: string }>
   const merchEvents = (await merchEventService.listMerchEvents({})) as Array<{ slug?: string }>
@@ -126,8 +158,8 @@ export default async function paritySnapshot({ container }: ExecArgs) {
       .map((r) => ({ name: r.name, currency: r.currency_code }))
       .sort((a, b) => a.name.localeCompare(b.name)),
     storeDefaultCurrency: store?.supported_currencies?.find((c: { is_default?: boolean }) => c.is_default)?.currency_code ?? null,
-    feelingSlugs: feelings.map((f) => f.slug || "").filter(Boolean).sort(),
-    subfeelingSlugs: subfeelings.map((f) => f.slug || "").filter(Boolean).sort(),
+    feelingSlugs,
+    subfeelingSlugs,
     occasionSlugs: occasions.map((o) => o.slug || "").filter(Boolean).sort(),
     artistSlugs: artists.map((a) => a.slug || "").filter(Boolean).sort(),
     merchEventSlugs: merchEvents.map((e) => e.slug || "").filter(Boolean).sort(),

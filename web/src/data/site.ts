@@ -172,13 +172,21 @@ export const getVibe = getFeeling;
 
 export function productsByFeeling(feelingSlug: string) {
   const resolved = resolveFeelingSlug(feelingSlug);
-  return getProducts().filter((p) => (p.primaryFeelingSlug ?? p.feelingSlug) === resolved);
+  return getProducts().filter((p) => {
+    if (p.feelingBrowseEligible === false) {
+      return false;
+    }
+    return (p.primaryFeelingSlug ?? p.feelingSlug) === resolved;
+  });
 }
 
 export function productsBySubfeeling(subfeelingSlug: string) {
-  return getProducts().filter(
-    (product) => (product.primarySubfeelingSlug ?? product.lineSlug) === subfeelingSlug
-  );
+  return getProducts().filter((product) => {
+    if (product.feelingBrowseEligible === false) {
+      return false;
+    }
+    return (product.primarySubfeelingSlug ?? product.lineSlug) === subfeelingSlug;
+  });
 }
 
 export function getOccasion(slug: string) {

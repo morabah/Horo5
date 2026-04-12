@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { AppIcon } from '../components/AppIcon';
-import { getEditorialBlockByFeelingSlug } from '../data/homeEditorial';
 import { getFeeling, getFeelings, getSubfeelingsByFeeling, productsByFeeling } from '../data/site';
 import { getFeelingCollectionVisual, getProductMedia, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
@@ -92,8 +91,6 @@ export function FeelingCollection() {
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
   const mobileFilterTriggerRef = useRef<HTMLElement | null>(null);
 
-  const editorialBlock = useMemo(() => getEditorialBlockByFeelingSlug(slug), [slug]);
-
   useEffect(() => {
     setSortKey('featured');
     setPriceFilter('all');
@@ -123,8 +120,17 @@ export function FeelingCollection() {
   }
 
   const feelingVisuals = getFeelingCollectionVisual(feeling.slug);
-  const storyLead = editorialBlock?.body ?? feeling.tagline;
-  const manifestoLine = editorialBlock?.manifesto ?? feeling.manifesto;
+  const heroLead =
+    activeLine?.blurb ||
+    feeling.tagline ||
+    feeling.blurb ||
+    `Browse all designs filed under ${feeling.name}.`;
+  const storyLead =
+    feeling.blurb ||
+    feeling.tagline ||
+    activeLine?.blurb ||
+    `Browse all products assigned to ${feeling.name} in Medusa.`;
+  const manifestoLine = feeling.manifesto;
   const designCountLabel = baseList.length >= DESIGN_COUNT_MIN ? `${baseList.length} designs` : 'Curated selection';
   const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || Boolean(lineParam);
 
@@ -246,7 +252,7 @@ export function FeelingCollection() {
                   {feeling.name}
                 </h1>
                 <p className="font-body mt-4 max-w-xl text-base leading-relaxed text-white/95 md:text-[1.0625rem]">
-                  {feeling.tagline}
+                  {heroLead}
                 </p>
                 {manifestoLine ? (
                   <p className="font-body mt-5 max-w-xl text-[1.05rem] italic leading-relaxed text-white/95 md:text-[1.16rem]">
@@ -309,12 +315,12 @@ export function FeelingCollection() {
               </div>
             </div>
             <div className="w-full space-y-4 md:max-w-lg">
-              {editorialBlock ? (
-                <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">{editorialBlock.kicker}</p>
-              ) : null}
+              <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
+                {activeLine ? `${feeling.name} / ${activeLine.name}` : 'Category story'}
+              </p>
               <h2
                 id="feeling-proof-heading"
-                className={`font-headline text-xl font-semibold tracking-tight text-obsidian md:text-2xl ${editorialBlock ? 'mt-2' : ''}`}
+                className="font-headline mt-2 text-xl font-semibold tracking-tight text-obsidian md:text-2xl"
               >
                 {feeling.name}
               </h2>
@@ -479,7 +485,7 @@ export function FeelingCollection() {
                 </div>
                 <div className="space-y-2 px-4 py-4">
                   <p className="font-headline text-lg font-semibold text-obsidian">{v.name}</p>
-                  <p className="font-body text-sm leading-relaxed text-warm-charcoal">{v.tagline}</p>
+                  <p className="font-body text-sm leading-relaxed text-warm-charcoal">{v.blurb || v.tagline}</p>
                 </div>
               </Link>
             ))}

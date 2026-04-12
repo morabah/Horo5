@@ -2,7 +2,7 @@ import { VibeCommerceCard } from './VibeCommerceCard';
 import { getFeelings } from '../data/site';
 
 /**
- * Homepage-only: five commerce cards → /feelings/:slug (no editorial stack, no scroll-spy).
+ * Homepage-only: render every live feeling card → /feelings/:slug.
  */
 export function HomeVibeGrid() {
   return (

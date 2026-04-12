@@ -5,23 +5,11 @@ import { createProductCategoriesWorkflow } from "@medusajs/medusa/core-flows"
 type Cat = { name: string; handle: string; is_active: boolean; rank: number; parent_handle?: string }
 
 /**
- * HORO Admin "taxonomy" product categories (Feelings / Moments trees) — matches typical local Admin setup.
- * Not part of seed-egypt-catalog; use this so Railway matches localhost /app/categories.
- *
+ * HORO Admin "Moments" product categories — matches typical local Admin setup.
+ * Canonical Shop-by-Feeling categories live under native handle `feelings` (see seed / migration).
  * Idempotent: creates missing categories only (by handle).
  */
-const ROOTS: Cat[] = [
-  { name: "Feelings", handle: "taxonomy-feelings", is_active: true, rank: 0 },
-  { name: "Moments", handle: "taxonomy-moments", is_active: true, rank: 1 },
-]
-
-const UNDER_FEELINGS: Cat[] = [
-  { name: "Playful / Offbeat", handle: "feeling-playful-offbeat", is_active: true, rank: 0, parent_handle: "taxonomy-feelings" },
-  { name: "Warm / Romantic", handle: "feeling-warm-romantic", is_active: true, rank: 1, parent_handle: "taxonomy-feelings" },
-  { name: "Soft / Quiet", handle: "feeling-soft-quiet", is_active: true, rank: 2, parent_handle: "taxonomy-feelings" },
-  { name: "Grounded / Everyday", handle: "feeling-grounded-everyday", is_active: true, rank: 3, parent_handle: "taxonomy-feelings" },
-  { name: "Bold / Electric", handle: "feeling-bold-electric", is_active: true, rank: 4, parent_handle: "taxonomy-feelings" },
-]
+const ROOTS: Cat[] = [{ name: "Moments", handle: "taxonomy-moments", is_active: true, rank: 1 }]
 
 const UNDER_MOMENTS: Cat[] = [
   { name: "Gift Something Real", handle: "moment-gift-something-real", is_active: true, rank: 0, parent_handle: "taxonomy-moments" },
@@ -54,11 +42,7 @@ export default async function ensureHoroTaxonomyProductCategories({ container }:
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
-  const allHandles = [
-    ...ROOTS.map((r) => r.handle),
-    ...UNDER_FEELINGS.map((r) => r.handle),
-    ...UNDER_MOMENTS.map((r) => r.handle),
-  ]
+  const allHandles = [...ROOTS.map((r) => r.handle), ...UNDER_MOMENTS.map((r) => r.handle)]
 
   let idByHandle = await existingIdsByHandle(query, allHandles)
   const created: string[] = []
@@ -99,10 +83,10 @@ export default async function ensureHoroTaxonomyProductCategories({ container }:
 
   await createBatch(ROOTS)
   idByHandle = await existingIdsByHandle(query, allHandles)
-  await createBatch([...UNDER_FEELINGS, ...UNDER_MOMENTS])
+  await createBatch(UNDER_MOMENTS)
 
   if (!created.length) {
-    logger.info("HORO taxonomy product categories already present — nothing to create.")
+    logger.info("HORO taxonomy product categories (moments) already present — nothing to create.")
   } else {
     logger.info(`Created HORO taxonomy categories: ${created.join(", ")}`)
   }

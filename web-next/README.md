@@ -19,7 +19,7 @@ This is the **HORO storefront on Next.js** (`web-next`). Page UI is imported fro
 ### Medusa (`medusa-backend`)
 
 1. Run API: `cd medusa-backend && npm run dev` (default `http://localhost:9000`).
-2. Copy [`.env.example`](./.env.example) → `.env.local` and set **`NEXT_PUBLIC_MEDUSA_BACKEND_URL`** and **`NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`** (publishable key from Medusa Admin).
+2. Copy [`.env.example`](./.env.example) → `.env.local` and set **`NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`**. From `web-next/`, **`npm run dev:local`** kills anything listening on **9000** (Medusa) and **3000** (Next dev) if present, then starts [`medusa-backend`](../medusa-backend) (`npm run dev`), waits until `http://127.0.0.1:9000/health` responds, then starts Next with `NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000`. **`npm run dev:railway`** starts only Next and points at [`.env.railway`](./.env.railway) (plus optional `.env.railway.local`). If Medusa is already running locally, use **`npm run dev`** instead of `dev:local` so you do not start a second backend.
 3. On the Medusa service, **`STORE_CORS`** / **`AUTH_CORS`** must include your storefront origin (e.g. `http://localhost:3000`).
 4. Catalog: [`AppProviders`](../web/src/AppProviders.tsx) calls **`hydrateRuntimeCatalog()`** on load; products merge into runtime data when the Store API is reachable ([`web/src/lib/medusa/catalog.ts`](../web/src/lib/medusa/catalog.ts)).
 

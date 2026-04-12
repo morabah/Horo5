@@ -50,6 +50,8 @@ export type StorefrontProductDTO = {
   originalPriceEgp?: number | null
   pdpFitModels?: Array<Record<string, unknown>>
   defaultPriceSize?: string
+  /** False when legacy metadata fallback is off and the product has no single valid branch under `feelings` — hide from feeling browse. */
+  feelingBrowseEligible?: boolean
   primaryFeelingSlug: string
   primaryOccasionSlug?: string
   primarySubfeelingSlug: string

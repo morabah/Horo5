@@ -6,14 +6,13 @@ import type { MedusaContainer } from "@medusajs/types"
 
 import { ARTIST_MODULE } from "../../modules/artist"
 import type ArtistModuleService from "../../modules/artist/service"
-import { FEELING_MODULE } from "../../modules/feeling"
-import type FeelingModuleService from "../../modules/feeling/service"
 import { MERCH_EVENT_MODULE } from "../../modules/merch-event"
 import type MerchEventModuleService from "../../modules/merch-event/service"
 import { OCCASION_MODULE } from "../../modules/occasion"
 import type OccasionModuleService from "../../modules/occasion/service"
-import { SUBFEELING_MODULE } from "../../modules/subfeeling"
-import type SubfeelingModuleService from "../../modules/subfeeling/service"
+import { FEELINGS_ROOT_HANDLE } from "./feeling-category-metadata"
+import type { CategoryNode } from "./feeling-category-tree"
+import { derivePrimaryFeelingSlugsFromProductCategories } from "./feeling-category-tree"
 import {
   inferFeelingSlugFromHandle,
   inferSubfeelingSlugFromHandle,
@@ -63,10 +62,8 @@ type RegionDTO = {
   id: string
 }
 
-type QueryCategory = {
-  handle?: string | null
+type QueryCategory = CategoryNode & {
   id: string
-  name?: string | null
   parent_category?: QueryCategory | null
 }
 
@@ -210,6 +207,10 @@ const PRODUCT_QUERY_FIELDS = [
   "categories.parent_category.handle",
   "categories.parent_category.parent_category.id",
   "categories.parent_category.parent_category.handle",
+  "categories.metadata",
+  "categories.description",
+  "categories.rank",
+  "categories.is_active",
   "variants.id",
   "variants.title",
   "variants.sku",
@@ -226,6 +227,94 @@ const PRODUCT_QUERY_FIELDS = [
 
 const DEFAULT_APPAREL_CATEGORY_PATH = "apparel/tops/t-shirts"
 const DEFAULT_SIZE_ORDER = ["S", "M", "L", "XL", "XXL"] as const
+
+function categoryToFeelingRecord(category: CategoryNode): FeelingRecord {
+  const meta = asRecord(category.metadata)
+  return {
+    accent: asString(meta.accent),
+    active: category.is_active !== false,
+    blurb: (typeof category.description === "string" ? category.description : "") || "",
+    card_image_alt: asString(meta.card_image_alt),
+    card_image_src: asString(meta.card_image_src),
+    hero_image_alt: asString(meta.hero_image_alt),
+    hero_image_src: asString(meta.hero_image_src),
+    manifesto: asString(meta.manifesto),
+    name: category.name || category.handle || "",
+    seo_description: asString(meta.seo_description),
+    seo_title: asString(meta.seo_title),
+    slug: category.handle || "",
+    sort_order: typeof category.rank === "number" ? category.rank : 0,
+    tagline: asString(meta.tagline),
+  }
+}
+
+function categoryToSubfeelingRecord(category: CategoryNode, feelingSlug: string): SubfeelingRecord {
+  const meta = asRecord(category.metadata)
+  return {
+    active: category.is_active !== false,
+    blurb: (typeof category.description === "string" ? category.description : "") || "",
+    card_image_alt: asString(meta.card_image_alt),
+    card_image_src: asString(meta.card_image_src),
+    feeling_slug: feelingSlug,
+    hero_image_alt: asString(meta.hero_image_alt),
+    hero_image_src: asString(meta.hero_image_src),
+    name: category.name || category.handle || "",
+    seo_description: asString(meta.seo_description),
+    seo_title: asString(meta.seo_title),
+    slug: category.handle || "",
+    sort_order: typeof category.rank === "number" ? category.rank : 0,
+  }
+}
+
+export async function fetchProductCategoryByHandle(
+  scope: MedusaContainer,
+  handle: string
+): Promise<CategoryNode | null> {
+  const query = scope.resolve(ContainerRegistrationKeys.QUERY)
+  const { data } = await query.graph({
+    entity: "product_category",
+    fields: [
+      "id",
+      "handle",
+      "name",
+      "description",
+      "metadata",
+      "rank",
+      "is_active",
+      "parent_category_id",
+      "parent_category.id",
+      "parent_category.handle",
+      "parent_category.parent_category.handle",
+    ],
+    filters: { handle },
+    pagination: {
+      take: 1,
+    },
+  })
+
+  return ((data || [])[0] as CategoryNode) ?? null
+}
+
+export async function fetchChildCategoriesOfParent(
+  scope: MedusaContainer,
+  parentId: string
+): Promise<CategoryNode[]> {
+  const query = scope.resolve(ContainerRegistrationKeys.QUERY)
+  const { data } = await query.graph({
+    entity: "product_category",
+    fields: ["id", "handle", "name", "description", "metadata", "rank", "is_active", "parent_category_id"],
+    filters: { parent_category_id: parentId },
+    pagination: {
+      order: {
+        rank: "ASC",
+      },
+      take: 500,
+    },
+  })
+
+  const rows = (data || []) as CategoryNode[]
+  return rows.sort((left, right) => Number(left.rank ?? 0) - Number(right.rank ?? 0))
+}
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {}
@@ -459,10 +548,32 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
   ])
   const mainImage = gallery[0] || product.thumbnail || legacyMedia?.main || null
   const inventoryHints = asRecord(metadata.inventoryHintBySize) as Record<string, string>
+  const derived = derivePrimaryFeelingSlugsFromProductCategories(
+    product.categories as QueryCategory[] | null,
+    FEELINGS_ROOT_HANDLE
+  )
+  const legacyFb = String(process.env.STOREFRONT_FEELINGS_LEGACY_FALLBACK || "").trim().toLowerCase() !== "false"
   const rawFeelingSlug = asString(metadata.primaryFeelingSlug) || asString(metadata.feelingSlug)
-  const primaryFeelingSlug = normalizeFeelingSlug(rawFeelingSlug, product.handle)
   const rawSubfeelingSlug = asString(metadata.primarySubfeelingSlug) || asString(metadata.lineSlug)
-  const primarySubfeelingSlug = normalizeSubfeelingSlug(rawSubfeelingSlug, product.handle, primaryFeelingSlug)
+
+  let primaryFeelingSlug: string
+  let primarySubfeelingSlug: string
+
+  if (derived) {
+    primaryFeelingSlug = normalizeFeelingSlug(derived.primaryFeelingSlug, product.handle)
+    primarySubfeelingSlug = derived.primarySubfeelingSlug
+      ? normalizeSubfeelingSlug(derived.primarySubfeelingSlug, product.handle, primaryFeelingSlug)
+      : ""
+  } else if (legacyFb) {
+    primaryFeelingSlug = normalizeFeelingSlug(rawFeelingSlug, product.handle)
+    primarySubfeelingSlug = normalizeSubfeelingSlug(rawSubfeelingSlug, product.handle, primaryFeelingSlug)
+  } else {
+    primaryFeelingSlug = normalizeFeelingSlug(undefined, product.handle)
+    primarySubfeelingSlug = normalizeSubfeelingSlug(undefined, product.handle, primaryFeelingSlug)
+  }
+
+  const feelingBrowseEligible = derived !== null || legacyFb
+
   const apparelPath =
     apparelCategoryPath(product.categories) ||
     asString(metadata.apparelCategoryPath) ||
@@ -482,6 +593,7 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
     customersAlsoBoughtSlugs: asStringArray(metadata.customersAlsoBoughtSlugs),
     decorationType,
     defaultPriceSize: defaultVariant?.size,
+    feelingBrowseEligible,
     description: product.description || asString(metadata.story) || undefined,
     feelingSlug: primaryFeelingSlug,
     fitLabel: asString(metadata.fitLabel),
@@ -697,39 +809,78 @@ export async function listStorefrontArtists(scope: MedusaContainer) {
 }
 
 export async function listStorefrontFeelings(scope: MedusaContainer) {
-  const feelingService = scope.resolve<FeelingModuleService>(FEELING_MODULE)
-  const feelings = await feelingService.listFeelings({})
+  const root = await fetchProductCategoryByHandle(scope, FEELINGS_ROOT_HANDLE)
+  if (root?.id) {
+    const children = await fetchChildCategoriesOfParent(scope, root.id)
+    const active = children.filter((category) => category.is_active !== false)
+    if (active.length > 0) {
+      return active.map((category) => buildFeeling(categoryToFeelingRecord(category)))
+    }
+  }
 
-  return (feelings as FeelingRecord[])
-    .map(buildFeeling)
-    .sort((left, right) => left.sortOrder - right.sortOrder)
+  return []
 }
 
 export async function retrieveStorefrontFeeling(scope: MedusaContainer, slug: string) {
-  const feelingService = scope.resolve<FeelingModuleService>(FEELING_MODULE)
-  const feelings = await feelingService.listFeelings({ slug })
+  const root = await fetchProductCategoryByHandle(scope, FEELINGS_ROOT_HANDLE)
+  if (root?.id) {
+    const children = await fetchChildCategoriesOfParent(scope, root.id)
+    const match = children.find((category) => category.handle === slug && category.is_active !== false)
+    if (match) {
+      return buildFeeling(categoryToFeelingRecord(match))
+    }
+  }
 
-  return (feelings as FeelingRecord[])
-    .map(buildFeeling)
-    .find((feeling) => feeling.slug === slug) || null
+  return null
 }
 
 export async function listStorefrontSubfeelings(scope: MedusaContainer) {
-  const subfeelingService = scope.resolve<SubfeelingModuleService>(SUBFEELING_MODULE)
-  const subfeelings = await subfeelingService.listSubfeelings({})
+  const root = await fetchProductCategoryByHandle(scope, FEELINGS_ROOT_HANDLE)
+  if (root?.id) {
+    const top = await fetchChildCategoriesOfParent(scope, root.id)
+    const subRows: SubfeelingRecord[] = []
 
-  return (subfeelings as SubfeelingRecord[])
-    .map(buildSubfeeling)
-    .sort((left, right) => left.sortOrder - right.sortOrder)
+    for (const feeling of top) {
+      if (!feeling.id || feeling.is_active === false) {
+        continue
+      }
+
+      const subs = await fetchChildCategoriesOfParent(scope, feeling.id)
+      for (const sub of subs) {
+        if (sub.is_active === false || !sub.handle) {
+          continue
+        }
+
+        subRows.push(categoryToSubfeelingRecord(sub, feeling.handle || ""))
+      }
+    }
+
+    if (subRows.length > 0) {
+      return subRows.map(buildSubfeeling).sort((left, right) => left.sortOrder - right.sortOrder)
+    }
+  }
+
+  return []
 }
 
 export async function retrieveStorefrontSubfeeling(scope: MedusaContainer, slug: string) {
-  const subfeelingService = scope.resolve<SubfeelingModuleService>(SUBFEELING_MODULE)
-  const subfeelings = await subfeelingService.listSubfeelings({ slug })
+  const root = await fetchProductCategoryByHandle(scope, FEELINGS_ROOT_HANDLE)
+  if (root?.id) {
+    const top = await fetchChildCategoriesOfParent(scope, root.id)
+    for (const feeling of top) {
+      if (!feeling.id) {
+        continue
+      }
 
-  return (subfeelings as SubfeelingRecord[])
-    .map(buildSubfeeling)
-    .find((subfeeling) => subfeeling.slug === slug) || null
+      const subs = await fetchChildCategoriesOfParent(scope, feeling.id)
+      const match = subs.find((sub) => sub.handle === slug && sub.is_active !== false)
+      if (match) {
+        return buildSubfeeling(categoryToSubfeelingRecord(match, feeling.handle || ""))
+      }
+    }
+  }
+
+  return null
 }
 
 export async function listStorefrontOccasions(scope: MedusaContainer) {

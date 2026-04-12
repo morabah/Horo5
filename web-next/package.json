@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "dev:local": "node scripts/free-dev-ports.mjs && concurrently -k -n backend,next -c cyan,magenta \"npm run dev --prefix ../medusa-backend\" \"wait-on http://127.0.0.1:9000/health && dotenv -e .env.local -v NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000 -- next dev --webpack\"",
+    "dev:railway": "dotenv -e .env.local -e .env.railway -e .env.railway.local -- next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
@@ -23,9 +25,13 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/webpack": "^5.28.5",
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
+    "kill-port": "^2.0.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^9.0.5"
   }
 }

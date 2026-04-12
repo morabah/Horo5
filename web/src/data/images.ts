@@ -3,8 +3,15 @@
  * so page sections stop pulling from an ad hoc shared pool.
  */
 
-import { mapLegacyFeelingSlug } from './legacy-slugs';
-import { getFeeling, getFeelings, getOccasion, getProduct } from './site.ts';
+import {
+  getFeeling,
+  getFeelings,
+  getOccasion,
+  getProduct,
+  getSubfeeling,
+  productsByFeeling,
+  productsBySubfeeling,
+} from './site.ts';
 
 /** Hero: urban, warm, model in tee */
 export const heroStreet = '/images/tees/tee_walking_street.png';
@@ -68,24 +75,6 @@ export type FeelingStorefrontImages = {
 type OccasionStorefrontImages = {
   hero: StorefrontImageSlot;
   proof: StorefrontImageSlot;
-};
-
-const FALLBACK_FEELING_VISUALS: FeelingStorefrontImages = {
-  cover: {
-    src: heroStreet,
-    alt: 'HORO feeling cover — editorial styling in a graphic tee.',
-    objectPosition: 'center 24%',
-  },
-  hero: {
-    src: heroStreet,
-    alt: 'HORO feeling collection hero — editorial styling in a graphic tee.',
-    objectPosition: 'center 24%',
-  },
-  proof: {
-    src: heroStreet,
-    alt: 'HORO feeling proof image — editorial styling in a graphic tee.',
-    objectPosition: 'center 24%',
-  },
 };
 
 const FALLBACK_OCCASION_VISUALS: OccasionStorefrontImages = {
@@ -333,35 +322,85 @@ export const homeProofGallery = [
   },
 ] as const;
 
-function resolveFeelingVisualKey(slug: string): string {
-  return mapLegacyFeelingSlug(slug);
+function firstNonEmptyString(...values: Array<string | null | undefined>): string | undefined {
+  return values.find((value): value is string => typeof value === 'string' && value.trim().length > 0);
+}
+
+function runtimeProductImage(productSlug: string): string | undefined {
+  const product = getProduct(productSlug);
+  return firstNonEmptyString(product?.media?.main, ...(product?.media?.gallery ?? []), product?.thumbnail);
+}
+
+function firstRuntimeProductImage(productSlugs: string[]): string | undefined {
+  for (const productSlug of productSlugs) {
+    const image = runtimeProductImage(productSlug);
+    if (image) {
+      return image;
+    }
+  }
+
+  return undefined;
 }
 
 export function getFeelingCollectionVisual(slug: string): FeelingStorefrontImages {
   const feeling = getFeeling(slug);
-  const runtimeCover =
-    feeling?.cardImageSrc || feeling?.heroImageSrc
-      ? {
-          cover: {
-            src: feeling.cardImageSrc ?? feeling.heroImageSrc ?? heroStreet,
-            alt: feeling.cardImageAlt ?? `${feeling.name} cover`,
-          },
-          hero: {
-            src: feeling.heroImageSrc ?? feeling.cardImageSrc ?? heroStreet,
-            alt: feeling.heroImageAlt ?? `${feeling.name} hero`,
-          },
-          proof: {
-            src: feeling.heroImageSrc ?? feeling.cardImageSrc ?? heroStreet,
-            alt: feeling.heroImageAlt ?? `${feeling.name} proof`,
-          },
-        }
-      : null;
+  const productFallback = firstRuntimeProductImage(productsByFeeling(slug).map((product) => product.slug));
+  const coverSrc = firstNonEmptyString(feeling?.cardImageSrc, feeling?.heroImageSrc, productFallback, heroStreet) ?? heroStreet;
+  const heroSrc = firstNonEmptyString(feeling?.heroImageSrc, feeling?.cardImageSrc, productFallback, coverSrc) ?? coverSrc;
+  const proofSrc = firstNonEmptyString(heroSrc, coverSrc, productFallback, heroStreet) ?? heroStreet;
+  const name = feeling?.name ?? slug.replace(/-/g, ' ');
 
-  return runtimeCover ?? STOREFRONT_IMAGE_SLOTS.feelings[resolveFeelingVisualKey(slug)] ?? FALLBACK_FEELING_VISUALS;
+  return {
+    cover: {
+      src: coverSrc,
+      alt: firstNonEmptyString(feeling?.cardImageAlt, feeling?.heroImageAlt, `${name} collection cover`) ?? `${name} collection cover`,
+    },
+    hero: {
+      src: heroSrc,
+      alt: firstNonEmptyString(feeling?.heroImageAlt, feeling?.cardImageAlt, `${name} collection image`) ?? `${name} collection image`,
+    },
+    proof: {
+      src: proofSrc,
+      alt: firstNonEmptyString(feeling?.heroImageAlt, feeling?.cardImageAlt, `${name} category image`) ?? `${name} category image`,
+    },
+  };
 }
 
 /** @deprecated Use getFeelingCollectionVisual */
 export const getVibeCollectionVisual = getFeelingCollectionVisual;
+
+export function getSubfeelingCollectionVisual(slug: string): StorefrontImageSlot {
+  const subfeeling = getSubfeeling(slug);
+  const parentFeeling = subfeeling ? getFeeling(subfeeling.feelingSlug) : undefined;
+  const subfeelingProductFallback = firstRuntimeProductImage(
+    productsBySubfeeling(slug).map((product) => product.slug)
+  );
+  const parentFeelingFallback = parentFeeling
+    ? firstRuntimeProductImage(productsByFeeling(parentFeeling.slug).map((product) => product.slug))
+    : undefined;
+  const src =
+    firstNonEmptyString(
+      subfeeling?.cardImageSrc,
+      subfeeling?.heroImageSrc,
+      subfeelingProductFallback,
+      parentFeeling?.cardImageSrc,
+      parentFeeling?.heroImageSrc,
+      parentFeelingFallback,
+      heroStreet
+    ) ?? heroStreet;
+  const name = subfeeling?.name ?? slug.replace(/-/g, ' ');
+
+  return {
+    src,
+    alt:
+      firstNonEmptyString(
+        subfeeling?.cardImageAlt,
+        subfeeling?.heroImageAlt,
+        parentFeeling?.cardImageAlt,
+        `${name} collection image`
+      ) ?? `${name} collection image`,
+  };
+}
 
 export function getOccasionCollectionVisual(slug: string): OccasionStorefrontImages {
   const occasion = getOccasion(slug);

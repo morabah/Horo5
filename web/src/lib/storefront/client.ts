@@ -49,6 +49,7 @@ type StorefrontProductResponse = {
   originalPriceEgp?: number | null;
   pdpFitModels?: Product["pdpFitModels"];
   defaultPriceSize?: string;
+  feelingBrowseEligible?: boolean;
   primaryFeelingSlug: string;
   primaryOccasionSlug?: string;
   primarySubfeelingSlug: string;
@@ -153,6 +154,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     originalPriceEgp: product.originalPriceEgp,
     pdpFitModels: product.pdpFitModels,
     defaultPriceSize: product.defaultPriceSize as Product["defaultPriceSize"],
+    feelingBrowseEligible: product.feelingBrowseEligible ?? true,
     primaryFeelingSlug: product.primaryFeelingSlug,
     primaryOccasionSlug: product.primaryOccasionSlug,
     primarySubfeelingSlug: product.primarySubfeelingSlug,
