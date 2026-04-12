@@ -213,6 +213,27 @@ const LEGACY_MEDIA_BY_PRODUCT: Record<string, LegacyProductMedia> = {
     flatLay: tee.flatLayStyle,
     lifestyle: tee.yellowTee,
   }),
+  /** Egypt catalog hero SKUs (see egypt-products.ts + seed-egypt-catalog) */
+  "horo-career-vibe": legacyGallery(newTees.career1, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.relaxedFit,
+  }),
+  "horo-emotions-vibe": legacyGallery(newTees.emotions1, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.womanStreet,
+  }),
+  "horo-fiction-vibe": legacyGallery(newTees.fiction1, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.womanUrban,
+  }),
+  "horo-signature-hero": legacyGallery("/images/hero/hero-model.png", {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.studioTee,
+  }),
+  "horo-zodiac-vibe": legacyGallery(newTees.zodiac1, {
+    flatLay: tee.flatLayStyle,
+    lifestyle: tee.streetPose,
+  }),
 }
 
 const DEFAULT_MEDIA = legacyGallery(tee.manCasual, {

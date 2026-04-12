@@ -35,6 +35,7 @@ import {
   SUBFEELING_TAXONOMY,
   type SubfeelingTaxonomySeed,
 } from "./data/feelings-taxonomy-data"
+import { egyptProducts, EGYPT_PRODUCT_PRICE_EGP } from "./data/egypt-products"
 import { getLegacyProductMedia } from "./data/legacy-product-media"
 import { merchEvents } from "./data/merch-events"
 import { MERCH_EVENT_MODULE } from "../modules/merch-event"
@@ -81,6 +82,28 @@ type LegacyProduct = {
   story: string
   useCase?: string
   wearerStories?: unknown[]
+}
+
+/** Canonical feeling slugs for Egypt hero tees (aligned with migrate-feelings hero fallbacks). */
+const EGYPT_HERO_FEELING_BY_HANDLE: Record<string, string> = {
+  "horo-emotions-vibe": "mood",
+  "horo-zodiac-vibe": "zodiac",
+  "horo-fiction-vibe": "fiction",
+  "horo-career-vibe": "career",
+  "horo-signature-hero": "mood",
+}
+
+function buildEgyptHeroLegacyProducts(): LegacyProduct[] {
+  const priceEgp = Math.round(EGYPT_PRODUCT_PRICE_EGP / 100)
+  return egyptProducts.map((row) => ({
+    artistSlug: "nada-ibrahim",
+    feelingSlug: EGYPT_HERO_FEELING_BY_HANDLE[row.handle] ?? "mood",
+    name: row.titleEn,
+    occasionSlugs: [],
+    priceEgp,
+    slug: row.handle,
+    story: row.descriptionEn,
+  }))
 }
 
 function resolveRepoFile(...candidates: string[]) {
@@ -698,6 +721,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
   const occasionModuleService = container.resolve<OccasionModuleService>(OCCASION_MODULE)
   const merchEventModuleService = container.resolve<MerchEventModuleService>(MERCH_EVENT_MODULE)
   const { legacyOccasions, legacyProducts } = await loadLegacyCatalogPayload()
+  const seedCatalogProducts: LegacyProduct[] = [...legacyProducts, ...buildEgyptHeroLegacyProducts()]
 
   logger.info("Seeding Egypt catalog data...")
 
@@ -786,7 +810,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
   const { data: existingProducts } = await query.graph({
     entity: "product",
     fields: ["id", "handle"],
-    filters: { handle: legacyProducts.map((item) => item.slug) },
+    filters: { handle: seedCatalogProducts.map((item) => item.slug) },
   })
   const existingProductByHandle = new Map(
     ((existingProducts || []) as Array<{ handle: string; id: string }>).map((product) => [product.handle, product])
@@ -822,7 +846,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     const payload = {
       active: true,
       avatar_src: await uploadStorefrontAsset(artist.avatarSrc),
-      design_count: legacyProducts.filter((product) => product.artistSlug === artist.slug).length,
+      design_count: seedCatalogProducts.filter((product) => product.artistSlug === artist.slug).length,
       name: artist.name,
       slug: artist.slug,
       style: artist.style,
@@ -841,7 +865,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
   }
 
   const productsInput: any[] = []
-  for (const product of legacyProducts) {
+  for (const product of seedCatalogProducts) {
     const legacyMedia = getLegacyProductMedia(product.slug)
     const uploadedMedia: ProductMedia = {
       gallery: [],
@@ -860,7 +884,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
       handle: product.slug,
       description: product.story,
       status: ProductStatus.PUBLISHED,
-      metadata: metadataFromProduct(product, legacyProducts, legacyMedia, uploadedMedia),
+      metadata: metadataFromProduct(product, seedCatalogProducts, legacyMedia, uploadedMedia),
       images: allImages,
       thumbnail: uploadedMedia.main,
       options: [{ title: "Size", values: [...sizeValues] }],
@@ -910,7 +934,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     apparelCategoryId: apparelTaxonomy.apparelCategoryId,
     container,
     query,
-    legacyProducts,
+    legacyProducts: seedCatalogProducts,
   })
 
   const feelingCategoryIds = await ensureFeelingsProductCategories({
@@ -922,7 +946,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
   await linkLegacyProductsToFeelingCategories({
     categoryIdByHandle: feelingCategoryIds,
     container,
-    legacyProducts,
+    legacyProducts: seedCatalogProducts,
     query,
   })
 
