@@ -1,6 +1,6 @@
 {
-  "installCommand": "cd web && npm ci",
-  "buildCommand": "cd web && npm run build",
-  "outputDirectory": "web/dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "cd web-next && npm ci",
+  "buildCommand": "cd web-next && npm run build"
 }

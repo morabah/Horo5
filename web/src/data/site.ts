@@ -1,11 +1,12 @@
 export * from './catalog-types';
 
 /**
- * Fixture imports — guarded by `import.meta.env.DEV`.
+ * Fixture imports — guarded by Vite dev mode.
  *
- * Vite replaces `import.meta.env.DEV` with `false` in production builds.
- * Rollup then eliminates the dead branches and tree-shakes the unused
- * imports from `dev-fixtures`.
+ * In app bundles, Vite replaces `import.meta.env.DEV` with `false` in production.
+ * This module is also imported from `vite.config.ts` (sitemap plugin); there
+ * `import.meta.env` can be undefined in the config-time Node bundle — use
+ * optional access so we never throw and default to production (no fixtures).
  */
 import {
   ARTIST_FIXTURES,
@@ -18,6 +19,10 @@ import {
 import { mapLegacyFeelingSlug } from './legacy-slugs';
 
 import type { Artist, Feeling, MerchEvent, Occasion, Product, RuntimeCatalog, Subfeeling } from './catalog-types';
+
+function viteDevFixturesEnabled(): boolean {
+  return Boolean(import.meta.env?.DEV);
+}
 
 let runtimeArtists: Artist[] | null = null;
 let runtimeProducts: Product[] | null = null;
@@ -90,7 +95,7 @@ export function getFeelings(): Feeling[] {
   if (runtimeFeelings && runtimeFeelings.length > 0) {
     return runtimeFeelings;
   }
-  if (import.meta.env.DEV) {
+  if (viteDevFixturesEnabled()) {
     return FEELING_FIXTURES;
   }
   return [];
@@ -100,7 +105,7 @@ export function getArtists(): Artist[] {
   if (runtimeArtists && runtimeArtists.length > 0) {
     return runtimeArtists;
   }
-  if (import.meta.env.DEV) {
+  if (viteDevFixturesEnabled()) {
     return ARTIST_FIXTURES;
   }
   return [];
@@ -110,7 +115,7 @@ export function getSubfeelings(): Subfeeling[] {
   if (runtimeSubfeelings && runtimeSubfeelings.length > 0) {
     return runtimeSubfeelings;
   }
-  if (import.meta.env.DEV) {
+  if (viteDevFixturesEnabled()) {
     return SUBFEELING_FIXTURES;
   }
   return [];
@@ -125,7 +130,7 @@ export function getProducts(): Product[] {
   if (runtimeProducts && runtimeProducts.length > 0) {
     return runtimeProducts;
   }
-  if (import.meta.env.DEV) {
+  if (viteDevFixturesEnabled()) {
     return products;
   }
   return [];
@@ -135,7 +140,7 @@ export function getOccasions(): Occasion[] {
   if (runtimeOccasions && runtimeOccasions.length > 0) {
     return runtimeOccasions;
   }
-  if (import.meta.env.DEV) {
+  if (viteDevFixturesEnabled()) {
     return OCCASION_FIXTURES;
   }
   return [];

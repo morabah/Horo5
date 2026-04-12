@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { AnalyticsRoot } from "../../../web/src/analytics/AnalyticsRoot";
 import { AppProviders } from "../../../web/src/AppProviders";
@@ -16,7 +17,9 @@ export function Providers({
 }) {
   return (
     <HelmetProvider>
-      <AnalyticsRoot />
+      <Suspense fallback={null}>
+        <AnalyticsRoot />
+      </Suspense>
       <AppProviders initialCatalog={initialCatalog} renderedAt={renderedAt}>
         {children}
       </AppProviders>

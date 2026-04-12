@@ -37,6 +37,25 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
 export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
   const { copy } = useUiLocale();
   const occasions = initialOccasions && initialOccasions.length > 0 ? initialOccasions : getOccasions();
+  if (occasions.length === 0) {
+    return (
+      <div className="bg-papyrus pb-16 md:pb-20">
+        <div className="mx-auto max-w-7xl px-4 pt-8 md:px-8 md:pt-10">
+          <PageBreadcrumb
+            className="mb-6"
+            items={[
+              { label: copy.shell.home, to: '/' },
+              { label: copy.shell.shopByMoment },
+            ]}
+          />
+          <p className="font-body text-warm-charcoal">Moment collections are not available yet. Try again shortly.</p>
+          <Link className="btn btn-primary mt-6 inline-flex" to="/">
+            {copy.shell.home}
+          </Link>
+        </div>
+      </div>
+    );
+  }
   const featured = occasions[0];
   const featuredVisual = getOccasionCollectionVisual(featured.slug).hero;
   const secondaryOccasions = occasions.filter((occasion) => occasion.slug !== featured.slug);
