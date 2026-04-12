@@ -4,3 +4,5 @@
 /node_modules
 /.next
 /web-next/.next
+/web-next/public/images
+/web-next/public/brand
