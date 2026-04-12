@@ -1,7 +1,9 @@
 import "./globals.css";
 import { StorefrontChrome } from "@/components/storefront-chrome";
-import { fetchStorefrontCatalogServer, getStorefrontServerBaseUrl } from "@/lib/storefront-server";
+import { fetchStorefrontCatalogServer, logStorefrontFetchError } from "@/lib/storefront-server";
 import { Providers } from "./providers";
+
+export const dynamic = "force-dynamic";
 
 export default async function RootLayout({
   children,
@@ -14,10 +16,7 @@ export default async function RootLayout({
   try {
     initialCatalog = await fetchStorefrontCatalogServer();
   } catch (error) {
-    console.error("[storefront] Failed to fetch initial catalog in layout", {
-      baseUrl: getStorefrontServerBaseUrl(),
-      error,
-    });
+    logStorefrontFetchError("[storefront] Failed to fetch initial catalog in layout", error);
     initialCatalog = null;
   }
 

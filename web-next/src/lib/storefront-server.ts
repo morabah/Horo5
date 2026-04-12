@@ -150,6 +150,32 @@ export function getStorefrontServerBaseUrl() {
   return baseUrl;
 }
 
+function isExpectedDynamicServerUsage(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const digest = "digest" in error ? error.digest : undefined;
+  const description = "description" in error ? error.description : undefined;
+  return (
+    digest === "DYNAMIC_SERVER_USAGE" ||
+    (typeof description === "string" && description.includes("Dynamic server usage"))
+  );
+}
+
+export function logStorefrontFetchError(
+  message: string,
+  error: unknown,
+  extra: Record<string, unknown> = {}
+) {
+  if (isExpectedDynamicServerUsage(error)) {
+    return;
+  }
+
+  console.error(message, {
+    baseUrl,
+    ...extra,
+    error,
+  });
+}
+
 function normalizeVariantMap(
   variants: StorefrontProductResponse["variantsBySize"]
 ): Product["variantsBySize"] {
