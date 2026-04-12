@@ -85,7 +85,21 @@ Also set the rest of the Medusa variables (below).
 npm run seed:egypt
 ```
 
-## 4) Verification checklist
+## 4) Local is the source of truth (remote must match)
+
+Treat **your machine + local Postgres** as canonical. **Railway** should run the **same git revision**, **equivalent env**, **the same schema** (migrations), **data produced by the same seed scripts**, and **media** that resolves the same way.
+
+| Layer | What “identical” means | How to align remote |
+|--------|-------------------------|---------------------|
+| **Code** | Same commit on `main` / deploy branch as local when you cut a release | Push, deploy Railway from that commit; avoid hot-editing production only. |
+| **Database schema** | Same as local after `npm run migrate` | Railway `preDeploy` already runs migrate; use one Postgres per env. |
+| **Database data** | Same catalog, categories, feelings, etc. as a freshly seeded local DB **plus** any Admin edits you rely on | Run the same scripts against Railway’s DB (from `medusa-backend`, with Railway env): `npm run seed:egypt:public`, `npm run seed:horo-taxonomy:public`. Optional demo categories: `npm run seed:demo-categories:public`. Compare trees: `npm run dump:categories:public` vs local `npm run dump:categories`. For a **full** clone of local data, use Postgres backup/restore or replication (advanced); scripts cover repo-defined seed + taxonomy. |
+| **Env vars** | Same *keys* and semantics as [`.env.template`](.env.template); production values differ only where required (URLs, secrets) | Mirror template on Medusa service; `MEDUSA_BACKEND_URL` must be the public Railway URL. |
+| **Media** | Files in bucket + URLs in DB point at a **publicly loadable** base (`MEDUSA_BACKEND_URL/store-media` when using the proxy) | Set S3/Railway bucket vars + `S3_USE_STORE_MEDIA_PROXY=true` as needed; run `npm run rewrite:store-media-urls:public` after URL changes. |
+
+**Laptop vs Railway CLI:** Railway’s internal `DATABASE_URL` is not reachable from your Mac. Reference **`DATABASE_PUBLIC_URL`** on the Medusa service and use the `*:public` npm scripts (they prefer it when set). See comments in [`.env.template`](.env.template).
+
+## 5) Verification checklist
 
 - `GET /health` returns OK
 - Admin can see region `Egypt` with currency `egp`

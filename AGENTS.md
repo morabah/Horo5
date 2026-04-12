@@ -15,7 +15,7 @@ This repo is the **HORO** storefront and related services (`web/`, `web-next/`, 
 
 - **`web-next/`** (Next.js app): from this directory run `npm run type-check` and `npm run lint` before treating UI work as done.
 - **`web/`** (Vite source consumed by `web-next`): keep `npx tsc --noEmit` clean when changing shared `web/src`.
-- **`medusa-backend/`**: follow that package’s README and env templates.
+- **`medusa-backend/`**: follow that package’s README and env templates. **Local is the source of truth** for Medusa: align Railway (code revision, migrations, seeded data, env keys, media URLs) with local using the parity table in [`medusa-backend/README.md`](medusa-backend/README.md) (section “Local is the source of truth”).
 
 ## SSR / hydration (required for `web-next`)
 
