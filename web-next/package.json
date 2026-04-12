@@ -6,7 +6,7 @@
     "dev": "next dev --webpack",
     "dev:local": "node scripts/free-dev-ports.mjs && concurrently -k -n backend,next -c cyan,magenta \"npm run dev --prefix ../medusa-backend\" \"wait-on http://127.0.0.1:9000/health && dotenv -e .env.local -v NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000 -- next dev --webpack\"",
     "dev:railway": "dotenv -e .env.local -e .env.railway -e .env.railway.local -- next dev --webpack",
-    "build": "next build --webpack",
+    "build": "next build --webpack && node scripts/sync-vercel-root-next.mjs",
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
