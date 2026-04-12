@@ -6,7 +6,8 @@
     "build": "npm run build --prefix web-next"
   },
   "dependencies": {
-    "next": "16.2.3"
+    "next": "16.2.3",
+    "web-vitals": "^5.1.0"
   },
   "devDependencies": {
     "@types/react": "^19",
