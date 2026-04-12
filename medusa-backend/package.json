@@ -17,6 +17,8 @@
     "build": "medusa build",
     "seed": "medusa exec ./src/scripts/seed-egypt-catalog.ts",
     "seed:egypt": "medusa exec ./src/scripts/seed-egypt-catalog.ts",
+    "diagnose:s3": "medusa exec ./src/scripts/diagnose-s3.ts",
+    "rewrite:store-media-urls": "medusa exec ./src/scripts/rewrite-storage-urls-to-store-media.ts",
     "start": "medusa start",
     "dev": "medusa develop",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",

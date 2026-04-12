@@ -1,5 +1,7 @@
 import { loadEnv, defineConfig } from '@medusajs/framework/utils'
 
+import { resolveS3ConfigFromEnv } from "./src/lib/s3-env"
+
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
 /** Railway / managed Postgres often uses TLS; set only if connections fail with cert errors. */
@@ -15,54 +17,8 @@ const databaseDriverOptions =
         },
       }
 
-/**
- * Railway "Storage Bucket" presets use BUCKET, ENDPOINT, AWS_*.
- * Explicit S3_* vars still work (e.g. local .env).
- */
-function s3ConfigFromEnv() {
-  const bucket =
-    process.env.S3_BUCKET ||
-    process.env.BUCKET ||
-    process.env.AWS_S3_BUCKET_NAME ||
-    ""
-  const accessKeyId =
-    process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || ""
-  const secretAccessKey =
-    process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || ""
-  const region =
-    process.env.S3_REGION || process.env.AWS_DEFAULT_REGION || "auto"
-  const endpoint =
-    process.env.S3_ENDPOINT ||
-    process.env.ENDPOINT ||
-    process.env.AWS_ENDPOINT_URL ||
-    ""
-
-  let fileUrl = (process.env.S3_FILE_URL || "").replace(/\/+$/, "")
-  if (!fileUrl && bucket && endpoint) {
-    try {
-      const u = new URL(endpoint)
-      fileUrl = `https://${bucket}.${u.host}`
-    } catch {
-      /* ignore */
-    }
-  }
-
-  if (!bucket || !accessKeyId || !secretAccessKey || !fileUrl) {
-    return null
-  }
-
-  return {
-    bucket,
-    accessKeyId,
-    secretAccessKey,
-    region,
-    endpoint: endpoint || undefined,
-    fileUrl,
-    forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
-  }
-}
-
-const s3 = s3ConfigFromEnv()
+/** Railway "Storage Bucket" presets use BUCKET, ENDPOINT, AWS_*; see `src/lib/s3-env.ts`. */
+const s3 = resolveS3ConfigFromEnv()
 
 const fileModule = s3
   ? {
