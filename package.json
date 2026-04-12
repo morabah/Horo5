@@ -1,0 +1,11 @@
+{
+  "name": "horo5",
+  "private": true,
+  "description": "Monorepo root. The Vercel storefront is web-next/; this file exists so Vercel can detect Next.js when the Git root is the repo (Root Directory is not set to web-next).",
+  "scripts": {
+    "build": "npm run build --prefix web-next"
+  },
+  "dependencies": {
+    "next": "16.2.3"
+  }
+}
