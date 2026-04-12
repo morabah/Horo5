@@ -51,7 +51,26 @@ What this seeds:
 
 ---
 
-1. Create a Railway project and add **PostgreSQL**. Copy its connection string into `DATABASE_URL` on the Medusa service (use Railway’s guidance for direct vs pooled URLs).
+### Connect Railway Postgres to this deployment
+
+Do this in the **same Railway project** where the Medusa app runs.
+
+1. **Add Postgres** (if needed): **New** → **Database** → **PostgreSQL**. Note the **service name** in the canvas (e.g. `Postgres` — yours might differ).
+2. **Open your Medusa / API service** (the one that runs `medusa start`).
+3. Go to **Variables**.
+4. Add **`DATABASE_URL`**:
+   - **Recommended:** use a **variable reference** so redeploys always follow the live DB credentials:
+     - **Typed reference:** `${{ Postgres.DATABASE_URL }}` — replace `Postgres` with your **exact** Postgres service name from the project graph, **or**
+     - Use **“Add reference”** / **“Variable reference”** in the UI and pick the Postgres service → `DATABASE_URL`.
+   - **Alternative:** copy **`DATABASE_URL`** from the Postgres service’s **Variables** tab and paste it into the Medusa service (works, but you must update it manually if Railway rotates credentials).
+5. **Redeploy** the Medusa service (or push a commit). `preDeploy` runs `npm run migrate` against this URL.
+6. **Verify:** open the Postgres **Data** tab or run `npx @railway/cli connect` → `\dt` — you should see tables after a successful migrate. If the DB stays empty, Medusa is still pointing at a different `DATABASE_URL` than the database you are inspecting.
+
+Also set the rest of the Medusa variables (below).
+
+---
+
+1. Ensure **PostgreSQL** exists in the project and **`DATABASE_URL`** on the Medusa service points at it (see **Connect Railway Postgres** above).
 2. Set environment variables on the Medusa service (see [`.env.template`](.env.template)):
    - `DATABASE_URL`
    - `MEDUSA_BACKEND_URL` — public `https://` URL of this Railway service (no trailing slash)
