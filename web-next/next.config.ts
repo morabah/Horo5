@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     const reactDomRoot = path.resolve(__dirname, "node_modules/react-dom");
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
+      "@": path.resolve(__dirname, "src"),
       /** Client only: dedupe `../web` vs `web-next` so shared Context (UiLocaleProvider) works. */
       ...(!isServer
         ? {
