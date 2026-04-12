@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
-import { AppErrorBoundary } from "../../../web/src/components/AppErrorBoundary";
+import { AppErrorBoundary } from "./app-error-boundary";
 import { FunnelNavigationTracker } from "../../../web/src/components/FunnelNavigationTracker";
 import { Nav } from "../../../web/src/components/Nav";
 import { Footer } from "../../../web/src/components/Footer";
