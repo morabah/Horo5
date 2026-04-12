@@ -6,9 +6,18 @@ const nextConfig: NextConfig = {
   experimental: {
     externalDir: true,
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
+    const reactRoot = path.resolve(__dirname, "node_modules/react");
+    const reactDomRoot = path.resolve(__dirname, "node_modules/react-dom");
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
+      /** Client only: dedupe `../web` vs `web-next` so shared Context (UiLocaleProvider) works. */
+      ...(!isServer
+        ? {
+            react: reactRoot,
+            "react-dom": reactDomRoot,
+          }
+        : {}),
       "react-router-dom": path.resolve(__dirname, "src/lib/react-router-dom-shim.tsx"),
       "react-helmet-async": path.resolve(__dirname, "src/lib/react-helmet-async-shim.tsx"),
     };
