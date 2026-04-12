@@ -1,18 +1,11 @@
 {
   "name": "horo5",
   "private": true,
-  "description": "Monorepo root. Vercel runs `npm ci` here first so `node_modules/next` exists for framework detection; full app deps install in web-next/ (see vercel.json installCommand).",
+  "description": "Monorepo root. Only `next` here so Vercel detects the framework and `npm ci` hoists one React tree; do not add react/react-dom here — that duplicates web-next and breaks TS/JSX for ../web imports.",
   "scripts": {
     "build": "npm run build --prefix web-next"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "^4.2.2",
-    "next": "16.2.3",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^7.14.0",
-    "tailwindcss": "^4.2.2",
-    "web-vitals": "^5.2.0"
+    "next": "16.2.3"
   }
 }

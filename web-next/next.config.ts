@@ -3,6 +3,8 @@ import path from "node:path";
 import webpack from "webpack";
 
 const nextConfig: NextConfig = {
+  /** Monorepo: one lockfile at repo root + web-next; trace shared `../web` from repo root. */
+  outputFileTracingRoot: path.join(__dirname, ".."),
   experimental: {
     externalDir: true,
   },
