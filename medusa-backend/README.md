@@ -99,6 +99,22 @@ Treat **your machine + local Postgres** as canonical. **Railway** should run the
 
 **Laptop vs Railway CLI:** Railway’s internal `DATABASE_URL` is not reachable from your Mac. Reference **`DATABASE_PUBLIC_URL`** on the Medusa service and use the `*:public` npm scripts (they prefer it when set). See comments in [`.env.template`](.env.template).
 
+### Automated parity check (local DB vs Railway DB)
+
+From **`medusa-backend`** (with the [Railway CLI](https://docs.railway.com/develop/cli) linked to the project):
+
+```bash
+npm run parity:snapshot:local
+npx @railway/cli run npm run parity:snapshot:remote
+npm run parity:check
+```
+
+This writes **`.parity/local.json`** and **`.parity/railway.json`** (ignored by git), compares the **`snapshot`** block ( **`meta`** is ignored), and exits **`0`** only when both match. On failure it prints counts, product handles, and category handles that exist on only one side.
+
+- **`npm run parity:check:ignore-media`** — same compare but ignores **`productThumbnailHosts`** (localhost vs production hosts are expected to differ until URLs are unified).
+
+A green check means **database-facing catalog data** in the snapshot matches; it does **not** verify the deployed **git commit** (see Railway dashboard) or **`.env`** secrets.
+
 ## 5) Verification checklist
 
 - `GET /health` returns OK
