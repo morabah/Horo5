@@ -42,6 +42,7 @@ import {
 } from "./data/feelings-taxonomy-data"
 import { egyptProducts, EGYPT_PRODUCT_PRICE_EGP } from "./data/egypt-products"
 import { getLegacyProductMedia } from "./data/legacy-product-media"
+import { EGYPT_REGION_NAME, getEgyptRegionPaymentProviders } from "./lib/egypt-checkout"
 import { merchEvents } from "./data/merch-events"
 import { MERCH_EVENT_MODULE } from "../modules/merch-event"
 import type MerchEventModuleService from "../modules/merch-event/service"
@@ -85,9 +86,16 @@ type LegacyProduct = {
   slug: string
   stockNote?: string
   story: string
+  trustBadges?: readonly string[]
   useCase?: string
   wearerStories?: unknown[]
 }
+
+const DEFAULT_PRODUCT_TRUST_BADGES = [
+  "220 GSM cotton",
+  "Free exchange 14d",
+  "COD available",
+] as const
 
 /** Canonical feeling slugs for Egypt hero tees (aligned with migrate-feelings hero fallbacks). */
 const EGYPT_HERO_FEELING_BY_HANDLE: Record<string, string> = {
@@ -173,6 +181,52 @@ function toMimeType(filePath: string): string {
   if (filePath.endsWith(".webp")) return "image/webp"
   if (filePath.endsWith(".svg")) return "image/svg+xml"
   return "application/octet-stream"
+}
+
+/** When true, seed always re-uploads assets (old behavior). Default false avoids duplicate static/ files. */
+function isSeedForceRefreshMedia(): boolean {
+  const v = String(process.env.SEED_FORCE_REFRESH_MEDIA || "").trim().toLowerCase()
+  return v === "1" || v === "true" || v === "yes"
+}
+
+function feelingCardHeroFromCategoryMetadata(metadata: unknown): { card: string; hero: string } | null {
+  if (!metadata || typeof metadata !== "object") {
+    return null
+  }
+  const m = metadata as Record<string, unknown>
+  const card = m.card_image_src
+  const hero = m.hero_image_src
+  if (typeof card === "string" && card.length > 0 && typeof hero === "string" && hero.length > 0) {
+    return { card, hero }
+  }
+  return null
+}
+
+type ExistingProductSeedRow = {
+  id: string
+  handle: string
+  thumbnail?: string | null
+  images?: Array<{ url?: string | null }> | null
+  metadata?: Record<string, unknown> | null
+}
+
+function productMediaFromExistingRow(row: ExistingProductSeedRow): ProductMedia | null {
+  const meta = row.metadata
+  const media = meta?.media as { main?: unknown; gallery?: unknown } | undefined
+  if (media && typeof media.main === "string" && media.main.length > 0) {
+    const galleryRaw = Array.isArray(media.gallery) ? media.gallery : []
+    const gallery = galleryRaw.filter((u): u is string => typeof u === "string" && u.length > 0)
+    return { main: media.main, gallery }
+  }
+  const main = row.thumbnail
+  if (typeof main === "string" && main.length > 0) {
+    const fromImages = (row.images || [])
+      .map((i) => i?.url)
+      .filter((u): u is string => typeof u === "string" && u.length > 0)
+    const gallery = fromImages.filter((u) => u !== main)
+    return { main, gallery }
+  }
+  return null
 }
 
 async function uploadImage(container: ExecArgs["container"], imagePath: string) {
@@ -393,15 +447,36 @@ function buildSubfeelingProductHandles(subfeelingSlug: string, legacyProducts: L
     .map((product) => product.slug)
 }
 
+function artistMetadataForSeedProduct(product: LegacyProduct, avatarBySlug: Map<string, string>) {
+  const seedRow = ARTIST_SEED.find((artist) => artist.slug === product.artistSlug)
+
+  if (!seedRow) {
+    return undefined
+  }
+
+  const avatarUrl = avatarBySlug.get(product.artistSlug)?.trim()
+  const out: { name: string; avatarUrl?: string } = { name: seedRow.name }
+
+  if (avatarUrl) {
+    out.avatarUrl = avatarUrl
+  }
+
+  return out
+}
+
 function metadataFromProduct(
   product: LegacyProduct,
   legacyProducts: LegacyProduct[],
   media: ProductMedia,
-  uploadedMedia: ProductMedia
+  uploadedMedia: ProductMedia,
+  artistAvatarBySlug: Map<string, string>
 ) {
+  const artistMeta = artistMetadataForSeedProduct(product, artistAvatarBySlug)
+
   return {
     apparelCategoryPath: "apparel/tops/t-shirts",
     artistSlug: product.artistSlug,
+    ...(artistMeta ? { artist: artistMeta } : {}),
     artworkSlug: product.slug,
     availableSizes: product.availableSizes ?? [...DEFAULT_SIZES],
     capsuleSlugs: product.capsuleSlugs,
@@ -421,6 +496,7 @@ function metadataFromProduct(
     priceEgp: product.priceEgp,
     stockNote: product.stockNote,
     story: product.story,
+    trustBadges: product.trustBadges ?? [...DEFAULT_PRODUCT_TRUST_BADGES],
     useCase: product.useCase,
     wearerStories: product.wearerStories,
     legacyMedia: media,
@@ -505,17 +581,19 @@ async function ensureFeelingsProductCategories(args: {
   idByHandle.set(root.handle, root.id)
 
   for (const feeling of FEELING_TAXONOMY) {
-    const uploaded = {
+    const { data: existing } = await query.graph({
+      entity: "product_category",
+      fields: ["id", "metadata"],
+      filters: { handle: feeling.slug },
+    })
+    const row = (existing as Array<{ id: string; metadata?: unknown }> | undefined)?.[0]
+
+    const reused =
+      !isSeedForceRefreshMedia() && row ? feelingCardHeroFromCategoryMetadata(row.metadata) : null
+    const uploaded = reused ?? {
       card: await uploadStorefrontAsset(feeling.cardImageSrc),
       hero: await uploadStorefrontAsset(feeling.heroImageSrc),
     }
-
-    const { data: existing } = await query.graph({
-      entity: "product_category",
-      fields: ["id"],
-      filters: { handle: feeling.slug },
-    })
-    const row = (existing as Array<{ id: string }> | undefined)?.[0]
 
     if (row) {
       idByHandle.set(feeling.slug, row.id)
@@ -559,17 +637,19 @@ async function ensureFeelingsProductCategories(args: {
       throw new Error(`Missing parent feeling category "${sub.feeling_slug}" for subfeeling "${sub.slug}".`)
     }
 
-    const uploaded = {
+    const { data: existing } = await query.graph({
+      entity: "product_category",
+      fields: ["id", "metadata"],
+      filters: { handle: sub.slug },
+    })
+    const row = (existing as Array<{ id: string; metadata?: unknown }> | undefined)?.[0]
+
+    const reused =
+      !isSeedForceRefreshMedia() && row ? feelingCardHeroFromCategoryMetadata(row.metadata) : null
+    const uploaded = reused ?? {
       card: await uploadStorefrontAsset(sub.cardImageSrc),
       hero: await uploadStorefrontAsset(sub.heroImageSrc),
     }
-
-    const { data: existing } = await query.graph({
-      entity: "product_category",
-      fields: ["id"],
-      filters: { handle: sub.slug },
-    })
-    const row = (existing as Array<{ id: string }> | undefined)?.[0]
 
     if (row) {
       idByHandle.set(sub.slug, row.id)
@@ -717,33 +797,12 @@ async function linkLegacyProductsToFeelingCategories(args: {
   }
 }
 
-const EGYPT_REGION_NAME = "Egypt"
 const EGYPT_STOCK_LOCATION_NAME = "Egypt Warehouse"
 const EGYPT_FULFILLMENT_SET_NAME = "Egypt Delivery"
 const EGYPT_SHIPPING_OPTION_NAME = "Standard"
 const EGYPT_SHIPPING_OPTION_CODE = "standard"
 const GIFT_WRAP_HANDLE = "gift-wrap"
 const GIFT_WRAP_PRICE_AMOUNT = 20000
-
-function isPaymobConfigured() {
-  const storeUrl =
-    process.env.STORE_URL?.trim() || process.env.STORE_CORS?.split(",")[0]?.trim()
-
-  return Boolean(
-    process.env.PAYMOB_API_KEY?.trim() &&
-      process.env.PAYMOB_HMAC_SECRET?.trim() &&
-      process.env.PAYMOB_CARD_INTEGRATION_ID?.trim() &&
-      process.env.MEDUSA_BACKEND_URL?.trim() &&
-      storeUrl
-  )
-}
-
-function getEgyptRegionPaymentProviders() {
-  return [
-    "pp_system_default",
-    ...(isPaymobConfigured() ? ["pp_paymob_paymob"] : []),
-  ]
-}
 
 async function ensureLinkExists(
   link: { create: (input: Record<string, unknown>) => Promise<unknown> },
@@ -1067,12 +1126,14 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
 
   const { data: existingProducts } = await query.graph({
     entity: "product",
-    fields: ["id", "handle"],
+    fields: ["id", "handle", "thumbnail", "images.url", "metadata"],
     filters: { handle: [...seedCatalogProducts.map((item) => item.slug), GIFT_WRAP_HANDLE] },
   })
-  const existingProductByHandle = new Map(
-    ((existingProducts || []) as Array<{ handle: string; id: string }>).map((product) => [product.handle, product])
+  const existingProductRowByHandle = new Map(
+    ((existingProducts || []) as ExistingProductSeedRow[]).map((product) => [product.handle, product])
   )
+
+  const productHandlesOmitMediaOnUpdate = new Set<string>()
 
   const uploadCache = new Map<string, string>()
   const uploadStorefrontAsset = async (src: string) => {
@@ -1097,24 +1158,33 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     (await artistModuleService.listArtists({ slug: ARTIST_SEED.map((artist) => artist.slug) }) as Array<{
       id: string
       slug: string
+      avatar_src?: string | null
     }>).map((artist) => [artist.slug, artist])
   )
 
+  const artistAvatarBySlug = new Map<string, string>()
+
   for (const artist of ARTIST_SEED) {
+    const existingArtist = existingArtists.get(artist.slug)
+    const avatar_src =
+      !isSeedForceRefreshMedia() && existingArtist?.avatar_src
+        ? existingArtist.avatar_src
+        : await uploadStorefrontAsset(artist.avatarSrc)
+
+    artistAvatarBySlug.set(artist.slug, avatar_src)
+
     const payload = {
       active: true,
-      avatar_src: await uploadStorefrontAsset(artist.avatarSrc),
+      avatar_src,
       design_count: seedCatalogProducts.filter((product) => product.artistSlug === artist.slug).length,
       name: artist.name,
       slug: artist.slug,
       style: artist.style,
     }
 
-    const existing = existingArtists.get(artist.slug)
-
-    if (existing) {
+    if (existingArtist) {
       await artistModuleService.updateArtists({
-        selector: { id: existing.id },
+        selector: { id: existingArtist.id },
         data: payload,
       })
     } else {
@@ -1125,13 +1195,23 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
   const productsInput: any[] = []
   for (const product of seedCatalogProducts) {
     const legacyMedia = getLegacyProductMedia(product.slug)
-    const uploadedMedia: ProductMedia = {
-      gallery: [],
-      main: await uploadStorefrontAsset(legacyMedia.main),
-    }
+    const existingRow = existingProductRowByHandle.get(product.slug)
+    const reusedMedia =
+      !isSeedForceRefreshMedia() && existingRow ? productMediaFromExistingRow(existingRow) : null
 
-    for (const viewSrc of legacyMedia.gallery) {
-      uploadedMedia.gallery.push(await uploadStorefrontAsset(viewSrc))
+    let uploadedMedia: ProductMedia
+    if (reusedMedia) {
+      uploadedMedia = reusedMedia
+      productHandlesOmitMediaOnUpdate.add(product.slug)
+    } else {
+      uploadedMedia = {
+        gallery: [],
+        main: await uploadStorefrontAsset(legacyMedia.main),
+      }
+
+      for (const viewSrc of legacyMedia.gallery) {
+        uploadedMedia.gallery.push(await uploadStorefrontAsset(viewSrc))
+      }
     }
 
     const sizeValues = (product.availableSizes ?? [...DEFAULT_SIZES]) as readonly ProductSizeKey[]
@@ -1142,7 +1222,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
       handle: product.slug,
       description: product.story,
       status: ProductStatus.PUBLISHED,
-      metadata: metadataFromProduct(product, seedCatalogProducts, legacyMedia, uploadedMedia),
+      metadata: metadataFromProduct(product, seedCatalogProducts, legacyMedia, uploadedMedia, artistAvatarBySlug),
       images: allImages,
       thumbnail: uploadedMedia.main,
       options: [{ title: "Size", values: [...sizeValues] }],
@@ -1182,8 +1262,8 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     sales_channels: [{ id: defaultSalesChannel[0].id }],
   })
 
-  const productsToCreate = productsInput.filter((product) => !existingProductByHandle.has(product.handle))
-  const productsToUpdate = productsInput.filter((product) => existingProductByHandle.has(product.handle))
+  const productsToCreate = productsInput.filter((product) => !existingProductRowByHandle.has(product.handle))
+  const productsToUpdate = productsInput.filter((product) => existingProductRowByHandle.has(product.handle))
 
   if (productsToCreate.length) {
     await createProductsWorkflow(container).run({
@@ -1192,22 +1272,29 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
   }
 
   for (const product of productsToUpdate) {
-    const existing = existingProductByHandle.get(product.handle)
+    const existing = existingProductRowByHandle.get(product.handle)
 
     if (!existing) {
       continue
     }
 
+    const omitMedia = productHandlesOmitMediaOnUpdate.has(product.handle)
     await updateProductsWorkflow(container).run({
       input: {
         selector: { id: existing.id },
-        update: {
-          title: product.title,
-          description: product.description,
-          metadata: product.metadata,
-          images: product.images,
-          thumbnail: product.thumbnail,
-        },
+        update: omitMedia
+          ? {
+              title: product.title,
+              description: product.description,
+              metadata: product.metadata,
+            }
+          : {
+              title: product.title,
+              description: product.description,
+              metadata: product.metadata,
+              images: product.images,
+              thumbnail: product.thumbnail,
+            },
       },
     })
   }
@@ -1236,18 +1323,30 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     (await occasionModuleService.listOccasions({ slug: legacyOccasions.map((occasion) => occasion.slug) }) as Array<{
       id: string
       slug: string
+      card_image_src?: string | null
+      hero_image_src?: string | null
     }>).map((occasion) => [occasion.slug, occasion])
   )
 
   for (const [index, occasion] of legacyOccasions.entries()) {
+    const existingOccasion = existingOccasions.get(occasion.slug)
+    const card_image_src =
+      !isSeedForceRefreshMedia() && existingOccasion?.card_image_src
+        ? existingOccasion.card_image_src
+        : await uploadStorefrontAsset(occasion.cardImageSrc)
+    const hero_image_src =
+      !isSeedForceRefreshMedia() && existingOccasion?.hero_image_src
+        ? existingOccasion.hero_image_src
+        : await uploadStorefrontAsset(occasion.heroImageSrc)
+
     const payload = {
       accent: OCCASION_ACCENT_BY_SLUG[occasion.slug],
       active: true,
       blurb: occasion.blurb,
       card_image_alt: occasion.cardImageAlt,
-      card_image_src: await uploadStorefrontAsset(occasion.cardImageSrc),
+      card_image_src,
       hero_image_alt: occasion.heroImageAlt,
-      hero_image_src: await uploadStorefrontAsset(occasion.heroImageSrc),
+      hero_image_src,
       is_gift_occasion: occasion.isGiftOccasion,
       name: occasion.name,
       price_hint: occasion.priceHint,
@@ -1258,11 +1357,9 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
       sort_order: index * 10,
     }
 
-    const existing = existingOccasions.get(occasion.slug)
-
-    if (existing) {
+    if (existingOccasion) {
       await occasionModuleService.updateOccasions({
-        selector: { id: existing.id },
+        selector: { id: existingOccasion.id },
         data: payload,
       })
     } else {
@@ -1274,18 +1371,30 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     (await merchEventModuleService.listMerchEvents({ slug: merchEvents.map((event) => event.slug) }) as Array<{
       id: string
       slug: string
+      card_image_src?: string | null
+      hero_image_src?: string | null
     }>).map((event) => [event.slug, event])
   )
 
   for (const event of merchEvents) {
+    const existingEvent = existingEvents.get(event.slug)
+    const card_image_src =
+      !isSeedForceRefreshMedia() && existingEvent?.card_image_src
+        ? existingEvent.card_image_src
+        : await uploadStorefrontAsset(event.cardImageSrc)
+    const hero_image_src =
+      !isSeedForceRefreshMedia() && existingEvent?.hero_image_src
+        ? existingEvent.hero_image_src
+        : await uploadStorefrontAsset(event.heroImageSrc)
+
     const payload = {
       active: true,
       body: event.body,
       card_image_alt: event.cardImageAlt,
-      card_image_src: await uploadStorefrontAsset(event.cardImageSrc),
+      card_image_src,
       ends_at: event.endsAt ? new Date(event.endsAt) : null,
       hero_image_alt: event.heroImageAlt,
-      hero_image_src: await uploadStorefrontAsset(event.heroImageSrc),
+      hero_image_src,
       name: event.name,
       occasion_slug: event.occasionSlug ?? null,
       product_handles: event.productHandles,
@@ -1299,11 +1408,9 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
       type: event.type,
     }
 
-    const existing = existingEvents.get(event.slug)
-
-    if (existing) {
+    if (existingEvent) {
       await merchEventModuleService.updateMerchEvents({
-        selector: { id: existing.id },
+        selector: { id: existingEvent.id },
         data: payload,
       })
     } else {

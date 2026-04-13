@@ -17,6 +17,19 @@ const nextConfig: NextConfig = {
   experimental: {
     externalDir: true,
   },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "script-src 'self' 'unsafe-eval' 'unsafe-inline' https: http:;",
+          },
+        ],
+      },
+    ];
+  },
   webpack: (config, { isServer }) => {
     const reactRoot = path.resolve(__dirname, "node_modules/react");
     const reactDomRoot = path.resolve(__dirname, "node_modules/react-dom");

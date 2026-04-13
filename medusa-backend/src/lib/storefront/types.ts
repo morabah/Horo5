@@ -1,3 +1,9 @@
+export type StorefrontFeelingBrowseAssignmentDTO = {
+  feelingSlug: string
+  /** Empty string when browse applies to the whole pillar (product linked only to that feeling category). */
+  subfeelingSlug: string
+}
+
 export type StorefrontVariantDTO = {
   allow_backorder: boolean
   available: boolean
@@ -17,6 +23,18 @@ export type StorefrontMediaDTO = {
   main?: string | null
 }
 
+/** Native Medusa product / variant shipping attributes exposed on the storefront DTO (Admin “Attributes”). */
+export type StorefrontProductPhysicalAttributesDTO = {
+  weight?: string
+  length?: string
+  height?: string
+  width?: string
+  originCountry?: string
+  hsCode?: string
+  midCode?: string
+  material?: string
+}
+
 export type StorefrontArtistDTO = {
   active: boolean
   avatarSrc?: string
@@ -26,8 +44,16 @@ export type StorefrontArtistDTO = {
   style: string
 }
 
+/** PDP artist line from Medusa `product.metadata.artist` (native); slug/module is fallback only. */
+export type StorefrontProductArtistDisplayDTO = {
+  name: string
+  avatarUrl?: string
+}
+
 export type StorefrontProductDTO = {
   apparelCategoryPath?: string
+  /** Resolved for PDP: metadata.artist first, else storefront_artist by artistSlug. */
+  artistDisplay?: StorefrontProductArtistDisplayDTO
   artistSlug: string
   availableSizes?: string[]
   artworkSlug?: string
@@ -49,9 +75,13 @@ export type StorefrontProductDTO = {
   occasionSlugs: string[]
   originalPriceEgp?: number | null
   pdpFitModels?: Array<Record<string, unknown>>
+  /** Weight / dimensions / HS, etc. from Medusa product (and default variant when product-level is empty). */
+  physicalAttributes?: StorefrontProductPhysicalAttributesDTO
   defaultPriceSize?: string
   /** False when legacy metadata fallback is off and the product has no single valid branch under `feelings` — hide from feeling browse. */
   feelingBrowseEligible?: boolean
+  /** All pillar/line placements from Medusa categories under `feelings` (normalized); browse should match any. */
+  feelingBrowseAssignments?: StorefrontFeelingBrowseAssignmentDTO[]
   primaryFeelingSlug: string
   primaryOccasionSlug?: string
   primarySubfeelingSlug: string
@@ -60,6 +90,7 @@ export type StorefrontProductDTO = {
   stockNote?: string
   story: string
   thumbnail?: string | null
+  trustBadges?: string[]
   useCase?: string
   variantsBySize: Record<string, StorefrontVariantDTO>
   wearerStories?: Array<Record<string, unknown>>

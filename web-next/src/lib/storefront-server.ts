@@ -54,6 +54,7 @@ type StorefrontVariantResponse = {
 
 type StorefrontProductResponse = {
   apparelCategoryPath?: string;
+  artistDisplay?: Product["artistDisplay"];
   artistSlug: string;
   artworkSlug?: string;
   availableSizes?: string[];
@@ -74,7 +75,10 @@ type StorefrontProductResponse = {
   occasionSlugs: string[];
   originalPriceEgp?: number | null;
   pdpFitModels?: Product["pdpFitModels"];
+  physicalAttributes?: Product["physicalAttributes"];
   defaultPriceSize?: string;
+  feelingBrowseEligible?: boolean;
+  feelingBrowseAssignments?: Product["feelingBrowseAssignments"];
   primaryFeelingSlug: string;
   primaryOccasionSlug?: string;
   primarySubfeelingSlug: string;
@@ -83,6 +87,7 @@ type StorefrontProductResponse = {
   stockNote?: string;
   story: string;
   thumbnail?: string | null;
+  trustBadges?: string[];
   useCase?: string;
   variantsBySize?: Record<string, StorefrontVariantResponse>;
   wearerStories?: Product["wearerStories"];
@@ -121,9 +126,13 @@ const publishableApiKey =
 const missingPublishableKeyMessage =
   "Missing Medusa publishable key. Set MEDUSA_PUBLISHABLE_KEY or NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY in web-next/.env.local and restart Next.";
 const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
-function catalogFetchOptions(tags: string[] = []): NextFetchOptions {
-  void tags;
-  return { cache: "no-store" };
+function catalogFetchOptions(extraTags: string[] = []): NextFetchOptions {
+  return {
+    next: {
+      revalidate: 60,
+      tags: ["catalog", "storefront", ...extraTags],
+    },
+  };
 }
 
 const CATALOG_FETCH_OPTIONS: NextFetchOptions = catalogFetchOptions();
@@ -210,6 +219,7 @@ function normalizeVariantMap(
 function normalizeProduct(product: StorefrontProductResponse): Product {
   return {
     apparelCategoryPath: product.apparelCategoryPath,
+    artistDisplay: product.artistDisplay,
     artistSlug: product.artistSlug,
     artworkSlug: product.artworkSlug,
     availableSizes: product.availableSizes as Product["availableSizes"],
@@ -230,7 +240,10 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     occasionSlugs: product.occasionSlugs,
     originalPriceEgp: product.originalPriceEgp,
     pdpFitModels: product.pdpFitModels,
+    physicalAttributes: product.physicalAttributes,
     defaultPriceSize: product.defaultPriceSize as Product["defaultPriceSize"],
+    feelingBrowseEligible: product.feelingBrowseEligible ?? true,
+    feelingBrowseAssignments: product.feelingBrowseAssignments,
     primaryFeelingSlug: product.primaryFeelingSlug,
     primaryOccasionSlug: product.primaryOccasionSlug,
     primarySubfeelingSlug: product.primarySubfeelingSlug,
@@ -239,6 +252,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     stockNote: product.stockNote,
     story: product.story,
     thumbnail: product.thumbnail,
+    trustBadges: product.trustBadges,
     useCase: product.useCase,
     variantsBySize: normalizeVariantMap(product.variantsBySize),
     wearerStories: product.wearerStories,
@@ -309,7 +323,10 @@ async function fetchStorefrontProductServerImpl(
 /** Per-request dedupe for metadata + page. Source of truth: Medusa storefront API only. */
 export const fetchStorefrontProductServer = cache((slug: string) =>
   fetchStorefrontProductServerImpl(slug, {
-    cache: "no-store",
+    next: {
+      revalidate: 60,
+      tags: ["catalog", "storefront", "product", `product:${encodeURIComponent(slug)}`],
+    },
   })
 );
 

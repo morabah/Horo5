@@ -71,8 +71,14 @@ export function OrderConfirmation() {
   const isArabic = locale === 'ar';
   const [order, setOrder] = useState<LastOrderSnapshot | null>(null);
   const [copiedOrderId, setCopiedOrderId] = useState(false);
-  const location = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  const urlOrderId = location?.get('order_id');
+  // Read the order_id only after mount so SSR and the first client paint match
+  // (avoids hydration mismatch from `window.location.search` during render).
+  const [urlOrderId, setUrlOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setUrlOrderId(params.get('order_id'));
+  }, []);
 
   useEffect(() => {
     const fallback = loadLastOrder();

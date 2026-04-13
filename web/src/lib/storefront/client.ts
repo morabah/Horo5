@@ -1,6 +1,7 @@
 import type {
   Artist,
   Feeling,
+  FeelingBrowseAssignment,
   MerchEvent,
   Occasion,
   Product,
@@ -30,6 +31,7 @@ type StorefrontVariantResponse = {
 
 type StorefrontProductResponse = {
   apparelCategoryPath?: string;
+  artistDisplay?: Product["artistDisplay"];
   artistSlug: string;
   artworkSlug?: string;
   availableSizes?: string[];
@@ -50,8 +52,10 @@ type StorefrontProductResponse = {
   occasionSlugs: string[];
   originalPriceEgp?: number | null;
   pdpFitModels?: Product["pdpFitModels"];
+  physicalAttributes?: Product["physicalAttributes"];
   defaultPriceSize?: string;
   feelingBrowseEligible?: boolean;
+  feelingBrowseAssignments?: FeelingBrowseAssignment[];
   primaryFeelingSlug: string;
   primaryOccasionSlug?: string;
   primarySubfeelingSlug: string;
@@ -60,6 +64,7 @@ type StorefrontProductResponse = {
   stockNote?: string;
   story: string;
   thumbnail?: string | null;
+  trustBadges?: string[];
   useCase?: string;
   variantsBySize?: Record<string, StorefrontVariantResponse>;
   wearerStories?: Product["wearerStories"];
@@ -139,6 +144,7 @@ function normalizeVariantMap(
 function normalizeProduct(product: StorefrontProductResponse): Product {
   return {
     apparelCategoryPath: product.apparelCategoryPath,
+    artistDisplay: product.artistDisplay,
     artistSlug: product.artistSlug,
     artworkSlug: product.artworkSlug,
     availableSizes: product.availableSizes as Product["availableSizes"],
@@ -159,8 +165,10 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     occasionSlugs: product.occasionSlugs,
     originalPriceEgp: product.originalPriceEgp,
     pdpFitModels: product.pdpFitModels,
+    physicalAttributes: product.physicalAttributes,
     defaultPriceSize: product.defaultPriceSize as Product["defaultPriceSize"],
     feelingBrowseEligible: product.feelingBrowseEligible ?? true,
+    feelingBrowseAssignments: product.feelingBrowseAssignments,
     primaryFeelingSlug: product.primaryFeelingSlug,
     primaryOccasionSlug: product.primaryOccasionSlug,
     primarySubfeelingSlug: product.primarySubfeelingSlug,
@@ -169,6 +177,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     stockNote: product.stockNote,
     story: product.story,
     thumbnail: product.thumbnail,
+    trustBadges: product.trustBadges,
     useCase: product.useCase,
     variantsBySize: normalizeVariantMap(product.variantsBySize),
     wearerStories: product.wearerStories,

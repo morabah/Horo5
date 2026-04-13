@@ -79,6 +79,24 @@ export type ProductMediaRecord = {
   main?: string | null;
 };
 
+/** Medusa product / default-variant shipping attributes (Admin “Attributes”), when present on the storefront DTO. */
+export type ProductPhysicalAttributes = {
+  weight?: string;
+  length?: string;
+  height?: string;
+  width?: string;
+  originCountry?: string;
+  hsCode?: string;
+  midCode?: string;
+  material?: string;
+};
+
+/** PDP artist from Medusa `metadata.artist`; storefront may also resolve from artistSlug + catalog artists. */
+export type ProductArtistDisplay = {
+  name: string;
+  avatarUrl?: string;
+};
+
 export type ProductVariantRecord = {
   id: string;
   size: ProductSizeKey;
@@ -93,14 +111,25 @@ export type ProductVariantRecord = {
   inventoryQuantity?: number | null;
 };
 
+/** Pillar + optional line from Medusa product categories under `feelings` (normalized). */
+export type FeelingBrowseAssignment = {
+  feelingSlug: string;
+  /** Empty when the product is linked only to the pillar category (no leaf). */
+  subfeelingSlug: string;
+};
+
 export type Product = {
   apparelCategoryPath?: string;
   slug: string;
   name: string;
+  /** Prefer for PDP when set (from `metadata.artist`). */
+  artistDisplay?: ProductArtistDisplay;
   artistSlug: string;
   primaryFeelingSlug?: string;
   /** From Medusa catalog: false = omit from /feelings browse when category taxonomy is incomplete (strict mode). */
   feelingBrowseEligible?: boolean;
+  /** All feeling/line placements from Medusa when the product spans multiple branches. */
+  feelingBrowseAssignments?: FeelingBrowseAssignment[];
   primarySubfeelingSlug?: string;
   primaryOccasionSlug?: string;
   feelingSlug: string;
@@ -130,8 +159,12 @@ export type Product = {
   availableSizes?: ProductSizeKey[];
   /** Optional on-body copy for PDP (e.g. two models). When absent, PDP uses global template + fitLabel. */
   pdpFitModels?: readonly PdpFitModel[];
+  /** Native Medusa weight/dimensions/etc. when `metadata.pdpFitModels` is not used. */
+  physicalAttributes?: ProductPhysicalAttributes;
   /** Optional studio / design-intent quotes — not customer reviews (no review schema emitted). */
   wearerStories?: readonly WearerStory[];
+  /** Runtime-configurable trust/service bullets surfaced on PDP and merchandising entry points. */
+  trustBadges?: readonly string[];
   /** Merchandising: complementary product slugs for “Style it with”. */
   complementarySlugs?: string[];
   /** Merchandising: co-purchase suggestions (1–2 slugs) for “Frequently bought together”. */

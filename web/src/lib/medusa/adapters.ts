@@ -51,36 +51,62 @@ export function toProduct(medusa: MedusaProduct): Product {
     (p) => p.currency_code.toLowerCase() === "egp"
   )?.amount
   const metadata = medusa.metadata || {}
-  const inferredFeeling =
-    medusa.handle.includes("emotion")
-      ? "soft-quiet"
-      : medusa.handle.includes("zodiac")
-        ? "warm-romantic"
-        : medusa.handle.includes("fiction")
-          ? "playful-offbeat"
-          : medusa.handle.includes("career")
-            ? "grounded-everyday"
-            : "bold-electric"
+  const metadataAvailableSizes = Array.isArray(metadata.availableSizes)
+    ? metadata.availableSizes.filter((value): value is ProductSizeKey => {
+        return value === "S" || value === "M" || value === "L" || value === "XL" || value === "XXL"
+      })
+    : []
+  const primaryFeelingSlug =
+    typeof metadata.primaryFeelingSlug === "string" ? metadata.primaryFeelingSlug : undefined
   const feelingSlug =
-    typeof metadata.feelingSlug === "string" ? metadata.feelingSlug : inferredFeeling
+    primaryFeelingSlug ||
+    (typeof metadata.feelingSlug === "string" ? metadata.feelingSlug : "")
   const artistSlug =
-    typeof metadata.artistSlug === "string" ? metadata.artistSlug : "nada-ibrahim"
+    typeof metadata.artistSlug === "string" ? metadata.artistSlug : ""
   const occasionSlugs = Array.isArray(metadata.occasionSlugs)
     ? (metadata.occasionSlugs.filter((value): value is string => typeof value === "string") as Product["occasionSlugs"])
-    : ["just-because"]
+    : []
+  const gallery = (medusa.images || [])
+    .map((image) => image.url)
+    .filter((value): value is string => Boolean(value))
+  const thumbnail = medusa.thumbnail || gallery[0] || null
+  const trustBadges = Array.isArray(metadata.trustBadges)
+    ? metadata.trustBadges.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    : []
 
   return {
     slug: medusa.handle,
     name: medusa.title,
     artistSlug,
+    primaryFeelingSlug,
     feelingSlug,
     occasionSlugs,
-    priceEgp: Math.round(((calculatedPrice ?? fallbackPrice ?? 79900) as number) / 100),
+    priceEgp: Math.round(((calculatedPrice ?? fallbackPrice ?? 0) as number) / 100),
     story:
-      (typeof metadata.descriptionEn === "string" && metadata.descriptionEn) ||
+      (typeof metadata.story === "string" && metadata.story) ||
       medusa.description ||
-      "Artist-made graphic tee.",
-    availableSizes: availableSizes.length ? availableSizes : ["S", "M", "L", "XL", "XXL"],
+      "",
+    availableSizes:
+      availableSizes.length > 0
+        ? availableSizes
+        : metadataAvailableSizes.length > 0
+          ? metadataAvailableSizes
+          : undefined,
+    description: medusa.description || undefined,
+    fitLabel: typeof metadata.fitLabel === "string" ? metadata.fitLabel : undefined,
+    merchandisingBadge:
+      typeof metadata.merchandisingBadge === "string" ? metadata.merchandisingBadge : undefined,
+    stockNote: typeof metadata.stockNote === "string" ? metadata.stockNote : undefined,
+    thumbnail,
+    media:
+      thumbnail || gallery.length > 0
+        ? {
+            gallery: gallery.length > 0 ? gallery : undefined,
+            main: thumbnail,
+          }
+        : undefined,
+    trustBadges: trustBadges.length > 0 ? trustBadges : undefined,
+    useCase: typeof metadata.useCase === "string" ? metadata.useCase : undefined,
   }
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { trackHomeScrollMilestone, trackHomeView, trackHoroFunnelStep } from '../analytics/funnel';
 import { MerchProductCard } from '../components/MerchProductCard';
@@ -46,6 +46,9 @@ export function Home({
   }, [searchParams]);
   const latestDrops = (initialProducts ?? getProducts()).filter(productHasRealImage).slice(0, 6);
   const featuredFeelings = getFeelings().slice(0, 6);
+  const homeTrustItems = useMemo(() => {
+    return [...new Set(latestDrops.flatMap((product) => product.trustBadges ?? []).filter(Boolean))].slice(0, 3);
+  }, [latestDrops]);
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -127,17 +130,18 @@ export function Home({
               <p className="mt-2 max-w-2xl font-body text-sm text-warm-charcoal md:text-[15px]">
                 Start with real products, real prices, and the shortest route to checkout. No taxonomy required.
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="font-label rounded-full border border-stone/40 bg-white/70 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-warm-charcoal">
-                  220 GSM cotton
-                </span>
-                <span className="font-label rounded-full border border-stone/40 bg-white/70 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-warm-charcoal">
-                  Free exchange 14d
-                </span>
-                <span className="font-label rounded-full border border-stone/40 bg-white/70 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-warm-charcoal">
-                  COD available
-                </span>
-              </div>
+              {homeTrustItems.length > 0 ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {homeTrustItems.map((item) => (
+                    <span
+                      key={item}
+                      className="font-label rounded-full border border-stone/40 bg-white/70 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-warm-charcoal"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
             <Link
               data-reveal="stagger-1"
@@ -161,10 +165,9 @@ export function Home({
                   priceEgp={p.priceEgp}
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
-                  merchandisingBadge={p.merchandisingBadge || (i < 2 ? 'Popular' : undefined)}
+                  merchandisingBadge={p.merchandisingBadge}
                   eyebrow={feeling?.name}
                   eyebrowAccent={feeling?.accent}
-                  proofChip="220 GSM cotton"
                   useCase={p.useCase}
                   artistCredit={artist ? `Illustrated by ${artist.name}` : undefined}
                   variant="minimal"

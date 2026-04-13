@@ -6,6 +6,7 @@ import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
+import { useCart } from '../cart/CartContext';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, getProductMedia, giftWrapPreview, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -20,6 +21,7 @@ import {
   type Product,
 } from '../data/site';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { formatEgp } from '../utils/formatPrice';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 
 const FOCUSABLE_SELECTOR =
@@ -83,12 +85,10 @@ function formatDesignCount(count: number) {
 
 function OccasionProductCard({
   product,
-  isGiftOccasion,
   onQuickView,
   onProductClick,
 }: {
   product: Product;
-  isGiftOccasion: boolean;
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
 }) {
@@ -106,7 +106,6 @@ function OccasionProductCard({
       merchandisingBadge={product.merchandisingBadge}
       eyebrow={feeling?.name}
       eyebrowAccent={feeling?.accent}
-      proofChip={isGiftOccasion ? OCCASION_SCHEMA.copy.giftBannerChip : product.fitLabel ?? '220 GSM cotton'}
       onQuickView={onQuickView}
       onProductClick={onProductClick}
     />
@@ -123,6 +122,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
   const { slug: routeSlug = '' } = useParams();
   const slug = initialSlug ?? routeSlug;
   const { copy } = useUiLocale();
+  const { giftWrapCatalogPriceEgp } = useCart();
   const occasion = initialOccasion !== undefined ? initialOccasion : getOccasion(slug);
   const isMobile = useMediaQuery('(max-width: 767px)');
 
@@ -167,6 +167,13 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
   }, [priceFilter, sorted, vibeFilter]);
 
   const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || vibeFilter !== 'all';
+  const giftWrapPriceLabel = giftWrapCatalogPriceEgp ? formatEgp(giftWrapCatalogPriceEgp) : null;
+  const giftBannerBody = giftWrapPriceLabel
+    ? `${OCCASION_SCHEMA.copy.giftBannerBody} (${giftWrapPriceLabel}).`
+    : OCCASION_SCHEMA.copy.giftBannerBody;
+  const giftBannerChip = giftWrapPriceLabel
+    ? `${OCCASION_SCHEMA.copy.giftBannerChip} +${giftWrapPriceLabel}`
+    : OCCASION_SCHEMA.copy.giftBannerChip;
 
   const siblingOccasions = useMemo(() => {
     return getOccasions().filter((entry) => entry.slug !== slug);
@@ -381,9 +388,9 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
             </div>
             <div className="min-w-0">
               <h2 className="font-headline text-xl font-semibold leading-tight text-obsidian">{OCCASION_SCHEMA.copy.giftBannerHeading}</h2>
-              <p className="mt-3 font-body text-[0.96rem] leading-relaxed text-warm-charcoal">{OCCASION_SCHEMA.copy.giftBannerBody}</p>
+              <p className="mt-3 font-body text-[0.96rem] leading-relaxed text-warm-charcoal">{giftBannerBody}</p>
               <p className="font-label mt-4 inline-flex min-h-9 items-center rounded-full border border-stone bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-clay-earth shadow-sm">
-                {OCCASION_SCHEMA.copy.giftBannerChip}
+                {giftBannerChip}
               </p>
             </div>
           </section>
@@ -494,7 +501,6 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
               <OccasionProductCard
                 key={product.slug}
                 product={product}
-                isGiftOccasion={occasion.isGiftOccasion}
                 onQuickView={setQuickViewSlug}
               />
             ))}

@@ -24,9 +24,8 @@ import {
   getGiftWrapLineItem,
   toCartLines,
 } from '../lib/medusa/adapters';
+import type { MedusaProduct } from '../lib/medusa/types';
 import { CART_STORAGE_KEY, MEDUSA_CART_ID_STORAGE_KEY, cartLineKey, type CartLine } from './types';
-
-export const GIFT_WRAP_PRICE_EGP = 200;
 
 export type LastAddedItem = {
   productSlug: string;
@@ -47,7 +46,9 @@ type CartContextValue = {
   totalQty: number;
   subtotalEgp: number;
   giftWrapEgp: number;
-  setGiftWrapEgp: (egp: 0 | typeof GIFT_WRAP_PRICE_EGP) => void;
+  giftWrapCatalogPriceEgp: number | null;
+  addGiftWrap: () => void;
+  removeGiftWrap: () => void;
   miniCartOpen: boolean;
   setMiniCartOpen: (open: boolean) => void;
   lastAddedItem: LastAddedItem | null;
@@ -114,20 +115,46 @@ function persistMedusaCartId(cartId: string | null) {
   }
 }
 
+type GiftWrapOffer = {
+  priceEgp: number | null;
+  variantId: string | null;
+};
+
+function getMedusaProductPriceEgp(product: Pick<MedusaProduct, 'variants'> | null | undefined): number | null {
+  const priceCents =
+    product?.variants?.[0]?.calculated_price?.calculated_amount ??
+    product?.variants?.[0]?.prices?.find((price) => price.currency_code.toLowerCase() === 'egp')?.amount;
+
+  return typeof priceCents === 'number' ? Math.round(priceCents / 100) : null;
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
   const [giftWrapEgp, setGiftWrapEgpState] = useState(0);
+  const [giftWrapCatalogPriceEgp, setGiftWrapCatalogPriceEgp] = useState<number | null>(null);
   const [medusaCartId, setMedusaCartId] = useState<string | null>(null);
   const [storageReady, setStorageReady] = useState(false);
   const [miniCartOpen, setMiniCartOpen] = useState(false);
   const [lastAddedItem, setLastAddedItem] = useState<LastAddedItem | null>(null);
-  const giftWrapVariantPromiseRef = useRef<Promise<string | null> | null>(null);
+  const giftWrapOfferPromiseRef = useRef<Promise<GiftWrapOffer> | null>(null);
+  /** Monotonic counter incremented on clearCart to invalidate in-flight syncs. */
+  const cartGenerationRef = useRef(0);
 
   const syncFromMedusaCart = useCallback(async (cartId: string) => {
+    const generation = cartGenerationRef.current;
     try {
       const { cart } = await getCart(cartId);
+      // If the cart was cleared while this fetch was in flight, discard the result
+      // so we don't accidentally re-set the medusaCartId after clearCart().
+      if (cartGenerationRef.current !== generation) return;
+      // Also skip completed carts – they belong to a placed order.
+      if (cart.completed_at) return;
       setItems(toCartLines(cart));
-      setGiftWrapEgpState(getCartGiftWrapEgp(cart));
+      const nextGiftWrapEgp = getCartGiftWrapEgp(cart);
+      setGiftWrapEgpState(nextGiftWrapEgp);
+      if (nextGiftWrapEgp > 0) {
+        setGiftWrapCatalogPriceEgp((current) => current ?? nextGiftWrapEgp);
+      }
       setMedusaCartId(cart.id);
     } catch {
       // Keep local fallback state if backend is unavailable.
@@ -167,15 +194,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return getProduct(productSlug)?.variantsBySize?.[size]?.id ?? null;
   }, []);
 
-  const resolveGiftWrapVariantId = useCallback(async () => {
-    if (!giftWrapVariantPromiseRef.current) {
-      giftWrapVariantPromiseRef.current = getProductByHandle(GIFT_WRAP_PRODUCT_HANDLE)
-        .then((response) => response?.product.variants?.[0]?.id ?? null)
-        .catch(() => null);
+  const resolveGiftWrapOffer = useCallback(async () => {
+    if (!giftWrapOfferPromiseRef.current) {
+      giftWrapOfferPromiseRef.current = getProductByHandle(GIFT_WRAP_PRODUCT_HANDLE)
+        .then((response) => ({
+          priceEgp: getMedusaProductPriceEgp(response?.product),
+          variantId: response?.product.variants?.[0]?.id ?? null,
+        }))
+        .catch(() => ({ priceEgp: null, variantId: null }));
     }
 
-    return giftWrapVariantPromiseRef.current;
+    return giftWrapOfferPromiseRef.current;
   }, []);
+
+  useEffect(() => {
+    void resolveGiftWrapOffer().then((offer) => {
+      if (typeof offer.priceEgp === 'number') {
+        setGiftWrapCatalogPriceEgp(offer.priceEgp);
+      }
+    });
+  }, [resolveGiftWrapOffer]);
 
   const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1) => {
     const product = getProduct(productSlug);
@@ -280,24 +318,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [items, medusaCartId, syncFromMedusaCart],
   );
 
-  const setGiftWrapEgp = useCallback((egp: 0 | typeof GIFT_WRAP_PRICE_EGP) => {
-    if (egp === giftWrapEgp) return;
+  const addGiftWrap = useCallback(() => {
+    if (giftWrapEgp > 0) return;
     const previousGiftWrap = giftWrapEgp;
-    setGiftWrapEgpState(egp);
 
     void (async () => {
       try {
         const cartId = await ensureMedusaCartId();
         const { cart } = await getCart(cartId);
         const existingGiftWrapLine = getGiftWrapLineItem(cart);
-
-        if (egp === 0) {
-          if (existingGiftWrapLine?.id) {
-            await removeLineItem(cartId, existingGiftWrapLine.id);
-          }
-          await syncFromMedusaCart(cartId);
-          return;
-        }
 
         if (existingGiftWrapLine?.id) {
           if (existingGiftWrapLine.quantity !== 1) {
@@ -307,23 +336,59 @@ export function CartProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const variantId = await resolveGiftWrapVariantId();
-        if (!variantId) {
+        const offer = await resolveGiftWrapOffer();
+        if (!offer.variantId) {
           throw new Error('Gift wrap variant is not available in Medusa.');
         }
 
-        await addLineItem(cartId, variantId, 1);
+        if (typeof offer.priceEgp === 'number' && offer.priceEgp > 0) {
+          setGiftWrapCatalogPriceEgp(offer.priceEgp);
+          setGiftWrapEgpState(offer.priceEgp);
+        }
+
+        await addLineItem(cartId, offer.variantId, 1);
         await syncFromMedusaCart(cartId);
       } catch {
         setGiftWrapEgpState(previousGiftWrap);
       }
     })();
-  }, [ensureMedusaCartId, giftWrapEgp, resolveGiftWrapVariantId, syncFromMedusaCart]);
+  }, [ensureMedusaCartId, giftWrapEgp, resolveGiftWrapOffer, syncFromMedusaCart]);
+
+  const removeGiftWrap = useCallback(() => {
+    if (giftWrapEgp === 0) return;
+    const previousGiftWrap = giftWrapEgp;
+    setGiftWrapEgpState(0);
+
+    void (async () => {
+      try {
+        if (!medusaCartId) {
+          return;
+        }
+
+        const { cart } = await getCart(medusaCartId);
+        const existingGiftWrapLine = getGiftWrapLineItem(cart);
+
+        if (existingGiftWrapLine?.id) {
+          await removeLineItem(medusaCartId, existingGiftWrapLine.id);
+        }
+
+        await syncFromMedusaCart(medusaCartId);
+      } catch {
+        setGiftWrapEgpState(previousGiftWrap);
+      }
+    })();
+  }, [giftWrapEgp, medusaCartId, syncFromMedusaCart]);
 
   const clearCart = useCallback(() => {
+    // Bump generation so any in-flight syncFromMedusaCart discards its result.
+    cartGenerationRef.current += 1;
     setItems([]);
     setGiftWrapEgpState(0);
     setMedusaCartId(null);
+    // Synchronously wipe localStorage so the stale cart ID can never be
+    // re-loaded on a subsequent page mount (React effects are async).
+    persistItems([]);
+    persistMedusaCartId(null);
   }, []);
 
   const replaceMedusaCartId = useCallback((cartId: string | null) => {
@@ -354,12 +419,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
       totalQty,
       subtotalEgp,
       giftWrapEgp,
-      setGiftWrapEgp,
+      giftWrapCatalogPriceEgp,
+      addGiftWrap,
+      removeGiftWrap,
       miniCartOpen,
       setMiniCartOpen,
       lastAddedItem,
     }),
-    [items, addItem, removeItem, setLineQty, clearCart, replaceMedusaCartId, totalQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp, miniCartOpen, lastAddedItem],
+    [
+      items,
+      addItem,
+      removeItem,
+      setLineQty,
+      clearCart,
+      replaceMedusaCartId,
+      totalQty,
+      subtotalEgp,
+      giftWrapEgp,
+      giftWrapCatalogPriceEgp,
+      addGiftWrap,
+      removeGiftWrap,
+      miniCartOpen,
+      lastAddedItem,
+    ],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -3,7 +3,8 @@ import { StorefrontChrome } from "@/components/storefront-chrome";
 import { fetchStorefrontCatalogServer, logStorefrontFetchError } from "@/lib/storefront-server";
 import { Providers } from "./providers";
 
-export const dynamic = "force-dynamic";
+// Avoid force-dynamic here so the root shell can participate in Next fetch caching (catalog uses
+// revalidate in storefront-server). Profile Medusa catalog timings with STOREFRONT_PROFILE_CATALOG=1.
 
 export default async function RootLayout({
   children,

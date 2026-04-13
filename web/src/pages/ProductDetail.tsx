@@ -293,6 +293,22 @@ export function ProductDetail({
   const artist = product
     ? artistLookup.get(product.artistSlug) ?? (!preferBackendCatalog ? getArtist(product.artistSlug) : undefined)
     : undefined;
+
+  /** Prefer Medusa `metadata.artist` (API `artistDisplay`); fallback to catalog/fixture artist by slug. */
+  const pdpArtist = useMemo(() => {
+    const fromMeta = product?.artistDisplay;
+    if (fromMeta?.name?.trim()) {
+      return {
+        name: fromMeta.name.trim(),
+        avatarSrc: fromMeta.avatarUrl?.trim(),
+      };
+    }
+    if (artist) {
+      return { name: artist.name, avatarSrc: artist.avatarSrc };
+    }
+    return null;
+  }, [product?.artistDisplay, artist]);
+
   const related = product
     ? (((catalogProductsSnapshot.length > 0
         ? catalogProductsSnapshot
@@ -358,6 +374,18 @@ export function ProductDetail({
     : null;
   const productDescription = product?.description ?? product?.story ?? '';
 
+  /** Hero chip: prefer Medusa product description; fallback to pillar tagline (see PDP / Medusa README). */
+  const HERO_SUBTITLE_MAX_LEN = 280;
+  const heroSubtitle = useMemo(() => {
+    const fromDesc = product?.description?.trim();
+    if (fromDesc) {
+      return fromDesc.length <= HERO_SUBTITLE_MAX_LEN
+        ? fromDesc
+        : `${fromDesc.slice(0, HERO_SUBTITLE_MAX_LEN).trimEnd()}…`;
+    }
+    return feeling?.tagline?.trim() ?? '';
+  }, [product?.description, feeling?.tagline]);
+
   const sizeButtons = useMemo(() => {
     if (!product) return PDP_SCHEMA.sizes;
     const avail = new Set(productAvailableSizes(product));
@@ -385,15 +413,28 @@ export function ProductDetail({
       ? product.inventoryHintBySize[selectedSize as ProductSizeKey]
       : undefined;
 
-  const trustItems = [
-    '220 GSM cotton',
-    'Free exchange 14d',
-    'COD available',
-  ];
+  const trustItems = product?.trustBadges?.filter(Boolean) ?? [];
 
   const customFitLines = product ? formatPdpFitModelLines(product) : [];
   const fallbackModelParagraph = product ? defaultPdpModelParagraph(product) : '';
-  const inlineFitNote = customFitLines[0] ?? copy.sizeGuideModelNote;
+  const physicalFitDisplayLines = useMemo(() => {
+    const p = product?.physicalAttributes;
+    if (!p) return [] as string[];
+    const lines: string[] = [];
+    if (p.weight) lines.push(`Weight: ${p.weight}`);
+    if (p.length || p.width || p.height) {
+      const L = p.length ?? '—';
+      const W = p.width ?? '—';
+      const H = p.height ?? '—';
+      lines.push(`Dimensions (L × W × H): ${L} × ${W} × ${H}`);
+    }
+    if (p.material) lines.push(`Material: ${p.material}`);
+    if (p.originCountry) lines.push(`Origin: ${p.originCountry}`);
+    if (p.hsCode) lines.push(`HS code: ${p.hsCode}`);
+    if (p.midCode) lines.push(`MID code: ${p.midCode}`);
+    return lines;
+  }, [product?.physicalAttributes]);
+  const inlineFitNote = customFitLines[0] ?? physicalFitDisplayLines[0] ?? copy.sizeGuideModelNote;
   const whatsappSupportUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
     ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
     : null;
@@ -947,11 +988,13 @@ export function ProductDetail({
                 {formatTitleLines(product.name)}
               </h1>
 
-              {feeling || product.occasionSlugs.length ? (
+              {heroSubtitle ||
+              product.occasionSlugs.length > 0 ||
+              product.capsuleSlugs?.includes('zodiac') ? (
                 <div className="flex flex-wrap gap-2">
-                  {feeling?.tagline ? (
+                  {heroSubtitle ? (
                     <span className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
-                      {feeling.tagline}
+                      {heroSubtitle}
                     </span>
                   ) : null}
                   {product.occasionSlugs.map((slug) => {
@@ -1133,9 +1176,11 @@ export function ProductDetail({
                 {deliveryDynamic ? (
                   <p className="font-body text-sm leading-snug text-warm-charcoal">{deliveryDynamic.arrivesLine}</p>
                 ) : null}
-                <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
-                  {trustItems.join(' · ')}
-                </p>
+                {trustItems.length > 0 ? (
+                  <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+                    {trustItems.join(' · ')}
+                  </p>
+                ) : null}
                 {whatsappSupportUrl ? (
                   <a
                     href={whatsappSupportUrl}
@@ -1150,13 +1195,13 @@ export function ProductDetail({
 
               {!compactPdp ? <PdpShareStrip productName={product.name} productSlug={product.slug} /> : null}
 
-              {artist ? (
+              {pdpArtist ? (
                 <div className="flex items-center gap-3 border-t border-stone/30 pt-5">
-                  {artist.avatarSrc ? (
+                  {pdpArtist.avatarSrc ? (
                     <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/45">
                       <TeeImage
-                        src={artist.avatarSrc}
-                        alt={artist.name}
+                        src={pdpArtist.avatarSrc}
+                        alt={pdpArtist.name}
                         w={160}
                         eager
                         className="h-full w-full object-cover"
@@ -1166,7 +1211,7 @@ export function ProductDetail({
                   <p className="font-body text-sm leading-snug text-warm-charcoal">
                     <span className="text-clay">{copy.illustratedByLabel}</span>{' '}
                     <span className="font-medium text-obsidian">
-                      {artist.name}
+                      {pdpArtist.name}
                     </span>
                   </p>
                 </div>
@@ -1184,6 +1229,17 @@ export function ProductDetail({
                 <div className="mb-5 space-y-3">
                   {customFitLines.map((line, idx) => (
                     <p key={`fit-line-${idx}`} className="font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              ) : physicalFitDisplayLines.length > 0 ? (
+                <div className="mb-5 space-y-3">
+                  {physicalFitDisplayLines.map((line, idx) => (
+                    <p
+                      key={`phys-line-${idx}`}
+                      className="font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]"
+                    >
                       {line}
                     </p>
                   ))}
@@ -1240,9 +1296,9 @@ export function ProductDetail({
                     'collection'
                   )}{' '}
                   line — artwork by{' '}
-                  {artist ? (
+                  {pdpArtist ? (
                     <span className="font-medium text-deep-teal">
-                      {artist.name}
+                      {pdpArtist.name}
                     </span>
                   ) : (
                     'the artist'
@@ -1534,6 +1590,12 @@ export function ProductDetail({
               <div className="mt-4 space-y-2 font-body text-[13px] leading-normal text-clay">
                 {product.pdpFitModels.map((m) => (
                   <p key={`${m.heightCm}-${m.sizeWorn}`}>{formatPdpFitModelLine(m)}</p>
+                ))}
+              </div>
+            ) : physicalFitDisplayLines.length > 0 ? (
+              <div className="mt-4 space-y-2 font-body text-[13px] leading-normal text-clay">
+                {physicalFitDisplayLines.map((line, idx) => (
+                  <p key={`sg-phys-${idx}`}>{line}</p>
                 ))}
               </div>
             ) : (

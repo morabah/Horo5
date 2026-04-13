@@ -11,8 +11,13 @@ import type MerchEventModuleService from "../../modules/merch-event/service"
 import { OCCASION_MODULE } from "../../modules/occasion"
 import type OccasionModuleService from "../../modules/occasion/service"
 import { FEELINGS_ROOT_HANDLE } from "./feeling-category-metadata"
-import type { CategoryNode } from "./feeling-category-tree"
-import { derivePrimaryFeelingSlugsFromProductCategories } from "./feeling-category-tree"
+import type { CategoryNode, FlatCategoryRow, FeelingBrowseAssignmentRaw } from "./feeling-category-tree"
+import {
+  collectFeelingBrowseAssignmentsFromFlatCategoryIds,
+  collectFeelingBrowseAssignmentsFromNestedCategories,
+  derivePrimaryFeelingSlugsFromFlat,
+  derivePrimaryFeelingSlugsFromProductCategories,
+} from "./feeling-category-tree"
 import {
   inferFeelingSlugFromHandle,
   inferSubfeelingSlugFromHandle,
@@ -22,11 +27,14 @@ import {
 import type {
   StorefrontArtistDTO,
   StorefrontCatalogDTO,
+  StorefrontFeelingBrowseAssignmentDTO,
   StorefrontFeelingDTO,
   StorefrontMediaDTO,
   StorefrontMerchEventDTO,
   StorefrontOccasionDTO,
+  StorefrontProductArtistDisplayDTO,
   StorefrontProductDTO,
+  StorefrontProductPhysicalAttributesDTO,
   StorefrontSubfeelingDTO,
   StorefrontVariantDTO,
 } from "./types"
@@ -71,11 +79,19 @@ type QueryProduct = {
   categories?: QueryCategory[] | null
   description?: string | null
   handle: string
+  height?: string | null
+  hs_code?: string | null
   id: string
   images?: Array<{ url?: string | null }> | null
+  length?: string | null
+  material?: string | null
   metadata?: Record<string, unknown> | null
+  mid_code?: string | null
+  origin_country?: string | null
   thumbnail?: string | null
   title: string
+  weight?: string | null
+  width?: string | null
   variants?: QueryVariant[] | null
 }
 
@@ -86,6 +102,8 @@ type QueryVariant = {
     currency_code?: string | null
     original_amount?: number | null
   } | null
+  height?: number | string | null
+  hs_code?: string | null
   id: string
   inventory_items?: Array<{
     inventory?: {
@@ -95,17 +113,23 @@ type QueryVariant = {
       }> | null
     } | null
   }> | null
+  length?: number | string | null
   manage_inventory?: boolean | null
+  material?: string | null
+  mid_code?: string | null
   options?: Array<{
     option?: { title?: string | null } | null
     value?: string | null
   }> | null
+  origin_country?: string | null
   prices?: Array<{
     amount?: number | null
     currency_code?: string | null
   }> | null
   sku?: string | null
   title: string
+  weight?: number | string | null
+  width?: number | string | null
 }
 
 export type FeelingRecord = {
@@ -197,6 +221,14 @@ const PRODUCT_QUERY_FIELDS = [
   "title",
   "handle",
   "description",
+  "weight",
+  "length",
+  "height",
+  "width",
+  "origin_country",
+  "hs_code",
+  "mid_code",
+  "material",
   "thumbnail",
   "images.url",
   "metadata",
@@ -221,12 +253,25 @@ const PRODUCT_QUERY_FIELDS = [
   "variants.prices.amount",
   "variants.prices.currency_code",
   "variants.calculated_price.*",
+  "variants.weight",
+  "variants.length",
+  "variants.height",
+  "variants.width",
+  "variants.origin_country",
+  "variants.hs_code",
+  "variants.mid_code",
+  "variants.material",
   "variants.inventory_items.inventory.location_levels.stocked_quantity",
   "variants.inventory_items.inventory.location_levels.reserved_quantity",
 ]
 
 const DEFAULT_APPAREL_CATEGORY_PATH = "apparel/tops/t-shirts"
 const DEFAULT_SIZE_ORDER = ["S", "M", "L", "XL", "XXL"] as const
+const LEGACY_STOREFRONT_TRUST_BADGES = [
+  "220 GSM cotton",
+  "Free exchange 14d",
+  "COD available",
+] as const
 
 function categoryToFeelingRecord(category: CategoryNode): FeelingRecord {
   const meta = asRecord(category.metadata)
@@ -539,13 +584,177 @@ function isHiddenProduct(product: QueryProduct) {
   return metadata.hidden === true || metadata.hidden === "true"
 }
 
-function buildProduct(product: QueryProduct): StorefrontProductDTO {
+function normalizeFeelingBrowseAssignments(
+  raw: FeelingBrowseAssignmentRaw[],
+  productHandle: string
+): StorefrontFeelingBrowseAssignmentDTO[] {
+  const seen = new Set<string>()
+  const out: StorefrontFeelingBrowseAssignmentDTO[] = []
+
+  for (const row of raw) {
+    const feelingSlug = normalizeFeelingSlug(row.feelingSlug, productHandle)
+    const subfeelingSlug = row.subfeelingSlug
+      ? normalizeSubfeelingSlug(row.subfeelingSlug, productHandle, feelingSlug)
+      : ""
+    const key = `${feelingSlug}\0${subfeelingSlug}`
+    if (seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    out.push({ feelingSlug, subfeelingSlug })
+  }
+
+  return out
+}
+
+function trimPhysicalDisplayValue(value: unknown): string | undefined {
+  if (value === null || value === undefined) {
+    return undefined
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : undefined
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim()
+
+    return trimmed.length > 0 ? trimmed : undefined
+  }
+
+  return undefined
+}
+
+function buildPhysicalAttributes(
+  product: QueryProduct,
+  defaultVariantId: string | undefined
+): StorefrontProductPhysicalAttributesDTO | undefined {
+  const rawVariants = product.variants || []
+  const rawDefault = defaultVariantId
+    ? rawVariants.find((variant) => variant.id === defaultVariantId)
+    : rawVariants[0]
+
+  const weight =
+    trimPhysicalDisplayValue(product.weight) ?? trimPhysicalDisplayValue(rawDefault?.weight)
+  const length =
+    trimPhysicalDisplayValue(product.length) ?? trimPhysicalDisplayValue(rawDefault?.length)
+  const height =
+    trimPhysicalDisplayValue(product.height) ?? trimPhysicalDisplayValue(rawDefault?.height)
+  const width =
+    trimPhysicalDisplayValue(product.width) ?? trimPhysicalDisplayValue(rawDefault?.width)
+  const originCountry =
+    trimPhysicalDisplayValue(product.origin_country) ??
+    trimPhysicalDisplayValue(rawDefault?.origin_country)
+  const hsCode =
+    trimPhysicalDisplayValue(product.hs_code) ?? trimPhysicalDisplayValue(rawDefault?.hs_code)
+  const midCode =
+    trimPhysicalDisplayValue(product.mid_code) ?? trimPhysicalDisplayValue(rawDefault?.mid_code)
+  const material =
+    trimPhysicalDisplayValue(product.material) ?? trimPhysicalDisplayValue(rawDefault?.material)
+
+  const out: StorefrontProductPhysicalAttributesDTO = {}
+
+  if (weight) {
+    out.weight = weight
+  }
+
+  if (length) {
+    out.length = length
+  }
+
+  if (height) {
+    out.height = height
+  }
+
+  if (width) {
+    out.width = width
+  }
+
+  if (originCountry) {
+    out.originCountry = originCountry
+  }
+
+  if (hsCode) {
+    out.hsCode = hsCode
+  }
+
+  if (midCode) {
+    out.midCode = midCode
+  }
+
+  if (material) {
+    out.material = material
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
+function parseArtistDisplayFromMetadata(metadata: Record<string, unknown>): StorefrontProductArtistDisplayDTO | undefined {
+  const nested = metadata.artist
+
+  if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+    const rec = nested as Record<string, unknown>
+    const name = asString(rec.name)?.trim()
+
+    if (!name) {
+      return undefined
+    }
+
+    const avatarUrl =
+      asString(rec.avatarUrl)?.trim() ||
+      asString(rec.avatar_src)?.trim() ||
+      undefined
+
+    return avatarUrl ? { name, avatarUrl } : { name }
+  }
+
+  const flatName = asString(metadata.artistName)?.trim()
+
+  if (flatName) {
+    const avatarUrl = asString(metadata.artistAvatarUrl)?.trim()
+    return avatarUrl ? { name: flatName, avatarUrl } : { name: flatName }
+  }
+
+  return undefined
+}
+
+function resolveArtistDisplay(
+  metadata: Record<string, unknown>,
+  artistsBySlug?: Map<string, StorefrontArtistDTO>
+): StorefrontProductArtistDisplayDTO | undefined {
+  const fromMeta = parseArtistDisplayFromMetadata(metadata)
+
+  if (fromMeta) {
+    return fromMeta
+  }
+
+  const slug = asString(metadata.artistSlug) || "nada-ibrahim"
+  const fromModule = artistsBySlug?.get(slug)
+
+  if (fromModule) {
+    return {
+      name: fromModule.name,
+      ...(fromModule.avatarSrc ? { avatarUrl: fromModule.avatarSrc } : {}),
+    }
+  }
+
+  return undefined
+}
+
+function buildProduct(
+  product: QueryProduct,
+  categoriesById?: Map<string, FlatCategoryRow>,
+  artistsBySlug?: Map<string, StorefrontArtistDTO>
+): StorefrontProductDTO {
   const metadata = asRecord(product.metadata)
   const legacyMedia = asMedia(metadata.media)
   const legacyPrice = typeof metadata.priceEgp === "number" ? metadata.priceEgp : undefined
+  const trustBadges = asStringArray(metadata.trustBadges) || []
   const mappedVariants = sortVariantList((product.variants || []).map((variant) => mapVariant(variant, legacyPrice)))
   const variantsBySize = Object.fromEntries(mappedVariants.map((variant) => [variant.size, variant]))
   const defaultVariant = mappedVariants.find((variant) => variant.available) || mappedVariants[0]
+  const physicalAttributes = buildPhysicalAttributes(product, defaultVariant?.id)
   const gallery = orderedUniqueStrings([
     ...(product.images || []).map((image) => image.url || undefined),
     ...galleryFromLegacyMedia(legacyMedia),
@@ -553,10 +762,16 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
   ])
   const mainImage = gallery[0] || product.thumbnail || legacyMedia?.main || null
   const inventoryHints = asRecord(metadata.inventoryHintBySize) as Record<string, string>
-  const derived = derivePrimaryFeelingSlugsFromProductCategories(
-    product.categories as QueryCategory[] | null,
-    FEELINGS_ROOT_HANDLE
-  )
+  const derived = categoriesById
+    ? derivePrimaryFeelingSlugsFromFlat(
+        product.categories?.map((c) => c.id),
+        categoriesById,
+        FEELINGS_ROOT_HANDLE
+      )
+    : derivePrimaryFeelingSlugsFromProductCategories(
+        product.categories as QueryCategory[] | null,
+        FEELINGS_ROOT_HANDLE
+      )
   const legacyFb = String(process.env.STOREFRONT_FEELINGS_LEGACY_FALLBACK || "").trim().toLowerCase() !== "false"
   const rawFeelingSlug = asString(metadata.primaryFeelingSlug) || asString(metadata.feelingSlug)
   const rawSubfeelingSlug = asString(metadata.primarySubfeelingSlug) || asString(metadata.lineSlug)
@@ -579,6 +794,21 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
 
   const feelingBrowseEligible = derived !== null || legacyFb
 
+  const rawFeelingBrowseAssignments = categoriesById
+    ? collectFeelingBrowseAssignmentsFromFlatCategoryIds(
+        product.categories?.map((category) => category.id),
+        categoriesById,
+        FEELINGS_ROOT_HANDLE
+      )
+    : collectFeelingBrowseAssignmentsFromNestedCategories(
+        product.categories as QueryCategory[] | null,
+        FEELINGS_ROOT_HANDLE
+      )
+  const feelingBrowseAssignments =
+    rawFeelingBrowseAssignments.length > 0
+      ? normalizeFeelingBrowseAssignments(rawFeelingBrowseAssignments, product.handle)
+      : undefined
+
   const apparelPath =
     apparelCategoryPath(product.categories) ||
     asString(metadata.apparelCategoryPath) ||
@@ -590,6 +820,7 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
 
   return {
     apparelCategoryPath: apparelPath,
+    artistDisplay: resolveArtistDisplay(metadata, artistsBySlug),
     artistSlug: asString(metadata.artistSlug) || "nada-ibrahim",
     artworkSlug: asString(metadata.artworkSlug),
     availableSizes: mappedVariants.length > 0 ? mappedVariants.map((variant) => variant.size) : asStringArray(metadata.availableSizes),
@@ -599,6 +830,7 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
     decorationType,
     defaultPriceSize: defaultVariant?.size,
     feelingBrowseEligible,
+    feelingBrowseAssignments,
     description: product.description || asString(metadata.story) || undefined,
     feelingSlug: primaryFeelingSlug,
     fitLabel: asString(metadata.fitLabel),
@@ -618,6 +850,7 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
     occasionSlugs: asStringArray(metadata.occasionSlugs) || [],
     originalPriceEgp: defaultVariant?.original_price_egp ?? null,
     pdpFitModels: asObjectArray(metadata.pdpFitModels),
+    physicalAttributes,
     primaryFeelingSlug,
     primaryOccasionSlug: asString(metadata.primaryOccasionSlug),
     primarySubfeelingSlug,
@@ -626,6 +859,7 @@ function buildProduct(product: QueryProduct): StorefrontProductDTO {
     stockNote: asString(metadata.stockNote),
     story: asString(metadata.story) || product.description || "",
     thumbnail: mainImage,
+    trustBadges: trustBadges.length > 0 ? trustBadges : [...LEGACY_STOREFRONT_TRUST_BADGES],
     useCase: asString(metadata.useCase),
     variantsBySize,
     wearerStories: asObjectArray(metadata.wearerStories),
@@ -752,21 +986,79 @@ export async function resolveEgyptPricingContext(scope: MedusaContainer) {
   }
 }
 
-function sortStorefrontProducts(products: QueryProduct[]) {
+function sortStorefrontProducts(
+  products: QueryProduct[],
+  categoriesById?: Map<string, FlatCategoryRow>,
+  artistsBySlug?: Map<string, StorefrontArtistDTO>
+) {
   return products
     .filter((product) => !isHiddenProduct(product))
     .map((product) => {
       const metadata = asRecord(product.metadata)
       return {
         order: asNumber(metadata.catalogOrder) ?? Number.MAX_SAFE_INTEGER,
-        product: buildProduct(product),
+        product: buildProduct(product, categoriesById, artistsBySlug),
       }
     })
     .sort((left, right) => left.order - right.order)
     .map((entry) => entry.product)
 }
 
+const DEFAULT_SERVER_CACHE_MS = 60_000
+
+function parsePositiveMsEnv(name: string, fallback: number): number {
+  const raw = String(process.env[name] ?? "").trim()
+  if (raw === "0") {
+    return 0
+  }
+  if (raw === "") {
+    return fallback
+  }
+  const n = Number(raw)
+  return Number.isFinite(n) && n >= 0 ? n : fallback
+}
+
+/** In-memory flat category graph for storefront product mapping (Phase 2). Disabled when ms is 0. */
+let categoryGraphCache: { expiresAt: number; map: Map<string, FlatCategoryRow> } | null = null
+
+async function loadCategoriesByIdMap(
+  scope: MedusaContainer,
+  profileCatalog: boolean
+): Promise<Map<string, FlatCategoryRow>> {
+  const ttlMs = parsePositiveMsEnv("STOREFRONT_CATEGORY_GRAPH_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
+  const now = Date.now()
+  if (ttlMs > 0 && categoryGraphCache && categoryGraphCache.expiresAt > now) {
+    return new Map(categoryGraphCache.map)
+  }
+
+  const query = scope.resolve(ContainerRegistrationKeys.QUERY)
+  const tCategories = profileCatalog ? Date.now() : 0
+  const { data: allCategoriesRows } = await query.graph({
+    entity: "product_category",
+    fields: ["id", "handle", "parent_category_id"],
+    pagination: {
+      take: 2000,
+    },
+  })
+  if (profileCatalog) {
+    console.info(`[storefront/profile] category_graph_ms=${Date.now() - tCategories}`)
+  }
+
+  const categoriesById = new Map<string, FlatCategoryRow>()
+  for (const row of (allCategoriesRows || []) as FlatCategoryRow[]) {
+    categoriesById.set(row.id, row)
+  }
+
+  if (ttlMs > 0) {
+    categoryGraphCache = { expiresAt: now + ttlMs, map: categoriesById }
+    return new Map(categoriesById)
+  }
+
+  return categoriesById
+}
+
 async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQueryFilters = {}, take = 200) {
+  const profileCatalog = String(process.env.STOREFRONT_PROFILE_CATALOG || "").trim() === "1"
   const query = scope.resolve(ContainerRegistrationKeys.QUERY)
   const pricingContext = await resolveEgyptPricingContext(scope)
   const context = pricingContext
@@ -777,6 +1069,7 @@ async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQ
       }
     : undefined
 
+  const tProducts = profileCatalog ? Date.now() : 0
   const { data } = await query.graph(
     {
       entity: "product",
@@ -791,16 +1084,30 @@ async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQ
       context,
     }
   )
+  if (profileCatalog) {
+    console.info(`[storefront/profile] product_graph_ms=${Date.now() - tProducts}`)
+  }
 
-  return data as QueryProduct[]
+  const categoriesById = await loadCategoriesByIdMap(scope, profileCatalog)
+
+  return {
+    products: data as QueryProduct[],
+    categoriesById,
+  }
 }
 
-export async function listStorefrontProducts(scope: MedusaContainer) {
-  return sortStorefrontProducts(await queryStorefrontProducts(scope))
+export async function listStorefrontProducts(scope: MedusaContainer, artists?: StorefrontArtistDTO[]) {
+  const artistList = artists ?? (await listStorefrontArtists(scope))
+  const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
+  const result = await queryStorefrontProducts(scope)
+  return sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug)
 }
 
 export async function retrieveStorefrontProduct(scope: MedusaContainer, handle: string) {
-  const products = sortStorefrontProducts(await queryStorefrontProducts(scope, { handle }, 1))
+  const artistList = await listStorefrontArtists(scope)
+  const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
+  const result = await queryStorefrontProducts(scope, { handle }, 1)
+  const products = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug)
   return products[0] || null
 }
 
@@ -812,6 +1119,58 @@ export async function listStorefrontArtists(scope: MedusaContainer) {
     .map(buildArtist)
     .filter((artist) => artist.active)
     .sort((left, right) => left.name.localeCompare(right.name))
+}
+
+/**
+ * Single feelings-root walk for catalog: avoids duplicating fetchProductCategoryByHandle +
+ * fetchChildCategoriesOfParent when both pillars and lines are needed (see buildStorefrontCatalog).
+ */
+async function loadFeelingsAndSubfeelingsForCatalog(scope: MedusaContainer): Promise<{
+  feelings: StorefrontFeelingDTO[]
+  subfeelings: StorefrontSubfeelingDTO[]
+}> {
+  const profileCatalog = String(process.env.STOREFRONT_PROFILE_CATALOG || "").trim() === "1"
+  const t0 = profileCatalog ? Date.now() : 0
+
+  const root = await fetchProductCategoryByHandle(scope, FEELINGS_ROOT_HANDLE)
+  if (!root?.id) {
+    return { feelings: [], subfeelings: [] }
+  }
+
+  const children = await fetchChildCategoriesOfParent(scope, root.id)
+  const active = children.filter((category) => category.is_active !== false)
+  if (active.length === 0) {
+    return { feelings: [], subfeelings: [] }
+  }
+
+  const feelings = active.map((category) => buildFeeling(categoryToFeelingRecord(category)))
+  const subRows: SubfeelingRecord[] = []
+
+  for (const feeling of active) {
+    if (!feeling.id) {
+      continue
+    }
+
+    const subs = await fetchChildCategoriesOfParent(scope, feeling.id)
+    for (const sub of subs) {
+      if (sub.is_active === false || !sub.handle) {
+        continue
+      }
+
+      subRows.push(categoryToSubfeelingRecord(sub, feeling.handle || ""))
+    }
+  }
+
+  const subfeelings =
+    subRows.length > 0
+      ? subRows.map(buildSubfeeling).sort((left, right) => left.sortOrder - right.sortOrder)
+      : []
+
+  if (profileCatalog) {
+    console.info(`[storefront/profile] feelings_tree_ms=${Date.now() - t0}`)
+  }
+
+  return { feelings, subfeelings }
 }
 
 export async function listStorefrontFeelings(scope: MedusaContainer) {
@@ -926,14 +1285,15 @@ export async function retrieveStorefrontMerchEvent(scope: MedusaContainer, slug:
 }
 
 export async function buildStorefrontCatalog(scope: MedusaContainer): Promise<StorefrontCatalogDTO> {
-  const [artists, products, feelings, subfeelings, occasions, events] = await Promise.all([
-    listStorefrontArtists(scope),
-    listStorefrontProducts(scope),
-    listStorefrontFeelings(scope),
-    listStorefrontSubfeelings(scope),
+  const artists = await listStorefrontArtists(scope)
+  const [products, feelingsBundle, occasions, events] = await Promise.all([
+    listStorefrontProducts(scope, artists),
+    loadFeelingsAndSubfeelingsForCatalog(scope),
     listStorefrontOccasions(scope),
     listStorefrontMerchEvents(scope),
   ])
+
+  const { feelings, subfeelings } = feelingsBundle
 
   return {
     artists,
@@ -943,4 +1303,42 @@ export async function buildStorefrontCatalog(scope: MedusaContainer): Promise<St
     products,
     subfeelings,
   }
+}
+
+let catalogServerCache: { expiresAt: number; value: StorefrontCatalogDTO } | null = null
+let catalogServerInflight: Promise<StorefrontCatalogDTO> | null = null
+
+/**
+ * Same DTO as {@link buildStorefrontCatalog}, with optional in-process TTL (Phase 2).
+ * Aligns with Next `revalidate: 60`: both can lag briefly after Admin edits unless you call
+ * `revalidateTag` / restart workers. Set `STOREFRONT_CATALOG_SERVER_CACHE_MS=0` to disable.
+ * Coalesces concurrent catalog builds onto one promise.
+ */
+export async function getStorefrontCatalogWithServerCache(
+  scope: MedusaContainer
+): Promise<StorefrontCatalogDTO> {
+  const ttlMs = parsePositiveMsEnv("STOREFRONT_CATALOG_SERVER_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
+  if (ttlMs <= 0) {
+    return buildStorefrontCatalog(scope)
+  }
+
+  const now = Date.now()
+  if (catalogServerCache && catalogServerCache.expiresAt > now) {
+    return catalogServerCache.value
+  }
+
+  if (catalogServerInflight) {
+    return catalogServerInflight
+  }
+
+  catalogServerInflight = buildStorefrontCatalog(scope)
+    .then((value) => {
+      catalogServerCache = { expiresAt: Date.now() + ttlMs, value }
+      return value
+    })
+    .finally(() => {
+      catalogServerInflight = null
+    })
+
+  return catalogServerInflight
 }

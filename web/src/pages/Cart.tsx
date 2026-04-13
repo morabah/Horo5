@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { TeeImageFrame } from '../components/TeeImage';
-import { GIFT_WRAP_PRICE_EGP, useCart } from '../cart/CartContext';
+import { useCart } from '../cart/CartContext';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
@@ -28,12 +28,14 @@ function formatItemCount(count: number) {
 function CartUpsell({
   totalQty,
   giftWrapSelected,
+  giftWrapPriceEgp,
   onAddGiftWrap,
   onDeclineGiftWrap,
   onRemoveGiftWrap,
 }: {
   totalQty: number;
   giftWrapSelected: boolean;
+  giftWrapPriceEgp: number | null;
   onAddGiftWrap: () => void;
   onDeclineGiftWrap: () => void;
   onRemoveGiftWrap: () => void;
@@ -51,7 +53,11 @@ function CartUpsell({
             {giftWrapSelected ? copy.giftUpsellIncludedHeading : copy.giftUpsellHeading}
           </h2>
           <p className="cart-upsell-body">
-            {giftWrapSelected ? copy.giftUpsellIncludedBody : `${copy.giftUpsellBody} (${formatEgp(GIFT_WRAP_PRICE_EGP)}).`}
+            {giftWrapSelected
+              ? copy.giftUpsellIncludedBody
+              : giftWrapPriceEgp
+                ? `${copy.giftUpsellBody} (${formatEgp(giftWrapPriceEgp)}).`
+                : copy.giftUpsellBody}
           </p>
           <div className="cart-upsell-actions">
             {giftWrapSelected ? (
@@ -241,7 +247,17 @@ function CartLineItem({
 }
 
 export function Cart() {
-  const { items, removeItem, setLineQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp, addItem } = useCart();
+  const {
+    items,
+    removeItem,
+    setLineQty,
+    subtotalEgp,
+    giftWrapEgp,
+    giftWrapCatalogPriceEgp,
+    addGiftWrap,
+    removeGiftWrap,
+    addItem,
+  } = useCart();
   const { copy: shellCopy } = useUiLocale();
   const now = useStableNow();
   const copy = CART_SCHEMA.copy;
@@ -322,7 +338,7 @@ export function Cart() {
 
   const handleAddGiftWrap = () => {
     setGiftUpsellDismissed(false);
-    setGiftWrapEgp(GIFT_WRAP_PRICE_EGP);
+    addGiftWrap();
     setStatusMessage(copy.giftWrapAdded);
   };
 
@@ -331,7 +347,7 @@ export function Cart() {
   };
 
   const handleRemoveGiftWrap = () => {
-    setGiftWrapEgp(0);
+    removeGiftWrap();
     if (giftWrapEgp > 0) {
       setStatusMessage(copy.giftWrapRemoved);
     }
@@ -466,6 +482,7 @@ export function Cart() {
               <CartUpsell
                 totalQty={itemCount}
                 giftWrapSelected={giftWrapEgp > 0}
+                giftWrapPriceEgp={giftWrapCatalogPriceEgp}
                 onAddGiftWrap={handleAddGiftWrap}
                 onDeclineGiftWrap={handleDeclineGiftWrap}
                 onRemoveGiftWrap={handleRemoveGiftWrap}

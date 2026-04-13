@@ -422,7 +422,7 @@ function filterByPrice(list: Product[], filter: SearchPriceFilter) {
 }
 
 function productGarmentColorLabels(product: Product): string[] {
-  return product.garmentColors?.length ? [...product.garmentColors] : ['Black'];
+  return product.garmentColors?.length ? [...product.garmentColors] : [];
 }
 
 function productOccasionNames(product: Product) {
@@ -440,7 +440,15 @@ function productSearchTerms(product: Product) {
     ...product.occasionSlugs.flatMap((occasionSlug) => OCCASION_ALIAS_MAP[occasionSlug] ?? []),
   ];
 
-  return [product.name, feeling?.name ?? feelingSlug, feeling?.tagline ?? '', occasionNames, product.story, '220 GSM cotton graphic tee', ...aliases]
+  return [
+    product.name,
+    feeling?.name ?? feelingSlug,
+    feeling?.tagline ?? '',
+    occasionNames,
+    product.story,
+    ...(product.trustBadges ?? []),
+    ...aliases,
+  ]
     .filter(Boolean)
     .join(' ');
 }
@@ -565,6 +573,27 @@ function resolveFeelingSlugParam(raw: string) {
   return LEGACY_VIBE_SLUG_TO_FEELING_SLUG[raw] ?? raw;
 }
 
+/** Canonical feeling slugs this product should appear under in search (multi-branch Medusa). */
+function distinctResolvedFeelingSlugs(product: Product): string[] {
+  const assignments = product.feelingBrowseAssignments;
+  if (assignments && assignments.length > 0) {
+    const set = new Set<string>();
+    for (const a of assignments) {
+      set.add(resolveFeelingSlugParam(a.feelingSlug));
+    }
+    return [...set];
+  }
+  return [resolveFeelingSlugParam(productFeelingSlug(product))];
+}
+
+function productMatchesScopedFeeling(product: Product, resolvedScopeFeeling: string): boolean {
+  const assignments = product.feelingBrowseAssignments;
+  if (assignments && assignments.length > 0) {
+    return assignments.some((a) => resolveFeelingSlugParam(a.feelingSlug) === resolvedScopeFeeling);
+  }
+  return resolveFeelingSlugParam(productFeelingSlug(product)) === resolvedScopeFeeling;
+}
+
 function isFeelingBrowseEligible(product: Product): boolean {
   return product.feelingBrowseEligible !== false;
 }
@@ -574,8 +603,7 @@ function getScopedProducts(scopeFeelingSlug?: string | null, scopeOccasionSlug?:
   if (scopeFeelingSlug) {
     const resolved = resolveFeelingSlugParam(scopeFeelingSlug);
     baseProducts = baseProducts.filter(
-      (product) =>
-        isFeelingBrowseEligible(product) && productFeelingSlug(product) === resolved
+      (product) => isFeelingBrowseEligible(product) && productMatchesScopedFeeling(product, resolved)
     );
   }
   if (scopeOccasionSlug) baseProducts = baseProducts.filter((product) => product.occasionSlugs.includes(scopeOccasionSlug as OccasionSlug));
@@ -618,8 +646,9 @@ function getScopedCounts(baseProducts: Product[]) {
     if (!isFeelingBrowseEligible(product)) {
       continue;
     }
-    const feelingSlug = productFeelingSlug(product);
-    vibeCounts.set(feelingSlug, (vibeCounts.get(feelingSlug) ?? 0) + 1);
+    for (const feelingSlug of distinctResolvedFeelingSlugs(product)) {
+      vibeCounts.set(feelingSlug, (vibeCounts.get(feelingSlug) ?? 0) + 1);
+    }
     for (const occasionSlug of product.occasionSlugs) {
       occasionCounts.set(occasionSlug, (occasionCounts.get(occasionSlug) ?? 0) + 1);
     }
@@ -688,7 +717,9 @@ export function getSearchResults({
     if (!isFeelingBrowseEligible(product)) {
       return false;
     }
-    return feelingFilter !== 'all' ? productFeelingSlug(product) === resolveFeelingSlugParam(feelingFilter) : true;
+    return feelingFilter !== 'all'
+      ? productMatchesScopedFeeling(product, resolveFeelingSlugParam(feelingFilter))
+      : true;
   });
 
   let facetFiltered = vibeFiltered;
@@ -720,7 +751,9 @@ export function getSearchResults({
       })
       : sortProductList(filteredProducts, sortKey);
 
-  const vibeOptions = [...new Set(queryMatchedProducts.map((product) => productFeelingSlug(product)))]
+  const vibeOptions = [
+    ...new Set(queryMatchedProducts.flatMap((product) => distinctResolvedFeelingSlugs(product))),
+  ]
     .sort((a, b) => optionName(a).localeCompare(optionName(b)))
     .map((slug) => ({ slug, name: optionName(slug) }));
 

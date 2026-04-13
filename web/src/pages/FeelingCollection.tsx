@@ -3,7 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { AppIcon } from '../components/AppIcon';
-import { getFeeling, getFeelings, getSubfeelingsByFeeling, productHasRealImage, productsByFeeling } from '../data/site';
+import {
+  getFeeling,
+  getFeelings,
+  getSubfeelingsByFeeling,
+  productAppearsInFeelingLine,
+  productHasRealImage,
+  productsByFeeling,
+} from '../data/site';
 import { getFeelingCollectionVisual, getProductMedia, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
@@ -78,9 +85,7 @@ export function FeelingCollection() {
   const baseList = useMemo(() => {
     let list = productsByFeeling(slug).filter(productHasRealImage);
     if (lineParam) {
-      list = list.filter(
-        (product) => (product.primarySubfeelingSlug ?? product.lineSlug) === lineParam
-      );
+      list = list.filter((product) => productAppearsInFeelingLine(product, slug, lineParam));
     }
     return list;
   }, [slug, lineParam]);
@@ -307,7 +312,7 @@ export function FeelingCollection() {
               {subfeelings.map((line) => (
                 <Link
                   key={line.slug}
-                  to={`${baseFeelingPath}?line=${encodeURIComponent(line.slug)}`}
+                  to={`${baseFeelingPath}/${encodeURIComponent(line.slug)}`}
                   className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
                     line.slug === lineParam
                       ? 'border-obsidian bg-obsidian text-white'
@@ -405,7 +410,6 @@ export function FeelingCollection() {
                   merchandisingBadge={p.merchandisingBadge}
                   eyebrow={feeling.name}
                   eyebrowAccent={feeling.accent}
-                  proofChip={p.fitLabel ?? '220 GSM cotton'}
                   onQuickView={setQuickViewSlug}
                 />
               );

@@ -24,6 +24,7 @@ export function HomeHeroWearMean() {
     const min = Math.min(...prices);
     return min;
   })();
+  const heroTrustLabel = featuredProduct?.trustBadges?.find(Boolean) ?? null;
 
   return (
     <section
@@ -57,7 +58,7 @@ export function HomeHeroWearMean() {
             id="home-hero-support"
             className="max-w-md font-body text-sm leading-relaxed text-stone md:text-[15px]"
           >
-            Artist-designed graphic tees. 220 GSM Egyptian cotton.{priceRange ? ` From ${formatEgp(priceRange)}.` : ''}
+            Artist-designed graphic tees.{heroTrustLabel ? ` ${heroTrustLabel}.` : ''}{priceRange ? ` From ${formatEgp(priceRange)}.` : ''}
           </p>
           {/* Decorative accent line */}
           <div className="h-px w-8 bg-primary/40" aria-hidden="true" />

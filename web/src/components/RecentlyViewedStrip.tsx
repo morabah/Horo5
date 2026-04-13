@@ -66,7 +66,6 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
                   merchandisingBadge={p.merchandisingBadge}
                   eyebrow={feeling?.name}
                   eyebrowAccent={feeling?.accent}
-                  proofChip="220 GSM cotton"
                   variant="minimal"
                   onQuickView={setQuickViewSlug}
                 />

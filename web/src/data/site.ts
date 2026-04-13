@@ -16,6 +16,7 @@ import {
   SUBFEELING_FIXTURES,
 } from './dev-fixtures';
 
+import { feelingLineMatchesAssignments } from './feelingLineBrowse';
 import { mapLegacyFeelingSlug } from './legacy-slugs';
 
 import type { Artist, Feeling, MerchEvent, Occasion, Product, RuntimeCatalog, Subfeeling } from './catalog-types';
@@ -181,8 +182,17 @@ export function productsByFeeling(feelingSlug: string) {
     if (p.feelingBrowseEligible === false) {
       return false;
     }
-    return (p.primaryFeelingSlug ?? p.feelingSlug) === resolved;
+    const assignments = p.feelingBrowseAssignments;
+    if (assignments && assignments.length > 0) {
+      return assignments.some((a) => resolveFeelingSlug(a.feelingSlug) === resolved);
+    }
+    return resolveFeelingSlug(p.primaryFeelingSlug ?? p.feelingSlug) === resolved;
   });
+}
+
+/** True when the product should appear on `/feelings/:feeling?line=` for a specific line (Medusa leaf categories only; no primary-metadata fallback). */
+export function productAppearsInFeelingLine(product: Product, feelingSlug: string, lineParam: string) {
+  return feelingLineMatchesAssignments(product.feelingBrowseAssignments, feelingSlug, lineParam);
 }
 
 export function productsBySubfeeling(subfeelingSlug: string) {

@@ -67,7 +67,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
       alt: product ? `HORO “${product.name}” t-shirt.` : '',
       label: 'image',
     };
-  const fit = product?.fitLabel ?? 'Regular';
+  const fit = product?.fitLabel?.trim() || null;
   const displayPriceSelection = product
     ? getDisplayPriceSelection(product, selectedSize)
     : { isSelected: false, size: null, variant: null };
@@ -239,9 +239,9 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
             <div className="space-y-5 md:pr-10">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  {feeling ? (
+                  {feeling || fit ? (
                     <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-kohl-gold-bright">
-                      {feeling.name} / {fit}
+                      {[feeling?.name, fit].filter(Boolean).join(' / ')}
                     </p>
                   ) : null}
                   <h2 id={titleId} className="font-headline mt-2 text-[clamp(1.9rem,3vw,3.05rem)] font-bold uppercase leading-[0.95] tracking-tight text-white">

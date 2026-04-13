@@ -94,6 +94,16 @@ Also set the rest of the Medusa variables (below).
 npm run seed:egypt
 ```
 
+If checkout ever loses COD on Railway, repair the Egypt region payment-provider assignment directly in Medusa instead of patching the storefront:
+
+```bash
+npm run ensure:egypt-payment-providers
+# or against Railway / DATABASE_PUBLIC_URL
+npm run ensure:egypt-payment-providers:public
+```
+
+That script re-attaches `pp_system_default` and adds `pp_paymob_paymob` only when the required Paymob env vars are configured.
+
 ## 4) Local is the source of truth (remote must match)
 
 Treat **your machine + local Postgres** as canonical. **Railway** should run the **same git revision**, **equivalent env**, **the same schema** (migrations), **data produced by the same seed scripts**, and **media** that resolves the same way.
@@ -151,6 +161,34 @@ MEDUSA_BACKEND_URL=http://localhost:9000 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_.
 ```
 
 This extends the basic `/health` + `/store/products` check with **`GET /storefront/catalog`**.
+
+### PDP chips vs Admin categories (storefront)
+
+On the product page, the **purple feeling pill** (e.g. Mood) comes from primary feeling slugs derived from the product **category** tree and metadata in the storefront DTO. The **white occasion pills** (e.g. “Just Because”) come from **`product.metadata.occasionSlugs`** (and optional `primaryOccasionSlug`). Removing a row under **Organize → Categories** in Medusa Admin does **not** remove slugs from `metadata.occasionSlugs`; edit **Metadata** on the product to change those chips. The Next app may cache the product DTO for up to the configured `revalidate` interval after you save.
+
+To print what is stored in the DB for one product (handles, category list, and metadata fields above):
+
+```bash
+PRODUCT_HANDLE=emotions-raw-nerve npm run inspect:product-pdp
+# against Railway / DATABASE_PUBLIC_URL:
+PRODUCT_HANDLE=emotions-raw-nerve npm run inspect:product-pdp:public
+```
+
+To remove one slug from **`metadata.occasionSlugs`** from the CLI (same effect as editing product Metadata in Admin):
+
+```bash
+PRODUCT_HANDLE=emotions-raw-nerve OCCASION_SLUG=just-because npm run clear:product-occasion-slug
+# Railway / DATABASE_PUBLIC_URL:
+PRODUCT_HANDLE=emotions-raw-nerve OCCASION_SLUG=just-because npm run clear:product-occasion-slug:public
+```
+
+### PDP “Illustrated by” artist (native Medusa metadata)
+
+The storefront prefers **`metadata.artist`** on the product (Medusa Admin → Product → Metadata), shaped as JSON:
+
+- `artist`: `{ "name": "…", "avatarUrl": "https://…" }` (`avatarUrl` optional)
+
+If `artist` is missing, the API falls back to **`metadata.artistSlug`** plus the **`storefront_artist`** module (same as before). Run **`npm run backfill:product-artist-metadata`** to copy name/avatar from that module into `metadata.artist` for each product so PDP data lives on the product row. Optional: `DRY_RUN=1` logs only. Single product: `PRODUCT_HANDLE=…`.
 
 ### First-time or fresh database
 

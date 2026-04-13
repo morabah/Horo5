@@ -114,7 +114,6 @@ function SearchProductCard({
       merchandisingBadge={product.merchandisingBadge}
       eyebrow={product.feelingName}
       eyebrowAccent={product.feelingAccent}
-      proofChip="220 GSM cotton"
       onQuickView={onQuickView}
       onProductClick={onProductClick}
     />
