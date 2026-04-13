@@ -272,6 +272,19 @@ export function Cart() {
     return () => window.clearTimeout(id);
   }, [undoLine]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const root = document.documentElement;
+    if (undoLine) {
+      root.style.setProperty('--horo-bottom-fab-offset', '5.5rem');
+    } else {
+      root.style.removeProperty('--horo-bottom-fab-offset');
+    }
+    return () => {
+      root.style.removeProperty('--horo-bottom-fab-offset');
+    };
+  }, [undoLine]);
+
   const undoProductName = undoLine ? getProduct(undoLine.productSlug)?.name ?? 'Item' : '';
 
   const handleDecrease = (line: CartLineView) => {

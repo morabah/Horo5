@@ -7,13 +7,18 @@ import type { ExecArgs } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, Modules, ProductStatus } from "@medusajs/framework/utils"
 import {
   batchLinkProductsToCategoryWorkflow,
+  createApiKeysWorkflow,
   createProductCategoriesWorkflow,
   createProductsWorkflow,
   createRegionsWorkflow,
   createSalesChannelsWorkflow,
-  createApiKeysWorkflow,
+  createShippingOptionsWorkflow,
+  createShippingProfilesWorkflow,
+  createStockLocationsWorkflow,
+  linkSalesChannelsToStockLocationWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
   updateProductCategoriesWorkflow,
+  updateRegionsWorkflow,
   updateProductsWorkflow,
   updateStoresStep,
   updateStoresWorkflow,
@@ -712,6 +717,270 @@ async function linkLegacyProductsToFeelingCategories(args: {
   }
 }
 
+const EGYPT_REGION_NAME = "Egypt"
+const EGYPT_STOCK_LOCATION_NAME = "Egypt Warehouse"
+const EGYPT_FULFILLMENT_SET_NAME = "Egypt Delivery"
+const EGYPT_SHIPPING_OPTION_NAME = "Standard"
+const EGYPT_SHIPPING_OPTION_CODE = "standard"
+const GIFT_WRAP_HANDLE = "gift-wrap"
+const GIFT_WRAP_PRICE_AMOUNT = 20000
+
+function isPaymobConfigured() {
+  const storeUrl =
+    process.env.STORE_URL?.trim() || process.env.STORE_CORS?.split(",")[0]?.trim()
+
+  return Boolean(
+    process.env.PAYMOB_API_KEY?.trim() &&
+      process.env.PAYMOB_HMAC_SECRET?.trim() &&
+      process.env.PAYMOB_CARD_INTEGRATION_ID?.trim() &&
+      process.env.MEDUSA_BACKEND_URL?.trim() &&
+      storeUrl
+  )
+}
+
+function getEgyptRegionPaymentProviders() {
+  return [
+    "pp_system_default",
+    ...(isPaymobConfigured() ? ["pp_paymob_paymob"] : []),
+  ]
+}
+
+async function ensureLinkExists(
+  link: { create: (input: Record<string, unknown>) => Promise<unknown> },
+  input: Record<string, unknown>
+) {
+  try {
+    await link.create(input)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : ""
+
+    if (!/(already exists|already linked|duplicate|exists)/i.test(message)) {
+      throw error
+    }
+  }
+}
+
+async function ensureEgyptRegion(args: {
+  container: ExecArgs["container"]
+  query: {
+    graph: (query: Record<string, unknown>) => Promise<{ data?: unknown }>
+  }
+}) {
+  const { container, query } = args
+  const paymentProviders = getEgyptRegionPaymentProviders()
+  const { data: existingRegions } = await query.graph({
+    entity: "region",
+    fields: ["id", "name", "currency_code"],
+    filters: { name: EGYPT_REGION_NAME },
+    pagination: { take: 1 },
+  })
+
+  const existingRegion = (existingRegions?.[0] as { id: string } | undefined) ?? null
+
+  if (!existingRegion) {
+    const { result } = await createRegionsWorkflow(container).run({
+      input: {
+        regions: [
+          {
+            name: EGYPT_REGION_NAME,
+            currency_code: "egp",
+            countries: ["eg"],
+            payment_providers: paymentProviders,
+          },
+        ],
+      },
+    })
+
+    return result[0]
+  }
+
+  const { result } = await updateRegionsWorkflow(container).run({
+    input: {
+      selector: { id: existingRegion.id },
+      update: {
+        payment_providers: paymentProviders,
+      },
+    },
+  })
+
+  return result[0]
+}
+
+async function ensureEgyptCheckoutInfrastructure(args: {
+  container: ExecArgs["container"]
+  query: {
+    graph: (query: Record<string, unknown>) => Promise<{ data?: unknown }>
+  }
+  regionId: string
+  salesChannelId: string
+  storeId: string
+}) {
+  const { container, query, regionId, salesChannelId, storeId } = args
+  const fulfillmentModuleService = container.resolve<any>(Modules.FULFILLMENT)
+  const link = container.resolve<any>(ContainerRegistrationKeys.LINK)
+
+  const { data: existingStockLocations } = await query.graph({
+    entity: "stock_location",
+    fields: ["id", "name"],
+    filters: { name: EGYPT_STOCK_LOCATION_NAME },
+    pagination: { take: 1 },
+  })
+
+  let stockLocation = (existingStockLocations?.[0] as { id: string } | undefined) ?? null
+
+  if (!stockLocation) {
+    const { result } = await createStockLocationsWorkflow(container).run({
+      input: {
+        locations: [
+          {
+            name: EGYPT_STOCK_LOCATION_NAME,
+            address: {
+              address_1: "Cairo, Egypt",
+              city: "Cairo",
+              country_code: "EG",
+            },
+          },
+        ],
+      },
+    })
+
+    stockLocation = result[0]
+  }
+
+  await updateStoresWorkflow(container).run({
+    input: {
+      selector: { id: storeId },
+      update: {
+        default_location_id: stockLocation.id,
+      },
+    },
+  })
+
+  await ensureLinkExists(link, {
+    [Modules.STOCK_LOCATION]: {
+      stock_location_id: stockLocation.id,
+    },
+    [Modules.FULFILLMENT]: {
+      fulfillment_provider_id: "manual_manual",
+    },
+  })
+
+  const shippingProfiles = await fulfillmentModuleService.listShippingProfiles({
+    type: "default",
+  })
+  let shippingProfile = shippingProfiles[0] ?? null
+
+  if (!shippingProfile) {
+    const { result } = await createShippingProfilesWorkflow(container).run({
+      input: {
+        data: [
+          {
+            name: "Default Shipping Profile",
+            type: "default",
+          },
+        ],
+      },
+    })
+    shippingProfile = result[0]
+  }
+
+  const fulfillmentSets = await fulfillmentModuleService.listFulfillmentSets(
+    { name: EGYPT_FULFILLMENT_SET_NAME },
+    { relations: ["service_zones"] }
+  )
+
+  let fulfillmentSet = fulfillmentSets[0] ?? null
+
+  if (!fulfillmentSet) {
+    fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
+      name: EGYPT_FULFILLMENT_SET_NAME,
+      type: "shipping",
+      service_zones: [
+        {
+          name: EGYPT_REGION_NAME,
+          geo_zones: [
+            {
+              country_code: "eg",
+              type: "country",
+            },
+          ],
+        },
+      ],
+    })
+  }
+
+  const serviceZoneId = fulfillmentSet.service_zones?.[0]?.id
+
+  if (!serviceZoneId) {
+    throw new Error("Failed to resolve the Egypt service zone for checkout shipping.")
+  }
+
+  await ensureLinkExists(link, {
+    [Modules.STOCK_LOCATION]: {
+      stock_location_id: stockLocation.id,
+    },
+    [Modules.FULFILLMENT]: {
+      fulfillment_set_id: fulfillmentSet.id,
+    },
+  })
+
+  const { data: existingShippingOptions } = await query.graph({
+    entity: "shipping_option",
+    fields: ["id", "name", "service_zone_id"],
+    filters: {
+      name: EGYPT_SHIPPING_OPTION_NAME,
+      service_zone_id: serviceZoneId,
+    },
+    pagination: { take: 1 },
+  })
+
+  const shippingOptionRows = (existingShippingOptions || []) as Array<{ id: string }>
+
+  if (!shippingOptionRows.length) {
+    await createShippingOptionsWorkflow(container).run({
+      input: [
+        {
+          name: EGYPT_SHIPPING_OPTION_NAME,
+          price_type: "flat",
+          provider_id: "manual_manual",
+          service_zone_id: serviceZoneId,
+          shipping_profile_id: shippingProfile.id,
+          type: {
+            code: EGYPT_SHIPPING_OPTION_CODE,
+            description: "Standard delivery across Egypt.",
+            label: "Standard",
+          },
+          prices: [
+            {
+              amount: 6000,
+              region_id: regionId,
+            },
+          ],
+          rules: [
+            {
+              attribute: "enabled_in_store",
+              operator: "eq",
+              value: "true",
+            },
+            {
+              attribute: "is_return",
+              operator: "eq",
+              value: "false",
+            },
+          ],
+        },
+      ],
+    })
+  }
+
+  await linkSalesChannelsToStockLocationWorkflow(container).run({
+    input: {
+      id: stockLocation.id,
+      add: [salesChannelId],
+    },
+  })
+}
+
 export default async function seedEgyptCatalog({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const storeModuleService = container.resolve(Modules.STORE)
@@ -757,26 +1026,15 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     },
   })
 
-  const { data: existingRegions } = await query.graph({
-    entity: "region",
-    fields: ["id", "name"],
-    filters: { name: "Egypt" },
-  })
+  const region = await ensureEgyptRegion({ container, query })
 
-  if (!existingRegions.length) {
-    await createRegionsWorkflow(container).run({
-      input: {
-        regions: [
-          {
-            name: "Egypt",
-            currency_code: "egp",
-            countries: ["eg"],
-            payment_providers: ["pp_system_default"],
-          },
-        ],
-      },
-    })
-  }
+  await ensureEgyptCheckoutInfrastructure({
+    container,
+    query,
+    regionId: region.id,
+    salesChannelId: defaultSalesChannel[0].id,
+    storeId: store.id,
+  })
 
   let publishableApiKey: ApiKey | null = null
   const { data: apiKeys } = await query.graph({
@@ -810,7 +1068,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
   const { data: existingProducts } = await query.graph({
     entity: "product",
     fields: ["id", "handle"],
-    filters: { handle: seedCatalogProducts.map((item) => item.slug) },
+    filters: { handle: [...seedCatalogProducts.map((item) => item.slug), GIFT_WRAP_HANDLE] },
   })
   const existingProductByHandle = new Map(
     ((existingProducts || []) as Array<{ handle: string; id: string }>).map((product) => [product.handle, product])
@@ -899,6 +1157,30 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
       sales_channels: [{ id: defaultSalesChannel[0].id }],
     })
   }
+
+  productsInput.push({
+    title: "Gift Wrap",
+    handle: GIFT_WRAP_HANDLE,
+    description: "Premium HORO gift wrapping and story card add-on.",
+    status: ProductStatus.PUBLISHED,
+    metadata: {
+      hidden: true,
+      is_add_on: true,
+      merchandisingBadge: "Gift option",
+    },
+    images: [],
+    thumbnail: "",
+    options: [{ title: "Default", values: ["Default"] }],
+    variants: [{
+      title: "Default",
+      sku: "GIFT-WRAP",
+      options: { Default: "Default" },
+      manage_inventory: false,
+      allow_backorder: true,
+      prices: [{ amount: GIFT_WRAP_PRICE_AMOUNT, currency_code: "egp" }],
+    }],
+    sales_channels: [{ id: defaultSalesChannel[0].id }],
+  })
 
   const productsToCreate = productsInput.filter((product) => !existingProductByHandle.has(product.handle))
   const productsToUpdate = productsInput.filter((product) => existingProductByHandle.has(product.handle))

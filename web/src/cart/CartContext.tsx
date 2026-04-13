@@ -4,44 +4,38 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { trackAddToCart } from '../analytics/events';
 import { getProduct, type ProductSizeKey } from '../data/site';
-import { CART_STORAGE_KEY, MEDUSA_CART_ID_STORAGE_KEY, cartLineKey, type CartLine } from './types';
 import {
   addLineItem,
   createCart,
   getCart,
+  getProductByHandle,
   removeLineItem,
   updateLineItem,
 } from '../lib/medusa/client';
-import { toCartLines } from '../lib/medusa/adapters';
+import {
+  GIFT_WRAP_PRODUCT_HANDLE,
+  getCartGiftWrapEgp,
+  getGiftWrapLineItem,
+  toCartLines,
+} from '../lib/medusa/adapters';
+import { CART_STORAGE_KEY, MEDUSA_CART_ID_STORAGE_KEY, cartLineKey, type CartLine } from './types';
 
 export const GIFT_WRAP_PRICE_EGP = 200;
 
-const GIFT_WRAP_STORAGE_KEY = 'horo-gift-wrap-v1';
-
-function loadGiftWrapEgp(): number {
-  if (typeof window === 'undefined') return 0;
-  try {
-    const raw = localStorage.getItem(GIFT_WRAP_STORAGE_KEY);
-    if (raw == null) return 0;
-    const n = Number(raw);
-    return n === GIFT_WRAP_PRICE_EGP ? GIFT_WRAP_PRICE_EGP : 0;
-  } catch {
-    return 0;
-  }
-}
-
-function persistGiftWrapEgp(egp: number) {
-  try {
-    localStorage.setItem(GIFT_WRAP_STORAGE_KEY, String(egp));
-  } catch {
-    /* ignore */
-  }
-}
+export type LastAddedItem = {
+  productSlug: string;
+  size: ProductSizeKey;
+  qty: number;
+  productName?: string;
+  imageSrc?: string;
+  unitPriceEgp?: number;
+};
 
 type CartContextValue = {
   items: CartLine[];
@@ -49,10 +43,14 @@ type CartContextValue = {
   removeItem: (productSlug: string, size: ProductSizeKey) => void;
   setLineQty: (productSlug: string, size: ProductSizeKey, qty: number) => void;
   clearCart: () => void;
+  replaceMedusaCartId: (cartId: string | null) => void;
   totalQty: number;
   subtotalEgp: number;
   giftWrapEgp: number;
   setGiftWrapEgp: (egp: 0 | typeof GIFT_WRAP_PRICE_EGP) => void;
+  miniCartOpen: boolean;
+  setMiniCartOpen: (open: boolean) => void;
+  lastAddedItem: LastAddedItem | null;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -90,7 +88,7 @@ function persistItems(items: CartLine[]) {
   try {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
   } catch {
-    /* quota / private mode */
+    /* ignore */
   }
 }
 
@@ -121,11 +119,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [giftWrapEgp, setGiftWrapEgpState] = useState(0);
   const [medusaCartId, setMedusaCartId] = useState<string | null>(null);
   const [storageReady, setStorageReady] = useState(false);
+  const [miniCartOpen, setMiniCartOpen] = useState(false);
+  const [lastAddedItem, setLastAddedItem] = useState<LastAddedItem | null>(null);
+  const giftWrapVariantPromiseRef = useRef<Promise<string | null> | null>(null);
 
   const syncFromMedusaCart = useCallback(async (cartId: string) => {
     try {
       const { cart } = await getCart(cartId);
       setItems(toCartLines(cart));
+      setGiftWrapEgpState(getCartGiftWrapEgp(cart));
+      setMedusaCartId(cart.id);
     } catch {
       // Keep local fallback state if backend is unavailable.
     }
@@ -133,7 +136,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setItems(loadItems());
-    setGiftWrapEgpState(loadGiftWrapEgp());
     setMedusaCartId(loadMedusaCartId());
     setStorageReady(true);
   }, []);
@@ -150,11 +152,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!storageReady) return;
-    persistGiftWrapEgp(giftWrapEgp);
-  }, [giftWrapEgp, storageReady]);
-
-  useEffect(() => {
-    if (!storageReady) return;
     persistMedusaCartId(medusaCartId);
   }, [medusaCartId, storageReady]);
 
@@ -162,11 +159,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (medusaCartId) return medusaCartId;
     const created = await createCart();
     setMedusaCartId(created.cart.id);
+    setGiftWrapEgpState(getCartGiftWrapEgp(created.cart));
     return created.cart.id;
   }, [medusaCartId]);
 
   const resolveVariantId = useCallback((productSlug: string, size: ProductSizeKey) => {
     return getProduct(productSlug)?.variantsBySize?.[size]?.id ?? null;
+  }, []);
+
+  const resolveGiftWrapVariantId = useCallback(async () => {
+    if (!giftWrapVariantPromiseRef.current) {
+      giftWrapVariantPromiseRef.current = getProductByHandle(GIFT_WRAP_PRODUCT_HANDLE)
+        .then((response) => response?.product.variants?.[0]?.id ?? null)
+        .catch(() => null);
+    }
+
+    return giftWrapVariantPromiseRef.current;
   }, []);
 
   const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1) => {
@@ -179,33 +187,46 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     setItems((prev) => {
       const key = cartLineKey({ productSlug, size });
-      const idx = prev.findIndex((l) => cartLineKey(l) === key);
+      const idx = prev.findIndex((line) => cartLineKey(line) === key);
       if (idx >= 0) {
         const next = [...prev];
         next[idx] = {
           ...next[idx],
-          qty: Math.min(99, next[idx].qty + add),
-          productName: next[idx].productName ?? product.name,
           imageSrc: next[idx].imageSrc ?? product.media?.main ?? product.thumbnail ?? undefined,
+          productName: next[idx].productName ?? product.name,
+          qty: Math.min(99, next[idx].qty + add),
           unitPriceEgp: next[idx].unitPriceEgp ?? unitPriceEgp,
           variantId: next[idx].variantId ?? variantId ?? undefined,
         };
         return next;
       }
+
       return [
         ...prev,
         {
-          productSlug,
-          size,
-          qty: add,
-          productName: product.name,
           imageSrc: product.media?.main ?? product.thumbnail ?? undefined,
+          productName: product.name,
+          productSlug,
+          qty: add,
+          size,
           unitPriceEgp,
           variantId: variantId ?? undefined,
         },
       ];
     });
+
+    /* Track the last added item for the mini-cart drawer */
+    setLastAddedItem({
+      productSlug,
+      size,
+      qty: add,
+      productName: product.name,
+      imageSrc: product.media?.main ?? product.thumbnail ?? undefined,
+      unitPriceEgp,
+    });
+
     queueMicrotask(() => trackAddToCart(product, add, size));
+
     void (async () => {
       try {
         const cartId = await ensureMedusaCartId();
@@ -220,12 +241,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [ensureMedusaCartId, resolveVariantId, syncFromMedusaCart]);
 
   const removeItem = useCallback((productSlug: string, size: ProductSizeKey) => {
-    const line = items.find((l) => cartLineKey(l) === cartLineKey({ productSlug, size }));
-    setItems((prev) => prev.filter((l) => cartLineKey(l) !== cartLineKey({ productSlug, size })));
+    const line = items.find((item) => cartLineKey(item) === cartLineKey({ productSlug, size }));
+    setItems((prev) => prev.filter((item) => cartLineKey(item) !== cartLineKey({ productSlug, size })));
     if (!line?.lineId || !medusaCartId) return;
     void (async () => {
       try {
-        await removeLineItem(medusaCartId, line.lineId as string);
+        await removeLineItem(medusaCartId, line.lineId!);
         await syncFromMedusaCart(medusaCartId);
       } catch {
         // Keep optimistic removal.
@@ -235,29 +256,69 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const setLineQty = useCallback(
     (productSlug: string, size: ProductSizeKey, qty: number) => {
-      const line = items.find((l) => cartLineKey(l) === cartLineKey({ productSlug, size }));
+      const line = items.find((item) => cartLineKey(item) === cartLineKey({ productSlug, size }));
       if (qty < 1) {
-        setItems((prev) => prev.filter((l) => cartLineKey(l) !== cartLineKey({ productSlug, size })));
+        setItems((prev) => prev.filter((item) => cartLineKey(item) !== cartLineKey({ productSlug, size })));
         if (line?.lineId && medusaCartId) {
-          void removeLineItem(medusaCartId, line.lineId).then(() => syncFromMedusaCart(medusaCartId)).catch(() => {});
+          void removeLineItem(medusaCartId, line.lineId)
+            .then(() => syncFromMedusaCart(medusaCartId))
+            .catch(() => {});
         }
         return;
       }
       const nextQty = Math.min(99, Math.floor(qty));
       setItems((prev) => {
         const key = cartLineKey({ productSlug, size });
-        return prev.map((l) => (cartLineKey(l) === key ? { ...l, qty: nextQty } : l));
+        return prev.map((item) => (cartLineKey(item) === key ? { ...item, qty: nextQty } : item));
       });
       if (line?.lineId && medusaCartId) {
-        void updateLineItem(medusaCartId, line.lineId, nextQty).then(() => syncFromMedusaCart(medusaCartId)).catch(() => {});
+        void updateLineItem(medusaCartId, line.lineId, nextQty)
+          .then(() => syncFromMedusaCart(medusaCartId))
+          .catch(() => {});
       }
     },
     [items, medusaCartId, syncFromMedusaCart],
   );
 
   const setGiftWrapEgp = useCallback((egp: 0 | typeof GIFT_WRAP_PRICE_EGP) => {
+    if (egp === giftWrapEgp) return;
+    const previousGiftWrap = giftWrapEgp;
     setGiftWrapEgpState(egp);
-  }, []);
+
+    void (async () => {
+      try {
+        const cartId = await ensureMedusaCartId();
+        const { cart } = await getCart(cartId);
+        const existingGiftWrapLine = getGiftWrapLineItem(cart);
+
+        if (egp === 0) {
+          if (existingGiftWrapLine?.id) {
+            await removeLineItem(cartId, existingGiftWrapLine.id);
+          }
+          await syncFromMedusaCart(cartId);
+          return;
+        }
+
+        if (existingGiftWrapLine?.id) {
+          if (existingGiftWrapLine.quantity !== 1) {
+            await updateLineItem(cartId, existingGiftWrapLine.id, 1);
+          }
+          await syncFromMedusaCart(cartId);
+          return;
+        }
+
+        const variantId = await resolveGiftWrapVariantId();
+        if (!variantId) {
+          throw new Error('Gift wrap variant is not available in Medusa.');
+        }
+
+        await addLineItem(cartId, variantId, 1);
+        await syncFromMedusaCart(cartId);
+      } catch {
+        setGiftWrapEgpState(previousGiftWrap);
+      }
+    })();
+  }, [ensureMedusaCartId, giftWrapEgp, resolveGiftWrapVariantId, syncFromMedusaCart]);
 
   const clearCart = useCallback(() => {
     setItems([]);
@@ -265,15 +326,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setMedusaCartId(null);
   }, []);
 
-  const totalQty = useMemo(() => items.reduce((s, l) => s + l.qty, 0), [items]);
+  const replaceMedusaCartId = useCallback((cartId: string | null) => {
+    setMedusaCartId(cartId);
+  }, []);
+
+  const totalQty = useMemo(() => items.reduce((sum, line) => sum + line.qty, 0), [items]);
 
   const subtotalEgp = useMemo(() => {
     return items.reduce((sum, line) => {
-      const p = getProduct(line.productSlug);
+      const product = getProduct(line.productSlug);
       const linePrice =
         line.unitPriceEgp ??
-        p?.variantsBySize?.[line.size]?.priceEgp ??
-        p?.priceEgp;
+        product?.variantsBySize?.[line.size]?.priceEgp ??
+        product?.priceEgp;
       return sum + (linePrice ?? 0) * line.qty;
     }, 0);
   }, [items]);
@@ -285,12 +350,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeItem,
       setLineQty,
       clearCart,
+      replaceMedusaCartId,
       totalQty,
       subtotalEgp,
       giftWrapEgp,
       setGiftWrapEgp,
+      miniCartOpen,
+      setMiniCartOpen,
+      lastAddedItem,
     }),
-    [items, addItem, removeItem, setLineQty, clearCart, totalQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp],
+    [items, addItem, removeItem, setLineQty, clearCart, replaceMedusaCartId, totalQty, subtotalEgp, giftWrapEgp, setGiftWrapEgp, miniCartOpen, lastAddedItem],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -1,27 +1,28 @@
 # 09 — Cart
 
 **Route:** `/cart`  
-**Implementation:** `shopify-headless/src/app/cart/page.tsx`, `shopify-headless/src/components/cart/cart-view.tsx`  
+**Implementation:** `web-next/src/app/cart/page.tsx`, `web/src/pages/Cart.tsx`  
 **Status:** Current live cart wireframe.
 
 ## Purpose
 
-Show cart lines, allow quantity updates, and redirect users to Shopify-hosted checkout.
+Show cart lines, allow quantity updates/removal, and continue to in-app Medusa checkout.
 
 ## Current structure
 
 1. **Empty state**
-- Card with heading `Your cart is empty`
-- Supporting text: add products from shop page
+- Editorial empty card + breadcrumb
+- CTA back to `/feelings`
 
 2. **Filled cart**
-- Heading `Your Cart`
-- List of line items with image, product title, variant title, line total
-- Quantity stepper (`-` and `+`) per line
+- Cart line cards with image, size, qty stepper, remove
+- Undo-remove toast behavior
+- Optional upsell block (gift wrap or bundle upsell)
 
 3. **Summary block**
-- Subtotal amount
-- Primary CTA: `Proceed to secure checkout`
+- Subtotal + shipping estimate + total
+- Trust strip items
+- Primary CTA to `/checkout`
 
 ## Visual wireframe
 
@@ -38,8 +39,8 @@ Show cart lines, allow quantity updates, and redirect users to Shopify-hosted ch
 | [Line] image / title / variant / qty stepper / line total                         |
 | [Line] image / title / variant / qty stepper / line total                         |
 |----------------------------------------------------------------------------------|
-| Subtotal                                                                          |
-| [Proceed to secure checkout]                                                      |
+| Subtotal / shipping est / total                                                   |
+| [Continue to checkout]                                                            |
 +----------------------------------------------------------------------------------+
 | FOOTER                                                                            |
 +----------------------------------------------------------------------------------+
@@ -47,6 +48,6 @@ Show cart lines, allow quantity updates, and redirect users to Shopify-hosted ch
 
 ## Key behaviors
 
-- Cart is restored from `localStorage` cart ID when available.
-- Quantity changes call `/api/cart/lines`.
-- Checkout button redirects browser to `cart.checkoutUrl`.
+- Cart state comes from shared `CartContext`.
+- Supports gift wrap add/remove and line-level undo.
+- Checkout continues to local `/checkout` page (not hosted external checkout).

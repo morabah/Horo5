@@ -2,6 +2,7 @@ import { Suspense, lazy, type ReactNode } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AnalyticsRoot } from './analytics/AnalyticsRoot';
 import { Layout } from './components/Layout';
+import { RouteLoadingSpinner } from './components/RouteLoadingSpinner';
 import { LegacyVibeCollectionRedirect } from './routes/LegacyVibeRedirect';
 
 const Home = lazy(async () => ({ default: (await import('./pages/Home')).Home }));
@@ -20,16 +21,8 @@ const Exchange = lazy(async () => ({ default: (await import('./pages/Exchange'))
 const Privacy = lazy(async () => ({ default: (await import('./pages/Privacy')).Privacy }));
 const Terms = lazy(async () => ({ default: (await import('./pages/Terms')).Terms }));
 
-function RouteLoadingFallback() {
-  return (
-    <div className="container py-12">
-      <p className="font-body text-warm-charcoal">Loading...</p>
-    </div>
-  );
-}
-
 function RoutePage({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<RouteLoadingFallback />}>{children}</Suspense>;
+  return <Suspense fallback={<RouteLoadingSpinner />}>{children}</Suspense>;
 }
 
 export default function App() {
@@ -52,7 +45,7 @@ export default function App() {
           <Route path="/occasions/:slug" element={<RoutePage><OccasionCollection /></RoutePage>} />
           <Route path="/artists" element={<Navigate to="/feelings" replace />} />
           <Route path="/artists/:slug" element={<Navigate to="/feelings" replace />} />
-          <Route path="/products" element={<Navigate to="/search" replace />} />
+          <Route path="/products" element={<RoutePage><Search /></RoutePage>} />
           <Route path="/products/:slug" element={<RoutePage><ProductDetail /></RoutePage>} />
           <Route path="/cart" element={<RoutePage><Cart /></RoutePage>} />
           <Route path="/checkout" element={<RoutePage><Checkout /></RoutePage>} />

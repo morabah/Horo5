@@ -49,6 +49,33 @@ const fileModule = s3
     }
   : null
 
+const paymobConfig = (() => {
+  const apiKey = process.env.PAYMOB_API_KEY?.trim()
+  const hmacSecret = process.env.PAYMOB_HMAC_SECRET?.trim()
+  const cardIntegrationId = process.env.PAYMOB_CARD_INTEGRATION_ID?.trim()
+  const applePayIntegrationId = process.env.PAYMOB_APPLE_PAY_INTEGRATION_ID?.trim()
+  const googlePayIntegrationId = process.env.PAYMOB_GOOGLE_PAY_INTEGRATION_ID?.trim()
+  const backendUrl = process.env.MEDUSA_BACKEND_URL?.trim()
+  const storeUrl =
+    process.env.STORE_URL?.trim() ||
+    process.env.STORE_CORS?.split(",")[0]?.trim() ||
+    undefined
+
+  if (!apiKey || !hmacSecret || !cardIntegrationId || !backendUrl || !storeUrl) {
+    return null
+  }
+
+  return {
+    apiKey,
+    applePayIntegrationId,
+    hmacSecret,
+    cardIntegrationId,
+    backendUrl,
+    googlePayIntegrationId,
+    storeUrl,
+  }
+})()
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
@@ -63,6 +90,20 @@ module.exports = defineConfig({
   },
   modules: [
     ...(fileModule ? [fileModule] : []),
+    {
+      resolve: "@medusajs/payment",
+      options: {
+        providers: paymobConfig
+          ? [
+              {
+                resolve: "./src/modules/paymob",
+                id: "paymob",
+                options: paymobConfig,
+              },
+            ]
+          : [],
+      },
+    },
     {
       resolve: "./src/modules/artist",
     },

@@ -12,7 +12,7 @@ import { SearchSuggestionPanel } from './SearchSuggestionPanel';
 function drawerNavLinkClass(isActive: boolean) {
   return `font-body box-border flex min-h-14 w-full items-center rounded-sm py-4 pl-4 pr-4 text-[0.98rem] font-medium transition-colors ${
     isActive
-      ? 'border-l-[3px] border-primary bg-primary/8 text-primary'
+      ? 'border-l-[3px] border-obsidian bg-obsidian/5 text-obsidian'
       : 'border-l-[3px] border-transparent text-obsidian/90 active:bg-surface-container-high'
   }`;
 }
@@ -143,6 +143,7 @@ export function Nav() {
   const activeSuggestionId = activeSuggestion ? `nav-search-suggestions-${activeSuggestionIndex}` : undefined;
   const routeLabelByKey: Record<NavRouteKey, string> = {
     home: copy.shell.home,
+    products: copy.shell.shopAll,
     collection: copy.shell.shopByFeeling,
     occasions: copy.shell.shopByMoment,
     about: copy.shell.about,
@@ -532,12 +533,14 @@ export function Nav() {
               key={routeKey}
               to={NAV_ROUTE[routeKey].path}
               className={({ isActive }) =>
-                `nav-link-underline font-body rounded-sm px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
+                `nav-link-underline font-body px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
                   isActive
-                    ? 'text-primary nav-link-underline--active'
+                    ? navOnHeroTransparent
+                      ? 'nav-link-underline--active rounded-full border border-white/20 bg-white/12 text-white shadow-sm'
+                      : 'nav-link-underline--active rounded-full bg-obsidian text-white shadow-sm'
                     : navOnHeroTransparent
-                      ? 'text-white/80 hover:text-white'
-                      : 'text-obsidian/90 hover:text-obsidian'
+                      ? 'rounded-sm text-white/80 hover:text-white'
+                      : 'rounded-sm text-obsidian/90 hover:text-obsidian'
                 }`
               }
             >

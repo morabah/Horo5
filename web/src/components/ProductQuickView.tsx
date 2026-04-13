@@ -25,7 +25,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addItem, setMiniCartOpen } = useCart();
   const titleId = useId();
   const descId = useId();
   const sizeChartId = useId();
@@ -155,6 +155,9 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
     if (!product || !selectedSize) return;
     addItem(product.slug, selectedSize, 1);
     setAddedToBag(true);
+    // Close the dialog and open the mini-cart drawer for a consistent experience
+    onClose();
+    setMiniCartOpen(true);
   };
 
   const handleViewBag = () => {

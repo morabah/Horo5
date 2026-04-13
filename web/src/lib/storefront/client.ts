@@ -11,6 +11,8 @@ import type {
 
 const baseUrl = (import.meta.env.VITE_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "");
 const publishableApiKey = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY || "";
+const missingPublishableKeyMessage =
+  "Missing Medusa publishable key. Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY in web-next/.env.local (or VITE_MEDUSA_PUBLISHABLE_KEY for the Vite app) and restart the frontend.";
 
 type StorefrontVariantResponse = {
   allow_backorder: boolean;
@@ -86,6 +88,10 @@ type StorefrontCatalogResponse = {
 };
 
 async function request<T>(path: string): Promise<T> {
+  if (!publishableApiKey) {
+    throw new Error(missingPublishableKeyMessage);
+  }
+
   const headers = new Headers();
 
   if (publishableApiKey) {

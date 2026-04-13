@@ -1,29 +1,29 @@
 # 02 — Shop by Vibe
 
 **Route:** `/vibes`  
-**Implementation:** Not implemented in `shopify-headless/src/app`  
-**Status:** Legacy wireframe; this route is not part of the current storefront design.
+**Implementation:** `web-next/src/app/vibes/page.tsx`  
+**Status:** Implemented as a legacy redirect.
 
 ## Current behavior
 
-- There is no `/vibes` page in the live Next.js app.
-- Primary browse entry is `/products` from the global header `Shop` link.
-- If this route is visited directly, the app falls back to standard Next.js not-found behavior.
+- Visiting `/vibes` redirects immediately to `/feelings`.
+- No standalone content renders on `/vibes`.
+- The canonical browse hub is `/feelings`.
 
 ## Visual wireframe
 
 ```text
 +--------------------------------------------+
-| /vibes                                     |
-| no route in current storefront             |
+| GET /vibes                                 |
 +--------------------------------------------+
                     |
                     v
 +--------------------------------------------+
-| Next.js not-found behavior                 |
+| 307/308 redirect -> /feelings              |
++--------------------------------------------+
+                    |
+                    v
++--------------------------------------------+
+| Shop by Feeling page                       |
 +--------------------------------------------+
 ```
-
-## Product rule
-
-Keep wireframes aligned to implemented routes only unless a new page is explicitly added to `src/app`.

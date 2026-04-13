@@ -1,6 +1,5 @@
 import {
   Link,
-  useNavigate,
   useParams,
   useSearchParams,
 } from 'react-router-dom';
@@ -20,6 +19,7 @@ import {
   getFeeling,
   getOccasion,
   getProduct,
+  productHasRealImage,
   productsByFeeling,
   type Product,
   type ProductSizeKey,
@@ -27,6 +27,7 @@ import {
 } from '../data/site';
 import { trackViewItem } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
+import { StickyAddToCart } from '../components/StickyAddToCart';
 import {
   buildProductPdpGallery,
   getProductMedia,
@@ -69,6 +70,20 @@ function formatTitleLines(name: string) {
       {words.slice(mid).join(' ')}
     </>
   );
+}
+
+function getPreferredDefaultSize(product?: Product | null): ProductSizeKey | null {
+  if (!product) return null;
+
+  const availableSizes = productAvailableSizes(product).filter((size) =>
+    PDP_SCHEMA.sizes.some((definition) => definition.key === size && !definition.disabled),
+  );
+
+  if (availableSizes.length === 0) {
+    return null;
+  }
+
+  return availableSizes.includes('M') ? 'M' : availableSizes[0];
 }
 
 function IconCart() {
@@ -114,9 +129,9 @@ function IconChevronRight({ className = 'h-6 w-6' }: { className?: string }) {
   );
 }
 
-function AccordionSection({ title, children }: { title: string; children: ReactNode }) {
+function AccordionSection({ title, children, defaultOpen }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   return (
-    <details className="group border-t border-stone/30">
+    <details className="group border-t border-stone/30" open={defaultOpen}>
       <summary className="font-headline flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-sm font-medium uppercase tracking-wide text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal [&::-webkit-details-marker]:hidden">
         {title}
         <IconChevronDown />
@@ -146,8 +161,7 @@ export function ProductDetail({
   const { copy: shellCopy } = useUiLocale();
   const now = useStableNow();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addItem, setMiniCartOpen } = useCart();
   const { recordView } = useRecentlyViewed();
   const preferBackendCatalog = Boolean(initialProduct || catalogSnapshot);
   const catalogProductsSnapshot = catalogProducts ?? catalogSnapshot?.products ?? [];
@@ -176,17 +190,20 @@ export function ProductDetail({
   }, [preferBackendCatalog, productLookup]);
 
   const product = initialProduct ?? lookupProduct(slug);
+  const preferredDefaultSize = useMemo(() => getPreferredDefaultSize(product), [product]);
 
   const [photoIndex, setPhotoIndex] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(preferredDefaultSize);
   const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [relatedQuickViewSlug, setRelatedQuickViewSlug] = useState<string | null>(null);
   const [notifyEmail, setNotifyEmail] = useState('');
   const [notifyError, setNotifyError] = useState(false);
   const [notifySuccess, setNotifySuccess] = useState(false);
-  const [spaceViewMockOpen, setSpaceViewMockOpen] = useState(false);
   const [galleryLiveText, setGalleryLiveText] = useState('');
+  const [stickyCtaVisible, setStickyCtaVisible] = useState(false);
+  const [addedFeedback, setAddedFeedback] = useState(false);
+  const mainCtaRef = useRef<HTMLDivElement | null>(null);
 
   const sizeGuideTriggerRef = useRef<HTMLButtonElement | null>(null);
   const sizeGuideDialogRef = useRef<HTMLDivElement | null>(null);
@@ -208,11 +225,26 @@ export function ProductDetail({
 
   useEffect(() => {
     setPhotoIndex(0);
-    setSelectedSize(null);
+    setSelectedSize(preferredDefaultSize);
     setLightboxOpen(false);
     setRelatedQuickViewSlug(null);
-    setSpaceViewMockOpen(false);
-  }, [slug]);
+    setAddedFeedback(false);
+    setStickyCtaVisible(false);
+  }, [preferredDefaultSize, slug]);
+
+  /* Sticky CTA: show when main CTA buttons scroll out of viewport */
+  useEffect(() => {
+    const target = mainCtaRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setStickyCtaVisible(!entry.isIntersecting);
+      },
+      { root: null, threshold: 0 },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [product]);
 
   useEffect(() => {
     if (!product) return;
@@ -267,8 +299,8 @@ export function ProductDetail({
         : preferBackendCatalog
           ? []
           : productsByFeeling(product.primaryFeelingSlug ?? product.feelingSlug))))
-        .filter((item) => item.slug !== slug)
-        .slice(0, 4)
+        .filter((item) => item.slug !== slug && productHasRealImage(item))
+        .slice(0, 3)
     : [];
 
   const [compactPdp, setCompactPdp] = useState(false);
@@ -284,7 +316,8 @@ export function ProductDetail({
     return product.complementarySlugs
       .map((s) => lookupProduct(s))
       .filter((p): p is NonNullable<ReturnType<typeof getProduct>> => Boolean(p))
-      .slice(0, 4);
+      .filter((p) => productHasRealImage(p))
+      .slice(0, 3);
   }, [lookupProduct, product]);
 
   const frequentlyBoughtWithProducts = useMemo(() => {
@@ -292,16 +325,7 @@ export function ProductDetail({
     return product.frequentlyBoughtWithSlugs
       .map((s) => lookupProduct(s))
       .filter((p): p is NonNullable<ReturnType<typeof getProduct>> => Boolean(p))
-      .slice(0, 2);
-  }, [lookupProduct, product]);
-
-  const customersAlsoBoughtProducts = useMemo(() => {
-    if (!product?.customersAlsoBoughtSlugs?.length) return [];
-    const fbtSlugs = new Set(product.frequentlyBoughtWithSlugs ?? []);
-    return product.customersAlsoBoughtSlugs
-      .filter((s) => !fbtSlugs.has(s))
-      .map((s) => lookupProduct(s))
-      .filter((p): p is NonNullable<ReturnType<typeof getProduct>> => Boolean(p))
+      .filter((p) => productHasRealImage(p))
       .slice(0, 2);
   }, [lookupProduct, product]);
 
@@ -363,19 +387,21 @@ export function ProductDetail({
 
   const trustItems = [
     '220 GSM cotton',
-    artist ? `Illustrated by ${artist.name}` : 'Illustrated artwork',
     'Free exchange 14d',
     'COD available',
   ];
 
   const customFitLines = product ? formatPdpFitModelLines(product) : [];
   const fallbackModelParagraph = product ? defaultPdpModelParagraph(product) : '';
+  const inlineFitNote = customFitLines[0] ?? copy.sizeGuideModelNote;
   const whatsappSupportUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
     ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
     : null;
-  const instagramUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.instagramUrl)
-    ? HORO_SUPPORT_CHANNELS.instagramUrl
-    : null;
+  const primaryCrossSellProducts = frequentlyBoughtWithProducts;
+  const fallbackCrossSellProducts =
+    primaryCrossSellProducts.length === 0 ? styleWithProducts : [];
+  const standardDeliveryWindow = formatDeliveryWindow(3, 5, now);
+  const expressDeliveryWindow = formatDeliveryWindow(1, 2, now);
 
   useEffect(() => {
     if (gallery.length === 0) return;
@@ -643,32 +669,14 @@ export function ProductDetail({
 
     if (!selectedSize) return;
     addItem(product.slug, selectedSize as ProductSizeKey, 1);
-    navigate('/cart');
-  }
-
-  function handleBuyNow() {
-    if (!product) return;
-    if (oosSelected) {
-      handlePrimaryAction();
-      return;
-    }
-    if (!sizeReady) {
-      handleMissingSize();
-      return;
-    }
-    if (!selectedSize) return;
-    addItem(product.slug, selectedSize as ProductSizeKey, 1);
-    navigate('/checkout');
+    setAddedFeedback(true);
+    setMiniCartOpen(true);
+    window.setTimeout(() => setAddedFeedback(false), 2200);
   }
 
   function handleLightboxPrimary() {
     setLightboxOpen(false);
     queueMicrotask(() => handlePrimaryAction());
-  }
-
-  function handleLightboxBuyNow() {
-    setLightboxOpen(false);
-    queueMicrotask(() => handleBuyNow());
   }
 
   function handleCrossSellBundle(companions: Product[]) {
@@ -684,7 +692,9 @@ export function ProductDetail({
       const u = avail.includes(sz) ? sz : avail[0];
       if (u) addItem(p.slug, u, 1);
     }
-    navigate('/cart');
+    setAddedFeedback(true);
+    setMiniCartOpen(true);
+    window.setTimeout(() => setAddedFeedback(false), 2200);
   }
 
   function handleGalleryKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
@@ -707,12 +717,6 @@ export function ProductDetail({
     return copy.selectSizePrompt;
   }
 
-  function buyNowCtaLabel() {
-    if (oosSelected) return copy.notifyMeCTA;
-    if (sizeReady && product) return `${copy.buyNowCta} — ${formatEgp(displayPriceEgp)}`;
-    return copy.selectSizePrompt;
-  }
-
   const desktopCtaClass = `cta-clay flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
     oosSelected
       ? 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90 opacity-90'
@@ -724,12 +728,6 @@ export function ProductDetail({
       ? 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90 opacity-90'
       : 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90'
   }`;
-
-  const desktopBuyNowClass =
-    'flex min-h-14 w-full items-center justify-center gap-2 border-2 border-obsidian bg-white px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-all duration-300 hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
-
-  const mobileBuyNowClass =
-    'flex min-h-12 w-full items-center justify-center border-2 border-obsidian bg-white px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
 
   const deliveryDynamic = product
     ? buildPdpDeliveryLines(now, PDP_SCHEMA.deliveryRules, {
@@ -878,41 +876,8 @@ export function ProductDetail({
                 </>
               ) : null}
 
-              <button
-                type="button"
-                className="absolute bottom-4 right-4 z-30 flex items-center gap-2 rounded-full border border-stone/50 bg-white/80 px-4 py-2 font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                onClick={() => setSpaceViewMockOpen(true)}
-                aria-expanded={spaceViewMockOpen}
-                aria-controls={spaceViewMockOpen ? 'pdp-space-view-mock-notice' : undefined}
-                aria-label="View in 3D"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" />
-                </svg>
-                View in space
-              </button>
             </div>
           </div>
-
-          {spaceViewMockOpen ? (
-            <div
-              id="pdp-space-view-mock-notice"
-              className="rounded-xl border border-stone/50 bg-white/85 px-4 py-3 shadow-sm"
-              role="status"
-            >
-              <p className="font-body text-sm leading-relaxed text-warm-charcoal">
-                3D / AR “View in space” is a demo preview — not a live viewer yet.
-              </p>
-              <button
-                type="button"
-                className="font-label mt-3 min-h-11 text-[11px] font-semibold uppercase tracking-wider text-deep-teal underline decoration-deep-teal/35 underline-offset-4 hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                onClick={() => setSpaceViewMockOpen(false)}
-              >
-                Dismiss
-              </button>
-            </div>
-          ) : null}
 
           {hasGalleryRail ? (
             <div
@@ -940,35 +905,10 @@ export function ProductDetail({
             </div>
           ) : null}
 
-          <section
-            className="rounded-xl border border-stone/45 bg-white/55 p-4 shadow-sm md:p-5"
-            aria-labelledby="pdp-video-heading"
-          >
-            <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{copy.videoEyebrow}</p>
-            <h2 id="pdp-video-heading" className="font-headline mt-2 text-lg font-semibold tracking-tight text-obsidian md:text-xl">
-              {copy.videoTitle}
-            </h2>
-            <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-lg border border-stone/50 bg-obsidian/[0.04]">
-              <video
-                className="h-full w-full object-cover"
-                poster={imgUrl(primaryGallerySrc, 1400)}
-                muted
-                playsInline
-                preload="metadata"
-                aria-label={copy.videoAriaLabel}
-              />
-              <div className="pointer-events-none absolute inset-0 flex items-end justify-center bg-gradient-to-t from-obsidian/35 via-transparent to-transparent pb-4 md:pb-5">
-                <p className="max-w-md px-4 text-center font-body text-sm font-medium text-white drop-shadow-sm md:text-[0.9375rem]">
-                  {copy.videoPlaceholderBody}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {!compactPdp && (frequentlyBoughtWithProducts.length > 0 || styleWithProducts.length > 0) ? (
+          {!compactPdp && (primaryCrossSellProducts.length > 0 || fallbackCrossSellProducts.length > 0) ? (
             <CrossSellWidget
-              frequentlyBoughtWith={frequentlyBoughtWithProducts}
-              styleWith={styleWithProducts}
+              frequentlyBoughtWith={primaryCrossSellProducts}
+              styleWith={fallbackCrossSellProducts}
               copy={{
                 fbtEyebrow: copy.frequentlyBoughtTogetherEyebrow,
                 fbtTitle: copy.frequentlyBoughtTogetherTitle,
@@ -1008,50 +948,31 @@ export function ProductDetail({
               </h1>
 
               {feeling || product.occasionSlugs.length ? (
-                <div className="space-y-3 rounded-xl border border-stone/40 bg-papyrus/90 px-4 py-3">
-                  {feeling ? (
-                    <div>
-                      <p className="font-label text-[10px] uppercase tracking-wider text-label">Feels like</p>
-                      <p className="mt-1 font-body text-sm leading-relaxed text-warm-charcoal">{feeling.tagline}</p>
-                    </div>
+                <div className="flex flex-wrap gap-2">
+                  {feeling?.tagline ? (
+                    <span className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+                      {feeling.tagline}
+                    </span>
                   ) : null}
-                  {product.occasionSlugs.length ? (
-                    <div>
-                      <p className="font-label text-[10px] uppercase tracking-wider text-label">Works for</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {product.occasionSlugs.map((slug) => {
-                          const o = occasionLookup.get(slug) ?? (!preferBackendCatalog ? getOccasion(slug) : undefined);
-                          return (
-                            <span
-                              key={slug}
-                              className="font-label rounded-full border border-stone/55 bg-white/90 px-3 py-1.5 text-[10px] uppercase tracking-wider text-obsidian"
-                            >
-                              {o?.name ?? slug}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
+                  {product.occasionSlugs.map((slug) => {
+                    const occasion = occasionLookup.get(slug) ?? (!preferBackendCatalog ? getOccasion(slug) : undefined);
+                    return (
+                      <span
+                        key={slug}
+                        className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal"
+                      >
+                        {occasion?.name ?? slug}
+                      </span>
+                    );
+                  })}
                   {product.capsuleSlugs?.includes('zodiac') ? (
-                    <p className="font-label text-[10px] uppercase tracking-wider text-moon-gold">Zodiac capsule</p>
+                    <span className="font-label rounded-full border border-moon-gold/40 bg-moon-gold/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian">
+                      Zodiac capsule
+                    </span>
                   ) : null}
                 </div>
               ) : null}
             </header>
-
-            <section
-              className="mt-2 border-l-2 border-dusk-violet/40 pl-5 text-obsidian md:pl-6"
-              aria-labelledby="pdp-story-card-heading"
-            >
-              <p
-                id="pdp-story-card-heading"
-                className="font-label mb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-obsidian"
-              >
-                {copy.storyCardHeading}
-              </p>
-              <p className="font-body text-[1rem] leading-relaxed text-warm-charcoal md:text-[1.08rem]">{productDescription}</p>
-            </section>
 
             <div className="space-y-5">
               <div className="space-y-2">
@@ -1110,6 +1031,10 @@ export function ProductDetail({
                   })}
                 </div>
 
+                <p className="font-body text-sm leading-relaxed text-warm-charcoal">
+                  {inlineFitNote}
+                </p>
+
                 {inventoryHint ? (
                   <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
                     {inventoryHint}
@@ -1127,23 +1052,15 @@ export function ProductDetail({
                 <button
                   type="button"
                   onClick={handlePrimaryAction}
-                  className={desktopCtaClass}
+                  className={`${desktopCtaClass}${addedFeedback ? ' pdp-cta-added' : ''}`}
                   aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
                 >
-                  <IconCart />
-                  <span>{primaryCtaLabel()}</span>
+                  {addedFeedback ? (
+                    <><span className="pdp-cta-check" aria-hidden>✓</span><span>Added!</span></>
+                  ) : (
+                    <><IconCart /><span>{primaryCtaLabel()}</span></>
+                  )}
                 </button>
-
-                {!oosSelected ? (
-                  <button
-                    type="button"
-                    onClick={handleBuyNow}
-                    className={desktopBuyNowClass}
-                    aria-describedby={sizeReady ? undefined : 'pdp-size-hint'}
-                  >
-                    <span>{buyNowCtaLabel()}</span>
-                  </button>
-                ) : null}
 
                 {oosSelected ? (
                   <div ref={notifyFormRef} className="space-y-3">
@@ -1191,58 +1108,44 @@ export function ProductDetail({
                     )}
                   </div>
                 ) : null}
-
-                {whatsappSupportUrl ? (
-                  <a
-                    href={whatsappSupportUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-label inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-stone bg-white px-4 py-4 text-sm font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  >
-                    {copy.whatsappHelpLabel}
-                  </a>
-                ) : null}
-              </div>
-
-              <div className="flex flex-wrap gap-2 border-t border-stone/30 pt-5" aria-label="Trust and service highlights">
-                {trustItems.map((item) => (
-                  <span
-                    key={item}
-                    className="font-label rounded-full border border-stone/50 bg-white/70 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-warm-charcoal"
-                  >
-                    {item}
-                  </span>
-                ))}
               </div>
 
               <div
-                className="space-y-2 rounded-xl border border-stone/40 bg-white/50 px-4 py-3"
+                className="space-y-2 rounded-xl border border-stone/35 bg-white/55 px-4 py-3"
                 aria-labelledby="pdp-delivery-est-heading"
               >
-                {deliveryDynamic ? (
-                  <div className="rounded-lg border border-deep-teal/15 bg-frost-blue/30 px-3 py-2.5">
-                    <p className="font-body text-sm font-medium leading-snug text-obsidian">{deliveryDynamic.urgencyLine}</p>
-                    <p className="mt-1 font-body text-sm leading-snug text-warm-charcoal">{deliveryDynamic.arrivesLine}</p>
-                  </div>
-                ) : null}
                 <p
                   id="pdp-delivery-est-heading"
                   className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label"
                 >
                   {copy.deliveryEyebrow}
                 </p>
-                <p className="font-headline text-sm font-semibold text-obsidian">{copy.deliveryEstimateTitle}</p>
+                {deliveryDynamic ? (
+                  <p className="font-body text-sm font-medium leading-snug text-obsidian">{deliveryDynamic.urgencyLine}</p>
+                ) : null}
                 <p className="font-body text-sm leading-relaxed text-warm-charcoal">
-                  <span className="block">
-                    <span className="font-medium text-obsidian">{copy.deliveryStandardBadge}</span>{' '}
-                    <span className="text-obsidian">{formatDeliveryWindow(3, 5, now)}</span>
+                  <span className="font-medium text-obsidian">{copy.deliveryStandardBadge}</span> {standardDeliveryWindow}
+                  <span className="mx-2 text-clay/50" aria-hidden>
+                    ·
                   </span>
-                  <span className="mt-1.5 block">
-                    <span className="font-medium text-obsidian">{copy.deliveryExpressBadge}</span>{' '}
-                    <span className="text-obsidian">{formatDeliveryWindow(1, 2, now)}</span>
-                  </span>
+                  <span className="font-medium text-obsidian">{copy.deliveryExpressBadge}</span> {expressDeliveryWindow}
                 </p>
-                <p className="font-body text-xs leading-snug text-clay">{copy.deliveryEstimateNote}</p>
+                {deliveryDynamic ? (
+                  <p className="font-body text-sm leading-snug text-warm-charcoal">{deliveryDynamic.arrivesLine}</p>
+                ) : null}
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+                  {trustItems.join(' · ')}
+                </p>
+                {whatsappSupportUrl ? (
+                  <a
+                    href={whatsappSupportUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
+                  >
+                    {copy.whatsappHelpLabel}
+                  </a>
+                ) : null}
               </div>
 
               {!compactPdp ? <PdpShareStrip productName={product.name} productSlug={product.slug} /> : null}
@@ -1272,40 +1175,6 @@ export function ProductDetail({
           </div>
         </aside>
       </section>
-
-      {product.wearerStories && product.wearerStories.length > 0 ? (
-        <section className="border-t border-stone/25 bg-papyrus" aria-labelledby="wearer-stories-heading">
-          <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-8 md:py-12 lg:px-12">
-            <div className="max-w-[980px]">
-              <p className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
-                {copy.wearerStoriesEyebrow}
-              </p>
-              <h2
-                id="wearer-stories-heading"
-                className="font-headline mt-2 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl"
-              >
-                {copy.wearerStoriesTitle}
-              </h2>
-              <p className="mt-2 font-body text-sm text-clay">{copy.wearerStoriesNote}</p>
-              <ul className="mt-8 list-none space-y-6 p-0">
-                {product.wearerStories.map((story, idx) => (
-                  <li
-                    key={`${story.author}-${idx}`}
-                    className="rounded-2xl border border-stone/40 bg-white/60 p-5 shadow-sm backdrop-blur-sm"
-                  >
-                    <blockquote className="font-body text-base leading-relaxed text-warm-charcoal md:text-[17px]">
-                      “{story.quote}”
-                    </blockquote>
-                    <footer className="mt-4 font-label text-[11px] uppercase tracking-wider text-clay">
-                      <cite className="not-italic text-obsidian/80">— {story.author}</cite>
-                    </footer>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-      ) : null}
 
       <section className="border-t border-stone/25 bg-papyrus">
         <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-8 md:py-12 lg:px-12">
@@ -1351,6 +1220,11 @@ export function ProductDetail({
                   </div>
                 </figure>
               ) : null}
+              {productDescription ? (
+                <p className="mb-4 font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
+                  {productDescription}
+                </p>
+              ) : null}
               <p className="font-body text-sm font-medium leading-relaxed text-warm-charcoal md:text-[15px]">
                 {copy.designStoryAccordionBody}{' '}
                 <span className="block pt-2 text-warm-charcoal/95">
@@ -1386,11 +1260,11 @@ export function ProductDetail({
                   </p>
                   <p className="mt-1.5 leading-relaxed">
                     <span className="font-medium text-obsidian">{copy.deliveryStandardBadge}:</span>{' '}
-                    {formatDeliveryWindow(3, 5, now)}
+                    {standardDeliveryWindow}
                   </p>
                   <p className="mt-1 leading-relaxed">
                     <span className="font-medium text-obsidian">{copy.deliveryExpressBadge}:</span>{' '}
-                    {formatDeliveryWindow(1, 2, now)}
+                    {expressDeliveryWindow}
                   </p>
                   <p className="mt-2 text-xs text-clay">{copy.deliveryEstimateNote}</p>
                 </div>
@@ -1405,23 +1279,29 @@ export function ProductDetail({
         </div>
       </section>
 
-      {customersAlsoBoughtProducts.length > 0 ? (
-        <section className="border-t border-stone/25 bg-papyrus" aria-labelledby="cab-heading">
+      {related.length > 0 ? (
+        <section className="border-t border-stone/25 bg-papyrus">
           <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-8 md:px-8 md:pb-12 md:pt-10 lg:px-12">
-            <div className="mb-6">
-              <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
-                {copy.customersAlsoBoughtEyebrow}
-              </span>
-              <h2
-                id="cab-heading"
-                className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl"
-              >
-                {copy.customersAlsoBoughtTitle}
-              </h2>
-              <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.customersAlsoBoughtSubtitle}</p>
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">Discovery</span>
+                <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
+                  More from {feeling?.name ?? 'this feeling'}
+                </h2>
+                <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
+              </div>
+              {feeling ? (
+                <Link
+                  to={`/feelings/${feeling.slug}`}
+                  className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
+                >
+                  {shellCopy.shell.shopByFeeling}
+                </Link>
+              ) : null}
             </div>
-            <div className="grid max-w-3xl gap-4 sm:grid-cols-2 md:gap-6">
-              {customersAlsoBoughtProducts.map((item) => (
+
+            <div className="grid gap-4 md:grid-cols-3 md:gap-6">
+              {related.map((item) => (
                 <article
                   key={item.slug}
                   className="group relative overflow-hidden rounded-[18px] bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md"
@@ -1434,13 +1314,14 @@ export function ProductDetail({
                       View {item.name}, {formatEgp(item.priceEgp)}
                     </span>
                   </Link>
+
                   <div className="pointer-events-none relative z-[2]">
                     <div className="relative overflow-hidden rounded-t-[18px]">
                       <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
                         <TeeImageFrame
                           src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
                           alt={`HORO “${item.name}” tee`}
-                          w={400}
+                          w={500}
                           aspectRatio="4/5"
                           borderRadius="1.125rem 1.125rem 0 0"
                           frameStyle={{ marginBottom: 0 }}
@@ -1452,6 +1333,7 @@ export function ProductDetail({
                         onClick={() => setRelatedQuickViewSlug(item.slug)}
                       />
                     </div>
+
                     <div className="p-4">
                       <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
                         {item.name}
@@ -1473,144 +1355,35 @@ export function ProductDetail({
         </section>
       ) : null}
 
-      <section className="border-t border-stone/25 bg-papyrus" aria-labelledby="pdp-reviews-soon-heading">
-        <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-8 md:py-10 lg:px-12">
-          <div className="mx-auto max-w-[42rem] rounded-2xl border border-stone/40 bg-white/55 px-5 py-6 md:px-8 md:py-7">
-            <p className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">{copy.reviewsSoonEyebrow}</p>
-            <h2
-              id="pdp-reviews-soon-heading"
-              className="font-headline mt-2 text-xl font-semibold uppercase tracking-tight text-obsidian md:text-2xl"
-            >
-              {copy.reviewsSoonTitle}
-            </h2>
-            <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">{copy.reviewsSoonBody}</p>
-            {whatsappSupportUrl || instagramUrl ? (
-              <div className="mt-5 flex flex-wrap gap-3">
-                {whatsappSupportUrl ? (
-                  <a
-                    href={whatsappSupportUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-label inline-flex min-h-12 items-center justify-center rounded-xl border border-obsidian bg-obsidian px-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-obsidian/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  >
-                    {copy.reviewsSoonWhatsappCta}
-                  </a>
-                ) : null}
-                {instagramUrl ? (
-                  <a
-                    href={instagramUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-label inline-flex min-h-12 items-center justify-center rounded-xl border border-stone bg-white px-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  >
-                    {copy.reviewsSoonInstagramCta}
-                  </a>
-                ) : null}
-              </div>
-            ) : (
-              <p className="mt-4 font-body text-xs text-clay">{copy.reviewsSoonNoLinks}</p>
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-8 md:px-8 md:pb-12 md:pt-10 lg:px-12">
-          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">Discovery</span>
-              <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
-                More from {feeling?.name ?? 'this feeling'}
-              </h2>
-              <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
-            </div>
-            {feeling ? (
-              <Link
-                to={`/feelings/${feeling.slug}`}
-                className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
-              >
-                {shellCopy.shell.shopByFeeling}
-              </Link>
-            ) : null}
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-4 md:gap-6">
-            {related.map((item) => (
-              <article
-                key={item.slug}
-                className="group relative overflow-hidden rounded-[18px] bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md"
-              >
-                <Link
-                  to={`/products/${item.slug}`}
-                  className="absolute inset-0 z-[1] rounded-[18px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                >
-                  <span className="sr-only">
-                    View {item.name}, {formatEgp(item.priceEgp)}
-                  </span>
-                </Link>
-
-                <div className="pointer-events-none relative z-[2]">
-                  <div className="relative overflow-hidden rounded-t-[18px]">
-                    <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
-                      <TeeImageFrame
-                        src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
-                        alt={`HORO “${item.name}” tee`}
-                        w={500}
-                        aspectRatio="4/5"
-                        borderRadius="1.125rem 1.125rem 0 0"
-                        frameStyle={{ marginBottom: 0 }}
-                      />
-                    </div>
-                    <QuickViewTrigger
-                      productName={item.name}
-                      className="pointer-events-auto bottom-3 left-3 right-3"
-                      onClick={() => setRelatedQuickViewSlug(item.slug)}
-                    />
-                  </div>
-
-                    <div className="p-4">
-                      <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
-                        {item.name}
-                      </h3>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <p className="font-body text-xs text-clay">{formatEgp(item.priceEgp)}</p>
-                        {compareAtPrice(item.priceEgp, item.originalPriceEgp) ? (
-                          <p className="font-body text-[11px] text-clay/80 line-through">
-                            {formatEgp(compareAtPrice(item.priceEgp, item.originalPriceEgp) ?? 0)}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="pointer-events-none fixed inset-x-0 bottom-0 z-90 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden">
+      <div ref={mainCtaRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-90 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden">
         <div className="pointer-events-auto space-y-2 rounded-[20px] border border-obsidian/10 bg-papyrus/92 p-2 shadow-[0_24px_60px_-28px_rgba(26,26,26,0.55)] backdrop-blur-xl">
           <button
             type="button"
             onClick={handlePrimaryAction}
-            className={mobileCtaClass}
+            className={`${mobileCtaClass}${addedFeedback ? ' pdp-cta-added' : ''}`}
             aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
           >
-            <IconCart />
-            <span>{primaryCtaLabel()}</span>
+            {addedFeedback ? (
+              <><span className="pdp-cta-check" aria-hidden>✓</span><span>Added!</span></>
+            ) : (
+              <><IconCart /><span>{primaryCtaLabel()}</span></>
+            )}
           </button>
-          {!oosSelected ? (
-            <button
-              type="button"
-              onClick={handleBuyNow}
-              className={mobileBuyNowClass}
-              aria-describedby={sizeReady ? undefined : 'pdp-size-hint'}
-            >
-              {buyNowCtaLabel()}
-            </button>
-          ) : null}
         </div>
       </div>
+
+      {product ? (
+        <StickyAddToCart
+          visible={stickyCtaVisible && !lightboxOpen && !sizeGuideOpen}
+          productName={product.name}
+          thumbnail={media.main}
+          selectedSize={selectedSize}
+          sizeReady={sizeReady}
+          oosSelected={oosSelected}
+          displayPrice={displayPriceEgp}
+          onAddToBag={handlePrimaryAction}
+        />
+      ) : null}
 
       {lightboxOpen ? (
         <div
@@ -1703,16 +1476,6 @@ export function ProductDetail({
                 <IconCart />
                 <span>{primaryCtaLabel()}</span>
               </button>
-              {!oosSelected ? (
-                <button
-                  type="button"
-                  onClick={handleLightboxBuyNow}
-                  className={mobileBuyNowClass}
-                  aria-describedby={sizeReady ? undefined : 'pdp-size-hint'}
-                >
-                  {buyNowCtaLabel()}
-                </button>
-              ) : null}
             </div>
           </div>
         </div>

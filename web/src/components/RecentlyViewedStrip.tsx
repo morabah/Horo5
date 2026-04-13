@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { MerchProductCard } from './MerchProductCard';
 import { ProductQuickView } from './ProductQuickView';
 import { getProductMedia } from '../data/images';
-import { getFeeling, getProduct } from '../data/site';
+import { getFeeling, getProduct, productHasRealImage } from '../data/site';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useUiLocale } from '../i18n/ui-locale';
 
@@ -23,6 +23,7 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
       .filter((s) => s !== excludeSlug)
       .map((slug) => getProduct(slug))
       .filter((p): p is NonNullable<typeof p> => Boolean(p))
+      .filter((p) => productHasRealImage(p))
       .slice(0, 4);
   }, [excludeSlug, slugs]);
 

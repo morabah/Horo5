@@ -1,9 +1,13 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { AppErrorBoundary } from './AppErrorBoundary';
+import { BackToTopButton } from './BackToTopButton';
 import { FunnelNavigationTracker } from './FunnelNavigationTracker';
+import { MiniCartDrawer } from './MiniCartDrawer';
 import { Nav } from './Nav';
 import { Footer } from './Footer';
+import { ScrollToTop } from './ScrollToTop';
 import { SeoHead } from './SeoHead';
+import { WhatsAppFloatingButton } from './WhatsAppFloatingButton';
 
 export function Layout() {
   const { pathname } = useLocation();
@@ -11,6 +15,7 @@ export function Layout() {
 
   return (
     <>
+      <ScrollToTop />
       <FunnelNavigationTracker />
       <SeoHead />
       <a
@@ -22,10 +27,15 @@ export function Layout() {
       <Nav />
       <main id="main-content" className={isHome ? '' : 'pt-32 md:pt-24'}>
         <AppErrorBoundary key={pathname}>
-          <Outlet />
+          <div className="route-outlet-fade">
+            <Outlet />
+          </div>
         </AppErrorBoundary>
       </main>
       <Footer />
+      <MiniCartDrawer />
+      <WhatsAppFloatingButton />
+      <BackToTopButton />
     </>
   );
 }

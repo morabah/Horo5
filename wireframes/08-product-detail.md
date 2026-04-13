@@ -1,27 +1,27 @@
 # 08 — Product Detail
 
-**Route:** `/products/:handle`  
-**Implementation:** `shopify-headless/src/app/products/[handle]/page.tsx`, `shopify-headless/src/components/cart/add-to-cart-button.tsx`  
+**Route:** `/products/:slug`  
+**Implementation:** `web-next/src/app/products/[slug]/page.tsx`, `web-next/src/components/product-detail-page.tsx`, `web/src/pages/ProductDetail.tsx`  
 **Status:** Current live PDP wireframe.
 
 ## Purpose
 
-Display core product information and allow direct cart addition using the default variant.
+Display full product story, media, sizing, and add-to-cart flow for HORO merch.
 
 ## Current structure
 
-1. **Main two-column layout**
-- Left: single hero image (`featuredImage` fallback to first product image)
-- Right: title, price, description, and add-to-cart action
+1. **Server + client composition**
+- Server fetches product + catalog (`Promise.all`)
+- Client page mounted via `ProductDetailPage`
 
-2. **Product meta**
-- Page metadata generated per product handle
-- Canonical URL and Open Graph image when available
+2. **PDP content**
+- Product gallery/story blocks
+- Price + merchandising info
+- Size selection and add-to-cart CTA
 
-3. **Purchase action**
-- `Add to cart` button adds quantity `1`
-- Uses first available variant as default
-- If no variant exists, page shows a non-purchasable warning
+3. **SEO + structured data**
+- `generateMetadata` builds page OG/canonical data
+- Product JSON-LD is injected
 
 ## Visual wireframe
 
@@ -29,10 +29,10 @@ Display core product information and allow direct cart addition using the defaul
 +----------------------------------------------------------------------------------+
 | GLOBAL HEADER                                                                     |
 +----------------------------------------------------------------------------------+
-| [HERO IMAGE]                                     | PRODUCT TITLE                  |
-|                                                  | PRICE                          |
-|                                                  | DESCRIPTION                    |
-|                                                  | [Add to cart]                  |
+| [MEDIA / PRODUCT STORY]                           | PRODUCT TITLE                  |
+|                                                   | PRICE + BADGES                 |
+|                                                   | SIZE SELECTOR                  |
+|                                                   | [ADD TO CART]                  |
 +----------------------------------------------------------------------------------+
 | FOOTER                                                                           |
 +----------------------------------------------------------------------------------+
@@ -40,6 +40,6 @@ Display core product information and allow direct cart addition using the defaul
 
 ## Key behaviors
 
-- Unknown handles return not-found via `notFound()`.
-- Product view analytics are tracked with `ProductViewTracker`.
-- No breadcrumbs, accordions, related products, quick view, or sticky mobile dock in current implementation.
+- Unknown slugs return `notFound()`.
+- Metadata + JSON-LD are generated server-side.
+- PDP uses shared `web/src/pages/ProductDetail` implementation (same UX as main storefront).

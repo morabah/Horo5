@@ -10,10 +10,9 @@ export type LastOrderSnapshot = {
   subtotal: number;
   giftWrapEgp?: number;
   shipping: number;
-  cardDiscount: number;
   total: number;
-  paymentMethod: 'cod' | 'card' | 'paypal' | 'fawry' | 'wallet';
-  shippingMethod: 'standard' | 'express';
+  paymentMethod: 'cod' | 'card';
+  shippingMethod: 'standard';
   paymentLabel?: string;
   shippingLabel?: string;
   estimatedDeliveryWindow?: string;

@@ -1,25 +1,24 @@
 # 06 — Browse by Artist
 
 **Route:** `/artists`  
-**Implementation:** Not implemented in `shopify-headless/src/app`  
-**Status:** Not part of current storefront design.
+**Implementation:** `web-next/src/app/artists/page.tsx`  
+**Status:** Implemented as redirect.
 
 ## Current behavior
 
-- No `/artists` route is defined in the current Next.js app.
-- There is no artist-based navigation in `StoreHeader`.
-- Visiting `/artists` returns not-found behavior (no redirect implemented).
+- `/artists` redirects to `/feelings`.
+- No standalone artist directory page is rendered.
+- Artist discovery currently happens inside product/search surfaces.
 
 ## Visual wireframe
 
 ```text
 +--------------------------------------------+
-| /artists                                   |
-| no route in current storefront             |
+| GET /artists                               |
 +--------------------------------------------+
                     |
                     v
 +--------------------------------------------+
-| Next.js not-found behavior                 |
+| redirect -> /feelings                      |
 +--------------------------------------------+
 ```

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { AppIcon } from '../components/AppIcon';
-import { getFeeling, getFeelings, getSubfeelingsByFeeling, productsByFeeling } from '../data/site';
+import { getFeeling, getFeelings, getSubfeelingsByFeeling, productHasRealImage, productsByFeeling } from '../data/site';
 import { getFeelingCollectionVisual, getProductMedia, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
@@ -71,10 +71,12 @@ export function FeelingCollection() {
   const lineParam = subfeelingSlug || lineFromQuery;
   const { copy } = useUiLocale();
   const feeling = getFeeling(slug);
-  const activeLine = lineParam ? getSubfeelingsByFeeling(slug).find((line) => line.slug === lineParam) : undefined;
+  const subfeelings = useMemo(() => getSubfeelingsByFeeling(slug), [slug]);
+  const activeLine = lineParam ? subfeelings.find((line) => line.slug === lineParam) : undefined;
+  const baseFeelingPath = `/feelings/${slug}`;
 
   const baseList = useMemo(() => {
-    let list = productsByFeeling(slug);
+    let list = productsByFeeling(slug).filter(productHasRealImage);
     if (lineParam) {
       list = list.filter(
         (product) => (product.primarySubfeelingSlug ?? product.lineSlug) === lineParam
@@ -203,7 +205,7 @@ export function FeelingCollection() {
       </a>
 
       <section className="relative isolate overflow-hidden bg-obsidian text-white" aria-labelledby="feeling-collection-title">
-        <div className="relative h-[44vh] min-h-[24rem] sm:h-[48vh] md:h-[56vh] md:min-h-[32rem] lg:h-[60vh]">
+        <div className="relative h-[36vh] min-h-[21rem] sm:h-[40vh] md:h-[44vh] md:min-h-[26rem] lg:h-[48vh]">
           <img
             alt={feelingVisuals.hero.alt}
             className="absolute inset-0 h-full w-full object-cover"
@@ -266,12 +268,6 @@ export function FeelingCollection() {
                   >
                     Shop the designs
                   </a>
-                  <a
-                    href="#feeling-proof"
-                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/92 hover:text-white"
-                  >
-                    Read the story
-                  </a>
                 </div>
               </div>
             </div>
@@ -285,7 +281,7 @@ export function FeelingCollection() {
             <span className="font-semibold">{activeLine.name}</span>
             <span className="text-warm-charcoal"> — {activeLine.blurb} </span>
             <Link
-              to={`/feelings/${slug}`}
+              to={baseFeelingPath}
               className="font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
             >
               Show all in {feeling.name}
@@ -295,56 +291,35 @@ export function FeelingCollection() {
       ) : null}
 
       <div className="mx-auto max-w-7xl space-y-14 px-6 pt-8 pb-12 md:space-y-16 md:px-10 md:pt-10 md:pb-16">
-        <section
-          id="feeling-proof"
-          className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-b border-stone/25 pb-12 md:pb-14"
-          aria-labelledby="feeling-proof-heading"
-        >
-          <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-12 lg:gap-16">
-            <div className="w-full">
-              <div className="editorial-shadow overflow-hidden rounded-sm shadow-2xl ring-1 ring-black/5">
-                <img
-                  alt={feelingVisuals.proof.alt}
-                  className="h-auto w-full object-cover"
-                  src={imgUrl(feelingVisuals.proof.src, 1200)}
-                  width={1200}
-                  height={900}
-                  loading="lazy"
-                  style={feelingVisuals.proof.objectPosition ? { objectPosition: feelingVisuals.proof.objectPosition } : undefined}
-                />
-              </div>
-            </div>
-            <div className="w-full space-y-4 md:max-w-lg">
-              <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
-                {activeLine ? `${feeling.name} / ${activeLine.name}` : 'Category story'}
-              </p>
-              <h2
-                id="feeling-proof-heading"
-                className="font-headline mt-2 text-xl font-semibold tracking-tight text-obsidian md:text-2xl"
-              >
-                {feeling.name}
-              </h2>
-              <p className="font-body text-[1.05rem] leading-relaxed text-warm-charcoal md:text-[1.16rem] md:leading-[1.75]">
-                {storyLead}
-              </p>
-              <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">
-                {designCountLabel}
-                <span className="mx-2 text-clay/50" aria-hidden>
-                  |
-                </span>
-                220 GSM cotton
-              </p>
-              <a
-                href="#feeling-collection-products"
-                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-7 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-              >
-                Shop the designs
-              </a>
-            </div>
-          </div>
-        </section>
-
         <section id="feeling-collection-products" className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
+          {subfeelings.length > 0 ? (
+            <div className="mb-6 flex flex-wrap gap-2 border-b border-stone/20 pb-5">
+              <Link
+                to={baseFeelingPath}
+                className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+                  !lineParam
+                    ? 'border-obsidian bg-obsidian text-white'
+                    : 'border-stone/50 bg-white text-obsidian hover:border-obsidian'
+                }`}
+              >
+                All {feeling.name}
+              </Link>
+              {subfeelings.map((line) => (
+                <Link
+                  key={line.slug}
+                  to={`${baseFeelingPath}?line=${encodeURIComponent(line.slug)}`}
+                  className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
+                    line.slug === lineParam
+                      ? 'border-obsidian bg-obsidian text-white'
+                      : 'border-stone/50 bg-white text-obsidian hover:border-obsidian'
+                  }`}
+                >
+                  {line.name}
+                </Link>
+              ))}
+            </div>
+          ) : null}
+
           {isMobile ? (
             <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
               <button
@@ -417,7 +392,7 @@ export function FeelingCollection() {
 
           <div className="vibe-product-grid">
             {list.map((p) => {
-              const { main } = getProductMedia(p.slug);
+              const main = p.media?.main ?? p.thumbnail ?? getProductMedia(p.slug).main;
               return (
                 <MerchProductCard
                   key={p.slug}
@@ -456,6 +431,55 @@ export function FeelingCollection() {
           {list.length === 0 && priceFilter === 'all' && (
             <p className="mt-6 font-body text-warm-charcoal">No designs in this feeling yet.</p>
           )}
+        </section>
+
+        <section
+          id="feeling-proof"
+          className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-t border-stone/25 pt-12 md:pt-14"
+          aria-labelledby="feeling-proof-heading"
+        >
+          <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-12 lg:gap-16">
+            <div className="w-full">
+              <div className="editorial-shadow overflow-hidden rounded-sm shadow-2xl ring-1 ring-black/5">
+                <img
+                  alt={feelingVisuals.proof.alt}
+                  className="h-auto w-full object-cover"
+                  src={imgUrl(feelingVisuals.proof.src, 1200)}
+                  width={1200}
+                  height={900}
+                  loading="lazy"
+                  style={feelingVisuals.proof.objectPosition ? { objectPosition: feelingVisuals.proof.objectPosition } : undefined}
+                />
+              </div>
+            </div>
+            <div className="w-full space-y-4 md:max-w-lg">
+              <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
+                {activeLine ? `${feeling.name} / ${activeLine.name}` : 'Category story'}
+              </p>
+              <h2
+                id="feeling-proof-heading"
+                className="font-headline mt-2 text-xl font-semibold tracking-tight text-obsidian md:text-2xl"
+              >
+                {feeling.name}
+              </h2>
+              <p className="font-body text-[1.05rem] leading-relaxed text-warm-charcoal md:text-[1.16rem] md:leading-[1.75]">
+                {storyLead}
+              </p>
+              <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">
+                {designCountLabel}
+                <span className="mx-2 text-clay/50" aria-hidden>
+                  |
+                </span>
+                220 GSM cotton
+              </p>
+              <a
+                href="#feeling-collection-products"
+                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-7 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+              >
+                Back to the designs
+              </a>
+            </div>
+          </div>
         </section>
 
         <section className="border-t border-stone/25 pt-12 md:pt-14">

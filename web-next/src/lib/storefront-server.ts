@@ -118,6 +118,8 @@ const publishableApiKey =
   process.env.MEDUSA_PUBLISHABLE_KEY ||
   process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ||
   "";
+const missingPublishableKeyMessage =
+  "Missing Medusa publishable key. Set MEDUSA_PUBLISHABLE_KEY or NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY in web-next/.env.local and restart Next.";
 const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
 function catalogFetchOptions(tags: string[] = []): NextFetchOptions {
   void tags;
@@ -127,6 +129,10 @@ function catalogFetchOptions(tags: string[] = []): NextFetchOptions {
 const CATALOG_FETCH_OPTIONS: NextFetchOptions = catalogFetchOptions();
 
 async function storefrontRequest<T>(path: string, init: NextFetchOptions = {}): Promise<T> {
+  if (!publishableApiKey) {
+    throw new Error(missingPublishableKeyMessage);
+  }
+
   const headers = new Headers(init.headers || {});
 
   if (publishableApiKey) {

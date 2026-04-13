@@ -37,6 +37,7 @@ export class AppErrorBoundary extends Component<Props, State> {
             >
               Reload page
             </button>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               href="/"
               className="font-label inline-flex min-h-12 min-w-[10rem] items-center justify-center rounded-xl border border-stone bg-white px-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"

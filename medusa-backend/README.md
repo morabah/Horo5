@@ -1,6 +1,6 @@
 # Medusa v2 Backend (Railway + Egypt Catalog)
 
-This service sets up Medusa v2 with PostgreSQL, seeds an Egypt region (`egp`), and creates 5 test products with S/M/L/XL/XXL variants priced at `799 EGP`.
+This service sets up Medusa v2 with PostgreSQL, seeds an Egypt region (`egp`), creates the HORO catalog, and provisions the launch checkout path for Egypt: one live `Standard` shipping option (`60 EGP`), COD via Medusa's system provider, and an optional custom Paymob card provider when its env vars are configured.
 
 ## 1) Local setup
 
@@ -30,7 +30,10 @@ npm run seed:egypt
 What this seeds:
 - Region: `Egypt` (`eg`, `egp`)
 - Store default currency: `egp`
-- 5 products, each with:
+- Store default stock location and fulfillment set for Egypt checkout
+- One live `Standard` shipping option priced at `60 EGP`
+- Hidden `gift-wrap` add-on product priced at `200 EGP`
+- HORO apparel products from the shared fixture catalog, each with:
   - `metadata.titleEn`
   - `metadata.descriptionEn`
   - size variants `S/M/L/XL/XXL`
@@ -74,9 +77,15 @@ Also set the rest of the Medusa variables (below).
 2. Set environment variables on the Medusa service (see [`.env.template`](.env.template)):
    - `DATABASE_URL`
    - `MEDUSA_BACKEND_URL` — public `https://` URL of this Railway service (no trailing slash)
+   - `STORE_URL` — public storefront URL used for checkout return links
    - `STORE_CORS` — Vercel storefront origin(s), comma-separated, e.g. `https://your-app.vercel.app`
    - `ADMIN_CORS` / `AUTH_CORS` — align with Medusa admin and your Vercel origins
    - `JWT_SECRET`, `COOKIE_SECRET`, `MEDUSA_ADMIN_ONBOARDING_TYPE`
+   - Optional Paymob card checkout:
+     - `PAYMOB_API_KEY`
+     - `PAYMOB_HMAC_SECRET`
+     - `PAYMOB_CARD_INTEGRATION_ID`
+     - Configure the Paymob backend callback to `https://YOUR_MEDUSA_DOMAIN/hooks/payment/paymob_paymob`
    - If logs show `http.jwtSecret not found`, **`JWT_SECRET` is missing** in Railway (and often `COOKIE_SECRET`). Add both (e.g. `openssl rand -hex 32` each), then redeploy.
 3. After the first successful deploy (migrations run automatically), optionally seed the Egypt catalog **once** against production:
 
@@ -119,9 +128,11 @@ A green check means **database-facing catalog data** in the snapshot matches; it
 
 - `GET /health` returns OK
 - Admin can see region `Egypt` with currency `egp`
-- Exactly 5 seeded products exist
-- Each product has 5 variants (`S/M/L/XL/XXL`)
-- Every variant price is `799 EGP`
+- Admin can see the `Standard` Egypt shipping option and the `Egypt Warehouse` stock location
+- Region payment providers include `pp_system_default` and `pp_paymob_paymob` only when Paymob env vars are configured
+- The seeded HORO apparel catalog is present along with the hidden `gift-wrap` add-on
+- Hidden `gift-wrap` exists but does not appear in the storefront catalog DTO
+- Apparel products have `S/M/L/XL/XXL` variants priced at `799 EGP`
 - Product media URLs resolve
 
 ### Storefront DTO routes (HORO Next.js)

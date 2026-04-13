@@ -1,25 +1,29 @@
 # 03 — Vibe Collection
 
 **Route:** `/vibes/:slug`  
-**Implementation:** Not implemented in `shopify-headless/src/app`  
-**Status:** Legacy wireframe; dynamic vibe collection pages do not exist in the current design.
+**Implementation:** `web-next/src/app/vibes/[slug]/page.tsx`, `web/src/data/legacy-slugs.ts`  
+**Status:** Implemented as legacy slug mapping redirect.
 
 ## Current behavior
 
-- There is no vibe taxonomy route in the live app.
-- Product browsing currently happens through `/products` and `/products/:handle`.
-- Requests to `/vibes/:slug` are unresolved by app routes.
+- Incoming legacy vibe slugs map to feeling slugs using `LEGACY_VIBE_SLUG_TO_FEELING_SLUG`.
+- Then route redirects to `/feelings/:slug`.
+- Unknown slugs still redirect to `/feelings/{same-slug}`.
 
 ## Visual wireframe
 
 ```text
 +--------------------------------------------+
-| /vibes/:slug                               |
-| no dynamic route implemented               |
+| GET /vibes/:slug                           |
 +--------------------------------------------+
                     |
                     v
 +--------------------------------------------+
-| Next.js not-found behavior                 |
+| map legacy slug (if configured)            |
++--------------------------------------------+
+                    |
+                    v
++--------------------------------------------+
+| redirect -> /feelings/:mappedSlug          |
 +--------------------------------------------+
 ```

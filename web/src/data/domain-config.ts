@@ -1,5 +1,35 @@
 // src/data/domain-config.ts
 
+export const EGYPT_CITY_OPTIONS = [
+  'Cairo',
+  'Giza',
+  'Alexandria',
+  'Qalyubia',
+  'Sharqia',
+  'Dakahlia',
+  'Gharbia',
+  'Monufia',
+  'Beheira',
+  'Kafr El Sheikh',
+  'Damietta',
+  'Port Said',
+  'Ismailia',
+  'Suez',
+  'North Sinai',
+  'South Sinai',
+  'Faiyum',
+  'Beni Suef',
+  'Minya',
+  'Assiut',
+  'Sohag',
+  'Qena',
+  'Luxor',
+  'Aswan',
+  'Red Sea',
+  'New Valley',
+  'Matrouh',
+] as const
+
 export const PDP_SCHEMA = {
   viewLabels: ['front on-body', 'back fit card', 'print proof', 'fabric and tag', 'flat lay', 'lifestyle', 'weight proof', 'wash check'],
   surfacePhrases: [
@@ -179,6 +209,37 @@ export const CART_SCHEMA = {
   },
 } as const;
 
+export const MINI_CART_SCHEMA = {
+  copy: {
+    addedLabel: 'Added to bag',
+    addedLabelAr: 'أُضيف إلى الحقيبة',
+    checkoutCta: 'Checkout',
+    checkoutCtaAr: 'الدفع',
+    viewBagCta: 'View Bag',
+    viewBagCtaAr: 'عرض الحقيبة',
+    continueCta: 'Continue shopping',
+    continueCtaAr: 'واصل التسوق',
+    subtotalLabel: 'Subtotal',
+    subtotalLabelAr: 'الإجمالي الفرعي',
+    itemSingular: 'item',
+    itemSingularAr: 'قطعة',
+    itemPlural: 'items',
+    itemPluralAr: 'قطع',
+    sizeLabel: 'Size',
+    sizeLabelAr: 'المقاس',
+    qtyLabel: 'Qty',
+    qtyLabelAr: 'الكمية',
+    closeLabel: 'Close',
+    closeLabelAr: 'إغلاق',
+    dialogLabel: 'Item added to bag',
+    dialogLabelAr: 'تمت إضافة قطعة إلى الحقيبة',
+    scrimLabel: 'Close mini cart',
+    scrimLabelAr: 'إغلاق السلة المصغرة',
+  },
+  trustItems: ['Free exchange 14d', 'COD available', 'Secure checkout'] as const,
+  trustItemsAr: ['استبدال مجاني ١٤ يوم', 'الدفع عند الاستلام', 'دفع آمن'] as const,
+} as const;
+
 export const OCCASION_SCHEMA = {
   copy: {
     hubEyebrow: 'Shop by occasion',
@@ -333,7 +394,7 @@ export const SEARCH_SCHEMA = {
 export const CHECKOUT_SCHEMA = {
   trustStripItems: [
     'SSL-encrypted checkout',
-    'COD, card, PayPal, Fawry & wallets',
+    'COD + Paymob card',
     '14-day exchange',
     'Guest checkout',
   ] as const,

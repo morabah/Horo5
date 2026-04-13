@@ -13,6 +13,7 @@ import {
   getFeeling,
   getOccasion,
   getOccasions,
+  productHasRealImage,
   productsByOccasion,
   type Occasion,
   type OccasionSlug,
@@ -92,7 +93,7 @@ function OccasionProductCard({
   onProductClick?: () => void;
 }) {
   const feeling = getFeeling(product.primaryFeelingSlug ?? product.feelingSlug);
-  const { main } = getProductMedia(product.slug);
+  const imageSrc = product.media?.main ?? product.thumbnail ?? getProductMedia(product.slug).main;
 
   return (
     <MerchProductCard
@@ -100,7 +101,7 @@ function OccasionProductCard({
       name={product.name}
       compareAtPriceEgp={product.originalPriceEgp ?? undefined}
       priceEgp={product.priceEgp}
-      imageSrc={main}
+      imageSrc={imageSrc}
       imageAlt={`HORO “${product.name}” graphic tee for ${feeling?.name ?? 'the collection'}.`}
       merchandisingBadge={product.merchandisingBadge}
       eyebrow={feeling?.name}
@@ -136,7 +137,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
   const mobileFilterTriggerRef = useRef<HTMLElement | null>(null);
 
   const occasionSlug = occasion?.slug as OccasionSlug | undefined;
-  const baseList = useMemo(() => (occasionSlug ? productsByOccasion(occasionSlug) : []), [occasionSlug]);
+  const baseList = useMemo(() => (occasionSlug ? productsByOccasion(occasionSlug).filter(productHasRealImage) : []), [occasionSlug]);
 
   useEffect(() => {
     setSortKey('featured');

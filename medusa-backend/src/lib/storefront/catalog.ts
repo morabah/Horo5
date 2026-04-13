@@ -534,6 +534,11 @@ function normalizeSubfeelingSlug(value: string | undefined, handle: string, feel
   return LEGACY_SUBFEELING_TO_TAXONOMY[value] || value
 }
 
+function isHiddenProduct(product: QueryProduct) {
+  const metadata = asRecord(product.metadata)
+  return metadata.hidden === true || metadata.hidden === "true"
+}
+
 function buildProduct(product: QueryProduct): StorefrontProductDTO {
   const metadata = asRecord(product.metadata)
   const legacyMedia = asMedia(metadata.media)
@@ -749,6 +754,7 @@ export async function resolveEgyptPricingContext(scope: MedusaContainer) {
 
 function sortStorefrontProducts(products: QueryProduct[]) {
   return products
+    .filter((product) => !isHiddenProduct(product))
     .map((product) => {
       const metadata = asRecord(product.metadata)
       return {

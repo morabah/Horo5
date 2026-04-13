@@ -59,13 +59,16 @@ export function Link({
 
 export function useNavigate() {
   const router = useRouter();
-  return (to: string | number) => {
-    if (typeof to === "number") {
-      if (to < 0) router.back();
-      return;
-    }
-    router.push(to);
-  };
+  return useCallback(
+    (to: string | number) => {
+      if (typeof to === "number") {
+        if (to < 0) router.back();
+        return;
+      }
+      router.push(to);
+    },
+    [router],
+  );
 }
 
 export function useParams<T extends Record<string, string | undefined>>() {

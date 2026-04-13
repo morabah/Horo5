@@ -10,6 +10,7 @@ const UI_COPY = {
   en: {
     shell: {
       home: 'Home',
+      shopAll: 'Shop All',
       shopByFeeling: 'Shop by feeling',
       shopByMoment: 'Shop by moment',
       about: 'About',
@@ -38,7 +39,7 @@ const UI_COPY = {
       momentsTitle: 'Gift it, go out, reset the day',
       momentsCta: 'Shop by moment',
       featuredTitle: 'Featured pieces',
-      featuredCta: 'Shop by feeling',
+      featuredCta: 'View all products',
       planEyebrow: 'Simple plan',
       planTitle: 'How it works',
       trustEyebrow: 'Why trust HORO',
@@ -98,7 +99,7 @@ const UI_COPY = {
       payPayPalTitle: 'PayPal',
       payPayPalBody: 'Pay with your PayPal balance or linked card — redirect or link sent after you place the order (demo flow).',
       paymentExtraSecureLine:
-        'You can choose COD, card (discount where shown), PayPal, Fawry, or a mobile wallet. Final payment steps are confirmed after order placement.',
+        'You can choose COD or Paymob card payment. Final order creation only happens after the live payment step is ready.',
       expressHeading: 'Quick checkout',
       expressSub:
         'Demo: tap Apple Pay, Google Pay, or PayPal — then complete your details below. No charge until you confirm the order.',
@@ -107,6 +108,13 @@ const UI_COPY = {
       paypalExpressLabel: 'PayPal',
       expressPickedPrefix: 'Selected',
       expressWalletHint: 'Fawry, mobile wallet, and PayPal are also on the payment step.',
+      changeSizeInBag: 'Change size in bag',
+      paymobVerifyingTitle: 'Verifying your payment…',
+      paymobVerifyingBody: 'This usually takes a few seconds. Please keep this page open.',
+      paymobPendingTitle: 'Payment still processing',
+      paymobPendingBody:
+        'We could not confirm your card yet. Retry the check below, or return to Paymob if you have not finished paying.',
+      paymobRetryCheck: 'Retry verification',
     },
     confirmation: {
       breadcrumbTitle: 'Order confirmed',
@@ -132,6 +140,7 @@ const UI_COPY = {
   ar: {
     shell: {
       home: 'الرئيسية',
+      shopAll: 'تسوّق الكل',
       shopByFeeling: 'تسوّق حسب الشعور',
       shopByMoment: 'تسوّق حسب المناسبة',
       about: 'عن HORO',
@@ -160,7 +169,7 @@ const UI_COPY = {
       momentsTitle: 'هدية، خروجة، أو إعادة ضبط اليوم',
       momentsCta: 'تسوّق حسب المناسبة',
       featuredTitle: 'قطع مختارة',
-      featuredCta: 'تسوّق حسب الشعور',
+      featuredCta: 'عرض كل المنتجات',
       planEyebrow: 'خطوات واضحة',
       planTitle: 'كيف يعمل HORO',
       trustEyebrow: 'لماذا تثق في HORO',
@@ -220,7 +229,7 @@ const UI_COPY = {
       payPayPalTitle: 'باي بال',
       payPayPalBody: 'الدفع عبر باي بال أو البطاقة المرتبطة — يُرسل رابط أو توجيه بعد تأكيد الطلب (واجهة تجريبية).',
       paymentExtraSecureLine:
-        'يمكنك اختيار الدفع عند الاستلام، البطاقة (مع الخصم عند العرض)، باي بال، فوري، أو محفظة إلكترونية. خطوات الدفع النهائية تُؤكد بعد إتمام الطلب.',
+        'يمكنك اختيار الدفع عند الاستلام أو البطاقة عبر Paymob. لا يتم إنشاء الطلب إلا بعد جاهزية خطوة الدفع الحية.',
       expressHeading: 'دفع سريع',
       expressSub:
         'تجريبي: اختر Apple Pay أو Google Pay أو PayPal — ثم أكمل بياناتك أدناه. لا يتم الخصم قبل تأكيد الطلب.',
@@ -229,6 +238,13 @@ const UI_COPY = {
       paypalExpressLabel: 'PayPal',
       expressPickedPrefix: 'تم الاختيار',
       expressWalletHint: 'فوري والمحفظة وباي بال متاحة أيضاً في خطوة الدفع.',
+      changeSizeInBag: 'تغيير المقاس من السلة',
+      paymobVerifyingTitle: 'جاري التحقق من الدفع…',
+      paymobVerifyingBody: 'قد يستغرق ذلك بضع ثوانٍ. يرجى إبقاء هذه الصفحة مفتوحة.',
+      paymobPendingTitle: 'الدفع ما زال قيد المعالجة',
+      paymobPendingBody:
+        'لم نتمكن من تأكيد البطاقة بعد. جرّب إعادة التحقق أدناه، أو أكمل الدفع في Paymob إذا لم تنتهِ بعد.',
+      paymobRetryCheck: 'إعادة التحقق',
     },
     confirmation: {
       breadcrumbTitle: 'تم تأكيد الطلب',

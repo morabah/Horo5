@@ -1,26 +1,36 @@
 # 10 — Checkout
 
 **Route:** `/checkout`  
-**Implementation:** Not implemented as a local page; checkout is hosted by Shopify via `cart.checkoutUrl`  
-**Status:** Current behavior documented.
+**Implementation:** `web-next/src/app/checkout/page.tsx`, `web/src/pages/Checkout.tsx`  
+**Status:** Fully implemented in-app checkout (Medusa + Paymob/COD).
 
 ## Current behavior
 
-- There is no `shopify-headless/src/app/checkout/page.tsx`.
-- Clicking `Proceed to secure checkout` on `/cart` navigates to Shopify-hosted checkout URL.
-- The local app only handles return status via `/checkout/return`.
+- Checkout runs inside the storefront app.
+- User fills contact + shipping address, then payment method.
+- Payment providers are loaded from Medusa (COD and Paymob options).
+- Card/wallet payments redirect to Paymob then return to `/checkout` for status handling.
+- Successful completion navigates to `/checkout/success?order_id=...`.
 
 ## Visual wireframe
 
 ```text
-+--------------------------------------------+
-| /cart                                      |
-| [Proceed to secure checkout]               |
-+--------------------------------------------+
++----------------------------------------------------------------------------------+
+| CHECKOUT PAGE                                                                     |
+| Contact -> Address -> Shipping -> Payment                                         |
+| [Place order / Continue to Paymob]                                                |
++----------------------------------------------------------------------------------+
                     |
+         +----------+-----------+
+         |                      |
+         v                      v
++-------------------------+   +--------------------------+
+| COD completion in app   |   | Paymob redirect + return |
++-------------------------+   +--------------------------+
+         |                      |
+         +----------+-----------+
                     v
 +--------------------------------------------+
-| Shopify-hosted checkout                    |
-| (outside local Next.js app)                |
+| /checkout/success?order_id=...             |
 +--------------------------------------------+
 ```

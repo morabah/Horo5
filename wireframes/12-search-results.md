@@ -1,25 +1,36 @@
 # 12 — Search Results
 
 **Route:** `/search`  
-**Implementation:** Not implemented in `shopify-headless/src/app`  
-**Status:** Legacy wireframe; no dedicated search page in current design.
+**Implementation:** `web-next/src/app/search/page.tsx`, `web-next/src/components/search-page.tsx`, `web/src/pages/Search.tsx`  
+**Status:** Fully implemented.
+
+## Purpose
+
+Unified discovery across products, feelings, and occasions with query + faceted filters.
 
 ## Current behavior
 
-- No `/search` route exists in the current app router.
-- Global header includes only `Home`, `Shop`, and `Cart` links.
-- Product discovery is currently done through `/products` and collection links.
+- Search query is URL-driven (`q`) with debounce.
+- Includes suggestions panel (keyboard accessible).
+- Results grouped into designs, feelings, and occasions.
+- Supports scope (`feeling` / `occasion`) and multiple filters (price, size, artist, occasion, color, sort).
+- Mobile uses filter sheet; desktop uses sticky filter bar.
 
 ## Visual wireframe
 
 ```text
-+--------------------------------------------+
-| /search                                    |
-| no route in current storefront             |
-+--------------------------------------------+
-                    |
-                    v
-+--------------------------------------------+
-| Next.js not-found behavior                 |
-+--------------------------------------------+
++----------------------------------------------------------------------------------+
+| SEARCH HERO                                                                          |
+| [search input + suggestions] [visual panel]                                          |
++----------------------------------------------------------------------------------+
+| FILTERS (sticky desktop / modal mobile)                                               |
+| sort | price | feeling | size | artist | occasion | color                            |
++----------------------------------------------------------------------------------+
+| RESULTS GROUPS                                                                        |
+| Designs grid                                                                          |
+| Related feelings                                                                       |
+| Related occasions                                                                      |
++----------------------------------------------------------------------------------+
+| Zero-state with recovery CTAs when no matches                                         |
++----------------------------------------------------------------------------------+
 ```

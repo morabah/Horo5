@@ -1,27 +1,25 @@
-# 11 — Checkout Return
+# 11 — Order Confirmation
 
-**Route:** `/checkout/return?status={success|failed|cancelled}`  
-**Implementation:** `shopify-headless/src/app/checkout/return/page.tsx`, `shopify-headless/src/components/checkout/return-tracker.tsx`  
-**Status:** Current live return-status page wireframe.
+**Route:** `/checkout/success?order_id={id}`  
+**Implementation:** `web-next/src/app/checkout/success/page.tsx`, `web/src/pages/OrderConfirmation.tsx`  
+**Status:** Current live order confirmation page.
 
 ## Purpose
 
-Show informational status after redirecting back from Shopify checkout and reinforce webhook truth source.
+Confirm successful order placement and show user-facing order summary/tracking actions.
 
 ## Current structure
 
-1. **Status heading**
-- `Checkout returned` for success
-- `Payment failed` for failed
-- `Checkout cancelled` for cancelled
+1. **Confirmation hero**
+- Success mark, order id, delivery window, and celebratory heading
 
-2. **Explanatory copy**
-- Success: payment is unverified until signed `orders/paid` webhook is recorded
-- Failed: retry payment and verify gateway + webhook logs
-- Cancelled: user can return to cart and continue later
+2. **Actions**
+- Copy order number
+- WhatsApp follow-up CTA (when available) or exchange CTA fallback
 
-3. **Trust note**
-- Explicit note that webhook is authoritative, not browser redirect
+3. **Order summary**
+- Ordered items, size/qty/price, payment/shipping labels
+- Hydrates from `lastOrder` snapshot and optionally refreshes from Medusa `getOrder`
 
 ## Visual wireframe
 
@@ -29,11 +27,13 @@ Show informational status after redirecting back from Shopify checkout and reinf
 +----------------------------------------------------------------------------------+
 | GLOBAL HEADER                                                                     |
 +----------------------------------------------------------------------------------+
-| CHECKOUT RETURN CARD                                                              |
-| [Heading based on status]                                                         |
-| [Status-specific explanation]                                                     |
-| [Authoritative source note: signed webhook]                                       |
+| ORDER CONFIRMED CARD                                                               |
+| [Order #] [Delivery window] [Copy order number]                                   |
+| [WhatsApp help / Exchange CTA]                                                    |
 +----------------------------------------------------------------------------------+
-| FOOTER                                                                            |
+| ORDER SUMMARY                                                                      |
+| [Line item] [Line item]                                                           |
++----------------------------------------------------------------------------------+
+| CONTINUE SHOPPING ACTIONS + FOOTER                                                |
 +----------------------------------------------------------------------------------+
 ```

@@ -216,3 +216,11 @@ export function productsByArtist(artistSlug: string) {
 export function productsByOccasion(occasionSlug: import('./catalog-types').OccasionSlug) {
   return getProducts().filter((p) => p.occasionSlugs.includes(occasionSlug));
 }
+
+/** True when the product has at least one real product image (not a generic fallback). */
+export function productHasRealImage(product: Product): boolean {
+  if (product.media?.main) return true;
+  if (product.media?.gallery && product.media.gallery.filter(Boolean).length > 0) return true;
+  if (product.thumbnail) return true;
+  return false;
+}

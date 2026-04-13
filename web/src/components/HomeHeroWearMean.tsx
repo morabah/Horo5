@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { BRAND_COPY } from '../data/brand';
-import { heroModelHome } from '../data/images';
+import { heroModelHome, getProductMedia } from '../data/images';
+import { getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
+import { formatEgp } from '../utils/formatPrice';
 
 const HERO_NAV_OFFSET =
   'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))]';
@@ -10,11 +12,24 @@ const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 export function HomeHeroWearMean() {
   const { copy } = useUiLocale();
 
+  // Pick the first product with a real image to feature in the hero
+  const featuredProduct = getProducts().find(productHasRealImage) ?? null;
+  const featuredImage = featuredProduct
+    ? (featuredProduct.media?.main ?? getProductMedia(featuredProduct.slug).main)
+    : heroModelHome;
+  const priceRange = (() => {
+    const products = getProducts().filter(productHasRealImage);
+    if (products.length === 0) return null;
+    const prices = products.map((p) => p.priceEgp);
+    const min = Math.min(...prices);
+    return min;
+  })();
+
   return (
     <section
       id="home-hero"
       aria-labelledby="home-hero-heading"
-      className={`relative isolate flex min-h-svh w-full flex-col overflow-hidden bg-obsidian ${HERO_NAV_OFFSET}`}
+      className={`relative isolate flex min-h-[min(84svh,50rem)] w-full flex-col overflow-hidden bg-obsidian lg:min-h-[min(88svh,56rem)] ${HERO_NAV_OFFSET}`}
     >
       <div
         aria-hidden="true"
@@ -42,28 +57,40 @@ export function HomeHeroWearMean() {
             id="home-hero-support"
             className="max-w-md font-body text-sm leading-relaxed text-stone md:text-[15px]"
           >
-            {BRAND_COPY.heroSupportLine}
+            Artist-designed graphic tees. 220 GSM Egyptian cotton.{priceRange ? ` From ${formatEgp(priceRange)}.` : ''}
           </p>
           {/* Decorative accent line */}
           <div className="h-px w-8 bg-primary/40" aria-hidden="true" />
           <div>
             <Link
-              to="/feelings"
-              className="font-body inline-flex min-h-11 items-center justify-center border border-white/40 bg-white/5 px-8 py-3.5 text-sm font-medium text-white transition-all duration-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
+              to="/products"
+              className="font-body inline-flex min-h-12 items-center justify-center border border-white/40 bg-white/10 px-10 py-3.5 text-[15px] font-semibold text-white transition-all duration-300 hover:bg-white/20 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
             >
-              {copy.home.heroCta}
+              {copy.shell.shopAll}
             </Link>
           </div>
         </div>
 
-        <div className="relative mt-2 flex min-h-[min(48vh,420px)] flex-1 items-end justify-center overflow-visible py-2 lg:mt-0 lg:min-h-[min(76vh,760px)] lg:justify-end lg:py-4">
-          <img
-            src={heroModelHome}
-            alt="Model wearing a HORO graphic tee"
-            fetchPriority="high"
-            loading="eager"
-            className="hero-editorial-zoom relative z-1 h-auto max-h-[min(65vh,580px)] w-full max-w-none object-contain object-bottom drop-shadow-[0_20px_60px_rgba(0,0,0,0.4)] lg:max-h-none lg:max-w-none"
-          />
+        <div className="relative mt-2 flex min-h-[min(44vh,400px)] flex-1 items-end justify-center overflow-visible py-2 lg:mt-0 lg:min-h-[min(68vh,680px)] lg:justify-end lg:py-4">
+          {featuredProduct ? (
+            <Link to={`/products/${featuredProduct.slug}`} className="relative z-1">
+              <img
+                src={featuredImage}
+                alt={`HORO "${featuredProduct.name}" graphic tee`}
+                fetchPriority="high"
+                loading="eager"
+                className="hero-editorial-zoom h-auto max-h-[min(58vh,520px)] w-full max-w-none object-contain object-bottom drop-shadow-[0_20px_60px_rgba(0,0,0,0.4)] lg:max-h-[min(74vh,760px)] lg:max-w-none"
+              />
+            </Link>
+          ) : (
+            <img
+              src={heroModelHome}
+              alt="Model wearing a HORO graphic tee"
+              fetchPriority="high"
+              loading="eager"
+              className="hero-editorial-zoom relative z-1 h-auto max-h-[min(58vh,520px)] w-full max-w-none object-contain object-bottom drop-shadow-[0_20px_60px_rgba(0,0,0,0.4)] lg:max-h-[min(74vh,760px)] lg:max-w-none"
+            />
+          )}
         </div>
       </div>
 

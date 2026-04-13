@@ -13,6 +13,7 @@ import {
   getOccasion,
   getOccasions,
   getProducts,
+  productHasRealImage,
   type OccasionSlug,
   type Product,
   type ProductSizeKey,
@@ -507,7 +508,8 @@ function occasionScore(occasionSlug: OccasionSlug, queryVariants: string[]): num
 function mapDesignCard(product: Product): SearchDesignCard {
   const feelingSlug = productFeelingSlug(product);
   const feeling = getFeeling(feelingSlug);
-  const media = getProductMedia(product.slug);
+  const imageSrc =
+    product.media?.main ?? product.thumbnail ?? getProductMedia(product.slug).main;
 
   return {
     slug: product.slug,
@@ -517,7 +519,7 @@ function mapDesignCard(product: Product): SearchDesignCard {
     feelingAccent: feeling?.accent,
     originalPriceEgp: product.originalPriceEgp,
     priceEgp: product.priceEgp,
-    imageSrc: media.main,
+    imageSrc,
     imageAlt: `HORO “${product.name}” graphic tee${feeling ? ` — ${feeling.name}` : ''}.`,
     merchandisingBadge: product.merchandisingBadge,
   };
@@ -568,7 +570,7 @@ function isFeelingBrowseEligible(product: Product): boolean {
 }
 
 function getScopedProducts(scopeFeelingSlug?: string | null, scopeOccasionSlug?: string | null) {
-  let baseProducts = getProducts();
+  let baseProducts = getProducts().filter(productHasRealImage);
   if (scopeFeelingSlug) {
     const resolved = resolveFeelingSlugParam(scopeFeelingSlug);
     baseProducts = baseProducts.filter(
