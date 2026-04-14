@@ -43,6 +43,7 @@ type StorefrontProductResponse = {
   feelingSlug: string;
   lineSlug?: string;
   fitLabel?: string;
+  sizeTableKey?: string;
   frequentlyBoughtWithSlugs?: string[];
   garmentColors?: string[];
   inventoryHintBySize?: Record<string, string>;
@@ -157,6 +158,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     feelingSlug: product.feelingSlug,
     lineSlug: product.lineSlug,
     fitLabel: product.fitLabel,
+    sizeTableKey: product.sizeTableKey,
     frequentlyBoughtWithSlugs: product.frequentlyBoughtWithSlugs,
     garmentColors: product.garmentColors,
     inventoryHintBySize: product.inventoryHintBySize as Product["inventoryHintBySize"],

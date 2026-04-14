@@ -43,12 +43,24 @@ import { QuickViewTrigger } from '../components/QuickViewTrigger';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
-import { HORO_SUPPORT_CHANNELS, PDP_SCHEMA, mergePdpDeliveryRules, isConfiguredExternalUrl } from '../data/domain-config';
+import {
+  HORO_SUPPORT_CHANNELS,
+  PDP_SCHEMA,
+  mergePdpDeliveryRules,
+  mergePdpSizeTableConfig,
+  resolvePdpDisplayFitModels,
+  isConfiguredExternalUrl,
+  type PdpSizeTableConfig,
+} from '../data/domain-config';
 import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useStableNow } from '../runtime/render-time';
 import type { PdpDeliveryRules } from '../utils/deliveryEstimate';
-import { defaultPdpModelParagraph, formatPdpFitModelLine, formatPdpFitModelLines } from '../utils/pdpFitModels';
+import {
+  defaultPdpModelParagraph,
+  formatPdpFitModelLine,
+  formatPdpFitModelLineForSizeSelection,
+} from '../utils/pdpFitModels';
 import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
 import {
@@ -58,7 +70,7 @@ import {
   formatPdpStandardBadgeLabel,
 } from '../utils/deliveryEstimate';
 
-const { sizeTable, copy } = PDP_SCHEMA;
+const { copy } = PDP_SCHEMA;
 
 const featureStripItems = PDP_SCHEMA.features.map((feature) => ({
   label: feature.label,
@@ -135,6 +147,12 @@ function IconChevronRight({ className = 'h-6 w-6' }: { className?: string }) {
   );
 }
 
+function formatSizeTablePresetLabel(presetKey: string): string {
+  const t = presetKey.trim();
+  if (!t) return presetKey;
+  return t.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function AccordionSection({ title, children, defaultOpen }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   return (
     <details className="group border-t border-stone/30" open={defaultOpen}>
@@ -154,6 +172,8 @@ type ProductDetailProps = {
   initialSlug?: string;
   /** Merged delivery windows from RSC (Medusa store metadata + defaults). */
   deliveryRules?: PdpDeliveryRules;
+  /** Size chart + model lines from RSC; when omitted, merged from built-in defaults + product.sizeTableKey. */
+  sizeTableConfig?: PdpSizeTableConfig;
   /**
    * When false (default), omit Helmet JSON-LD — Next injects the same schema in the RSC page
    * from `buildProductJsonLd` to avoid duplicate/conflicting Product schema.
@@ -167,6 +187,7 @@ export function ProductDetail({
   initialProduct,
   initialSlug,
   deliveryRules: deliveryRulesProp,
+  sizeTableConfig: sizeTableConfigProp,
   renderJsonLd = false,
 }: ProductDetailProps = {}) {
   const { slug: routeSlug = '' } = useParams();
@@ -454,8 +475,40 @@ export function ProductDetail({
 
   const trustItems = product?.trustBadges?.filter(Boolean) ?? [];
 
-  const customFitLines = product ? formatPdpFitModelLines(product) : [];
-  const fallbackModelParagraph = product ? defaultPdpModelParagraph(product) : '';
+  const sizeTableResolved = useMemo(
+    () =>
+      sizeTableConfigProp ??
+      mergePdpSizeTableConfig(undefined, product?.sizeTableKey),
+    [sizeTableConfigProp, product?.sizeTableKey, product?.slug],
+  );
+
+  const displayFitModelsResolved = useMemo(
+    () => resolvePdpDisplayFitModels(sizeTableResolved),
+    [sizeTableResolved],
+  );
+  const displayFitLines = useMemo(
+    () => displayFitModelsResolved.map(formatPdpFitModelLine),
+    [displayFitModelsResolved],
+  );
+
+  const fallbackModelParagraph =
+    displayFitModelsResolved.length > 0
+      ? formatPdpFitModelLine(displayFitModelsResolved[0]!)
+      : product
+        ? defaultPdpModelParagraph(product)
+        : '';
+
+  const inlineFitModelPart =
+    formatPdpFitModelLineForSizeSelection(displayFitModelsResolved, selectedSize) ??
+    (displayFitModelsResolved[0] ? formatPdpFitModelLine(displayFitModelsResolved[0]) : undefined);
+
+  const inlineFitMeasurementsPart = (() => {
+    if (!selectedSize || !sizeTableResolved.measurements.length) return '';
+    const row = sizeTableResolved.measurements.find((r) => r.size === selectedSize);
+    if (!row) return '';
+    return `Flat measurements for ${row.size}: chest ${row.chest}, shoulder ${row.shoulder}, length ${row.length}, sleeve ${row.sleeve}.`;
+  })();
+
   const physicalFitDisplayLines = useMemo(() => {
     const p = product?.physicalAttributes;
     if (!p) return [] as string[];
@@ -473,7 +526,10 @@ export function ProductDetail({
     if (p.midCode) lines.push(`MID code: ${p.midCode}`);
     return lines;
   }, [product?.physicalAttributes]);
-  const inlineFitNote = customFitLines[0] ?? physicalFitDisplayLines[0] ?? copy.sizeGuideModelNote;
+  const inlineFitModelDisplay =
+    inlineFitModelPart ??
+    physicalFitDisplayLines[0] ??
+    (displayFitModelsResolved[0] ? formatPdpFitModelLine(displayFitModelsResolved[0]) : copy.sizeGuideModelNote);
   const whatsappSupportUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
     ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
     : null;
@@ -1118,14 +1174,14 @@ export function ProductDetail({
                         type="button"
                         onClick={() => setSelectedSize(isSelected ? null : key)}
                         aria-pressed={isSelected}
-                        className={`flex h-12 min-w-12 items-center justify-center border px-3 font-headline text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                        className={`flex h-12 min-w-12 shrink-0 items-center justify-center rounded-full border px-4 font-headline text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
                           disabled
                             ? isSelected
                               ? 'border-obsidian bg-obsidian text-white line-through decoration-white/70'
                               : 'border-stone/40 text-clay line-through decoration-obsidian/30 hover:border-obsidian/45'
                             : isSelected
                               ? 'border-obsidian bg-obsidian text-white shadow-sm'
-                              : 'border-stone/60 hover:border-obsidian'
+                              : 'border-stone/60 bg-white/80 text-obsidian hover:border-obsidian'
                         }`}
                       >
                         <span aria-disabled={disabled}>{key}</span>
@@ -1134,8 +1190,14 @@ export function ProductDetail({
                   })}
                 </div>
 
-                <p className="font-body text-sm leading-relaxed text-warm-charcoal">
-                  {inlineFitNote}
+                <p className="font-body text-sm leading-relaxed">
+                  <span className="text-obsidian">{inlineFitModelDisplay}</span>
+                  {inlineFitMeasurementsPart ? (
+                    <>
+                      {' '}
+                      <span className="font-medium text-obsidian">{inlineFitMeasurementsPart}</span>
+                    </>
+                  ) : null}
                 </p>
 
                 {inventoryHint ? (
@@ -1285,9 +1347,9 @@ export function ProductDetail({
         <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-8 md:py-12 lg:px-12">
           <div className="max-w-[980px]">
             <AccordionSection title={copy.accordionProductDetails}>
-              {customFitLines.length > 0 ? (
+              {displayFitLines.length > 0 ? (
                 <div className="mb-5 space-y-3">
-                  {customFitLines.map((line, idx) => (
+                  {displayFitLines.map((line, idx) => (
                     <p key={`fit-line-${idx}`} className="font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
                       {line}
                     </p>
@@ -1599,67 +1661,94 @@ export function ProductDetail({
 
       {sizeGuideOpen ? (
         <div className="fixed inset-0 z-125 flex items-end justify-center sm:items-center" role="presentation">
-          <div className="absolute inset-0 bg-obsidian/40" aria-hidden onClick={closeSizeGuide} />
+          <div className="absolute inset-0 bg-obsidian/55" aria-hidden onClick={closeSizeGuide} />
           <div
             ref={sizeGuideDialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby={sizeGuideTitleId}
-            className="relative z-10 m-0 max-h-[90vh] w-full overflow-y-auto rounded-t-2xl border border-white/60 bg-frost-blue/25 px-5 py-6 shadow-[0_4px_24px_rgba(26,26,26,0.12)] backdrop-blur-lg sm:m-4 sm:max-w-lg sm:rounded-2xl sm:border-white/65"
+            className="relative z-10 m-0 max-h-[90vh] w-full overflow-y-auto rounded-t-2xl border border-stone/50 bg-papyrus px-5 py-6 shadow-[0_8px_40px_rgba(26,26,26,0.18)] sm:m-4 sm:max-w-lg sm:rounded-2xl"
           >
             <div className="mb-4 flex items-start justify-between gap-4">
-              <h2 id={sizeGuideTitleId} className="font-headline text-[17px] font-medium leading-[1.4] text-obsidian">
-                {copy.sizeGuideLabel}
-              </h2>
+              <div className="min-w-0 flex-1 space-y-2">
+                <h2 id={sizeGuideTitleId} className="font-headline text-[17px] font-medium leading-[1.4] text-obsidian">
+                  {copy.sizeGuideLabel}
+                </h2>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                  Guide preset
+                </p>
+                <span className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+                  {formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed)}
+                </span>
+              </div>
               <button
                 type="button"
                 data-size-guide-close
-                className="font-label min-h-11 shrink-0 rounded-sm border border-obsidian px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white"
+                className="font-label min-h-11 shrink-0 rounded-full border border-obsidian px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white"
                 onClick={closeSizeGuide}
               >
                 Close
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[280px] border-collapse font-body text-sm text-warm-charcoal">
+            <div className="overflow-x-auto rounded-xl border border-stone/50 bg-white p-3 shadow-sm">
+              <table className="w-full min-w-[280px] border-collapse font-body text-sm text-obsidian">
                 <thead>
-                  <tr className="border-b border-stone text-left">
-                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Size</th>
-                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Chest</th>
-                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Shoulder</th>
-                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Length</th>
-                    <th scope="col" className="py-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Sleeve</th>
+                  <tr className="border-b border-stone/50 text-left">
+                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
+                      Size
+                    </th>
+                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
+                      Chest
+                    </th>
+                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
+                      Shoulder
+                    </th>
+                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
+                      Length
+                    </th>
+                    <th scope="col" className="py-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
+                      Sleeve
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sizeTable.map((row) => (
-                    <tr key={row.size} className="border-b border-stone/70">
-                      <td className="py-2.5 pr-2 font-medium text-obsidian">{row.size}</td>
-                      <td className="py-2.5 pr-2">{row.chest}</td>
-                      <td className="py-2.5 pr-2">{row.shoulder}</td>
-                      <td className="py-2.5 pr-2">{row.length}</td>
-                      <td className="py-2.5">{row.sleeve}</td>
-                    </tr>
-                  ))}
+                  {sizeTableResolved.measurements.map((row) => {
+                    const rowSelected = selectedSize === row.size;
+                    return (
+                      <tr key={row.size} className={rowSelected ? '' : 'border-b border-stone/25'}>
+                        <td
+                          className={`py-2.5 pr-2 font-semibold text-obsidian ${rowSelected ? 'rounded-l-lg bg-stone-200 pl-2' : ''}`}
+                        >
+                          {row.size}
+                        </td>
+                        <td className={`py-2.5 pr-2 ${rowSelected ? 'bg-stone-200' : ''}`}>{row.chest}</td>
+                        <td className={`py-2.5 pr-2 ${rowSelected ? 'bg-stone-200' : ''}`}>{row.shoulder}</td>
+                        <td className={`py-2.5 pr-2 ${rowSelected ? 'bg-stone-200' : ''}`}>{row.length}</td>
+                        <td className={`py-2.5 ${rowSelected ? 'rounded-r-lg bg-stone-200 pr-2' : ''}`}>{row.sleeve}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
-            {product?.pdpFitModels?.length ? (
-              <div className="mt-4 space-y-2 font-body text-[13px] leading-normal text-clay">
-                {product.pdpFitModels.map((m) => (
-                  <p key={`${m.heightCm}-${m.sizeWorn}`}>{formatPdpFitModelLine(m)}</p>
+            {displayFitLines.length > 0 ? (
+              <div className="mt-4 space-y-2 rounded-xl border border-stone/40 bg-white/90 px-3 py-3 font-body text-[13px] leading-normal text-obsidian">
+                {displayFitLines.map((line, idx) => (
+                  <p key={`sg-fit-${idx}`}>{line}</p>
                 ))}
               </div>
             ) : physicalFitDisplayLines.length > 0 ? (
-              <div className="mt-4 space-y-2 font-body text-[13px] leading-normal text-clay">
+              <div className="mt-4 space-y-2 rounded-xl border border-stone/40 bg-white/90 px-3 py-3 font-body text-[13px] leading-normal text-obsidian">
                 {physicalFitDisplayLines.map((line, idx) => (
                   <p key={`sg-phys-${idx}`}>{line}</p>
                 ))}
               </div>
             ) : (
-              <p className="mt-4 font-body text-[13px] leading-normal text-clay">{copy.sizeGuideModelNote}</p>
+              <p className="mt-4 rounded-xl border border-stone/40 bg-white/90 px-3 py-3 font-body text-[13px] leading-normal text-obsidian">
+                {copy.sizeGuideModelNote}
+              </p>
             )}
           </div>
         </div>
@@ -1671,6 +1760,7 @@ export function ProductDetail({
         open={relatedQuickViewSlug !== null}
         productSlug={relatedQuickViewSlug}
         onClose={() => setRelatedQuickViewSlug(null)}
+        sizeTableConfig={sizeTableResolved}
       />
     </div>
   );

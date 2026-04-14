@@ -10,7 +10,7 @@ import {
   fetchStorefrontSettingsServer,
   logStorefrontFetchError,
 } from "@/lib/storefront-server";
-import { mergePdpDeliveryRules } from "@/storefront/data/domain-config";
+import { mergePdpDeliveryRules, mergePdpSizeTableConfig, type PdpSizeTableConfig } from "@/storefront/data/domain-config";
 import type { PdpDeliveryRules } from "@/storefront/utils/deliveryEstimate";
 
 type ProductPageProps = {
@@ -50,7 +50,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: ProductPageProps) {
   const { slug } = await params;
-  const [product, catalog, deliveryMetadata] = await Promise.all([
+  const [product, catalog, storefrontSettings] = await Promise.all([
     fetchStorefrontProductServer(slug),
     fetchStorefrontCatalogServer().catch((error) => {
       logStorefrontFetchError("[storefront] Failed to fetch catalog for product page", error, { slug });
@@ -63,13 +63,14 @@ export default async function Page({ params }: ProductPageProps) {
     notFound();
   }
 
-  if (process.env.NODE_ENV === "development" && deliveryMetadata == null) {
+  if (process.env.NODE_ENV === "development" && storefrontSettings == null) {
     console.warn(
-      "[pdp] No store.metadata.delivery from Medusa — using built-in delivery windows. Check Admin Store → Metadata (key `delivery`) and GET /storefront/settings.",
+      "[pdp] GET /storefront/settings failed or empty — using built-in delivery windows and size tables. Check Medusa and publishable key.",
     );
   }
 
-  const deliveryRules: PdpDeliveryRules = mergePdpDeliveryRules(deliveryMetadata);
+  const deliveryRules: PdpDeliveryRules = mergePdpDeliveryRules(storefrontSettings?.delivery ?? null);
+  const sizeTableConfig: PdpSizeTableConfig = mergePdpSizeTableConfig(storefrontSettings ?? undefined, product.sizeTableKey);
 
   const jsonLd = buildProductJsonLd(product, catalog ?? undefined);
 
@@ -85,6 +86,7 @@ export default async function Page({ params }: ProductPageProps) {
         catalog={catalog}
         catalogProducts={catalog?.products}
         deliveryRules={deliveryRules}
+        sizeTableConfig={sizeTableConfig}
       />
     </>
   );

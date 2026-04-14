@@ -879,6 +879,7 @@ function buildProduct(
     description: product.description || asString(metadata.story) || undefined,
     feelingSlug: primaryFeelingSlug,
     fitLabel: asString(metadata.fitLabel),
+    sizeTableKey: asString(metadata.sizeTableKey)?.trim() || undefined,
     frequentlyBoughtWithSlugs: asStringArray(metadata.frequentlyBoughtWithSlugs),
     garmentColors: asStringArray(metadata.garmentColors),
     inventoryHintBySize: Object.keys(inventoryHints).length > 0 ? inventoryHints : undefined,

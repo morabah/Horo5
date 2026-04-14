@@ -6,6 +6,28 @@ For full setup, deploy, and catalog notes, see [`README.md`](README.md). For HTT
 
 ---
 
+## Editable config, env, and data files
+
+Use these paths when you need to change **defaults** before running a script, or to align **env** with Railway. Links are relative to the **`medusa-backend/`** folder unless noted.
+
+| What | File | Role |
+|------|------|------|
+| **Env template** | [`.env.template`](.env.template) | Documented variable names and comments; copy to **`.env`** locally (never commit secrets). Railway sets the same keys on the service. |
+| **Runtime Medusa config** | [`medusa-config.ts`](medusa-config.ts) | Database pool, Redis toggles, CORS, S3 file module, Paymob — code + env together. |
+| **Admin PDP preset widget** | [`src/admin/widgets/product-size-table-key.tsx`](src/admin/widgets/product-size-table-key.tsx) | Dropdown on product page; requires `VITE_BACKEND_URL` in `.env` (see [`src/admin/README.md`](src/admin/README.md)). |
+| **PDP delivery defaults (JSON)** | [`src/scripts/data/store-delivery-defaults.json`](src/scripts/data/store-delivery-defaults.json) | Source for `npm run apply:store-delivery-metadata` → **`store.metadata.delivery`**. |
+| **PDP size guide presets (JSON)** | [`src/scripts/data/size-tables-defaults.json`](src/scripts/data/size-tables-defaults.json) | Source for `npm run apply:size-tables-metadata` → **`store.metadata.sizeTables`** + **`defaultSizeTableKey`**. |
+| **Storefront PDP fallback** | [`../web-next/src/storefront/data/domain-config.ts`](../web-next/src/storefront/data/domain-config.ts) | `PDP_DEFAULT_DELIVERY_RULES` / `PDP_DEFAULT_SIZE_PRESET` when Medusa has no store metadata; keep delivery numbers in sync with delivery JSON if desired. |
+| **Egypt catalog fixtures** | [`src/scripts/data/egypt-products.ts`](src/scripts/data/egypt-products.ts) | Product list / handles for `seed:egypt`. |
+| **Feelings taxonomy** | [`src/scripts/data/feelings-taxonomy-data.ts`](src/scripts/data/feelings-taxonomy-data.ts) | Feelings / subfeelings tree for seed + `migrate:feelings-categories`. |
+| **Merch events** | [`src/scripts/data/merch-events.ts`](src/scripts/data/merch-events.ts) | Seeded merch events. |
+| **Legacy PDP media map** | [`src/scripts/data/legacy-product-media.ts`](src/scripts/data/legacy-product-media.ts) | Maps handles to legacy image paths for seed. |
+| **Parity snapshots (generated)** | `.parity/local.json`, `.parity/railway.json` under this package | Created by `parity:snapshot:*` (folder is gitignored); compare with `parity:check`, not usually hand-edited. |
+
+**Store metadata shape** (reference, not a repo file): Medusa Admin cannot edit nested **`delivery`** or **`sizeTables`** objects; use the **`apply:*`** scripts or the Admin API. Delivery fields: [`README.md`](README.md) (*Global PDP delivery windows*). Size presets: same README (*Global PDP size guide presets*).
+
+---
+
 ## Local vs remote (`:public`)
 
 | Mode | When to use | Database connection |
@@ -63,9 +85,10 @@ If you still see **`getaddrinfo ENOTFOUND redis.railway.internal`**, you are on 
 | Script | Role | Local | Remote |
 |--------|------|-------|--------|
 | `apply:store-delivery-metadata` | Writes **`store.metadata.delivery`** from [`src/scripts/data/store-delivery-defaults.json`](src/scripts/data/store-delivery-defaults.json). Admin UI cannot edit object metadata; use this or the Admin API. | `npm run apply:store-delivery-metadata` | `npm run apply:store-delivery-metadata:public` |
+| `apply:size-tables-metadata` | Writes **`store.metadata.sizeTables`** + **`store.metadata.defaultSizeTableKey`** from [`src/scripts/data/size-tables-defaults.json`](src/scripts/data/size-tables-defaults.json). Per product, set **`metadata.sizeTableKey`** (string, e.g. `oversized`) in Admin. | `npm run apply:size-tables-metadata` | `npm run apply:size-tables-metadata:public` |
 | `backfill:product-artist-metadata` | Copies artist display data into **`metadata.artist`** on products for PDP. Supports `DRY_RUN=1`, `PRODUCT_HANDLE=…`. | `npm run backfill:product-artist-metadata` | `npm run backfill:product-artist-metadata:public` |
 
-Storefront reads global delivery via **`GET /storefront/settings`**; see README § “Global PDP delivery windows”.
+Storefront reads **`GET /storefront/settings`** for delivery + size presets; see README § “Global PDP delivery windows” and “Global PDP size guide presets”.
 
 ---
 
@@ -140,6 +163,7 @@ Run from **`medusa-backend/`** with **`DATABASE_PUBLIC_URL`** set when hitting R
 - `dump:categories:public`
 - `inspect:product-pdp:public`
 - `apply:store-delivery-metadata:public`
+- `apply:size-tables-metadata:public`
 - `clear:product-occasion-slug:public`
 - `backfill:product-artist-metadata:public`
 - `migrate:feelings-categories:public`

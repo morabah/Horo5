@@ -77,6 +77,7 @@ type StorefrontProductResponse = {
   occasionSlugs: string[];
   originalPriceEgp?: number | null;
   pdpFitModels?: Product["pdpFitModels"];
+  sizeTableKey?: string;
   physicalAttributes?: Product["physicalAttributes"];
   defaultPriceSize?: string;
   feelingBrowseEligible?: boolean;
@@ -243,6 +244,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     occasionSlugs: product.occasionSlugs,
     originalPriceEgp: product.originalPriceEgp,
     pdpFitModels: product.pdpFitModels,
+    sizeTableKey: product.sizeTableKey,
     physicalAttributes: product.physicalAttributes,
     defaultPriceSize: product.defaultPriceSize as Product["defaultPriceSize"],
     feelingBrowseEligible: product.feelingBrowseEligible ?? true,
@@ -361,9 +363,18 @@ export const fetchStorefrontOccasionServer = cache((slug: string) =>
 
 type StorefrontSettingsResponse = {
   delivery?: unknown | null;
+  sizeTables?: unknown | null;
+  defaultSizeTableKey?: string | null;
 };
 
-async function fetchStorefrontSettingsServerImpl(): Promise<unknown | null> {
+/** Medusa `GET /storefront/settings` payload (delivery + size table presets). */
+export type StorefrontSettingsPayload = {
+  delivery: unknown | null;
+  sizeTables: unknown | null;
+  defaultSizeTableKey: string | null;
+};
+
+async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPayload | null> {
   try {
     const data = await storefrontRequest<StorefrontSettingsResponse>("/storefront/settings", {
       /** Always bypass Next Data Cache — operators expect Medusa edits to show without a long TTL wait. */
@@ -372,11 +383,18 @@ async function fetchStorefrontSettingsServerImpl(): Promise<unknown | null> {
         tags: ["storefront", "settings"],
       },
     });
-    return data.delivery ?? null;
+    return {
+      delivery: data.delivery ?? null,
+      sizeTables: data.sizeTables ?? null,
+      defaultSizeTableKey:
+        typeof data.defaultSizeTableKey === "string" && data.defaultSizeTableKey.trim()
+          ? data.defaultSizeTableKey.trim()
+          : null,
+    };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.warn(
-        "[storefront] GET /storefront/settings failed — PDP delivery falls back to defaults.",
+        "[storefront] GET /storefront/settings failed — PDP delivery and size tables fall back to defaults.",
         error instanceof Error ? error.message : error,
       );
     }
@@ -384,7 +402,7 @@ async function fetchStorefrontSettingsServerImpl(): Promise<unknown | null> {
   }
 }
 
-/** Global storefront settings from Medusa (e.g. `store.metadata.delivery`). Not cached in Next; use Medusa `store.updated` + revalidate tag `settings` for freshness after edits. */
+/** Global storefront settings from Medusa (`store.metadata.delivery`, `sizeTables`, `defaultSizeTableKey`). Not cached in Next; use Medusa `store.updated` + revalidate tag `settings` for freshness after edits. */
 export const fetchStorefrontSettingsServer = cache(fetchStorefrontSettingsServerImpl);
 
 export function buildOccasionMetadata(occasion: Occasion): Metadata {

@@ -66,6 +66,8 @@ export type StorefrontProductDTO = {
   /** Thematic line under a feeling (emotions, zodiac, fiction, career, trends). */
   lineSlug?: string
   fitLabel?: string
+  /** Preset key under `store.metadata.sizeTables` (e.g. `regular`, `oversized`). */
+  sizeTableKey?: string
   frequentlyBoughtWithSlugs?: string[]
   garmentColors?: string[]
   inventoryHintBySize?: Record<string, string>

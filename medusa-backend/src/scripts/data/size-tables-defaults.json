@@ -1,0 +1,74 @@
+{
+  "defaultSizeTableKey": "regular",
+  "tables": {
+    "regular": {
+      "measurements": [
+        { "size": "S", "chest": "96 cm", "shoulder": "45 cm", "length": "70 cm", "sleeve": "20 cm" },
+        { "size": "M", "chest": "102 cm", "shoulder": "47 cm", "length": "72 cm", "sleeve": "21 cm" },
+        { "size": "L", "chest": "108 cm", "shoulder": "49 cm", "length": "74 cm", "sleeve": "22 cm" },
+        { "size": "XL", "chest": "114 cm", "shoulder": "51 cm", "length": "76 cm", "sleeve": "23 cm" },
+        { "size": "XXL", "chest": "120 cm", "shoulder": "53 cm", "length": "78 cm", "sleeve": "24 cm" }
+      ],
+      "fitModels": [
+        {
+          "heightCm": 172,
+          "heightImperial": "5'10\"",
+          "sizeWorn": "M",
+          "fitNote": "regular fit"
+        },
+        {
+          "heightCm": 165,
+          "heightImperial": "5'5\"",
+          "sizeWorn": "S",
+          "fitNote": "relaxed drape on a smaller frame"
+        }
+      ]
+    },
+    "oversized": {
+      "measurements": [
+        { "size": "S", "chest": "100 cm", "shoulder": "47 cm", "length": "72 cm", "sleeve": "21 cm" },
+        { "size": "M", "chest": "106 cm", "shoulder": "49 cm", "length": "74 cm", "sleeve": "22 cm" },
+        { "size": "L", "chest": "112 cm", "shoulder": "51 cm", "length": "76 cm", "sleeve": "23 cm" },
+        { "size": "XL", "chest": "118 cm", "shoulder": "53 cm", "length": "78 cm", "sleeve": "24 cm" },
+        { "size": "XXL", "chest": "124 cm", "shoulder": "55 cm", "length": "80 cm", "sleeve": "25 cm" }
+      ],
+      "fitModels": [
+        {
+          "heightCm": 179,
+          "heightImperial": "5'10\"",
+          "sizeWorn": "M",
+          "fitNote": "intentional oversized silhouette"
+        },
+        {
+          "heightCm": 165,
+          "heightImperial": "5'5\"",
+          "sizeWorn": "S",
+          "fitNote": "roomy drape on a smaller frame"
+        }
+      ]
+    },
+    "fitted": {
+      "measurements": [
+        { "size": "S", "chest": "94 cm", "shoulder": "44 cm", "length": "69 cm", "sleeve": "19.5 cm" },
+        { "size": "M", "chest": "100 cm", "shoulder": "46 cm", "length": "71 cm", "sleeve": "20.5 cm" },
+        { "size": "L", "chest": "106 cm", "shoulder": "48 cm", "length": "73 cm", "sleeve": "21.5 cm" },
+        { "size": "XL", "chest": "112 cm", "shoulder": "50 cm", "length": "75 cm", "sleeve": "22.5 cm" },
+        { "size": "XXL", "chest": "118 cm", "shoulder": "52 cm", "length": "77 cm", "sleeve": "23.5 cm" }
+      ],
+      "fitModels": [
+        {
+          "heightCm": 170,
+          "heightImperial": "5'9\"",
+          "sizeWorn": "M",
+          "fitNote": "closer body fit"
+        },
+        {
+          "heightCm": 162,
+          "heightImperial": "5'4\"",
+          "sizeWorn": "S",
+          "fitNote": "tailored feel on a smaller frame"
+        }
+      ]
+    }
+  }
+}

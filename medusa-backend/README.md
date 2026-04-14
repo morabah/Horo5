@@ -225,6 +225,20 @@ If `delivery` is missing or invalid, the storefront uses built-in defaults. Afte
 
 **If numbers on the PDP do not change after you edit metadata:** (1) **Value shape** — `delivery` must be a JSON **object** (or a single JSON **string** that parses to an object). Flat keys like `standardMinDays` at the top level of Store metadata are ignored; nest them under `delivery`. (2) **Next cache** — in production, settings are cached up to **5 minutes** unless revalidation is configured. In local `next dev`, settings refetch every request (`revalidate: 0`). (3) **Verify Medusa** — `curl -H "x-publishable-api-key: …" http://localhost:9000/storefront/settings` should echo your `delivery` object.
 
+### Global PDP size guide presets (store + product metadata)
+
+The storefront reads **`GET /storefront/settings`** for **`store.metadata.sizeTables`** (named presets: `regular`, `oversized`, `fitted`, …) and **`store.metadata.defaultSizeTableKey`**. Each preset includes **`measurements`** (size chart rows) and **`fitModels`** (the “Model is …” lines). On each product, set **`metadata.sizeTableKey`** to a preset name **string** (editable in Admin metadata table). If omitted, the store default preset is used; if store data is missing, Next uses built-in `PDP_DEFAULT_SIZE_PRESET`.
+
+**Apply the repo default size-table JSON to the store:**
+
+```bash
+npm run apply:size-tables-metadata
+# Railway / DATABASE_PUBLIC_URL:
+npm run apply:size-tables-metadata:public
+```
+
+Canonical file: [`src/scripts/data/size-tables-defaults.json`](src/scripts/data/size-tables-defaults.json). Operators cannot edit the nested `sizeTables` object in the Admin metadata UI; use this script or the Admin API.
+
 ### PDP “Illustrated by” artist (native Medusa metadata)
 
 The storefront prefers **`metadata.artist`** on the product (Medusa Admin → Product → Metadata), shaped as JSON:

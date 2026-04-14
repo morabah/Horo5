@@ -156,6 +156,8 @@ export type Product = {
   merchandisingBadge?: string;
   /** Shown as "FEELING / FIT" in quick view */
   fitLabel?: string;
+  /** Named preset under `store.metadata.sizeTables` (e.g. `oversized`). Editable as a string in Medusa Admin metadata. */
+  sizeTableKey?: string;
   /** Optional scarcity line in quick view */
   stockNote?: string;
   /** Per-size FOMO / inventory hints on PDP, e.g. { M: "Only 2 left" } */

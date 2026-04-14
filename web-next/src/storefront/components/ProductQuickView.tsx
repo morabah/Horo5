@@ -3,7 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { buildProductPdpGallery, getProductMedia, imgUrl } from '../data/images';
 import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
 import { useCart } from '../cart/CartContext';
-import { PDP_SCHEMA, QUICK_VIEW_SCHEMA } from '../data/domain-config';
+import {
+  mergePdpSizeTableConfig,
+  PDP_SCHEMA,
+  QUICK_VIEW_SCHEMA,
+  resolvePdpDisplayFitModels,
+  type PdpSizeTableConfig,
+} from '../data/domain-config';
 import { formatEgp } from '../utils/formatPrice';
 import { formatPdpFitModelLine } from '../utils/pdpFitModels';
 import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
@@ -14,6 +20,8 @@ type ProductQuickViewProps = {
   open: boolean;
   productSlug: string | null;
   onClose: () => void;
+  /** When set (e.g. from PDP), reuses merged store preset; otherwise merges built-in + product.sizeTableKey. */
+  sizeTableConfig?: PdpSizeTableConfig;
 };
 
 const QUICK_VIEW_BASE_SIZES = PDP_SCHEMA.sizes.map((size) => ({
@@ -21,7 +29,7 @@ const QUICK_VIEW_BASE_SIZES = PDP_SCHEMA.sizes.map((size) => ({
   disabled: Boolean(size.disabled),
 }));
 
-export function ProductQuickView({ open, productSlug, onClose }: ProductQuickViewProps) {
+export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }: ProductQuickViewProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
   const navigate = useNavigate();
@@ -35,6 +43,18 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
 
   const product = productSlug ? getProduct(productSlug) : undefined;
+
+  const resolvedSizeTable = useMemo(
+    () =>
+      sizeTableConfig ??
+      mergePdpSizeTableConfig(undefined, product?.sizeTableKey),
+    [sizeTableConfig, product?.sizeTableKey, product?.slug],
+  );
+
+  const quickViewFitLines = useMemo(
+    () => resolvePdpDisplayFitModels(resolvedSizeTable).map(formatPdpFitModelLine),
+    [resolvedSizeTable],
+  );
   const feelingSlug = product?.primaryFeelingSlug ?? product?.feelingSlug;
   const feeling = feelingSlug ? getFeeling(feelingSlug) : undefined;
   const media = useMemo(() => {
@@ -326,7 +346,7 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                           </tr>
                         </thead>
                         <tbody>
-                          {PDP_SCHEMA.sizeTable.map((row) => (
+                          {resolvedSizeTable.measurements.map((row) => (
                             <tr key={row.size} className="border-t border-white/8">
                               <td className="px-3 py-3 font-semibold text-white">{row.size}</td>
                               <td className="px-3 py-3">{row.chest}</td>
@@ -339,8 +359,8 @@ export function ProductQuickView({ open, productSlug, onClose }: ProductQuickVie
                       </table>
                     </div>
                     <div className="font-body border-t border-white/8 px-3 py-3 text-xs text-white/82">
-                      {product.pdpFitModels?.length ? (
-                        product.pdpFitModels.map((m) => <p key={`${m.heightCm}-${m.sizeWorn}`}>{formatPdpFitModelLine(m)}</p>)
+                      {quickViewFitLines.length > 0 ? (
+                        quickViewFitLines.map((line, idx) => <p key={`qv-fit-${idx}`}>{line}</p>)
                       ) : (
                         <p>{PDP_SCHEMA.copy.sizeGuideModelNote}</p>
                       )}

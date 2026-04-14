@@ -32,6 +32,8 @@
     "inspect:product-pdp:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/print-product-pdp-fields.ts",
     "apply:store-delivery-metadata": "medusa exec ./src/scripts/apply-store-delivery-metadata.ts",
     "apply:store-delivery-metadata:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/apply-store-delivery-metadata.ts",
+    "apply:size-tables-metadata": "medusa exec ./src/scripts/apply-size-tables-metadata.ts",
+    "apply:size-tables-metadata:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/apply-size-tables-metadata.ts",
     "clear:product-occasion-slug": "medusa exec ./src/scripts/clear-product-occasion-slug.ts",
     "clear:product-occasion-slug:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/clear-product-occasion-slug.ts",
     "backfill:product-artist-metadata": "medusa exec ./src/scripts/backfill-product-artist-metadata.ts",
@@ -56,6 +58,8 @@
     "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit"
   },
   "dependencies": {
+    "@medusajs/js-sdk": "^2.13.6",
+    "@medusajs/types": "^2.13.6",
     "@medusajs/admin-sdk": "^2.13.6",
     "@medusajs/caching-redis": "^2.13.6",
     "@medusajs/cli": "^2.13.6",
@@ -65,6 +69,7 @@
     "dotenv": "^17.4.1"
   },
   "devDependencies": {
+    "@tanstack/react-query": "5.64.2",
     "@medusajs/test-utils": "^2.13.6",
     "@swc/core": "^1.7.28",
     "@swc/jest": "^0.2.36",
