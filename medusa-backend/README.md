@@ -195,3 +195,26 @@ If `artist` is missing, the API falls back to **`metadata.artistSlug`** plus the
 1. `npm run migrate`
 2. `npm run seed:egypt` (when `DATABASE_URL` points at the target DB)
 3. Start Medusa, then run the `web-next` smoke command above
+
+## 6) Performance optimizations
+
+### Redis (required for production)
+
+Without Redis, Medusa uses in-memory locking and event processing, causing 409 conflicts on concurrent cart operations. See `.env.template` for setup instructions.
+
+When `REDIS_URL` is set, `medusa-config.ts` automatically enables:
+- **eventBusModule** (`@medusajs/medusa/event-bus-redis`) — async event processing
+- **lockingModule** (`@medusajs/medusa/locking-redis`) — distributed locking for cart/order ops
+
+### Database indexes
+
+The migration `Migration20260414000001_performance_indexes` adds indexes to improve checkout performance:
+
+| Table | Index | Purpose |
+|-------|-------|---------|
+| `cart` | `customer_id`, `created_at`, `completed_at` | Faster customer cart lookups |
+| `cart_line_item` | `cart_id`, `variant_id` | Faster cart item queries |
+| `product` | `handle`, `created_at` | Faster product lookups by handle |
+| `product_variant` | `product_id`, `sku` | Faster variant lookups |
+
+Indexes are applied automatically via `npm run migrate` (Railway `preDeploy` or local).

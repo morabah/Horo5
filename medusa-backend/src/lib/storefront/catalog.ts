@@ -1124,6 +1124,7 @@ export async function listStorefrontArtists(scope: MedusaContainer) {
 /**
  * Single feelings-root walk for catalog: avoids duplicating fetchProductCategoryByHandle +
  * fetchChildCategoriesOfParent when both pillars and lines are needed (see buildStorefrontCatalog).
+ * Optimized: fetches all subfeelings in parallel rather than sequentially (N+1 → 1+N parallel).
  */
 async function loadFeelingsAndSubfeelingsForCatalog(scope: MedusaContainer): Promise<{
   feelings: StorefrontFeelingDTO[]
@@ -1144,20 +1145,22 @@ async function loadFeelingsAndSubfeelingsForCatalog(scope: MedusaContainer): Pro
   }
 
   const feelings = active.map((category) => buildFeeling(categoryToFeelingRecord(category)))
+
+  const feelingsWithIds = active.filter((feeling) => feeling.id)
+  const subResults = await Promise.all(
+    feelingsWithIds.map(async (feeling) => {
+      const subs = await fetchChildCategoriesOfParent(scope, feeling.id!)
+      return { feelingHandle: feeling.handle || "", subs }
+    })
+  )
+
   const subRows: SubfeelingRecord[] = []
-
-  for (const feeling of active) {
-    if (!feeling.id) {
-      continue
-    }
-
-    const subs = await fetchChildCategoriesOfParent(scope, feeling.id)
+  for (const { feelingHandle, subs } of subResults) {
     for (const sub of subs) {
       if (sub.is_active === false || !sub.handle) {
         continue
       }
-
-      subRows.push(categoryToSubfeelingRecord(sub, feeling.handle || ""))
+      subRows.push(categoryToSubfeelingRecord(sub, feelingHandle))
     }
   }
 
