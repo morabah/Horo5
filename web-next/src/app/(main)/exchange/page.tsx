@@ -1,12 +1,12 @@
 "use client";
 
-import { OrderConfirmation } from "../../../../../web/src/pages/OrderConfirmation";
+import { Exchange } from "../../../../../web/src/pages/Exchange";
 import { RouterContextProvider } from "@/lib/router-context";
 
 export default function Page() {
   return (
     <RouterContextProvider>
-      <OrderConfirmation />
+      <Exchange />
     </RouterContextProvider>
   );
 }

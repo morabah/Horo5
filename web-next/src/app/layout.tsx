@@ -1,32 +1,17 @@
 import "./globals.css";
-import { StorefrontChrome } from "@/components/storefront-chrome";
-import { fetchStorefrontCatalogServer, logStorefrontFetchError } from "@/lib/storefront-server";
-import { Providers } from "./providers";
 
-// Avoid force-dynamic here so the root shell can participate in Next fetch caching (catalog uses
-// revalidate in storefront-server). Profile Medusa catalog timings with STOREFRONT_PROFILE_CATALOG=1.
+// HTML shell only. Catalog + Providers live in route-group layouts so `/checkout` can skip
+// the heavy Medusa `/storefront/catalog` fetch (see `(main)/layout.tsx` and `(checkout)/layout.tsx`).
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const renderedAt = new Date().toISOString();
-  let initialCatalog = null;
-
-  try {
-    initialCatalog = await fetchStorefrontCatalogServer();
-  } catch (error) {
-    logStorefrontFetchError("[storefront] Failed to fetch initial catalog in layout", error);
-    initialCatalog = null;
-  }
-
   return (
     <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col">
-        <Providers initialCatalog={initialCatalog} renderedAt={renderedAt}>
-          <StorefrontChrome>{children}</StorefrontChrome>
-        </Providers>
+        {children}
       </body>
     </html>
   );

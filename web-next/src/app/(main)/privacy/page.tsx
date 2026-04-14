@@ -1,12 +1,12 @@
 "use client";
 
-import { Terms } from "../../../../web/src/pages/Terms";
+import { Privacy } from "../../../../../web/src/pages/Privacy";
 import { RouterContextProvider } from "@/lib/router-context";
 
 export default function Page() {
   return (
     <RouterContextProvider>
-      <Terms />
+      <Privacy />
     </RouterContextProvider>
   );
 }

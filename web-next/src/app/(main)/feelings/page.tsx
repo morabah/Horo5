@@ -1,12 +1,12 @@
 "use client";
 
-import { Exchange } from "../../../../web/src/pages/Exchange";
+import { ShopByFeeling } from "../../../../../web/src/pages/ShopByFeeling";
 import { RouterContextProvider } from "@/lib/router-context";
 
 export default function Page() {
   return (
     <RouterContextProvider>
-      <Exchange />
+      <ShopByFeeling />
     </RouterContextProvider>
   );
 }

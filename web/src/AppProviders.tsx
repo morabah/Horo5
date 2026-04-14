@@ -12,7 +12,13 @@ export function AppProviders({
   children,
   initialCatalog,
   renderedAt,
-}: PropsWithChildren<{ initialCatalog?: Partial<RuntimeCatalog> | null; renderedAt?: string | null }>) {
+  skipCatalogHydration,
+}: PropsWithChildren<{
+  initialCatalog?: Partial<RuntimeCatalog> | null;
+  renderedAt?: string | null;
+  /** Skip client-side catalog fetch (e.g. checkout does not need product catalog). */
+  skipCatalogHydration?: boolean;
+}>) {
   const [, setCatalogVersion] = useState(0);
 
   if (initialCatalog) {
@@ -21,6 +27,7 @@ export function AppProviders({
 
   /** Grace cache: restore last successful Medusa catalog for this tab before network completes. */
   useEffect(() => {
+    if (skipCatalogHydration) return;
     try {
       const raw = sessionStorage.getItem(LAST_CATALOG_STORAGE_KEY);
       if (!raw) return;
@@ -38,6 +45,7 @@ export function AppProviders({
     } catch {
       /* ignore corrupt storage */
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- skipCatalogHydration is constant per route
   }, []);
 
   useEffect(() => {
@@ -52,6 +60,7 @@ export function AppProviders({
   }, [initialCatalog]);
 
   useEffect(() => {
+    if (skipCatalogHydration) return;
     if (
       initialCatalog?.products?.length &&
       initialCatalog?.feelings?.length &&
@@ -63,6 +72,7 @@ export function AppProviders({
     void hydrateRuntimeCatalog().then(() => {
       setCatalogVersion((value) => value + 1);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- skipCatalogHydration is constant per route
   }, [initialCatalog?.products?.length]);
 
   return (

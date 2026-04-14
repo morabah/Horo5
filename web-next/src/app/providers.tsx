@@ -10,17 +10,24 @@ export function Providers({
   children,
   initialCatalog,
   renderedAt,
+  skipCatalogHydration,
 }: {
   children: React.ReactNode;
   initialCatalog?: Partial<RuntimeCatalog> | null;
   renderedAt?: string | null;
+  /** Skip client-side catalog fetch (checkout does not need full catalog). */
+  skipCatalogHydration?: boolean;
 }) {
   return (
     <HelmetProvider>
       <Suspense fallback={null}>
         <AnalyticsRoot />
       </Suspense>
-      <AppProviders initialCatalog={initialCatalog} renderedAt={renderedAt}>
+      <AppProviders
+        initialCatalog={initialCatalog}
+        renderedAt={renderedAt}
+        skipCatalogHydration={skipCatalogHydration}
+      >
         {children}
       </AppProviders>
     </HelmetProvider>
