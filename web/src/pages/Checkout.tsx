@@ -417,7 +417,7 @@ function buildOrderSnapshot(args: {
 
 export function Checkout() {
   const navigate = useNavigate();
-  const { items, subtotalEgp, giftWrapEgp, clearCart, replaceMedusaCartId } = useCart();
+  const { items, subtotalEgp, giftWrapEgp, clearCart, replaceMedusaCartId, awaitPendingCartSync } = useCart();
   const { locale, copy } = useUiLocale();
   const now = useStableNow();
   const isArabic = locale === 'ar';
@@ -435,6 +435,8 @@ export function Checkout() {
   const [paymentVerifying, setPaymentVerifying] = useState(false);
   const [paymobPendingNeedsAction, setPaymobPendingNeedsAction] = useState(false);
   const completionLockRef = useRef<string | null>(null);
+  /** Reused across retries so Medusa can dedupe concurrent complete requests. */
+  const completionIdempotencyKeyRef = useRef<string | null>(null);
   const addressInputRef = useRef<HTMLInputElement | null>(null);
 
   const [email, setEmail] = useState('');
@@ -625,7 +627,10 @@ export function Checkout() {
         setStoredCartId(activeCartId);
         setCartId(activeCartId);
 
-        const status = await getCheckoutStatus(activeCartId).catch(() => null);
+        const [status, { cart }] = await Promise.all([
+          getCheckoutStatus(activeCartId).catch(() => null),
+          getCart(activeCartId),
+        ]);
 
         if (!cancelled && status?.status === 'completed' && status.order_id) {
           setStoredCartId(null);
@@ -636,13 +641,19 @@ export function Checkout() {
           return;
         }
 
-        const { cart } = await getCart(activeCartId);
         if (cancelled) return;
         hydrateCheckoutFromCart(cart);
 
-        const liveShippingOptions = cart.region_id
-          ? await listShippingOptions(activeCartId).then((response) => response.shipping_options).catch(() => [])
-          : [];
+        const [liveShippingOptions, liveProviders] = await Promise.all([
+          cart.region_id
+            ? listShippingOptions(activeCartId).then((response) => response.shipping_options).catch(() => [])
+            : Promise.resolve([]),
+          cart.region_id
+            ? listPaymentProviders(cart.region_id)
+                .then((response) => normalizePaymentProviders(response.payment_providers))
+                .catch(() => [])
+            : Promise.resolve([]),
+        ]);
         if (cancelled) return;
 
         const selectedShippingMethod = cart.shipping_methods?.[0];
@@ -651,14 +662,7 @@ export function Checkout() {
           liveShippingOptions[0] ||
           null;
         setShippingOption(resolvedShippingOption);
-
-        if (cart.region_id) {
-          const liveProviders = await listPaymentProviders(cart.region_id)
-            .then((response) => normalizePaymentProviders(response.payment_providers))
-            .catch(() => []);
-          if (cancelled) return;
-          setPaymentProviders(liveProviders);
-        }
+        setPaymentProviders(liveProviders);
 
         if (isPaymobReturn) {
           let paymobStatus = status;
@@ -798,22 +802,31 @@ export function Checkout() {
     };
   }, []);
 
-  async function refreshCartState(activeCartId: string) {
-    const { cart } = await getCart(activeCartId);
+  async function refreshCartState(activeCartId: string, cartHint?: MedusaCart) {
+    const cart =
+      cartHint && cartHint.id === activeCartId ? cartHint : (await getCart(activeCartId)).cart;
     setCheckoutCart(cart);
     const selectedShippingMethod = cart.shipping_methods?.[0];
+    const [liveShippingOptions, liveProviders] = await Promise.all([
+      selectedShippingMethod
+        ? listShippingOptions(activeCartId).then((response) => response.shipping_options).catch(() => [])
+        : Promise.resolve([]),
+      cart.region_id
+        ? listPaymentProviders(cart.region_id)
+            .then((response) => normalizePaymentProviders(response.payment_providers))
+            .catch(() => [])
+        : Promise.resolve([]),
+    ]);
+
     if (selectedShippingMethod) {
-      const liveShippingOptions = await listShippingOptions(activeCartId).then((response) => response.shipping_options).catch(() => []);
-      const resolvedOption = liveShippingOptions.find((option) => option.id === selectedShippingMethod.shipping_option_id) || liveShippingOptions[0] || null;
+      const resolvedOption =
+        liveShippingOptions.find((option) => option.id === selectedShippingMethod.shipping_option_id) ||
+        liveShippingOptions[0] ||
+        null;
       setShippingOption(resolvedOption);
     }
 
-    if (cart.region_id) {
-      const liveProviders = await listPaymentProviders(cart.region_id)
-        .then((response) => normalizePaymentProviders(response.payment_providers))
-        .catch(() => []);
-      setPaymentProviders(liveProviders);
-    }
+    setPaymentProviders(liveProviders);
 
     return cart;
   }
@@ -868,10 +881,19 @@ export function Checkout() {
     setPlacingOrder(true);
     setPaymentError(null);
 
+    if (!completionIdempotencyKeyRef.current) {
+      completionIdempotencyKeyRef.current =
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `complete_${activeCartId}_${Date.now()}`;
+    }
+    const idempotencyKey = completionIdempotencyKeyRef.current;
+
     try {
-      const completion = await completeCart(activeCartId);
+      const completion = await completeCart(activeCartId, idempotencyKey);
 
       if (completion.type === 'order' && completion.order) {
+        completionIdempotencyKeyRef.current = null;
         const snapshot = buildOrderSnapshot({
           email,
           estimatedDeliveryRange: estimatedDeliveryRange,
@@ -914,6 +936,19 @@ export function Checkout() {
         );
       }
     } catch (error) {
+      const message = error instanceof Error ? error.message : '';
+      if (message.includes('409')) {
+        const st = await getCheckoutStatus(activeCartId).catch(() => null);
+        if (st?.status === 'completed' && st.order_id) {
+          completionIdempotencyKeyRef.current = null;
+          setStoredCartId(null);
+          clearCart();
+          setCartId(null);
+          setCheckoutCart(null);
+          navigate(`/checkout/success?order_id=${st.order_id}`);
+          return;
+        }
+      }
       setPaymentError(getReadableCheckoutError(error, isArabic, {
         ar: 'حدث خطأ أثناء إكمال الطلب.',
         en: 'An error occurred while completing the order.',
@@ -963,6 +998,7 @@ export function Checkout() {
   }
 
   async function persistInformationAndShipping() {
+    await awaitPendingCartSync();
     const ensured = await ensureCheckoutCartAvailable();
     const activeInitialCartId = ensured.cartId;
 
@@ -1095,6 +1131,7 @@ export function Checkout() {
     activeCheckoutCart: MedusaCart | null = checkoutCart,
     methodOverride?: CheckoutPaymentMethod | null,
   ) {
+    await awaitPendingCartSync();
     if (!activeCartId || !activeCheckoutCart) {
       setPaymentError(isArabic ? 'سلة الدفع غير جاهزة.' : 'The checkout cart is not ready.');
       return;
@@ -1293,10 +1330,9 @@ export function Checkout() {
                       shipping={shippingCost}
                       cartId={cartId}
                       className="rounded-2xl border border-stone/35 bg-white/80 p-4 shadow-sm"
-                      onAfterLineChange={async () => {
+                      onAfterLineChange={async (cartHint) => {
                         if (!cartId) return;
-                        await new Promise((r) => setTimeout(r, 220));
-                        await refreshCartState(cartId);
+                        await refreshCartState(cartId, cartHint);
                       }}
                     />
                   </div>
@@ -1569,10 +1605,9 @@ export function Checkout() {
                 cart={checkoutCart}
                 shipping={shippingCost}
                 cartId={cartId}
-                onAfterLineChange={async () => {
+                onAfterLineChange={async (cartHint) => {
                   if (!cartId) return;
-                  await new Promise((r) => setTimeout(r, 220));
-                  await refreshCartState(cartId);
+                  await refreshCartState(cartId, cartHint);
                 }}
               />
             </div>
@@ -1623,12 +1658,12 @@ function OrderSummary({
   cart: MedusaCart | null;
   shipping: number;
   cartId: string | null;
-  onAfterLineChange: () => Promise<void>;
+  onAfterLineChange: (cartHint?: MedusaCart) => Promise<void>;
   className?: string;
 }) {
   const { locale, copy } = useUiLocale();
   const isArabic = locale === 'ar';
-  const { items, subtotalEgp, giftWrapEgp, setLineQty, removeItem } = useCart();
+  const { items, subtotalEgp, giftWrapEgp, setLineQty, removeItem, awaitPendingCartSync } = useCart();
   const [busy, setBusy] = useState(false);
   const lineViews = useMemo(
     () => getCartLineViews(cart ? toCartLines(cart) : items),
@@ -1643,7 +1678,8 @@ function OrderSummary({
     try {
       mutate();
       if (cartId) {
-        await onAfterLineChange();
+        const cartHint = await awaitPendingCartSync();
+        await onAfterLineChange(cartHint ?? undefined);
       }
     } finally {
       setBusy(false);

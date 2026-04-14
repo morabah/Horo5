@@ -192,9 +192,13 @@ export async function initiatePaymentSession(
   )
 }
 
-export async function completeCart(cartId: string): Promise<MedusaCompleteCartResponse> {
+export async function completeCart(
+  cartId: string,
+  idempotencyKey?: string,
+): Promise<MedusaCompleteCartResponse> {
   return request<MedusaCompleteCartResponse>(`/store/carts/${cartId}/complete`, {
     method: "POST",
+    ...(idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : {}),
   })
 }
 
