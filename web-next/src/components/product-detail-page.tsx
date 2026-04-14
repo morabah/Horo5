@@ -20,7 +20,6 @@ export function ProductDetailPage({
       initialSlug={slug}
       initialProduct={product}
       catalogProducts={catalogProducts}
-      renderJsonLd={false}
     />
   );
 }

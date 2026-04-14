@@ -49,6 +49,7 @@ type StorefrontProductResponse = {
   media?: Product["media"];
   merchandisingBadge?: string;
   name: string;
+  pdpTagLabels?: string[];
   occasionSlugs: string[];
   originalPriceEgp?: number | null;
   pdpFitModels?: Product["pdpFitModels"];
@@ -162,6 +163,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     media: product.media,
     merchandisingBadge: product.merchandisingBadge,
     name: product.name,
+    pdpTagLabels: product.pdpTagLabels,
     occasionSlugs: product.occasionSlugs,
     originalPriceEgp: product.originalPriceEgp,
     pdpFitModels: product.pdpFitModels,

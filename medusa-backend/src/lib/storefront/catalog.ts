@@ -73,7 +73,11 @@ type RegionDTO = {
 
 type QueryCategory = CategoryNode & {
   id: string
+  handle?: string | null
+  is_active?: boolean | null
+  name?: string | null
   parent_category?: QueryCategory | null
+  rank?: number | null
 }
 
 type QueryProduct = {
@@ -720,6 +724,46 @@ function parseArtistDisplayFromMetadata(metadata: Record<string, unknown>): Stor
   return undefined
 }
 
+/**
+ * Ordered, de-duplicated labels for PDP chips: linked Medusa product categories only
+ * (Admin → Organize → Categories), excluding the internal `feelings` root. Does not merge
+ * `metadata.occasionSlugs` — occasion metadata remains on the DTO for browse/SEO elsewhere.
+ */
+function buildPdpTagLabels(product: QueryProduct): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+
+  const push = (raw: string) => {
+    const label = raw.trim()
+    if (!label) return
+    const key = label.toLowerCase()
+    if (seen.has(key)) return
+    seen.add(key)
+    out.push(label)
+  }
+
+  const cats = (product.categories || [])
+    .filter((c) => {
+      if (!c?.handle) return false
+      if (String(c.handle).toLowerCase() === FEELINGS_ROOT_HANDLE) return false
+      if (c.is_active === false) return false
+      return Boolean(c.name?.trim())
+    })
+    .slice()
+    .sort((a, b) => {
+      const ra = Number(a.rank) || 0
+      const rb = Number(b.rank) || 0
+      if (ra !== rb) return ra - rb
+      return String(a.name || "").localeCompare(String(b.name || ""))
+    })
+
+  for (const c of cats) {
+    push(String(c.name))
+  }
+
+  return out
+}
+
 function resolveArtistDisplay(
   metadata: Record<string, unknown>,
   artistsBySlug?: Map<string, StorefrontArtistDTO>
@@ -848,6 +892,7 @@ function buildProduct(
         : undefined,
     merchandisingBadge: asString(metadata.merchandisingBadge),
     name: product.title,
+    pdpTagLabels: buildPdpTagLabels(product),
     occasionSlugs: asStringArray(metadata.occasionSlugs) || [],
     originalPriceEgp: defaultVariant?.original_price_egp ?? null,
     pdpFitModels: asObjectArray(metadata.pdpFitModels),
@@ -1105,9 +1150,11 @@ export async function listStorefrontProducts(scope: MedusaContainer, artists?: S
 }
 
 export async function retrieveStorefrontProduct(scope: MedusaContainer, handle: string) {
-  const artistList = await listStorefrontArtists(scope)
+  const [artistList, result] = await Promise.all([
+    listStorefrontArtists(scope),
+    queryStorefrontProducts(scope, { handle }, 1),
+  ])
   const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
-  const result = await queryStorefrontProducts(scope, { handle }, 1)
   const products = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug)
   return products[0] || null
 }
@@ -1290,12 +1337,14 @@ export async function retrieveStorefrontMerchEvent(scope: MedusaContainer, slug:
 
 export async function buildStorefrontCatalog(scope: MedusaContainer): Promise<StorefrontCatalogDTO> {
   const artists = await listStorefrontArtists(scope)
-  const [products, feelingsBundle, occasions, events] = await Promise.all([
-    listStorefrontProducts(scope, artists),
+  const artistsBySlug = new Map(artists.map((artist) => [artist.slug, artist]))
+  const [pq, feelingsBundle, occasions, events] = await Promise.all([
+    queryStorefrontProducts(scope),
     loadFeelingsAndSubfeelingsForCatalog(scope),
     listStorefrontOccasions(scope),
     listStorefrontMerchEvents(scope),
   ])
+  const products = sortStorefrontProducts(pq.products, pq.categoriesById, artistsBySlug)
 
   const { feelings, subfeelings } = feelingsBundle
 

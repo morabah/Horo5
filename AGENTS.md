@@ -19,3 +19,30 @@ This repo is the **HORO** storefront and related services (`web-next/`, `medusa-
 ## SSR / hydration (required for `web-next`)
 
 Client-only data (`localStorage`, `sessionStorage`, `navigator.share`, `window` layout flags) must not determine the **first** paint of client components unless it matches the server. Prefer: default state on the server and first client render, then **`useEffect`** to read browser APIs and update state. See `doc/Agent.md` §6.5–6.6 and `doc/LESSONS_LEARNED.md` (useEffect / hydration lessons).
+
+**Hydration baseline:** Cart, locale, compact PDP flags, catalog grace cache, analytics, and PDP client-only affordances read browser APIs in `useEffect` or event handlers so the first client render matches SSR defaults. Re-check whenever you add storefront components that touch `window` / storage.
+
+## RSC data loading (`web-next`)
+
+- When two **independent** server fetches are needed in the same component, prefer **`Promise.all`** (see `web-next/src/app/(main)/products/[slug]/page.tsx`).
+- `generateMetadata` and the page often need the same Medusa payload: `fetchStorefrontCatalogServer`, `fetchStorefrontProductServer`, and `fetchStorefrontOccasionServer` in `web-next/src/lib/storefront-server.ts` are wrapped in React **`cache()`** so a single request does not pay duplicate round-trips when metadata and the page both await the same key.
+
+## Horo5 pre-flight checklist (portable ideas from `doc/`)
+
+Use this instead of PosalPro-only scripts named in `doc/CORE_REQUIREMENTS.md`.
+
+| Step | Command / action |
+|------|-------------------|
+| TypeScript | From `web-next/`: `npm run type-check` |
+| Lint | From `web-next/`: `npm run lint` |
+| Shared `web/src` | If you changed it: `npx tsc --noEmit` from `web/` (or the package that owns the path) |
+| Medusa catalog / DB parity | From `medusa-backend/`: `npm run parity:snapshot:local`, `npx @railway/cli run npm run parity:snapshot:remote`, `npm run parity:check` (see `medusa-backend/README.md`) |
+| Hydration / client-only APIs | Re-read `doc/Agent.md` §6.5–6.6 before merging features that touch `localStorage`, `sessionStorage`, or `window` on the storefront |
+| Accessibility | PDP, cart, checkout, search: ~44px touch targets, visible focus, meaningful labels / `aria-*` on icon-only controls |
+| Security headers | `web-next/next.config.ts` `headers()` — keep CSP aligned with third-party scripts the storefront loads |
+| Production env | Set `MEDUSA_BACKEND_URL`, `MEDUSA_PUBLISHABLE_KEY` (or `NEXT_PUBLIC_*` equivalents), and `NEXT_PUBLIC_SITE_URL` on the host; `web-next/src/instrumentation.ts` logs **warnings** in production when Medusa keys or backend URL are missing |
+
+## `web-next` security & env
+
+- **Headers:** Global response headers live in `web-next/next.config.ts` (frame options, MIME sniffing, referrer policy, permissions policy, CSP).
+- **Env:** Prefer mirroring `medusa-backend/.env.template` semantics for anything the storefront calls server-side. Client-exposed vars stay `NEXT_PUBLIC_*`.

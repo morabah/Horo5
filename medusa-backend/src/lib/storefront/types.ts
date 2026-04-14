@@ -72,6 +72,11 @@ export type StorefrontProductDTO = {
   media?: StorefrontMediaDTO
   merchandisingBadge?: string
   name: string
+  /**
+   * PDP hero tags: linked product category display names from Medusa (Admin → Organize → Categories),
+   * excluding the internal `feelings` root. Not derived from `metadata.occasionSlugs`.
+   */
+  pdpTagLabels?: string[]
   occasionSlugs: string[]
   originalPriceEgp?: number | null
   pdpFitModels?: Array<Record<string, unknown>>

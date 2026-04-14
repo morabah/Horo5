@@ -36,7 +36,8 @@ async function resolveRevalidateTags(
       })
       const handle = product?.handle
       if (handle) {
-        return [...coarse, `catalog:product:${handle}`]
+        // Match Next.js fetch tags in web-next/src/lib/storefront-server.ts (product:${slug}).
+        return [...coarse, `catalog:product:${handle}`, `product:${encodeURIComponent(handle)}`]
       }
     } catch {
       // fall through to coarse

@@ -146,6 +146,10 @@ type ProductDetailProps = {
   catalogProducts?: Product[];
   initialProduct?: Product | null;
   initialSlug?: string;
+  /**
+   * When false (default), omit Helmet JSON-LD — Next injects the same schema in the RSC page
+   * from `buildProductJsonLd` to avoid duplicate/conflicting Product schema.
+   */
   renderJsonLd?: boolean;
 };
 
@@ -154,7 +158,7 @@ export function ProductDetail({
   catalogProducts,
   initialProduct,
   initialSlug,
-  renderJsonLd = true,
+  renderJsonLd = false,
 }: ProductDetailProps = {}) {
   const { slug: routeSlug = '' } = useParams();
   const slug = initialSlug ?? routeSlug;
@@ -309,6 +313,7 @@ export function ProductDetail({
     return null;
   }, [product?.artistDisplay, artist]);
 
+  /** Same-pillar suggestions: Medusa catalog list only when `preferBackendCatalog` (no fixture `productsByFeeling`). */
   const related = product
     ? (((catalogProductsSnapshot.length > 0
         ? catalogProductsSnapshot
@@ -327,6 +332,7 @@ export function ProductDetail({
     setCompactPdp(q === '1' || sessionStorage.getItem('horo_home_compact') === '1');
   }, [searchParams]);
 
+  /** “Style with” / FBT: resolve slugs from `catalogProducts` / `catalogSnapshot` only — no fixture `getProduct` when using Medusa-backed PDP. */
   const styleWithProducts = useMemo(() => {
     if (!product?.complementarySlugs?.length) return [];
     return product.complementarySlugs
@@ -383,8 +389,32 @@ export function ProductDetail({
         ? fromDesc
         : `${fromDesc.slice(0, HERO_SUBTITLE_MAX_LEN).trimEnd()}…`;
     }
+    if (preferBackendCatalog) {
+      const fromStory = product?.story?.trim();
+      if (fromStory) {
+        return fromStory.length <= HERO_SUBTITLE_MAX_LEN
+          ? fromStory
+          : `${fromStory.slice(0, HERO_SUBTITLE_MAX_LEN).trimEnd()}…`;
+      }
+      return '';
+    }
     return feeling?.tagline?.trim() ?? '';
-  }, [product?.description, feeling?.tagline]);
+  }, [preferBackendCatalog, product?.description, product?.story, feeling?.tagline]);
+
+  /** Medusa-backed PDP: category chips only (`pdpTagLabels`). Fixture catalog still maps `occasionSlugs`. */
+  const heroCategoryTagItems = useMemo(() => {
+    if (!product) return [];
+    if (product.pdpTagLabels && product.pdpTagLabels.length > 0) {
+      return product.pdpTagLabels.map((label) => ({ key: label, label }));
+    }
+    if (!preferBackendCatalog) {
+      return product.occasionSlugs.map((slug) => {
+        const occasion = occasionLookup.get(slug) ?? getOccasion(slug);
+        return { key: slug, label: occasion?.name ?? slug };
+      });
+    }
+    return [];
+  }, [product, preferBackendCatalog, occasionLookup]);
 
   const sizeButtons = useMemo(() => {
     if (!product) return PDP_SCHEMA.sizes;
@@ -793,7 +823,19 @@ export function ProductDetail({
 
   return (
     <div className="product-page bg-papyrus text-obsidian">
-      {renderJsonLd ? <ProductJsonLd slug={product.slug} /> : null}
+      {renderJsonLd ? (
+        <ProductJsonLd
+          product={product}
+          catalog={
+            catalogSnapshot
+              ? {
+                  feelings: catalogSnapshot.feelings ?? [],
+                  occasions: catalogSnapshot.occasions ?? [],
+                }
+              : undefined
+          }
+        />
+      ) : null}
       <span id="pdp-size-hint" className="sr-only">
         {copy.sizeRequiredPrompt}
       </span>
@@ -988,26 +1030,21 @@ export function ProductDetail({
                 {formatTitleLines(product.name)}
               </h1>
 
-              {heroSubtitle ||
-              product.occasionSlugs.length > 0 ||
-              product.capsuleSlugs?.includes('zodiac') ? (
+              {heroSubtitle || heroCategoryTagItems.length > 0 || product.capsuleSlugs?.includes('zodiac') ? (
                 <div className="flex flex-wrap gap-2">
                   {heroSubtitle ? (
                     <span className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
                       {heroSubtitle}
                     </span>
                   ) : null}
-                  {product.occasionSlugs.map((slug) => {
-                    const occasion = occasionLookup.get(slug) ?? (!preferBackendCatalog ? getOccasion(slug) : undefined);
-                    return (
-                      <span
-                        key={slug}
-                        className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal"
-                      >
-                        {occasion?.name ?? slug}
-                      </span>
-                    );
-                  })}
+                  {heroCategoryTagItems.map(({ key, label }) => (
+                    <span
+                      key={key}
+                      className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal"
+                    >
+                      {label}
+                    </span>
+                  ))}
                   {product.capsuleSlugs?.includes('zodiac') ? (
                     <span className="font-label rounded-full border border-moon-gold/40 bg-moon-gold/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian">
                       Zodiac capsule
@@ -1565,11 +1602,11 @@ export function ProductDetail({
               <table className="w-full min-w-[280px] border-collapse font-body text-sm text-warm-charcoal">
                 <thead>
                   <tr className="border-b border-stone text-left">
-                    <th className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Size</th>
-                    <th className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Chest</th>
-                    <th className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Shoulder</th>
-                    <th className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Length</th>
-                    <th className="py-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Sleeve</th>
+                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Size</th>
+                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Chest</th>
+                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Shoulder</th>
+                    <th scope="col" className="py-2 pr-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Length</th>
+                    <th scope="col" className="py-2 font-label text-[10px] font-medium uppercase tracking-wider text-label">Sleeve</th>
                   </tr>
                 </thead>
                 <tbody>

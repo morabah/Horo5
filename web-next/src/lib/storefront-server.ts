@@ -13,6 +13,7 @@ import {
   type RuntimeCatalog,
   type Subfeeling,
 } from "@/storefront/data/site";
+import { buildProductJsonLdSchema } from "@/storefront/seo/product-jsonld-schema";
 
 function feelingFromCatalog(slug: string, catalog: Pick<RuntimeCatalog, "feelings"> | null | undefined): Feeling | undefined {
   if (catalog?.feelings?.length) {
@@ -72,6 +73,7 @@ type StorefrontProductResponse = {
   media?: Product["media"];
   merchandisingBadge?: string;
   name: string;
+  pdpTagLabels?: string[];
   occasionSlugs: string[];
   originalPriceEgp?: number | null;
   pdpFitModels?: Product["pdpFitModels"];
@@ -237,6 +239,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     media: product.media,
     merchandisingBadge: product.merchandisingBadge,
     name: product.name,
+    pdpTagLabels: product.pdpTagLabels,
     occasionSlugs: product.occasionSlugs,
     originalPriceEgp: product.originalPriceEgp,
     pdpFitModels: product.pdpFitModels,
@@ -422,48 +425,5 @@ export function buildProductJsonLd(
   product: Product,
   catalog?: Pick<RuntimeCatalog, "feelings" | "occasions"> | null
 ) {
-  const feelingSlug = product.primaryFeelingSlug ?? product.feelingSlug;
-  const feeling = feelingFromCatalog(feelingSlug, catalog);
-  const occasionNames = product.occasionSlugs
-    .map((occasionSlug) => occasionNameFromCatalog(occasionSlug, catalog))
-    .filter((value): value is string => Boolean(value));
-  const images = Array.from(
-    new Set(
-      [
-        product.thumbnail,
-        product.media?.main,
-        ...(product.media?.gallery || []),
-      ]
-        .filter((value): value is string => Boolean(value))
-        .map((src) => toAbsoluteUrl(src) || src)
-    )
-  );
-  const inStock =
-    Object.values(product.variantsBySize || {}).length === 0 ||
-    Object.values(product.variantsBySize || {}).some((variant) => variant?.available);
-  const productUrl = siteOrigin ? `${siteOrigin}/products/${product.slug}` : `/products/${product.slug}`;
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.description || product.story,
-    image: images,
-    sku: product.slug,
-    url: productUrl,
-    brand: {
-      "@type": "Brand",
-      name: "HORO Egypt",
-    },
-    ...(feeling ? { category: `${feeling.name} graphic tee` } : {}),
-    ...(occasionNames.length > 0 ? { keywords: occasionNames.join(", ") } : {}),
-    offers: {
-      "@type": "Offer",
-      url: productUrl,
-      priceCurrency: "EGP",
-      price: String(product.priceEgp),
-      availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      itemCondition: "https://schema.org/NewCondition",
-    },
-  };
+  return buildProductJsonLdSchema(product, { siteOrigin, catalog });
 }

@@ -1,5 +1,7 @@
 # Custom API Routes
 
+**Horo5 convention:** Keep `route.ts` handlers small—validate inputs, resolve services from `req.scope`, call shared logic in `src/lib/storefront/` (for example `getStorefrontCatalogWithServerCache` used by [`storefront/catalog/route.ts`](./storefront/catalog/route.ts))—and return JSON. Put orchestration, caching, and DTO shaping in library modules, not in the route file.
+
 An API Route is a REST API endpoint.
 
 An API Route is created in a TypeScript or JavaScript file under the `/src/api` directory of your Medusa application. The file’s name must be `route.ts` or `route.js`.

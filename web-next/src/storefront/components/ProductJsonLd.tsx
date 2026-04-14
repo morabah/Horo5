@@ -1,60 +1,26 @@
-import { Helmet } from 'react-helmet-async';
-import { getProductPdpGallery, getProductMedia } from '../data/images';
-import { getFeeling, getOccasion, getProduct } from '../data/site';
-import { getSiteUrl } from '../seo/siteUrl';
+import { Helmet } from "react-helmet-async";
+
+import type { Product, RuntimeCatalog } from "../data/catalog-types";
+import { buildProductJsonLdSchema } from "../seo/product-jsonld-schema";
+import { getSiteUrl } from "../seo/siteUrl";
 
 function jsonLdString(data: unknown) {
-  return JSON.stringify(data).replace(/</g, '\\u003c');
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-type Props = { slug: string };
+type Props = {
+  product: Product;
+  /** Medusa storefront catalog slice (same source as SSR). Omit only when unavailable. */
+  catalog?: Pick<RuntimeCatalog, "feelings" | "occasions"> | null;
+};
 
-export function buildProductJsonLd(slug: string) {
-  const product = getProduct(slug);
-  if (!product) return null;
-
+/**
+ * Client-side JSON-LD for non-Next hosts (e.g. legacy SPA). Next.js PDP should inject JSON-LD
+ * in `app/(main)/products/[slug]/page.tsx` only (`renderJsonLd={false}` on `ProductDetail`).
+ */
+export function ProductJsonLd({ product, catalog }: Props) {
   const siteUrl = getSiteUrl();
-  const media = getProductMedia(product.slug);
-  const gallery = getProductPdpGallery(product.name, product.slug);
-  const imageUrls = Array.from(
-    new Set([media.main, ...gallery.map((view) => view.src)].map((src) => src.split('?')[0])),
-  ).map((imagePath) => (siteUrl ? `${siteUrl}${imagePath}` : imagePath));
-  const productUrl = siteUrl ? `${siteUrl}/products/${product.slug}` : `/products/${product.slug}`;
-  const feeling = getFeeling(product.primaryFeelingSlug ?? product.feelingSlug);
-  const occasionNames = product.occasionSlugs
-    .map((occasionSlug) => getOccasion(occasionSlug)?.name)
-    .filter(Boolean);
-
-  const ld = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    description: product.description || product.story,
-    image: imageUrls,
-    sku: product.slug,
-    url: productUrl,
-    brand: {
-      '@type': 'Brand',
-      name: 'HORO Egypt',
-    },
-    ...(feeling ? { category: `${feeling.name} graphic tee` } : {}),
-    ...(occasionNames.length > 0 ? { keywords: occasionNames.join(', ') } : {}),
-    offers: {
-      '@type': 'Offer',
-      url: productUrl,
-      priceCurrency: 'EGP',
-      price: String(product.priceEgp),
-      availability: 'https://schema.org/InStock',
-      itemCondition: 'https://schema.org/NewCondition',
-    },
-  };
-
-  return ld;
-}
-
-export function ProductJsonLd({ slug }: Props) {
-  const ld = buildProductJsonLd(slug);
-  if (!ld) return null;
+  const ld = buildProductJsonLdSchema(product, { siteOrigin: siteUrl, catalog });
 
   return (
     <Helmet>

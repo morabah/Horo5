@@ -142,6 +142,11 @@ export type Product = {
   useCase?: string;
   /** Recurring capsules (e.g. zodiac) — not top-level browse pillars §6.4 */
   capsuleSlugs?: string[];
+  /**
+   * PDP chips from Medusa: linked product category names only (see medusa-backend `buildPdpTagLabels`).
+   * When set on a Medusa-backed PDP, these replace fixture `occasionSlugs` chips for that row.
+   */
+  pdpTagLabels?: string[];
   occasionSlugs: OccasionSlug[];
   defaultPriceSize?: ProductSizeKey;
   originalPriceEgp?: number | null;

@@ -1363,7 +1363,7 @@ export function Checkout() {
               <div className="mt-6 lg:hidden">
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between rounded-2xl border border-stone/35 bg-white/70 px-4 py-3 text-left shadow-sm"
+                  className="flex min-h-12 w-full items-center justify-between rounded-2xl border border-stone/35 bg-white/70 px-4 py-3 text-left shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   aria-expanded={mobileSummaryOpen}
                   onClick={() => setMobileSummaryOpen((open) => !open)}
                 >
@@ -1815,7 +1815,7 @@ function OrderSummary({
                 </Link>
                 <button
                   type="button"
-                  className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-ember hover:underline disabled:opacity-50"
+                  className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.16em] text-ember hover:underline disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   disabled={busy}
                   onClick={() => handleRemove(line)}
                 >

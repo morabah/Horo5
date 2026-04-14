@@ -2,6 +2,8 @@
 
 This service sets up Medusa v2 with PostgreSQL, seeds an Egypt region (`egp`), creates the HORO catalog, and provisions the launch checkout path for Egypt: one live `Standard` shipping option (`60 EGP`), COD via Medusa's system provider, and an optional custom Paymob card provider when its env vars are configured.
 
+**Custom HTTP routes:** Handlers under `src/api/storefront/**` and `src/api/admin/custom/**` should stay thin at the HTTP boundary (parse/validate, auth where applicable) and delegate catalog or taxonomy work to [`src/lib/storefront/catalog.ts`](src/lib/storefront/catalog.ts) and module services—see [`src/api/storefront/catalog/route.ts`](src/api/storefront/catalog/route.ts) and [`src/api/admin/custom/occasions/route.ts`](src/api/admin/custom/occasions/route.ts). File-based routing conventions are summarized in [`src/api/README.md`](src/api/README.md).
+
 ## 1) Local setup
 
 1. Copy env values:
@@ -164,17 +166,19 @@ This extends the basic `/health` + `/store/products` check with **`GET /storefro
 
 ### PDP chips vs Admin categories (storefront)
 
-On the product page, the **purple feeling pill** (e.g. Mood) comes from primary feeling slugs derived from the product **category** tree and metadata in the storefront DTO. The **white occasion pills** (e.g. “Just Because”) come from **`product.metadata.occasionSlugs`** (and optional `primaryOccasionSlug`). Removing a row under **Organize → Categories** in Medusa Admin does **not** remove slugs from `metadata.occasionSlugs`; edit **Metadata** on the product to change those chips. The Next app may cache the product DTO for up to the configured `revalidate` interval after you save.
+On the product page, the **purple feeling pill** (e.g. Zodiac) comes from primary feeling slugs derived from the product **category** tree and metadata in the storefront DTO. The **white category pills** under the title are **only** the linked product **category** names from **Organize → Categories** (the internal `feelings` root is excluded). They are **not** populated from **`metadata.occasionSlugs`** (that field is still used elsewhere: browse, `primaryOccasionSlug`, etc.). The Next app may cache the product DTO for up to the configured `revalidate` interval after you save.
 
-To print what is stored in the DB for one product (handles, category list, and metadata fields above):
+To print what is stored in the DB for one product (handles, category list, metadata fields, and the resolved **`storefrontPdpTagLabels`** array the PDP uses for those category chips):
 
 ```bash
 PRODUCT_HANDLE=emotions-raw-nerve npm run inspect:product-pdp
+# “Astral Body” in the catalog uses handle zodiac-astral-body:
+PRODUCT_HANDLE=zodiac-astral-body npm run inspect:product-pdp
 # against Railway / DATABASE_PUBLIC_URL:
 PRODUCT_HANDLE=emotions-raw-nerve npm run inspect:product-pdp:public
 ```
 
-To remove one slug from **`metadata.occasionSlugs`** from the CLI (same effect as editing product Metadata in Admin):
+To remove one slug from **`metadata.occasionSlugs`** from the CLI (same effect as editing product Metadata in Admin; optional cleanup when you no longer need those slugs for routing or shop-by-occasion):
 
 ```bash
 PRODUCT_HANDLE=emotions-raw-nerve OCCASION_SLUG=just-because npm run clear:product-occasion-slug
