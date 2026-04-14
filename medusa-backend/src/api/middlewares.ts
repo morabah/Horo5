@@ -56,7 +56,7 @@ function httpRequestTiming(req: MedusaRequest, res: MedusaResponse, next: Medusa
 export default defineMiddlewares({
   routes: [
     {
-      matcher: /^\/(store|admin|storefront|store-media)(\/|$)/,
+      matcher: /^\/(store|admin|storefront|store-media|integrations)(\/|$)/,
       middlewares: [httpRequestTiming],
     },
   ],

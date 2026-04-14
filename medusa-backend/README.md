@@ -106,6 +106,17 @@ npm run ensure:egypt-payment-providers:public
 
 That script re-attaches `pp_system_default` and adds `pp_paymob_paymob` only when the required Paymob env vars are configured.
 
+### Order confirmation email (buyer)
+
+When **`RESEND_API_KEY`** and **`ORDER_CONFIRMATION_FROM`** are set, the subscriber [`src/subscribers/order-confirmation-email.ts`](src/subscribers/order-confirmation-email.ts) runs on **`order.placed`** (same event as `completeCartWorkflow`). It loads the order via the core **Query** API, builds an HTML receipt (line items, totals, shipping method, ship/bill addresses, gift-wrap add-on if present), and sends it to **`order.email`** through [Resend](https://resend.com/)’s HTTP API (no extra npm dependency).
+
+- If those env vars are **missing**, the subscriber **no-ops** (orders still complete).
+- If the order has **no valid email**, it logs and skips (guest checkout must persist email on the cart before completion).
+- Optional **`ORDER_CONFIRMATION_BCC`**: single address copied on each send.
+- **`STORE_URL`**: used for a storefront link to the order success path; keep it aligned with production.
+
+See [`.env.template`](.env.template) for variable names.
+
 ## 4) Local is the source of truth (remote must match)
 
 Treat **your machine + local Postgres** as canonical. **Railway** should run the **same git revision**, **equivalent env**, **the same schema** (migrations), **data produced by the same seed scripts**, and **media** that resolves the same way.
