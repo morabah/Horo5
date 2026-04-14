@@ -17,8 +17,6 @@ web-next/node_modules
 web-next/.next
 web-next/src
 web-next/scripts
-# Seed assets only use tees/ + hero/; shrink context further
-web-next/public/images/proof
 
 # Docs / brand files at repo root (folder name includes a trailing space)
 *.md

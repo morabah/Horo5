@@ -5,7 +5,5 @@
 node_modules/
 /.next
 /web-next/.next
-/web-next/public/images
-/web-next/public/brand
 # Vite app removed from git; ignore stray local `web/` (build output, old checkouts).
 /web/
