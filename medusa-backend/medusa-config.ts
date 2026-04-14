@@ -80,6 +80,7 @@ module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     ...(databaseDriverOptions ? { databaseDriverOptions } : {}),
+    ...(process.env.REDIS_URL ? { redisUrl: process.env.REDIS_URL } : {}),
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -88,6 +89,16 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET!,
     },
   },
+  ...(process.env.REDIS_URL
+    ? {
+        eventBusModule: {
+          resolve: "@medusajs/medusa/event-bus-redis",
+          options: {
+            redisUrl: process.env.REDIS_URL,
+          },
+        },
+      }
+    : {}),
   modules: [
     ...(fileModule ? [fileModule] : []),
     {
