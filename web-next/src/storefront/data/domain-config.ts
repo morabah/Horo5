@@ -423,6 +423,26 @@ export const PDP_SCHEMA = {
     ],
     trustReturnsLine: '14-day hassle-free returns',
     sizeGuideModelNote: 'Open the size guide for measurements and on-body fit notes.',
+    sizeGuideFlatDiagramTitle: 'Flat sketch (your size)',
+    sizeGuideFlatDiagramSelectSize:
+      'Select a size in the table above to see the flat measurement sketch.',
+    sizeGuideFlatDiagramDisclaimer:
+      'Illustrative only — use the chart values as the source of truth.',
+    /** Placeholders: `{heightCm}`, `{heightImperial}`, `{sizeWorn}`, `{fitNoteSuffix}` (empty or localized note). */
+    sizeGuideFitModelTemplate:
+      'Model is {heightCm} cm / {heightImperial}, wearing size {sizeWorn}{fitNoteSuffix}.',
+    /** Appended when `fitNote` is set; `{fitNote}` = operator text from size preset. */
+    sizeGuideFitNoteSuffix: ' — {fitNote}',
+    /** One line under the model line(s); placeholders match `PdpSizeTableRow` fields. */
+    sizeGuideFlatMeasurementsTemplate:
+      'Flat measurements for {size}: chest {chest}, shoulder {shoulder}, length {length}, sleeve {sleeve}.',
+    /** Shown in the size guide when product `physicalAttributes` exist but preset has no `fitModels`. */
+    sizeGuidePhysicalWeight: 'Weight: {value}',
+    sizeGuidePhysicalDimensions: 'Dimensions (L × W × H): {length} × {width} × {height}',
+    sizeGuidePhysicalMaterial: 'Material: {value}',
+    sizeGuidePhysicalOrigin: 'Origin: {value}',
+    sizeGuidePhysicalHs: 'HS code: {value}',
+    sizeGuidePhysicalMid: 'MID code: {value}',
     /** Fallback when no size-table fit data is available */
     modelLineTemplate: 'See the size guide for how this piece fits on the body{fit}.',
     wornByEyebrow: 'Styling',
@@ -460,8 +480,54 @@ export const PDP_SCHEMA = {
     videoTitle: 'Drape & movement',
     videoPlaceholderBody: 'Product video placeholder — clip coming soon.',
     videoAriaLabel: 'Product video area. Motion preview not available yet; still image shown as poster.',
+    /** When product name is missing before data resolves. */
+    pdpHeroImageNameFallback: 'this design',
+    /** Hero / gallery fallback alt — `{name}` only (no garment type). */
+    pdpHeroImageAltTemplate: 'HORO “{name}”.',
+    pdpRelatedCardImageAltTemplate: 'HORO “{name}”.',
+    pdpPriceSelectedSizeTemplate: 'Selected size {size}',
+    pdpPriceForSizeTemplate: 'Price shown for size {size}',
+    /** Screen reader when the main gallery image changes; placeholders `{current}`, `{total}`, `{label}`. */
+    pdpGalleryLiveTemplate: 'Image {current} of {total}: {label}',
+    pdpGalleryThumbnailsAria: 'Product image thumbnails',
+    pdpGalleryRegionAria: 'Product images',
+    pdpGalleryPrev: 'Previous product image',
+    pdpGalleryNext: 'Next product image',
+    /** `{label}` = view label from gallery builder. */
+    pdpGalleryShowImageTemplate: 'Show {label}',
+    pdpGalleryOpenFullScreenTemplate: 'Open full screen — {label}',
+    pdpProductNotFound: 'Product not found.',
+    pdpSizeSectionLabel: 'Size',
+    pdpSizeGroupAria: 'Size',
+    pdpQuickViewSelectSizeLabel: 'Select size',
+    pdpOutOfStockForSize: 'Out of stock for this size',
+    pdpPrimaryCtaAddedLabel: 'Added to bag',
+    styleItWithEyebrow: 'Pairing',
+    pdpZodiacCapsuleLabel: 'Zodiac capsule',
+    pdpRelatedEyebrow: 'Discovery',
+    pdpRelatedMoreFromTemplate: 'More from {feeling}',
+    pdpRelatedFallbackFeeling: 'this feeling',
+    pdpRelatedCardSrTemplate: 'View {name}, {price}',
+    sizeGuidePresetEyebrow: 'Guide preset',
+    sizeGuideTableSize: 'Size',
+    sizeGuideTableChest: 'Chest',
+    sizeGuideTableShoulder: 'Shoulder',
+    sizeGuideTableLength: 'Length',
+    sizeGuideTableSleeve: 'Sleeve',
+    /** Flat diagram `<title>` / `aria-label`; placeholders `{size}`, `{chest}`, `{shoulder}`, `{length}`, `{sleeve}`. */
+    sizeGuideFlatDiagramAriaTemplate:
+      'Flat sketch for size {size}: chest {chest}, shoulder {shoulder}, length {length}, sleeve {sleeve}. Illustrative only.',
   },
 };
+
+/** Replace `{key}` placeholders in PDP copy templates (order-independent). */
+export function fillPdpCopyTemplate(template: string, vars: Record<string, string | number>): string {
+  let out = template;
+  for (const [key, value] of Object.entries(vars)) {
+    out = out.split(`{${key}}`).join(String(value));
+  }
+  return out;
+}
 
 export const CART_SCHEMA = {
   trustStripItems: ['Free exchange 14d', 'COD available', '220 GSM cotton'] as const,

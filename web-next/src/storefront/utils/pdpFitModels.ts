@@ -1,9 +1,20 @@
 import { PDP_SCHEMA } from '../data/domain-config';
 import type { PdpFitModel, Product } from '../data/site';
 
+const { copy } = PDP_SCHEMA;
+
+function fitNoteSuffixFromModel(model: PdpFitModel): string {
+  const note = model.fitNote?.trim();
+  if (!note) return '';
+  return copy.sizeGuideFitNoteSuffix.replace('{fitNote}', note);
+}
+
 export function formatPdpFitModelLine(model: PdpFitModel): string {
-  const tail = model.fitNote ? ` — ${model.fitNote}` : '';
-  return `Model is ${model.heightCm} cm / ${model.heightImperial}, wearing size ${model.sizeWorn}${tail}.`;
+  return copy.sizeGuideFitModelTemplate
+    .replace('{heightCm}', String(model.heightCm))
+    .replace('{heightImperial}', model.heightImperial)
+    .replace('{sizeWorn}', model.sizeWorn)
+    .replace('{fitNoteSuffix}', fitNoteSuffixFromModel(model));
 }
 
 /**
@@ -20,8 +31,11 @@ export function formatPdpFitModelLineForSizeSelection(
     const match = models.find((m) => m.sizeWorn === selectedSize);
     if (match) return formatPdpFitModelLine(match);
     const base = models[0]!;
-    const tail = base.fitNote ? ` — ${base.fitNote}` : '';
-    return `Model is ${base.heightCm} cm / ${base.heightImperial}, wearing size ${selectedSize}${tail}.`;
+    return copy.sizeGuideFitModelTemplate
+      .replace('{heightCm}', String(base.heightCm))
+      .replace('{heightImperial}', base.heightImperial)
+      .replace('{sizeWorn}', selectedSize)
+      .replace('{fitNoteSuffix}', fitNoteSuffixFromModel(base));
   }
   return formatPdpFitModelLine(models[0]!);
 }

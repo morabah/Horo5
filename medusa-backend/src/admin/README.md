@@ -8,6 +8,8 @@ You can extend the Medusa Admin to add widgets and new pages. Your customization
 
 [`widgets/product-size-table-key.tsx`](widgets/product-size-table-key.tsx) adds a **dropdown on the product details page** that sets `metadata.sizeTableKey` (store presets come from `npm run apply:size-tables-metadata`). Options are loaded from [`GET /admin/custom/storefront-size-table-options`](../api/admin/custom/storefront-size-table-options/route.ts).
 
+[`widgets/product-artist-slug.tsx`](widgets/product-artist-slug.tsx) adds a **dropdown on the product details page** that sets `metadata.artistSlug` from active `storefront_artist` rows and clears `metadata.artist` / `artistName` / `artistAvatarUrl` overrides when you pick an artist. Options are loaded from [`GET /admin/custom/storefront-product-artist-options`](../api/admin/custom/storefront-product-artist-options/route.ts). The same widget includes an expandable **Manage storefront artist catalog** section to create artists, edit name/style/avatar URL, activate, or deactivate (same APIs as [`/admin/custom/artists`](../api/admin/custom/artists/route.ts)). In production, `HORO_TAXONOMY_ADMIN_SECRET` must be set on the server; logged-in Admin users do **not** need the `x-horo-taxonomy-secret` header (scripts and curl still can).
+
 **Local dev:** set in `medusa-backend/.env` (used when building/serving admin):
 
 ```bash

@@ -4,6 +4,7 @@ import { buildProductPdpGallery, getProductMedia, imgUrl } from '../data/images'
 import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
 import { useCart } from '../cart/CartContext';
 import {
+  fillPdpCopyTemplate,
   mergePdpSizeTableConfig,
   PDP_SCHEMA,
   QUICK_VIEW_SCHEMA,
@@ -29,6 +30,8 @@ const QUICK_VIEW_BASE_SIZES = PDP_SCHEMA.sizes.map((size) => ({
   disabled: Boolean(size.disabled),
 }));
 
+const pdpCopy = PDP_SCHEMA.copy;
+
 export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }: ProductQuickViewProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
@@ -48,7 +51,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     () =>
       sizeTableConfig ??
       mergePdpSizeTableConfig(undefined, product?.sizeTableKey),
-    [sizeTableConfig, product?.sizeTableKey, product?.slug],
+    [sizeTableConfig, product?.sizeTableKey],
   );
 
   const quickViewFitLines = useMemo(
@@ -84,7 +87,11 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     gallery[safePhotoIndex] ??
     gallery[0] ?? {
       src: media?.main ?? '',
-      alt: product ? `HORO “${product.name}” t-shirt.` : '',
+      alt: product
+        ? fillPdpCopyTemplate(pdpCopy.pdpHeroImageAltTemplate, {
+            name: product.name.trim() || pdpCopy.pdpHeroImageNameFallback,
+          })
+        : '',
       label: 'image',
     };
   const fit = product?.fitLabel?.trim() || null;
@@ -96,13 +103,17 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     ? compareAtPrice(displayPriceSelection.variant.priceEgp, displayPriceSelection.variant.originalPriceEgp)
     : compareAtPrice(product?.priceEgp ?? 0, product?.originalPriceEgp);
   const pricingVariesBySize = product ? productHasVariablePricing(product) : false;
-  const priceSizeLabel = displayPriceSelection.size
-    ? displayPriceSelection.isSelected
-      ? `Selected size ${displayPriceSelection.size}`
-      : pricingVariesBySize
-        ? `Price shown for size ${displayPriceSelection.size}`
-        : null
-    : null;
+  const priceSizeLabel = useMemo(() => {
+    if (!displayPriceSelection.size) return null;
+    const sz = displayPriceSelection.size;
+    if (displayPriceSelection.isSelected) {
+      return pdpCopy.pdpPriceSelectedSizeTemplate.replace('{size}', sz);
+    }
+    if (pricingVariesBySize) {
+      return pdpCopy.pdpPriceForSizeTemplate.replace('{size}', sz);
+    }
+    return null;
+  }, [displayPriceSelection.size, displayPriceSelection.isSelected, pricingVariesBySize]);
   const priceStr = product ? formatEgp(displayPriceEgp) : '';
   const descriptionText = product?.description ?? product?.story ?? '';
 
@@ -123,11 +134,21 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
         !avail.has(size.key),
     }));
   }, [product]);
+
+  const sizeDef = selectedSize ? quickViewSizes.find((s) => s.key === selectedSize) : undefined;
+  const oosSelected = Boolean(sizeDef?.disabled);
+  const inventoryHint =
+    selectedSize && product?.inventoryHintBySize
+      ? product.inventoryHintBySize[selectedSize]
+      : undefined;
+
   const primaryCtaLabel = addedToBag
     ? QUICK_VIEW_SCHEMA.copy.viewBagCta
-    : selectedSize
-      ? QUICK_VIEW_SCHEMA.copy.addToBagCta.replace('{price}', priceStr)
-      : QUICK_VIEW_SCHEMA.copy.chooseSizeCta;
+    : oosSelected
+      ? pdpCopy.notifyMeCTA
+      : selectedSize
+        ? `${pdpCopy.addBtnCTA} — ${priceStr}`
+        : pdpCopy.selectSizePrompt;
 
   useEffect(() => {
     setSelectedSize(null);
@@ -172,12 +193,22 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
   const showContent = Boolean(open && productSlug);
 
   const handleAddToBag = () => {
-    if (!product || !selectedSize) return;
+    if (!product || !selectedSize || oosSelected) return;
     addItem(product.slug, selectedSize, 1);
     setAddedToBag(true);
     // Close the dialog and open the mini-cart drawer for a consistent experience
     onClose();
     setMiniCartOpen(true);
+  };
+
+  const handlePrimaryCta = () => {
+    if (!product) return;
+    if (oosSelected && selectedSize) {
+      onClose();
+      navigate(`/products/${product.slug}`);
+      return;
+    }
+    handleAddToBag();
   };
 
   const handleViewBag = () => {
@@ -196,14 +227,14 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
       {showContent && !product ? (
         <div className="p-6 text-white">
           <p id={titleId} className="font-headline text-lg">
-            Product not found
+            {pdpCopy.pdpProductNotFound}
           </p>
           <button
             type="button"
             className="font-label mt-4 min-h-12 w-full rounded-sm border border-white/20 py-3 text-xs font-semibold uppercase tracking-widest"
             onClick={onClose}
           >
-            Close
+            {pdpCopy.lightboxClose}
           </button>
         </div>
       ) : null}
@@ -219,7 +250,10 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
             <AppIcon name="close" className="h-5 w-5" />
           </button>
 
-          <div className="flex w-full shrink-0 flex-col border-b border-white/10 md:min-h-[min(600px,84dvh)] md:w-[52%] md:border-b-0 md:border-r">
+          <div
+            className="flex w-full shrink-0 flex-col border-b border-white/10 md:min-h-[min(600px,84dvh)] md:w-[52%] md:border-b-0 md:border-r"
+            aria-label={pdpCopy.pdpGalleryRegionAria}
+          >
             <div className="relative min-h-[280px] flex-1 bg-black/10 md:min-h-0">
               <img
                 src={imgUrl(mainView.src, 1200)}
@@ -236,7 +270,10 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
             </div>
 
             {galleryLen > 1 ? (
-              <div className="flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 bg-black/35 p-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div
+                className="flex shrink-0 gap-2 overflow-x-auto overscroll-x-contain border-t border-white/10 bg-black/35 p-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                aria-label={pdpCopy.pdpGalleryThumbnailsAria}
+              >
                 {gallery.map((view, index) => (
                   <button
                     key={`${product.slug}-qv-${view.label}-${index}`}
@@ -245,7 +282,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                     className={`aspect-square h-16 w-16 shrink-0 overflow-hidden rounded-lg p-0 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                       safePhotoIndex === index ? 'ring-2 ring-white' : 'ring-1 ring-white/20 hover:ring-white/45'
                     }`}
-                    aria-label={`Show ${view.label}`}
+                    aria-label={fillPdpCopyTemplate(pdpCopy.pdpGalleryShowImageTemplate, { label: view.label })}
                     aria-pressed={safePhotoIndex === index}
                   >
                     <img src={imgUrl(view.src, 240)} alt="" className="h-full w-full object-cover" width={240} height={240} />
@@ -267,6 +304,11 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                   <h2 id={titleId} className="font-headline mt-2 text-[clamp(1.9rem,3vw,3.05rem)] font-bold uppercase leading-[0.95] tracking-tight text-white">
                     {product.name}
                   </h2>
+                  {product.capsuleSlugs?.includes('zodiac') ? (
+                    <span className="font-label mt-2 inline-flex rounded-full border border-moon-gold/40 bg-moon-gold/10 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.16em] text-white">
+                      {pdpCopy.pdpZodiacCapsuleLabel}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="shrink-0 pt-1 text-right">
                   <div className="flex flex-wrap items-end justify-end gap-2">
@@ -287,62 +329,77 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
 
               <div>
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <span className="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-white/92">Select size</span>
+                  <span className="font-label text-[11px] font-semibold uppercase tracking-[0.2em] text-white/92">
+                    {pdpCopy.pdpQuickViewSelectSizeLabel}
+                  </span>
                   <button
                     type="button"
                     className="font-label inline-flex min-h-11 items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-frost-blue transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  aria-expanded={sizeChartOpen}
-                  aria-controls={sizeChartId}
-                  onClick={() => setSizeChartOpen((current) => !current)}
-                >
-                  <AppIcon name="straighten" className="h-4 w-4" />
-                  {QUICK_VIEW_SCHEMA.copy.sizeChartLabel}
-                </button>
+                    aria-expanded={sizeChartOpen}
+                    aria-controls={sizeChartId}
+                    onClick={() => setSizeChartOpen((current) => !current)}
+                  >
+                    <AppIcon name="straighten" className="h-4 w-4" />
+                    {pdpCopy.sizeGuideLabel}
+                  </button>
                 </div>
 
-                <div className="flex flex-wrap gap-2" role="group" aria-label="Size">
+                <div className="flex flex-wrap gap-2" role="group" aria-label={pdpCopy.pdpSizeGroupAria}>
                   {quickViewSizes.map((size) => {
                     const isSelected = selectedSize === size.key;
+                    const { disabled } = size;
                     return (
                       <button
                         key={size.key}
                         type="button"
-                        disabled={size.disabled}
                         onClick={() => {
-                          setSelectedSize(size.key);
+                          setSelectedSize(isSelected ? null : size.key);
                           setAddedToBag(false);
                         }}
                         className={`font-label min-h-12 min-w-12 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                          size.disabled
-                            ? 'cursor-not-allowed border-white/10 bg-white/[0.04] text-white/25'
+                          disabled
+                            ? isSelected
+                              ? 'border-white bg-white/90 text-obsidian line-through decoration-obsidian/50'
+                              : 'border-white/15 bg-white/[0.04] text-white/40 line-through decoration-white/25 hover:border-white/30'
                             : isSelected
                               ? 'border-white bg-white text-obsidian'
                               : 'border-white/25 bg-transparent text-white hover:border-white/50'
                         }`}
                         aria-pressed={isSelected}
                       >
-                        {size.key}
+                        <span aria-disabled={disabled}>{size.key}</span>
                       </button>
                     );
                   })}
                 </div>
 
+                {inventoryHint ? (
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-white/70">
+                    {inventoryHint}
+                  </p>
+                ) : null}
+                {oosSelected ? (
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-white/72">
+                    {pdpCopy.pdpOutOfStockForSize}
+                  </p>
+                ) : null}
+
                 {sizeChartOpen ? (
                   <div
                     id={sizeChartId}
                     role="region"
-                    aria-label={QUICK_VIEW_SCHEMA.copy.sizeChartRegionLabel}
+                    aria-label={pdpCopy.sizeGuideLabel}
                     className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]"
                   >
                     <div className="overflow-x-auto">
                       <table className="min-w-full border-collapse text-left text-xs text-white/92">
                         <thead className="bg-white/[0.08] text-[10px] uppercase tracking-[0.18em] text-white/80">
                           <tr>
-                            <th className="px-3 py-3 font-medium">Size</th>
-                            <th className="px-3 py-3 font-medium">Chest</th>
-                            <th className="px-3 py-3 font-medium">Shoulder</th>
-                            <th className="px-3 py-3 font-medium">Length</th>
-                            <th className="px-3 py-3 font-medium">Sleeve</th>
+                            <th className="px-3 py-3 font-medium">{pdpCopy.sizeGuideTableSize}</th>
+                            <th className="px-3 py-3 font-medium">{pdpCopy.sizeGuideTableChest}</th>
+                            <th className="px-3 py-3 font-medium">{pdpCopy.sizeGuideTableShoulder}</th>
+                            <th className="px-3 py-3 font-medium">{pdpCopy.sizeGuideTableLength}</th>
+                            <th className="px-3 py-3 font-medium">{pdpCopy.sizeGuideTableSleeve}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -362,7 +419,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                       {quickViewFitLines.length > 0 ? (
                         quickViewFitLines.map((line, idx) => <p key={`qv-fit-${idx}`}>{line}</p>)
                       ) : (
-                        <p>{PDP_SCHEMA.copy.sizeGuideModelNote}</p>
+                        <p>{pdpCopy.sizeGuideModelNote}</p>
                       )}
                     </div>
                   </div>
@@ -373,7 +430,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                 {addedToBag ? (
                   <>
                     <p className="font-label text-center text-[11px] font-medium uppercase tracking-[0.18em] text-primary" role="status" aria-live="polite">
-                      {QUICK_VIEW_SCHEMA.copy.addedStatus}
+                      {pdpCopy.pdpPrimaryCtaAddedLabel}
                     </p>
                     <button
                       type="button"
@@ -396,11 +453,13 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                     disabled={!selectedSize}
                     className={`font-label flex min-h-12 w-full items-center justify-center rounded-lg px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] shadow-md transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                       selectedSize
-                        ? 'bg-primary text-obsidian hover:brightness-95'
+                        ? oosSelected
+                          ? 'bg-primary/90 text-obsidian hover:brightness-95'
+                          : 'bg-primary text-obsidian hover:brightness-95'
                         : 'cursor-not-allowed border border-white/12 bg-white/[0.08] text-white/48 shadow-none'
                     }`}
                     aria-disabled={!selectedSize}
-                    onClick={handleAddToBag}
+                    onClick={handlePrimaryCta}
                   >
                     {primaryCtaLabel}
                   </button>

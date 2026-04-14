@@ -70,6 +70,12 @@ async function pollPaymobCheckoutStatus(
 
 type FieldErrors = Record<string, string>;
 type PaymentChoice = 'cod' | 'card';
+
+function omitFieldError(errors: FieldErrors, key: keyof FieldErrors): FieldErrors {
+  const next = { ...errors };
+  delete next[key];
+  return next;
+}
 type CheckoutPaymentMethodKind = PaymentChoice | 'wallet';
 type CheckoutPaymentMethod = {
   id: string;
@@ -442,6 +448,9 @@ export function Checkout() {
   const completionLockRef = useRef<string | null>(null);
   /** Reused across retries so Medusa can dedupe concurrent complete requests. */
   const completionIdempotencyKeyRef = useRef<string | null>(null);
+  const handleCartCompletionRef = useRef<
+    ((activeCartId: string, choice: PaymentChoice) => Promise<void>) | null
+  >(null);
   const addressInputRef = useRef<HTMLInputElement | null>(null);
 
   const [email, setEmail] = useState('');
@@ -597,7 +606,7 @@ export function Checkout() {
 
   useEffect(() => {
     setMounted(true);
-  }, [googleMapsApiKey]);
+  }, []);
 
   useEffect(() => {
     if (!mounted) return;
@@ -710,7 +719,7 @@ export function Checkout() {
           }
 
           if (paymobStatus?.status === 'authorized') {
-            void handleCartCompletion(activeCartId, 'card');
+            void handleCartCompletionRef.current?.(activeCartId, 'card');
             return;
           }
 
@@ -1007,6 +1016,8 @@ export function Checkout() {
       completionLockRef.current = null;
     }
   }
+
+  handleCartCompletionRef.current = handleCartCompletion;
 
   async function retryPaymobStatusCheck() {
     if (!cartId) return;
@@ -1406,10 +1417,7 @@ export function Checkout() {
                   value={phone}
                   onChange={(event) => {
                     setPhone(event.target.value);
-                    setErrors((prev) => {
-                      const { phone: _removed, ...rest } = prev;
-                      return rest;
-                    });
+                    setErrors((prev) => omitFieldError(prev, 'phone'));
                   }}
                   onBlur={() => validateFieldOnBlur('phone')}
                   className={`${inputBaseClass} ${errors.phone ? inputErrorClass : ''}`}
@@ -1426,10 +1434,7 @@ export function Checkout() {
                   value={email}
                   onChange={(event) => {
                     setEmail(event.target.value);
-                    setErrors((prev) => {
-                      const { email: _removed, ...rest } = prev;
-                      return rest;
-                    });
+                    setErrors((prev) => omitFieldError(prev, 'email'));
                   }}
                   onBlur={() => validateFieldOnBlur('email')}
                   className={`${inputBaseClass} ${errors.email ? inputErrorClass : ''}`}
@@ -1460,10 +1465,7 @@ export function Checkout() {
                   value={fullName}
                   onChange={(event) => {
                     setFullName(event.target.value);
-                    setErrors((prev) => {
-                      const { name: _removed, ...rest } = prev;
-                      return rest;
-                    });
+                    setErrors((prev) => omitFieldError(prev, 'name'));
                   }}
                   onBlur={() => validateFieldOnBlur('name')}
                   className={`${inputBaseClass} ${errors.name ? inputErrorClass : ''}`}
@@ -1482,10 +1484,7 @@ export function Checkout() {
                   onChange={(event) => {
                     setLine1(event.target.value);
                     setAddressPlaceId(null);
-                    setErrors((prev) => {
-                      const { line1: _removed, ...rest } = prev;
-                      return rest;
-                    });
+                    setErrors((prev) => omitFieldError(prev, 'line1'));
                   }}
                   onBlur={() => validateFieldOnBlur('line1')}
                   className={`${inputBaseClass} ${errors.line1 ? inputErrorClass : ''}`}
@@ -1513,10 +1512,7 @@ export function Checkout() {
                   value={city}
                   onChange={(event) => {
                     setCity(event.target.value);
-                    setErrors((prev) => {
-                      const { city: _removed, ...rest } = prev;
-                      return rest;
-                    });
+                    setErrors((prev) => omitFieldError(prev, 'city'));
                   }}
                   onBlur={() => validateFieldOnBlur('city')}
                   className={`${inputBaseClass} ${errors.city ? inputErrorClass : ''}`}

@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import {
   type Artist,
   getFeeling,
-  getOccasion,
   type Feeling,
   type MerchEvent,
   type Occasion,
@@ -20,16 +19,6 @@ function feelingFromCatalog(slug: string, catalog: Pick<RuntimeCatalog, "feeling
     return catalog.feelings.find((f) => f.slug === slug);
   }
   return getFeeling(slug);
-}
-
-function occasionNameFromCatalog(
-  slug: string,
-  catalog: Pick<RuntimeCatalog, "occasions"> | null | undefined
-): string | undefined {
-  if (catalog?.occasions?.length) {
-    return catalog.occasions.find((o) => o.slug === slug)?.name;
-  }
-  return getOccasion(slug)?.name;
 }
 
 type NextFetchOptions = RequestInit & {

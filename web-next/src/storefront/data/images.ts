@@ -488,7 +488,7 @@ export function buildProductPdpGallery(productName: string, media: ProductMedia)
   const ordered = Array.from(new Set([media.main, ...(media.gallery ?? [])].filter(Boolean)));
 
   return ordered.map((src, index) => ({
-    alt: `HORO “${productName}” t-shirt gallery image ${index + 1}.`,
+    alt: `HORO “${productName}” gallery image ${index + 1}.`,
     key: (PDP_VIEW_ORDER[index] ?? `gallery-${index}`) as ProductPdpViewKey,
     label: index === 0 ? 'hero image' : `gallery image ${index + 1}`,
     src,

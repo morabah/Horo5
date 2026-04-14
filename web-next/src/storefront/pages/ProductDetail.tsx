@@ -21,6 +21,9 @@ import {
   getProduct,
   productHasRealImage,
   productsByFeeling,
+  type Artist,
+  type Feeling,
+  type Occasion,
   type Product,
   type ProductSizeKey,
   type RuntimeCatalog,
@@ -38,14 +41,17 @@ import { PdpShareStrip } from '../components/PdpShareStrip';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { ProductJsonLd } from '../components/ProductJsonLd';
 import { TeeImage, TeeImageFrame } from '../components/TeeImage';
+import { PdpSizeFlatDiagram } from '../components/PdpSizeFlatDiagram';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { QuickViewTrigger } from '../components/QuickViewTrigger';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
+import { humanizeArtistSlugForDisplay } from '../utils/humanizeArtistSlug';
 import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
 import {
   HORO_SUPPORT_CHANNELS,
   PDP_SCHEMA,
+  fillPdpCopyTemplate,
   mergePdpDeliveryRules,
   mergePdpSizeTableConfig,
   resolvePdpDisplayFitModels,
@@ -71,6 +77,11 @@ import {
 } from '../utils/deliveryEstimate';
 
 const { copy } = PDP_SCHEMA;
+
+const EMPTY_PRODUCT_LIST: Product[] = [];
+const EMPTY_FEELING_LIST: Feeling[] = [];
+const EMPTY_ARTIST_LIST: Artist[] = [];
+const EMPTY_OCCASION_LIST: Occasion[] = [];
 
 const featureStripItems = PDP_SCHEMA.features.map((feature) => ({
   label: feature.label,
@@ -198,10 +209,22 @@ export function ProductDetail({
   const { addItem, setMiniCartOpen } = useCart();
   const { recordView } = useRecentlyViewed();
   const preferBackendCatalog = Boolean(initialProduct || catalogSnapshot);
-  const catalogProductsSnapshot = catalogProducts ?? catalogSnapshot?.products ?? [];
-  const catalogFeelings = catalogSnapshot?.feelings ?? [];
-  const catalogArtists = catalogSnapshot?.artists ?? [];
-  const catalogOccasions = catalogSnapshot?.occasions ?? [];
+  const catalogProductsSnapshot = useMemo(
+    () => catalogProducts ?? catalogSnapshot?.products ?? EMPTY_PRODUCT_LIST,
+    [catalogProducts, catalogSnapshot?.products],
+  );
+  const catalogFeelings = useMemo(
+    () => catalogSnapshot?.feelings ?? EMPTY_FEELING_LIST,
+    [catalogSnapshot?.feelings],
+  );
+  const catalogArtists = useMemo(
+    () => catalogSnapshot?.artists ?? EMPTY_ARTIST_LIST,
+    [catalogSnapshot?.artists],
+  );
+  const catalogOccasions = useMemo(
+    () => catalogSnapshot?.occasions ?? EMPTY_OCCASION_LIST,
+    [catalogSnapshot?.occasions],
+  );
 
   const productLookup = useMemo(() => {
     return new Map(catalogProductsSnapshot.map((entry) => [entry.slug, entry]));
@@ -340,8 +363,13 @@ export function ProductDetail({
     if (artist) {
       return { name: artist.name, avatarSrc: artist.avatarSrc };
     }
+    const slug = product?.artistSlug?.trim();
+    if (slug) {
+      const label = humanizeArtistSlugForDisplay(slug);
+      if (label) return { name: label, avatarSrc: undefined };
+    }
     return null;
-  }, [product?.artistDisplay, artist]);
+  }, [product?.artistDisplay, product?.artistSlug, artist]);
 
   /** Same-pillar suggestions: Medusa catalog list only when `preferBackendCatalog` (no fixture `productsByFeeling`). */
   const related = product
@@ -387,7 +415,9 @@ export function ProductDetail({
       key: 'hero' as const,
       src: media.main,
       label: 'image',
-      alt: `HORO “${product?.name ?? 'product'}” t-shirt.`,
+      alt: fillPdpCopyTemplate(copy.pdpHeroImageAltTemplate, {
+        name: product?.name?.trim() || copy.pdpHeroImageNameFallback,
+      }),
     };
 
   const detailView = gallery[1] ?? null;
@@ -401,13 +431,17 @@ export function ProductDetail({
     ? compareAtPrice(displayPriceSelection.variant.priceEgp, displayPriceSelection.variant.originalPriceEgp)
     : compareAtPrice(product?.priceEgp ?? 0, product?.originalPriceEgp);
   const pricingVariesBySize = product ? productHasVariablePricing(product) : false;
-  const priceSizeLabel = displayPriceSelection.size
-    ? displayPriceSelection.isSelected
-      ? `Selected size ${displayPriceSelection.size}`
-      : pricingVariesBySize
-        ? `Price shown for size ${displayPriceSelection.size}`
-        : null
-    : null;
+  const priceSizeLabel = useMemo(() => {
+    if (!displayPriceSelection.size) return null;
+    const sz = displayPriceSelection.size;
+    if (displayPriceSelection.isSelected) {
+      return copy.pdpPriceSelectedSizeTemplate.replace('{size}', sz);
+    }
+    if (pricingVariesBySize) {
+      return copy.pdpPriceForSizeTemplate.replace('{size}', sz);
+    }
+    return null;
+  }, [displayPriceSelection.size, displayPriceSelection.isSelected, pricingVariesBySize]);
   const productDescription = product?.description ?? product?.story ?? '';
 
   /** Hero chip: prefer Medusa product description; fallback to pillar tagline (see PDP / Medusa README). */
@@ -479,7 +513,7 @@ export function ProductDetail({
     () =>
       sizeTableConfigProp ??
       mergePdpSizeTableConfig(undefined, product?.sizeTableKey),
-    [sizeTableConfigProp, product?.sizeTableKey, product?.slug],
+    [sizeTableConfigProp, product?.sizeTableKey],
   );
 
   const displayFitModelsResolved = useMemo(
@@ -502,28 +536,35 @@ export function ProductDetail({
     formatPdpFitModelLineForSizeSelection(displayFitModelsResolved, selectedSize) ??
     (displayFitModelsResolved[0] ? formatPdpFitModelLine(displayFitModelsResolved[0]) : undefined);
 
-  const inlineFitMeasurementsPart = (() => {
+  const inlineFitMeasurementsPart = useMemo(() => {
     if (!selectedSize || !sizeTableResolved.measurements.length) return '';
     const row = sizeTableResolved.measurements.find((r) => r.size === selectedSize);
     if (!row) return '';
-    return `Flat measurements for ${row.size}: chest ${row.chest}, shoulder ${row.shoulder}, length ${row.length}, sleeve ${row.sleeve}.`;
-  })();
+    return copy.sizeGuideFlatMeasurementsTemplate
+      .replace('{size}', row.size)
+      .replace('{chest}', row.chest)
+      .replace('{shoulder}', row.shoulder)
+      .replace('{length}', row.length)
+      .replace('{sleeve}', row.sleeve);
+  }, [selectedSize, sizeTableResolved.measurements]);
 
   const physicalFitDisplayLines = useMemo(() => {
     const p = product?.physicalAttributes;
     if (!p) return [] as string[];
     const lines: string[] = [];
-    if (p.weight) lines.push(`Weight: ${p.weight}`);
+    if (p.weight) lines.push(copy.sizeGuidePhysicalWeight.replace('{value}', p.weight));
     if (p.length || p.width || p.height) {
       const L = p.length ?? '—';
       const W = p.width ?? '—';
       const H = p.height ?? '—';
-      lines.push(`Dimensions (L × W × H): ${L} × ${W} × ${H}`);
+      lines.push(
+        copy.sizeGuidePhysicalDimensions.replace('{length}', L).replace('{width}', W).replace('{height}', H),
+      );
     }
-    if (p.material) lines.push(`Material: ${p.material}`);
-    if (p.originCountry) lines.push(`Origin: ${p.originCountry}`);
-    if (p.hsCode) lines.push(`HS code: ${p.hsCode}`);
-    if (p.midCode) lines.push(`MID code: ${p.midCode}`);
+    if (p.material) lines.push(copy.sizeGuidePhysicalMaterial.replace('{value}', p.material));
+    if (p.originCountry) lines.push(copy.sizeGuidePhysicalOrigin.replace('{value}', p.originCountry));
+    if (p.hsCode) lines.push(copy.sizeGuidePhysicalHs.replace('{value}', p.hsCode));
+    if (p.midCode) lines.push(copy.sizeGuidePhysicalMid.replace('{value}', p.midCode));
     return lines;
   }, [product?.physicalAttributes]);
   const inlineFitModelDisplay =
@@ -566,7 +607,7 @@ export function ProductDetail({
     document
       .getElementById(`pdp-gallery-thumb-v-${product.slug}-${photoIndex}`)
       ?.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
-  }, [photoIndex, gallery.length, product?.slug]);
+  }, [photoIndex, gallery.length, product]);
 
   useEffect(() => {
     if (gallery.length < 2 || !product) {
@@ -581,7 +622,13 @@ export function ProductDetail({
     }
     if (prev.slug === product.slug && prev.index === photoIndex) return;
     galleryAnnouncementRef.current = { slug: product.slug, index: photoIndex };
-    setGalleryLiveText(`Image ${photoIndex + 1} of ${gallery.length}: ${heroView.label}`);
+    setGalleryLiveText(
+      fillPdpCopyTemplate(copy.pdpGalleryLiveTemplate, {
+        current: photoIndex + 1,
+        total: gallery.length,
+        label: heroView.label,
+      }),
+    );
   }, [product, gallery.length, photoIndex, heroView.label]);
 
   useEffect(() => {
@@ -597,7 +644,13 @@ export function ProductDetail({
     if (lightboxPhotoPrevRef.current !== photoIndex) {
       lightboxPhotoPrevRef.current = photoIndex;
       if (gallery.length < 2) return;
-      setLightboxAnnounce(`Image ${photoIndex + 1} of ${gallery.length}: ${heroView.label}`);
+      setLightboxAnnounce(
+        fillPdpCopyTemplate(copy.pdpGalleryLiveTemplate, {
+          current: photoIndex + 1,
+          total: gallery.length,
+          label: heroView.label,
+        }),
+      );
     }
   }, [lightboxOpen, photoIndex, gallery.length, heroView.label]);
 
@@ -892,7 +945,7 @@ export function ProductDetail({
   if (!product) {
     return (
       <div className="bg-papyrus px-4 py-16 text-center">
-        <p className="font-body text-warm-charcoal">Product not found.</p>
+        <p className="font-body text-warm-charcoal">{copy.pdpProductNotFound}</p>
         <Link to="/feelings" className="font-label mt-4 inline-block text-deep-teal underline">
           {shellCopy.shell.shopByFeeling}
         </Link>
@@ -956,7 +1009,7 @@ export function ProductDetail({
             {hasGalleryRail ? (
               <div
                 className="scrollbar-thin hidden max-h-[min(75vh,42rem)] w-[4.5rem] shrink-0 flex-col gap-2 overflow-y-auto overflow-x-hidden py-0.5 pr-1 [scrollbar-width:thin] md:flex lg:w-[5.25rem]"
-                aria-label="Product image thumbnails"
+                aria-label={copy.pdpGalleryThumbnailsAria}
               >
                 {gallery.map((view, index) => (
                   <button
@@ -970,7 +1023,7 @@ export function ProductDetail({
                         : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                     aria-pressed={photoIndex === index}
-                    aria-label={`Show ${view.label}`}
+                    aria-label={fillPdpCopyTemplate(copy.pdpGalleryShowImageTemplate, { label: view.label })}
                   >
                     <div className="aspect-[4/5] w-full">
                       <TeeImage src={view.src} alt="" w={320} className="h-full w-full" />
@@ -985,7 +1038,7 @@ export function ProductDetail({
               onKeyDown={handleGalleryKeyDown}
               tabIndex={0}
               role="region"
-              aria-label="Product images"
+              aria-label={copy.pdpGalleryRegionAria}
             >
               {hasGalleryRail ? (
                 <span id={galleryLiveRegionId} className="sr-only" aria-live="polite" aria-atomic="true">
@@ -996,7 +1049,7 @@ export function ProductDetail({
                 type="button"
                 className="block w-full overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 onClick={() => setLightboxOpen(true)}
-                aria-label={`Open full screen — ${heroView.label}`}
+                aria-label={fillPdpCopyTemplate(copy.pdpGalleryOpenFullScreenTemplate, { label: heroView.label })}
               >
                 <div className="aspect-[4/5] w-full overflow-hidden">
                   <TeeImage
@@ -1019,7 +1072,7 @@ export function ProductDetail({
                       e.stopPropagation();
                       setPhotoIndex((i) => (i <= 0 ? gallery.length - 1 : i - 1));
                     }}
-                    aria-label="Previous product image"
+                    aria-label={copy.pdpGalleryPrev}
                   >
                     <IconChevronLeft />
                   </button>
@@ -1031,7 +1084,7 @@ export function ProductDetail({
                       e.stopPropagation();
                       setPhotoIndex((i) => (i >= gallery.length - 1 ? 0 : i + 1));
                     }}
-                    aria-label="Next product image"
+                    aria-label={copy.pdpGalleryNext}
                   >
                     <IconChevronRight />
                   </button>
@@ -1044,7 +1097,7 @@ export function ProductDetail({
           {hasGalleryRail ? (
             <div
               className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] touch-pan-x md:hidden"
-              aria-label="Product image thumbnails"
+              aria-label={copy.pdpGalleryThumbnailsAria}
             >
               {gallery.map((view, index) => (
                 <button
@@ -1057,7 +1110,7 @@ export function ProductDetail({
                       : 'border-transparent opacity-60 hover:opacity-100'
                   }`}
                   aria-pressed={photoIndex === index}
-                  aria-label={`Show ${view.label}`}
+                  aria-label={fillPdpCopyTemplate(copy.pdpGalleryShowImageTemplate, { label: view.label })}
                 >
                   <div className="aspect-[4/5] w-full">
                     <TeeImage src={view.src} alt="" w={320} className="h-full w-full" />
@@ -1075,7 +1128,7 @@ export function ProductDetail({
                 fbtEyebrow: copy.frequentlyBoughtTogetherEyebrow,
                 fbtTitle: copy.frequentlyBoughtTogetherTitle,
                 fbtSubtitle: copy.frequentlyBoughtTogetherSubtitle,
-                styleEyebrow: 'Pairing',
+                styleEyebrow: copy.styleItWithEyebrow,
                 styleTitle: copy.styleItWithTitle,
                 styleSubtitle: copy.styleItWithSubtitle,
                 bundleFbtCta: copy.crossSellBundleFbtCta,
@@ -1126,7 +1179,7 @@ export function ProductDetail({
                   ))}
                   {product.capsuleSlugs?.includes('zodiac') ? (
                     <span className="font-label rounded-full border border-moon-gold/40 bg-moon-gold/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian">
-                      Zodiac capsule
+                      {copy.pdpZodiacCapsuleLabel}
                     </span>
                   ) : null}
                 </div>
@@ -1153,19 +1206,29 @@ export function ProductDetail({
               </div>
 
               <div ref={sizeSectionRef} className="space-y-3 border-t border-stone/30 pt-5">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">Size</p>
-                  <button
-                    ref={sizeGuideTriggerRef}
-                    type="button"
-                    onClick={() => setSizeGuideOpen(true)}
-                    className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
-                  >
-                    {copy.sizeGuideLabel}
-                  </button>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
+                    {copy.pdpSizeSectionLabel}
+                  </p>
+                  <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+                    <span
+                      className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian"
+                      title={sizeTableResolved.presetKeyUsed}
+                    >
+                      {formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed)}
+                    </span>
+                    <button
+                      ref={sizeGuideTriggerRef}
+                      type="button"
+                      onClick={() => setSizeGuideOpen(true)}
+                      className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
+                    >
+                      {copy.sizeGuideLabel}
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2.5" role="group" aria-label="Size">
+                <div className="flex flex-wrap gap-2.5" role="group" aria-label={copy.pdpSizeGroupAria}>
                   {sizeButtons.map(({ key, disabled }) => {
                     const isSelected = selectedSize === key;
                     return (
@@ -1208,7 +1271,7 @@ export function ProductDetail({
 
                 {oosSelected ? (
                   <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
-                    Out of stock for this size
+                    {copy.pdpOutOfStockForSize}
                   </p>
                 ) : null}
               </div>
@@ -1221,7 +1284,12 @@ export function ProductDetail({
                   aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
                 >
                   {addedFeedback ? (
-                    <><span className="pdp-cta-check" aria-hidden>✓</span><span>Added!</span></>
+                    <>
+                      <span className="pdp-cta-check" aria-hidden>
+                        ✓
+                      </span>
+                      <span>{copy.pdpPrimaryCtaAddedLabel}</span>
+                    </>
                   ) : (
                     <><IconCart /><span>{primaryCtaLabel()}</span></>
                   )}
@@ -1462,9 +1530,13 @@ export function ProductDetail({
           <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-8 md:px-8 md:pb-12 md:pt-10 lg:px-12">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">Discovery</span>
+                <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
+                  {copy.pdpRelatedEyebrow}
+                </span>
                 <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
-                  More from {feeling?.name ?? 'this feeling'}
+                  {fillPdpCopyTemplate(copy.pdpRelatedMoreFromTemplate, {
+                    feeling: feeling?.name ?? copy.pdpRelatedFallbackFeeling,
+                  })}
                 </h2>
                 <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
               </div>
@@ -1489,7 +1561,10 @@ export function ProductDetail({
                     className="absolute inset-0 z-[1] rounded-[18px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   >
                     <span className="sr-only">
-                      View {item.name}, {formatEgp(item.priceEgp)}
+                      {fillPdpCopyTemplate(copy.pdpRelatedCardSrTemplate, {
+                        name: item.name,
+                        price: formatEgp(item.priceEgp),
+                      })}
                     </span>
                   </Link>
 
@@ -1498,7 +1573,7 @@ export function ProductDetail({
                       <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
                         <TeeImageFrame
                           src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
-                          alt={`HORO “${item.name}” tee`}
+                          alt={fillPdpCopyTemplate(copy.pdpRelatedCardImageAltTemplate, { name: item.name })}
                           w={500}
                           aspectRatio="4/5"
                           borderRadius="1.125rem 1.125rem 0 0"
@@ -1542,7 +1617,12 @@ export function ProductDetail({
             aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
           >
             {addedFeedback ? (
-              <><span className="pdp-cta-check" aria-hidden>✓</span><span>Added!</span></>
+              <>
+                <span className="pdp-cta-check" aria-hidden>
+                  ✓
+                </span>
+                <span>{copy.pdpPrimaryCtaAddedLabel}</span>
+              </>
             ) : (
               <><IconCart /><span>{primaryCtaLabel()}</span></>
             )}
@@ -1675,7 +1755,7 @@ export function ProductDetail({
                   {copy.sizeGuideLabel}
                 </h2>
                 <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                  Guide preset
+                  {copy.sizeGuidePresetEyebrow}
                 </p>
                 <span className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
                   {formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed)}
@@ -1687,7 +1767,7 @@ export function ProductDetail({
                 className="font-label min-h-11 shrink-0 rounded-full border border-obsidian px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white"
                 onClick={closeSizeGuide}
               >
-                Close
+                {copy.lightboxClose}
               </button>
             </div>
 
@@ -1696,19 +1776,19 @@ export function ProductDetail({
                 <thead>
                   <tr className="border-b border-stone/50 text-left">
                     <th scope="col" className="py-2 pr-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
-                      Size
+                      {copy.sizeGuideTableSize}
                     </th>
                     <th scope="col" className="py-2 pr-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
-                      Chest
+                      {copy.sizeGuideTableChest}
                     </th>
                     <th scope="col" className="py-2 pr-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
-                      Shoulder
+                      {copy.sizeGuideTableShoulder}
                     </th>
                     <th scope="col" className="py-2 pr-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
-                      Length
+                      {copy.sizeGuideTableLength}
                     </th>
                     <th scope="col" className="py-2 font-label text-[10px] font-semibold uppercase tracking-wider text-obsidian/80">
-                      Sleeve
+                      {copy.sizeGuideTableSleeve}
                     </th>
                   </tr>
                 </thead>
@@ -1732,6 +1812,19 @@ export function ProductDetail({
                 </tbody>
               </table>
             </div>
+
+            <PdpSizeFlatDiagram
+              className="mt-4"
+              row={
+                selectedSize
+                  ? sizeTableResolved.measurements.find((r) => r.size === selectedSize) ?? null
+                  : null
+              }
+              noSelectionMessage={copy.sizeGuideFlatDiagramSelectSize}
+              sectionTitle={copy.sizeGuideFlatDiagramTitle}
+              disclaimer={copy.sizeGuideFlatDiagramDisclaimer}
+              diagramAriaTemplate={copy.sizeGuideFlatDiagramAriaTemplate}
+            />
 
             {displayFitLines.length > 0 ? (
               <div className="mt-4 space-y-2 rounded-xl border border-stone/40 bg-white/90 px-3 py-3 font-body text-[13px] leading-normal text-obsidian">

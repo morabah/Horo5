@@ -724,6 +724,17 @@ function parseArtistDisplayFromMetadata(metadata: Record<string, unknown>): Stor
   return undefined
 }
 
+/** Readable label when `artistSlug` is set but does not match any `storefront_artist` row (hyphens/underscores → words). */
+function humanizeArtistSlugForDisplay(slug: string): string {
+  const normalized = slug.trim().toLowerCase()
+  if (!normalized) return ""
+  return normalized
+    .split(/[-_\s]+/)
+    .filter((part) => part.length > 0)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
 /**
  * Ordered, de-duplicated labels for PDP chips: linked Medusa product categories only
  * (Admin → Organize → Categories), excluding the internal `feelings` root. Does not merge
@@ -774,14 +785,20 @@ function resolveArtistDisplay(
     return fromMeta
   }
 
-  const slug = asString(metadata.artistSlug) || "nada-ibrahim"
-  const fromModule = artistsBySlug?.get(slug)
+  const explicitSlug = asString(metadata.artistSlug)?.trim() ?? ""
+  const slugForLookup = explicitSlug || "nada-ibrahim"
+  const fromModule = artistsBySlug?.get(slugForLookup)
 
   if (fromModule) {
     return {
       name: fromModule.name,
       ...(fromModule.avatarSrc ? { avatarUrl: fromModule.avatarSrc } : {}),
     }
+  }
+
+  if (explicitSlug) {
+    const label = humanizeArtistSlugForDisplay(explicitSlug)
+    return label ? { name: label } : undefined
   }
 
   return undefined

@@ -22,6 +22,9 @@ const eslintConfig = defineConfig([
       "react-hooks/refs": "off",
       "react-hooks/immutability": "off",
       "react-hooks/preserve-manual-memoization": "off",
+      // Vite/React-Router storefront: product art uses dynamic CDN URLs, `imgUrl()` query params,
+      // and many client-only flows — native <img> is intentional; Next/Image is for `src/app` RSC routes.
+      "@next/next/no-img-element": "off",
     },
   },
 ]);
