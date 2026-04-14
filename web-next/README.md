@@ -62,4 +62,6 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 **Monorepo (Horo5):** Prefer setting the Vercel project **Root Directory** to `web-next` so install/build run in the app folder and `.next` is in the right place. If the Git project root is the repo root instead, the root [`vercel.json`](../vercel.json) runs the build under `web-next` and adds a `.next` symlink for Vercel’s Next.js post-step.
 
+**Production URL:** In Vercel → Project → **Settings** → **Git** → **Production Branch**, choose the branch that should update your production domain (e.g. `medusa`). Only that branch’s deployments are “Production”; other branches stay off unless you add them to `git.deploymentEnabled` in the root `vercel.json`.
+
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

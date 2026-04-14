@@ -2,5 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "npm ci --prefix web-next",
-  "buildCommand": "npm run build --prefix web-next && rm -rf .next && ln -s web-next/.next .next"
+  "buildCommand": "npm run build --prefix web-next && rm -rf .next && ln -s web-next/.next .next",
+  "git": {
+    "deploymentEnabled": {
+      "*": false,
+      "main": true,
+      "medusa": true
+    }
+  }
 }
