@@ -1,4 +1,4 @@
-import { feelingLineMatchesAssignments } from "../../../../../web/src/data/feelingLineBrowse"
+import { feelingLineMatchesAssignments } from "../../../../../web-next/src/storefront/data/feelingLineBrowse"
 
 describe("feelingLineMatchesAssignments (Medusa line parity)", () => {
   it("returns false when assignments are missing even if primary would say fire-sign", () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { NotFound } from "../../../web/src/pages/NotFound";
+import { NotFound } from "@/storefront/pages/NotFound";
 import { RouterContextProvider } from "@/lib/router-context";
 
 export default function NotFoundPage() {

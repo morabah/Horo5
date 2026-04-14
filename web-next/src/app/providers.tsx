@@ -2,9 +2,9 @@
 
 import { Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
-import { AnalyticsRoot } from "../../../web/src/analytics/AnalyticsRoot";
-import { AppProviders } from "../../../web/src/AppProviders";
-import type { RuntimeCatalog } from "../../../web/src/data/site";
+import { AnalyticsRoot } from "@/storefront/analytics/AnalyticsRoot";
+import { AppProviders } from "@/storefront/AppProviders";
+import type { RuntimeCatalog } from "@/storefront/data/site";
 
 export function Providers({
   children,

@@ -1,6 +1,6 @@
 # Horo5 — agent and contributor guide
 
-This repo is the **HORO** storefront and related services (`web/`, `web-next/`, `medusa-backend/`, `shopify-headless/`). It is **not** the PosalPro MVP2 app tree referenced inside some `doc/` files.
+This repo is the **HORO** storefront and related services (`web-next/`, `medusa-backend/`, `shopify-headless/`). Storefront UI and client logic live under `web-next/src/storefront/`. It is **not** the PosalPro MVP2 app tree referenced inside some `doc/` files.
 
 ## Authoritative docs (repo root `doc/`)
 
@@ -13,8 +13,7 @@ This repo is the **HORO** storefront and related services (`web/`, `web-next/`, 
 
 ## Horo5 quality gates
 
-- **`web-next/`** (Next.js app): from this directory run `npm run type-check` and `npm run lint` before treating UI work as done.
-- **`web/`** (Vite source consumed by `web-next`): keep `npx tsc --noEmit` clean when changing shared `web/src`.
+- **`web-next/`** (Next.js app + storefront under `src/storefront/`): from this directory run `npm run type-check` and `npm run lint` before treating UI work as done.
 - **`medusa-backend/`**: follow that package’s README and env templates. **Local is the source of truth** for Medusa: align Railway (code revision, migrations, seeded data, env keys, media URLs) with local using the parity table in [`medusa-backend/README.md`](medusa-backend/README.md) (section “Local is the source of truth”). Verify DB catalog parity with `npm run parity:snapshot:local`, `npx @railway/cli run npm run parity:snapshot:remote`, and `npm run parity:check` from `medusa-backend/`.
 
 ## SSR / hydration (required for `web-next`)

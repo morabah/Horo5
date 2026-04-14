@@ -1,7 +1,7 @@
 "use client";
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
-import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from "../../../web/src/data/domain-config";
+import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from "@/storefront/data/domain-config";
 
 type Props = { children: ReactNode };
 type State = { hasError: boolean };

@@ -1,7 +1,7 @@
 "use client";
 
-import type { Product, RuntimeCatalog } from "../../../web/src/data/site";
-import { ProductDetail } from "../../../web/src/pages/ProductDetail";
+import type { Product, RuntimeCatalog } from "@/storefront/data/site";
+import { ProductDetail } from "@/storefront/pages/ProductDetail";
 
 export function ProductDetailPage({
   slug,

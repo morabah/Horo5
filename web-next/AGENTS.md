@@ -6,6 +6,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Horo5 context
 
-- Storefront UI lives under `../web/src` and is mounted from this app (`experimental.externalDir`). Shared code must stay **SSR-safe**: no `localStorage` / `sessionStorage` / `navigator` in the initial render path unless defaults match the server.
+- Storefront UI and shared client logic live under **`src/storefront/`** (import as `@/storefront/...`). Code must stay **SSR-safe**: no `localStorage` / `sessionStorage` / `navigator` in the initial render path unless defaults match the server.
 - Repo-wide guidance and how `doc/*` maps to this project: **[`../AGENTS.md`](../AGENTS.md)**.
 - Deep React/Next practice reference: **[`../doc/Agent.md`](../doc/Agent.md)**.

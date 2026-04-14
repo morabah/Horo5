@@ -1,8 +1,8 @@
 "use client";
 
-import type { Occasion } from "../../../web/src/data/site";
+import type { Occasion } from "@/storefront/data/site";
 import { RouterContextProvider } from "@/lib/router-context";
-import { OccasionCollection } from "../../../web/src/pages/OccasionCollection";
+import { OccasionCollection } from "@/storefront/pages/OccasionCollection";
 
 export function OccasionCollectionPage({
   initialOccasion,

@@ -1,6 +1,6 @@
 "use client";
 
-import { ShopByFeeling } from "../../../../../web/src/pages/ShopByFeeling";
+import { ShopByFeeling } from "@/storefront/pages/ShopByFeeling";
 import { RouterContextProvider } from "@/lib/router-context";
 
 export default function Page() {

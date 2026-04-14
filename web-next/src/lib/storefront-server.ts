@@ -12,7 +12,7 @@ import {
   type ProductSizeKey,
   type RuntimeCatalog,
   type Subfeeling,
-} from "../../../web/src/data/site";
+} from "@/storefront/data/site";
 
 function feelingFromCatalog(slug: string, catalog: Pick<RuntimeCatalog, "feelings"> | null | undefined): Feeling | undefined {
   if (catalog?.feelings?.length) {

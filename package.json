@@ -1,7 +1,7 @@
 {
   "name": "horo5",
   "private": true,
-  "description": "Monorepo root. Only `next` here so Vercel detects the framework and `npm ci` hoists one React tree; do not add react/react-dom here — that duplicates web-next and breaks TS/JSX for ../web imports.",
+  "description": "Monorepo root. Only `next` here so Vercel detects the framework and `npm ci` hoists one React tree; do not add react/react-dom here — that duplicates web-next and breaks TypeScript resolution.",
   "scripts": {
     "build": "npm run build --prefix web-next"
   },

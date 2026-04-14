@@ -4,14 +4,11 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { AppErrorBoundary } from "./app-error-boundary";
-import { FunnelNavigationTracker } from "../../../web/src/components/FunnelNavigationTracker";
-import { Nav } from "../../../web/src/components/Nav";
-import { Footer } from "../../../web/src/components/Footer";
+import { FunnelNavigationTracker } from "@/storefront/components/FunnelNavigationTracker";
+import { Nav } from "@/storefront/components/Nav";
+import { Footer } from "@/storefront/components/Footer";
 
-/**
- * Same chrome as `web/src/components/Layout.tsx` but uses page `children` instead of
- * `<Outlet />` (the Next.js react-router shim does not implement Outlet).
- */
+/** App shell for main storefront pages: skip link, nav, footer, analytics wrapper. */
 export function StorefrontChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "/";
   const isHome = pathname === "/";

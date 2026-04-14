@@ -3,7 +3,7 @@
 > **Horo5 (this repo)**: Many paths and npm scripts below refer to the PosalPro
 > MVP2 app layout. For Horo5, use **[`../AGENTS.md`](../AGENTS.md)** to see what
 > applies (shared principles vs PosalPro-only requirements). Run checks from
-> `web-next/`, `web/`, or `medusa-backend/` as appropriate.
+> `web-next/` or `medusa-backend/` as appropriate.
 
 > **Purpose**: This document defines mandatory patterns and standards for
 > PosalPro MVP2 development. Follow Required items strictly; Recommended items

@@ -1,8 +1,11 @@
 .DS_Store
 **/.DS_Store
 .vercel
-/node_modules
+# Ignore dependency trees anywhere in the monorepo (not only repo root).
+node_modules/
 /.next
 /web-next/.next
 /web-next/public/images
 /web-next/public/brand
+# Vite app removed from git; ignore stray local `web/` (build output, old checkouts).
+/web/

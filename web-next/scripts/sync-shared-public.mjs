@@ -6,11 +6,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const webNextDir = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(webNextDir, "..");
+/** Legacy path when `web/` mirrored public assets into Next; optional if that tree exists again. */
 const sharedPublicDir = path.join(repoRoot, "web", "public");
 const appPublicDir = path.join(webNextDir, "public");
 
 if (!fs.existsSync(sharedPublicDir)) {
-  console.warn(`[public-sync] Shared public directory not found: ${sharedPublicDir}`);
+  // Next-only layout: canonical assets are already under web-next/public.
   process.exit(0);
 }
 

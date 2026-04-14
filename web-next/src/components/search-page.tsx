@@ -1,7 +1,7 @@
 "use client";
 
 import { RouterContextProvider } from "@/lib/router-context";
-import { Search } from "../../../web/src/pages/Search";
+import { Search } from "@/storefront/pages/Search";
 
 export function SearchPage() {
   return (

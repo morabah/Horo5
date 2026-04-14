@@ -136,7 +136,7 @@ async function loadLegacyCatalogPayload(): Promise<{
   legacyProducts: LegacyProduct[]
 }> {
   const fixturesModuleUrl = pathToFileURL(
-    resolveRepoFile("../web/src/data/dev-fixtures.ts", "web/src/data/dev-fixtures.ts")
+    resolveRepoFile("../web-next/src/storefront/data/dev-fixtures.ts", "web-next/src/storefront/data/dev-fixtures.ts")
   ).href
 
   const fixturesModule = (await import(fixturesModuleUrl)) as {
@@ -257,7 +257,7 @@ function resolveStorefrontPublicAsset(src: string) {
     return src
   }
 
-  return `../web/public${src}`
+  return `../web-next/public${src}`
 }
 
 const ARTIST_SEED = [

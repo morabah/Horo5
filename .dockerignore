@@ -10,15 +10,15 @@ audits
 
 # Other apps (not part of this Medusa image)
 shopify-headless
-web-next
 wireframes
 
-# Vite storefront — Dockerfile copies only web/public/images explicitly
-web/src
-web/dist
-web/node_modules
+# Next storefront — Dockerfile copies web-next/public/images for Egypt seed paths
+web-next/node_modules
+web-next/.next
+web-next/src
+web-next/scripts
 # Seed assets only use tees/ + hero/; shrink context further
-web/public/images/proof
+web-next/public/images/proof
 
 # Docs / brand files at repo root (folder name includes a trailing space)
 *.md
@@ -28,5 +28,4 @@ Guidelines
 # Next / Vercel config for other deploys (not used in this image)
 vercel.json
 
-web-next/.next
 shopify-headless/.next

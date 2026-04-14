@@ -17,8 +17,8 @@ RUN npm config set fetch-retries 10 && \
     npm ci --no-audit --no-fund
 
 COPY medusa-backend/ ./
-# Seed script resolves image paths like ../web/public/... from /app → /web/public/...
-COPY web/public/images /web/public/images
+# Seed resolves ../web-next/public/... from medusa-backend cwd; map into container as /web-next/public
+COPY web-next/public/images /web-next/public/images
 
 # medusa build (admin + server) is memory-heavy
 ENV NODE_OPTIONS=--max-old-space-size=6144

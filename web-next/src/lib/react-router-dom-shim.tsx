@@ -5,7 +5,7 @@ import { useCallback } from "react";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { useRouterContext } from "./router-context";
 
-/** Used by `web/src/seo/routeMeta.ts` via `react-router-dom` import map. */
+/** Used by `@/storefront/seo/routeMeta.ts` via `react-router-dom` import map. */
 export { matchPath } from "react-router";
 
 function pathIsActive(linkTo: string, pathname: string, end: boolean): boolean {
@@ -135,14 +135,6 @@ export function Navigate({ to }: { to: string }) {
 
 export function BrowserRouter({ children }: { children: ReactNode }) {
   return <>{children}</>;
-}
-
-export function Routes({ children }: { children: ReactNode }) {
-  return <>{children}</>;
-}
-
-export function Route() {
-  return null;
 }
 
 export { usePathname };

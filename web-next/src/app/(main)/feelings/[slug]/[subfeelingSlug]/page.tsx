@@ -1,6 +1,6 @@
 "use client";
 
-import { FeelingCollection } from "../../../../../../../web/src/pages/FeelingCollection";
+import { FeelingCollection } from "@/storefront/pages/FeelingCollection";
 import { RouterContextProvider } from "@/lib/router-context";
 import { useParams } from "next/navigation";
 
