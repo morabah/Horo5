@@ -202,9 +202,9 @@ If `artist` is missing, the API falls back to **`metadata.artistSlug`** plus the
 
 Without Redis, Medusa uses in-memory locking and event processing, causing 409 conflicts on concurrent cart operations. See `.env.template` for setup instructions.
 
-When `REDIS_URL` is set, `medusa-config.ts` automatically enables:
-- **eventBusModule** (`@medusajs/medusa/event-bus-redis`) — async event processing
-- **lockingModule** (`@medusajs/medusa/locking-redis`) — distributed locking for cart/order ops
+When `REDIS_URL` is set, `medusa-config.ts` registers in **`modules`**:
+- **`@medusajs/medusa/event-bus-redis`** — async event processing (see [Redis Event Module](https://docs.medusajs.com/resources/infrastructure-modules/event/redis))
+- **`@medusajs/medusa/locking`** with **`@medusajs/locking-redis`** as the default provider — distributed locking for cart/order ops
 
 ### Database indexes
 

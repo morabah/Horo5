@@ -89,20 +89,16 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET!,
     },
   },
-  ...(process.env.REDIS_URL
-    ? {
-        eventBusModule: {
-          resolve: "@medusajs/medusa/event-bus-redis",
-          options: {
-            redisUrl: process.env.REDIS_URL,
-          },
-        },
-      }
-    : {}),
   modules: [
     ...(fileModule ? [fileModule] : []),
     ...(process.env.REDIS_URL
       ? [
+          {
+            resolve: "@medusajs/medusa/event-bus-redis",
+            options: {
+              redisUrl: process.env.REDIS_URL,
+            },
+          },
           {
             resolve: "@medusajs/medusa/locking",
             options: {
