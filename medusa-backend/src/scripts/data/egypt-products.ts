@@ -5,7 +5,8 @@ export type EgyptProductSeed = {
   imagePath: string
 }
 
-export const EGYPT_PRODUCT_PRICE_EGP = 79900
+/** Integer EGP (whole pounds). Medusa stores this directly when `currency.decimal_digits = 0` for EGP. */
+export const EGYPT_PRODUCT_PRICE_EGP = 799
 export const EGYPT_PRODUCT_SIZES = ["S", "M", "L", "XL", "XXL"] as const
 
 export const egyptProducts: EgyptProductSeed[] = [

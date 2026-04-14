@@ -8,6 +8,7 @@ import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, withSupportMessage } fr
 import { useUiLocale } from '../i18n/ui-locale';
 import { getOrder } from '../lib/medusa/client';
 import { getOrderGiftWrapEgp, toOrderLines } from '../lib/medusa/adapters';
+import { medusaAmountToEgp } from '../lib/medusa/egp-amount';
 import { useStableNow } from '../runtime/render-time';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { formatEgp } from '../utils/formatPrice';
@@ -27,9 +28,9 @@ function createSnapshotFromOrder(args: {
   const { fallback, isArabic, order, now } = args;
   const lines = toOrderLines(order);
   const giftWrapEgp = getOrderGiftWrapEgp(order);
-  const shipping = Math.round(((order.shipping_total ?? order.shipping_methods?.[0]?.amount ?? 0) || 0) / 100);
-  const subtotal = Math.round(((order.subtotal ?? 0) || 0) / 100);
-  const total = Math.round(((order.total ?? 0) || 0) / 100);
+  const shipping = medusaAmountToEgp((order.shipping_total ?? order.shipping_methods?.[0]?.amount ?? 0) || 0);
+  const subtotal = medusaAmountToEgp((order.subtotal ?? 0) || 0);
+  const total = medusaAmountToEgp((order.total ?? 0) || 0);
   const firstPaymentSession = order.payment_collections?.[0]?.payment_sessions?.[0];
   const providerId = firstPaymentSession?.provider_id || '';
   const paymentMethod: LastOrderSnapshot['paymentMethod'] =

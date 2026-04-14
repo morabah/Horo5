@@ -14,6 +14,7 @@
   ],
   "scripts": {
     "migrate": "medusa db:migrate",
+    "migrate:egp-prices": "medusa exec ./src/scripts/apply-egp-whole-pound-prices.ts",
     "build": "medusa build",
     "seed": "medusa exec ./src/scripts/seed-egypt-catalog.ts",
     "seed:egypt": "medusa exec ./src/scripts/seed-egypt-catalog.ts",

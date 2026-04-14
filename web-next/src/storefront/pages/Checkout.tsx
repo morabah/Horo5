@@ -39,6 +39,7 @@ import {
   toCartLines,
   toOrderLines,
 } from '../lib/medusa/adapters';
+import { medusaAmountToEgp } from '../lib/medusa/egp-amount';
 import type {
   CheckoutStatusResponse,
   MedusaCart,
@@ -383,9 +384,9 @@ function buildOrderSnapshot(args: {
 }): LastOrderSnapshot {
   const { email, estimatedDeliveryRange, fullName, isArabic, line1, order, paymentMethod, phone, shippingLabel, whatsappOptIn } = args;
   const lines = toOrderLines(order);
-  const subtotal = Math.round(((order.subtotal ?? 0) || 0) / 100);
-  const shipping = Math.round(((order.shipping_total ?? order.shipping_methods?.[0]?.amount ?? 0) || 0) / 100);
-  const total = Math.round(((order.total ?? 0) || 0) / 100);
+  const subtotal = medusaAmountToEgp((order.subtotal ?? 0) || 0);
+  const shipping = medusaAmountToEgp((order.shipping_total ?? order.shipping_methods?.[0]?.amount ?? 0) || 0);
+  const total = medusaAmountToEgp((order.total ?? 0) || 0);
   const giftWrapEgp = getOrderGiftWrapEgp(order);
   const paymentLabel = paymentMethod === 'card'
     ? isArabic ? 'بطاقة' : 'Card'
@@ -562,17 +563,17 @@ export function Checkout() {
 
   const shippingCost = useMemo(() => {
     if (typeof checkoutCart?.shipping_total === 'number') {
-      return Math.round(checkoutCart.shipping_total / 100);
+      return medusaAmountToEgp(checkoutCart.shipping_total);
     }
     if (typeof shippingOption?.amount === 'number') {
-      return Math.round(shippingOption.amount / 100);
+      return medusaAmountToEgp(shippingOption.amount);
     }
     return 0;
   }, [checkoutCart?.shipping_total, shippingOption?.amount]);
 
   const orderTotal = useMemo(() => {
     if (typeof checkoutCart?.total === 'number') {
-      return Math.round(checkoutCart.total / 100);
+      return medusaAmountToEgp(checkoutCart.total);
     }
     return subtotalEgp + giftWrapEgp + shippingCost;
   }, [checkoutCart?.total, giftWrapEgp, shippingCost, subtotalEgp]);
@@ -1723,7 +1724,7 @@ function OrderSummary({
     [cart, items],
   );
   const total = typeof cart?.total === 'number'
-    ? Math.round(cart.total / 100)
+    ? medusaAmountToEgp(cart.total)
     : subtotalEgp + giftWrapEgp + shipping;
 
   async function runWithRefresh(mutate: () => void) {

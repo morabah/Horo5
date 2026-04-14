@@ -7,7 +7,7 @@ builder = "nixpacks"
 buildCommand = "npm ci && npm run build"
 
 [deploy]
-preDeployCommand = ["npm run migrate"]
+preDeployCommand = ["npm run migrate", "npm run migrate:egp-prices"]
 startCommand = "npm run start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300

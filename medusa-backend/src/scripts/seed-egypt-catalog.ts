@@ -107,7 +107,7 @@ const EGYPT_HERO_FEELING_BY_HANDLE: Record<string, string> = {
 }
 
 function buildEgyptHeroLegacyProducts(): LegacyProduct[] {
-  const priceEgp = Math.round(EGYPT_PRODUCT_PRICE_EGP / 100)
+  const priceEgp = EGYPT_PRODUCT_PRICE_EGP
   return egyptProducts.map((row) => ({
     artistSlug: "nada-ibrahim",
     feelingSlug: EGYPT_HERO_FEELING_BY_HANDLE[row.handle] ?? "mood",
@@ -802,7 +802,7 @@ const EGYPT_FULFILLMENT_SET_NAME = "Egypt Delivery"
 const EGYPT_SHIPPING_OPTION_NAME = "Standard"
 const EGYPT_SHIPPING_OPTION_CODE = "standard"
 const GIFT_WRAP_HANDLE = "gift-wrap"
-const GIFT_WRAP_PRICE_AMOUNT = 20000
+const GIFT_WRAP_PRICE_AMOUNT = 200
 
 async function ensureLinkExists(
   link: { create: (input: Record<string, unknown>) => Promise<unknown> },
@@ -1011,7 +1011,7 @@ async function ensureEgyptCheckoutInfrastructure(args: {
           },
           prices: [
             {
-              amount: 6000,
+              amount: 60,
               region_id: regionId,
             },
           ],
@@ -1232,7 +1232,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
         options: { Size: size },
         manage_inventory: false,
         allow_backorder: true,
-        prices: [{ amount: product.priceEgp * 100, currency_code: "egp" }],
+        prices: [{ amount: product.priceEgp, currency_code: "egp" }],
       })),
       sales_channels: [{ id: defaultSalesChannel[0].id }],
     })

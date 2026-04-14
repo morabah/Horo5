@@ -24,6 +24,7 @@ import {
   LEGACY_FEELING_TO_TAXONOMY,
   LEGACY_SUBFEELING_TO_TAXONOMY,
 } from "./legacy-compat"
+import { medusaAmountToEgp } from "../egp-amount"
 import type {
   StorefrontArtistDTO,
   StorefrontCatalogDTO,
@@ -486,9 +487,9 @@ function variantPrice(
   const originalAmount = variant.calculated_price?.original_amount
 
   if (typeof calculatedAmount === "number") {
-    const priceEgp = Math.round(calculatedAmount / 100)
+    const priceEgp = medusaAmountToEgp(calculatedAmount)
     const originalPriceEgp =
-      typeof originalAmount === "number" ? Math.round(originalAmount / 100) : null
+      typeof originalAmount === "number" ? medusaAmountToEgp(originalAmount) : null
     const hasDiscount = typeof originalPriceEgp === "number" && originalPriceEgp > priceEgp
 
     return {
@@ -506,7 +507,7 @@ function variantPrice(
       currency_code: "egp",
       is_discounted: false,
       original_price_egp: null,
-      price_egp: Math.round(egpPrice.amount / 100),
+      price_egp: medusaAmountToEgp(egpPrice.amount),
     }
   }
 

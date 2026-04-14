@@ -37,7 +37,7 @@ What this seeds:
   - `metadata.titleEn`
   - `metadata.descriptionEn`
   - size variants `S/M/L/XL/XXL`
-  - variant prices: `79900` (`egp` minor units = 799 EGP)
+  - variant prices: **`799`** integer EGP (`currency.decimal_digits = 0` for `egp`). **`medusa db:migrate` does not run `src/migrations/`** in Medusa v2; after `npm run migrate`, run **`npm run migrate:egp-prices`** once per database so `price.amount` and `currency.decimal_digits` match the storefront (see `src/scripts/apply-egp-whole-pound-prices.ts`). **Re-seed is not required** for prices once `price` rows are correct—clear the browser tab’s `sessionStorage` key `horo:lastCatalog` or hard-refresh so Next reloads the catalog from Medusa.
 - Product images uploaded from:
   - `../web-next/public/images/tees/emotions_vibe_1_1774374034307.png`
   - `../web-next/public/images/tees/zodiac_vibe_1_1774374128029.png`

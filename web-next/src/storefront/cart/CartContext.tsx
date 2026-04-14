@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { trackAddToCart } from '../analytics/events';
 import { getProduct, type ProductSizeKey } from '../data/site';
+import { medusaAmountToEgp } from '../lib/medusa/egp-amount';
 import {
   addLineItem,
   createCart,
@@ -124,11 +125,11 @@ type GiftWrapOffer = {
 };
 
 function getMedusaProductPriceEgp(product: Pick<MedusaProduct, 'variants'> | null | undefined): number | null {
-  const priceCents =
+  const raw =
     product?.variants?.[0]?.calculated_price?.calculated_amount ??
     product?.variants?.[0]?.prices?.find((price) => price.currency_code.toLowerCase() === 'egp')?.amount;
 
-  return typeof priceCents === 'number' ? Math.round(priceCents / 100) : null;
+  return typeof raw === 'number' ? medusaAmountToEgp(raw) : null;
 }
 
 const QTY_DEBOUNCE_MS = 300;

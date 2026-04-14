@@ -7,6 +7,7 @@ import type {
   MedusaProduct,
   MedusaProductVariant,
 } from "./types"
+import { medusaAmountToEgp } from "./egp-amount"
 
 const DEFAULT_SIZE: ProductSizeKey = "M"
 export const GIFT_WRAP_PRODUCT_HANDLE = "gift-wrap"
@@ -81,7 +82,7 @@ export function toProduct(medusa: MedusaProduct): Product {
     primaryFeelingSlug,
     feelingSlug,
     occasionSlugs,
-    priceEgp: Math.round(((calculatedPrice ?? fallbackPrice ?? 0) as number) / 100),
+    priceEgp: medusaAmountToEgp((calculatedPrice ?? fallbackPrice ?? 0) as number),
     story:
       (typeof metadata.story === "string" && metadata.story) ||
       medusa.description ||
@@ -136,9 +137,7 @@ function toCartLine(item: MedusaCartLineItem): CartLine {
         ? size
         : "M",
     unitPriceEgp:
-      typeof item.unit_price === "number"
-        ? Math.round(item.unit_price / 100)
-        : undefined,
+      typeof item.unit_price === "number" ? medusaAmountToEgp(item.unit_price) : undefined,
     variantId: item.variant_id,
   }
 }
@@ -161,11 +160,11 @@ export function getCartGiftWrapEgp(cart: MedusaCart): number {
     typeof giftWrapLine.unit_price === "number" ? giftWrapLine.unit_price : undefined
 
   if (typeof total === "number") {
-    return Math.round(total / 100)
+    return medusaAmountToEgp(total)
   }
 
   if (typeof unitPrice === "number") {
-    return Math.round((unitPrice * giftWrapLine.quantity) / 100)
+    return medusaAmountToEgp(unitPrice * giftWrapLine.quantity)
   }
 
   return 0
@@ -187,11 +186,11 @@ export function getOrderGiftWrapEgp(order: MedusaOrder): number {
     typeof giftWrapLine.unit_price === "number" ? giftWrapLine.unit_price : undefined
 
   if (typeof total === "number") {
-    return Math.round(total / 100)
+    return medusaAmountToEgp(total)
   }
 
   if (typeof unitPrice === "number") {
-    return Math.round((unitPrice * giftWrapLine.quantity) / 100)
+    return medusaAmountToEgp(unitPrice * giftWrapLine.quantity)
   }
 
   return 0
