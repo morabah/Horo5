@@ -97,16 +97,29 @@ module.exports = defineConfig({
             redisUrl: process.env.REDIS_URL,
           },
         },
-        lockingModule: {
-          resolve: "@medusajs/locking-redis",
-          options: {
-            redisUrl: process.env.REDIS_URL,
-          },
-        },
       }
     : {}),
   modules: [
     ...(fileModule ? [fileModule] : []),
+    ...(process.env.REDIS_URL
+      ? [
+          {
+            resolve: "@medusajs/medusa/locking",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/locking-redis",
+                  id: "locking-redis",
+                  is_default: true,
+                  options: {
+                    redisUrl: process.env.REDIS_URL,
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      : []),
     {
       resolve: "@medusajs/payment",
       options: {
