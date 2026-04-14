@@ -56,6 +56,9 @@ const fileModule = s3
     }
   : null
 
+const redisUrl = process.env.REDIS_URL?.trim()
+const cacheRedisUrl = process.env.CACHE_REDIS_URL?.trim() || redisUrl
+
 const paymobConfig = (() => {
   const apiKey = process.env.PAYMOB_API_KEY?.trim()
   const hmacSecret = process.env.PAYMOB_HMAC_SECRET?.trim()
@@ -87,7 +90,7 @@ module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     databaseDriverOptions,
-    ...(process.env.REDIS_URL ? { redisUrl: process.env.REDIS_URL } : {}),
+    ...(redisUrl ? { redisUrl } : {}),
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -98,12 +101,12 @@ module.exports = defineConfig({
   },
   modules: [
     ...(fileModule ? [fileModule] : []),
-    ...(process.env.REDIS_URL
+    ...(redisUrl
       ? [
           {
             resolve: "@medusajs/medusa/event-bus-redis",
             options: {
-              redisUrl: process.env.REDIS_URL,
+              redisUrl,
             },
           },
           {
@@ -115,7 +118,27 @@ module.exports = defineConfig({
                   id: "locking-redis",
                   is_default: true,
                   options: {
-                    redisUrl: process.env.REDIS_URL,
+                    redisUrl,
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      : []),
+    ...(cacheRedisUrl
+      ? [
+          {
+            resolve: "@medusajs/medusa/caching",
+            options: {
+              ttl: 300,
+              providers: [
+                {
+                  resolve: "@medusajs/caching-redis",
+                  id: "caching-redis",
+                  is_default: true,
+                  options: {
+                    redisUrl: cacheRedisUrl,
                   },
                 },
               ],

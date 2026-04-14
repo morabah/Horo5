@@ -104,8 +104,33 @@ export async function createCart(regionId?: string): Promise<MedusaCartResponse>
   })
 }
 
+/** Store API `fields` for cart reads used by checkout + bag sync (smaller payload than default expansion). */
+export const STORE_CART_CHECKOUT_FIELDS = [
+  "id",
+  "email",
+  "region_id",
+  "currency_code",
+  "completed_at",
+  "metadata",
+  "subtotal",
+  "total",
+  "shipping_total",
+  "tax_total",
+  "*billing_address",
+  "*shipping_address",
+  "*items",
+  "*items.variant",
+  "*items.variant.product",
+  "*payment_collection",
+  "*payment_collection.payment_sessions",
+  "*shipping_methods",
+  "*region",
+].join(",")
+
 export async function getCart(cartId: string): Promise<MedusaCartResponse> {
-  return request<MedusaCartResponse>(`/store/carts/${cartId}`)
+  return request<MedusaCartResponse>(
+    withQuery(`/store/carts/${cartId}`, { fields: STORE_CART_CHECKOUT_FIELDS }),
+  )
 }
 
 export async function addLineItem(cartId: string, variantId: string, quantity: number): Promise<MedusaCartResponse> {

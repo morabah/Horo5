@@ -18,6 +18,7 @@ import {
   removeLineItem,
   updateLineItem,
 } from '../lib/medusa/client';
+import { prefetchCheckoutAuxForCart } from '../lib/medusa/checkout-aux-cache';
 import {
   GIFT_WRAP_PRODUCT_HANDLE,
   getCartGiftWrapEgp,
@@ -165,6 +166,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setMedusaCartId(cart.id);
   }, []);
 
+  const trackOp = useCallback((p: Promise<unknown>) => {
+    pendingOpsRef.current.add(p);
+    void p.finally(() => {
+      pendingOpsRef.current.delete(p);
+    });
+  }, []);
+
+  const syncFromMedusaCart = useCallback(async (cartId: string) => {
+    const generation = cartGenerationRef.current;
+    try {
+      const { cart } = await getCart(cartId);
+      // If the cart was cleared while this fetch was in flight, discard the result
+      // so we don't accidentally re-set the medusaCartId after clearCart().
+      if (cartGenerationRef.current !== generation) return;
+      applyCartFromResponse(cart, generation);
+    } catch {
+      // Keep local fallback state if backend is unavailable.
+    }
+  }, [applyCartFromResponse]);
+
   const flushPendingQtyUpdatesInternal = useCallback(async () => {
     const pending = new Map(pendingQtyByKeyRef.current);
     pendingQtyByKeyRef.current.clear();
@@ -173,18 +194,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!cartId) return;
     const gen = cartGenerationRef.current;
     let lastCart: MedusaCart | null = null;
+    let hadError = false;
     for (const { lineId, qty } of pending.values()) {
       try {
         const { cart } = await updateLineItem(cartId, lineId, qty);
         lastCart = cart;
       } catch {
-        /* keep optimistic UI */
+        hadError = true;
       }
+    }
+    if (hadError) {
+      await syncFromMedusaCart(cartId);
+      return;
     }
     if (lastCart && cartGenerationRef.current === gen) {
       applyCartFromResponse(lastCart, gen);
     }
-  }, [applyCartFromResponse]);
+  }, [applyCartFromResponse, syncFromMedusaCart]);
 
   flushPendingQtyUpdatesInternalRef.current = flushPendingQtyUpdatesInternal;
 
@@ -213,26 +239,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return lastServerCartRef.current;
   }, []);
 
-  const trackOp = useCallback((p: Promise<unknown>) => {
-    pendingOpsRef.current.add(p);
-    void p.finally(() => {
-      pendingOpsRef.current.delete(p);
-    });
-  }, []);
-
-  const syncFromMedusaCart = useCallback(async (cartId: string) => {
-    const generation = cartGenerationRef.current;
-    try {
-      const { cart } = await getCart(cartId);
-      // If the cart was cleared while this fetch was in flight, discard the result
-      // so we don't accidentally re-set the medusaCartId after clearCart().
-      if (cartGenerationRef.current !== generation) return;
-      applyCartFromResponse(cart, generation);
-    } catch {
-      // Keep local fallback state if backend is unavailable.
-    }
-  }, [applyCartFromResponse]);
-
   useEffect(() => {
     setItems(loadItems());
     setMedusaCartId(loadMedusaCartId());
@@ -257,6 +263,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     medusaCartIdRef.current = medusaCartId;
   }, [medusaCartId]);
+
+  useEffect(() => {
+    if (!miniCartOpen || !medusaCartId) return;
+    prefetchCheckoutAuxForCart(medusaCartId);
+  }, [miniCartOpen, medusaCartId]);
 
   const ensureMedusaCartId = useCallback(async () => {
     if (medusaCartId) return medusaCartId;

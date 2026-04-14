@@ -27,6 +27,14 @@ import {
   updateCart,
 } from '../lib/medusa/client';
 import {
+  CHECKOUT_AUX_CACHE_MAX_AGE_MS,
+  getFreshPaymentProviders,
+  getFreshShippingOptions,
+  normalizePaymentProviders,
+  setPaymentProvidersCache,
+  setShippingOptionsCache,
+} from '../lib/medusa/checkout-aux-cache';
+import {
   getOrderGiftWrapEgp,
   toCartLines,
   toOrderLines,
@@ -171,10 +179,6 @@ function splitFullName(fullName: string) {
     firstName: parts[0],
     lastName: parts.slice(1).join(' '),
   };
-}
-
-function normalizePaymentProviders(providers: MedusaPaymentProvider[]) {
-  return providers.filter((provider) => typeof provider.id === 'string' && provider.id.trim().length > 0);
 }
 
 function resolveCheckoutPaymentMethodKind(providerId: string): CheckoutPaymentMethodKind {
@@ -644,6 +648,23 @@ export function Checkout() {
         if (cancelled) return;
         hydrateCheckoutFromCart(cart);
 
+        const cachedShip =
+          cart.region_id ? getFreshShippingOptions(activeCartId, CHECKOUT_AUX_CACHE_MAX_AGE_MS) : null;
+        const cachedProv =
+          cart.region_id ? getFreshPaymentProviders(cart.region_id, CHECKOUT_AUX_CACHE_MAX_AGE_MS) : null;
+
+        if (cachedShip?.length) {
+          const selectedMethod = cart.shipping_methods?.[0];
+          const resolvedFromCache =
+            selectedMethod
+              ? cachedShip.find((option) => option.id === selectedMethod.shipping_option_id) || cachedShip[0]
+              : cachedShip[0];
+          setShippingOption(resolvedFromCache);
+        }
+        if (cachedProv?.length) {
+          setPaymentProviders(cachedProv);
+        }
+
         const [liveShippingOptions, liveProviders] = await Promise.all([
           cart.region_id
             ? listShippingOptions(activeCartId).then((response) => response.shipping_options).catch(() => [])
@@ -663,6 +684,11 @@ export function Checkout() {
           null;
         setShippingOption(resolvedShippingOption);
         setPaymentProviders(liveProviders);
+
+        setShippingOptionsCache(activeCartId, liveShippingOptions);
+        if (cart.region_id) {
+          setPaymentProvidersCache(cart.region_id, liveProviders);
+        }
 
         if (isPaymobReturn) {
           let paymobStatus = status;
@@ -807,6 +833,23 @@ export function Checkout() {
       cartHint && cartHint.id === activeCartId ? cartHint : (await getCart(activeCartId)).cart;
     setCheckoutCart(cart);
     const selectedShippingMethod = cart.shipping_methods?.[0];
+
+    const cachedShip = getFreshShippingOptions(activeCartId, CHECKOUT_AUX_CACHE_MAX_AGE_MS);
+    const cachedProv = cart.region_id
+      ? getFreshPaymentProviders(cart.region_id, CHECKOUT_AUX_CACHE_MAX_AGE_MS)
+      : null;
+
+    if (selectedShippingMethod && cachedShip?.length) {
+      const resolvedFromCache =
+        cachedShip.find((option) => option.id === selectedShippingMethod.shipping_option_id) ||
+        cachedShip[0] ||
+        null;
+      setShippingOption(resolvedFromCache);
+    }
+    if (cachedProv?.length) {
+      setPaymentProviders(cachedProv);
+    }
+
     const [liveShippingOptions, liveProviders] = await Promise.all([
       selectedShippingMethod
         ? listShippingOptions(activeCartId).then((response) => response.shipping_options).catch(() => [])
@@ -827,6 +870,11 @@ export function Checkout() {
     }
 
     setPaymentProviders(liveProviders);
+
+    setShippingOptionsCache(activeCartId, liveShippingOptions);
+    if (cart.region_id) {
+      setPaymentProvidersCache(cart.region_id, liveProviders);
+    }
 
     return cart;
   }
@@ -1058,6 +1106,11 @@ export function Checkout() {
           .then((response) => normalizePaymentProviders(response.payment_providers))
           .catch(() => []);
         setPaymentProviders(liveProviders);
+      }
+
+      setShippingOptionsCache(activeCartId, liveShippingOptions);
+      if (refreshedCart.region_id) {
+        setPaymentProvidersCache(refreshedCart.region_id, liveProviders);
       }
 
       return {

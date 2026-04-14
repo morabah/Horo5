@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@medusajs/admin-sdk": "^2.13.6",
+    "@medusajs/caching-redis": "^2.13.6",
     "@medusajs/cli": "^2.13.6",
     "@medusajs/framework": "^2.13.6",
     "@medusajs/locking-redis": "^2.13.6",
