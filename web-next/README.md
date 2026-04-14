@@ -60,4 +60,6 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
+**Monorepo (Horo5):** Prefer setting the Vercel project **Root Directory** to `web-next` so install/build run in the app folder and `.next` is in the right place. If the Git project root is the repo root instead, the root [`vercel.json`](../vercel.json) runs the build under `web-next` and adds a `.next` symlink for Vercel’s Next.js post-step.
+
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
