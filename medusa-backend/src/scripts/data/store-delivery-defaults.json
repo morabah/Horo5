@@ -1,0 +1,9 @@
+{
+  "standardMinDays": 2,
+  "standardMaxDays": 7,
+  "expressMinDays": 2,
+  "expressMaxDays": 4,
+  "cutoffHourLocal": 18,
+  "cutoffMinuteLocal": 0,
+  "standardMaxBusinessDays": 7
+}

@@ -18,6 +18,10 @@ async function resolveRevalidateTags(
 ): Promise<string[]> {
   const coarse = ["catalog", "taxonomy"] as string[]
 
+  if (eventName.startsWith("store.")) {
+    return [...coarse, "settings"]
+  }
+
   if (eventName.startsWith("product.product-category")) {
     return [...coarse, "taxonomy:feelings"]
   }
@@ -124,6 +128,7 @@ export default async function storefrontRevalidateHandler({
 
 export const config: SubscriberConfig = {
   event: [
+    "store.updated",
     "product.created",
     "product.updated",
     "product.deleted",

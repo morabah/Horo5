@@ -7,8 +7,11 @@ import {
   buildProductMetadata,
   fetchStorefrontCatalogServer,
   fetchStorefrontProductServer,
+  fetchStorefrontSettingsServer,
   logStorefrontFetchError,
 } from "@/lib/storefront-server";
+import { mergePdpDeliveryRules } from "@/storefront/data/domain-config";
+import type { PdpDeliveryRules } from "@/storefront/utils/deliveryEstimate";
 
 type ProductPageProps = {
   params: Promise<{
@@ -47,17 +50,26 @@ export async function generateMetadata({
 
 export default async function Page({ params }: ProductPageProps) {
   const { slug } = await params;
-  const [product, catalog] = await Promise.all([
+  const [product, catalog, deliveryMetadata] = await Promise.all([
     fetchStorefrontProductServer(slug),
     fetchStorefrontCatalogServer().catch((error) => {
       logStorefrontFetchError("[storefront] Failed to fetch catalog for product page", error, { slug });
       return null;
     }),
+    fetchStorefrontSettingsServer(),
   ]);
 
   if (!product) {
     notFound();
   }
+
+  if (process.env.NODE_ENV === "development" && deliveryMetadata == null) {
+    console.warn(
+      "[pdp] No store.metadata.delivery from Medusa — using built-in delivery windows. Check Admin Store → Metadata (key `delivery`) and GET /storefront/settings.",
+    );
+  }
+
+  const deliveryRules: PdpDeliveryRules = mergePdpDeliveryRules(deliveryMetadata);
 
   const jsonLd = buildProductJsonLd(product, catalog ?? undefined);
 
@@ -72,6 +84,7 @@ export default async function Page({ params }: ProductPageProps) {
         product={product}
         catalog={catalog}
         catalogProducts={catalog?.products}
+        deliveryRules={deliveryRules}
       />
     </>
   );

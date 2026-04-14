@@ -118,7 +118,7 @@ Treat **your machine + local Postgres** as canonical. **Railway** should run the
 | **Env vars** | Same *keys* and semantics as [`.env.template`](.env.template); production values differ only where required (URLs, secrets) | Mirror template on Medusa service; `MEDUSA_BACKEND_URL` must be the public Railway URL. |
 | **Media** | Files in bucket + URLs in DB point at a **publicly loadable** base (`MEDUSA_BACKEND_URL/store-media` when using the proxy) | Set S3/Railway bucket vars + `S3_USE_STORE_MEDIA_PROXY=true` as needed; run `npm run rewrite:store-media-urls:public` after URL changes. |
 
-**Laptop vs Railway CLI:** Railway’s internal `DATABASE_URL` is not reachable from your Mac. Reference **`DATABASE_PUBLIC_URL`** on the Medusa service and use the `*:public` npm scripts (they prefer it when set). See comments in [`.env.template`](.env.template).
+**Laptop vs Railway CLI:** Railway’s internal `DATABASE_URL` is not reachable from your Mac. Reference **`DATABASE_PUBLIC_URL`** on the Medusa service and use the `*:public` npm scripts (they run [`scripts/medusa-exec-public-db.sh`](scripts/medusa-exec-public-db.sh), which also **unsets Redis URLs** for that process so `redis.railway.internal` from `railway run` does not break `medusa exec` on your laptop). See [`.env.template`](.env.template).
 
 ### Automated parity check (local DB vs Railway DB)
 
@@ -185,6 +185,45 @@ PRODUCT_HANDLE=emotions-raw-nerve OCCASION_SLUG=just-because npm run clear:produ
 # Railway / DATABASE_PUBLIC_URL:
 PRODUCT_HANDLE=emotions-raw-nerve OCCASION_SLUG=just-because npm run clear:product-occasion-slug:public
 ```
+
+### Global PDP delivery windows (store metadata)
+
+The storefront reads **`GET /storefront/settings`** (Medusa) for `store.metadata.delivery`. Operators edit **Medusa Admin → Settings → Store → Metadata** and add a `delivery` object (JSON). The Next PDP still **computes date ranges** from “today” using Egypt-local business days; only the **numeric windows and cutoff** come from Medusa.
+
+**Apply the repo default delivery JSON to the store (CLI, merges into existing `store.metadata`):**
+
+```bash
+npm run apply:store-delivery-metadata
+# Railway / DATABASE_PUBLIC_URL:
+npm run apply:store-delivery-metadata:public
+```
+
+The canonical JSON file is [`src/scripts/data/store-delivery-defaults.json`](src/scripts/data/store-delivery-defaults.json) (same numbers as the storefront fallback).
+
+Example `metadata` fragment (merge with existing keys; do not remove unrelated metadata):
+
+```json
+{
+  "delivery": {
+    "standardMinDays": 3,
+    "standardMaxDays": 5,
+    "expressMinDays": 1,
+    "expressMaxDays": 2,
+    "cutoffHourLocal": 14,
+    "cutoffMinuteLocal": 0,
+    "standardMaxBusinessDays": 5
+  }
+}
+```
+
+- **`standardMinDays` / `standardMaxDays`:** range passed to the PDP “Standard · …” date line.
+- **`expressMinDays` / `expressMaxDays`:** range for the “Express · …” line.
+- **`cutoffHourLocal` / `cutoffMinuteLocal`:** same-day ship cutoff (Egypt local), 0–23 / 0–59.
+- **`standardMaxBusinessDays`:** optional; if omitted, defaults to **`standardMaxDays`** for the “often arrives by {date}” line.
+
+If `delivery` is missing or invalid, the storefront uses built-in defaults. After changing Store metadata, **`store.updated`** triggers Next on-demand revalidation when `STOREFRONT_REVALIDATE_*` is configured.
+
+**If numbers on the PDP do not change after you edit metadata:** (1) **Value shape** — `delivery` must be a JSON **object** (or a single JSON **string** that parses to an object). Flat keys like `standardMinDays` at the top level of Store metadata are ignored; nest them under `delivery`. (2) **Next cache** — in production, settings are cached up to **5 minutes** unless revalidation is configured. In local `next dev`, settings refetch every request (`revalidate: 0`). (3) **Verify Medusa** — `curl -H "x-publishable-api-key: …" http://localhost:9000/storefront/settings` should echo your `delivery` object.
 
 ### PDP “Illustrated by” artist (native Medusa metadata)
 

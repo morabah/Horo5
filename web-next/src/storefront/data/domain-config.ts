@@ -1,5 +1,102 @@
 // src/data/domain-config.ts
 
+import type { PdpDeliveryRules } from '../utils/deliveryEstimate';
+
+/** Partial override from Medusa `store.metadata.delivery` (see medusa-backend README). */
+export type StorefrontDeliveryMetadata = Partial<{
+  standardMinDays: number;
+  standardMaxDays: number;
+  expressMinDays: number;
+  expressMaxDays: number;
+  cutoffHourLocal: number;
+  cutoffMinuteLocal: number;
+  /** If set, used for “arrives by”; otherwise `standardMaxDays` is used. */
+  standardMaxBusinessDays: number;
+}>;
+
+const INT_FIELDS: (keyof StorefrontDeliveryMetadata)[] = [
+  'standardMinDays',
+  'standardMaxDays',
+  'expressMinDays',
+  'expressMaxDays',
+  'cutoffHourLocal',
+  'cutoffMinuteLocal',
+  'standardMaxBusinessDays',
+];
+
+function clampInt(n: number, min: number, max: number): number {
+  if (!Number.isFinite(n)) return min;
+  return Math.min(max, Math.max(min, Math.trunc(n)));
+}
+
+/** Defaults match previous hard-coded PDP behavior. */
+export const PDP_DEFAULT_DELIVERY_RULES: PdpDeliveryRules = {
+  cutoffHourLocal: 14,
+  cutoffMinuteLocal: 0,
+  standardMaxBusinessDays: 5,
+  standardMinDays: 3,
+  standardMaxDays: 5,
+  expressMinDays: 1,
+  expressMaxDays: 2,
+};
+
+/**
+ * Merge Medusa `store.metadata.delivery` into PDP delivery rules. Invalid or missing keys keep defaults.
+ */
+export function mergePdpDeliveryRules(remote: unknown): PdpDeliveryRules {
+  const out: PdpDeliveryRules = { ...PDP_DEFAULT_DELIVERY_RULES };
+  let parsed: unknown = remote;
+  if (typeof remote === 'string') {
+    try {
+      parsed = JSON.parse(remote) as unknown;
+    } catch {
+      return out;
+    }
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return out;
+  }
+  const d = parsed as Record<string, unknown>;
+  for (const key of INT_FIELDS) {
+    const v = d[key as string];
+    if (typeof v !== 'number' && typeof v !== 'string') continue;
+    const n = typeof v === 'number' ? v : Number(v);
+    if (!Number.isFinite(n)) continue;
+    if (key === 'cutoffHourLocal') {
+      out.cutoffHourLocal = clampInt(n, 0, 23);
+    } else if (key === 'cutoffMinuteLocal') {
+      out.cutoffMinuteLocal = clampInt(n, 0, 59);
+    } else if (key === 'standardMinDays') {
+      out.standardMinDays = clampInt(n, 1, 30);
+    } else if (key === 'standardMaxDays') {
+      out.standardMaxDays = clampInt(n, 1, 30);
+    } else if (key === 'expressMinDays') {
+      out.expressMinDays = clampInt(n, 1, 30);
+    } else if (key === 'expressMaxDays') {
+      out.expressMaxDays = clampInt(n, 1, 30);
+    } else if (key === 'standardMaxBusinessDays') {
+      out.standardMaxBusinessDays = clampInt(n, 1, 30);
+    }
+  }
+  if (out.standardMinDays > out.standardMaxDays) {
+    [out.standardMinDays, out.standardMaxDays] = [out.standardMaxDays, out.standardMinDays];
+  }
+  if (out.expressMinDays > out.expressMaxDays) {
+    [out.expressMinDays, out.expressMaxDays] = [out.expressMaxDays, out.expressMinDays];
+  }
+  const rawBiz = d.standardMaxBusinessDays;
+  const explicitBiz =
+    rawBiz !== undefined &&
+    rawBiz !== null &&
+    (typeof rawBiz === 'number' || (typeof rawBiz === 'string' && rawBiz.trim() !== ''));
+  if (!explicitBiz || !Number.isFinite(Number(rawBiz))) {
+    out.standardMaxBusinessDays = out.standardMaxDays;
+  } else {
+    out.standardMaxBusinessDays = clampInt(Number(rawBiz), 1, 30);
+  }
+  return out;
+}
+
 export const EGYPT_CITY_OPTIONS = [
   'Cairo',
   'Giza',
@@ -73,17 +170,14 @@ export const PDP_SCHEMA = {
   storyPlanSteps: ['Find your feeling', 'Pick your design', 'It arrives at your door'] as const,
   /** Gallery image indices (0-based) for the “See it styled” grid */
   wornByGalleryIndices: [1, 2, 0] as const,
-  /** Same-day ship cutoff (local) + conservative “arrives by” horizon for PDP copy. */
-  deliveryRules: {
-    cutoffHourLocal: 14,
-    cutoffMinuteLocal: 0,
-    standardMaxBusinessDays: 5,
-  } as const,
+  /** Same-day ship cutoff (local) + delivery windows for PDP copy (overridable via Medusa store metadata). */
+  deliveryRules: PDP_DEFAULT_DELIVERY_RULES,
   copy: {
     addBtnCTA: 'Add to Bag',
     shippingLine: 'Express shipping · 14-day hassle-free returns · Secure checkout',
     deliveryEyebrow: 'Delivery',
     deliveryEstimateTitle: 'Estimated arrival',
+    /** PDP uses `formatPdpStandardBadgeLabel` / `formatPdpExpressBadgeLabel` from merged rules; these are fallbacks only. */
     deliveryStandardBadge: 'Standard · 3–5 business days',
     deliveryExpressBadge: 'Express · 1–2 business days',
     deliveryEstimateNote: 'Final speed and shipping cost are confirmed at checkout.',

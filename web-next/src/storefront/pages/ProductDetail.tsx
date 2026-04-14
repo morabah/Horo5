@@ -43,14 +43,20 @@ import { QuickViewTrigger } from '../components/QuickViewTrigger';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
-import { HORO_SUPPORT_CHANNELS, PDP_SCHEMA, isConfiguredExternalUrl } from '../data/domain-config';
+import { HORO_SUPPORT_CHANNELS, PDP_SCHEMA, mergePdpDeliveryRules, isConfiguredExternalUrl } from '../data/domain-config';
 import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useStableNow } from '../runtime/render-time';
+import type { PdpDeliveryRules } from '../utils/deliveryEstimate';
 import { defaultPdpModelParagraph, formatPdpFitModelLine, formatPdpFitModelLines } from '../utils/pdpFitModels';
 import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
-import { buildPdpDeliveryLines, formatDeliveryWindow } from '../utils/deliveryEstimate';
+import {
+  buildPdpDeliveryLines,
+  formatDeliveryWindow,
+  formatPdpExpressBadgeLabel,
+  formatPdpStandardBadgeLabel,
+} from '../utils/deliveryEstimate';
 
 const { sizeTable, copy } = PDP_SCHEMA;
 
@@ -146,6 +152,8 @@ type ProductDetailProps = {
   catalogProducts?: Product[];
   initialProduct?: Product | null;
   initialSlug?: string;
+  /** Merged delivery windows from RSC (Medusa store metadata + defaults). */
+  deliveryRules?: PdpDeliveryRules;
   /**
    * When false (default), omit Helmet JSON-LD — Next injects the same schema in the RSC page
    * from `buildProductJsonLd` to avoid duplicate/conflicting Product schema.
@@ -158,6 +166,7 @@ export function ProductDetail({
   catalogProducts,
   initialProduct,
   initialSlug,
+  deliveryRules: deliveryRulesProp,
   renderJsonLd = false,
 }: ProductDetailProps = {}) {
   const { slug: routeSlug = '' } = useParams();
@@ -471,8 +480,22 @@ export function ProductDetail({
   const primaryCrossSellProducts = frequentlyBoughtWithProducts;
   const fallbackCrossSellProducts =
     primaryCrossSellProducts.length === 0 ? styleWithProducts : [];
-  const standardDeliveryWindow = formatDeliveryWindow(3, 5, now);
-  const expressDeliveryWindow = formatDeliveryWindow(1, 2, now);
+  const deliveryRules: PdpDeliveryRules = useMemo(
+    () => deliveryRulesProp ?? mergePdpDeliveryRules(undefined),
+    [deliveryRulesProp],
+  );
+  const deliveryStandardBadgeLabel = useMemo(() => formatPdpStandardBadgeLabel(deliveryRules), [deliveryRules]);
+  const deliveryExpressBadgeLabel = useMemo(() => formatPdpExpressBadgeLabel(deliveryRules), [deliveryRules]);
+  const standardDeliveryWindow = formatDeliveryWindow(
+    deliveryRules.standardMinDays,
+    deliveryRules.standardMaxDays,
+    now,
+  );
+  const expressDeliveryWindow = formatDeliveryWindow(
+    deliveryRules.expressMinDays,
+    deliveryRules.expressMaxDays,
+    now,
+  );
 
   useEffect(() => {
     if (gallery.length === 0) return;
@@ -801,7 +824,7 @@ export function ProductDetail({
   }`;
 
   const deliveryDynamic = product
-    ? buildPdpDeliveryLines(now, PDP_SCHEMA.deliveryRules, {
+    ? buildPdpDeliveryLines(now, deliveryRules, {
         beforeCutoffHours: copy.deliveryUrgencyBeforeCutoff,
         tightWindowHours: copy.deliveryUrgencyTight,
         afterCutoff: copy.deliveryAfterCutoff,
@@ -1204,11 +1227,11 @@ export function ProductDetail({
                   <p className="font-body text-sm font-medium leading-snug text-obsidian">{deliveryDynamic.urgencyLine}</p>
                 ) : null}
                 <p className="font-body text-sm leading-relaxed text-warm-charcoal">
-                  <span className="font-medium text-obsidian">{copy.deliveryStandardBadge}</span> {standardDeliveryWindow}
+                  <span className="font-medium text-obsidian">{deliveryStandardBadgeLabel}</span> {standardDeliveryWindow}
                   <span className="mx-2 text-clay/50" aria-hidden>
                     ·
                   </span>
-                  <span className="font-medium text-obsidian">{copy.deliveryExpressBadge}</span> {expressDeliveryWindow}
+                  <span className="font-medium text-obsidian">{deliveryExpressBadgeLabel}</span> {expressDeliveryWindow}
                 </p>
                 {deliveryDynamic ? (
                   <p className="font-body text-sm leading-snug text-warm-charcoal">{deliveryDynamic.arrivesLine}</p>
@@ -1352,11 +1375,11 @@ export function ProductDetail({
                     {copy.deliveryEstimateTitle}
                   </p>
                   <p className="mt-1.5 leading-relaxed">
-                    <span className="font-medium text-obsidian">{copy.deliveryStandardBadge}:</span>{' '}
+                    <span className="font-medium text-obsidian">{deliveryStandardBadgeLabel}:</span>{' '}
                     {standardDeliveryWindow}
                   </p>
                   <p className="mt-1 leading-relaxed">
-                    <span className="font-medium text-obsidian">{copy.deliveryExpressBadge}:</span>{' '}
+                    <span className="font-medium text-obsidian">{deliveryExpressBadgeLabel}:</span>{' '}
                     {expressDeliveryWindow}
                   </p>
                   <p className="mt-2 text-xs text-clay">{copy.deliveryEstimateNote}</p>

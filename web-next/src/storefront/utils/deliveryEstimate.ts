@@ -106,8 +106,25 @@ export function getNextShippingAnchor(from: Date = new Date()): Date {
 export type PdpDeliveryRules = {
   cutoffHourLocal: number;
   cutoffMinuteLocal: number;
+  /** Upper bound (business days) for “arrives by” copy — usually same as standard max window. */
   standardMaxBusinessDays: number;
+  /** Standard tier window shown on PDP (min inclusive business days from order anchor). */
+  standardMinDays: number;
+  standardMaxDays: number;
+  expressMinDays: number;
+  expressMaxDays: number;
 };
+
+const RANGE_DASH = "\u2013";
+
+/** PDP label line — must track Medusa `metadata.delivery` (not static copy). */
+export function formatPdpStandardBadgeLabel(rules: PdpDeliveryRules): string {
+  return `Standard · ${rules.standardMinDays}${RANGE_DASH}${rules.standardMaxDays} business days`;
+}
+
+export function formatPdpExpressBadgeLabel(rules: PdpDeliveryRules): string {
+  return `Express · ${rules.expressMinDays}${RANGE_DASH}${rules.expressMaxDays} business days`;
+}
 
 /**
  * PDP urgency line + “arrives by” using Egypt-local same-day cutoff (not holiday-aware).

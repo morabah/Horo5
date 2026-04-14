@@ -359,6 +359,34 @@ export const fetchStorefrontOccasionServer = cache((slug: string) =>
   })
 );
 
+type StorefrontSettingsResponse = {
+  delivery?: unknown | null;
+};
+
+async function fetchStorefrontSettingsServerImpl(): Promise<unknown | null> {
+  try {
+    const data = await storefrontRequest<StorefrontSettingsResponse>("/storefront/settings", {
+      /** Always bypass Next Data Cache — operators expect Medusa edits to show without a long TTL wait. */
+      cache: "no-store",
+      next: {
+        tags: ["storefront", "settings"],
+      },
+    });
+    return data.delivery ?? null;
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[storefront] GET /storefront/settings failed — PDP delivery falls back to defaults.",
+        error instanceof Error ? error.message : error,
+      );
+    }
+    return null;
+  }
+}
+
+/** Global storefront settings from Medusa (e.g. `store.metadata.delivery`). Not cached in Next; use Medusa `store.updated` + revalidate tag `settings` for freshness after edits. */
+export const fetchStorefrontSettingsServer = cache(fetchStorefrontSettingsServerImpl);
+
 export function buildOccasionMetadata(occasion: Occasion): Metadata {
   const title = `${occasion.name} | HORO Egypt`;
   const description =
