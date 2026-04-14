@@ -8,14 +8,21 @@ loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 const databaseSslRejectUnauthorized =
   process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false'
 
-const databaseDriverOptions =
-  databaseSslRejectUnauthorized
-    ? undefined
-    : {
-        connection: {
-          ssl: { rejectUnauthorized: false },
-        },
-      }
+/** Connection pool size: tune based on Railway plan (default: 10, max recommended: 20 for hobby). */
+const poolMin = parseInt(process.env.DATABASE_POOL_MIN || '2', 10)
+const poolMax = parseInt(process.env.DATABASE_POOL_MAX || '10', 10)
+
+const databaseDriverOptions = {
+  connection: {
+    ...(databaseSslRejectUnauthorized ? {} : { ssl: { rejectUnauthorized: false } }),
+  },
+  pool: {
+    min: poolMin,
+    max: poolMax,
+    acquireTimeoutMillis: 30000,
+    idleTimeoutMillis: 30000,
+  },
+}
 
 /** Railway "Storage Bucket" presets use BUCKET, ENDPOINT, AWS_*; see `src/lib/s3-env.ts`. */
 const s3 = resolveS3ConfigFromEnv()
@@ -79,7 +86,7 @@ const paymobConfig = (() => {
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
-    ...(databaseDriverOptions ? { databaseDriverOptions } : {}),
+    databaseDriverOptions,
     ...(process.env.REDIS_URL ? { redisUrl: process.env.REDIS_URL } : {}),
     http: {
       storeCors: process.env.STORE_CORS!,
