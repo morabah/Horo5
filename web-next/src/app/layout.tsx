@@ -1,7 +1,8 @@
 import "./globals.css";
+import { RootProviders } from "./root-providers";
 
-// HTML shell only. Catalog + Providers live in route-group layouts so `/checkout` can skip
-// the heavy Medusa `/storefront/catalog` fetch (see `(main)/layout.tsx` and `(checkout)/layout.tsx`).
+// Root: minimal i18n so `not-found` and other root-only trees work. Catalog + full providers
+// live in route-group layouts so `/checkout` can skip the heavy `/storefront/catalog` fetch.
 
 export default function RootLayout({
   children,
@@ -11,7 +12,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col">
-        {children}
+        <RootProviders>{children}</RootProviders>
       </body>
     </html>
   );
