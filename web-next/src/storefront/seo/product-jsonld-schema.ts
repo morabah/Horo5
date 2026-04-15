@@ -140,6 +140,12 @@ export function buildProductJsonLdSchema(
       "@type": "Brand",
       name: "HORO Egypt",
     },
+    ...(product.physicalAttributes?.material
+      ? { material: product.physicalAttributes.material }
+      : {}),
+    ...(product.garmentColors && product.garmentColors.length > 0
+      ? { color: product.garmentColors.join(", ") }
+      : {}),
     ...(feeling ? { category: `${feeling.name} graphic tee` } : {}),
     ...(occasionNames.length > 0 ? { keywords: occasionNames.join(", ") } : {}),
     ...(variantEntries.length > 0

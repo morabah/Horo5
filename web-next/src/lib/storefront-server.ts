@@ -8,11 +8,14 @@ import {
   type MerchEvent,
   type Occasion,
   type Product,
-  type ProductSizeKey,
   type RuntimeCatalog,
   type Subfeeling,
 } from "@/storefront/data/site";
 import { mergePdpDeliveryRules, parseJsonLdStandardShippingEgpFromStoreDelivery } from "@/storefront/data/domain-config";
+import {
+  normalizeStorefrontProductApi,
+  type StorefrontProductApi,
+} from "@/storefront/lib/medusa/normalize-storefront-product";
 import { buildProductJsonLdSchema, type ProductJsonLdShippingHint } from "@/storefront/seo/product-jsonld-schema";
 
 function feelingFromCatalog(slug: string, catalog: Pick<RuntimeCatalog, "feelings"> | null | undefined): Feeling | undefined {
@@ -29,62 +32,7 @@ type NextFetchOptions = RequestInit & {
   };
 };
 
-type StorefrontVariantResponse = {
-  allow_backorder: boolean;
-  available: boolean;
-  currency_code: string;
-  id: string;
-  inventory_quantity: number | null;
-  is_discounted: boolean;
-  manage_inventory: boolean;
-  original_price_egp: number | null;
-  price_egp: number;
-  size: string;
-  sku?: string | null;
-};
-
-type StorefrontProductResponse = {
-  apparelCategoryPath?: string;
-  artistDisplay?: Product["artistDisplay"];
-  artistSlug: string;
-  artworkSlug?: string;
-  availableSizes?: string[];
-  capsuleSlugs?: string[];
-  complementarySlugs?: string[];
-  customersAlsoBoughtSlugs?: string[];
-  decorationType?: Product["decorationType"];
-  description?: string;
-  feelingSlug: string;
-  lineSlug?: string;
-  fitLabel?: string;
-  frequentlyBoughtWithSlugs?: string[];
-  garmentColors?: string[];
-  inventoryHintBySize?: Record<string, string>;
-  media?: Product["media"];
-  merchandisingBadge?: string;
-  name: string;
-  pdpTagLabels?: string[];
-  occasionSlugs: string[];
-  originalPriceEgp?: number | null;
-  pdpFitModels?: Product["pdpFitModels"];
-  sizeTableKey?: string;
-  physicalAttributes?: Product["physicalAttributes"];
-  defaultPriceSize?: string;
-  feelingBrowseEligible?: boolean;
-  feelingBrowseAssignments?: Product["feelingBrowseAssignments"];
-  primaryFeelingSlug: string;
-  primaryOccasionSlug?: string;
-  primarySubfeelingSlug: string;
-  priceEgp: number;
-  slug: string;
-  stockNote?: string;
-  story: string;
-  thumbnail?: string | null;
-  trustBadges?: string[];
-  useCase?: string;
-  variantsBySize?: Record<string, StorefrontVariantResponse>;
-  wearerStories?: Product["wearerStories"];
-};
+type StorefrontProductResponse = StorefrontProductApi;
 
 type StorefrontArtistResponse = Artist;
 type StorefrontFeelingResponse = Feeling;
@@ -184,74 +132,8 @@ export function logStorefrontFetchError(
   });
 }
 
-function normalizeVariantMap(
-  variants: StorefrontProductResponse["variantsBySize"]
-): Product["variantsBySize"] {
-  if (!variants) return undefined;
-
-  return Object.fromEntries(
-    Object.entries(variants).map(([size, variant]) => [
-      size,
-      {
-        id: variant.id,
-        size: size as ProductSizeKey,
-        sku: variant.sku ?? null,
-        originalPriceEgp: variant.original_price_egp,
-        priceEgp: variant.price_egp,
-        currencyCode: variant.currency_code,
-        isDiscounted: variant.is_discounted,
-        manageInventory: variant.manage_inventory,
-        allowBackorder: variant.allow_backorder,
-        available: variant.available,
-        inventoryQuantity: variant.inventory_quantity,
-      },
-    ])
-  );
-}
-
 function normalizeProduct(product: StorefrontProductResponse): Product {
-  return {
-    apparelCategoryPath: product.apparelCategoryPath,
-    artistDisplay: product.artistDisplay,
-    artistSlug: product.artistSlug,
-    artworkSlug: product.artworkSlug,
-    availableSizes: product.availableSizes as Product["availableSizes"],
-    capsuleSlugs: product.capsuleSlugs,
-    complementarySlugs: product.complementarySlugs,
-    customersAlsoBoughtSlugs: product.customersAlsoBoughtSlugs,
-    decorationType: product.decorationType,
-    description: product.description,
-    feelingSlug: product.feelingSlug,
-    lineSlug: product.lineSlug,
-    fitLabel: product.fitLabel,
-    frequentlyBoughtWithSlugs: product.frequentlyBoughtWithSlugs,
-    garmentColors: product.garmentColors,
-    inventoryHintBySize: product.inventoryHintBySize as Product["inventoryHintBySize"],
-    media: product.media,
-    merchandisingBadge: product.merchandisingBadge,
-    name: product.name,
-    pdpTagLabels: product.pdpTagLabels,
-    occasionSlugs: product.occasionSlugs,
-    originalPriceEgp: product.originalPriceEgp,
-    pdpFitModels: product.pdpFitModels,
-    sizeTableKey: product.sizeTableKey,
-    physicalAttributes: product.physicalAttributes,
-    defaultPriceSize: product.defaultPriceSize as Product["defaultPriceSize"],
-    feelingBrowseEligible: product.feelingBrowseEligible ?? true,
-    feelingBrowseAssignments: product.feelingBrowseAssignments,
-    primaryFeelingSlug: product.primaryFeelingSlug,
-    primaryOccasionSlug: product.primaryOccasionSlug,
-    primarySubfeelingSlug: product.primarySubfeelingSlug,
-    priceEgp: product.priceEgp,
-    slug: product.slug,
-    stockNote: product.stockNote,
-    story: product.story,
-    thumbnail: product.thumbnail,
-    trustBadges: product.trustBadges,
-    useCase: product.useCase,
-    variantsBySize: normalizeVariantMap(product.variantsBySize),
-    wearerStories: product.wearerStories,
-  };
+  return normalizeStorefrontProductApi(product);
 }
 
 function normalizeOccasion(occasion: StorefrontOccasionResponse): Occasion {
@@ -325,6 +207,67 @@ export const fetchStorefrontProductServer = cache((slug: string) =>
   })
 );
 
+type StorefrontPdpApiResponse = {
+  product: StorefrontProductResponse;
+  settings: StorefrontSettingsResponse;
+  crossSellProducts: StorefrontProductResponse[];
+};
+
+async function fetchStorefrontPdpServerImpl(
+  slug: string,
+  init: NextFetchOptions = {}
+): Promise<{
+  product: Product;
+  settings: StorefrontSettingsPayload;
+  crossSellProducts: Product[];
+} | null> {
+  try {
+    const data = await storefrontRequest<StorefrontPdpApiResponse>(
+      `/storefront/pdp/${encodeURIComponent(slug)}`,
+      init
+    );
+    if (!data.product) {
+      return null;
+    }
+    return {
+      product: normalizeProduct(data.product),
+      settings: {
+        delivery: data.settings?.delivery ?? null,
+        sizeTables: data.settings?.sizeTables ?? null,
+        defaultSizeTableKey:
+          typeof data.settings?.defaultSizeTableKey === "string" && data.settings.defaultSizeTableKey.trim()
+            ? data.settings.defaultSizeTableKey.trim()
+            : null,
+      },
+      crossSellProducts: (data.crossSellProducts || []).map(normalizeProduct),
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("(404)")) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Single PDP payload: product + store settings + cross-sell products (replaces separate catalog + product + settings calls).
+ */
+export const fetchStorefrontPdpServer = cache((slug: string) =>
+  fetchStorefrontPdpServerImpl(slug, {
+    next: {
+      revalidate: 60,
+      tags: [
+        "catalog",
+        "storefront",
+        "settings",
+        "product",
+        `product:${encodeURIComponent(slug)}`,
+      ],
+    },
+  })
+);
+
 async function fetchStorefrontOccasionServerImpl(
   slug: string,
   init: NextFetchOptions = {}
@@ -367,9 +310,8 @@ export type StorefrontSettingsPayload = {
 async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPayload | null> {
   try {
     const data = await storefrontRequest<StorefrontSettingsResponse>("/storefront/settings", {
-      /** Always bypass Next Data Cache — operators expect Medusa edits to show without a long TTL wait. */
-      cache: "no-store",
       next: {
+        revalidate: 300,
         tags: ["storefront", "settings"],
       },
     });
@@ -392,7 +334,10 @@ async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPa
   }
 }
 
-/** Global storefront settings from Medusa (`store.metadata.delivery`, `sizeTables`, `defaultSizeTableKey`). Not cached in Next; use Medusa `store.updated` + revalidate tag `settings` for freshness after edits. */
+/**
+ * Global storefront settings from Medusa (`store.metadata.delivery`, `sizeTables`, `defaultSizeTableKey`).
+ * Cached with `revalidate: 300` and tag `settings`; bust via Medusa `store.updated` → `POST /api/revalidate/storefront`.
+ */
 export const fetchStorefrontSettingsServer = cache(fetchStorefrontSettingsServerImpl);
 
 export function buildOccasionMetadata(occasion: Occasion): Metadata {
@@ -435,11 +380,21 @@ export function buildProductMetadata(
   const canonical = siteOrigin ? `${siteOrigin}/products/${product.slug}` : `/products/${product.slug}`;
   const image = toAbsoluteUrl(product.thumbnail || product.media?.main || undefined);
 
+  const arUrl = siteOrigin ? `${siteOrigin}/products/${product.slug}?uiLocale=ar` : undefined;
+
   return {
     title: `${product.name} Graphic Tee | HORO Egypt`,
     description,
     alternates: {
       canonical,
+      ...(siteOrigin
+        ? {
+            languages: {
+              en: `${siteOrigin}/products/${product.slug}`,
+              ...(arUrl ? { ar: arUrl } : {}),
+            },
+          }
+        : {}),
     },
     openGraph: {
       title: `${product.name} Graphic Tee | HORO Egypt`,

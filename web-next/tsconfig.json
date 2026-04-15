@@ -22,6 +22,7 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@medusa-storefront/dto": ["../medusa-backend/src/lib/storefront/dto.ts"],
       "react-router-dom": ["./src/lib/react-router-dom-shim.tsx"],
       "react-helmet-async": ["./src/lib/react-helmet-async-shim.tsx"]
     }

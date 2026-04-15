@@ -114,6 +114,7 @@ export const STORE_CART_CHECKOUT_FIELDS = [
   "metadata",
   "subtotal",
   "total",
+  "discount_total",
   "shipping_total",
   "tax_total",
   "*billing_address",

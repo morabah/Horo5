@@ -1,4 +1,4 @@
-import { filterStorefrontProductsByQuery } from "../catalog"
+import { aggregateFeelingFacetsFromProducts, filterStorefrontProductsByQuery } from "../catalog"
 import type { StorefrontProductDTO } from "../types"
 
 const base = (overrides: Partial<StorefrontProductDTO>): StorefrontProductDTO => ({
@@ -49,5 +49,17 @@ describe("filterStorefrontProductsByQuery", () => {
   it("returns all when no filters", () => {
     const out = filterStorefrontProductsByQuery(products, {})
     expect(out).toHaveLength(2)
+  })
+})
+
+describe("aggregateFeelingFacetsFromProducts", () => {
+  it("counts by primary feeling slug", () => {
+    const facets = aggregateFeelingFacetsFromProducts([
+      base({ slug: "a", primaryFeelingSlug: "calm", feelingSlug: "legacy" }),
+      base({ slug: "b", primaryFeelingSlug: "calm", feelingSlug: "legacy" }),
+      base({ slug: "c", primaryFeelingSlug: "bold", feelingSlug: "bold" }),
+    ])
+    expect(facets.feelings.calm).toBe(2)
+    expect(facets.feelings.bold).toBe(1)
   })
 })

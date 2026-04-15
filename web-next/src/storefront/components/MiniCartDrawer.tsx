@@ -20,7 +20,8 @@ function t(key: keyof typeof MINI_CART_SCHEMA.copy, isArabic: boolean): string {
 }
 
 export function MiniCartDrawer() {
-  const { miniCartOpen, setMiniCartOpen, lastAddedItem, subtotalEgp, totalQty } = useCart();
+  const { miniCartOpen, setMiniCartOpen, lastAddedItem, subtotalEgp, totalQty, cartPromotionDiscountEgp } =
+    useCart();
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const navigate = useNavigate();
@@ -182,6 +183,12 @@ export function MiniCartDrawer() {
             <span>{t('subtotalLabel', isArabic)} ({totalQty} {itemCountLabel})</span>
             <span className="mini-cart-summary-value">{formatEgp(subtotalEgp)}</span>
           </p>
+          {cartPromotionDiscountEgp > 0 ? (
+            <p className="mini-cart-summary-line text-deep-teal">
+              <span>{t('promotionDiscountLabel', isArabic)}</span>
+              <span className="mini-cart-summary-value">−{formatEgp(cartPromotionDiscountEgp)}</span>
+            </p>
+          ) : null}
           <p className="mini-cart-summary-note font-body text-xs text-warm-charcoal">
             {t('shippingAtCheckoutNote', isArabic)}
           </p>

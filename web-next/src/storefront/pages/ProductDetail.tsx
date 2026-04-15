@@ -247,6 +247,28 @@ export function ProductDetail({
   }, [preferBackendCatalog, productLookup]);
 
   const product = initialProduct ?? lookupProduct(slug);
+
+  const defaultColorSelection = useMemo(() => {
+    if (!product?.variantsByColor) return null;
+    const keys = Object.keys(product.variantsByColor).sort();
+    const pref = getPreferredDefaultSize(product);
+    for (const k of keys) {
+      const row = product.variantsByColor[k];
+      if (pref && row?.some((v) => v.size === pref)) return k;
+    }
+    return keys[0] ?? null;
+  }, [product]);
+
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+
+  const pdpProduct = useMemo((): Product | null => {
+    if (!product) return null;
+    if (!selectedColor || !product.variantsByColor?.[selectedColor]) return product;
+    const row = product.variantsByColor[selectedColor];
+    const variantsBySize = Object.fromEntries(row.map((v) => [v.size, v])) as Product['variantsBySize'];
+    return { ...product, variantsBySize };
+  }, [product, selectedColor]);
+
   const preferredDefaultSize = useMemo(() => getPreferredDefaultSize(product), [product]);
 
   const [photoIndex, setPhotoIndex] = useState(0);
@@ -283,11 +305,12 @@ export function ProductDetail({
   useEffect(() => {
     setPhotoIndex(0);
     setSelectedSize(preferredDefaultSize);
+    setSelectedColor(defaultColorSelection);
     setLightboxOpen(false);
     setRelatedQuickViewSlug(null);
     setAddedFeedback(false);
     setStickyCtaVisible(false);
-  }, [preferredDefaultSize, slug]);
+  }, [preferredDefaultSize, defaultColorSelection, slug]);
 
   /* Sticky CTA: show when main CTA buttons scroll out of viewport */
   useEffect(() => {
@@ -313,9 +336,34 @@ export function ProductDetail({
     recordView(product.slug);
   }, [product, recordView]);
 
+  const colorVariantMedia = useMemo(() => {
+    if (!product?.variantsByColor || !selectedColor) return null;
+    const row = product.variantsByColor[selectedColor];
+    const withMedia = row.find(
+      (v) => v.media && (v.media.main || (v.media.gallery && v.media.gallery.length > 0)),
+    );
+    return withMedia?.media ?? null;
+  }, [product, selectedColor]);
+
   const media = useMemo(() => {
     if (!product) {
       return getProductMedia('');
+    }
+
+    if (colorVariantMedia?.main || (colorVariantMedia?.gallery && colorVariantMedia.gallery.length > 0)) {
+      const backendGallery = Array.from(
+        new Set(
+          [
+            colorVariantMedia.main ?? undefined,
+            ...(colorVariantMedia.gallery ?? []),
+            product.thumbnail ?? undefined,
+          ].filter((value): value is string => Boolean(value)),
+        ),
+      );
+      return {
+        gallery: backendGallery,
+        main: colorVariantMedia.main ?? backendGallery[0] ?? product.thumbnail ?? '',
+      };
     }
 
     const backendGallery = Array.from(
@@ -341,7 +389,7 @@ export function ProductDetail({
       gallery: backendGallery,
       main: product.media?.main ?? backendGallery[0] ?? product.thumbnail ?? '',
     };
-  }, [preferBackendCatalog, product]);
+  }, [preferBackendCatalog, product, colorVariantMedia]);
   const gallery = product ? buildProductPdpGallery(product.name, media) : [];
   const feelingSlug = product?.primaryFeelingSlug ?? product?.feelingSlug;
   const feeling = feelingSlug
@@ -423,14 +471,15 @@ export function ProductDetail({
   const detailView = gallery[1] ?? null;
   const hasGalleryRail = gallery.length > 1;
   const primaryGallerySrc = gallery[0]?.src ?? media.main;
-  const displayPriceSelection = product
-    ? getDisplayPriceSelection(product, selectedSize as ProductSizeKey | null)
+  const scopeProduct = pdpProduct ?? product;
+  const displayPriceSelection = scopeProduct
+    ? getDisplayPriceSelection(scopeProduct, selectedSize as ProductSizeKey | null)
     : { isSelected: false, size: null, variant: null };
-  const displayPriceEgp = displayPriceSelection.variant?.priceEgp ?? product?.priceEgp ?? 0;
+  const displayPriceEgp = displayPriceSelection.variant?.priceEgp ?? scopeProduct?.priceEgp ?? 0;
   const displayOriginalPriceEgp = displayPriceSelection.variant
     ? compareAtPrice(displayPriceSelection.variant.priceEgp, displayPriceSelection.variant.originalPriceEgp)
-    : compareAtPrice(product?.priceEgp ?? 0, product?.originalPriceEgp);
-  const pricingVariesBySize = product ? productHasVariablePricing(product) : false;
+    : compareAtPrice(scopeProduct?.priceEgp ?? 0, scopeProduct?.originalPriceEgp);
+  const pricingVariesBySize = scopeProduct ? productHasVariablePricing(scopeProduct) : false;
   const priceSizeLabel = useMemo(() => {
     if (!displayPriceSelection.size) return null;
     const sz = displayPriceSelection.size;
@@ -482,12 +531,21 @@ export function ProductDetail({
 
   const sizeButtons = useMemo(() => {
     if (!product) return PDP_SCHEMA.sizes;
-    const avail = new Set(productAvailableSizes(product));
-    const definedSizes = new Set<ProductSizeKey>(
-      product.availableSizes?.length
-        ? product.availableSizes
-        : (Object.keys(product.variantsBySize || {}) as ProductSizeKey[]),
-    );
+    const scope = pdpProduct ?? product;
+    const rowSizes = new Set(Object.keys(scope.variantsBySize || {}) as ProductSizeKey[]);
+    const avail = new Set(productAvailableSizes(scope));
+    const definedSizeList: ProductSizeKey[] = product.availableSizes?.length
+      ? product.availableSizes
+      : product.variantsByColor
+        ? [
+            ...new Set(
+              Object.values(product.variantsByColor)
+                .flat()
+                .map((v) => v.size as ProductSizeKey),
+            ),
+          ]
+        : (Object.keys(product.variantsBySize || {}) as ProductSizeKey[]);
+    const definedSizes = new Set<ProductSizeKey>(definedSizeList);
     const hasDefinedSizes = definedSizes.size > 0;
 
     return PDP_SCHEMA.sizes.map(({ key, disabled }) => ({
@@ -495,9 +553,10 @@ export function ProductDetail({
       disabled:
         Boolean(disabled) ||
         (hasDefinedSizes && !definedSizes.has(key as ProductSizeKey)) ||
-        !avail.has(key as ProductSizeKey),
+        !avail.has(key as ProductSizeKey) ||
+        (Boolean(product.variantsByColor) && !rowSizes.has(key as ProductSizeKey)),
     }));
-  }, [product]);
+  }, [product, pdpProduct]);
 
   const sizeDef = selectedSize ? sizeButtons.find((s) => s.key === selectedSize) : undefined;
   const oosSelected = Boolean(sizeDef?.disabled);
@@ -887,7 +946,8 @@ export function ProductDetail({
     }
 
     if (!selectedSize) return;
-    addItem(product.slug, selectedSize as ProductSizeKey, 1);
+    const vId = scopeProduct?.variantsBySize?.[selectedSize as ProductSizeKey]?.id;
+    addItem(product.slug, selectedSize as ProductSizeKey, 1, vId);
     setAddedFeedback(true);
     setMiniCartOpen(true);
     window.setTimeout(() => setAddedFeedback(false), 2200);
@@ -905,7 +965,8 @@ export function ProductDetail({
       return;
     }
     const sz = selectedSize as ProductSizeKey;
-    addItem(product.slug, sz, 1);
+    const vId = scopeProduct?.variantsBySize?.[sz]?.id;
+    addItem(product.slug, sz, 1, vId);
     for (const p of companions) {
       const avail = productAvailableSizes(p);
       const u = avail.includes(sz) ? sz : avail[0];
@@ -968,6 +1029,11 @@ export function ProductDetail({
       </div>
     );
   }
+
+  const blurForProductMain = (src: string) =>
+    product.media?.blurDataUrlMain && product.media?.main && src === product.media.main
+      ? product.media.blurDataUrlMain
+      : null;
 
   return (
     <div className="product-page bg-papyrus text-obsidian">
@@ -1042,7 +1108,14 @@ export function ProductDetail({
                     aria-label={fillPdpCopyTemplate(copy.pdpGalleryShowImageTemplate, { label: view.label })}
                   >
                     <div className="aspect-[4/5] w-full">
-                      <TeeImage src={view.src} alt="" w={320} className="h-full w-full" />
+                      <TeeImage
+                        src={view.src}
+                        alt=""
+                        w={320}
+                        className="h-full w-full"
+                        blurDataURL={blurForProductMain(view.src)}
+                        sizes="72px"
+                      />
                     </div>
                   </button>
                 ))}
@@ -1074,6 +1147,8 @@ export function ProductDetail({
                     w={1600}
                     eager
                     className="h-full w-full"
+                    blurDataURL={blurForProductMain(heroView.src)}
+                    sizes="(min-width: 1024px) 50vw, 100vw"
                   />
                 </div>
               </button>
@@ -1129,7 +1204,14 @@ export function ProductDetail({
                   aria-label={fillPdpCopyTemplate(copy.pdpGalleryShowImageTemplate, { label: view.label })}
                 >
                   <div className="aspect-[4/5] w-full">
-                    <TeeImage src={view.src} alt="" w={320} className="h-full w-full" />
+                    <TeeImage
+                      src={view.src}
+                      alt=""
+                      w={320}
+                      className="h-full w-full"
+                      blurDataURL={blurForProductMain(view.src)}
+                      sizes="72px"
+                    />
                   </div>
                 </button>
               ))}
@@ -1195,6 +1277,34 @@ export function ProductDetail({
                   </p>
                 ) : null}
               </div>
+
+              {product.variantsByColor ? (
+                <div className="space-y-2">
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">Color</p>
+                  <div className="flex flex-wrap gap-2" role="group" aria-label="Product color">
+                    {Object.keys(product.variantsByColor)
+                      .sort()
+                      .map((color) => {
+                        const isSelected = selectedColor === color;
+                        return (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => setSelectedColor(color)}
+                            aria-pressed={isSelected}
+                            className={`font-label min-h-11 rounded-full border px-4 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                              isSelected
+                                ? 'border-obsidian bg-obsidian text-white'
+                                : 'border-stone/60 bg-white/80 text-obsidian hover:border-obsidian'
+                            }`}
+                          >
+                            {color}
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              ) : null}
 
               <div ref={sizeSectionRef} className="space-y-3 border-t border-stone/30 pt-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1417,7 +1527,8 @@ export function ProductDetail({
                         alt={pdpArtist.name}
                         w={160}
                         eager
-                        className="h-full w-full object-cover"
+                        className="h-full w-full"
+                        sizes="48px"
                       />
                     </div>
                   ) : null}
@@ -1485,6 +1596,8 @@ export function ProductDetail({
                       alt={detailView.alt}
                       w={1200}
                       className="h-full w-full"
+                      blurDataURL={blurForProductMain(detailView.src)}
+                      sizes="(min-width: 768px) 66vw, 100vw"
                     />
                   </div>
                 </figure>
@@ -1601,6 +1714,7 @@ export function ProductDetail({
                           aspectRatio="4/5"
                           borderRadius="1.125rem 1.125rem 0 0"
                           frameStyle={{ marginBottom: 0 }}
+                          blurDataURL={item.media?.blurDataUrlMain ?? null}
                         />
                       </div>
                       <QuickViewTrigger

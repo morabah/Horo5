@@ -1,6 +1,7 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
+import { retryWithBackoff } from "../lib/retry-with-backoff"
 import {
   buildWhatsAppOrderTemplateBody,
   ORDER_WHATSAPP_GRAPH_FIELDS,
@@ -65,18 +66,28 @@ export default async function whatsappOrderConfirmationHandler({
 
   const body = buildWhatsAppOrderTemplateBody(orderRow, orderId)
 
-  const result = await sendWhatsAppOrderConfirmationTemplate({
-    graphVersion,
-    phoneNumberId,
-    accessToken,
-    toDigits,
-    templateName,
-    templateLang,
-    body,
-  })
+  const attempts = Math.max(1, Math.min(5, parseInt(String(process.env.HORO_SUBSCRIBER_HTTP_RETRIES ?? "3"), 10) || 3))
+  const result = await retryWithBackoff(
+    `[whatsapp-order-confirmation] order=${orderId}`,
+    attempts,
+    () =>
+      sendWhatsAppOrderConfirmationTemplate({
+        graphVersion,
+        phoneNumberId,
+        accessToken,
+        toDigits,
+        templateName,
+        templateLang,
+        body,
+      }),
+    (r) => r.ok,
+    logger,
+  )
 
-  if (!result.ok) {
-    logger.warn(`[whatsapp-order-confirmation] WhatsApp send failed for order ${orderId}: ${result.error}`)
+  if (!result?.ok) {
+    logger.warn(
+      `[whatsapp-order-confirmation] WhatsApp send failed for order ${orderId}: ${result?.error} (manual replay: order.placed)`,
+    )
     return
   }
 

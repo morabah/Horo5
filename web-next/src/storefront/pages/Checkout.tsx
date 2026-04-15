@@ -2112,17 +2112,17 @@ function OrderSummary({
 
   function handleDecrease(line: CartLineView) {
     if (line.qty <= 1 || busy) return;
-    void runWithRefresh(() => setLineQty(line.productSlug, line.size, line.qty - 1));
+    void runWithRefresh(() => setLineQty(line.productSlug, line.size, line.qty - 1, line.variantId));
   }
 
   function handleIncrease(line: CartLineView) {
     if (busy || line.qty >= 99) return;
-    void runWithRefresh(() => setLineQty(line.productSlug, line.size, line.qty + 1));
+    void runWithRefresh(() => setLineQty(line.productSlug, line.size, line.qty + 1, line.variantId));
   }
 
   function handleRemove(line: CartLineView) {
     if (busy) return;
-    void runWithRefresh(() => removeItem(line.productSlug, line.size));
+    void runWithRefresh(() => removeItem(line.productSlug, line.size, line.variantId));
   }
 
   return (

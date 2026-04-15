@@ -69,7 +69,9 @@
     "@medusajs/medusa": "^2.13.6",
     "@medusajs/types": "^2.13.6",
     "dotenv": "^17.4.1",
-    "resend": "^4.8.0"
+    "pg": "^8.20.0",
+    "resend": "^4.8.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@medusajs/test-utils": "^2.13.6",

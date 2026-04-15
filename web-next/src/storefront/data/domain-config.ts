@@ -623,6 +623,8 @@ export const MINI_CART_SCHEMA = {
     continueCtaAr: 'واصل التسوق',
     subtotalLabel: 'Subtotal',
     subtotalLabelAr: 'الإجمالي الفرعي',
+    promotionDiscountLabel: 'Promotion',
+    promotionDiscountLabelAr: 'عرض',
     shippingAtCheckoutNote: 'Shipping is confirmed at checkout.',
     shippingAtCheckoutNoteAr: 'يُؤكَّد الشحن عند الدفع.',
     itemSingular: 'item',

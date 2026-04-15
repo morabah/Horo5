@@ -435,7 +435,7 @@ export function Cart() {
       setStatusMessage(locale === 'ar' ? 'الحد الأقصى ٩٩ لكل مقاس.' : 'Maximum quantity is 99 per size.');
       return;
     }
-    setLineQty(line.productSlug, line.size, line.qty + 1);
+    setLineQty(line.productSlug, line.size, line.qty + 1, line.variantId);
     setStatusMessage(formatMessage(copy.quantityUpdated, line.productName));
   };
 
@@ -444,15 +444,16 @@ export function Cart() {
       productSlug: line.productSlug,
       size: line.size as ProductSizeKey,
       qty: line.qty,
+      variantId: line.variantId,
     });
-    removeItem(line.productSlug, line.size);
+    removeItem(line.productSlug, line.size, line.variantId);
     setStatusMessage('');
   };
 
   const handleUndoRemove = () => {
     if (!undoLine) return;
     const name = getProduct(undoLine.productSlug)?.name ?? 'Item';
-    addItem(undoLine.productSlug, undoLine.size, undoLine.qty);
+    addItem(undoLine.productSlug, undoLine.size, undoLine.qty, undoLine.variantId);
     setUndoLine(null);
     setStatusMessage(formatMessage(copy.itemRestored, name));
   };

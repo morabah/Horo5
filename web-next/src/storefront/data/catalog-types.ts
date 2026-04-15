@@ -77,6 +77,8 @@ export type WearerStory = {
 export type ProductMediaRecord = {
   gallery?: string[];
   main?: string | null;
+  blurDataUrlMain?: string | null;
+  dominantColorMain?: string | null;
 };
 
 /** Medusa product / default-variant shipping attributes (Admin “Attributes”), when present on the storefront DTO. */
@@ -97,6 +99,8 @@ export type ProductArtistDisplay = {
   avatarUrl?: string;
 };
 
+export type StockStatusKey = 'in_stock' | 'low_stock' | 'sold_out' | 'preorder';
+
 export type ProductVariantRecord = {
   id: string;
   size: ProductSizeKey;
@@ -109,6 +113,8 @@ export type ProductVariantRecord = {
   allowBackorder: boolean;
   available: boolean;
   inventoryQuantity?: number | null;
+  color?: string;
+  media?: ProductMediaRecord;
 };
 
 /** Pillar + optional line from Medusa product categories under `feelings` (normalized). */
@@ -154,6 +160,8 @@ export type Product = {
   story: string;
   /** Card + quick view merchandising label, e.g. "Bestseller" */
   merchandisingBadge?: string;
+  /** Time-boxed campaign chip from Medusa `metadata.promoLabel` / `promo_ends_at`. */
+  promoLabel?: string;
   /** Shown as "FEELING / FIT" in quick view */
   fitLabel?: string;
   /** Named preset under `store.metadata.sizeTables` (e.g. `oversized`). Editable as a string in Medusa Admin metadata. */
@@ -162,6 +170,27 @@ export type Product = {
   stockNote?: string;
   /** Per-size FOMO / inventory hints on PDP, e.g. { M: "Only 2 left" } */
   inventoryHintBySize?: Partial<Record<ProductSizeKey, string>>;
+  /** Derived from live inventory when Medusa reports levels (preferred over static hints). */
+  stockStatusBySize?: Partial<Record<ProductSizeKey, StockStatusKey>>;
+  /** Structured measurements from `product.metadata.fitBySize` (cm). */
+  fitBySize?: Partial<
+    Record<
+      ProductSizeKey,
+      {
+        bust_cm?: number;
+        length_cm?: number;
+        sleeve_cm?: number;
+        rise_cm?: number;
+        inseam_cm?: number;
+      }
+    >
+  >;
+  /** ISO datetime — hide from catalog until this instant when set. */
+  launchAt?: string;
+  /** ISO datetime — hide from catalog after this instant when set. */
+  sunsetAt?: string;
+  /** Medusa `updated_at` for sitemap freshness. */
+  updatedAt?: string;
   /** If set, restricts which sizes appear in stock (search filter + PDP). Omit = all non-disabled catalog sizes. */
   availableSizes?: ProductSizeKey[];
   /** Optional on-body copy for PDP (e.g. two models). When absent, PDP uses global template + fitLabel. */
@@ -183,6 +212,11 @@ export type Product = {
   thumbnail?: string | null;
   media?: ProductMediaRecord;
   variantsBySize?: Partial<Record<ProductSizeKey, ProductVariantRecord>>;
+  /**
+   * Multi-color PDP: per-color variant rows (same shape as `variantsBySize` values).
+   * When set, every variant should include `color`; `variantsBySize` reflects the default color row.
+   */
+  variantsByColor?: Record<string, ProductVariantRecord[]>;
 };
 
 /** @deprecated Use Subfeeling */

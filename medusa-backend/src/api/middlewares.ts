@@ -22,7 +22,10 @@ function httpRequestTiming(req: MedusaRequest, res: MedusaResponse, next: Medusa
 
   res.once("finish", () => {
     const durationMs = Math.round(performance.now() - started)
-    if (!logAll && durationMs < slowMs) {
+    const structured =
+      String(process.env.HORO_HTTP_STRUCTURED_LOG || "").trim() === "1" ||
+      String(process.env.HORO_HTTP_STRUCTURED_LOG || "").trim().toLowerCase() === "true"
+    if (!logAll && durationMs < slowMs && !structured) {
       return
     }
 
@@ -47,6 +50,26 @@ function httpRequestTiming(req: MedusaRequest, res: MedusaResponse, next: Medusa
 
     if (!wrote) {
       console.info(line)
+    }
+
+    if (structured) {
+      const payload = JSON.stringify({
+        type: "horo_http_request",
+        method: req.method,
+        path,
+        status: res.statusCode,
+        duration_ms: durationMs,
+      })
+      try {
+        const logger = req.scope?.resolve("logger") as { info?: (msg: string) => void } | undefined
+        if (typeof logger?.info === "function") {
+          logger.info(payload)
+        } else {
+          console.info(payload)
+        }
+      } catch {
+        console.info(payload)
+      }
     }
   })
 

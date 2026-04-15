@@ -129,6 +129,7 @@ export type MedusaCart = {
   shipping_total?: number
   subtotal?: number
   tax_total?: number
+  discount_total?: number
   total?: number
 }
 

@@ -5,9 +5,7 @@ import { ProductDetailPage } from "@/components/product-detail-page";
 import {
   buildProductJsonLd,
   buildProductMetadata,
-  fetchStorefrontCatalogServer,
-  fetchStorefrontProductServer,
-  fetchStorefrontSettingsServer,
+  fetchStorefrontPdpServer,
   logStorefrontFetchError,
 } from "@/lib/storefront-server";
 import { mergePdpDeliveryRules, mergePdpSizeTableConfig, type PdpSizeTableConfig } from "@/storefront/data/domain-config";
@@ -23,18 +21,14 @@ function jsonLdString(data: unknown) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-export async function generateMetadata({
-  params,
-}: ProductPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const [product, catalog] = await Promise.all([
-    fetchStorefrontProductServer(slug),
-    fetchStorefrontCatalogServer().catch((error) => {
-      logStorefrontFetchError("[storefront] Failed to fetch catalog for product metadata", error, { slug });
-      return null;
-    }),
-  ]);
+  const pdp = await fetchStorefrontPdpServer(slug).catch((error) => {
+    logStorefrontFetchError("[storefront] Failed to fetch PDP for product metadata", error, { slug });
+    return null;
+  });
 
+  const product = pdp?.product;
   if (!product) {
     return {
       title: "Page not found | HORO Egypt",
@@ -45,34 +39,26 @@ export async function generateMetadata({
     };
   }
 
-  return buildProductMetadata(product, catalog ?? undefined);
+  return buildProductMetadata(product, undefined);
 }
 
 export default async function Page({ params }: ProductPageProps) {
   const { slug } = await params;
-  const [product, catalog, storefrontSettings] = await Promise.all([
-    fetchStorefrontProductServer(slug),
-    fetchStorefrontCatalogServer().catch((error) => {
-      logStorefrontFetchError("[storefront] Failed to fetch catalog for product page", error, { slug });
-      return null;
-    }),
-    fetchStorefrontSettingsServer(),
-  ]);
+  const pdp = await fetchStorefrontPdpServer(slug).catch((error) => {
+    logStorefrontFetchError("[storefront] Failed to fetch PDP for product page", error, { slug });
+    return null;
+  });
 
-  if (!product) {
+  if (!pdp?.product) {
     notFound();
   }
 
-  if (process.env.NODE_ENV === "development" && storefrontSettings == null) {
-    console.warn(
-      "[pdp] GET /storefront/settings failed or empty — using built-in delivery windows and size tables. Check Medusa and publishable key.",
-    );
-  }
+  const { product, settings: storefrontSettings, crossSellProducts } = pdp;
 
   const deliveryRules: PdpDeliveryRules = mergePdpDeliveryRules(storefrontSettings?.delivery ?? null);
   const sizeTableConfig: PdpSizeTableConfig = mergePdpSizeTableConfig(storefrontSettings ?? undefined, product.sizeTableKey);
 
-  const jsonLd = buildProductJsonLd(product, catalog ?? undefined, storefrontSettings?.delivery ?? null);
+  const jsonLd = buildProductJsonLd(product, undefined, storefrontSettings?.delivery ?? null);
 
   return (
     <>
@@ -83,8 +69,8 @@ export default async function Page({ params }: ProductPageProps) {
       <ProductDetailPage
         slug={slug}
         product={product}
-        catalog={catalog}
-        catalogProducts={catalog?.products}
+        catalog={null}
+        catalogProducts={crossSellProducts}
         deliveryRules={deliveryRules}
         sizeTableConfig={sizeTableConfig}
       />

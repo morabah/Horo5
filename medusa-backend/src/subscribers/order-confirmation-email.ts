@@ -7,6 +7,7 @@ import {
   buildOrderConfirmationHtml,
   sendOrderConfirmationResend,
 } from "../lib/order-confirmation-email"
+import { retryWithBackoff } from "../lib/retry-with-backoff"
 
 type OrderPlacedPayload = { id?: string }
 
@@ -72,17 +73,27 @@ export default async function orderConfirmationEmailHandler({
   const html = buildOrderConfirmationHtml(orderInput)
   const subject = `Your HORO order ${display} is confirmed`
 
-  const result = await sendOrderConfirmationResend({
-    apiKey,
-    from,
-    to,
-    bcc,
-    subject,
-    html,
-  })
+  const attempts = Math.max(1, Math.min(5, parseInt(String(process.env.HORO_SUBSCRIBER_HTTP_RETRIES ?? "3"), 10) || 3))
+  const result = await retryWithBackoff(
+    `[order-confirmation-email] order=${orderId}`,
+    attempts,
+    () =>
+      sendOrderConfirmationResend({
+        apiKey,
+        from,
+        to,
+        bcc,
+        subject,
+        html,
+      }),
+    (r) => r.ok,
+    logger,
+  )
 
-  if (!result.ok) {
-    logger.warn(`[order-confirmation-email] Resend error for order ${orderId}: ${result.error || "unknown"}`)
+  if (!result?.ok) {
+    logger.warn(
+      `[order-confirmation-email] Resend error for order ${orderId}: ${result?.error || "unknown"} (DLQ: replay order.placed or fix RESEND)`,
+    )
     return
   }
 

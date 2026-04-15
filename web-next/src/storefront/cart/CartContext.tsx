@@ -28,6 +28,7 @@ import {
   toCartLines,
 } from '../lib/medusa/adapters';
 import type { MedusaCart, MedusaProduct } from '../lib/medusa/types';
+import { findProductVariantById } from '../utils/productVariants';
 import { CART_STORAGE_KEY, MEDUSA_CART_ID_STORAGE_KEY, cartLineKey, type CartLine } from './types';
 
 export type LastAddedItem = {
@@ -43,15 +44,17 @@ type CartContextValue = {
   /** Medusa store cart id when synced; read-only for pages that prefetch shipping (e.g. cart). */
   medusaCartId: string | null;
   items: CartLine[];
-  addItem: (productSlug: string, size: ProductSizeKey, qty?: number) => void;
-  removeItem: (productSlug: string, size: ProductSizeKey) => void;
-  setLineQty: (productSlug: string, size: ProductSizeKey, qty: number) => void;
+  addItem: (productSlug: string, size: ProductSizeKey, qty?: number, explicitVariantId?: string) => void;
+  removeItem: (productSlug: string, size: ProductSizeKey, variantId?: string) => void;
+  setLineQty: (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string) => void;
   /** Waits for in-flight Medusa mutations (incl. debounced qty) and returns the latest cart snapshot if any. */
   awaitPendingCartSync: () => Promise<MedusaCart | null>;
   clearCart: () => void;
   replaceMedusaCartId: (cartId: string | null) => void;
   totalQty: number;
   subtotalEgp: number;
+  /** Medusa cart promotions (store `discount_total`), EGP whole pounds. */
+  cartPromotionDiscountEgp: number;
   giftWrapEgp: number;
   giftWrapCatalogPriceEgp: number | null;
   addGiftWrap: () => void;
@@ -148,6 +151,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [miniCartOpen, setMiniCartOpen] = useState(false);
   const [lastAddedItem, setLastAddedItem] = useState<LastAddedItem | null>(null);
   const [lineQtySaving, setLineQtySaving] = useState(false);
+  const [cartPromotionDiscountEgp, setCartPromotionDiscountEgp] = useState(0);
   const giftWrapOfferPromiseRef = useRef<Promise<GiftWrapOffer> | null>(null);
   /** Monotonic counter incremented on clearCart to invalidate in-flight syncs. */
   const cartGenerationRef = useRef(0);
@@ -170,6 +174,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (nextGiftWrapEgp > 0) {
       setGiftWrapCatalogPriceEgp((current) => current ?? nextGiftWrapEgp);
     }
+    setCartPromotionDiscountEgp(
+      typeof cart.discount_total === 'number' && cart.discount_total > 0
+        ? medusaAmountToEgp(cart.discount_total)
+        : 0,
+    );
     setMedusaCartId(cart.id);
   }, []);
 
@@ -332,16 +341,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, [resolveGiftWrapOffer]);
 
-  const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1) => {
+  const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1, explicitVariantId?: string) => {
     const product = getProduct(productSlug) ?? readProductFromLastCatalogStorage(productSlug);
     if (!product || qty < 1) return;
     const add = Math.min(qty, 99);
-    const variant = product.variantsBySize?.[size];
+    const variant = explicitVariantId
+      ? findProductVariantById(product, explicitVariantId)
+      : product.variantsBySize?.[size];
+    if (explicitVariantId && !variant) return;
     const unitPriceEgp = variant?.priceEgp ?? product.priceEgp;
-    const variantId = variant?.id;
+    const variantId = variant?.id ?? explicitVariantId;
 
     setItems((prev) => {
-      const key = cartLineKey({ productSlug, size });
+      const key = cartLineKey({ productSlug, size, variantId });
       const idx = prev.findIndex((line) => cartLineKey(line) === key);
       if (idx >= 0) {
         const next = [...prev];
@@ -386,7 +398,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const gen = cartGenerationRef.current;
       try {
         const cartId = await ensureMedusaCartId();
-        const resolvedVariantId = resolveVariantId(productSlug, size);
+        const resolvedVariantId = explicitVariantId ?? resolveVariantId(productSlug, size);
         if (!resolvedVariantId) return;
         const { cart } = await addLineItem(cartId, resolvedVariantId, add);
         if (cartGenerationRef.current !== gen) return;
@@ -399,8 +411,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [applyCartFromResponse, ensureMedusaCartId, resolveVariantId, trackOp]);
 
   const removeItem = useCallback(
-    (productSlug: string, size: ProductSizeKey) => {
-      const key = cartLineKey({ productSlug, size });
+    (productSlug: string, size: ProductSizeKey, variantId?: string) => {
+      const key = cartLineKey({ productSlug, size, variantId });
       pendingQtyByKeyRef.current.delete(key);
       const line = items.find((item) => cartLineKey(item) === key);
       setItems((prev) => prev.filter((item) => cartLineKey(item) !== key));
@@ -421,8 +433,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const setLineQty = useCallback(
-    (productSlug: string, size: ProductSizeKey, qty: number) => {
-      const key = cartLineKey({ productSlug, size });
+    (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string) => {
+      const key = cartLineKey({ productSlug, size, variantId });
       const line = items.find((item) => cartLineKey(item) === key);
       if (qty < 1) {
         pendingQtyByKeyRef.current.delete(key);
@@ -535,6 +547,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
     setGiftWrapEgpState(0);
     setMedusaCartId(null);
+    setCartPromotionDiscountEgp(0);
     setLineQtySaving(false);
     // Synchronously wipe localStorage so the stale cart ID can never be
     // re-loaded on a subsequent page mount (React effects are async).
@@ -571,6 +584,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       replaceMedusaCartId,
       totalQty,
       subtotalEgp,
+      cartPromotionDiscountEgp,
       giftWrapEgp,
       giftWrapCatalogPriceEgp,
       addGiftWrap,
@@ -591,6 +605,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       replaceMedusaCartId,
       totalQty,
       subtotalEgp,
+      cartPromotionDiscountEgp,
       giftWrapEgp,
       giftWrapCatalogPriceEgp,
       addGiftWrap,

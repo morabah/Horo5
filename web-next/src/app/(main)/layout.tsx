@@ -1,3 +1,4 @@
+import { OrganizationJsonLd } from "@/components/organization-jsonld";
 import { StorefrontChrome } from "@/components/storefront-chrome";
 import { fetchStorefrontCatalogServer, logStorefrontFetchError } from "@/lib/storefront-server";
 import { Providers } from "../providers";
@@ -19,6 +20,7 @@ export default async function MainStoreLayout({
 
   return (
     <Providers initialCatalog={initialCatalog} renderedAt={renderedAt}>
+      <OrganizationJsonLd />
       <StorefrontChrome>{children}</StorefrontChrome>
     </Providers>
   );

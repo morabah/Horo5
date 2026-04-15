@@ -15,12 +15,14 @@ import { TeeImageFrame } from '../components/TeeImage';
 import { useUiLocale } from '../i18n/ui-locale';
 import { SEARCH_SCHEMA } from '../data/domain-config';
 import { getFeelingCollectionVisual, getOccasionCollectionVisual, heroStreet, imgUrl } from '../data/images';
-import { getFeeling, getOccasion } from '../data/site';
+import { getFeeling, getOccasion, type Product } from '../data/site';
 import { trackSearchZeroResults } from '../analytics/events';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { fetchStorefrontSearch, isStorefrontServerSearchConfigured } from '../lib/medusa/storefront-search-client';
 import {
   getSearchFacetOptions,
   getSearchResults,
+  getSearchResultsFromProducts,
   getSearchSuggestions,
   parseSearchSizeFilter,
   type SearchDesignCard,
@@ -33,6 +35,12 @@ import {
 import { defaultCatalogSizeKeys } from '../utils/productSizes';
 
 const SEARCH_DEBOUNCE_MS = 250;
+
+/** When set (default), design results use Medusa `GET /storefront/search` + client ranking. Set to `0` to force fixture-only search. */
+const useMedusaServerSearch =
+  typeof process !== 'undefined' &&
+  isStorefrontServerSearchConfigured() &&
+  process.env.NEXT_PUBLIC_STOREFRONT_SERVER_SEARCH !== '0';
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -112,6 +120,7 @@ function SearchProductCard({
       imageSrc={product.imageSrc}
       imageAlt={product.imageAlt}
       merchandisingBadge={product.merchandisingBadge}
+      promoLabel={product.promoLabel}
       eyebrow={product.feelingName}
       eyebrowAccent={product.feelingAccent}
       artistCredit={product.artistCredit}
@@ -188,6 +197,8 @@ export function Search() {
   const [q, setQ] = useState(urlQuery);
   const [debouncedQ, setDebouncedQ] = useState(urlQuery);
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
+  const [medusaSearchPool, setMedusaSearchPool] = useState<Product[]>([]);
+  const [medusaSearchStatus, setMedusaSearchStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
@@ -245,6 +256,34 @@ export function Search() {
     }, SEARCH_DEBOUNCE_MS);
     return () => window.clearTimeout(timeoutId);
   }, [q]);
+
+  useEffect(() => {
+    if (!useMedusaServerSearch) {
+      setMedusaSearchStatus('idle');
+      return;
+    }
+    let cancelled = false;
+    setMedusaSearchStatus('loading');
+    void fetchStorefrontSearch({
+      q: debouncedQ,
+      feeling: scopeFeeling?.slug,
+      occasion: scopeOccasion?.slug,
+      page: 1,
+      pageSize: 400,
+    }).then((r) => {
+      if (cancelled) return;
+      if (r.ok) {
+        setMedusaSearchPool(r.data.products);
+        setMedusaSearchStatus('ok');
+      } else {
+        setMedusaSearchPool([]);
+        setMedusaSearchStatus('error');
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQ, scopeFeeling?.slug, scopeOccasion?.slug]);
 
   useEffect(() => {
     if (params.get('focus') !== '1') return;
@@ -372,7 +411,7 @@ export function Search() {
     return () => window.removeEventListener('pointerdown', handlePointerDown);
   }, [searchFocused]);
 
-  const searchResults = useMemo(
+  const localSearchResults = useMemo(
     () =>
       getSearchResults({
         query: debouncedQ,
@@ -399,6 +438,38 @@ export function Search() {
       sizeFilter,
     ],
   );
+
+  const searchResults = useMemo(() => {
+    if (useMedusaServerSearch && medusaSearchStatus === 'ok') {
+      return getSearchResultsFromProducts(medusaSearchPool, {
+        query: debouncedQ,
+        scopeOccasionSlug: scopeOccasion?.slug,
+        scopeFeelingSlug: scopeFeeling?.slug,
+        sortKey,
+        priceFilter,
+        feelingFilter,
+        sizeFilter,
+        filterArtist,
+        filterOccasion,
+        filterColor,
+      });
+    }
+    return localSearchResults;
+  }, [
+    medusaSearchStatus,
+    medusaSearchPool,
+    debouncedQ,
+    filterArtist,
+    filterColor,
+    filterOccasion,
+    priceFilter,
+    scopeOccasion?.slug,
+    scopeFeeling?.slug,
+    sortKey,
+    feelingFilter,
+    sizeFilter,
+    localSearchResults,
+  ]);
 
   const suggestionGroups = useMemo(
     () =>
@@ -431,7 +502,10 @@ export function Search() {
     filterArtist !== 'all' ||
     filterOccasion !== 'all' ||
     filterColor !== 'all';
-  const noResultsAcrossSections = hasDebouncedQuery && totalResults === 0;
+  const noResultsAcrossSections =
+    hasDebouncedQuery &&
+    totalResults === 0 &&
+    !(useMedusaServerSearch && medusaSearchStatus === 'loading');
 
   const scopeLabels = [scopeOccasion?.name, scopeFeeling?.name].filter(Boolean);
   const scopeSummary = scopeLabels.join(' · ');
@@ -891,6 +965,29 @@ export function Search() {
               ) : null}
             </div>
           )}
+
+          {useMedusaServerSearch && medusaSearchStatus === 'loading' ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="mt-4 flex items-center gap-3 rounded-sm border border-stone/80 bg-white/90 px-4 py-3 font-body text-sm text-warm-charcoal"
+            >
+              <span
+                className="inline-block size-4 shrink-0 animate-spin rounded-full border-2 border-deep-teal border-t-transparent"
+                aria-hidden
+              />
+              Syncing with the live catalog…
+            </div>
+          ) : null}
+
+          {useMedusaServerSearch && medusaSearchStatus === 'error' ? (
+            <div
+              role="alert"
+              className="mt-4 rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 font-body text-sm text-amber-950"
+            >
+              Live catalog search is unavailable. Showing offline results until the connection is restored.
+            </div>
+          ) : null}
 
           {noResultsAcrossSections ? (
             <div className="card-glass mt-4 flex flex-col items-center border border-stone/70 px-6 py-10 text-center md:py-12">

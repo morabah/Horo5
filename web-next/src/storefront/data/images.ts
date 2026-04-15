@@ -500,6 +500,36 @@ export function imgUrl(src: string, w: number) {
   return `${src}${sep}w=${w}&q=80&auto=format&fit=crop`;
 }
 
+/**
+ * Prefix root-relative file URLs from Medusa (`/static/...`) with `NEXT_PUBLIC_MEDUSA_BACKEND_URL`
+ * so the browser does not request them from the storefront origin.
+ */
+export function resolveProductImageSrcForDisplay(src: string): string {
+  const t = src.trim();
+  if (!t) return t;
+  if (t.startsWith('http://') || t.startsWith('https://')) return t;
+  if (t.startsWith('//')) return `https:${t}`;
+  if (t.startsWith('/') && !t.startsWith('//')) {
+    const base = (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL : '') || '';
+    const origin = base.replace(/\/+$/, '');
+    if (origin) return `${origin}${t}`;
+  }
+  return t;
+}
+
+/**
+ * `next/image` only loads hosts listed in `next.config` `images.remotePatterns`. Catalog photos
+ * often use S3/R2/CDN domains that are not listed; the browser's `<img>` has no such restriction.
+ */
+export function useNextImageOptimizerForSrc(resolvedSrc: string): boolean {
+  const t = resolvedSrc.trim();
+  if (!t) return false;
+  if (t.startsWith('/') && !t.startsWith('//')) {
+    return true;
+  }
+  return shouldAppendUnsplashStyleParams(t);
+}
+
 export function getProductMedia(slug: string): ProductMedia {
   const product = getProduct(slug);
   const runtimeGallery = product?.media?.gallery?.filter(Boolean) ?? [];

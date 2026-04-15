@@ -137,4 +137,13 @@ test.describe("storefront journey", () => {
     }
     await expect(page.locator("#phone")).toBeVisible()
   })
+
+  test("Arabic locale query keeps shell (uiLocale=ar)", async ({ page }) => {
+    test.skip(!catalogJson, "Set NEXT_PUBLIC_MEDUSA_BACKEND_URL + NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and run Medusa")
+
+    await page.goto("/?uiLocale=ar", { waitUntil: "domcontentloaded" })
+    await expectMainShell(page)
+    const html = page.locator("html")
+    await expect(html).toHaveAttribute("lang", /ar|en/)
+  })
 })

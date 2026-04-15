@@ -54,6 +54,20 @@ async function main() {
   console.log(
     `OK /storefront/catalog contract (products=${body.products.length}, feelings=${body.feelings.length}, subfeelings=${body.subfeelings.length})`,
   );
+
+  if (body.products.length > 0) {
+    const handle = body.products[0].slug;
+    const pdpRes = await fetch(`${base}/storefront/pdp/${encodeURIComponent(handle)}`, {
+      headers: { "x-publishable-api-key": key },
+    });
+    const pdpErr = pdpRes.ok ? "" : await pdpRes.text();
+    assert(pdpRes.ok, `GET /storefront/pdp/:handle failed: ${pdpRes.status} ${pdpErr.slice(0, 400)}`);
+    const pdp = await pdpRes.json();
+    assert(pdp.product && typeof pdp.product.slug === "string", "pdp.product.slug must be string");
+    assert(pdp.settings && "delivery" in pdp.settings, "pdp.settings must include delivery");
+    assert(Array.isArray(pdp.crossSellProducts), "pdp.crossSellProducts must be array");
+    console.log(`OK /storefront/pdp/:handle contract (crossSell=${pdp.crossSellProducts.length})`);
+  }
 }
 
 main().catch((e) => {

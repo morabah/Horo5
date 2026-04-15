@@ -30,7 +30,11 @@ export async function register() {
   }
 
   const site = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (site && !/^https?:\/\//i.test(site)) {
+  if (!site) {
+    console.warn(
+      "[web-next] Production NEXT_PUBLIC_SITE_URL is unset — canonical URLs, Organization JSON-LD, and sitemap fallbacks may be wrong.",
+    );
+  } else if (!/^https?:\/\//i.test(site)) {
     console.warn("[web-next] NEXT_PUBLIC_SITE_URL should be an absolute http(s) URL.");
   }
 }

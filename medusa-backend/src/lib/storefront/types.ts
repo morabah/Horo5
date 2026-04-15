@@ -4,6 +4,15 @@ export type StorefrontFeelingBrowseAssignmentDTO = {
   subfeelingSlug: string
 }
 
+export type StorefrontMediaDTO = {
+  gallery?: string[]
+  main?: string | null
+  /** Base64 data URL for Next.js `placeholder="blur"` (optional; set via `product.metadata.media`). */
+  blurDataUrlMain?: string | null
+  /** CSS color e.g. `#1a1a1a` for skeleton / theme hints. */
+  dominantColorMain?: string | null
+}
+
 export type StorefrontVariantDTO = {
   allow_backorder: boolean
   available: boolean
@@ -15,12 +24,11 @@ export type StorefrontVariantDTO = {
   original_price_egp: number | null
   price_egp: number
   size: string
+  /** Option value when a `Color` product option exists. */
+  color?: string
+  /** Per-variant gallery from `variant.metadata.media` when set. */
+  media?: StorefrontMediaDTO
   sku: string | null
-}
-
-export type StorefrontMediaDTO = {
-  gallery?: string[]
-  main?: string | null
 }
 
 /** Native Medusa product / variant shipping attributes exposed on the storefront DTO (Admin “Attributes”). */
@@ -71,6 +79,19 @@ export type StorefrontProductDTO = {
   frequentlyBoughtWithSlugs?: string[]
   garmentColors?: string[]
   inventoryHintBySize?: Record<string, string>
+  stockStatusBySize?: Record<string, "in_stock" | "low_stock" | "sold_out" | "preorder">
+  fitBySize?: Record<
+    string,
+    {
+      bust_cm?: number
+      length_cm?: number
+      sleeve_cm?: number
+      rise_cm?: number
+      inseam_cm?: number
+    }
+  >
+  launchAt?: string
+  sunsetAt?: string
   media?: StorefrontMediaDTO
   merchandisingBadge?: string
   name: string
@@ -92,14 +113,23 @@ export type StorefrontProductDTO = {
   primaryFeelingSlug: string
   primaryOccasionSlug?: string
   primarySubfeelingSlug: string
+  /** Campaign line from `metadata.promoLabel` (hidden when `metadata.promo_ends_at` is past). */
+  promoLabel?: string
   priceEgp: number
   slug: string
   stockNote?: string
   story: string
   thumbnail?: string | null
+  /** ISO from Medusa `product.updated_at` (sitemap / freshness). */
+  updatedAt?: string
   trustBadges?: string[]
   useCase?: string
   variantsBySize: Record<string, StorefrontVariantDTO>
+  /**
+   * Present when every variant has a Color option and at least two distinct colors.
+   * `variantsBySize` is the default color row (first available variant’s color, else sorted first).
+   */
+  variantsByColor?: Record<string, StorefrontVariantDTO[]>
   wearerStories?: Array<Record<string, unknown>>
 }
 

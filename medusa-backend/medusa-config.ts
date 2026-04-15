@@ -4,6 +4,10 @@ import { resolveS3ConfigFromEnv } from "./src/lib/s3-env"
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
+if (process.env.NODE_ENV === "production" && !process.env.REDIS_URL?.trim()) {
+  throw new Error("REDIS_URL is required in production for the Medusa event bus and distributed locks.")
+}
+
 /** Railway / managed Postgres often uses TLS; set only if connections fail with cert errors. */
 const databaseSslRejectUnauthorized =
   process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false'
@@ -174,6 +178,9 @@ module.exports = defineConfig({
       options: {
         providers: paymentModuleProviders,
       },
+    },
+    {
+      resolve: "@medusajs/promotion",
     },
     {
       resolve: "./src/modules/artist",

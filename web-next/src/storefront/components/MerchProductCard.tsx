@@ -16,6 +16,8 @@ type MerchProductCardProps = {
   imageSrc: string;
   imageAlt: string;
   merchandisingBadge?: string;
+  /** Overrides catalog `product.promoLabel` when the card is driven by a server list (e.g. search). */
+  promoLabel?: string;
   eyebrow?: string;
   eyebrowAccent?: string;
   proofChip?: string;
@@ -52,6 +54,7 @@ export function MerchProductCard({
   imageSrc,
   imageAlt,
   merchandisingBadge,
+  promoLabel: promoLabelProp,
   artistCredit,
   compareAtPriceEgp,
   onQuickView,
@@ -64,6 +67,7 @@ export function MerchProductCard({
   const { addItem, setMiniCartOpen } = useCart();
   const minimal = variant === 'minimal';
   const product = useMemo(() => getProduct(slug), [slug]);
+  const promoLabel = promoLabelProp ?? product?.promoLabel;
   const availableSizes = useMemo(() => {
     if (!product) return [] as ProductSizeKey[];
     return productAvailableSizes(product).filter((size) =>
@@ -149,6 +153,15 @@ export function MerchProductCard({
               className="font-label absolute left-3 top-3 z-10 rounded-md bg-white/90 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm"
             >
               {merchandisingBadge}
+            </span>
+          ) : null}
+          {promoLabel ? (
+            <span
+              className={`font-label absolute left-3 z-10 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-950 shadow-sm backdrop-blur-sm ${
+                merchandisingBadge ? 'top-12' : 'top-3'
+              }`}
+            >
+              {promoLabel}
             </span>
           ) : null}
         </Link>

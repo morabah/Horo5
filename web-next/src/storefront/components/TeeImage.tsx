@@ -1,35 +1,77 @@
 import type { CSSProperties } from 'react';
-import { imgUrl } from '../data/images';
+import Image from 'next/image';
 
-type Props = {
-  /** Unsplash base URL (no query) */
+import {
+  imgUrl,
+  resolveProductImageSrcForDisplay,
+  useNextImageOptimizerForSrc,
+} from '../data/images';
+
+export type TeeImageProps = {
+  /** Unsplash base URL (no query) or absolute product image URL */
   src: string;
   alt: string;
-  /** Requested width for Unsplash CDN */
+  /** Requested width for Unsplash CDN and default `sizes` hint */
   w?: number;
   /** Above-the-fold / gallery swap — load immediately (no lazy) */
   eager?: boolean;
   className?: string;
   style?: CSSProperties;
+  /** Responsive `sizes` for `next/image` (grid vs PDP hero). */
+  sizes?: string;
+  /** Optional LQIP from catalog (`media.blurDataUrlMain`). */
+  blurDataURL?: string | null;
 };
 
 /**
  * Model / product photo — object-fit cover; lazy by default, eager when above the fold.
+ * Uses `next/image` for responsive srcset + optimization (see `next.config.ts` `images.remotePatterns`).
  */
-export function TeeImage({ src, alt, w = 800, eager = false, className, style }: Props) {
+export function TeeImage({
+  src,
+  alt,
+  w = 800,
+  eager = false,
+  className,
+  style,
+  sizes,
+  blurDataURL,
+}: TeeImageProps) {
+  const forDisplay = resolveProductImageSrcForDisplay(src);
+  const resolvedSrc = imgUrl(forDisplay, w);
+  const defaultSizes = sizes ?? `(max-width: 1024px) 100vw, min(${Math.min(w * 2, 1600)}px, 45vw)`;
+  const useNextOptimizer = useNextImageOptimizerForSrc(forDisplay);
+
   return (
-    <img
-      src={imgUrl(src, w)}
-      alt={alt}
-      loading={eager ? 'eager' : 'lazy'}
-      decoding={eager ? 'auto' : 'async'}
-      className={className}
-      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', ...style }}
-    />
+    <div
+      className={['relative h-full w-full min-h-0', className].filter(Boolean).join(' ')}
+      style={{ ...style }}
+    >
+      {useNextOptimizer ? (
+        <Image
+          src={resolvedSrc}
+          alt={alt}
+          fill
+          sizes={defaultSizes}
+          priority={eager}
+          className="object-cover"
+          placeholder={blurDataURL ? 'blur' : 'empty'}
+          blurDataURL={blurDataURL || undefined}
+        />
+      ) : (
+        <img
+          src={resolvedSrc}
+          alt={alt}
+          className="absolute inset-0 h-full w-full object-cover"
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+      )}
+    </div>
   );
 }
 
-type FrameProps = Props & {
+type FrameProps = TeeImageProps & {
   aspectRatio?: string;
   borderRadius?: string;
   frameStyle?: CSSProperties;
@@ -43,6 +85,8 @@ export function TeeImageFrame({
   w,
   eager,
   frameStyle,
+  sizes,
+  blurDataURL,
 }: FrameProps) {
   return (
     <div
@@ -54,7 +98,15 @@ export function TeeImageFrame({
         ...frameStyle,
       }}
     >
-      <TeeImage src={src} alt={alt} w={w} eager={eager} style={{ height: '100%' }} />
+      <TeeImage
+        src={src}
+        alt={alt}
+        w={w}
+        eager={eager}
+        sizes={sizes ?? '(min-width: 1024px) 33vw, 100vw'}
+        blurDataURL={blurDataURL}
+        style={{ height: '100%' }}
+      />
     </div>
   );
 }

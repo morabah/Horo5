@@ -39,6 +39,7 @@ import type {
   StorefrontSubfeelingDTO,
   StorefrontVariantDTO,
 } from "./types"
+import { retrieveStorefrontSettingsPayload, type StorefrontSettingsDTO } from "./store-settings"
 
 export function filterStorefrontProductsByQuery(
   products: StorefrontProductDTO[],
@@ -66,6 +67,16 @@ export function filterStorefrontProductsByQuery(
   return out
 }
 
+/** Feeling slug → count for storefront search/facets (primary feeling, else legacy feeling). */
+export function aggregateFeelingFacetsFromProducts(products: StorefrontProductDTO[]) {
+  const facets: { feelings: Record<string, number> } = { feelings: {} }
+  for (const product of products) {
+    const key = product.primaryFeelingSlug || product.feelingSlug
+    facets.feelings[key] = (facets.feelings[key] || 0) + 1
+  }
+  return facets
+}
+
 type RegionDTO = {
   currency_code: string
   id: string
@@ -84,6 +95,7 @@ type QueryProduct = {
   categories?: QueryCategory[] | null
   description?: string | null
   handle: string
+  updated_at?: string | null
   height?: string | null
   hs_code?: string | null
   id: string
@@ -135,6 +147,7 @@ type QueryVariant = {
   title: string
   weight?: number | string | null
   width?: number | string | null
+  metadata?: Record<string, unknown> | null
 }
 
 export type FeelingRecord = {
@@ -225,6 +238,7 @@ const PRODUCT_QUERY_FIELDS = [
   "id",
   "title",
   "handle",
+  "updated_at",
   "description",
   "weight",
   "length",
@@ -268,6 +282,7 @@ const PRODUCT_QUERY_FIELDS = [
   "variants.material",
   "variants.inventory_items.inventory.location_levels.stocked_quantity",
   "variants.inventory_items.inventory.location_levels.reserved_quantity",
+  "variants.metadata",
 ]
 
 const DEFAULT_APPAREL_CATEGORY_PATH = "apparel/tops/t-shirts"
@@ -410,9 +425,20 @@ function asMedia(value: unknown): StorefrontMediaDTO | undefined {
     return undefined
   }
 
+  const blurDataUrlMain =
+    typeof (media as { blurDataUrlMain?: unknown }).blurDataUrlMain === "string"
+      ? (media as { blurDataUrlMain: string }).blurDataUrlMain
+      : undefined
+  const dominantColorMain =
+    typeof (media as { dominantColorMain?: unknown }).dominantColorMain === "string"
+      ? (media as { dominantColorMain: string }).dominantColorMain
+      : undefined
+
   return {
     gallery: gallery.length > 0 ? gallery : undefined,
     main: media.main ?? undefined,
+    ...(blurDataUrlMain ? { blurDataUrlMain } : {}),
+    ...(dominantColorMain ? { dominantColorMain } : {}),
   }
 }
 
@@ -449,6 +475,15 @@ function variantSize(variant: QueryVariant): string {
   const normalized = String(raw || "").toUpperCase()
 
   return normalized || "M"
+}
+
+function variantColor(variant: QueryVariant): string | undefined {
+  const optionColor = variant.options?.find((option) => {
+    return (option.option?.title || "").toLowerCase() === "color"
+  })?.value
+
+  const raw = typeof optionColor === "string" ? optionColor.trim() : ""
+  return raw || undefined
 }
 
 function inventoryQuantity(variant: QueryVariant): number | null {
@@ -523,11 +558,56 @@ function variantPrice(
   }
 }
 
+function groupVariantsByColorForStorefront(
+  mappedVariants: StorefrontVariantDTO[],
+  defaultVariant: StorefrontVariantDTO | undefined
+): {
+  variantsBySize: Record<string, StorefrontVariantDTO>
+  variantsByColor?: Record<string, StorefrontVariantDTO[]>
+} {
+  if (mappedVariants.length === 0) {
+    return { variantsBySize: {} }
+  }
+  const colors = mappedVariants.map((v) => (typeof v.color === "string" ? v.color.trim() : ""))
+  if (colors.some((c) => !c)) {
+    return {
+      variantsBySize: Object.fromEntries(mappedVariants.map((variant) => [variant.size, variant])),
+    }
+  }
+  const distinct = new Set(colors)
+  if (distinct.size < 2) {
+    return {
+      variantsBySize: Object.fromEntries(mappedVariants.map((variant) => [variant.size, variant])),
+    }
+  }
+  const byColor: Record<string, StorefrontVariantDTO[]> = {}
+  for (const v of mappedVariants) {
+    const c = v.color!.trim()
+    if (!byColor[c]) {
+      byColor[c] = []
+    }
+    byColor[c].push(v)
+  }
+  const colorKeys = Object.keys(byColor).sort()
+  const defaultColor =
+    (defaultVariant?.color?.trim() && byColor[defaultVariant.color.trim()]
+      ? defaultVariant.color.trim()
+      : null) || colorKeys[0]
+  const row = byColor[defaultColor] || mappedVariants
+  return {
+    variantsByColor: byColor,
+    variantsBySize: Object.fromEntries(row.map((variant) => [variant.size, variant])),
+  }
+}
+
 function mapVariant(variant: QueryVariant, fallbackPriceEgp?: number): StorefrontVariantDTO {
   const { currency_code, is_discounted, original_price_egp, price_egp } = variantPrice(variant, fallbackPriceEgp)
   const qty = inventoryQuantity(variant)
   const allowBackorder = Boolean(variant.allow_backorder)
   const manageInventory = Boolean(variant.manage_inventory)
+  const color = variantColor(variant)
+  const variantMeta = asRecord(variant.metadata)
+  const variantMedia = asMedia(variantMeta.media)
 
   return {
     allow_backorder: allowBackorder,
@@ -540,6 +620,8 @@ function mapVariant(variant: QueryVariant, fallbackPriceEgp?: number): Storefron
     original_price_egp,
     price_egp,
     size: variantSize(variant),
+    ...(color ? { color } : {}),
+    ...(variantMedia ? { media: variantMedia } : {}),
     sku: variant.sku || null,
   }
 }
@@ -587,6 +669,73 @@ function normalizeSubfeelingSlug(value: string | undefined, handle: string, feel
 function isHiddenProduct(product: QueryProduct) {
   const metadata = asRecord(product.metadata)
   return metadata.hidden === true || metadata.hidden === "true"
+}
+
+function isOutsideLaunchWindow(product: QueryProduct, now: Date): boolean {
+  const metadata = asRecord(product.metadata)
+  const launch = asString(metadata.launch_at)?.trim()
+  const sunset = asString(metadata.sunset_at)?.trim()
+  if (launch) {
+    const t = Date.parse(launch)
+    if (Number.isFinite(t) && now.getTime() < t) {
+      return true
+    }
+  }
+  if (sunset) {
+    const t = Date.parse(sunset)
+    if (Number.isFinite(t) && now.getTime() > t) {
+      return true
+    }
+  }
+  return false
+}
+
+export function stockStatusForVariantDto(
+  v: StorefrontVariantDTO
+): "in_stock" | "low_stock" | "sold_out" | "preorder" {
+  const q = v.inventory_quantity
+  const manage = v.manage_inventory
+  const allow = v.allow_backorder
+  if (manage && allow && (q === null || q <= 0)) {
+    return "preorder"
+  }
+  if (!manage || q === null) {
+    return "in_stock"
+  }
+  if (q <= 0) {
+    return "sold_out"
+  }
+  if (q <= 10) {
+    return "low_stock"
+  }
+  return "in_stock"
+}
+
+function parseFitBySize(metadata: Record<string, unknown>): StorefrontProductDTO["fitBySize"] | undefined {
+  const raw = metadata.fitBySize
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return undefined
+  }
+  const out: NonNullable<StorefrontProductDTO["fitBySize"]> = {}
+  for (const [size, row] of Object.entries(raw as Record<string, unknown>)) {
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      continue
+    }
+    const r = row as Record<string, unknown>
+    const num = (key: string) =>
+      typeof r[key] === "number" && Number.isFinite(r[key] as number) ? (r[key] as number) : undefined
+    const entry = {
+      bust_cm: num("bust_cm"),
+      length_cm: num("length_cm"),
+      sleeve_cm: num("sleeve_cm"),
+      rise_cm: num("rise_cm"),
+      inseam_cm: num("inseam_cm"),
+    }
+    if (Object.values(entry).some((x) => x !== undefined)) {
+      out[size] = entry
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined
 }
 
 function normalizeFeelingBrowseAssignments(
@@ -814,8 +963,8 @@ function buildProduct(
   const legacyPrice = typeof metadata.priceEgp === "number" ? metadata.priceEgp : undefined
   const trustBadges = asStringArray(metadata.trustBadges) || []
   const mappedVariants = sortVariantList((product.variants || []).map((variant) => mapVariant(variant, legacyPrice)))
-  const variantsBySize = Object.fromEntries(mappedVariants.map((variant) => [variant.size, variant]))
   const defaultVariant = mappedVariants.find((variant) => variant.available) || mappedVariants[0]
+  const { variantsBySize, variantsByColor } = groupVariantsByColorForStorefront(mappedVariants, defaultVariant)
   const physicalAttributes = buildPhysicalAttributes(product, defaultVariant?.id)
   const gallery = orderedUniqueStrings([
     ...(product.images || []).map((image) => image.url || undefined),
@@ -880,6 +1029,21 @@ function buildProduct(
     explicitDecoration ||
     (asString(metadata.artworkSlug) ? "graphic" : "plain")
 
+  const stockStatusBySize = Object.fromEntries(mappedVariants.map((v) => [v.size, stockStatusForVariantDto(v)]))
+  const fitBySize = parseFitBySize(metadata)
+  const launchAt = asString(metadata.launch_at)?.trim()
+  const sunsetAt = asString(metadata.sunset_at)?.trim()
+
+  const promoLabelRaw = asString(metadata.promoLabel)?.trim()
+  const promoEndsAtRaw = asString(metadata.promo_ends_at)?.trim()
+  let promoLabel: string | undefined
+  if (promoLabelRaw) {
+    const endMs = promoEndsAtRaw ? Date.parse(promoEndsAtRaw) : NaN
+    if (!promoEndsAtRaw || !Number.isFinite(endMs) || Date.now() <= endMs) {
+      promoLabel = promoLabelRaw
+    }
+  }
+
   return {
     apparelCategoryPath: apparelPath,
     artistDisplay: resolveArtistDisplay(metadata, artistsBySlug),
@@ -900,12 +1064,18 @@ function buildProduct(
     frequentlyBoughtWithSlugs: asStringArray(metadata.frequentlyBoughtWithSlugs),
     garmentColors: asStringArray(metadata.garmentColors),
     inventoryHintBySize: Object.keys(inventoryHints).length > 0 ? inventoryHints : undefined,
+    stockStatusBySize,
+    fitBySize: fitBySize ?? undefined,
+    launchAt: launchAt || undefined,
+    sunsetAt: sunsetAt || undefined,
     lineSlug: primarySubfeelingSlug,
     media:
       mainImage || gallery.length > 0
         ? {
             gallery: gallery.length > 0 ? gallery : undefined,
             main: mainImage,
+            ...(legacyMedia?.blurDataUrlMain ? { blurDataUrlMain: legacyMedia.blurDataUrlMain } : {}),
+            ...(legacyMedia?.dominantColorMain ? { dominantColorMain: legacyMedia.dominantColorMain } : {}),
           }
         : undefined,
     merchandisingBadge: asString(metadata.merchandisingBadge),
@@ -918,14 +1088,17 @@ function buildProduct(
     primaryFeelingSlug,
     primaryOccasionSlug: asString(metadata.primaryOccasionSlug),
     primarySubfeelingSlug,
+    ...(promoLabel ? { promoLabel } : {}),
     priceEgp: defaultVariant?.price_egp ?? legacyPrice ?? 0,
     slug: product.handle,
     stockNote: asString(metadata.stockNote),
     story: asString(metadata.story) || product.description || "",
     thumbnail: mainImage,
+    ...(product.updated_at ? { updatedAt: product.updated_at } : {}),
     trustBadges: trustBadges.length > 0 ? trustBadges : [...LEGACY_STOREFRONT_TRUST_BADGES],
     useCase: asString(metadata.useCase),
     variantsBySize,
+    ...(variantsByColor ? { variantsByColor } : {}),
     wearerStories: asObjectArray(metadata.wearerStories),
   }
 }
@@ -1055,8 +1228,9 @@ function sortStorefrontProducts(
   categoriesById?: Map<string, FlatCategoryRow>,
   artistsBySlug?: Map<string, StorefrontArtistDTO>
 ) {
+  const now = new Date()
   return products
-    .filter((product) => !isHiddenProduct(product))
+    .filter((product) => !isHiddenProduct(product) && !isOutsideLaunchWindow(product, now))
     .map((product) => {
       const metadata = asRecord(product.metadata)
       return {
@@ -1175,6 +1349,54 @@ export async function retrieveStorefrontProduct(scope: MedusaContainer, handle: 
   const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
   const products = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug)
   return products[0] || null
+}
+
+export async function retrieveStorefrontProductsByHandles(
+  scope: MedusaContainer,
+  handles: string[]
+): Promise<StorefrontProductDTO[]> {
+  const unique = [...new Set(handles.map((h) => h.trim()).filter(Boolean))]
+  if (unique.length === 0) {
+    return []
+  }
+
+  const artistList = await listStorefrontArtists(scope)
+  const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
+
+  const results = await Promise.all(unique.map((handle) => queryStorefrontProducts(scope, { handle }, 1)))
+
+  const out: StorefrontProductDTO[] = []
+  for (const result of results) {
+    const sorted = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug)
+    if (sorted[0]) {
+      out.push(sorted[0])
+    }
+  }
+  return out
+}
+
+export async function retrieveStorefrontPdpPayload(
+  scope: MedusaContainer,
+  handle: string
+): Promise<{
+  product: StorefrontProductDTO
+  settings: StorefrontSettingsDTO
+  crossSellProducts: StorefrontProductDTO[]
+} | null> {
+  const product = await retrieveStorefrontProduct(scope, handle)
+  if (!product) {
+    return null
+  }
+
+  const crossSellSlugs = [
+    ...(product.complementarySlugs ?? []),
+    ...(product.frequentlyBoughtWithSlugs ?? []),
+    ...(product.customersAlsoBoughtSlugs ?? []),
+  ]
+  const crossSellProducts = await retrieveStorefrontProductsByHandles(scope, crossSellSlugs)
+  const settings = await retrieveStorefrontSettingsPayload(scope)
+
+  return { product, settings, crossSellProducts }
 }
 
 export async function listStorefrontArtists(scope: MedusaContainer) {
@@ -1388,7 +1610,8 @@ let catalogServerInflight: Promise<StorefrontCatalogDTO> | null = null
 export async function getStorefrontCatalogWithServerCache(
   scope: MedusaContainer
 ): Promise<StorefrontCatalogDTO> {
-  const ttlMs = parsePositiveMsEnv("STOREFRONT_CATALOG_SERVER_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
+  const catalogFallbackMs = process.env.NODE_ENV === "production" ? 0 : DEFAULT_SERVER_CACHE_MS
+  const ttlMs = parsePositiveMsEnv("STOREFRONT_CATALOG_SERVER_CACHE_MS", catalogFallbackMs)
   if (ttlMs <= 0) {
     return buildStorefrontCatalog(scope)
   }

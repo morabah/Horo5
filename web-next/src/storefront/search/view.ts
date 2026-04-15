@@ -40,6 +40,7 @@ export type SearchDesignCard = {
   imageSrc: string;
   imageAlt: string;
   merchandisingBadge?: string;
+  promoLabel?: string;
 };
 
 export type SearchVibeCard = {
@@ -92,7 +93,7 @@ export type SearchResults = {
   rawDesignMatchCount: number;
 };
 
-type ScopedSearchParams = {
+export type ScopedSearchParams = {
   query: string;
   scopeFeelingSlug?: string | null;
   scopeOccasionSlug?: string | null;
@@ -533,6 +534,7 @@ function mapDesignCard(product: Product): SearchDesignCard {
     imageSrc,
     imageAlt: `HORO “${product.name}” graphic tee${feeling ? ` — ${feeling.name}` : ''}.`,
     merchandisingBadge: product.merchandisingBadge,
+    promoLabel: product.promoLabel,
   };
 }
 
@@ -693,21 +695,30 @@ function getMatchedOccasions(occasionCounts: Map<OccasionSlug, number>, queryVar
     .filter((entry): entry is SearchOccasionCard => entry !== null);
 }
 
-export function getSearchResults({
-  query,
-  scopeFeelingSlug,
-  scopeOccasionSlug,
-  sortKey,
-  priceFilter,
-  feelingFilter,
-  sizeFilter,
-  filterArtist,
-  filterOccasion,
-  filterColor,
-}: ScopedSearchParams): SearchResults {
+/**
+ * Run search ranking + facet filters on an explicit product list (e.g. Medusa `/storefront/search` payload).
+ * Scope (feeling/occasion) should already match how this list was built.
+ */
+export function getSearchResultsFromProducts(
+  baseProducts: Product[],
+  params: ScopedSearchParams
+): SearchResults {
+  const {
+    query,
+    scopeFeelingSlug,
+    scopeOccasionSlug,
+    sortKey,
+    priceFilter,
+    feelingFilter,
+    sizeFilter,
+    filterArtist,
+    filterOccasion,
+    filterColor,
+  } = params;
+  void scopeFeelingSlug;
+  void scopeOccasionSlug;
   const normalizedQuery = normalizeForSearch(query);
   const queryVariants = expandQueryVariants(normalizedQuery);
-  const baseProducts = getScopedProducts(scopeFeelingSlug, scopeOccasionSlug);
   const { vibeCounts, occasionCounts } = getScopedCounts(baseProducts);
 
   const scoredProducts: ScoredProduct[] = baseProducts
@@ -772,6 +783,11 @@ export function getSearchResults({
     vibeOptions,
     rawDesignMatchCount: queryMatchedProducts.length,
   };
+}
+
+export function getSearchResults(params: ScopedSearchParams): SearchResults {
+  const baseProducts = getScopedProducts(params.scopeFeelingSlug, params.scopeOccasionSlug);
+  return getSearchResultsFromProducts(baseProducts, params);
 }
 
 export function getSearchSuggestions({
