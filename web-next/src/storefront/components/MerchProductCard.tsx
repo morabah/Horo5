@@ -109,10 +109,10 @@ export function MerchProductCard({
   }
 
   const desktopQuickAddClasses = [
-    'font-label absolute bottom-3 right-3 z-10 hidden min-h-10 items-center justify-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.18em] transition-all duration-300 md:inline-flex',
+    'font-label absolute bottom-3 right-3 z-10 hidden min-h-10 items-center justify-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-sm backdrop-blur-sm transition-colors duration-200 md:inline-flex',
     quickAddOpen || addedFeedback
-      ? 'border-obsidian bg-white text-obsidian opacity-100 shadow-md'
-      : 'border-white/75 bg-white/88 text-obsidian opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
+      ? 'border-obsidian bg-white text-obsidian shadow-md'
+      : 'border-obsidian/15 bg-white/95 text-obsidian hover:border-obsidian hover:bg-white',
   ].join(' ');
 
   const mobileQuickAddClasses = [

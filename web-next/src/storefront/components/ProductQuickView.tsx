@@ -313,7 +313,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                 <div className="shrink-0 pt-1 text-right">
                   <div className="flex flex-wrap items-end justify-end gap-2">
                     {displayOriginalPriceEgp ? (
-                      <p className="font-headline text-sm text-white/55 line-through md:text-base">{formatEgp(displayOriginalPriceEgp)}</p>
+                      <p className="font-headline text-sm text-white/70 line-through md:text-base">{formatEgp(displayOriginalPriceEgp)}</p>
                     ) : null}
                     <p className="font-headline text-lg font-bold text-white md:text-xl">{priceStr}</p>
                   </div>
@@ -360,7 +360,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                           disabled
                             ? isSelected
                               ? 'border-white bg-white/90 text-obsidian line-through decoration-obsidian/50'
-                              : 'border-white/15 bg-white/[0.04] text-white/40 line-through decoration-white/25 hover:border-white/30'
+                              : 'border-white/25 bg-white/[0.08] text-white/60 line-through decoration-white/40 hover:border-white/45'
                             : isSelected
                               ? 'border-white bg-white text-obsidian'
                               : 'border-white/25 bg-transparent text-white hover:border-white/50'
@@ -456,7 +456,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                         ? oosSelected
                           ? 'bg-primary/90 text-obsidian hover:brightness-95'
                           : 'bg-primary text-obsidian hover:brightness-95'
-                        : 'cursor-not-allowed border border-white/12 bg-white/[0.08] text-white/48 shadow-none'
+                        : 'cursor-not-allowed border border-white/30 bg-white/[0.14] text-white/75 shadow-none'
                     }`}
                     aria-disabled={!selectedSize}
                     onClick={handlePrimaryCta}
@@ -472,7 +472,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                 {PDP_SCHEMA.trustStripItems.map((item) => (
                   <li
                     key={item}
-                    className="font-label inline-flex min-h-9 items-center rounded-full border border-white/12 bg-white/[0.04] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-white/85"
+                    className="font-label inline-flex min-h-9 items-center rounded-full border border-white/30 bg-white/[0.10] px-3 py-2 text-[10px] font-medium uppercase tracking-[0.16em] text-white"
                   >
                     {item}
                   </li>

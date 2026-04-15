@@ -1,0 +1,22 @@
+/** Remote Query fields for order confirmation email + preview script. */
+export const ORDER_CONFIRMATION_GRAPH_FIELDS = [
+  "id",
+  "display_id",
+  "email",
+  "currency_code",
+  "created_at",
+  "metadata",
+  "subtotal",
+  "tax_total",
+  "shipping_total",
+  "discount_total",
+  "total",
+  "items.*",
+  "items.item.*",
+  "items.detail.*",
+  "summary.*",
+  "shipping_address.*",
+  "billing_address.*",
+  "shipping_methods.*",
+  "shipping_methods.shipping_method.*",
+] as const

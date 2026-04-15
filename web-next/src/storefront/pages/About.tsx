@@ -67,7 +67,7 @@ export function About() {
                     {PDP_SCHEMA.trustStripItems.map((item) => (
                       <span
                         key={item}
-                        className="font-label inline-flex min-h-11 items-center rounded-full border border-white/28 bg-white/10 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-white/88"
+                        className="font-label inline-flex min-h-11 items-center rounded-full border border-white/45 bg-white/12 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white"
                       >
                         {item}
                       </span>

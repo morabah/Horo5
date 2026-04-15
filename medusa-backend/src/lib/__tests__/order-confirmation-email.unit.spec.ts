@@ -3,7 +3,42 @@ import {
   buildOrderConfirmationHtml,
   GIFT_WRAP_PRODUCT_HANDLE,
   isGiftWrapLineItem,
+  validateOrderConfirmationPricing,
 } from "../order-confirmation-email"
+
+describe("validateOrderConfirmationPricing", () => {
+  it("passes when lines, subtotal, shipping, and total are consistent", () => {
+    const r = validateOrderConfirmationPricing({
+      id: "o1",
+      subtotal: 239700,
+      shipping_total: 6000,
+      tax_total: 0,
+      discount_total: 0,
+      total: 245700,
+      items: [
+        { product_title: "A", quantity: 1, unit_price: 119850, total: 119850 },
+        { product_title: "B", quantity: 1, unit_price: 119850, total: 119850 },
+      ],
+      shipping_methods: [{ name: "Standard", total: 6000 }],
+    })
+    expect(r.ok).toBe(true)
+  })
+
+  it("fails when a catalog line has no money", () => {
+    const r = validateOrderConfirmationPricing({
+      id: "o1",
+      subtotal: 100,
+      shipping_total: 0,
+      tax_total: 0,
+      discount_total: 0,
+      total: 100,
+      items: [{ product_title: "A", quantity: 1, unit_price: 0, total: 0 }],
+      shipping_methods: [],
+    })
+    expect(r.ok).toBe(false)
+    expect(r.errors.some((e) => e.includes("normalize to 0"))).toBe(true)
+  })
+})
 
 describe("order-confirmation-email", () => {
   it("filters gift-wrap line from item table", () => {
@@ -51,8 +86,11 @@ describe("order-confirmation-email", () => {
       billing_address: null,
       shipping_methods: [{ name: "Standard", total: 60 }],
       storeUrl: "https://shop.example.com",
+      estimated_delivery_window: "20 Apr – 24 Apr",
     })
 
+    expect(html).toContain("Estimated delivery (standard)")
+    expect(html).toContain("20 Apr – 24 Apr")
     expect(html).toContain("HORO-42")
     expect(html).toContain("Evil &lt;script&gt;")
     expect(html).not.toContain("<script>")

@@ -1,5 +1,40 @@
 import { coerceMoneyAmount } from "./egp-amount"
+import { resolveEstimatedDeliveryWindowForEmail } from "./order-confirmation-delivery"
 import type { OrderConfirmationInput, OrderLineLike, ShippingMethodLike } from "./order-confirmation-email"
+
+function sumLineMoneyForReconcile(lines: OrderLineLike[]): number {
+  let s = 0
+  for (const it of lines) {
+    const t = coerceMoneyAmount(it.total)
+    if (t !== null && t > 0) {
+      s += t
+      continue
+    }
+    const u = coerceMoneyAmount(it.unit_price)
+    const qRaw = it.quantity
+    const q =
+      typeof qRaw === "number" && Number.isFinite(qRaw)
+        ? Math.max(1, Math.floor(qRaw))
+        : Math.max(1, Math.floor(coerceMoneyAmount(qRaw) ?? 1))
+    if (u !== null && u > 0) s += u * q
+  }
+  return s
+}
+
+function sumShippingMoneyForReconcile(methods: ShippingMethodLike[]): number {
+  let s = 0
+  for (const m of methods) {
+    if (!m) continue
+    const t = coerceMoneyAmount(m.total)
+    if (t !== null && t > 0) {
+      s += t
+      continue
+    }
+    const a = coerceMoneyAmount(m.amount)
+    if (a !== null && a > 0) s += a
+  }
+  return s
+}
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v)
@@ -83,23 +118,56 @@ export function normalizeGraphOrderForEmail(
         (typeof el.product_handle === "string" && el.product_handle) ||
         null
 
-      const quantity = firstMoney(el.quantity, detail?.quantity, nested?.quantity) ?? el.quantity ?? 1
+      const qtyNum = (() => {
+        const q =
+          coerceMoneyAmount(el.quantity) ??
+          coerceMoneyAmount(detail?.quantity) ??
+          coerceMoneyAmount(nested?.quantity)
+        if (q !== null && q > 0) return Math.max(1, Math.floor(q))
+        if (typeof el.quantity === "number" && Number.isFinite(el.quantity)) return Math.max(1, Math.floor(el.quantity))
+        if (typeof detail?.quantity === "number" && Number.isFinite(detail.quantity)) return Math.max(1, Math.floor(detail.quantity))
+        return 1
+      })()
+      const quantity: OrderLineLike["quantity"] = qtyNum
 
-      const unit_price = firstMoney(
+      const lineSubtotal = firstMoney(
+        el.subtotal,
+        el.raw_subtotal,
+        detail?.subtotal,
+        detail?.raw_subtotal,
+        nested?.subtotal,
+      )
+
+      let unit_price = firstMoney(
         el.unit_price,
         detail?.unit_price,
         nested?.unit_price,
         detail?.raw_unit_price,
         nested?.raw_unit_price,
+        el.discounted_unit_price,
+        detail?.discounted_unit_price,
+        nested?.discounted_unit_price,
       )
 
-      const lineTotalRaw = firstMoney(
+      let lineTotalRaw = firstMoney(
         el.total,
         detail?.total,
         nested?.total,
         detail?.raw_total,
         nested?.raw_total,
+        lineSubtotal,
       )
+
+      const subN = coerceMoneyAmount(lineSubtotal)
+      if ((coerceMoneyAmount(unit_price) ?? 0) === 0 && subN !== null && subN > 0 && qtyNum > 0) {
+        unit_price = subN / qtyNum
+      }
+      if ((coerceMoneyAmount(lineTotalRaw) ?? 0) === 0 && subN !== null && subN > 0) {
+        lineTotalRaw = subN
+      }
+      if ((coerceMoneyAmount(lineTotalRaw) ?? 0) === 0 && (coerceMoneyAmount(unit_price) ?? 0) > 0) {
+        lineTotalRaw = (coerceMoneyAmount(unit_price) ?? 0) * qtyNum
+      }
 
       const line: OrderLineLike = {
         title:
@@ -110,7 +178,7 @@ export function normalizeGraphOrderForEmail(
               : null,
         product_title,
         variant_title,
-        quantity: quantity as OrderLineLike["quantity"],
+        quantity,
         unit_price: unit_price as OrderLineLike["unit_price"],
         total: lineTotalRaw as OrderLineLike["total"],
         product_handle,
@@ -139,17 +207,43 @@ export function normalizeGraphOrderForEmail(
 
   const id = typeof row.id === "string" ? row.id : ""
 
+  let subtotal = pickOrderMoney(row, totals, "subtotal", "item_subtotal", "items_total", "product_subtotal") as OrderConfirmationInput["subtotal"]
+  let tax_total = pickOrderMoney(row, totals, "tax_total", "item_tax_total") as OrderConfirmationInput["tax_total"]
+  let shipping_total = pickOrderMoney(row, totals, "shipping_total", "shipping_subtotal") as OrderConfirmationInput["shipping_total"]
+  let discount_total = pickOrderMoney(row, totals, "discount_total") as OrderConfirmationInput["discount_total"]
+  let total = pickOrderMoney(row, totals, "total", "current_order_total", "transaction_total") as OrderConfirmationInput["total"]
+
+  const lineSum = sumLineMoneyForReconcile(items)
+  const shipSum = sumShippingMoneyForReconcile(shipping_methods)
+  if ((coerceMoneyAmount(subtotal) ?? 0) === 0 && lineSum > 0) {
+    subtotal = lineSum
+  }
+  if ((coerceMoneyAmount(shipping_total) ?? 0) === 0 && shipSum > 0) {
+    shipping_total = shipSum
+  }
+  const sN = coerceMoneyAmount(subtotal) ?? 0
+  const shN = coerceMoneyAmount(shipping_total) ?? 0
+  const txN = coerceMoneyAmount(tax_total) ?? 0
+  const discN = coerceMoneyAmount(discount_total) ?? 0
+  if ((coerceMoneyAmount(total) ?? 0) === 0 && sN + shN + txN - discN > 0) {
+    total = sN + shN + txN - discN
+  }
+
+  const createdAt = row.created_at as OrderConfirmationInput["created_at"]
+  const estimated_delivery_window = resolveEstimatedDeliveryWindowForEmail(createdAt, row.metadata)
+
   return {
     id,
     display_id: row.display_id as OrderConfirmationInput["display_id"],
     email: row.email as OrderConfirmationInput["email"],
     currency_code: row.currency_code as OrderConfirmationInput["currency_code"],
-    created_at: row.created_at as OrderConfirmationInput["created_at"],
-    subtotal: pickOrderMoney(row, totals, "subtotal", "item_subtotal") as OrderConfirmationInput["subtotal"],
-    tax_total: pickOrderMoney(row, totals, "tax_total", "item_tax_total") as OrderConfirmationInput["tax_total"],
-    shipping_total: pickOrderMoney(row, totals, "shipping_total", "shipping_subtotal") as OrderConfirmationInput["shipping_total"],
-    discount_total: pickOrderMoney(row, totals, "discount_total") as OrderConfirmationInput["discount_total"],
-    total: pickOrderMoney(row, totals, "total", "current_order_total", "transaction_total") as OrderConfirmationInput["total"],
+    created_at: createdAt,
+    estimated_delivery_window,
+    subtotal,
+    tax_total,
+    shipping_total,
+    discount_total,
+    total,
     items,
     shipping_address: row.shipping_address as OrderConfirmationInput["shipping_address"],
     billing_address: row.billing_address as OrderConfirmationInput["billing_address"],

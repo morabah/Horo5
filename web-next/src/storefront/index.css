@@ -449,9 +449,11 @@
   }
 
   .home-trust-glass {
-    background: color-mix(in srgb, var(--color-linen) 88%, var(--color-clean-white) 12%);
-    border: 1px solid color-mix(in srgb, var(--color-stone) 70%, transparent);
-    box-shadow: 0 8px 24px rgba(31, 28, 26, 0.05);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
   }
 
   .home-glass-frame {

@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { trackHomeScrollMilestone, trackHomeView, trackHoroFunnelStep } from '../analytics/funnel';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
 
 import { HomeHeroWearMean } from '../components/HomeHeroWearMean';
+import { HomeMarqueeBand } from '../components/HomeMarqueeBand';
 import { HomeProofSplit } from '../components/HomeProofSplit';
+import { HomeTrustRibbon } from '../components/HomeTrustRibbon';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { getFeelingCollectionVisual } from '../data/images';
 import type { RuntimeCatalog } from '../data/catalog-types';
+import { getFeelingCollectionVisual, imgUrl } from '../data/images';
 import {
   getArtist,
   getFeeling,
@@ -34,7 +36,7 @@ export function Home({
   }
 
   useScrollReveal();
-  const { copy } = useUiLocale();
+  const { copy, locale } = useUiLocale();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [compactHome, setCompactHome] = useState(false);
@@ -45,13 +47,7 @@ export function Home({
     setCompactHome(q === '1' || sessionStorage.getItem(COMPACT_HOME_STORAGE) === '1');
   }, [searchParams]);
   const latestDrops = (initialProducts ?? getProducts()).filter(productHasRealImage).slice(0, 6);
-  const featuredFeelings = getFeelings()
-    .slice(0, 12)
-    .filter((feeling) => Boolean(getFeelingCollectionVisual(feeling.slug).cover.src?.trim()))
-    .slice(0, 6);
-  const homeTrustItems = useMemo(() => {
-    return [...new Set(latestDrops.flatMap((product) => product.trustBadges ?? []).filter(Boolean))].slice(0, 3);
-  }, [latestDrops]);
+  const featuredFeelings = getFeelings().slice(0, 4);
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
 
   useEffect(() => {
@@ -112,6 +108,7 @@ export function Home({
   return (
     <div className="home-grain">
       <HomeHeroWearMean />
+      <HomeTrustRibbon />
 
       <section
         aria-labelledby="home-latest-drop-title"
@@ -121,7 +118,7 @@ export function Home({
           <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="font-label text-[10px] font-medium uppercase tracking-[0.26em] text-label">
-                Buy fast
+                {locale === 'ar' ? 'الإصدار الأحدث' : 'Latest drop'}
               </p>
               <h2
                 id="home-latest-drop-title"
@@ -130,21 +127,6 @@ export function Home({
               >
                 {copy.home.featuredTitle}
               </h2>
-              <p className="mt-2 max-w-2xl font-body text-sm text-warm-charcoal md:text-[15px]">
-                Start with real products, real prices, and the shortest route to checkout. No taxonomy required.
-              </p>
-              {homeTrustItems.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {homeTrustItems.map((item) => (
-                    <span
-                      key={item}
-                      className="font-label rounded-full border border-stone/40 bg-white px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-warm-charcoal"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
             </div>
             <Link
               data-reveal="stagger-1"
@@ -189,66 +171,61 @@ export function Home({
         className="border-t border-stone/20 bg-papyrus px-4 py-12 sm:px-6 md:py-14 lg:px-8"
       >
         <div className="mx-auto max-w-6xl">
-          <div className="mb-8 md:mb-10" data-reveal>
-            <p className="font-label text-[10px] font-medium uppercase tracking-[0.26em] text-label">{copy.home.feelingsEyebrow}</p>
-            <h2 id="home-feelings-title" className="font-headline mt-2 text-xl font-medium tracking-tight text-obsidian md:text-2xl">
-              {copy.home.feelingsTitle}
-            </h2>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Link
-                to="/products"
-                className="cta-clay font-body inline-flex min-h-11 items-center justify-center border border-obsidian/15 bg-linen px-6 py-3 text-sm font-medium text-obsidian transition-colors hover:border-obsidian/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
-              >
-                {copy.shell.shopAll}
-              </Link>
-              <Link
-                to="/feelings"
-                className="font-body inline-flex min-h-11 items-center justify-center px-1 text-sm font-medium text-deep-teal transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
-              >
-                {copy.shell.shopByFeeling}
-              </Link>
-              <Link
-                to="/occasions"
-                className="font-body inline-flex min-h-11 items-center justify-center px-1 text-sm font-medium text-deep-teal transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
-              >
-                {copy.home.momentsCta}
-              </Link>
+          <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+            <div>
+              <p className="font-label text-[10px] font-medium uppercase tracking-[0.26em] text-label">{copy.home.feelingsEyebrow}</p>
+              <h2 id="home-feelings-title" className="font-headline mt-2 text-xl font-medium tracking-tight text-obsidian md:text-2xl">
+                {copy.home.feelingsTitle}
+              </h2>
             </div>
+            <Link
+              to="/feelings"
+              className="font-body inline-flex min-h-11 w-fit items-center justify-center px-1 text-sm font-medium text-deep-teal transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
+            >
+              {locale === 'ar' ? 'عرض كل المشاعر ←' : 'See all feelings →'}
+            </Link>
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             {featuredFeelings.map((feeling, i) => {
-              const cover = getFeelingCollectionVisual(feeling.slug).cover;
-              const coverSrc = cover.src;
-              const featuredCard = i === 0;
+              const visual = getFeelingCollectionVisual(feeling.slug).cover;
+              const hasImage = Boolean(visual?.src);
               return (
                 <Link
                   key={feeling.slug}
                   to={`/feelings/${feeling.slug}`}
-                  data-reveal={(['stagger-1', 'stagger-2', 'stagger-3'] as const)[i % 3]}
-                  className={`group relative flex min-h-[16rem] flex-col overflow-hidden rounded-[18px] bg-white ring-1 ring-stone/30 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                    featuredCard ? 'lg:col-span-2 lg:min-h-[18.5rem]' : ''
-                  }`}
+                  data-reveal={(['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4'] as const)[i % 4]}
+                  style={{ backgroundColor: feeling.accent }}
+                  className="feeling-tile group relative flex aspect-square flex-col justify-between overflow-hidden rounded-[18px] p-6 text-white shadow-sm transition-transform duration-300 hover:-translate-y-[2px] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:p-8"
                 >
-                  <div className={`relative w-full overflow-hidden bg-stone/5 ${
-                    featuredCard ? 'aspect-[16/10]' : 'aspect-[4/5]'
-                  }`}>
-                     {coverSrc && (
-                       <img
-                         src={coverSrc}
-                         className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                         alt={feeling.cardImageAlt || cover.alt || feeling.name}
-                         loading="lazy"
-                       />
-                     )}
-                  </div>
-                  <div className="flex flex-1 flex-col p-6 bg-papyrus/20">
-                    <div
-                      className="mb-3 h-3 w-3 rounded-full shadow-inner"
-                      style={{ backgroundColor: feeling.accent, border: '1px solid rgba(0,0,0,0.1)' }}
-                      aria-hidden
+                  {hasImage ? (
+                    <img
+                      src={imgUrl(visual.src, 800)}
+                      alt={visual.alt ?? ''}
+                      loading="lazy"
+                      decoding="async"
+                      aria-hidden={visual.alt ? undefined : true}
+                      className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                     />
-                    <h3 className="font-headline text-lg font-semibold tracking-tight text-obsidian transition-colors group-hover:text-deep-teal">{feeling.name}</h3>
-                    <span className="font-label mt-4 text-[10px] uppercase tracking-widest text-deep-teal">Explore &rarr;</span>
+                  ) : null}
+                  <span
+                    aria-hidden
+                    style={{ backgroundColor: feeling.accent }}
+                    className="pointer-events-none absolute inset-0 mix-blend-multiply opacity-55"
+                  />
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 bg-linear-to-b from-obsidian/10 via-obsidian/35 to-obsidian/85"
+                  />
+                  <span className="relative font-label text-[10px] font-semibold uppercase tracking-[0.24em] text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div className="relative">
+                    <h3 className="font-headline text-[clamp(1.5rem,4.5vw,2.25rem)] font-semibold leading-tight tracking-tight text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]">
+                      {feeling.name}
+                    </h3>
+                    <span className="font-label mt-3 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-white transition-transform duration-300 group-hover:translate-x-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.55)]">
+                      {locale === 'ar' ? 'اكتشف ←' : 'Explore →'}
+                    </span>
                   </div>
                 </Link>
               );
@@ -256,6 +233,8 @@ export function Home({
           </div>
         </div>
       </section>
+
+      <HomeMarqueeBand />
 
       <HomeProofSplit />
 

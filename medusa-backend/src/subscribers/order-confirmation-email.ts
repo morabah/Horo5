@@ -2,33 +2,13 @@ import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 import { normalizeGraphOrderForEmail } from "../lib/normalize-graph-order-for-email"
+import { ORDER_CONFIRMATION_GRAPH_FIELDS } from "../lib/order-confirmation-graph-fields"
 import {
   buildOrderConfirmationHtml,
   sendOrderConfirmationResend,
 } from "../lib/order-confirmation-email"
 
 type OrderPlacedPayload = { id?: string }
-
-const ORDER_GRAPH_FIELDS = [
-  "id",
-  "display_id",
-  "email",
-  "currency_code",
-  "created_at",
-  "subtotal",
-  "tax_total",
-  "shipping_total",
-  "discount_total",
-  "total",
-  "items.*",
-  "items.item.*",
-  "items.detail.*",
-  "summary.*",
-  "shipping_address.*",
-  "billing_address.*",
-  "shipping_methods.*",
-  "shipping_methods.shipping_method.*",
-] as const
 
 export default async function orderConfirmationEmailHandler({
   event: { data },
@@ -55,7 +35,7 @@ export default async function orderConfirmationEmailHandler({
   try {
     const { data: rows } = await query.graph({
       entity: "order",
-      fields: [...ORDER_GRAPH_FIELDS],
+      fields: [...ORDER_CONFIRMATION_GRAPH_FIELDS],
       filters: { id: orderId },
       pagination: { take: 1 },
     })

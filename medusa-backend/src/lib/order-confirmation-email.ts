@@ -1,6 +1,13 @@
 import { Resend } from "resend"
 
-import { medusaAmountToEgp } from "./egp-amount"
+import { coerceMoneyAmount, medusaAmountToEgp } from "./egp-amount"
+
+/** Thousands + up to 2 fractional digits when Medusa ever returns non-integer minor amounts. */
+const EGP_MONEY = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+  useGrouping: true,
+})
 
 /** Matches storefront `GIFT_WRAP_PRODUCT_HANDLE` — line excluded from apparel list in confirmation. */
 export const GIFT_WRAP_PRODUCT_HANDLE = "gift-wrap"
@@ -18,8 +25,9 @@ function escapeHtml(s: string): string {
 }
 
 function formatEgpLine(amount: unknown): string {
-  const n = medusaAmountToEgp(amount)
-  return `${n.toLocaleString("en-US")} EGP`
+  const raw = coerceMoneyAmount(amount)
+  const n = raw === null || Number.isNaN(raw) ? 0 : Math.round(raw * 100) / 100
+  return `${EGP_MONEY.format(n)} EGP`
 }
 
 export type OrderLineLike = {
@@ -68,6 +76,8 @@ export type OrderConfirmationInput = {
   billing_address?: AddressLike
   shipping_methods?: ShippingMethodLike[] | null
   storeUrl?: string | null
+  /** Standard tier arrival range, e.g. "18 Apr – 24 Apr" (business days from order). */
+  estimated_delivery_window?: string | null
 }
 
 function formatAddress(label: string, addr: AddressLike | undefined): string {
@@ -96,6 +106,60 @@ function lineTitle(item: OrderLineLike): string {
     item.variant_title ||
     "Item"
   ).trim()
+}
+
+/**
+ * Validates normalized order money for confirmation email (CLI + tests).
+ * Fails when apparel lines show 0, subtotal is 0 with lines, shipping_total disagrees with methods, or total ≠ sub+ship+tax−disc.
+ */
+export function validateOrderConfirmationPricing(order: OrderConfirmationInput): { ok: boolean; errors: string[] } {
+  const errors: string[] = []
+  const items = (order.items || []).filter((i) => !isGiftWrapLineItem(i))
+  let idx = 0
+  for (const it of items) {
+    idx += 1
+    const u = coerceMoneyAmount(it.unit_price)
+    const t = coerceMoneyAmount(it.total)
+    const qty =
+      typeof it.quantity === "number" && Number.isFinite(it.quantity)
+        ? Math.max(1, Math.floor(it.quantity))
+        : Math.max(1, Math.floor(coerceMoneyAmount(it.quantity) ?? 1))
+    const lineMoney = t !== null && t > 0 ? t : u !== null && u > 0 ? u * qty : 0
+    if (lineMoney <= 0) {
+      errors.push(`Line ${idx} (${lineTitle(it)}): unit and line total normalize to 0`)
+    }
+  }
+
+  const sub = coerceMoneyAmount(order.subtotal) ?? 0
+  const ship = coerceMoneyAmount(order.shipping_total) ?? 0
+  const tax = coerceMoneyAmount(order.tax_total) ?? 0
+  const disc = coerceMoneyAmount(order.discount_total) ?? 0
+  const tot = coerceMoneyAmount(order.total) ?? 0
+
+  if (items.length > 0 && sub <= 0) {
+    errors.push("Subtotal is 0 but the order has catalog line items")
+  }
+
+  let shipFromMethods = 0
+  for (const m of order.shipping_methods || []) {
+    if (!m) continue
+    shipFromMethods += coerceMoneyAmount(m.total) ?? coerceMoneyAmount(m.amount) ?? 0
+  }
+  if (ship <= 0 && shipFromMethods > 0) {
+    errors.push(`shipping_total is 0 while shipping_methods sum to ${shipFromMethods}`)
+  }
+
+  if (tot > 0) {
+    const expected = Math.round((sub + ship + tax - disc) * 100) / 100
+    const diff = Math.abs(expected - tot)
+    if (diff > 2) {
+      errors.push(
+        `Total mismatch: subtotal(${sub})+shipping(${ship})+tax(${tax})-discount(${disc})=${expected} vs order.total(${tot})`,
+      )
+    }
+  }
+
+  return { ok: errors.length === 0, errors }
 }
 
 function displayIdNumber(v: number | string | null | undefined): number | null {
@@ -174,6 +238,11 @@ export function buildOrderConfirmationHtml(order: OrderConfirmationInput): strin
     <h1 style="font-size:20px;margin:0 0 8px;">Thank you — order confirmed</h1>
     <p style="margin:0 0 16px;color:#444;">Order <strong>${escapeHtml(display)}</strong>${created ? ` · ${escapeHtml(created)}` : ""}</p>
     ${trackUrl ? `<p style="margin:0 0 20px;"><a href="${escapeHtml(trackUrl)}" style="color:#0d5c5c;">View order summary</a></p>` : ""}
+    ${
+      order.estimated_delivery_window
+        ? `<p style="margin:0 0 20px;padding:12px 14px;background:#f0f7f6;border-radius:8px;border:1px solid #d4e8e4;font-size:14px;line-height:1.45;"><strong>Estimated delivery (standard):</strong> ${escapeHtml(order.estimated_delivery_window)}<br/><span style="font-size:12px;color:#555;">Business days from your order time (Egypt). Weekend days are skipped; public holidays are not deducted.</span></p>`
+        : ""
+    }
 
     <h2 style="margin:24px 0 8px;font-size:15px;">Items</h2>
     <table style="width:100%;border-collapse:collapse;font-size:14px;">
