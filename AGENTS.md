@@ -13,7 +13,7 @@ This repo is the **HORO** storefront and related services (`web-next/`, `medusa-
 
 ## Horo5 quality gates
 
-- **`web-next/`** (Next.js app + storefront under `src/storefront/`): from this directory run `npm run type-check` and `npm run lint` before treating UI work as done.
+- **`web-next/`** (Next.js app + storefront under `src/storefront/`): from this directory run `npm run type-check`, `npm run lint`, and `npm run test:unit` (Jest, `**/__tests__/**/*.unit.spec.ts`) before treating UI work as done. With Medusa running locally and keys in env, `npm run integration:catalog` asserts `GET /storefront/catalog` matches storefront DTO expectations (see `web-next/scripts/integration-catalog-contract.mjs`; `npm run smoke:medusa` covers health + store + catalog + CORS). Headless UI checks: `npm run test:e2e` (Playwright, `e2e/*.spec.ts`; install browsers once with `npm run test:e2e:install`).
 - **`medusa-backend/`**: follow that package’s README and env templates. **Local is the source of truth** for Medusa: align Railway (code revision, migrations, seeded data, env keys, media URLs) with local using the parity table in [`medusa-backend/README.md`](medusa-backend/README.md) (section “Local is the source of truth”). Verify DB catalog parity with `npm run parity:snapshot:local`, `npx @railway/cli run npm run parity:snapshot:remote`, and `npm run parity:check` from `medusa-backend/`.
 
 ## SSR / hydration (required for `web-next`)
@@ -35,6 +35,10 @@ Use this instead of PosalPro-only scripts named in `doc/CORE_REQUIREMENTS.md`.
 |------|-------------------|
 | TypeScript | From `web-next/`: `npm run type-check` |
 | Lint | From `web-next/`: `npm run lint` |
+| Storefront unit tests | From `web-next/`: `npm run test:unit` |
+| Store API contract (Medusa up) | From `web-next/`: `npm run integration:catalog` (or `npm run smoke:medusa` for broader checks) |
+| Headless E2E (Playwright) | From `web-next/`: `npm run test:e2e:install` once, then `npm run test:e2e` (starts Next on port **3005** by default, headless Chromium; set `PLAYWRIGHT_SKIP_WEBSERVER=1` if the app is already running, and `PLAYWRIGHT_BASE_URL` to match). Checkout journey needs Medusa **STORE_CORS** (and **AUTH_CORS**) to include the exact storefront origin (e.g. `http://127.0.0.1:3005` vs `http://localhost:3005` are different); see `web-next/.env.example` and `medusa-backend/.env.template`. |
+| Medusa HTTP integration | From `medusa-backend/`: `npm run test:integration:http` (Jest + `@medusajs/test-utils`, e.g. `integration-tests/http/health.spec.ts`) |
 | Shared `web/src` | If you changed it: `npx tsc --noEmit` from `web/` (or the package that owns the path) |
 | Medusa catalog / DB parity | From `medusa-backend/`: `npm run parity:snapshot:local`, `npx @railway/cli run npm run parity:snapshot:remote`, `npm run parity:check` (see `medusa-backend/README.md`) |
 | Hydration / client-only APIs | Re-read `doc/Agent.md` §6.5–6.6 before merging features that touch `localStorage`, `sessionStorage`, or `window` on the storefront |

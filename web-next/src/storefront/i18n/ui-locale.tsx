@@ -30,6 +30,9 @@ const UI_COPY = {
       englishShort: 'EN',
       arabicShort: 'AR',
       pageNotFound: 'Page not found',
+      orderPlacedHint: 'Your bag was cleared after checkout.',
+      orderPlacedViewReceipt: 'View receipt',
+      orderPlacedDismiss: 'Dismiss',
     },
     home: {
       heroCta: 'Shop by feeling',
@@ -146,6 +149,8 @@ const UI_COPY = {
       discountTotalLabel: 'Discount',
       taxTotalLabel: 'Tax',
       orderTotalLabel: 'Total',
+      adjustmentLabel: 'Order adjustments',
+      cartClearedReceiptNote: 'Your bag was cleared — this page is your receipt.',
       referenceIdLabel: 'System reference',
       timelineHeading: "What's next",
       timelineStep1Title: 'Order received',
@@ -182,6 +187,9 @@ const UI_COPY = {
       englishShort: 'EN',
       arabicShort: 'AR',
       pageNotFound: 'الصفحة غير موجودة',
+      orderPlacedHint: 'تم إفراغ السلة بعد إتمام الطلب.',
+      orderPlacedViewReceipt: 'عرض الإيصال',
+      orderPlacedDismiss: 'إخفاء',
     },
     home: {
       heroCta: 'تسوّق حسب الشعور',
@@ -206,8 +214,10 @@ const UI_COPY = {
       recentCta: 'تصفّح كل التصاميم',
     },
     cartService: {
-      shippingExplainerArabic: '',
-      estimatedDeliveryCheckoutNoteArabic: '',
+      shippingExplainerArabic:
+        'الشحن المعروض تقديراً (قياسي داخل مصر)؛ ستؤكد السرعة والتكلفة النهائية عند إتمام الطلب.',
+      estimatedDeliveryCheckoutNoteArabic:
+        'التواريخ تقريبية أيام عمل من تأكيد الطلب؛ التفاصيل النهائية في الخطوة التالية.',
     },
     nav: {
       searchPlaceholder: 'ابحث عن التصميم أو المشاعر أو المناسبة...',
@@ -298,6 +308,8 @@ const UI_COPY = {
       discountTotalLabel: 'الخصم',
       taxTotalLabel: 'الضريبة',
       orderTotalLabel: 'الإجمالي',
+      adjustmentLabel: 'تعديلات على الطلب',
+      cartClearedReceiptNote: 'تم إفراغ السلة — هذه الصفحة هي إيصالك.',
       referenceIdLabel: 'مرجع النظام',
       timelineHeading: 'ماذا بعد؟',
       timelineStep1Title: 'تم استلام الطلب',

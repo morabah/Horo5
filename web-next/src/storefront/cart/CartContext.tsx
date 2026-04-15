@@ -19,6 +19,7 @@ import {
   removeLineItem,
   updateLineItem,
 } from '../lib/medusa/client';
+import { readProductFromLastCatalogStorage } from '../lib/medusa/catalog';
 import { prefetchCheckoutAuxForCart } from '../lib/medusa/checkout-aux-cache';
 import {
   GIFT_WRAP_PRODUCT_HANDLE,
@@ -39,6 +40,8 @@ export type LastAddedItem = {
 };
 
 type CartContextValue = {
+  /** Medusa store cart id when synced; read-only for pages that prefetch shipping (e.g. cart). */
+  medusaCartId: string | null;
   items: CartLine[];
   addItem: (productSlug: string, size: ProductSizeKey, qty?: number) => void;
   removeItem: (productSlug: string, size: ProductSizeKey) => void;
@@ -304,7 +307,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [resolveGiftWrapOffer]);
 
   const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1) => {
-    const product = getProduct(productSlug);
+    const product = getProduct(productSlug) ?? readProductFromLastCatalogStorage(productSlug);
     if (!product || qty < 1) return;
     const add = Math.min(qty, 99);
     const variant = product.variantsBySize?.[size];
@@ -532,6 +535,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
+      medusaCartId,
       items,
       addItem,
       removeItem,
@@ -550,6 +554,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       lastAddedItem,
     }),
     [
+      medusaCartId,
       items,
       addItem,
       removeItem,

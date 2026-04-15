@@ -1641,6 +1641,10 @@ export function ProductDetail({
           oosSelected={oosSelected}
           displayPrice={displayPriceEgp}
           onAddToBag={handlePrimaryAction}
+          addBtnCta={copy.addBtnCTA}
+          selectSizePrompt={copy.selectSizePrompt}
+          notifyMeCta={copy.notifyMeCTA}
+          selectSizeHint={copy.pdpStickySelectSizeHint}
         />
       ) : null}
 

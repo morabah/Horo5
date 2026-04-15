@@ -26,6 +26,10 @@ export function getCartLineView(
 
   const artist = product ? getArtist(product.artistSlug) : undefined;
   const unitPrice = line.unitPriceEgp ?? product?.priceEgp ?? 0;
+  const linePriceEgp =
+    typeof line.medusaLineTotalEgp === 'number' && line.medusaLineTotalEgp > 0
+      ? line.medusaLineTotalEgp
+      : unitPrice * line.qty;
   const productName = line.productName ?? product?.name ?? line.productSlug;
   const productUrl = product ? `/products/${product.slug}` : '/search';
   const hasLineThumb = Boolean(line.imageSrc?.trim());
@@ -46,7 +50,7 @@ export function getCartLineView(
     imageSrc,
     imageAlt: `HORO “${productName}” tee shown for order reference.`,
     unitPriceEgp: unitPrice,
-    linePriceEgp: unitPrice * line.qty,
+    linePriceEgp,
   };
 }
 

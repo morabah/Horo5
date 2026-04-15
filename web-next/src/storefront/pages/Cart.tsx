@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { getCartLineViews, type CartLineView } from '../cart/view';
-import { BilingualServiceBlock } from '../components/BilingualServiceBlock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import type { CartLine } from '../cart/types';
@@ -14,8 +13,17 @@ import { useStableNow } from '../runtime/render-time';
 import { getProduct, type ProductSizeKey } from '../data/site';
 import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
+import { getCart, listShippingOptions } from '../lib/medusa/client';
+import { getFreshShippingOptions } from '../lib/medusa/checkout-aux-cache';
+import { resolveShippingQuoteFromCartAndOptions } from '../lib/medusa/cart-money';
+import type { MedusaCart, MedusaShippingOption } from '../lib/medusa/types';
 
-const ESTIMATED_SHIPPING_EGP = 60;
+type CartShippingFetchState =
+  | { kind: 'inactive' }
+  | { kind: 'pending_cart_id' }
+  | { kind: 'loading' }
+  | { kind: 'ok'; cart: MedusaCart; options: MedusaShippingOption[] }
+  | { kind: 'error' };
 
 function formatMessage(template: string, name: string) {
   return template.replace('{name}', name);
@@ -107,6 +115,7 @@ function CartSummary({
   subtotalEgp,
   giftWrapEgp,
   estimatedOrderTotal,
+  shippingRow,
   now,
   locale,
   cartService,
@@ -114,29 +123,28 @@ function CartSummary({
   itemCount: number;
   subtotalEgp: number;
   giftWrapEgp: number;
-  estimatedOrderTotal: number;
+  estimatedOrderTotal: number | null;
+  shippingRow: { mode: 'loading' } | { mode: 'amount'; egp: number } | { mode: 'copy' };
   now: Date;
   locale: UiLocale;
   cartService: { shippingExplainerArabic: string; estimatedDeliveryCheckoutNoteArabic: string };
 }) {
   const copy = CART_SCHEMA.copy;
-  const showBilingual = locale === 'en' && Boolean(cartService?.shippingExplainerArabic?.trim());
+  const shippingNote =
+    locale === 'ar' && cartService.shippingExplainerArabic.trim()
+      ? cartService.shippingExplainerArabic
+      : copy.shippingExplainer;
+  const deliveryNote =
+    locale === 'ar' && cartService.estimatedDeliveryCheckoutNoteArabic.trim()
+      ? cartService.estimatedDeliveryCheckoutNoteArabic
+      : copy.estimatedDeliveryCheckoutNote;
 
   return (
     <aside className="cart-summary card-glass order-3 md:sticky md:top-20 md:col-start-2 md:row-start-1 md:row-span-2" aria-labelledby="cart-summary-title">
       <h2 id="cart-summary-title" className="cart-summary-title">
         {copy.orderSummaryHeading}
       </h2>
-      {showBilingual ? (
-        <BilingualServiceBlock
-          className="cart-summary-note"
-          locale="en"
-          arabic={cartService.shippingExplainerArabic}
-          english={copy.shippingExplainer}
-        />
-      ) : (
-        <p className="cart-summary-note">{copy.shippingExplainer}</p>
-      )}
+      <p className="cart-summary-note">{shippingNote}</p>
 
       <div className="cart-summary-rows">
         <p className="cart-summary-row">
@@ -153,25 +161,22 @@ function CartSummary({
         ) : null}
         <p className="cart-summary-row cart-summary-row--meta">
           <span>{copy.shippingLabel}</span>
-          <span>{formatEgp(ESTIMATED_SHIPPING_EGP)}</span>
+          <span className="text-right">
+            {shippingRow.mode === 'loading' ? '—' : null}
+            {shippingRow.mode === 'amount' ? formatEgp(shippingRow.egp) : null}
+            {shippingRow.mode === 'copy' ? (
+              <span className="font-body text-sm text-warm-charcoal">{copy.shippingConfirmedAtCheckout}</span>
+            ) : null}
+          </span>
         </p>
         <p className="cart-summary-row cart-summary-row--meta">
           <span>{copy.estimatedDeliveryLabel}</span>
           <span className="text-right font-body text-sm">{formatDeliveryWindow(3, 5, now)}</span>
         </p>
-        {locale === 'en' && cartService?.estimatedDeliveryCheckoutNoteArabic?.trim() ? (
-          <BilingualServiceBlock
-            className="-mt-1 mb-2 font-body text-xs text-warm-charcoal"
-            locale="en"
-            arabic={cartService.estimatedDeliveryCheckoutNoteArabic}
-            english={copy.estimatedDeliveryCheckoutNote}
-          />
-        ) : (
-          <p className="-mt-1 mb-2 font-body text-xs text-warm-charcoal">{copy.estimatedDeliveryCheckoutNote}</p>
-        )}
+        <p className="-mt-1 mb-2 font-body text-xs text-warm-charcoal">{deliveryNote}</p>
         <p className="cart-summary-total">
           <span>{copy.totalLabel}</span>
-          <span>{formatEgp(estimatedOrderTotal)}</span>
+          <span>{estimatedOrderTotal === null ? '—' : formatEgp(estimatedOrderTotal)}</span>
         </p>
       </div>
 
@@ -272,6 +277,7 @@ function CartLineItem({
 
 export function Cart() {
   const {
+    medusaCartId,
     items,
     removeItem,
     setLineQty,
@@ -291,7 +297,66 @@ export function Cart() {
 
   const lineViews = useMemo(() => getCartLineViews(items), [items]);
   const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
-  const estimatedOrderTotal = subtotalEgp + giftWrapEgp + ESTIMATED_SHIPPING_EGP;
+  const [shippingFetch, setShippingFetch] = useState<CartShippingFetchState>({ kind: 'inactive' });
+
+  useEffect(() => {
+    if (lineViews.length === 0) {
+      setShippingFetch({ kind: 'inactive' });
+      return;
+    }
+    if (!medusaCartId) {
+      setShippingFetch({ kind: 'pending_cart_id' });
+      return;
+    }
+    let cancelled = false;
+    setShippingFetch({ kind: 'loading' });
+    void (async () => {
+      try {
+        const { cart } = await getCart(medusaCartId);
+        let options = getFreshShippingOptions(medusaCartId) ?? [];
+        if (options.length === 0) {
+          const { shipping_options } = await listShippingOptions(medusaCartId);
+          options = shipping_options ?? [];
+        }
+        if (cancelled) return;
+        setShippingFetch({ kind: 'ok', cart, options });
+      } catch {
+        if (!cancelled) setShippingFetch({ kind: 'error' });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [lineViews.length, medusaCartId, itemCount, giftWrapEgp, subtotalEgp]);
+
+  const { shippingRow, estimatedOrderTotal } = useMemo(() => {
+    const base = subtotalEgp + giftWrapEgp;
+    if (
+      shippingFetch.kind === 'inactive' ||
+      shippingFetch.kind === 'pending_cart_id' ||
+      shippingFetch.kind === 'loading'
+    ) {
+      return {
+        shippingRow: { mode: 'loading' as const },
+        estimatedOrderTotal: null as number | null,
+      };
+    }
+    if (shippingFetch.kind === 'error') {
+      return {
+        shippingRow: { mode: 'copy' as const },
+        estimatedOrderTotal: base,
+      };
+    }
+    const quoteEgp = resolveShippingQuoteFromCartAndOptions(
+      shippingFetch.cart,
+      shippingFetch.options,
+    );
+    return {
+      shippingRow: { mode: 'amount' as const, egp: quoteEgp },
+      estimatedOrderTotal: base + quoteEgp,
+    };
+  }, [shippingFetch, subtotalEgp, giftWrapEgp]);
+
   const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && giftWrapEgp === 0);
 
   useEffect(() => {
@@ -519,6 +584,7 @@ export function Cart() {
             subtotalEgp={subtotalEgp}
             giftWrapEgp={giftWrapEgp}
             estimatedOrderTotal={estimatedOrderTotal}
+            shippingRow={shippingRow}
             now={now}
             locale={locale}
             cartService={shellCopy.cartService}

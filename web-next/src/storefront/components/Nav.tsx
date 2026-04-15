@@ -2,6 +2,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { FormEvent, TransitionEvent, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
+import { clearPlacedOrderMedusaIdHint, readPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
 import { useUiLocale } from '../i18n/ui-locale';
 import { NAV_DRAWER_ROUTE_KEYS, NAV_PRIMARY_ROUTE_KEYS, NAV_ROUTE, type NavRouteKey } from '../lib/navLinks';
 import { getSearchSuggestions, type SearchSuggestion } from '../search/view';
@@ -110,6 +111,16 @@ export function Nav() {
   const location = useLocation();
   const { pathname, search } = location;
   const prefersReducedMotion = usePrefersReducedMotion();
+  const [placedOrderMedusaId, setPlacedOrderMedusaId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (pathname.startsWith('/checkout/success')) {
+      clearPlacedOrderMedusaIdHint();
+      setPlacedOrderMedusaId(null);
+      return;
+    }
+    setPlacedOrderMedusaId(readPlacedOrderMedusaIdHint());
+  }, [pathname]);
 
   menuVisibleRef.current = menuVisible;
 
@@ -426,6 +437,44 @@ export function Nav() {
       className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${navOnHeroTransparent ? 'glass-nav--hero-transparent' : ''} ${isHeaderHidden ? '-translate-y-full' : 'translate-y-0'}`}
       role="banner"
     >
+      {placedOrderMedusaId ? (
+        <div
+          className={`border-b px-[max(1rem,env(safe-area-inset-left,0px))] py-2.5 pr-[max(1rem,env(safe-area-inset-right,0px))] font-body text-sm ${
+            navOnHeroTransparent
+              ? 'border-white/20 bg-obsidian/90 text-white'
+              : 'border-stone/35 bg-[var(--mint-frost)] text-obsidian'
+          }`}
+          role="status"
+        >
+          <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-3">
+            <p className="min-w-0 flex-1 leading-snug">{copy.shell.orderPlacedHint}</p>
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <Link
+                to={`/checkout/success?order_id=${encodeURIComponent(placedOrderMedusaId)}`}
+                className={`font-label inline-flex min-h-10 items-center rounded-sm px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest ${
+                  navOnHeroTransparent
+                    ? 'border border-white/35 text-white hover:bg-white/10'
+                    : 'border border-obsidian/25 text-obsidian hover:bg-white/80'
+                }`}
+              >
+                {copy.shell.orderPlacedViewReceipt}
+              </Link>
+              <button
+                type="button"
+                className={`font-label inline-flex min-h-10 items-center rounded-sm px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest underline-offset-4 ${
+                  navOnHeroTransparent ? 'text-white/85 hover:underline' : 'text-clay hover:text-obsidian hover:underline'
+                }`}
+                onClick={() => {
+                  clearPlacedOrderMedusaIdHint();
+                  setPlacedOrderMedusaId(null);
+                }}
+              >
+                {copy.shell.orderPlacedDismiss}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="mx-auto max-w-[1920px] md:hidden">
         <div className="flex items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
           <button

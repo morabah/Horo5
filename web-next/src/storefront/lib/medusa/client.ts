@@ -243,6 +243,8 @@ export async function getOrder(orderId: string): Promise<MedusaOrderResponse> {
         'subtotal',
         'total',
         'shipping_total',
+        'tax_total',
+        'discount_total',
         '*items',
         '*items.variant',
         '*items.variant.product',

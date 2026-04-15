@@ -1,7 +1,21 @@
+import type { Product } from "../../data/catalog-types"
 import { setRuntimeCatalog } from "../../data/site"
 import { fetchStorefrontCatalog } from "../storefront/client"
 
 const LAST_CATALOG_STORAGE_KEY = "horo:lastCatalog"
+
+/** Fallback when `getProduct` is not hydrated yet but `horo:lastCatalog` was primed (e.g. E2E / fast taps). */
+export function readProductFromLastCatalogStorage(slug: string): Product | undefined {
+  if (typeof globalThis.window === "undefined") return undefined
+  try {
+    const raw = window.sessionStorage.getItem(LAST_CATALOG_STORAGE_KEY)
+    if (!raw) return undefined
+    const parsed = JSON.parse(raw) as { products?: Product[] }
+    return parsed.products?.find((p) => p.slug === slug)
+  } catch {
+    return undefined
+  }
+}
 
 let hydrated = false
 

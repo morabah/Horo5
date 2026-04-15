@@ -20,7 +20,7 @@ describe("assertOpsBackendAccess", () => {
   it("allows when secret unset (non-production)", () => {
     process.env.NODE_ENV = "development"
     delete process.env.HORO_OPS_BACKEND_SECRET
-    const req = { headers: {}, auth_context: {} } as MedusaRequest
+    const req = { headers: {}, auth_context: {} } as unknown as MedusaRequest
     const res = mockRes()
     expect(assertOpsBackendAccess(req, res)).toBe(true)
   })
@@ -28,10 +28,10 @@ describe("assertOpsBackendAccess", () => {
   it("503 in production when secret missing", () => {
     process.env.NODE_ENV = "production"
     delete process.env.HORO_OPS_BACKEND_SECRET
-    const req = { headers: {} } as MedusaRequest
+    const req = { headers: {} } as unknown as MedusaRequest
     const res = mockRes()
     expect(assertOpsBackendAccess(req, res)).toBe(false)
-    expect((res as { status: jest.Mock }).status).toHaveBeenCalledWith(503)
+    expect((res as unknown as { status: jest.Mock }).status).toHaveBeenCalledWith(503)
   })
 
   it("allows matching x-horo-ops-secret", () => {
@@ -70,6 +70,6 @@ describe("assertOpsBackendAccess", () => {
     const req = { headers: { "x-horo-ops-secret": "wrong" }, auth_context: {} } as unknown as MedusaRequest
     const res = mockRes()
     expect(assertOpsBackendAccess(req, res)).toBe(false)
-    expect((res as { status: jest.Mock }).status).toHaveBeenCalledWith(401)
+    expect((res as unknown as { status: jest.Mock }).status).toHaveBeenCalledWith(401)
   })
 })

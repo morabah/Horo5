@@ -11,7 +11,11 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
-    "smoke:medusa": "node scripts/smoke-medusa.mjs"
+    "test:unit": "jest --config jest.config.cjs --runInBand",
+    "integration:catalog": "node scripts/integration-catalog-contract.mjs",
+    "smoke:medusa": "node scripts/smoke-medusa.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium"
   },
   "dependencies": {
     "next": "16.2.3",
@@ -21,14 +25,19 @@
     "web-vitals": "^5.1.0"
   },
   "devDependencies": {
+    "@swc/core": "^1.7.28",
+    "@swc/jest": "^0.2.36",
+    "@types/jest": "^29.5.13",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
+    "@playwright/test": "^1.51.0",
     "@types/react-dom": "^19",
     "@types/webpack": "^5.28.5",
     "concurrently": "^9.2.1",
     "dotenv-cli": "^11.0.0",
     "eslint": "^9",
+    "jest": "^29.7.0",
     "eslint-config-next": "16.2.3",
     "kill-port": "^2.0.1",
     "tailwindcss": "^4",

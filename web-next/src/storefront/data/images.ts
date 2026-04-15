@@ -423,10 +423,16 @@ export function getOccasionCollectionVisual(slug: string): OccasionStorefrontIma
 }
 
 export function getFeelingsHubHeroTiles() {
-  return getFeelings().map((feeling) => ({
-    slug: feeling.slug,
-    ...getFeelingCollectionVisual(feeling.slug).cover,
-  }));
+  return getFeelings().map((feeling) => {
+    const { cover, hero, proof } = getFeelingCollectionVisual(feeling.slug);
+    /** Hub uses `<img src>`; `cover` can be "" by design — fall back like proof does so src is never empty. */
+    const src = firstNonEmptyString(cover.src, hero.src, proof.src) ?? heroStreet;
+    return {
+      slug: feeling.slug,
+      ...cover,
+      src,
+    };
+  });
 }
 
 export function getFeelingEditorialImagery(slug: string) {
@@ -469,7 +475,27 @@ const FALLBACK_PRODUCT_GALLERY = [
   proofCards.macroDetail,
 ];
 
+/**
+ * Unsplash-style transform params are only safe on hosts that honor them.
+ * Medusa/R2/CDN URLs often break or ignore `w`/`fit` query params.
+ */
+function shouldAppendUnsplashStyleParams(src: string): boolean {
+  const t = src.trim();
+  if (!t.startsWith('http://') && !t.startsWith('https://')) {
+    return false;
+  }
+  try {
+    const host = new URL(t).hostname.toLowerCase();
+    return host === 'images.unsplash.com' || host.endsWith('.unsplash.com') || host === 'unsplash.com';
+  } catch {
+    return false;
+  }
+}
+
 export function imgUrl(src: string, w: number) {
+  if (!shouldAppendUnsplashStyleParams(src)) {
+    return src;
+  }
   const sep = src.includes('?') ? '&' : '?';
   return `${src}${sep}w=${w}&q=80&auto=format&fit=crop`;
 }

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "e2e/**",
+    "playwright-report/**",
+    "test-results/**",
   ]),
   // Migrated Vite storefront: keep strict rules on `src/app` / `src/components` first;
   // relax React Compiler hook rules here until patterns are refactored incrementally.

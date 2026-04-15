@@ -174,6 +174,9 @@ export function MiniCartDrawer() {
             <span>{t('subtotalLabel', isArabic)} ({totalQty} {itemCountLabel})</span>
             <span className="mini-cart-summary-value">{formatEgp(subtotalEgp)}</span>
           </p>
+          <p className="mini-cart-summary-note font-body text-xs text-warm-charcoal">
+            {t('shippingAtCheckoutNote', isArabic)}
+          </p>
         </div>
 
         {/* Actions */}

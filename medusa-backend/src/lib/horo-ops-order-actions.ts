@@ -5,6 +5,7 @@ import {
   markOrderFulfillmentAsDeliveredWorkflow,
 } from "@medusajs/medusa/core-flows"
 
+import { coerceMoneyAmount } from "./egp-amount"
 import { ORDER_OPS_ACTION_GRAPH_FIELDS } from "./horo-ops-order-query-fields"
 
 export type HoroOpsOrderActionKind = "capture_payment" | "create_fulfillment" | "mark_fulfillment_delivered"
@@ -39,21 +40,62 @@ export function findCapturablePaymentId(order: Record<string, unknown>): string 
   return null
 }
 
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v)
+}
+
+/**
+ * `query.graph` order rows often nest the sellable line on `items[].item` and priced fields on
+ * `items[].detail` (same shape as {@link normalizeGraphOrderForEmail}). Fulfillment workflows
+ * expect each `id` to be the **order line item** id.
+ */
+function graphOrderLineItemId(el: Record<string, unknown>): string {
+  const nested = isRecord(el.item) ? el.item : null
+  const fromNested = nested && typeof nested.id === "string" ? nested.id.trim() : ""
+  if (fromNested) return fromNested
+  const direct = typeof el.id === "string" ? el.id.trim() : ""
+  if (direct) return direct
+  const lit = el.line_item_id
+  if (typeof lit === "string" && lit.trim()) return lit.trim()
+  return ""
+}
+
+function graphOrderLineQuantity(el: Record<string, unknown>): number {
+  const detail = isRecord(el.detail) ? el.detail : null
+  const nested = isRecord(el.item) ? el.item : null
+
+  const coerced =
+    coerceMoneyAmount(el.quantity) ??
+    coerceMoneyAmount(detail?.quantity) ??
+    coerceMoneyAmount(nested?.quantity)
+  if (coerced !== null && coerced > 0) return Math.max(1, Math.floor(coerced))
+
+  if (typeof el.quantity === "number" && Number.isFinite(el.quantity) && el.quantity > 0) {
+    return Math.max(1, Math.floor(el.quantity))
+  }
+  if (typeof detail?.quantity === "number" && Number.isFinite(detail.quantity) && detail.quantity > 0) {
+    return Math.max(1, Math.floor(detail.quantity))
+  }
+  if (typeof nested?.quantity === "number" && Number.isFinite(nested.quantity) && nested.quantity > 0) {
+    return Math.max(1, Math.floor(nested.quantity))
+  }
+  if (typeof el.quantity === "string") {
+    const n = parseInt(el.quantity, 10)
+    if (Number.isFinite(n) && n > 0) return Math.max(1, n)
+  }
+  return 0
+}
+
 export function orderLineItemsForFulfillment(order: Record<string, unknown>): { id: string; quantity: number }[] {
   const items = order.items
   if (!Array.isArray(items)) return []
   const out: { id: string; quantity: number }[] = []
   for (const raw of items) {
     if (!raw || typeof raw !== "object") continue
-    const it = raw as Record<string, unknown>
-    const id = typeof it.id === "string" ? it.id : ""
-    let qty = 0
-    if (typeof it.quantity === "number" && Number.isFinite(it.quantity)) qty = Math.max(0, Math.floor(it.quantity))
-    else if (typeof it.quantity === "string") {
-      const n = parseInt(it.quantity, 10)
-      qty = Number.isFinite(n) ? Math.max(0, n) : 0
-    }
-    if (id && qty > 0) out.push({ id, quantity: qty })
+    const el = raw as Record<string, unknown>
+    const id = graphOrderLineItemId(el)
+    const quantity = graphOrderLineQuantity(el)
+    if (id && quantity > 0) out.push({ id, quantity })
   }
   return out
 }

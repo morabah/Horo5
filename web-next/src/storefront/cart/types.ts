@@ -9,6 +9,8 @@ export type CartLine = {
   productName?: string;
   imageSrc?: string;
   unitPriceEgp?: number;
+  /** When set (e.g. from Medusa line `total`), drives display totals so rows match order.subtotal/total. */
+  medusaLineTotalEgp?: number;
 };
 
 export const CART_STORAGE_KEY = 'horo-cart-v1';

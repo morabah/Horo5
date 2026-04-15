@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BilingualServiceBlock } from '../components/BilingualServiceBlock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { getCartLineViews } from '../cart/view';
@@ -11,6 +10,7 @@ import { useUiLocale } from '../i18n/ui-locale';
 import { getOrder } from '../lib/medusa/client';
 import { getOrderGiftWrapEgp, toOrderLines } from '../lib/medusa/adapters';
 import { medusaAmountToEgp } from '../lib/medusa/egp-amount';
+import { orderConfirmationFooterDeltaEgp, resolveOrderSnapshotSubtotalEgp } from '../lib/medusa/order-display';
 import { useStableNow } from '../runtime/render-time';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { formatEgp } from '../utils/formatPrice';
@@ -60,7 +60,7 @@ function createSnapshotFromOrder(args: {
   const lines = toOrderLines(order);
   const giftWrapEgp = getOrderGiftWrapEgp(order);
   const shipping = medusaAmountToEgp((order.shipping_total ?? order.shipping_methods?.[0]?.amount ?? 0) || 0);
-  const subtotal = medusaAmountToEgp((order.subtotal ?? 0) || 0);
+  const subtotal = resolveOrderSnapshotSubtotalEgp(order);
   const total = medusaAmountToEgp((order.total ?? 0) || 0);
   const rawTax = order.tax_total;
   const taxEgp =
@@ -212,6 +212,10 @@ export function OrderConfirmation() {
   const canReferenceWhatsapp = Boolean(whatsappOrderUrl);
   const hasOrderSummary = lineViews.length > 0;
   const itemCount = lineViews.reduce((total, line) => total + line.qty, 0);
+  const footerDeltaEgp = useMemo(
+    () => (order ? orderConfirmationFooterDeltaEgp(order) : null),
+    [order],
+  );
   const heroLine = lineViews[0] || null;
   const celebrationHeading = heroLine
     ? isArabic
@@ -265,6 +269,9 @@ export function OrderConfirmation() {
                     ? 'تم استلام طلبك.'
                     : 'Your order was received.'}
               </p>
+              {hasOrderSummary ? (
+                <p className="mt-2 max-w-xl font-body text-sm text-clay">{copy.confirmation.cartClearedReceiptNote}</p>
+              ) : null}
               <div className="mt-5 flex flex-wrap gap-3">
                 <div className="rounded-2xl border border-stone/45 bg-white/80 px-4 py-3">
                   <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
@@ -323,16 +330,7 @@ export function OrderConfirmation() {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="shrink-0" aria-hidden>
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                     </svg>
-                    {!isArabic && copy.confirmation.whatsappOrderHelpArabic.trim() ? (
-                      <BilingualServiceBlock
-                        locale="en"
-                        arabic={copy.confirmation.whatsappOrderHelpArabic}
-                        english={copy.confirmation.whatsappOrderHelp}
-                        className="min-w-0 text-left"
-                      />
-                    ) : (
-                      copy.confirmation.whatsappOrderHelp
-                    )}
+                    <span className="min-w-0 text-left">{copy.confirmation.whatsappOrderHelp}</span>
                   </a>
                 ) : (
                   <Link to="/exchange" className="btn btn-primary inline-flex min-h-12 items-center justify-center px-6">
@@ -379,16 +377,7 @@ export function OrderConfirmation() {
                     <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
                       {copy.confirmation.timelineStep1Title}
                     </p>
-                    {!isArabic && copy.confirmation.timelineStep1BodyArabic.trim() ? (
-                      <BilingualServiceBlock
-                        className="mt-1"
-                        locale="en"
-                        arabic={copy.confirmation.timelineStep1BodyArabic}
-                        english={copy.confirmation.timelineStep1Body}
-                      />
-                    ) : (
-                      <p className="mt-1 font-body text-sm text-obsidian">{copy.confirmation.timelineStep1Body}</p>
-                    )}
+                    <p className="mt-1 font-body text-sm text-obsidian">{copy.confirmation.timelineStep1Body}</p>
                   </div>
                 </li>
                 <li className="flex gap-3">
@@ -418,51 +407,18 @@ export function OrderConfirmation() {
                     <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
                       {copy.confirmation.timelineStep3Title}
                     </p>
-                    {!isArabic && copy.confirmation.timelineStep3BodyPrefixArabic.trim() ? (
-                      <div className="mt-1 space-y-1">
-                        <BilingualServiceBlock
-                          locale="en"
-                          arabic={copy.confirmation.timelineStep3BodyPrefixArabic}
-                          english={copy.confirmation.timelineStep3BodyPrefix}
-                          className="font-body text-sm text-obsidian"
-                        />
-                        <p className="font-body text-sm text-obsidian">{arrivalWindow}</p>
-                      </div>
-                    ) : (
-                      <p className="mt-1 font-body text-sm text-obsidian">
-                        {copy.confirmation.timelineStep3BodyPrefix} {arrivalWindow}
-                      </p>
-                    )}
+                    <p className="mt-1 font-body text-sm text-obsidian">
+                      {copy.confirmation.timelineStep3BodyPrefix} {arrivalWindow}
+                    </p>
                   </div>
                 </li>
               </ol>
             </div>
           ) : null}
 
-          {!isArabic &&
-          (canReferenceWhatsapp
-            ? copy.confirmation.whatsappOrderHelpArabic
-            : copy.confirmation.followUpFallbackArabic
-          ).trim() ? (
-            <BilingualServiceBlock
-              className="mt-6 font-body text-sm text-clay"
-              locale="en"
-              arabic={
-                canReferenceWhatsapp
-                  ? copy.confirmation.whatsappOrderHelpArabic
-                  : copy.confirmation.followUpFallbackArabic
-              }
-              english={
-                canReferenceWhatsapp ? copy.confirmation.whatsappOrderHelp : copy.confirmation.followUpFallback
-              }
-            />
-          ) : (
-            <p className="mt-6 font-body text-sm text-clay">
-              {canReferenceWhatsapp
-                ? copy.confirmation.whatsappOrderHelp
-                : copy.confirmation.followUpFallback}
-            </p>
-          )}
+          <p className="mt-6 font-body text-sm text-clay">
+            {canReferenceWhatsapp ? copy.confirmation.whatsappOrderHelp : copy.confirmation.followUpFallback}
+          </p>
         </section>
 
         <section className="mb-8 rounded-2xl border border-stone/45 bg-white/75 p-5">
@@ -535,6 +491,12 @@ export function OrderConfirmation() {
                     <span>{copy.confirmation.shippingTotalLabel}</span>
                     <span className="font-medium tabular-nums">{formatEgp(order.shipping)}</span>
                   </div>
+                  {footerDeltaEgp != null ? (
+                    <div className="flex justify-between gap-4 text-sm text-obsidian">
+                      <span>{copy.confirmation.adjustmentLabel}</span>
+                      <span className="font-medium tabular-nums">{formatEgp(footerDeltaEgp)}</span>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between gap-4 border-t border-stone/25 pt-2 text-base font-semibold text-obsidian">
                     <span>{copy.confirmation.orderTotalLabel}</span>
                     <span className="tabular-nums">{formatEgp(order.total)}</span>

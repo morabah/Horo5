@@ -10,6 +10,10 @@ type StickyAddToCartProps = {
   oosSelected: boolean;
   displayPrice: number;
   onAddToBag: () => void;
+  addBtnCta: string;
+  selectSizePrompt: string;
+  notifyMeCta: string;
+  selectSizeHint?: string;
 };
 
 export function StickyAddToCart({
@@ -21,12 +25,16 @@ export function StickyAddToCart({
   oosSelected,
   displayPrice,
   onAddToBag,
+  addBtnCta,
+  selectSizePrompt,
+  notifyMeCta,
+  selectSizeHint = 'Select a size',
 }: StickyAddToCartProps) {
   const ctaLabel = oosSelected
-    ? 'Notify Me'
+    ? notifyMeCta
     : sizeReady
-      ? `Add to Bag — ${formatEgp(displayPrice)}`
-      : 'Choose Size';
+      ? `${addBtnCta} — ${formatEgp(displayPrice)}`
+      : selectSizePrompt;
 
   return (
     <div
@@ -50,7 +58,7 @@ export function StickyAddToCart({
             {selectedSize ? (
               <p className="sticky-atc-size">Size: {selectedSize}</p>
             ) : (
-              <p className="sticky-atc-size sticky-atc-size--prompt">Select a size ↑</p>
+              <p className="sticky-atc-size sticky-atc-size--prompt">{selectSizeHint} ↑</p>
             )}
           </div>
         </div>

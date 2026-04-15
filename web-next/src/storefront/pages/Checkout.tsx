@@ -2,12 +2,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { trackBeginCheckout, trackPurchase } from '../analytics/events';
 import type { CartLine } from '../cart/types';
-import { BilingualServiceBlock } from '../components/BilingualServiceBlock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { loadSavedShipping, saveSavedShipping } from '../cart/savedShipping';
 import { saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
+import { setPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
 import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import { MEDUSA_CART_ID_STORAGE_KEY } from '../cart/types';
@@ -38,11 +38,14 @@ import {
   setShippingOptionsCache,
 } from '../lib/medusa/checkout-aux-cache';
 import {
+  getCartGiftWrapEgp,
   getOrderGiftWrapEgp,
   toCartLines,
   toOrderLines,
 } from '../lib/medusa/adapters';
+import { merchandiseSubtotalFromCartLines, resolveCheckoutShippingEgp } from '../lib/medusa/cart-money';
 import { medusaAmountToEgp } from '../lib/medusa/egp-amount';
+import { resolveOrderSnapshotSubtotalEgp } from '../lib/medusa/order-display';
 import type {
   CheckoutStatusResponse,
   MedusaCart,
@@ -420,7 +423,7 @@ function buildOrderSnapshot(args: {
 }): LastOrderSnapshot {
   const { email, estimatedDeliveryRange, fullName, isArabic, line1, order, paymentMethod, phone, shippingLabel, whatsappOptIn } = args;
   const lines = toOrderLines(order);
-  const subtotal = medusaAmountToEgp((order.subtotal ?? 0) || 0);
+  const subtotal = resolveOrderSnapshotSubtotalEgp(order);
   const shipping = medusaAmountToEgp((order.shipping_total ?? order.shipping_methods?.[0]?.amount ?? 0) || 0);
   const total = medusaAmountToEgp((order.total ?? 0) || 0);
   const rawTax = order.tax_total;
@@ -619,22 +622,19 @@ export function Checkout() {
     }
   }
 
-  const shippingCost = useMemo(() => {
-    if (typeof checkoutCart?.shipping_total === 'number') {
-      return medusaAmountToEgp(checkoutCart.shipping_total);
-    }
-    if (typeof shippingOption?.amount === 'number') {
-      return medusaAmountToEgp(shippingOption.amount);
-    }
-    return 0;
-  }, [checkoutCart?.shipping_total, shippingOption?.amount]);
+  const shippingCost = useMemo(
+    () => resolveCheckoutShippingEgp(checkoutCart ?? undefined, shippingOption),
+    [checkoutCart, shippingOption],
+  );
 
+  const merchandiseSubtotalEgp = useMemo(
+    () => merchandiseSubtotalFromCartLines(checkoutCart ? toCartLines(checkoutCart) : items),
+    [checkoutCart, items],
+  );
+  const giftWrapLineEgp = checkoutCart ? getCartGiftWrapEgp(checkoutCart) : giftWrapEgp;
   const orderTotal = useMemo(() => {
-    if (typeof checkoutCart?.total === 'number') {
-      return medusaAmountToEgp(checkoutCart.total);
-    }
-    return subtotalEgp + giftWrapEgp + shippingCost;
-  }, [checkoutCart?.total, giftWrapEgp, shippingCost, subtotalEgp]);
+    return merchandiseSubtotalEgp + giftWrapLineEgp + shippingCost;
+  }, [giftWrapLineEgp, merchandiseSubtotalEgp, shippingCost]);
 
   const estimatedDeliveryRange = useMemo(
     () => formatDeliveryWindow(3, 5, now),
@@ -700,6 +700,7 @@ export function Checkout() {
           clearCart();
           setCartId(null);
           setCheckoutCart(null);
+          setPlacedOrderMedusaIdHint(status.order_id);
           navigate(`/checkout/success?order_id=${status.order_id}`);
           return;
         }
@@ -763,6 +764,7 @@ export function Checkout() {
             clearCart();
             setCartId(null);
             setCheckoutCart(null);
+            setPlacedOrderMedusaIdHint(paymobStatus.order_id);
             navigate(`/checkout/success?order_id=${paymobStatus.order_id}`);
             return;
           }
@@ -1041,6 +1043,7 @@ export function Checkout() {
         });
 
         saveLastOrder(snapshot);
+        setPlacedOrderMedusaIdHint(completion.order.id);
         if (rememberAddressOnDevice) {
           saveSavedShipping({
             email: email.trim(),
@@ -1089,6 +1092,7 @@ export function Checkout() {
           clearCart();
           setCartId(null);
           setCheckoutCart(null);
+          setPlacedOrderMedusaIdHint(st.order_id);
           navigate(`/checkout/success?order_id=${st.order_id}`);
           return;
         }
@@ -1119,6 +1123,7 @@ export function Checkout() {
         clearCart();
         setCartId(null);
         setCheckoutCart(null);
+        setPlacedOrderMedusaIdHint(resolved.order_id);
         navigate(`/checkout/success?order_id=${resolved.order_id}`);
         return;
       }
@@ -1457,21 +1462,12 @@ export function Checkout() {
           </ol>
         </nav>
 
-        <form onSubmit={(event) => void handleSubmitCheckout(event)}>
+        <form id="checkout-main-form" onSubmit={(event) => void handleSubmitCheckout(event)}>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
             <div>
               <h1 className="font-headline text-2xl font-semibold text-obsidian">{copy.checkout.breadcrumbTitle}</h1>
               <p className="mt-3 text-[0.9375rem] font-semibold text-obsidian">{copy.checkout.guestCheckout}</p>
-              {!isArabic ? (
-                <BilingualServiceBlock
-                  className="mt-4 max-w-xl"
-                  locale="en"
-                  arabic={copy.checkout.secureDataArabic}
-                  english={copy.checkout.secureData}
-                />
-              ) : (
-                <p className="mt-4 max-w-xl text-sm text-warm-charcoal">{copy.checkout.secureData}</p>
-              )}
+              <p className="mt-4 max-w-xl text-sm text-warm-charcoal">{copy.checkout.secureData}</p>
 
               <div className="mt-6 lg:hidden">
                 <button
@@ -1644,7 +1640,7 @@ export function Checkout() {
                       .join(' · ')}
                   </p>
                 ) : null}
-                <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm text-obsidian">
+                <label className="mt-4 hidden cursor-pointer items-center gap-2 text-sm text-obsidian sm:flex">
                   <input
                     type="checkbox"
                     checked={rememberAddressOnDevice}
@@ -1796,9 +1792,9 @@ export function Checkout() {
             </div>
             <button
               type="button"
-              onClick={(e) => {
-                const form = (e.currentTarget as HTMLElement).closest('.checkout-wrap')?.querySelector('form');
-                if (form) form.requestSubmit();
+              onClick={() => {
+                const el = document.getElementById('checkout-main-form');
+                if (el instanceof HTMLFormElement) el.requestSubmit();
               }}
               className="btn btn-primary inline-flex min-h-12 shrink-0 items-center justify-center px-6 disabled:pointer-events-none disabled:opacity-60"
               disabled={submitDisabled}
@@ -1836,15 +1832,19 @@ function OrderSummary({
 }) {
   const { locale, copy } = useUiLocale();
   const isArabic = locale === 'ar';
-  const { items, subtotalEgp, giftWrapEgp, setLineQty, removeItem, awaitPendingCartSync } = useCart();
+  const { items, giftWrapEgp, setLineQty, removeItem, awaitPendingCartSync } = useCart();
   const [busy, setBusy] = useState(false);
   const lineViews = useMemo(
     () => getCartLineViews(cart ? toCartLines(cart) : items),
     [cart, items],
   );
-  const total = typeof cart?.total === 'number'
-    ? medusaAmountToEgp(cart.total)
-    : subtotalEgp + giftWrapEgp + shipping;
+  /** Must match the sum of rows above (Medusa prices), not catalog-only `subtotalEgp`. */
+  const merchandiseSubtotalEgp = useMemo(
+    () => merchandiseSubtotalFromCartLines(cart ? toCartLines(cart) : items),
+    [cart, items],
+  );
+  const giftWrapLineEgp = cart ? getCartGiftWrapEgp(cart) : giftWrapEgp;
+  const total = merchandiseSubtotalEgp + giftWrapLineEgp + shipping;
 
   async function runWithRefresh(mutate: () => void) {
     setBusy(true);
@@ -1947,12 +1947,12 @@ function OrderSummary({
       ))}
       <p className="flex justify-between font-body text-sm text-obsidian">
         <span>{isArabic ? 'الإجمالي الفرعي' : 'Subtotal'}</span>
-        <span>{formatEgp(subtotalEgp)}</span>
+        <span>{formatEgp(merchandiseSubtotalEgp)}</span>
       </p>
-      {giftWrapEgp > 0 ? (
+      {giftWrapLineEgp > 0 ? (
         <p className="mt-2 flex justify-between text-sm text-clay">
           <span>{CART_SCHEMA.copy.giftWrapLabel}</span>
-          <span>{formatEgp(giftWrapEgp)}</span>
+          <span>{formatEgp(giftWrapLineEgp)}</span>
         </p>
       ) : null}
       <p className="mt-2 flex justify-between text-sm text-clay">
