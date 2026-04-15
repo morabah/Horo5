@@ -2,11 +2,22 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import {
+  formatOrderTotalForUi,
+  getPipelineSteps,
+  type OpsWorkflowAction,
+  resolveNextOpsAction,
+  workflowDisabledReason,
+} from "./horo-ops-order-workflow-gates";
+import { useHoroOpsToastStrict } from "./horo-ops-toast";
+
 export type OpsOrderSummaryRow = {
   id: string;
   display_id?: number | string | null;
   friendly?: string | null;
   email?: string | null;
+  currency_code?: string | null;
+  total?: unknown;
   payment_status?: string | null;
   fulfillment_status?: string | null;
   sla_deadline_day_utc?: string | null;
@@ -45,74 +56,99 @@ function metaString(meta: unknown, key: string): string {
   return typeof v === "string" ? v : "";
 }
 
-const CAPTURE_ELIGIBLE = new Set(["authorized", "pending", "requires_capture"]);
+function PipelineTracker({
+  payment,
+  fulfillment,
+  delivery,
+}: {
+  payment: "done" | "current" | "pending";
+  fulfillment: "done" | "current" | "pending";
+  delivery: "done" | "current" | "pending";
+}) {
+  const pill = (label: string, state: "done" | "current" | "pending") => {
+    const base = "rounded-full px-3 py-1 text-xs font-medium ring-1 ";
+    if (state === "done") return `${base} bg-emerald-100 text-emerald-900 ring-emerald-200 dark:bg-emerald-950 dark:text-emerald-100 dark:ring-emerald-800`;
+    if (state === "current")
+      return `${base} bg-amber-100 text-amber-950 ring-amber-300 dark:bg-amber-950 dark:text-amber-50 dark:ring-amber-700`;
+    return `${base} bg-neutral-100 text-neutral-500 ring-neutral-200 dark:bg-neutral-900 dark:text-neutral-400 dark:ring-neutral-700`;
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-2" aria-label="Order pipeline">
+      <span className={pill("Payment", payment)}>Payment</span>
+      <span className="text-neutral-400" aria-hidden>
+        →
+      </span>
+      <span className={pill("Fulfillment", fulfillment)}>Fulfillment</span>
+      <span className="text-neutral-400" aria-hidden>
+        →
+      </span>
+      <span className={pill("Delivered", delivery)}>Delivered</span>
+    </div>
+  );
+}
 
-/** Order-level `payment_status` when nested `payments[]` is missing from the graph. */
-const ORDER_CAPTURE_ELIGIBLE = new Set([
-  "authorized",
-  "awaiting",
-  "partially_authorized",
-  "requires_action",
-]);
+function formatEmailForPrimaryLabel(email: string): string {
+  const t = email.trim();
+  if (t.length <= 26) return t;
+  const at = t.indexOf("@");
+  if (at <= 0 || at >= t.length - 1) return `${t.slice(0, 20)}…`;
+  const user = t.slice(0, at);
+  const dom = t.slice(at + 1);
+  const u = user.length > 8 ? `${user.slice(0, 6)}…` : user;
+  const d = dom.length > 14 ? `${dom.slice(0, 12)}…` : dom;
+  return `${u}@${d}`;
+}
 
-const DELIVERED_LIKE_FULFILLMENT = new Set(["fulfilled", "shipped", "delivered", "partially_delivered"]);
-const FULFILLMENT_CREATE_BLOCKED = new Set(["canceled", "cancelled"]);
-
-function canCapturePayment(g: Record<string, unknown> | null): boolean {
-  if (!g) return false;
-  const cols = g.payment_collections;
-  if (Array.isArray(cols)) {
-    for (const c of cols) {
-      if (!c || typeof c !== "object") continue;
-      const payments = (c as Record<string, unknown>).payments;
-      if (!Array.isArray(payments)) continue;
-      for (const p of payments) {
-        if (!p || typeof p !== "object") continue;
-        const st =
-          typeof (p as Record<string, unknown>).status === "string" ? String((p as Record<string, unknown>).status).toLowerCase() : "";
-        if (CAPTURE_ELIGIBLE.has(st)) return true;
-      }
-    }
+function WorkflowLeadIcon({ action }: { action: OpsWorkflowAction }) {
+  const cls = "mr-2 h-5 w-5 shrink-0 text-current";
+  if (action === "capture_payment") {
+    return (
+      <svg className={cls} viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="2.5" y="6.5" width="19" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M2.5 10.5h19" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="8" cy="14" r="1.2" fill="currentColor" />
+      </svg>
+    );
   }
-  const ps = typeof g.payment_status === "string" ? g.payment_status.toLowerCase() : "";
-  if (ps && ORDER_CAPTURE_ELIGIBLE.has(ps)) return true;
-  return false;
+  if (action === "create_fulfillment") {
+    return (
+      <svg className={cls} viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path d="M4 8h16v11H4z" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M9 8V6.5a3 3 0 016 0V8" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  return (
+    <svg className={cls} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M5 13l3.5 3.5L19 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }
 
-function hasOrderLineItems(g: Record<string, unknown>): boolean {
-  const items = g.items;
-  if (!Array.isArray(items)) return false;
-  return items.some((it) => it && typeof it === "object");
+function primaryActionClasses(action: OpsWorkflowAction): string {
+  const base =
+    "inline-flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 dark:focus-visible:ring-offset-neutral-950 ";
+  if (action === "capture_payment")
+    return `${base} bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500`;
+  if (action === "create_fulfillment")
+    return `${base} bg-sky-600 text-white hover:bg-sky-700 focus-visible:ring-sky-500`;
+  return `${base} bg-violet-600 text-white hover:bg-violet-700 focus-visible:ring-violet-500`;
 }
 
-function canCreateFulfillment(g: Record<string, unknown> | null): boolean {
-  if (!g) return false;
-  const fs = String(g.fulfillment_status ?? "").toLowerCase();
-  if (fs && FULFILLMENT_CREATE_BLOCKED.has(fs)) return false;
-  if (fs === "not_fulfilled" || fs === "partially_fulfilled" || fs === "pending") return true;
-  /** Graph sometimes omits `fulfillment_status`; if we have lines and Medusa has not closed out delivery, allow trying create (server validates). */
-  if (!fs && hasOrderLineItems(g)) return true;
-  if (fs && !DELIVERED_LIKE_FULFILLMENT.has(fs) && hasOrderLineItems(g)) return true;
-  return false;
-}
-
-function canMarkFulfillmentDelivered(g: Record<string, unknown> | null): boolean {
-  if (!g) return false;
-  const fuls = g.fulfillments;
-  if (!Array.isArray(fuls)) return false;
-  return fuls.some((f) => {
-    if (!f || typeof f !== "object") return false;
-    const d = (f as Record<string, unknown>).delivered_at;
-    return d === null || d === undefined || (typeof d === "string" && d.trim() === "");
-  });
+function actionVerb(action: OpsWorkflowAction): string {
+  if (action === "capture_payment") return "Capture payment";
+  if (action === "create_fulfillment") return "Create fulfillment";
+  return "Mark fulfillment delivered";
 }
 
 export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph, onClose, onSaved }: Props) {
+  const { showToast } = useHoroOpsToastStrict();
   const [graph, setGraph] = useState<Record<string, unknown> | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [workflowError, setWorkflowError] = useState<string | null>(null);
   const [medusaStatus, setMedusaStatus] = useState<string>("pending");
   const [opsHandling, setOpsHandling] = useState<string>("");
   const [initialMedusaStatus, setInitialMedusaStatus] = useState<string>("pending");
@@ -147,9 +183,11 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
       setGraph(null);
       setLoadError(null);
       setSaveError(null);
+      setWorkflowError(null);
       return;
     }
     setSaveError(null);
+    setWorkflowError(null);
     /** Dashboard `order_graphs` omits payment_collections / fulfillments — do not treat it as the action graph. */
     setGraph(null);
     if (initialGraph && Object.keys(initialGraph).length > 0) {
@@ -186,6 +224,7 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
     if (!orderId) return;
     setSaving(true);
     setSaveError(null);
+    setWorkflowError(null);
     try {
       const body: Record<string, unknown> = { order_id: orderId };
       if (medusaStatus !== initialMedusaStatus) {
@@ -215,6 +254,7 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
         setGraph(parsed.order);
         resetFromGraph(parsed.order);
       }
+      showToast("Saved to Medusa.", "success");
       onSaved();
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : "Save failed");
@@ -223,10 +263,10 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
     }
   };
 
-  const runWorkflow = async (action: "capture_payment" | "create_fulfillment" | "mark_fulfillment_delivered") => {
+  const runWorkflow = async (action: OpsWorkflowAction) => {
     if (!orderId) return;
     setActionBusy(action);
-    setSaveError(null);
+    setWorkflowError(null);
     try {
       const res = await fetch("/api/horo-ops/order/action", {
         method: "POST",
@@ -236,7 +276,8 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
       });
       const text = await res.text();
       if (!res.ok) {
-        setSaveError(text || res.statusText);
+        setWorkflowError(text || res.statusText);
+        showToast("Workflow action failed.", "error");
         return;
       }
       const parsed = JSON.parse(text) as { order?: Record<string, unknown> | null };
@@ -244,9 +285,12 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
         setGraph(parsed.order);
         resetFromGraph(parsed.order);
       }
+      showToast(`${actionVerb(action)} completed.`, "success");
       onSaved();
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : "Action failed");
+      const msg = e instanceof Error ? e.message : "Action failed";
+      setWorkflowError(msg);
+      showToast(msg, "error");
     } finally {
       setActionBusy(null);
     }
@@ -259,6 +303,23 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
     (typeof summary?.display_id === "number" && summary.display_id > 0
       ? `HORO-${Math.floor(summary.display_id)}`
       : orderId);
+
+  const nextAction = graph && !loadError ? resolveNextOpsAction(graph) : null;
+  const steps = graph && !loadError ? getPipelineSteps(graph) : null;
+  const currency =
+    (graph && typeof graph.currency_code === "string" ? graph.currency_code : null) ?? summary?.currency_code ?? null;
+  const total = graph?.total ?? summary?.total;
+  const moneyLine = graph ? formatOrderTotalForUi(currency, total) : "";
+  const emailHint = summary?.email ? formatEmailForPrimaryLabel(summary.email) : "customer";
+
+  const primaryLabel =
+    nextAction && graph
+      ? nextAction === "capture_payment"
+        ? `Capture ${moneyLine || "payment"} from ${emailHint}`
+        : nextAction === "create_fulfillment"
+          ? `Create fulfillment (${moneyLine || "order"})`
+          : "Mark fulfillment delivered"
+      : "No workflow action right now";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 sm:items-center" role="presentation">
@@ -274,20 +335,30 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
         aria-labelledby="horo-ops-order-detail-title"
         className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-neutral-200 bg-white shadow-xl dark:border-neutral-800 dark:bg-neutral-950"
       >
-        <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-neutral-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-950">
-          <div>
-            <h2 id="horo-ops-order-detail-title" className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-              Order {displayRef}
-            </h2>
-            <p className="mt-0.5 font-mono text-xs text-neutral-500 dark:text-neutral-400">{orderId}</p>
+        <div className="sticky top-0 z-20 border-b border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-950">
+          <div className="flex items-start justify-between gap-4 px-4 py-3">
+            <div title={`Medusa order id: ${orderId}`}>
+              <h2 id="horo-ops-order-detail-title" className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+                Order {displayRef}
+              </h2>
+              <span className="sr-only">Medusa order id: {orderId}</span>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md border border-neutral-300 px-3 py-1 text-sm text-neutral-800 hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 dark:border-neutral-600 dark:text-neutral-100 dark:hover:bg-neutral-900 dark:focus-visible:ring-offset-neutral-950"
+            >
+              Close
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-neutral-300 px-3 py-1 text-sm text-neutral-800 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-100 dark:hover:bg-neutral-900"
-          >
-            Close
-          </button>
+          {workflowError ? (
+            <p
+              className="border-t border-red-200 bg-red-50 px-4 py-2 text-sm text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-100"
+              role="alert"
+            >
+              {workflowError}
+            </p>
+          ) : null}
         </div>
 
         <div className="space-y-5 px-4 py-4">
@@ -318,47 +389,87 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
             </div>
           ) : null}
 
+          {graph && steps ? (
+            <div className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/40">
+              <p className="text-sm font-medium text-neutral-800 dark:text-neutral-100">Pipeline</p>
+              <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+                Based on the loaded Medusa order graph (payment collections and fulfillments).
+              </p>
+              <div className="mt-3">
+                <PipelineTracker payment={steps.payment} fulfillment={steps.fulfillment} delivery={steps.delivery} />
+              </div>
+            </div>
+          ) : null}
+
           {graph ? (
             <div className="rounded-lg border border-violet-200 bg-violet-50/80 p-4 text-sm dark:border-violet-900/50 dark:bg-violet-950/30">
-              <p className="text-xs font-semibold uppercase tracking-wide text-violet-900 dark:text-violet-200">Medusa workflows</p>
+              <p className="text-base font-medium text-violet-950 dark:text-violet-100">Medusa workflows</p>
               <p className="mt-1 text-xs text-violet-950/90 dark:text-violet-100/90">
-                These call the same Medusa workflows as Admin: <strong>capture payment</strong>, <strong>create fulfillment</strong>, and{" "}
-                <strong>mark fulfillment delivered</strong>. They update payment and fulfillment state—not only JSON metadata.
+                These call the same Medusa workflows as Admin. One primary action matches the next step in the pipeline.
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  disabled={!!loadError || !!actionBusy || saving || !canCapturePayment(graph)}
-                  onClick={() => void runWorkflow("capture_payment")}
-                  className="rounded-md border border-violet-300 bg-white px-3 py-1.5 text-xs font-medium text-violet-950 hover:bg-violet-100 disabled:opacity-50 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-50 dark:hover:bg-violet-900"
-                >
-                  {actionBusy === "capture_payment" ? "Capturing…" : "Capture payment"}
-                </button>
-                <button
-                  type="button"
-                  disabled={!!loadError || !!actionBusy || saving || !canCreateFulfillment(graph)}
-                  onClick={() => void runWorkflow("create_fulfillment")}
-                  className="rounded-md border border-violet-300 bg-white px-3 py-1.5 text-xs font-medium text-violet-950 hover:bg-violet-100 disabled:opacity-50 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-50 dark:hover:bg-violet-900"
-                >
-                  {actionBusy === "create_fulfillment" ? "Creating…" : "Create fulfillment"}
-                </button>
-                <button
-                  type="button"
-                  disabled={!!loadError || !!actionBusy || saving || !canMarkFulfillmentDelivered(graph)}
-                  onClick={() => void runWorkflow("mark_fulfillment_delivered")}
-                  className="rounded-md border border-violet-300 bg-white px-3 py-1.5 text-xs font-medium text-violet-950 hover:bg-violet-100 disabled:opacity-50 dark:border-violet-800 dark:bg-violet-950 dark:text-violet-50 dark:hover:bg-violet-900"
-                >
-                  {actionBusy === "mark_fulfillment_delivered" ? "Updating…" : "Mark fulfillment delivered"}
-                </button>
+
+              <div className="mt-4 space-y-2">
+                {nextAction ? (
+                  <button
+                    type="button"
+                    disabled={!!loadError || !!actionBusy || saving}
+                    onClick={() => void runWorkflow(nextAction)}
+                    className={primaryActionClasses(nextAction)}
+                  >
+                    <WorkflowLeadIcon action={nextAction} />
+                    {actionBusy === nextAction ? "Working…" : primaryLabel}
+                  </button>
+                ) : (
+                  <p className="text-xs text-violet-900 dark:text-violet-200">No capture, fulfillment, or mark-delivered action applies to this order right now.</p>
+                )}
+                <div className="flex flex-col gap-2 pt-1">
+                  {(["capture_payment", "create_fulfillment", "mark_fulfillment_delivered"] as const).map((a) => {
+                    if (a === nextAction) return null;
+                    const reason = workflowDisabledReason(graph, a);
+                    const enabled = !loadError && !actionBusy && !saving && reason === null;
+                    return (
+                      <button
+                        key={a}
+                        type="button"
+                        disabled={!enabled}
+                        title={reason ?? undefined}
+                        onClick={() => void runWorkflow(a)}
+                        className="w-full rounded-md border border-neutral-200/80 bg-transparent px-3 py-2 text-left text-xs text-violet-900 hover:bg-violet-100/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-700 dark:text-violet-100 dark:hover:bg-violet-900/40 dark:focus-visible:ring-offset-neutral-950"
+                      >
+                        <span className="font-medium">{actionVerb(a)}</span>
+                        {reason ? <span className="mt-0.5 block text-neutral-600 dark:text-neutral-400">— {reason}</span> : null}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <p className="mt-2 text-xs text-violet-900/80 dark:text-violet-200/80">
-                Uses the full order fetch (not the dashboard list payload). Capture also checks order <code className="rounded bg-white/80 px-0.5 dark:bg-violet-950">payment_status</code> when nested payments are missing.
-              </p>
+              <details className="mt-3 rounded-md border border-violet-300/80 bg-white/90 px-3 py-2 text-xs text-violet-950/95 dark:border-violet-800 dark:bg-violet-950/50 dark:text-violet-100/90">
+                <summary className="cursor-pointer font-medium text-violet-950 dark:text-violet-100">
+                  Where this order appears on the dashboard (after refresh)
+                </summary>
+                <p className="mt-2 text-[11px] leading-snug text-violet-900/90 dark:text-violet-200/85">
+                  Main buckets use Medusa <strong>payment</strong> and <strong>fulfillment</strong> (plus SLA dates)—not <strong>order status</strong> or
+                  fulfillment-desk metadata. <strong>Order list</strong> always includes every loaded order.
+                </p>
+                <ul className="mt-2 list-disc space-y-1.5 pl-4 text-[11px] leading-snug">
+                  <li>
+                    <strong>Capture payment</strong> — When captured: drops off <strong>Instapay — awaiting capture</strong> (if Instapay); joins{" "}
+                    <strong>Instapay — ready to ship</strong> until fulfillment is delivered-like; joins <strong>Money collected</strong>.
+                  </li>
+                  <li>
+                    <strong>Create fulfillment</strong> — Instapay + captured: stays on <strong>Instapay — ready to ship</strong> until delivered-like.
+                  </li>
+                  <li>
+                    <strong>Mark fulfillment delivered</strong> — When delivered-like: leaves <strong>Instapay — ready to ship</strong> and SLA delivery buckets;
+                    may appear in <strong>Delivered recently</strong>.
+                  </li>
+                </ul>
+              </details>
             </div>
           ) : null}
 
           <div className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/40">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Medusa order status</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Medusa order status</p>
             <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
               Database enum only (not custom labels). Typical flow: <code className="rounded bg-white px-1 dark:bg-neutral-950">pending</code> →{" "}
               <code className="rounded bg-white px-1 dark:bg-neutral-950">completed</code> when the order is done.
@@ -368,7 +479,7 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
               <select
                 value={medusaStatus}
                 onChange={(e) => setMedusaStatus(e.target.value)}
-                className="mt-1 w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 dark:border-neutral-600 dark:bg-neutral-950 dark:text-neutral-100"
+                className="mt-1 w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:border-neutral-600 dark:bg-neutral-950 dark:text-neutral-100"
               >
                 {MEDUSA_ORDER_STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>
@@ -377,20 +488,43 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
                 ))}
               </select>
             </label>
+            <details className="mt-3 rounded-md border border-neutral-200 bg-white/90 px-3 py-2 text-xs text-neutral-600 dark:border-neutral-700 dark:bg-neutral-950/60 dark:text-neutral-400">
+              <summary className="cursor-pointer font-medium text-neutral-800 dark:text-neutral-200">Operator guide: order status</summary>
+              <ul className="mt-2 list-disc space-y-1.5 pl-4">
+                <li>
+                  <strong>pending</strong> — Default for live storefront orders still in your pipeline (payment may or may not be captured yet).
+                </li>
+                <li>
+                  <strong>completed</strong> — Commerce-complete: nothing else to do in Medusa for this order (often after payment is settled and fulfillment is done).
+                </li>
+                <li>
+                  <strong>draft</strong> — Incomplete or non-production order; rarely change to this from ops for real checkouts.
+                </li>
+                <li>
+                  <strong>archived</strong> — Park the order out of active work without treating it as canceled.
+                </li>
+                <li>
+                  <strong>canceled</strong> — Void the sale; do not fulfill.
+                </li>
+                <li>
+                  <strong>requires_action</strong> — Blocked until something external is fixed.
+                </li>
+              </ul>
+            </details>
           </div>
 
           <div className="rounded-lg border border-neutral-200 bg-neutral-50/80 p-4 dark:border-neutral-800 dark:bg-neutral-900/40">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Ops handling (metadata)</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">Ops handling (metadata)</p>
             <p className="mt-1 text-xs text-neutral-600 dark:text-neutral-400">
-              Stored as <code className="rounded bg-white px-1 dark:bg-neutral-950">metadata.horo_ops_handling</code>. Shown on the buyer
-              confirmation page after refresh. This is <strong>not</strong> Medusa fulfillment state.
+              Stored as <code className="rounded bg-white px-1 dark:bg-neutral-950">metadata.horo_ops_handling</code>. Shown on the buyer confirmation page after
+              refresh.
             </p>
             <label className="mt-3 block text-sm">
               <span className="sr-only">Handling status</span>
               <select
                 value={opsHandling}
                 onChange={(e) => setOpsHandling(e.target.value)}
-                className="mt-1 w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 dark:border-neutral-600 dark:bg-neutral-950 dark:text-neutral-100"
+                className="mt-1 w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:border-neutral-600 dark:bg-neutral-950 dark:text-neutral-100"
               >
                 <option value="">— Not set (clear)</option>
                 <option value="pending">pending</option>
@@ -411,14 +545,14 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
               type="button"
               disabled={saving || !!loadError || !!actionBusy}
               onClick={() => void save()}
-              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
+              className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200"
             >
               {saving ? "Saving…" : "Save to Medusa"}
             </button>
             <button
               type="button"
               onClick={() => setShowRaw((v) => !v)}
-              className="text-sm text-neutral-500 underline decoration-neutral-400 underline-offset-2 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200"
+              className="text-sm text-neutral-500 underline decoration-neutral-400 underline-offset-2 hover:text-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 dark:text-neutral-400 dark:hover:text-neutral-200"
             >
               {showRaw ? "Hide" : "Show"} full order JSON
             </button>

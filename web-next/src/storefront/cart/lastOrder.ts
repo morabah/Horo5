@@ -1,3 +1,4 @@
+import type { StorefrontPaymentChoice } from '../lib/checkout-payment';
 import type { CartLine } from './types';
 
 export const LAST_ORDER_STORAGE_KEY = 'horo-last-order-v1';
@@ -17,7 +18,7 @@ export type LastOrderSnapshot = {
   taxEgp?: number;
   shipping: number;
   total: number;
-  paymentMethod: 'cod' | 'card';
+  paymentMethod: StorefrontPaymentChoice;
   shippingMethod: 'standard';
   paymentLabel?: string;
   shippingLabel?: string;

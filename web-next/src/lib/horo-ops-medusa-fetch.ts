@@ -5,6 +5,8 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { NextResponse } from "next/server"
+
 const OPS_SECRET_KEY = ["HORO", "_OPS", "_BACKEND", "_SECRET"].join("")
 const PUBLISHABLE_KEY = ["NEXT", "_PUBLIC", "_MEDUSA", "_PUBLISHABLE", "_KEY"].join("")
 
@@ -90,6 +92,34 @@ export function medusaBackendBaseUrl(): string {
 /**
  * Store-scoped Medusa routes require `x-publishable-api-key` (same as storefront).
  */
+/**
+ * True when `fetch(MEDUSA_BACKEND_URL)` failed because nothing is listening (e.g. Medusa dev server restarting).
+ */
+export function isLikelyMedusaConnectionFailure(e: unknown): boolean {
+  if (e instanceof TypeError && e.message === "fetch failed") return true
+  const cause = e && typeof e === "object" && "cause" in e ? (e as { cause?: unknown }).cause : undefined
+  if (cause && typeof cause === "object") {
+    const code = "code" in cause ? (cause as { code?: unknown }).code : undefined
+    if (code === "ECONNREFUSED") return true
+    const nested = "errors" in cause ? (cause as { errors?: unknown }).errors : undefined
+    if (Array.isArray(nested)) {
+      for (const err of nested) {
+        if (err && typeof err === "object" && "code" in err && (err as { code?: string }).code === "ECONNREFUSED") {
+          return true
+        }
+      }
+    }
+  }
+  return false
+}
+
+export const MEDUSA_CONNECTION_REFUSED_MESSAGE =
+  "Cannot reach Medusa (connection refused). The backend may be restarting—wait until it is listening on MEDUSA_BACKEND_URL, then retry."
+
+export function jsonResponseWhenMedusaUnreachable(): NextResponse {
+  return NextResponse.json({ message: MEDUSA_CONNECTION_REFUSED_MESSAGE }, { status: 502 })
+}
+
 export function medusaPublishableKey(): string {
   if (cachedPublishableKey !== undefined) return cachedPublishableKey
 

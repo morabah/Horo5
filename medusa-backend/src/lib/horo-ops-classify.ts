@@ -47,7 +47,7 @@ export type TodayQueueItem = {
 
 const DELIVERED_FULFILLMENT = new Set(["fulfilled", "shipped", "delivered", "partially_delivered"])
 
-const CAPTURED_PAYMENT = new Set(["captured", "partially_captured"])
+const CAPTURED_PAYMENT = new Set(["captured", "partially_captured", "completed"])
 
 function parseIsoDate(iso: string): Date | null {
   const d = new Date(iso)
@@ -84,6 +84,16 @@ export function isDeliveredFulfillment(fulfillment_status: string | null | undef
 export function isPaymentCaptured(payment_status: string | null | undefined): boolean {
   if (!payment_status) return false
   return CAPTURED_PAYMENT.has(payment_status)
+}
+
+/**
+ * Medusa `order.status` values that should not appear in SLA ship-by buckets, due-soon, shipping-related
+ * alarms, or money-collected aggregates (dashboard ops tables).
+ */
+export function orderExcludedFromShippingSlaBuckets(row: Pick<OpsOrderRow, "status">): boolean {
+  const s = typeof row.status === "string" ? row.status.trim().toLowerCase() : ""
+  if (!s) return false
+  return s === "canceled" || s === "cancelled" || s === "draft" || s === "archived"
 }
 
 function hoursBetween(a: Date, b: Date): number {
@@ -161,8 +171,9 @@ export function classifyOpsOrders(
     const fulfilled = isDeliveredFulfillment(row.fulfillment_status ?? undefined)
     const captured = isPaymentCaptured(row.payment_status ?? undefined)
     const deadlineYmd = utcYmd(deadline)
+    const shippingSlaInactive = orderExcludedFromShippingSlaBuckets(row)
 
-    if (!fulfilled) {
+    if (!fulfilled && !shippingSlaInactive) {
       if (deadlineYmd === todayYmd) {
         deliveryDueToday.push(row)
       } else if (deadlineYmd === tomorrowYmd) {
@@ -172,7 +183,7 @@ export function classifyOpsOrders(
       }
     }
 
-    if (captured) {
+    if (captured && !shippingSlaInactive) {
       moneyCollectedOrders.push(row)
       const cur = row.currency_code && typeof row.currency_code === "string" ? row.currency_code : "unknown"
       const minor = parseOrderTotalMinor(row.total)
@@ -184,11 +195,11 @@ export function classifyOpsOrders(
       deliveredRecently.push(row)
     }
 
-    if (!fulfilled && deadline > now && deadline <= dueSoonCutoff) {
+    if (!fulfilled && !shippingSlaInactive && deadline > now && deadline <= dueSoonCutoff) {
       dueSoon.push(row)
     }
 
-    if (!fulfilled && deadline < now) {
+    if (!fulfilled && !shippingSlaInactive && deadline < now) {
       alarms.push({
         order_id: row.id,
         display_id: row.display_id ?? null,
@@ -215,7 +226,7 @@ export function classifyOpsOrders(
       })
     }
 
-    if (captured && !fulfilled && hoursBetween(created, now) >= config.staleFulfillmentHours) {
+    if (captured && !fulfilled && !shippingSlaInactive && hoursBetween(created, now) >= config.staleFulfillmentHours) {
       alarms.push({
         order_id: row.id,
         display_id: row.display_id ?? null,
@@ -229,6 +240,7 @@ export function classifyOpsOrders(
     if (
       !captured &&
       !fulfilled &&
+      !shippingSlaInactive &&
       deadline <= dueSoonCutoff &&
       deadline >= now &&
       hoursBetween(now, deadline) <= 24

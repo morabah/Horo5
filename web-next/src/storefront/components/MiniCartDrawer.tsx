@@ -9,7 +9,7 @@ import { formatEgp } from '../utils/formatPrice';
 import { useUiLocale } from '../i18n/ui-locale';
 import { AppIcon } from './AppIcon';
 
-const AUTO_DISMISS_MS = 8000;
+const AUTO_DISMISS_MS = 5000;
 
 /** Pick English or Arabic copy from MINI_CART_SCHEMA */
 function t(key: keyof typeof MINI_CART_SCHEMA.copy, isArabic: boolean): string {
@@ -33,13 +33,21 @@ export function MiniCartDrawer() {
     setMiniCartOpen(false);
   }, [setMiniCartOpen]);
 
-  /* Auto-dismiss after 8s of no interaction */
+  /* Auto-dismiss after a short idle window */
   useEffect(() => {
     if (!miniCartOpen) return;
     timerRef.current = setTimeout(close, AUTO_DISMISS_MS);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
+  }, [miniCartOpen, close]);
+
+  /* Dismiss when the user scrolls the page (they moved on from the toast) */
+  useEffect(() => {
+    if (!miniCartOpen) return;
+    const onScroll = () => close();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, [miniCartOpen, close]);
 
   /* Pause auto-dismiss on hover/focus */

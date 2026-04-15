@@ -17,6 +17,13 @@ export const ORDER_OPS_CORE_FIELDS = [
  * Rich Remote Query shape for ops (metadata + money + lines + addresses + shipping),
  * aligned with `order-confirmation-email` subscriber graph.
  */
+/** Minimal payment graph so ops can detect Instapay (`provider_id`) without the full action graph. */
+export const ORDER_OPS_PAYMENT_DETECT_FIELDS = [
+  "payment_collections.*",
+  "payment_collections.payments.*",
+  "payment_collections.payment_sessions.*",
+] as const
+
 export const ORDER_OPS_GRAPH_FIELDS = [
   ...ORDER_OPS_CORE_FIELDS,
   "subtotal",
@@ -37,7 +44,6 @@ export const ORDER_OPS_GRAPH_FIELDS = [
 export const ORDER_OPS_ACTION_GRAPH_FIELDS = [
   ...ORDER_OPS_GRAPH_FIELDS,
   /** Wildcards load the relation reliably; narrow fields alone sometimes omit nested rows. */
-  "payment_collections.*",
-  "payment_collections.payments.*",
+  ...ORDER_OPS_PAYMENT_DETECT_FIELDS,
   "fulfillments.*",
 ] as const

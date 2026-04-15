@@ -1,7 +1,9 @@
 import type { CartLine } from "../../../cart/types"
 import {
   merchandiseSubtotalFromCartLines,
+  readCheckoutDisplayShippingFallbackEgpFromEnv,
   resolveCheckoutShippingEgp,
+  resolveCheckoutShippingEgpWithDisplayFallback,
   resolveShippingQuoteFromCartAndOptions,
   shippingOptionAmountEgp,
 } from "../cart-money"
@@ -73,6 +75,15 @@ describe("resolveCheckoutShippingEgp", () => {
 })
 
 describe("resolveShippingQuoteFromCartAndOptions", () => {
+  const initialFallbackEnv = process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP
+  beforeEach(() => {
+    if (initialFallbackEnv === undefined) {
+      delete process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP
+    } else {
+      process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP = initialFallbackEnv
+    }
+  })
+
   const optA: MedusaShippingOption = {
     id: "opt_a",
     name: "A",
@@ -127,6 +138,34 @@ describe("resolveShippingQuoteFromCartAndOptions", () => {
     }
     expect(resolveShippingQuoteFromCartAndOptions(cart, [])).toBe(0)
   })
+
+  it("uses NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP when live options are empty", () => {
+    process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP = "33"
+    const cart: MedusaCart = {
+      id: "c",
+      currency_code: "egp",
+      items: [],
+      shipping_total: 0,
+    }
+    expect(resolveShippingQuoteFromCartAndOptions(cart, [])).toBe(33)
+  })
+
+  it("uses env fallback when option quotes zero", () => {
+    process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP = "12"
+    const optZero: MedusaShippingOption = {
+      id: "opt_z",
+      name: "Z",
+      provider_id: "p",
+      amount: 0,
+    }
+    const cart: MedusaCart = {
+      id: "c",
+      currency_code: "egp",
+      items: [],
+      shipping_total: 0,
+    }
+    expect(resolveShippingQuoteFromCartAndOptions(cart, [optZero])).toBe(12)
+  })
 })
 
 describe("merchandiseSubtotalFromCartLines", () => {
@@ -148,5 +187,40 @@ describe("merchandiseSubtotalFromCartLines", () => {
       }),
     ]
     expect(merchandiseSubtotalFromCartLines(lines)).toBe(900)
+  })
+})
+
+describe("resolveCheckoutShippingEgpWithDisplayFallback", () => {
+  const prev = process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP
+
+  afterEach(() => {
+    if (prev === undefined) {
+      delete process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP
+    } else {
+      process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP = prev
+    }
+  })
+
+  it("uses live Medusa totals first", () => {
+    const cart = {
+      id: "c1",
+      currency_code: "egp",
+      items: [],
+      shipping_total: 55,
+    } satisfies MedusaCart
+    process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP = "99"
+    const r = resolveCheckoutShippingEgpWithDisplayFallback(cart, undefined)
+    expect(r).toEqual({ egp: 55, usedDisplayFallback: false })
+  })
+
+  it("uses env fallback when live is zero", () => {
+    process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP = "72"
+    const r = resolveCheckoutShippingEgpWithDisplayFallback(undefined, undefined)
+    expect(r).toEqual({ egp: 72, usedDisplayFallback: true })
+  })
+
+  it("readCheckoutDisplayShippingFallbackEgpFromEnv rejects invalid", () => {
+    process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP = "x"
+    expect(readCheckoutDisplayShippingFallbackEgpFromEnv()).toBeNull()
   })
 })

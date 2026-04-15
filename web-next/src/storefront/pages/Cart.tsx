@@ -15,7 +15,10 @@ import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { getCart, listShippingOptions } from '../lib/medusa/client';
 import { getFreshShippingOptions } from '../lib/medusa/checkout-aux-cache';
-import { resolveShippingQuoteFromCartAndOptions } from '../lib/medusa/cart-money';
+import {
+  readCheckoutDisplayShippingFallbackEgpFromEnv,
+  resolveShippingQuoteFromCartAndOptions,
+} from '../lib/medusa/cart-money';
 import type { MedusaCart, MedusaShippingOption } from '../lib/medusa/types';
 
 type CartShippingFetchState =
@@ -162,7 +165,12 @@ function CartSummary({
         <p className="cart-summary-row cart-summary-row--meta">
           <span>{copy.shippingLabel}</span>
           <span className="text-right">
-            {shippingRow.mode === 'loading' ? '—' : null}
+            {shippingRow.mode === 'loading' ? (
+              <span
+                className="inline-block h-4 w-16 animate-pulse rounded bg-stone/70 align-middle"
+                aria-label={locale === 'ar' ? 'جاري تحميل الشحن' : 'Loading shipping'}
+              />
+            ) : null}
             {shippingRow.mode === 'amount' ? formatEgp(shippingRow.egp) : null}
             {shippingRow.mode === 'copy' ? (
               <span className="font-body text-sm text-warm-charcoal">{copy.shippingConfirmedAtCheckout}</span>
@@ -201,12 +209,14 @@ function CartSummary({
 function CartLineItem({
   line,
   eager = false,
+  lineQtySaving,
   onDecrease,
   onIncrease,
   onRemove,
 }: {
   line: CartLineView;
   eager?: boolean;
+  lineQtySaving?: boolean;
   onDecrease: (line: CartLineView) => void;
   onIncrease: (line: CartLineView) => void;
   onRemove: (line: CartLineView) => void;
@@ -255,10 +265,18 @@ function CartLineItem({
               <span className="cart-stepper-value" aria-live="polite" aria-atomic="true">
                 {line.qty}
               </span>
+              {lineQtySaving ? (
+                <span
+                  className="inline-block h-2 w-2 shrink-0 animate-pulse rounded-full bg-deep-teal"
+                  aria-label="Saving quantity"
+                  title="Saving…"
+                />
+              ) : null}
               <button
                 type="button"
                 className="cart-stepper-button"
                 aria-label={`Increase quantity for ${line.productName}`}
+                disabled={line.qty >= 99}
                 onClick={() => onIncrease(line)}
               >
                 +
@@ -287,6 +305,7 @@ export function Cart() {
     addGiftWrap,
     removeGiftWrap,
     addItem,
+    lineQtySaving,
   } = useCart();
   const { copy: shellCopy, locale } = useUiLocale();
   const now = useStableNow();
@@ -331,11 +350,20 @@ export function Cart() {
 
   const { shippingRow, estimatedOrderTotal } = useMemo(() => {
     const base = subtotalEgp + giftWrapEgp;
-    if (
-      shippingFetch.kind === 'inactive' ||
-      shippingFetch.kind === 'pending_cart_id' ||
-      shippingFetch.kind === 'loading'
-    ) {
+    if (shippingFetch.kind === 'inactive' || shippingFetch.kind === 'pending_cart_id') {
+      return {
+        shippingRow: { mode: 'loading' as const },
+        estimatedOrderTotal: null as number | null,
+      };
+    }
+    if (shippingFetch.kind === 'loading') {
+      const fb = readCheckoutDisplayShippingFallbackEgpFromEnv();
+      if (fb != null && fb > 0) {
+        return {
+          shippingRow: { mode: 'amount' as const, egp: fb },
+          estimatedOrderTotal: base + fb,
+        };
+      }
       return {
         shippingRow: { mode: 'loading' as const },
         estimatedOrderTotal: null as number | null,
@@ -403,6 +431,10 @@ export function Cart() {
   };
 
   const handleIncrease = (line: CartLineView) => {
+    if (line.qty >= 99) {
+      setStatusMessage(locale === 'ar' ? 'الحد الأقصى ٩٩ لكل مقاس.' : 'Maximum quantity is 99 per size.');
+      return;
+    }
     setLineQty(line.productSlug, line.size, line.qty + 1);
     setStatusMessage(formatMessage(copy.quantityUpdated, line.productName));
   };
@@ -559,6 +591,7 @@ export function Cart() {
                 key={line.key}
                 line={line}
                 eager={index === 0}
+                lineQtySaving={lineQtySaving}
                 onDecrease={handleDecrease}
                 onIncrease={handleIncrease}
                 onRemove={handleRemove}

@@ -6,11 +6,13 @@ import {
 } from "@medusajs/medusa/core-flows"
 
 import { coerceMoneyAmount } from "./egp-amount"
+import { isPaymentCaptured } from "./horo-ops-classify"
 import { ORDER_OPS_ACTION_GRAPH_FIELDS } from "./horo-ops-order-query-fields"
 
 export type HoroOpsOrderActionKind = "capture_payment" | "create_fulfillment" | "mark_fulfillment_delivered"
 
-const CAPTURE_ELIGIBLE = new Set(["authorized", "pending", "requires_capture"])
+/** Medusa v2 payment rows often use `awaiting` before capture; keep in sync with horo-ops order detail UI. */
+const CAPTURE_ELIGIBLE = new Set(["authorized", "pending", "requires_capture", "awaiting"])
 
 type GraphQuery = { graph: (a: Record<string, unknown>) => Promise<{ data?: unknown[] }> }
 
@@ -37,7 +39,57 @@ export function findCapturablePaymentId(order: Record<string, unknown>): string 
   for (const p of flattenPayments(order)) {
     if (CAPTURE_ELIGIBLE.has(p.status)) return p.id
   }
+  if (orderUsesInstapayPayment(order) && !isPaymentCaptured(typeof order.payment_status === "string" ? order.payment_status : null)) {
+    const cols = order.payment_collections
+    if (Array.isArray(cols)) {
+      for (const c of cols) {
+        if (!c || typeof c !== "object") continue
+        const payments = (c as Record<string, unknown>).payments
+        if (!Array.isArray(payments)) continue
+        for (const raw of payments) {
+          if (!raw || typeof raw !== "object") continue
+          const rec = raw as Record<string, unknown>
+          const pid = typeof rec.provider_id === "string" ? rec.provider_id.toLowerCase() : ""
+          if (!pid.includes("instapay")) continue
+          const id = typeof rec.id === "string" ? rec.id : ""
+          const st = typeof rec.status === "string" ? rec.status.toLowerCase() : ""
+          if (!id) continue
+          if (st === "captured" || st === "partially_captured") continue
+          if (st === "canceled" || st === "cancelled") continue
+          return id
+        }
+      }
+    }
+  }
   return null
+}
+
+/** True when checkout used the custom Instapay provider (deferred bank / wallet rails). */
+export function orderUsesInstapayPayment(order: Record<string, unknown>): boolean {
+  const cols = order.payment_collections
+  if (!Array.isArray(cols)) return false
+  for (const c of cols) {
+    if (!c || typeof c !== "object") continue
+    const rec = c as Record<string, unknown>
+    const sessions = rec.payment_sessions
+    if (Array.isArray(sessions)) {
+      for (const s of sessions) {
+        if (!s || typeof s !== "object") continue
+        const pid = (s as Record<string, unknown>).provider_id
+        if (typeof pid === "string" && pid.toLowerCase().includes("instapay")) return true
+      }
+    }
+    const payments = rec.payments
+    if (Array.isArray(payments)) {
+      for (const p of payments) {
+        if (!p || typeof p !== "object") continue
+        const pr = p as Record<string, unknown>
+        const pid = pr.provider_id
+        if (typeof pid === "string" && pid.toLowerCase().includes("instapay")) return true
+      }
+    }
+  }
+  return false
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -170,6 +222,12 @@ export async function executeHoroOpsOrderAction(args: {
       break
     }
     case "create_fulfillment": {
+      if (orderUsesInstapayPayment(row) && !isPaymentCaptured(typeof row.payment_status === "string" ? row.payment_status : null)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          "Instapay: capture payment in Medusa after the transfer is confirmed, then create fulfillment.",
+        )
+      }
       const items = orderLineItemsForFulfillment(row)
       if (items.length === 0) {
         throw new MedusaError(MedusaError.Types.INVALID_DATA, "No line items to fulfill")

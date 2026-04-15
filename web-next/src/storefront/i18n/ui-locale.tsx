@@ -107,7 +107,7 @@ const UI_COPY = {
       payPayPalTitle: 'PayPal',
       payPayPalBody: 'Pay with your PayPal balance or linked card — redirect or link sent after you place the order (demo flow).',
       paymentExtraSecureLine:
-        'You can choose COD or Paymob card payment. Final order creation only happens after the live payment step is ready.',
+        'You can choose COD, Instapay (bank transfer via phone, IBAN, or wallet), or Paymob card. Card orders finish only after the Paymob step; COD and Instapay confirm the order when you place it, then you pay out of band for Instapay.',
       expressHeading: 'Quick checkout',
       expressSub:
         'Demo: tap Apple Pay, Google Pay, or PayPal — then complete your details below. No charge until you confirm the order.',
@@ -123,6 +123,23 @@ const UI_COPY = {
       paymobPendingBody:
         'We could not confirm your card yet. Retry the check below, or return to Paymob if you have not finished paying.',
       paymobRetryCheck: 'Retry verification',
+      paymobStillConfirmingTitle: 'Still confirming with Paymob…',
+      paymobStillConfirmingBody: 'This can take a little longer while your bank finishes. Please keep this page open.',
+      preparingPaymentRedirect: 'Connecting to secure payment…',
+      governorateMustMatchList:
+        'Pick an Egyptian governorate from the list so we can ship your order. Google suggestions do not always match our shipping zones.',
+      whatsappOptInHint:
+        'We send delivery updates on WhatsApp — untick if you prefer we only use phone or email.',
+      useCodInstead: 'Switch to cash on delivery',
+      paymentOptionsLoadingNote:
+        'Payment options load automatically for Egypt. Save your shipping details to attach delivery and confirm totals.',
+      instapayPayoutDetailsToggleShow: 'Show transfer details',
+      instapayPayoutDetailsToggleHide: 'Hide transfer details',
+      instapayPayoutInlineHeading: 'Instapay transfer details',
+      shippingDisplayFallbackNote:
+        'Estimate only; the exact shipping line confirms once your address is saved in Medusa.',
+      paymentErrorCodRecoveryHint:
+        'If online payment keeps failing, use “Switch to cash on delivery” below (when available) and submit again.',
     },
     confirmation: {
       breadcrumbTitle: 'Order confirmed',
@@ -150,6 +167,9 @@ const UI_COPY = {
       taxTotalLabel: 'Tax',
       orderTotalLabel: 'Total',
       adjustmentLabel: 'Order adjustments',
+      instapayPayoutHeading: 'Complete your Instapay transfer',
+      instapayPayoutIntro:
+        'Pay the order total using Instapay or your bank app (phone number, IBAN, or wallet). If your bank allows a memo, include your order reference below.',
       cartClearedReceiptNote: 'Your bag was cleared — this page is your receipt.',
       referenceIdLabel: 'System reference',
       timelineHeading: "What's next",
@@ -266,7 +286,7 @@ const UI_COPY = {
       payPayPalTitle: 'باي بال',
       payPayPalBody: 'الدفع عبر باي بال أو البطاقة المرتبطة — يُرسل رابط أو توجيه بعد تأكيد الطلب (واجهة تجريبية).',
       paymentExtraSecureLine:
-        'يمكنك اختيار الدفع عند الاستلام أو البطاقة عبر Paymob. لا يتم إنشاء الطلب إلا بعد جاهزية خطوة الدفع الحية.',
+        'يمكنك اختيار الدفع عند الاستلام، أو إنستاباي (تحويل عبر الهاتف أو الآيبان أو المحفظة)، أو البطاقة عبر Paymob. طلبات البطاقة تُكمل بعد خطوة Paymob؛ أما الدفع عند الاستلام وإنستاباي فيُسجّل الطلب عند التأكيد ثم تدفع إنستاباي خارج الموقع.',
       expressHeading: 'دفع سريع',
       expressSub:
         'تجريبي: اختر Apple Pay أو Google Pay أو PayPal — ثم أكمل بياناتك أدناه. لا يتم الخصم قبل تأكيد الطلب.',
@@ -282,6 +302,23 @@ const UI_COPY = {
       paymobPendingBody:
         'لم نتمكن من تأكيد البطاقة بعد. جرّب إعادة التحقق أدناه، أو أكمل الدفع في Paymob إذا لم تنتهِ بعد.',
       paymobRetryCheck: 'إعادة التحقق',
+      paymobStillConfirmingTitle: 'ما زلنا نؤكد مع Paymob…',
+      paymobStillConfirmingBody: 'قد يستغرق ذلك قليلاً حتى ينتهي البنك. يرجى إبقاء الصفحة مفتوحة.',
+      preparingPaymentRedirect: 'جاري الاتصال بالدفع الآمن…',
+      governorateMustMatchList:
+        'اختر محافظة مصر من القائمة الرسمية حتى نتمكن من الشحن. اقتراحات Google لا تطابق دائماً مناطق الشحن لدينا.',
+      whatsappOptInHint:
+        'نرسل تحديثات التوصيل عبر واتساب — أزل التحديد إذا كنت تفضل الاعتماد على الهاتف أو البريد فقط.',
+      useCodInstead: 'التبديل إلى الدفع عند الاستلام',
+      paymentOptionsLoadingNote:
+        'تُحمّل طرق الدفع تلقائياً لمصر. احفظ بيانات الشحن لربط التوصيل وتأكيد الإجمالي.',
+      instapayPayoutDetailsToggleShow: 'عرض تفاصيل التحويل',
+      instapayPayoutDetailsToggleHide: 'إخفاء تفاصيل التحويل',
+      instapayPayoutInlineHeading: 'تفاصيل تحويل إنستاباي',
+      shippingDisplayFallbackNote:
+        'تقدير فقط؛ يُثبَّت سطر الشحن النهائي بعد حفظ العنوان في Medusa.',
+      paymentErrorCodRecoveryHint:
+        'إذا استمر فشل الدفع الإلكتروني، استخدم «التبديل إلى الدفع عند الاستلام» أدناه (إن وُجد) ثم أعد الإرسال.',
     },
     confirmation: {
       breadcrumbTitle: 'تم تأكيد الطلب',
@@ -309,6 +346,9 @@ const UI_COPY = {
       taxTotalLabel: 'الضريبة',
       orderTotalLabel: 'الإجمالي',
       adjustmentLabel: 'تعديلات على الطلب',
+      instapayPayoutHeading: 'أكمل التحويل عبر إنستاباي',
+      instapayPayoutIntro:
+        'ادفع إجمالي الطلب عبر إنستاباي أو تطبيق البنك (هاتف مسجّل، أو آيبان، أو محفظة). إذا سمح البنك بملاحظة للمستفيد، اذكر رقم الطلب أدناه.',
       cartClearedReceiptNote: 'تم إفراغ السلة — هذه الصفحة هي إيصالك.',
       referenceIdLabel: 'مرجع النظام',
       timelineHeading: 'ماذا بعد؟',

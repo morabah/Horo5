@@ -59,6 +59,8 @@ type CartContextValue = {
   miniCartOpen: boolean;
   setMiniCartOpen: (open: boolean) => void;
   lastAddedItem: LastAddedItem | null;
+  /** True while debounced quantity updates are flushing to Medusa. */
+  lineQtySaving: boolean;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -145,6 +147,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [storageReady, setStorageReady] = useState(false);
   const [miniCartOpen, setMiniCartOpen] = useState(false);
   const [lastAddedItem, setLastAddedItem] = useState<LastAddedItem | null>(null);
+  const [lineQtySaving, setLineQtySaving] = useState(false);
   const giftWrapOfferPromiseRef = useRef<Promise<GiftWrapOffer> | null>(null);
   /** Monotonic counter incremented on clearCart to invalidate in-flight syncs. */
   const cartGenerationRef = useRef(0);
@@ -191,28 +194,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [applyCartFromResponse]);
 
   const flushPendingQtyUpdatesInternal = useCallback(async () => {
-    const pending = new Map(pendingQtyByKeyRef.current);
-    pendingQtyByKeyRef.current.clear();
-    if (pending.size === 0) return;
-    const cartId = medusaCartIdRef.current;
-    if (!cartId) return;
-    const gen = cartGenerationRef.current;
-    let lastCart: MedusaCart | null = null;
-    let hadError = false;
-    for (const { lineId, qty } of pending.values()) {
-      try {
-        const { cart } = await updateLineItem(cartId, lineId, qty);
-        lastCart = cart;
-      } catch {
-        hadError = true;
+    try {
+      for (;;) {
+        const pending = new Map(pendingQtyByKeyRef.current);
+        pendingQtyByKeyRef.current.clear();
+        if (pending.size === 0) break;
+
+        const cartId = medusaCartIdRef.current;
+        if (!cartId) break;
+
+        const gen = cartGenerationRef.current;
+        const byLineId = new Map<string, number>();
+        for (const { lineId, qty } of pending.values()) {
+          byLineId.set(lineId, qty);
+        }
+
+        let hadError = false;
+        await Promise.all(
+          [...byLineId.entries()].map(async ([lineId, qty]) => {
+            try {
+              await updateLineItem(cartId, lineId, qty);
+            } catch {
+              hadError = true;
+            }
+          }),
+        );
+
+        if (hadError) {
+          await syncFromMedusaCart(cartId);
+          break;
+        }
+
+        try {
+          const { cart } = await getCart(cartId);
+          if (cartGenerationRef.current === gen) {
+            applyCartFromResponse(cart, gen);
+          }
+        } catch {
+          await syncFromMedusaCart(cartId);
+        }
+
+        if (pendingQtyByKeyRef.current.size === 0) break;
       }
-    }
-    if (hadError) {
-      await syncFromMedusaCart(cartId);
-      return;
-    }
-    if (lastCart && cartGenerationRef.current === gen) {
-      applyCartFromResponse(lastCart, gen);
+    } finally {
+      setLineQtySaving(pendingQtyByKeyRef.current.size > 0 || qtyFlushTimerRef.current !== null);
     }
   }, [applyCartFromResponse, syncFromMedusaCart]);
 
@@ -222,6 +247,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (qtyFlushTimerRef.current !== null) {
       window.clearTimeout(qtyFlushTimerRef.current);
     }
+    setLineQtySaving(true);
     qtyFlushTimerRef.current = window.setTimeout(() => {
       qtyFlushTimerRef.current = null;
       void flushPendingQtyUpdatesInternalRef.current();
@@ -458,7 +484,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         if (typeof offer.priceEgp === 'number' && offer.priceEgp > 0) {
           setGiftWrapCatalogPriceEgp(offer.priceEgp);
-          setGiftWrapEgpState(offer.priceEgp);
         }
 
         const { cart: added } = await addLineItem(cartId, offer.variantId, 1);
@@ -510,6 +535,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
     setGiftWrapEgpState(0);
     setMedusaCartId(null);
+    setLineQtySaving(false);
     // Synchronously wipe localStorage so the stale cart ID can never be
     // re-loaded on a subsequent page mount (React effects are async).
     persistItems([]);
@@ -552,6 +578,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       miniCartOpen,
       setMiniCartOpen,
       lastAddedItem,
+      lineQtySaving,
     }),
     [
       medusaCartId,
@@ -570,6 +597,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeGiftWrap,
       miniCartOpen,
       lastAddedItem,
+      lineQtySaving,
     ],
   );
 

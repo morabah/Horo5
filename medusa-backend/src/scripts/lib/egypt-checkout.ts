@@ -16,6 +16,7 @@ export function isPaymobConfigured() {
 export function getEgyptRegionPaymentProviders() {
   return [
     "pp_system_default",
+    "pp_instapay_instapay",
     ...(isPaymobConfigured() ? ["pp_paymob_paymob"] : []),
   ]
 }

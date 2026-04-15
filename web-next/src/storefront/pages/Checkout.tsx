@@ -43,11 +43,21 @@ import {
   toCartLines,
   toOrderLines,
 } from '../lib/medusa/adapters';
-import { merchandiseSubtotalFromCartLines, resolveCheckoutShippingEgp } from '../lib/medusa/cart-money';
+import {
+  merchandiseSubtotalFromCartLines,
+  resolveCheckoutShippingEgpWithDisplayFallback,
+} from '../lib/medusa/cart-money';
 import { medusaAmountToEgp } from '../lib/medusa/egp-amount';
 import { resolveOrderSnapshotSubtotalEgp } from '../lib/medusa/order-display';
+import {
+  checkoutPaymentProviderSortKey,
+  checkoutProvidersIncludeCod,
+  isOfflineCheckoutPaymentKind,
+  resolveCheckoutPaymentMethodKind,
+  type CheckoutPaymentMethodKind,
+  type StorefrontPaymentChoice,
+} from '../lib/checkout-payment';
 import type {
-  CheckoutStatusResponse,
   MedusaCart,
   MedusaOrder,
   MedusaPaymentProvider,
@@ -58,31 +68,20 @@ import type {
 import { useStableNow } from '../runtime/render-time';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { formatEgp } from '../utils/formatPrice';
+import { addCheckoutCartLinesInParallelBatches } from '../lib/checkout-cart-rebuild';
+import { getInstapayPublicPayoutLines } from '../lib/instapay-public';
+import { pollPaymobCheckoutStatus } from '../lib/paymob-checkout-status';
 
 const CHECKOUT_FIELD_ORDER = ['phone', 'name', 'line1', 'city', 'email'] as const;
 
-/** Extra status polls when Paymob still reports `pending` (webhook / capture lag). */
-async function pollPaymobCheckoutStatus(
-  cartId: string,
-  initial: CheckoutStatusResponse | null,
-): Promise<CheckoutStatusResponse | null> {
-  let s = initial;
-  for (let attempt = 0; attempt < 3 && s?.status === 'pending'; attempt += 1) {
-    await new Promise((r) => setTimeout(r, 450 + attempt * 250));
-    s = await getCheckoutStatus(cartId).catch(() => null);
-  }
-  return s;
-}
-
 type FieldErrors = Record<string, string>;
-type PaymentChoice = 'cod' | 'card';
+type PaymentChoice = StorefrontPaymentChoice;
 
 function omitFieldError(errors: FieldErrors, key: keyof FieldErrors): FieldErrors {
   const next = { ...errors };
   delete next[key];
   return next;
 }
-type CheckoutPaymentMethodKind = PaymentChoice | 'wallet';
 type CheckoutPaymentMethod = {
   id: string;
   kind: CheckoutPaymentMethodKind;
@@ -209,13 +208,6 @@ function splitFullName(fullName: string) {
   };
 }
 
-function resolveCheckoutPaymentMethodKind(providerId: string): CheckoutPaymentMethodKind {
-  const normalized = providerId.toLowerCase();
-  if (normalized.includes('system_default')) return 'cod';
-  if (normalized.includes('apple') || normalized.includes('google')) return 'wallet';
-  return 'card';
-}
-
 function humanizePaymentProviderId(providerId: string) {
   return providerId
     .replace(/^pp_/, '')
@@ -225,20 +217,6 @@ function humanizePaymentProviderId(providerId: string) {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
-}
-
-/** Wallets first, then Paymob card, then other providers, COD last — Medusa ids only; labels unchanged below. */
-function checkoutPaymentProviderSortKey(providerId: string): number {
-  const id = providerId.toLowerCase();
-  const kind = resolveCheckoutPaymentMethodKind(providerId);
-  if (kind === 'wallet') {
-    if (id.includes('apple')) return 0;
-    if (id.includes('google')) return 1;
-    return 2;
-  }
-  if (kind === 'cod') return 100;
-  if (id.includes('paymob')) return 10;
-  return 20;
 }
 
 function buildCheckoutPaymentMethods(
@@ -256,6 +234,17 @@ function buildCheckoutPaymentMethods(
 
   return dedupedProviders.map((provider) => {
     const kind = resolveCheckoutPaymentMethodKind(provider.id);
+
+    if (kind === 'instapay') {
+      return {
+        id: provider.id,
+        kind,
+        label: isArabic ? 'إنستاباي (تحويل بنكي · هاتف · محفظة)' : 'Instapay (bank · phone · wallet)',
+        description: isArabic
+          ? 'بعد تأكيد الطلب، حوّل المبلغ عبر إنستاباي أو التطبيق البنكي باستخدام رقم الطلب في الملاحظات إن أمكن.'
+          : 'After you place the order, pay via Instapay or your bank app (phone, IBAN, or wallet). Use your order reference in the transfer notes if your bank allows it.',
+      };
+    }
 
     if (kind === 'cod') {
       return {
@@ -320,6 +309,11 @@ function resolveCartLineVariantId(line: CartLine) {
 
 function getDefaultCheckoutPaymentMethod(methods: CheckoutPaymentMethod[]) {
   return methods.find((method) => method.kind === 'cod') || methods[0] || null;
+}
+
+function appendCodRecoveryHint(message: string, providers: MedusaPaymentProvider[], hint: string) {
+  if (!checkoutProvidersIncludeCod(providers)) return message;
+  return `${message}\n\n${hint}`;
 }
 
 function getSelectedPaymentSession(cart: MedusaCart | null, providerId?: string | null) {
@@ -441,9 +435,12 @@ function buildOrderSnapshot(args: {
         ? medusaAmountToEgp(Math.abs(Number(rawDisc)))
         : undefined;
   const giftWrapEgp = getOrderGiftWrapEgp(order);
-  const paymentLabel = paymentMethod === 'card'
-    ? isArabic ? 'بطاقة' : 'Card'
-    : isArabic ? 'الدفع عند الاستلام' : 'COD';
+  const paymentLabel =
+    paymentMethod === 'card'
+      ? isArabic ? 'بطاقة' : 'Card'
+      : paymentMethod === 'instapay'
+        ? isArabic ? 'إنستاباي (تحويل بنكي · هاتف · محفظة)' : 'Instapay (bank · phone · wallet)'
+        : isArabic ? 'الدفع عند الاستلام' : 'COD';
   const finalShippingLabel = shippingLabel || order.shipping_methods?.[0]?.name || (isArabic ? 'عادي' : 'Standard');
 
   return {
@@ -485,6 +482,8 @@ export function Checkout() {
   const [checkoutCart, setCheckoutCart] = useState<MedusaCart | null>(null);
   const [cartId, setCartId] = useState<string | null>(null);
   const [paymentProviders, setPaymentProviders] = useState<MedusaPaymentProvider[]>([]);
+  const paymentProvidersRef = useRef<MedusaPaymentProvider[]>([]);
+  paymentProvidersRef.current = paymentProviders;
   const [shippingOption, setShippingOption] = useState<MedusaShippingOption | null>(null);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [savingInfo, setSavingInfo] = useState(false);
@@ -501,6 +500,7 @@ export function Checkout() {
     ((activeCartId: string, choice: PaymentChoice) => Promise<void>) | null
   >(null);
   const addressInputRef = useRef<HTMLInputElement | null>(null);
+  const governorateSelectRef = useRef<HTMLSelectElement | null>(null);
 
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -515,7 +515,11 @@ export function Checkout() {
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [placesReady, setPlacesReady] = useState(false);
   const [addressPlaceId, setAddressPlaceId] = useState<string | null>(null);
-  const [rememberAddressOnDevice, setRememberAddressOnDevice] = useState(false);
+  const [rememberAddressOnDevice, setRememberAddressOnDevice] = useState(true);
+  const [preparingPayment, setPreparingPayment] = useState(false);
+  const [paymentStepComplete, setPaymentStepComplete] = useState(false);
+  const [paymobLongWait, setPaymobLongWait] = useState(false);
+  const [instapayPayoutOpen, setInstapayPayoutOpen] = useState(true);
 
   const hydrateCheckoutFromCart = useCallback((cart: MedusaCart) => {
     const composedName = [cart.shipping_address?.first_name, cart.shipping_address?.last_name]
@@ -576,15 +580,23 @@ export function Checkout() {
     }
 
     const created = await createCart();
-    let activeCart = created.cart;
-    let addedLineCount = 0;
-
-    for (const line of items) {
-      const variantId = resolveCartLineVariantId(line);
-      if (!variantId) continue;
-      const response = await addLineItem(activeCart.id, variantId, line.qty);
-      activeCart = response.cart;
-      addedLineCount += 1;
+    let activeCart: MedusaCart;
+    let addedLineCount: number;
+    try {
+      const rebuilt = await addCheckoutCartLinesInParallelBatches(
+        created.cart.id,
+        items,
+        resolveCartLineVariantId,
+        addLineItem,
+      );
+      activeCart = rebuilt.cart;
+      addedLineCount = rebuilt.addedLineCount;
+    } catch {
+      throw new Error(
+        isArabic
+          ? 'تعذر ربط عناصر السلة بمتغيرات Medusa الحالية.'
+          : 'The current bag items could not be matched to live Medusa variants.',
+      );
     }
 
     if (addedLineCount === 0) {
@@ -622,10 +634,10 @@ export function Checkout() {
     }
   }
 
-  const shippingCost = useMemo(
-    () => resolveCheckoutShippingEgp(checkoutCart ?? undefined, shippingOption),
-    [checkoutCart, shippingOption],
-  );
+  const { shippingCost, shippingUsedDisplayFallback } = useMemo(() => {
+    const r = resolveCheckoutShippingEgpWithDisplayFallback(checkoutCart ?? undefined, shippingOption);
+    return { shippingCost: r.egp, shippingUsedDisplayFallback: r.usedDisplayFallback };
+  }, [checkoutCart, shippingOption]);
 
   const merchandiseSubtotalEgp = useMemo(
     () => merchandiseSubtotalFromCartLines(checkoutCart ? toCartLines(checkoutCart) : items),
@@ -696,6 +708,7 @@ export function Checkout() {
         ]);
 
         if (!cancelled && status?.status === 'completed' && status.order_id) {
+          setPaymentStepComplete(true);
           setStoredCartId(null);
           clearCart();
           setCartId(null);
@@ -754,12 +767,16 @@ export function Checkout() {
           let paymobStatus = status;
           if (paymobStatus?.status === 'pending') {
             setPaymentVerifying(true);
-            paymobStatus = await pollPaymobCheckoutStatus(activeCartId, paymobStatus);
+            paymobStatus = await pollPaymobCheckoutStatus(activeCartId, paymobStatus, {
+              getCheckoutStatus: (id) => getCheckoutStatus(id).catch(() => null),
+              sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+            });
           }
 
           if (cancelled) return;
 
           if (paymobStatus?.status === 'completed' && paymobStatus.order_id) {
+            setPaymentStepComplete(true);
             setStoredCartId(null);
             clearCart();
             setCartId(null);
@@ -816,13 +833,28 @@ export function Checkout() {
   const checkoutPaymentTrustLine = useMemo(() => {
     if (paymentMethods.length === 0) return null;
     const hasCod = paymentMethods.some((m) => m.kind === 'cod');
+    const hasInstapay = paymentMethods.some((m) => m.kind === 'instapay');
     const hasOnline = paymentMethods.some((m) => m.kind === 'card' || m.kind === 'wallet');
+    if (hasCod && hasInstapay && hasOnline) {
+      return isArabic
+        ? 'الدفع عند الاستلام وإنستاباي وبطاقة / محفظة متاحة'
+        : 'COD, Instapay (bank transfer), and card / wallet available';
+    }
+    if (hasCod && hasInstapay) {
+      return isArabic ? 'الدفع عند الاستلام وإنستاباي متاحان' : 'COD and Instapay (bank · phone · wallet) available';
+    }
     if (hasCod && hasOnline) {
       return isArabic
         ? 'الدفع عند الاستلام وخيارات بطاقة / محفظة متاحة'
         : 'COD plus card / wallet options available';
     }
+    if (hasInstapay && hasOnline) {
+      return isArabic
+        ? 'إنستاباي وبطاقة / محفظة متاحة'
+        : 'Instapay and card / wallet options available';
+    }
     if (hasCod) return isArabic ? 'الدفع عند الاستلام' : 'Cash on delivery (COD)';
+    if (hasInstapay) return isArabic ? 'إنستاباي (تحويل بنكي)' : 'Instapay (bank transfer)';
     if (hasOnline) return isArabic ? 'دفع إلكتروني عبر المزود المفعّل' : 'Online payment via enabled provider';
     return null;
   }, [paymentMethods, isArabic]);
@@ -844,12 +876,68 @@ export function Checkout() {
     [selectedPaymentSession],
   );
 
+  const instapayPayoutLines = useMemo(() => getInstapayPublicPayoutLines(), []);
+  const codMethodForFallback = useMemo(
+    () => paymentMethods.find((method) => method.kind === 'cod') ?? null,
+    [paymentMethods],
+  );
+
   useEffect(() => {
     if (selectedPaymentMethodId && paymentMethods.some((method) => method.id === selectedPaymentMethodId)) {
       return;
     }
     setSelectedPaymentMethodId(getDefaultCheckoutPaymentMethod(paymentMethods)?.id || null);
   }, [paymentMethods, selectedPaymentMethodId]);
+
+  useEffect(() => {
+    setPaymentStepComplete(false);
+  }, [cartId]);
+
+  useEffect(() => {
+    if (!paymentVerifying) {
+      setPaymobLongWait(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setPaymobLongWait(true), 3000);
+    return () => window.clearTimeout(timer);
+  }, [paymentVerifying]);
+
+  useEffect(() => {
+    const regionId = checkoutCart?.region_id;
+    if (!regionId || !mounted) return;
+    let cancelled = false;
+    const cached = getFreshPaymentProviders(regionId, CHECKOUT_AUX_CACHE_MAX_AGE_MS);
+    if (cached?.length) {
+      setPaymentProviders((prev) => (prev.length > 0 ? prev : cached));
+    }
+    void listPaymentProviders(regionId)
+      .then((response) => normalizePaymentProviders(response.payment_providers))
+      .then((live) => {
+        if (cancelled) return;
+        setPaymentProviders(live);
+        if (live.length > 0) {
+          setPaymentProvidersCache(regionId, live);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [checkoutCart?.region_id, mounted]);
+
+  const prefetchPaymentProvidersOnBlur = useCallback(() => {
+    const regionId = checkoutCart?.region_id;
+    if (!regionId) return;
+    void listPaymentProviders(regionId)
+      .then((response) => normalizePaymentProviders(response.payment_providers))
+      .then((live) => {
+        setPaymentProviders(live);
+        if (live.length > 0) {
+          setPaymentProvidersCache(regionId, live);
+        }
+      })
+      .catch(() => {});
+  }, [checkoutCart?.region_id]);
 
   useEffect(() => {
     if (!googleMapsApiKey || !addressInputRef.current) return;
@@ -1061,6 +1149,7 @@ export function Checkout() {
           currency: 'EGP',
           lines: snapshot.lines,
         });
+        setPaymentStepComplete(true);
         setStoredCartId(null);
         clearCart();
         setCartId(null);
@@ -1074,13 +1163,25 @@ export function Checkout() {
 
       const refreshedSession = getSelectedPaymentSession(refreshedCart, selectedPaymentMethod?.id);
       if (refreshedSession?.status === 'error' || refreshedSession?.status === 'canceled') {
-        setPaymentError(isArabic ? 'تعذر تأكيد الدفع. جرّب مرة أخرى أو اختر الدفع عند الاستلام.' : 'Payment could not be confirmed. Try again or switch to cash on delivery.');
-      } else {
         setPaymentError(
-          choice === 'card'
-            ? isArabic ? 'دفع البطاقة ما زال يحتاج خطوة إضافية في Paymob قبل إنشاء الطلب.' : 'Card payment still needs one more Paymob step before the order can be created.'
-            : isArabic ? 'تعذر إكمال السلة الآن. جرّب مرة أخرى بعد لحظات.' : 'The cart could not be completed yet. Try again in a moment.'
+          appendCodRecoveryHint(
+            isArabic
+              ? 'تعذر تأكيد الدفع. جرّب مرة أخرى أو اختر الدفع عند الاستلام.'
+              : 'Payment could not be confirmed. Try again or switch to cash on delivery.',
+            paymentProvidersRef.current,
+            copy.checkout.paymentErrorCodRecoveryHint,
+          ),
         );
+      } else {
+        const base =
+          choice === 'card'
+            ? isArabic
+              ? 'دفع البطاقة ما زال يحتاج خطوة إضافية في Paymob قبل إنشاء الطلب.'
+              : 'Card payment still needs one more Paymob step before the order can be created.'
+            : isArabic
+              ? 'تعذر إكمال السلة الآن. جرّب مرة أخرى بعد لحظات.'
+              : 'The cart could not be completed yet. Try again in a moment.';
+        setPaymentError(appendCodRecoveryHint(base, paymentProvidersRef.current, copy.checkout.paymentErrorCodRecoveryHint));
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : '';
@@ -1088,6 +1189,7 @@ export function Checkout() {
         const st = await getCheckoutStatus(activeCartId).catch(() => null);
         if (st?.status === 'completed' && st.order_id) {
           completionIdempotencyKeyRef.current = null;
+          setPaymentStepComplete(true);
           setStoredCartId(null);
           clearCart();
           setCartId(null);
@@ -1097,10 +1199,16 @@ export function Checkout() {
           return;
         }
       }
-      setPaymentError(getReadableCheckoutError(error, isArabic, {
-        ar: 'حدث خطأ أثناء إكمال الطلب.',
-        en: 'An error occurred while completing the order.',
-      }));
+      setPaymentError(
+        appendCodRecoveryHint(
+          getReadableCheckoutError(error, isArabic, {
+            ar: 'حدث خطأ أثناء إكمال الطلب.',
+            en: 'An error occurred while completing the order.',
+          }),
+          paymentProvidersRef.current,
+          copy.checkout.paymentErrorCodRecoveryHint,
+        ),
+      );
     } finally {
       setPlacingOrder(false);
       completionLockRef.current = null;
@@ -1116,9 +1224,13 @@ export function Checkout() {
     setPaymentVerifying(true);
     try {
       const initial = await getCheckoutStatus(cartId).catch(() => null);
-      const resolved = await pollPaymobCheckoutStatus(cartId, initial);
+      const resolved = await pollPaymobCheckoutStatus(cartId, initial, {
+        getCheckoutStatus: (id) => getCheckoutStatus(id).catch(() => null),
+        sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+      });
 
       if (resolved?.status === 'completed' && resolved.order_id) {
+        setPaymentStepComplete(true);
         setStoredCartId(null);
         clearCart();
         setCartId(null);
@@ -1246,18 +1358,32 @@ export function Checkout() {
 
   async function handleSubmitCheckout(e: FormEvent) {
     e.preventDefault();
+    if (savingInfo || placingOrder || preparingPayment) {
+      return;
+    }
     const fieldErrors = validateCheckoutFields({ email, phone, name: fullName, line1, city }, isArabic);
-    setErrors(fieldErrors);
+    const governorateOk = !city.trim() || EGYPT_GOVERNORATE_LIST.includes(city.trim());
+    const mergedErrors: FieldErrors = governorateOk
+      ? fieldErrors
+      : {
+          ...fieldErrors,
+          city: copy.checkout.governorateMustMatchList,
+        };
+    setErrors(mergedErrors);
     setCheckoutError(null);
     setShippingError(null);
     setPaymentError(null);
 
-    if (Object.keys(fieldErrors).length > 0) {
-      const firstInvalidField = CHECKOUT_FIELD_ORDER.find((field) => fieldErrors[field]);
-      if (firstInvalidField) {
-        requestAnimationFrame(() => {
-          document.getElementById(firstInvalidField)?.focus();
-        });
+    if (Object.keys(mergedErrors).length > 0) {
+      if (!governorateOk) {
+        requestAnimationFrame(() => governorateSelectRef.current?.focus());
+      } else {
+        const firstInvalidField = CHECKOUT_FIELD_ORDER.find((field) => mergedErrors[field]);
+        if (firstInvalidField) {
+          requestAnimationFrame(() => {
+            document.getElementById(firstInvalidField)?.focus();
+          });
+        }
       }
       return;
     }
@@ -1297,14 +1423,15 @@ export function Checkout() {
     if (!paymentMethodToUse) {
       setPaymentError(
         isArabic
-          ? 'احفظ عنوان الشحن أولاً لتحميل طرق الدفع. إذا بقيت فارغة بعد ذلك، فمزود الدفع غير مفعّل لهذه المنطقة في Medusa.'
-          : 'Save the shipping address first to load payment methods. If it still stays empty, Medusa has no enabled payment provider for this region.',
+          ? 'لم تُحمّل طرق الدفع بعد. انتظر لحظة ثم أعد المحاولة، أو تأكد من تفعيل مزود دفع لمنطقة السلة في Medusa.'
+          : 'Payment methods are not loaded yet. Wait a moment and try again, or confirm Medusa has an enabled payment provider for this cart region.',
       );
       return;
     }
 
+    setPreparingPayment(true);
     try {
-      if (paymentMethodToUse.kind !== 'cod') {
+      if (!isOfflineCheckoutPaymentKind(paymentMethodToUse.kind)) {
         const { session } = await preparePaymentSession(paymentMethodToUse, activeCheckoutCart, activeCartId);
         const redirectUrl = getPaymentSessionRedirectUrl(session || null);
         if (!redirectUrl) {
@@ -1314,17 +1441,22 @@ export function Checkout() {
               : 'The selected payment provider did not return a redirect URL yet.',
           );
         }
+        setPaymentStepComplete(true);
         window.location.assign(redirectUrl);
         return;
       }
 
       await preparePaymentSession(paymentMethodToUse, activeCheckoutCart, activeCartId);
-      await handleCartCompletion(activeCartId, 'cod');
+      const offlineChoice: PaymentChoice =
+        paymentMethodToUse.kind === 'instapay' ? 'instapay' : 'cod';
+      await handleCartCompletion(activeCartId, offlineChoice);
     } catch (error) {
       setPaymentError(getReadableCheckoutError(error, isArabic, {
         ar: 'تعذر بدء الدفع.',
         en: 'Unable to start the payment step.',
       }));
+    } finally {
+      setPreparingPayment(false);
     }
   }
 
@@ -1338,28 +1470,63 @@ export function Checkout() {
   );
 
   if (!mounted || loadingCheckout) {
+    const showBagSummaryWhileLoading = loadingCheckout && !paymentVerifying && items.length > 0;
     return (
       <div className="min-h-[60vh] bg-papyrus py-8 pb-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:py-10 md:pb-16">
-        <div className="container mx-auto max-w-3xl px-4 md:px-8">
+        <div className={`container mx-auto px-4 md:px-8 ${showBagSummaryWhileLoading ? 'max-w-5xl' : 'max-w-3xl'}`}>
           <PageBreadcrumb className="mb-6" items={checkoutBreadcrumbItems} />
-          <div className="rounded-xl border border-stone bg-white p-6 text-sm text-clay">
-            {paymentVerifying ? (
-              <div className="flex flex-col items-center gap-4 text-center">
-                <span
-                  className="inline-block h-9 w-9 shrink-0 animate-spin rounded-full border-2 border-stone border-t-deep-teal"
-                  aria-hidden
-                />
-                <div>
-                  <p className="font-medium text-obsidian">{copy.checkout.paymobVerifyingTitle}</p>
-                  <p className="mt-2 text-sm text-clay">{copy.checkout.paymobVerifyingBody}</p>
+          {showBagSummaryWhileLoading ? (
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)]">
+              <div className="rounded-xl border border-stone bg-white p-6 text-sm text-clay">
+                <p className="font-medium text-obsidian">
+                  {isArabic ? 'جارٍ تجهيز السلة للدفع…' : 'Preparing your bag for checkout…'}
+                </p>
+                <p className="mt-2 text-sm text-warm-charcoal">
+                  {isArabic
+                    ? 'نعيد مزامنة عناصرك مع الخادم. يمكنك مراجعة الملخص بجانب هذه الرسالة.'
+                    : 'We are syncing your items with the server. Your order summary stays visible on the right.'}
+                </p>
+                <div className="mt-6 space-y-3" aria-hidden>
+                  <div className="h-10 animate-pulse rounded-lg bg-stone/50" />
+                  <div className="h-10 animate-pulse rounded-lg bg-stone/40" />
+                  <div className="h-24 animate-pulse rounded-lg bg-stone/35" />
                 </div>
               </div>
-            ) : isArabic ? (
-              'جارٍ تحميل بيانات الدفع…'
-            ) : (
-              'Loading checkout…'
-            )}
-          </div>
+              <OrderSummary
+                cart={null}
+                cartId={null}
+                shipping={0}
+                shippingPending
+                className="rounded-xl border border-stone bg-papyrus/90 p-5 shadow-sm lg:sticky lg:top-28"
+                onAfterLineChange={async () => {}}
+              />
+            </div>
+          ) : (
+            <div className="rounded-xl border border-stone bg-white p-6 text-sm text-clay">
+              {paymentVerifying ? (
+                <div className="flex flex-col items-center gap-4 text-center">
+                  <span
+                    className="inline-block h-9 w-9 shrink-0 animate-spin rounded-full border-2 border-stone border-t-deep-teal"
+                    aria-hidden
+                  />
+                  <div>
+                    <p className="font-medium text-obsidian">{copy.checkout.paymobVerifyingTitle}</p>
+                    <p className="mt-2 text-sm text-clay">{copy.checkout.paymobVerifyingBody}</p>
+                    {paymobLongWait ? (
+                      <p className="mt-3 text-sm font-medium text-obsidian">{copy.checkout.paymobStillConfirmingTitle}</p>
+                    ) : null}
+                    {paymobLongWait ? (
+                      <p className="mt-1 text-sm text-clay">{copy.checkout.paymobStillConfirmingBody}</p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : isArabic ? (
+                'جارٍ تحميل بيانات الدفع…'
+              ) : (
+                'Loading checkout…'
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1413,7 +1580,15 @@ export function Checkout() {
     : `${checkoutLines.length} ${checkoutLines.length === 1 ? 'item' : 'items'}`;
   const hasSavedShipping = Boolean(checkoutCart?.shipping_methods?.length);
   const noPaymentProvidersAfterShipping = hasSavedShipping && paymentMethods.length === 0;
-  const submitDisabled = savingInfo || placingOrder || paymentVerifying || noPaymentProvidersAfterShipping;
+  const shippingSummaryPending = Boolean(
+    cartId &&
+      checkoutCart &&
+      !checkoutCart.shipping_methods?.length &&
+      shippingCost === 0 &&
+      !shippingUsedDisplayFallback,
+  );
+  const submitDisabled =
+    savingInfo || placingOrder || preparingPayment || paymentVerifying || noPaymentProvidersAfterShipping;
   return (
     <div className="checkout-wrap min-h-[60vh] bg-papyrus py-8 pb-28 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:py-10 md:pb-16 lg:pb-16">
       <div className="container mx-auto max-w-3xl px-4 md:px-8">
@@ -1447,7 +1622,7 @@ export function Checkout() {
             {[
               { label: isArabic ? 'التواصل' : 'Contact', done: Boolean(phone.trim() && fullName.trim()) },
               { label: isArabic ? 'العنوان' : 'Address', done: Boolean(line1.trim() && city.trim()) },
-              { label: isArabic ? 'الدفع' : 'Payment', done: false },
+              { label: isArabic ? 'الدفع' : 'Payment', done: paymentStepComplete },
             ].map((step, i, arr) => (
               <li key={step.label} className="flex items-center">
                 <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors ${step.done ? 'bg-deep-teal text-white' : 'border border-stone bg-white text-warm-charcoal'}`}>
@@ -1492,6 +1667,7 @@ export function Checkout() {
                       cart={checkoutCart}
                       shipping={shippingCost}
                       cartId={cartId}
+                      shippingPending={shippingSummaryPending}
                       className="rounded-2xl border border-stone/35 bg-white p-4 shadow-sm"
                       onAfterLineChange={async (cartHint) => {
                         if (!cartId) return;
@@ -1517,7 +1693,10 @@ export function Checkout() {
                     setPhone(event.target.value);
                     setErrors((prev) => omitFieldError(prev, 'phone'));
                   }}
-                  onBlur={() => validateFieldOnBlur('phone')}
+                  onBlur={() => {
+                    validateFieldOnBlur('phone');
+                    prefetchPaymentProvidersOnBlur();
+                  }}
                   className={`${inputBaseClass} ${errors.phone ? inputErrorClass : ''}`}
                 />
                 {errors.phone ? <p className={errTextClass}>{errors.phone}</p> : null}
@@ -1534,7 +1713,10 @@ export function Checkout() {
                     setEmail(event.target.value);
                     setErrors((prev) => omitFieldError(prev, 'email'));
                   }}
-                  onBlur={() => validateFieldOnBlur('email')}
+                  onBlur={() => {
+                    validateFieldOnBlur('email');
+                    prefetchPaymentProvidersOnBlur();
+                  }}
                   className={`${inputBaseClass} ${errors.email ? inputErrorClass : ''}`}
                 />
                 {errors.email ? <p className={errTextClass}>{errors.email}</p> : null}
@@ -1548,6 +1730,7 @@ export function Checkout() {
                   />
                   {copy.checkout.whatsappOptIn}
                 </label>
+                <p className="mt-2 text-xs text-clay">{copy.checkout.whatsappOptInHint}</p>
               </section>
 
               <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
@@ -1565,7 +1748,10 @@ export function Checkout() {
                     setFullName(event.target.value);
                     setErrors((prev) => omitFieldError(prev, 'name'));
                   }}
-                  onBlur={() => validateFieldOnBlur('name')}
+                  onBlur={() => {
+                    validateFieldOnBlur('name');
+                    prefetchPaymentProvidersOnBlur();
+                  }}
                   className={`${inputBaseClass} ${errors.name ? inputErrorClass : ''}`}
                 />
                 {errors.name ? <p className={errTextClass}>{errors.name}</p> : null}
@@ -1584,7 +1770,10 @@ export function Checkout() {
                     setAddressPlaceId(null);
                     setErrors((prev) => omitFieldError(prev, 'line1'));
                   }}
-                  onBlur={() => validateFieldOnBlur('line1')}
+                  onBlur={() => {
+                    validateFieldOnBlur('line1');
+                    prefetchPaymentProvidersOnBlur();
+                  }}
                   className={`${inputBaseClass} ${errors.line1 ? inputErrorClass : ''}`}
                 />
                 {errors.line1 ? <p className={errTextClass}>{errors.line1}</p> : null}
@@ -1603,6 +1792,7 @@ export function Checkout() {
                 </label>
                 <select
                   id="governorate"
+                  ref={governorateSelectRef}
                   name="governorate"
                   required
                   autoComplete="address-level1"
@@ -1659,11 +1849,20 @@ export function Checkout() {
                   <span className="font-body text-sm text-obsidian">
                     <strong>{shippingLabel}</strong>
                     <br />
-                    {shippingCost > 0
-                      ? formatEgp(shippingCost)
-                      : isArabic
-                        ? 'يتم تثبيت الشحن القياسي تلقائياً بعد حفظ العنوان.'
-                        : 'Standard shipping is attached automatically after your address is saved.'}
+                    {shippingCost > 0 ? (
+                      <>
+                        {formatEgp(shippingCost)}
+                        {shippingUsedDisplayFallback ? (
+                          <span className="mt-2 block text-xs font-normal text-clay">
+                            {copy.checkout.shippingDisplayFallbackNote}
+                          </span>
+                        ) : null}
+                      </>
+                    ) : isArabic ? (
+                      'يتم تثبيت الشحن القياسي تلقائياً بعد حفظ العنوان.'
+                    ) : (
+                      'Standard shipping is attached automatically after your address is saved.'
+                    )}
                   </span>
                 </div>
                 <p className="mt-4 font-body text-sm text-obsidian">
@@ -1678,7 +1877,6 @@ export function Checkout() {
                 <p className="font-label mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">
                   {isArabic ? 'خيارات الدفع الحية' : 'Live payment options'}
                 </p>
-
                 {paymentVerifying ? (
                   <div className="mt-4 flex gap-3 rounded-xl border border-stone bg-white p-4" role="status">
                     <span
@@ -1688,6 +1886,12 @@ export function Checkout() {
                     <div>
                       <p className="font-medium text-obsidian">{copy.checkout.paymobVerifyingTitle}</p>
                       <p className="mt-1 text-sm text-clay">{copy.checkout.paymobVerifyingBody}</p>
+                      {paymobLongWait ? (
+                        <p className="mt-3 text-sm font-medium text-obsidian">{copy.checkout.paymobStillConfirmingTitle}</p>
+                      ) : null}
+                      {paymobLongWait ? (
+                        <p className="mt-1 text-sm text-clay">{copy.checkout.paymobStillConfirmingBody}</p>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}
@@ -1707,7 +1911,10 @@ export function Checkout() {
                 ) : null}
 
                 {paymentMethods.map((method, index) => (
-                  <label key={method.id} className={`${radioCardClass(selectedPaymentMethodId === method.id)} ${index === 0 ? 'mt-4' : ''} mb-3`}>
+                  <label
+                    key={method.id}
+                    className={`${radioCardClass(selectedPaymentMethodId === method.id)} ${index === 0 ? 'mt-4' : ''} mb-3`}
+                  >
                     <input
                       type="radio"
                       name="pay"
@@ -1729,15 +1936,36 @@ export function Checkout() {
                         ? isArabic
                           ? 'لا توجد طريقة دفع مفعّلة لهذه المنطقة حالياً.'
                           : 'No payment provider is enabled for this region yet.'
-                        : isArabic
-                          ? 'أكمل بيانات الشحن أولاً ثم اضغط تأكيد الطلب لتحميل طرق الدفع المتاحة.'
-                          : 'Complete the shipping details first, then submit to load the available payment methods.'}
+                        : copy.checkout.paymentOptionsLoadingNote}
                     </p>
                     <p className="mt-2 text-xs text-clay">
                       {isArabic
                         ? 'إذا بقيت هذه المساحة فارغة بعد حفظ العنوان، فهذه مشكلة إعداد في Medusa وليست مشكلة في السلة.'
                         : 'If this section still stays empty after saving the address, that is a Medusa payment-configuration issue, not a cart issue.'}
                     </p>
+                  </div>
+                ) : null}
+
+                {selectedPaymentMethod?.kind === 'instapay' && instapayPayoutLines.length > 0 ? (
+                  <div className="mt-4 rounded-xl border border-stone bg-papyrus/60 p-4">
+                    <button
+                      type="button"
+                      className="flex w-full items-center justify-between text-left font-medium text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      aria-expanded={instapayPayoutOpen}
+                      onClick={() => setInstapayPayoutOpen((open) => !open)}
+                    >
+                      <span>{copy.checkout.instapayPayoutInlineHeading}</span>
+                      <span className="text-xs font-semibold text-deep-teal">
+                        {instapayPayoutOpen ? copy.checkout.instapayPayoutDetailsToggleHide : copy.checkout.instapayPayoutDetailsToggleShow}
+                      </span>
+                    </button>
+                    {instapayPayoutOpen ? (
+                      <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-obsidian">
+                        {instapayPayoutLines.map((line, idx) => (
+                          <li key={`${line.en}-${idx}`}>{isArabic ? line.ar : line.en}</li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 ) : null}
 
@@ -1749,24 +1977,42 @@ export function Checkout() {
                   </p>
                 ) : null}
 
-                {paymentError ? <p className="mt-4 text-sm text-ember">{paymentError}</p> : null}
+                {paymentError ? (
+                  <div className="mt-4 space-y-3">
+                    <p className="whitespace-pre-line text-sm text-ember">{paymentError}</p>
+                    {codMethodForFallback && selectedPaymentMethodId !== codMethodForFallback.id ? (
+                      <button
+                        type="button"
+                        className="btn btn-ghost min-h-12 w-full border border-stone sm:w-auto"
+                        onClick={() => {
+                          setPaymentError(null);
+                          setSelectedPaymentMethodId(codMethodForFallback.id);
+                        }}
+                      >
+                        {copy.checkout.useCodInstead}
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
               </section>
 
               <button
                 type="submit"
                 className="btn btn-primary mt-8 inline-flex min-h-12 w-full items-center justify-center disabled:pointer-events-none disabled:opacity-60"
                 disabled={submitDisabled}
-                aria-busy={savingInfo || placingOrder}
+                aria-busy={savingInfo || placingOrder || preparingPayment}
               >
                 {savingInfo
                   ? isArabic ? 'جارٍ حفظ البيانات…' : 'Saving…'
-                  : placingOrder
-                    ? copy.checkout.placingOrder
-                    : !selectedPaymentMethod && !hasSavedShipping
-                      ? isArabic ? 'المتابعة لتحميل الدفع' : 'Continue to payment'
-                    : externalPaymentSelected
-                      ? isArabic ? 'المتابعة إلى الدفع' : 'Continue to payment'
-                      : isArabic ? `أكّد الطلب — ${formatEgp(orderTotal)}` : `Place order — ${formatEgp(orderTotal)}`}
+                  : preparingPayment
+                    ? copy.checkout.preparingPaymentRedirect
+                    : placingOrder
+                      ? copy.checkout.placingOrder
+                      : !selectedPaymentMethod && !hasSavedShipping
+                        ? isArabic ? 'المتابعة لتحميل الدفع' : 'Continue to payment'
+                      : externalPaymentSelected
+                        ? isArabic ? 'المتابعة إلى الدفع' : 'Continue to payment'
+                        : isArabic ? `أكّد الطلب — ${formatEgp(orderTotal)}` : `Place order — ${formatEgp(orderTotal)}`}
               </button>
             </div>
             <div className="hidden lg:block">
@@ -1774,6 +2020,7 @@ export function Checkout() {
                 cart={checkoutCart}
                 shipping={shippingCost}
                 cartId={cartId}
+                shippingPending={shippingSummaryPending}
                 onAfterLineChange={async (cartHint) => {
                   if (!cartId) return;
                   await refreshCartState(cartId, cartHint);
@@ -1798,17 +2045,19 @@ export function Checkout() {
               }}
               className="btn btn-primary inline-flex min-h-12 shrink-0 items-center justify-center px-6 disabled:pointer-events-none disabled:opacity-60"
               disabled={submitDisabled}
-              aria-busy={savingInfo || placingOrder}
+              aria-busy={savingInfo || placingOrder || preparingPayment}
             >
               {savingInfo
                 ? isArabic ? 'حفظ…' : 'Saving…'
-                : placingOrder
-                  ? isArabic ? 'جارٍ…' : 'Placing…'
-                  : !selectedPaymentMethod && !hasSavedShipping
-                    ? isArabic ? 'المتابعة' : 'Continue'
-                  : externalPaymentSelected
-                    ? isArabic ? 'الدفع' : 'Pay now'
-                    : isArabic ? 'أكّد الطلب' : 'Place order'}
+                : preparingPayment
+                  ? isArabic ? 'جاري الربط…' : 'Connecting…'
+                  : placingOrder
+                    ? isArabic ? 'جارٍ…' : 'Placing…'
+                    : !selectedPaymentMethod && !hasSavedShipping
+                      ? isArabic ? 'المتابعة' : 'Continue'
+                    : externalPaymentSelected
+                      ? isArabic ? 'الدفع' : 'Pay now'
+                      : isArabic ? 'أكّد الطلب' : 'Place order'}
             </button>
           </div>
         </div>
@@ -1821,12 +2070,14 @@ function OrderSummary({
   cart,
   shipping,
   cartId,
+  shippingPending,
   onAfterLineChange,
   className,
 }: {
   cart: MedusaCart | null;
   shipping: number;
   cartId: string | null;
+  shippingPending?: boolean;
   onAfterLineChange: (cartHint?: MedusaCart) => Promise<void>;
   className?: string;
 }) {
@@ -1865,7 +2116,7 @@ function OrderSummary({
   }
 
   function handleIncrease(line: CartLineView) {
-    if (busy) return;
+    if (busy || line.qty >= 99) return;
     void runWithRefresh(() => setLineQty(line.productSlug, line.size, line.qty + 1));
   }
 
@@ -1957,7 +2208,18 @@ function OrderSummary({
       ) : null}
       <p className="mt-2 flex justify-between text-sm text-clay">
         <span>{isArabic ? 'الشحن' : 'Shipping'}</span>
-        <span>{shipping > 0 ? formatEgp(shipping) : '—'}</span>
+        <span className="text-right">
+          {shippingPending ? (
+            <span
+              className="inline-block h-4 w-16 animate-pulse rounded bg-stone/70 align-middle"
+              aria-label={isArabic ? 'جاري تحميل الشحن' : 'Loading shipping'}
+            />
+          ) : shipping > 0 ? (
+            formatEgp(shipping)
+          ) : (
+            '—'
+          )}
+        </span>
       </p>
       <p className="mt-4 flex justify-between border-t border-stone pt-4 font-semibold text-obsidian">
         <span>{isArabic ? 'الإجمالي' : 'Total'}</span>

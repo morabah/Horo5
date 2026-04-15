@@ -31,6 +31,33 @@ export function resolveCheckoutShippingEgp(
   return shippingOptionAmountEgp(resolvedShippingOption ?? undefined)
 }
 
+/**
+ * Optional display-only standard shipping (EGP) while Medusa totals are still zero.
+ * Set `NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP` to match your live standard rate; reconciles after save.
+ */
+export function readCheckoutDisplayShippingFallbackEgpFromEnv(): number | null {
+  try {
+    const raw = process.env.NEXT_PUBLIC_CHECKOUT_DISPLAY_SHIPPING_EGP?.trim()
+    if (!raw) return null
+    const n = Number(raw)
+    if (!Number.isFinite(n) || n < 0) return null
+    return Math.round(n)
+  } catch {
+    return null
+  }
+}
+
+export function resolveCheckoutShippingEgpWithDisplayFallback(
+  cart: MedusaCart | null | undefined,
+  resolvedShippingOption: MedusaShippingOption | null | undefined,
+): { egp: number; usedDisplayFallback: boolean } {
+  const live = resolveCheckoutShippingEgp(cart, resolvedShippingOption)
+  if (live > 0) return { egp: live, usedDisplayFallback: false }
+  const fb = readCheckoutDisplayShippingFallbackEgpFromEnv()
+  if (fb != null && fb > 0) return { egp: fb, usedDisplayFallback: true }
+  return { egp: 0, usedDisplayFallback: false }
+}
+
 /** Sum of apparel line display totals (matches checkout sidebar / OrderSummary). */
 export function merchandiseSubtotalFromCartLines(lines: CartLine[]): number {
   return getCartLineViews(lines).reduce((sum, line) => sum + line.linePriceEgp, 0)
@@ -48,11 +75,15 @@ export function resolveShippingQuoteFromCartAndOptions(
     const st = medusaAmountToEgpUnknown(cart.shipping_total)
     if (st > 0) return st
   }
-  if (liveOptions.length === 0) return 0
+  if (liveOptions.length === 0) {
+    return readCheckoutDisplayShippingFallbackEgpFromEnv() ?? 0
+  }
   const attached = cart?.shipping_methods?.[0]
   const opt =
     attached != null
       ? liveOptions.find((o) => o.id === attached.shipping_option_id) ?? liveOptions[0]
       : liveOptions[0]
-  return shippingOptionAmountEgp(opt)
+  const quoted = shippingOptionAmountEgp(opt)
+  if (quoted > 0) return quoted
+  return readCheckoutDisplayShippingFallbackEgpFromEnv() ?? 0
 }

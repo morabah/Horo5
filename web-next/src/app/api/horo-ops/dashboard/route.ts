@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { HORO_OPS_SESSION_COOKIE } from "@/lib/horo-ops-constants"
 import {
   horoOpsBackendSecret,
+  isLikelyMedusaConnectionFailure,
+  jsonResponseWhenMedusaUnreachable,
   medusaBackendBaseUrl,
   medusaPublishableKey,
 } from "@/lib/horo-ops-medusa-fetch"
@@ -50,14 +52,22 @@ export async function GET(request: NextRequest) {
     if (v != null && v !== "") url.searchParams.set(key, v)
   }
 
-  const medusaRes = await fetch(url.toString(), {
-    method: "GET",
-    headers: {
-      "x-publishable-api-key": publishable,
-      "x-horo-ops-secret": secret,
-    },
-    cache: "no-store",
-  })
+  let medusaRes: Response
+  try {
+    medusaRes = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        "x-publishable-api-key": publishable,
+        "x-horo-ops-secret": secret,
+      },
+      cache: "no-store",
+    })
+  } catch (e) {
+    if (isLikelyMedusaConnectionFailure(e)) {
+      return jsonResponseWhenMedusaUnreachable()
+    }
+    throw e
+  }
 
   const text = await medusaRes.text()
   const ct = medusaRes.headers.get("content-type") || "application/json"

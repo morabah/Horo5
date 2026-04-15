@@ -86,6 +86,29 @@ const paymobConfig = (() => {
   }
 })()
 
+const instapayProviderOptions = {
+  payoutPhone: process.env.INSTAPAY_PAYOUT_PHONE?.trim(),
+  payoutIban: process.env.INSTAPAY_PAYOUT_IBAN?.trim(),
+  payoutBankLabel: process.env.INSTAPAY_PAYOUT_BANK_LABEL?.trim(),
+}
+
+const paymentModuleProviders = [
+  {
+    resolve: "./src/modules/instapay" as const,
+    id: "instapay",
+    options: instapayProviderOptions,
+  },
+  ...(paymobConfig
+    ? [
+        {
+          resolve: "./src/modules/paymob" as const,
+          id: "paymob",
+          options: paymobConfig,
+        },
+      ]
+    : []),
+]
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
@@ -149,15 +172,7 @@ module.exports = defineConfig({
     {
       resolve: "@medusajs/payment",
       options: {
-        providers: paymobConfig
-          ? [
-              {
-                resolve: "./src/modules/paymob",
-                id: "paymob",
-                options: paymobConfig,
-              },
-            ]
-          : [],
+        providers: paymentModuleProviders,
       },
     },
     {

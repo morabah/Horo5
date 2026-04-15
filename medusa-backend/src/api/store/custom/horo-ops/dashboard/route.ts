@@ -5,12 +5,26 @@ import {
   classifyOpsOrders,
   computeSlaDeadlineUtc,
   friendlyDisplayId,
+  isDeliveredFulfillment,
+  isPaymentCaptured,
   readOpsClassifyConfigFromEnv,
   utcYmd,
   type OpsOrderRow,
 } from "../../../../../lib/horo-ops-classify"
 import { assertOpsBackendAccess } from "../../../../../lib/horo-ops-backend-auth"
-import { ORDER_OPS_CORE_FIELDS, ORDER_OPS_GRAPH_FIELDS } from "../../../../../lib/horo-ops-order-query-fields"
+import { orderUsesInstapayPayment } from "../../../../../lib/horo-ops-order-actions"
+import {
+  effectiveFulfillmentStatusFromOrderGraph,
+  effectivePaymentStatusFromOrderGraph,
+} from "../../../../../lib/horo-ops-order-graph-coerce"
+import {
+  ORDER_OPS_CORE_FIELDS,
+  ORDER_OPS_GRAPH_FIELDS,
+  ORDER_OPS_PAYMENT_DETECT_FIELDS,
+} from "../../../../../lib/horo-ops-order-query-fields"
+
+/** Dashboard-only: infer fulfillment when top-level field is missing from the graph. */
+const DASHBOARD_ORDER_EXTRA_FIELDS = ["fulfillments.*"] as const
 
 function parseIntParam(raw: unknown, fallback: number, max: number): number {
   const s = typeof raw === "string" ? raw : Array.isArray(raw) ? String(raw[0] ?? "") : ""
@@ -88,8 +102,8 @@ function toOpsRow(row: Record<string, unknown>): OpsOrderRow {
     status: typeof row.status === "string" ? row.status : null,
     currency_code: typeof row.currency_code === "string" ? row.currency_code : null,
     total: row.total,
-    fulfillment_status: typeof row.fulfillment_status === "string" ? row.fulfillment_status : null,
-    payment_status: typeof row.payment_status === "string" ? row.payment_status : null,
+    fulfillment_status: effectiveFulfillmentStatusFromOrderGraph(row),
+    payment_status: effectivePaymentStatusFromOrderGraph(row),
   }
 }
 
@@ -122,6 +136,12 @@ function summarizeListRow(row: OpsOrderRow, slaDeliveryDays: number, metadata: u
 
 function summarizeFromRaw(raw: Record<string, unknown>, slaDeliveryDays: number) {
   return summarizeListRow(toOpsRow(raw), slaDeliveryDays, raw.metadata)
+}
+
+function isCanceledMedusaOrder(status: string | null | undefined): boolean {
+  if (!status) return false
+  const s = status.toLowerCase()
+  return s === "canceled" || s === "cancelled"
 }
 
 async function loadOrderRowsBatched(
@@ -193,7 +213,11 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   }
   const config = readOpsClassifyConfigFromEnv()
 
-  const fields = [...(includeGraph ? ORDER_OPS_GRAPH_FIELDS : ORDER_OPS_CORE_FIELDS)]
+  const fields = [
+    ...(includeGraph ? ORDER_OPS_GRAPH_FIELDS : ORDER_OPS_CORE_FIELDS),
+    ...ORDER_OPS_PAYMENT_DETECT_FIELDS,
+    ...DASHBOARD_ORDER_EXTRA_FIELDS,
+  ]
 
   try {
     const { rows: rowsRaw, truncated, batches } = await loadOrderRowsBatched(query, fields, {
@@ -217,6 +241,22 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const sd = config.slaDeliveryDays
 
     const rawById = new Map(rowsRawValid.map((r) => [String(r.id ?? ""), r]))
+
+    const instapayAwaitingCapture: Record<string, unknown>[] = []
+    const instapayAwaitingShipment: Record<string, unknown>[] = []
+    for (const raw of rowsRawValid) {
+      if (isCanceledMedusaOrder(typeof raw.status === "string" ? raw.status : null)) continue
+      if (!orderUsesInstapayPayment(raw)) continue
+      const ps = effectivePaymentStatusFromOrderGraph(raw)
+      if (!isPaymentCaptured(ps)) {
+        instapayAwaitingCapture.push(raw)
+        continue
+      }
+      const fs = effectiveFulfillmentStatusFromOrderGraph(raw)
+      if (!isDeliveredFulfillment(fs)) {
+        instapayAwaitingShipment.push(raw)
+      }
+    }
 
     const order_graphs: Record<string, Record<string, unknown>> = {}
     if (includeGraph) {
@@ -267,6 +307,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
           return summarizeListRow(r, sd, raw?.metadata)
         }),
       },
+      instapayAwaitingCapture: instapayAwaitingCapture.map((raw) => summarizeFromRaw(raw, sd)),
+      instapayAwaitingShipment: instapayAwaitingShipment.map((raw) => summarizeFromRaw(raw, sd)),
       list: rowsRawValid.map((raw) => summarizeFromRaw(raw, sd)),
       dueSoon: classified.dueSoon.map((r) => {
         const raw = rawById.get(r.id)

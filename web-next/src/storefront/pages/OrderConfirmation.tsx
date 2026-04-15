@@ -14,15 +14,16 @@ import { orderConfirmationFooterDeltaEgp, resolveOrderSnapshotSubtotalEgp } from
 import { useStableNow } from '../runtime/render-time';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { formatEgp } from '../utils/formatPrice';
+import { getInstapayPublicPayoutLines } from '../lib/instapay-public';
 
 function isMedusaInternalOrderId(id: string) {
   return id.startsWith('order_');
 }
 
 function buildPaymentMethodLabel(paymentMethod: LastOrderSnapshot['paymentMethod'], isArabic: boolean) {
-  return paymentMethod === 'card'
-    ? isArabic ? 'بطاقة' : 'Card'
-    : isArabic ? 'الدفع عند الاستلام' : 'COD';
+  if (paymentMethod === 'card') return isArabic ? 'بطاقة' : 'Card';
+  if (paymentMethod === 'instapay') return isArabic ? 'إنستاباي (تحويل بنكي · هاتف · محفظة)' : 'Instapay (bank · phone · wallet)';
+  return isArabic ? 'الدفع عند الاستلام' : 'COD';
 }
 
 /** Mirrors checkout cart `metadata.whatsapp_opt_in`: explicit false opts out; key present + parseable wins. */
@@ -78,8 +79,12 @@ function createSnapshotFromOrder(args: {
         : undefined;
   const firstPaymentSession = order.payment_collections?.[0]?.payment_sessions?.[0];
   const providerId = firstPaymentSession?.provider_id || '';
-  const paymentMethod: LastOrderSnapshot['paymentMethod'] =
-    providerId.includes('paymob') ? 'card' : 'cod';
+  const pid = providerId.toLowerCase();
+  const paymentMethod: LastOrderSnapshot['paymentMethod'] = providerId.includes('paymob')
+    ? 'card'
+    : pid.includes('instapay')
+      ? 'instapay'
+      : 'cod';
   const paymentLabel = buildPaymentMethodLabel(paymentMethod, isArabic);
   const shippingLabel = order.shipping_methods?.[0]?.name || (isArabic ? 'عادي' : 'Standard');
   const displayOrderId = buildHoroCustomerOrderRef(order);
@@ -216,6 +221,7 @@ export function OrderConfirmation() {
     () => (order ? orderConfirmationFooterDeltaEgp(order) : null),
     [order],
   );
+  const instapayPayoutLines = useMemo(() => getInstapayPublicPayoutLines(), []);
   const heroLine = lineViews[0] || null;
   const celebrationHeading = heroLine
     ? isArabic
@@ -413,6 +419,26 @@ export function OrderConfirmation() {
                   </div>
                 </li>
               </ol>
+            </div>
+          ) : null}
+
+          {order?.paymentMethod === 'instapay' ? (
+            <div className="mt-8 rounded-2xl border border-deep-teal/25 bg-white/80 p-5">
+              <h2 className="font-headline text-[1rem] font-semibold text-obsidian">
+                {copy.confirmation.instapayPayoutHeading}
+              </h2>
+              <p className="mt-2 font-body text-sm text-obsidian">{copy.confirmation.instapayPayoutIntro}</p>
+              {instapayPayoutLines.length > 0 ? (
+                <ul className="mt-3 list-disc space-y-1 pl-5 font-body text-sm text-obsidian">
+                  {instapayPayoutLines.map((line, idx) => (
+                    <li key={idx}>{isArabic ? line.ar : line.en}</li>
+                  ))}
+                </ul>
+              ) : null}
+              <p className="mt-3 font-body text-sm text-clay">
+                {isArabic ? 'رقم الطلب: ' : 'Order reference: '}
+                <span className="font-medium text-obsidian">{customerFacingOrderId ?? internalOrderRef ?? '—'}</span>
+              </p>
             </div>
           ) : null}
 
