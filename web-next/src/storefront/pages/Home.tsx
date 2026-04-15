@@ -7,7 +7,7 @@ import { ProductQuickView } from '../components/ProductQuickView';
 import { HomeHeroWearMean } from '../components/HomeHeroWearMean';
 import { HomeProofSplit } from '../components/HomeProofSplit';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { getFeelingCollectionVisual, getProductMedia } from '../data/images';
+import { getFeelingCollectionVisual } from '../data/images';
 import type { RuntimeCatalog } from '../data/catalog-types';
 import {
   getArtist,
@@ -45,7 +45,10 @@ export function Home({
     setCompactHome(q === '1' || sessionStorage.getItem(COMPACT_HOME_STORAGE) === '1');
   }, [searchParams]);
   const latestDrops = (initialProducts ?? getProducts()).filter(productHasRealImage).slice(0, 6);
-  const featuredFeelings = getFeelings().slice(0, 6);
+  const featuredFeelings = getFeelings()
+    .slice(0, 12)
+    .filter((feeling) => Boolean(getFeelingCollectionVisual(feeling.slug).cover.src?.trim()))
+    .slice(0, 6);
   const homeTrustItems = useMemo(() => {
     return [...new Set(latestDrops.flatMap((product) => product.trustBadges ?? []).filter(Boolean))].slice(0, 3);
   }, [latestDrops]);
@@ -135,7 +138,7 @@ export function Home({
                   {homeTrustItems.map((item) => (
                     <span
                       key={item}
-                      className="font-label rounded-full border border-stone/40 bg-white/70 px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-warm-charcoal"
+                      className="font-label rounded-full border border-stone/40 bg-white px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-warm-charcoal"
                     >
                       {item}
                     </span>
@@ -155,7 +158,7 @@ export function Home({
             {latestDrops.map((p, i) => {
               const feeling = getFeeling(p.primaryFeelingSlug ?? p.feelingSlug);
               const artist = getArtist(p.artistSlug);
-              const main = p.media?.main ?? getProductMedia(p.slug).main;
+              const main = p.media?.main ?? p.thumbnail ?? '';
               return (
                 <MerchProductCard
                   key={p.slug}

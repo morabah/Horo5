@@ -52,6 +52,7 @@ export function MerchProductCard({
   imageSrc,
   imageAlt,
   merchandisingBadge,
+  artistCredit,
   compareAtPriceEgp,
   onQuickView,
   onProductClick,
@@ -245,6 +246,16 @@ export function MerchProductCard({
         >
           {name}
         </Link>
+        {artistCredit?.trim() ? (
+          <p className="font-label mt-2 text-[10px] font-medium uppercase tracking-[0.16em] text-warm-charcoal">
+            {artistCredit.trim()}
+          </p>
+        ) : null}
+        {product?.fitLabel?.trim() ? (
+          <p className="font-label mt-2 text-[10px] font-medium uppercase tracking-[0.16em] text-warm-charcoal">
+            {product.fitLabel.trim()}
+          </p>
+        ) : null}
         <div className={`mt-auto flex flex-wrap items-center gap-3 ${minimal ? 'pt-2.5' : 'pt-3'}`}>
           <div className="flex items-center gap-2">
             <p className={`font-headline font-semibold text-obsidian ${minimal ? 'text-[1rem]' : 'text-[1.125rem]'}`}>

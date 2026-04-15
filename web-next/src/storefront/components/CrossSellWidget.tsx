@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { Product, ProductSizeKey } from '../data/site';
-import { getProductMedia } from '../data/images';
+import { productHasRealImage, type Product, type ProductSizeKey } from '../data/site';
 import { TeeImageFrame } from './TeeImage';
 import { QuickViewTrigger } from './QuickViewTrigger';
 import { formatEgp } from '../utils/formatPrice';
@@ -43,10 +42,11 @@ function MiniCards({
   items: Product[];
   onQuickView: (slug: string) => void;
 }) {
-  if (items.length === 0) return null;
+  const listable = items.filter(productHasRealImage);
+  if (listable.length === 0) return null;
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4">
-      {items.map((item) => (
+      {listable.map((item) => (
         <article
           key={item.slug}
           className="group relative overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md"
@@ -63,7 +63,7 @@ function MiniCards({
             <div className="relative overflow-hidden rounded-t-[14px]">
               <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
                 <TeeImageFrame
-                  src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
+                  src={item.media?.main ?? item.thumbnail ?? ''}
                   alt={`HORO “${item.name}” tee`}
                   w={360}
                   aspectRatio="4/5"

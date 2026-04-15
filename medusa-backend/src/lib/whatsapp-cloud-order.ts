@@ -240,12 +240,42 @@ export type WhatsAppStatusEvent = {
   errors?: unknown
 }
 
-/** Best-effort extraction of outbound message status events from a Meta webhook POST body. */
-export function extractWhatsAppStatusEvents(body: unknown): WhatsAppStatusEvent[] {
-  const out: WhatsAppStatusEvent[] = []
-  if (!body || typeof body !== "object") return out
+export type WhatsAppIncomingMessageEvent = {
+  from?: string
+  messageId?: string
+  type?: string
+  textBody?: string
+  timestamp?: string
+}
+
+export type WhatsAppWebhookChangeMeta = {
+  field?: string
+  hasStatuses: boolean
+  hasMessages: boolean
+}
+
+/** Max chars for one log line of `JSON.stringify(webhookBody)` (avoid runaway log volume). */
+export const WHATSAPP_WEBHOOK_RAW_JSON_LOG_MAX = 100_000
+
+export function stringifyWebhookBodyForLog(body: unknown): string {
+  try {
+    const s = JSON.stringify(body)
+    if (s.length <= WHATSAPP_WEBHOOK_RAW_JSON_LOG_MAX) {
+      return s
+    }
+    return `${s.slice(0, WHATSAPP_WEBHOOK_RAW_JSON_LOG_MAX)}...(truncated, total_chars=${s.length})`
+  } catch {
+    return "[whatsapp-webhook] body could not be serialized to JSON"
+  }
+}
+
+function walkWebhookChanges(
+  body: unknown,
+  visit: (value: Record<string, unknown>, change: Record<string, unknown>) => void,
+): void {
+  if (!body || typeof body !== "object") return
   const entry = (body as { entry?: unknown[] }).entry
-  if (!Array.isArray(entry)) return out
+  if (!Array.isArray(entry)) return
 
   for (const ent of entry) {
     if (!ent || typeof ent !== "object") continue
@@ -253,20 +283,80 @@ export function extractWhatsAppStatusEvents(body: unknown): WhatsAppStatusEvent[
     if (!Array.isArray(changes)) continue
     for (const ch of changes) {
       if (!ch || typeof ch !== "object") continue
-      const value = (ch as { value?: unknown }).value
+      const change = ch as Record<string, unknown>
+      const value = change.value
       if (!value || typeof value !== "object") continue
-      const statuses = (value as { statuses?: unknown[] }).statuses
-      if (!Array.isArray(statuses)) continue
-      for (const st of statuses) {
-        if (!st || typeof st !== "object") continue
-        const o = st as { id?: unknown; status?: unknown; errors?: unknown }
-        out.push({
-          id: typeof o.id === "string" ? o.id : undefined,
-          status: typeof o.status === "string" ? o.status : undefined,
-          errors: o.errors,
-        })
-      }
+      visit(value as Record<string, unknown>, change)
     }
   }
+}
+
+/** Per-change `field` (e.g. `messages`) and whether `value` contains buyer messages or outbound status updates. */
+export function extractWhatsAppWebhookChangeMeta(body: unknown): WhatsAppWebhookChangeMeta[] {
+  const out: WhatsAppWebhookChangeMeta[] = []
+  walkWebhookChanges(body, (value, change) => {
+    const field = change.field
+    const statuses = value.statuses
+    const messages = value.messages
+    out.push({
+      field: typeof field === "string" ? field : undefined,
+      hasStatuses: Array.isArray(statuses) && statuses.length > 0,
+      hasMessages: Array.isArray(messages) && messages.length > 0,
+    })
+  })
+  return out
+}
+
+/** Best-effort extraction of outbound message status events from a Meta webhook POST body. */
+export function extractWhatsAppStatusEvents(body: unknown): WhatsAppStatusEvent[] {
+  const out: WhatsAppStatusEvent[] = []
+  walkWebhookChanges(body, (value) => {
+    const statuses = value.statuses
+    if (!Array.isArray(statuses)) return
+    for (const st of statuses) {
+      if (!st || typeof st !== "object") continue
+      const o = st as { id?: unknown; status?: unknown; errors?: unknown }
+      out.push({
+        id: typeof o.id === "string" ? o.id : undefined,
+        status: typeof o.status === "string" ? o.status : undefined,
+        errors: o.errors,
+      })
+    }
+  })
+  return out
+}
+
+/** Incoming user → business messages under `value.messages` (text and basic metadata). */
+export function extractWhatsAppIncomingMessageEvents(body: unknown): WhatsAppIncomingMessageEvent[] {
+  const out: WhatsAppIncomingMessageEvent[] = []
+  walkWebhookChanges(body, (value) => {
+    const messages = value.messages
+    if (!Array.isArray(messages)) return
+    for (const m of messages) {
+      if (!m || typeof m !== "object") continue
+      const o = m as {
+        from?: unknown
+        id?: unknown
+        type?: unknown
+        timestamp?: unknown
+        text?: { body?: unknown }
+      }
+      const textBody =
+        o.text && typeof o.text === "object" && typeof o.text.body === "string" ? o.text.body : undefined
+      const ts =
+        typeof o.timestamp === "string"
+          ? o.timestamp
+          : typeof o.timestamp === "number"
+            ? String(o.timestamp)
+            : undefined
+      out.push({
+        from: typeof o.from === "string" ? o.from : undefined,
+        messageId: typeof o.id === "string" ? o.id : undefined,
+        type: typeof o.type === "string" ? o.type : undefined,
+        textBody,
+        timestamp: ts,
+      })
+    }
+  })
   return out
 }

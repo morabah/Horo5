@@ -213,7 +213,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
 
   const handleViewBag = () => {
     onClose();
-    navigate('/cart');
+    setMiniCartOpen(true);
   };
 
   return (

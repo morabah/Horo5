@@ -345,7 +345,8 @@ function firstRuntimeProductImage(productSlugs: string[]): string | undefined {
 export function getFeelingCollectionVisual(slug: string): FeelingStorefrontImages {
   const feeling = getFeeling(slug);
   const productFallback = firstRuntimeProductImage(productsByFeeling(slug).map((product) => product.slug));
-  const coverSrc = firstNonEmptyString(feeling?.cardImageSrc, feeling?.heroImageSrc, productFallback, heroStreet) ?? heroStreet;
+  /** No generic street hero as pillar “photography” — cover stays empty until Medusa feeling art or a real product image exists. */
+  const coverSrc = firstNonEmptyString(feeling?.cardImageSrc, feeling?.heroImageSrc, productFallback) ?? '';
   const heroSrc = firstNonEmptyString(feeling?.heroImageSrc, feeling?.cardImageSrc, productFallback, coverSrc) ?? coverSrc;
   const proofSrc = firstNonEmptyString(heroSrc, coverSrc, productFallback, heroStreet) ?? heroStreet;
   const name = feeling?.name ?? slug.replace(/-/g, ' ');

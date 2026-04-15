@@ -8,9 +8,10 @@ import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { OCCASION_SCHEMA } from '../data/domain-config';
-import { getOccasionCollectionVisual, getProductMedia, giftWrapPreview, imgUrl } from '../data/images';
+import { getOccasionCollectionVisual, giftWrapPreview, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
 import {
+  getArtist,
   getFeeling,
   getOccasion,
   getOccasions,
@@ -93,7 +94,8 @@ function OccasionProductCard({
   onProductClick?: () => void;
 }) {
   const feeling = getFeeling(product.primaryFeelingSlug ?? product.feelingSlug);
-  const imageSrc = product.media?.main ?? product.thumbnail ?? getProductMedia(product.slug).main;
+  const imageSrc = product.media?.main ?? product.thumbnail ?? '';
+  const artistName = product.artistDisplay?.name?.trim() || getArtist(product.artistSlug)?.name?.trim();
 
   return (
     <MerchProductCard
@@ -106,6 +108,7 @@ function OccasionProductCard({
       merchandisingBadge={product.merchandisingBadge}
       eyebrow={feeling?.name}
       eyebrowAccent={feeling?.accent}
+      artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
       onQuickView={onQuickView}
       onProductClick={onProductClick}
     />

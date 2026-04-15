@@ -172,12 +172,15 @@ export type MedusaOrder = {
   email?: string | null
   id: string
   items?: MedusaCartLineItem[] | null
+  metadata?: Record<string, unknown> | null
   payment_collections?: MedusaPaymentCollection[]
   shipping_address?: MedusaAddress | null
   shipping_total?: number
   shipping_methods?: Array<{ amount?: number; name?: string | null }> | null
   status?: string
   subtotal?: number
+  tax_total?: number
+  discount_total?: number
   total?: number
 }
 

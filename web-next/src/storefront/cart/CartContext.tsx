@@ -60,7 +60,7 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const SIZE_SET = new Set<ProductSizeKey>(['S', 'M', 'L', 'XL', 'XXL']);
+const SIZE_SET = new Set<ProductSizeKey>(['XS', 'S', 'M', 'L', 'XL', 'XXL']);
 
 function isValidLine(x: unknown): x is CartLine {
   if (!x || typeof x !== 'object') return false;

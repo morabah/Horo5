@@ -3,6 +3,9 @@ import { cartLineKey } from './types';
 import { getProductMedia } from '../data/images';
 import { getArtist, getProduct } from '../data/site';
 
+/** Neutral mark when a Medusa order line has no thumbnail — avoids implying another SKU’s catalog art. */
+const ORDER_LINE_IMAGE_PLACEHOLDER = '/images/hero/horo_vectorized_v2.svg';
+
 export type CartLineView = CartLine & {
   key: string;
   productName: string;
@@ -14,7 +17,10 @@ export type CartLineView = CartLine & {
   linePriceEgp: number;
 };
 
-export function getCartLineView(line: CartLine): CartLineView | null {
+export function getCartLineView(
+  line: CartLine,
+  options?: { orderConfirmation?: boolean },
+): CartLineView | null {
   const product = getProduct(line.productSlug);
   if (!product && !line.productName) return null;
 
@@ -22,7 +28,14 @@ export function getCartLineView(line: CartLine): CartLineView | null {
   const unitPrice = line.unitPriceEgp ?? product?.priceEgp ?? 0;
   const productName = line.productName ?? product?.name ?? line.productSlug;
   const productUrl = product ? `/products/${product.slug}` : '/search';
-  const imageSrc = line.imageSrc ?? (product ? getProductMedia(product.slug).main : '/images/hero/hero-model.png');
+  const hasLineThumb = Boolean(line.imageSrc?.trim());
+  const imageSrc = hasLineThumb
+    ? line.imageSrc!
+    : options?.orderConfirmation
+      ? ORDER_LINE_IMAGE_PLACEHOLDER
+      : product
+        ? getProductMedia(product.slug).main
+        : '/images/hero/hero-model.png';
 
   return {
     ...line,
@@ -37,9 +50,9 @@ export function getCartLineView(line: CartLine): CartLineView | null {
   };
 }
 
-export function getCartLineViews(lines: CartLine[]): CartLineView[] {
+export function getCartLineViews(lines: CartLine[], options?: { orderConfirmation?: boolean }): CartLineView[] {
   return lines.flatMap((line) => {
-    const view = getCartLineView(line);
+    const view = getCartLineView(line, options);
     return view ? [view] : [];
   });
 }

@@ -1,3 +1,4 @@
+import { normalizeGraphOrderForEmail } from "../normalize-graph-order-for-email"
 import {
   buildOrderConfirmationHtml,
   GIFT_WRAP_PRODUCT_HANDLE,
@@ -93,5 +94,41 @@ describe("order-confirmation-email", () => {
     expect(html).toContain("859")
     expect(html).toContain("Standard")
     expect(html).toContain("60")
+  })
+
+  it("builds non-zero prices from Medusa-shaped graph row via normalizeGraphOrderForEmail", () => {
+    const graphRow: Record<string, unknown> = {
+      id: "order_graph_nested",
+      display_id: 22,
+      email: "nested@test.com",
+      currency_code: "egp",
+      created_at: "2026-04-15T12:00:00.000Z",
+      subtotal: 0,
+      total: 0,
+      shipping_total: 0,
+      tax_total: 0,
+      discount_total: 0,
+      items: [
+        {
+          quantity: 2,
+          item: {
+            product_title: "Nested Tee",
+            variant_title: "L",
+            unit_price: 400,
+          },
+        },
+      ],
+      shipping_methods: [{ name: "Standard", total: 50 }],
+      shipping_address: null,
+      billing_address: null,
+      summary: [{ totals: { subtotal: 800, shipping_total: 50, total: 850, tax_total: 0, discount_total: 0 } }],
+    }
+
+    const input = normalizeGraphOrderForEmail(graphRow, { storeUrl: null })
+    const html = buildOrderConfirmationHtml(input)
+    expect(html).toContain("Nested Tee")
+    expect(html).toContain("800")
+    expect(html).toContain("850")
+    expect(html).toContain("50")
   })
 })

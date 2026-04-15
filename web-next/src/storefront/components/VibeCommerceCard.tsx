@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { VIBES_SCHEMA } from '../data/domain-config';
 import type { Feeling } from '../data/site';
 import { glassInteractive } from '../lib/glassInteractive';
-import { getFeelingCollectionVisual, imgUrl } from '../data/images';
+import { getFeelingCollectionVisual, heroVectorizedV2, imgUrl } from '../data/images';
 
 const linkBaseClass =
   'group flex h-full min-h-0 flex-col overflow-hidden transition-all duration-700 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
@@ -28,6 +28,7 @@ export function VibeCommerceCard({
   'data-reveal': dataReveal,
 }: VibeCommerceCardProps) {
   const cover = getFeelingCollectionVisual(feeling.slug).cover;
+  const coverSrc = cover.src?.trim() ? cover.src : heroVectorizedV2;
   const bodyCopy = feeling.blurb || feeling.tagline || '';
   const ctaLabel = variant === 'see-vibe' ? VIBES_SCHEMA.copy.cardSeeVibeCta : VIBES_SCHEMA.copy.cardExploreCta;
   const ariaLabel = VIBES_SCHEMA.copy.cardAriaTemplate
@@ -60,7 +61,7 @@ export function VibeCommerceCard({
     >
       <div className="relative @container/vibe-card flex aspect-[4/5] w-full flex-1 flex-col overflow-hidden">
         <img
-          src={imgUrl(cover.src, 960)}
+          src={coverSrc === heroVectorizedV2 ? coverSrc : imgUrl(coverSrc, 960)}
           alt={cover.alt}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-105 motion-reduce:group-hover:scale-100"
           decoding="async"

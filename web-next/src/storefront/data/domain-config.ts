@@ -1,6 +1,9 @@
 // src/data/domain-config.ts
 
-import type { PdpFitModel } from './catalog-types';
+import type { PdpFitModel, ProductSizeKey } from './catalog-types';
+
+/** PDP size ladder entries; `disabled` marks sizes never sold for this storefront build. */
+export type PdpSizeSchemaEntry = { key: ProductSizeKey; disabled?: boolean };
 import type { PdpDeliveryRules } from '../utils/deliveryEstimate';
 
 /** Partial override from Medusa `store.metadata.delivery` (see medusa-backend README). */
@@ -13,6 +16,11 @@ export type StorefrontDeliveryMetadata = Partial<{
   cutoffMinuteLocal: number;
   /** If set, used for “arrives by”; otherwise `standardMaxDays` is used. */
   standardMaxBusinessDays: number;
+  /**
+   * Optional display-only standard shipping in EGP for Product JSON-LD `OfferShippingDetails`.
+   * Must match checkout reality — set in Medusa Admin store metadata `delivery` when operators want Rich Results shipping hints.
+   */
+  jsonLdStandardShippingEgp: number;
 }>;
 
 const INT_FIELDS: (keyof StorefrontDeliveryMetadata)[] = [
@@ -98,6 +106,31 @@ export function mergePdpDeliveryRules(remote: unknown): PdpDeliveryRules {
   return out;
 }
 
+/**
+ * Reads `jsonLdStandardShippingEgp` from Medusa `store.metadata.delivery` (number or numeric string).
+ * Returns null if unset or invalid — callers must not invent a fallback price.
+ */
+export function parseJsonLdStandardShippingEgpFromStoreDelivery(remote: unknown): number | null {
+  let parsed: unknown = remote;
+  if (typeof remote === 'string') {
+    try {
+      parsed = JSON.parse(remote) as unknown;
+    } catch {
+      return null;
+    }
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return null;
+  }
+  const d = parsed as Record<string, unknown>;
+  const v = d.jsonLdStandardShippingEgp ?? d.json_ld_standard_shipping_egp;
+  const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v.trim()) : NaN;
+  if (!Number.isFinite(n) || n < 0) {
+    return null;
+  }
+  return clampInt(n, 0, 500_000);
+}
+
 /** One row in the PDP size chart (chest / shoulder / length / sleeve). */
 export type PdpSizeTableRow = {
   size: string;
@@ -121,6 +154,7 @@ export type PdpSizeTableConfig = PdpSizeTablePresetBody & {
 /** Built-in fallback when Medusa has no `store.metadata.sizeTables` (matches legacy PDP). */
 export const PDP_DEFAULT_SIZE_PRESET: PdpSizeTablePresetBody = {
   measurements: [
+    { size: 'XS', chest: '90 cm', shoulder: '43 cm', length: '68 cm', sleeve: '19 cm' },
     { size: 'S', chest: '96 cm', shoulder: '45 cm', length: '70 cm', sleeve: '20 cm' },
     { size: 'M', chest: '102 cm', shoulder: '47 cm', length: '72 cm', sleeve: '21 cm' },
     { size: 'L', chest: '108 cm', shoulder: '49 cm', length: '74 cm', sleeve: '22 cm' },
@@ -135,6 +169,7 @@ export const PDP_DEFAULT_SIZE_PRESET: PdpSizeTablePresetBody = {
 
 const PDP_BUILTIN_OVERSIZED_PRESET: PdpSizeTablePresetBody = {
   measurements: [
+    { size: 'XS', chest: '94 cm', shoulder: '45 cm', length: '70 cm', sleeve: '20 cm' },
     { size: 'S', chest: '100 cm', shoulder: '47 cm', length: '72 cm', sleeve: '21 cm' },
     { size: 'M', chest: '106 cm', shoulder: '49 cm', length: '74 cm', sleeve: '22 cm' },
     { size: 'L', chest: '112 cm', shoulder: '51 cm', length: '76 cm', sleeve: '23 cm' },
@@ -149,6 +184,7 @@ const PDP_BUILTIN_OVERSIZED_PRESET: PdpSizeTablePresetBody = {
 
 const PDP_BUILTIN_FITTED_PRESET: PdpSizeTablePresetBody = {
   measurements: [
+    { size: 'XS', chest: '88 cm', shoulder: '42 cm', length: '67 cm', sleeve: '19 cm' },
     { size: 'S', chest: '94 cm', shoulder: '44 cm', length: '69 cm', sleeve: '19.5 cm' },
     { size: 'M', chest: '100 cm', shoulder: '46 cm', length: '71 cm', sleeve: '20.5 cm' },
     { size: 'L', chest: '106 cm', shoulder: '48 cm', length: '73 cm', sleeve: '21.5 cm' },
@@ -347,12 +383,13 @@ export const PDP_SCHEMA = {
     '3x wash proof card',
   ],
   sizes: [
+    { key: 'XS' },
     { key: 'S' },
     { key: 'M' },
     { key: 'L' },
     { key: 'XL' },
-    { key: 'XXL', disabled: true },
-  ],
+    { key: 'XXL' },
+  ] as PdpSizeSchemaEntry[],
   sizeTable: [...PDP_DEFAULT_SIZE_PRESET.measurements],
   features: [
     { label: '220 GSM heavyweight cotton', icon: 'FabricIcon' as const },
@@ -501,6 +538,8 @@ export const PDP_SCHEMA = {
     pdpSizeGroupAria: 'Size',
     pdpQuickViewSelectSizeLabel: 'Select size',
     pdpOutOfStockForSize: 'Out of stock for this size',
+    /** Shown as `title` on unavailable size buttons (inventory ladder). */
+    pdpSizeOosHint: 'Back soon — use Notify me below for this size.',
     pdpPrimaryCtaAddedLabel: 'Added to bag',
     styleItWithEyebrow: 'Pairing',
     pdpZodiacCapsuleLabel: 'Zodiac capsule',
@@ -752,10 +791,10 @@ export const SEARCH_SCHEMA = {
   },
 } as const;
 
+/** Static checkout reassurance only — payment types are rendered from live Medusa `payment_providers`. */
 export const CHECKOUT_SCHEMA = {
-  trustStripItems: [
+  trustStripItemsStatic: [
     'SSL-encrypted checkout',
-    'COD + Paymob card',
     '14-day exchange',
     'Guest checkout',
   ] as const,

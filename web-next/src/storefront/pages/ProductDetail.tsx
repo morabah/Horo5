@@ -577,6 +577,22 @@ export function ProductDetail({
   const primaryCrossSellProducts = frequentlyBoughtWithProducts;
   const fallbackCrossSellProducts =
     primaryCrossSellProducts.length === 0 ? styleWithProducts : [];
+  const uniqueCrossSellCompanions = useMemo(() => {
+    const bySlug = new Map<string, Product>();
+    for (const p of frequentlyBoughtWithProducts) bySlug.set(p.slug, p);
+    for (const p of styleWithProducts) bySlug.set(p.slug, p);
+    return [...bySlug.values()];
+  }, [frequentlyBoughtWithProducts, styleWithProducts]);
+  const showCrossSellSection =
+    !compactPdp &&
+    uniqueCrossSellCompanions.length >= 3 &&
+    (primaryCrossSellProducts.length > 0 || fallbackCrossSellProducts.length > 0);
+  /** Prefer `metadata.fitLabel` from Medusa / storefront API; static PDP line is fallback only. */
+  const silhouetteCueLabel = useMemo(() => {
+    const fromCatalog = product?.fitLabel?.trim();
+    if (fromCatalog) return fromCatalog;
+    return PDP_SCHEMA.features.find((f) => f.icon === 'SilhouetteIcon')?.label;
+  }, [product?.fitLabel]);
   const deliveryRules: PdpDeliveryRules = useMemo(
     () => deliveryRulesProp ?? mergePdpDeliveryRules(undefined),
     [deliveryRulesProp],
@@ -1119,31 +1135,6 @@ export function ProductDetail({
               ))}
             </div>
           ) : null}
-
-          {!compactPdp && (primaryCrossSellProducts.length > 0 || fallbackCrossSellProducts.length > 0) ? (
-            <CrossSellWidget
-              frequentlyBoughtWith={primaryCrossSellProducts}
-              styleWith={fallbackCrossSellProducts}
-              copy={{
-                fbtEyebrow: copy.frequentlyBoughtTogetherEyebrow,
-                fbtTitle: copy.frequentlyBoughtTogetherTitle,
-                fbtSubtitle: copy.frequentlyBoughtTogetherSubtitle,
-                styleEyebrow: copy.styleItWithEyebrow,
-                styleTitle: copy.styleItWithTitle,
-                styleSubtitle: copy.styleItWithSubtitle,
-                bundleFbtCta: copy.crossSellBundleFbtCta,
-                bundleStyleCta: copy.crossSellBundleStyleCta,
-                needSize: copy.crossSellNeedSize,
-              }}
-              sizeReady={sizeReady}
-              oosSelected={oosSelected}
-              selectedSize={selectedSize as ProductSizeKey | null}
-              currentSlug={product.slug}
-              onQuickView={setRelatedQuickViewSlug}
-              onMissingSize={handleMissingSize}
-              onAddBundle={handleCrossSellBundle}
-            />
-          ) : null}
         </div>
 
         <aside className="md:sticky md:top-24 md:self-start">
@@ -1235,9 +1226,10 @@ export function ProductDetail({
                       <button
                         key={key}
                         type="button"
+                        title={disabled ? copy.pdpSizeOosHint : undefined}
                         onClick={() => setSelectedSize(isSelected ? null : key)}
                         aria-pressed={isSelected}
-                        className={`flex h-12 min-w-12 shrink-0 items-center justify-center rounded-full border px-4 font-headline text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                        className={`flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border px-4 font-headline text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
                           disabled
                             ? isSelected
                               ? 'border-obsidian bg-obsidian text-white line-through decoration-white/70'
@@ -1252,6 +1244,12 @@ export function ProductDetail({
                     );
                   })}
                 </div>
+
+                {silhouetteCueLabel ? (
+                  <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+                    {silhouetteCueLabel}
+                  </p>
+                ) : null}
 
                 <p className="font-body text-sm leading-relaxed">
                   <span className="text-obsidian">{inlineFitModelDisplay}</span>
@@ -1276,7 +1274,7 @@ export function ProductDetail({
                 ) : null}
               </div>
 
-              <div className="space-y-3">
+              <div ref={mainCtaRef} className="space-y-3">
                 <button
                   type="button"
                   onClick={handlePrimaryAction}
@@ -1342,6 +1340,31 @@ export function ProductDetail({
                   </div>
                 ) : null}
               </div>
+
+              {showCrossSellSection ? (
+                <CrossSellWidget
+                  frequentlyBoughtWith={primaryCrossSellProducts}
+                  styleWith={fallbackCrossSellProducts}
+                  copy={{
+                    fbtEyebrow: copy.frequentlyBoughtTogetherEyebrow,
+                    fbtTitle: copy.frequentlyBoughtTogetherTitle,
+                    fbtSubtitle: copy.frequentlyBoughtTogetherSubtitle,
+                    styleEyebrow: copy.styleItWithEyebrow,
+                    styleTitle: copy.styleItWithTitle,
+                    styleSubtitle: copy.styleItWithSubtitle,
+                    bundleFbtCta: copy.crossSellBundleFbtCta,
+                    bundleStyleCta: copy.crossSellBundleStyleCta,
+                    needSize: copy.crossSellNeedSize,
+                  }}
+                  sizeReady={sizeReady}
+                  oosSelected={oosSelected}
+                  selectedSize={selectedSize as ProductSizeKey | null}
+                  currentSlug={product.slug}
+                  onQuickView={setRelatedQuickViewSlug}
+                  onMissingSize={handleMissingSize}
+                  onAddBundle={handleCrossSellBundle}
+                />
+              ) : null}
 
               <div
                 className="space-y-2 rounded-xl border border-stone/35 bg-white/55 px-4 py-3"
@@ -1607,28 +1630,6 @@ export function ProductDetail({
           </div>
         </section>
       ) : null}
-
-      <div ref={mainCtaRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-90 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] md:hidden">
-        <div className="pointer-events-auto space-y-2 rounded-[20px] border border-obsidian/10 bg-papyrus/92 p-2 shadow-[0_24px_60px_-28px_rgba(26,26,26,0.55)] backdrop-blur-xl">
-          <button
-            type="button"
-            onClick={handlePrimaryAction}
-            className={`${mobileCtaClass}${addedFeedback ? ' pdp-cta-added' : ''}`}
-            aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
-          >
-            {addedFeedback ? (
-              <>
-                <span className="pdp-cta-check" aria-hidden>
-                  ✓
-                </span>
-                <span>{copy.pdpPrimaryCtaAddedLabel}</span>
-              </>
-            ) : (
-              <><IconCart /><span>{primaryCtaLabel()}</span></>
-            )}
-          </button>
-        </div>
-      </div>
 
       {product ? (
         <StickyAddToCart

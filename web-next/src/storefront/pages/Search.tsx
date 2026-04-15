@@ -114,6 +114,7 @@ function SearchProductCard({
       merchandisingBadge={product.merchandisingBadge}
       eyebrow={product.feelingName}
       eyebrowAccent={product.feelingAccent}
+      artistCredit={product.artistCredit}
       onQuickView={onQuickView}
       onProductClick={onProductClick}
     />

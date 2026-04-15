@@ -72,7 +72,7 @@ export default async function Page({ params }: ProductPageProps) {
   const deliveryRules: PdpDeliveryRules = mergePdpDeliveryRules(storefrontSettings?.delivery ?? null);
   const sizeTableConfig: PdpSizeTableConfig = mergePdpSizeTableConfig(storefrontSettings ?? undefined, product.sizeTableKey);
 
-  const jsonLd = buildProductJsonLd(product, catalog ?? undefined);
+  const jsonLd = buildProductJsonLd(product, catalog ?? undefined, storefrontSettings?.delivery ?? null);
 
   return (
     <>

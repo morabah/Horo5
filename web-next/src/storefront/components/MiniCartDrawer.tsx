@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, usePathname } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
 import { getProduct } from '../data/site';
@@ -24,6 +24,7 @@ export function MiniCartDrawer() {
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const navigate = useNavigate();
+  const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -73,11 +74,18 @@ export function MiniCartDrawer() {
     };
   }, [miniCartOpen, close]);
 
-  /* Close on route change */
+  /* Close when the route changes (not on first mount), so the drawer does not leak across pages */
+  const prevPathRef = useRef<string | null>(null);
   useEffect(() => {
-    close();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (prevPathRef.current === null) {
+      prevPathRef.current = pathname;
+      return;
+    }
+    if (prevPathRef.current !== pathname) {
+      prevPathRef.current = pathname;
+      close();
+    }
+  }, [pathname, close]);
 
   const handleViewBag = useCallback(() => {
     close();

@@ -4,7 +4,7 @@ import {
   ADDITIONAL_FEELING_ALIASES,
   ADDITIONAL_OCCASION_ALIASES,
 } from '../data/searchSynonyms';
-import { getFeelingCollectionVisual, getOccasionCollectionVisual, getProductMedia, heroStreet } from '../data/images';
+import { getFeelingCollectionVisual, getOccasionCollectionVisual } from '../data/images';
 import { LEGACY_VIBE_SLUG_TO_FEELING_SLUG } from '../data/legacy-slugs';
 import {
   getArtist,
@@ -33,6 +33,8 @@ export type SearchDesignCard = {
   feelingSlug: string;
   feelingName?: string;
   feelingAccent?: string;
+  /** Same pattern as Home PLP — from Medusa `artistDisplay` or catalog artist. */
+  artistCredit?: string;
   originalPriceEgp?: number | null;
   priceEgp: number;
   imageSrc: string;
@@ -103,7 +105,7 @@ type ScopedSearchParams = {
   filterColor: string;
 };
 
-const PRODUCT_SIZE_KEYS: ProductSizeKey[] = ['S', 'M', 'L', 'XL', 'XXL'];
+const PRODUCT_SIZE_KEYS: ProductSizeKey[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 export function parseSearchSizeFilter(raw: string | null | undefined): SearchSizeFilter {
   if (raw == null || raw === '' || raw === 'all') return 'all';
@@ -516,8 +518,8 @@ function occasionScore(occasionSlug: OccasionSlug, queryVariants: string[]): num
 function mapDesignCard(product: Product): SearchDesignCard {
   const feelingSlug = productFeelingSlug(product);
   const feeling = getFeeling(feelingSlug);
-  const imageSrc =
-    product.media?.main ?? product.thumbnail ?? getProductMedia(product.slug).main;
+  const imageSrc = product.media?.main ?? product.thumbnail ?? '';
+  const artistName = product.artistDisplay?.name?.trim() || getArtist(product.artistSlug)?.name?.trim();
 
   return {
     slug: product.slug,
@@ -525,6 +527,7 @@ function mapDesignCard(product: Product): SearchDesignCard {
     feelingSlug,
     feelingName: feeling?.name,
     feelingAccent: feeling?.accent,
+    artistCredit: artistName ? `Illustrated by ${artistName}` : undefined,
     originalPriceEgp: product.originalPriceEgp,
     priceEgp: product.priceEgp,
     imageSrc,
@@ -537,6 +540,7 @@ function mapVibeCard(feelingSlug: string, designCount: number): SearchVibeCard |
   const feeling = getFeeling(feelingSlug);
   if (!feeling) return null;
   const visual = getFeelingCollectionVisual(feeling.slug).cover;
+  if (!visual.src?.trim()) return null;
 
   return {
     slug: feeling.slug,
@@ -544,7 +548,7 @@ function mapVibeCard(feelingSlug: string, designCount: number): SearchVibeCard |
     tagline: feeling.blurb || feeling.tagline || '',
     accent: feeling.accent,
     designCount,
-    imageSrc: visual.src || heroStreet,
+    imageSrc: visual.src,
     imageAlt: visual.alt || `${feeling.name} category image.`,
   };
 }
@@ -751,6 +755,9 @@ export function getSearchResults({
       })
       : sortProductList(filteredProducts, sortKey);
 
+  const listableForGrid = sortedProducts.filter(productHasRealImage);
+  const listableBase = baseProducts.filter(productHasRealImage);
+
   const vibeOptions = [
     ...new Set(queryMatchedProducts.flatMap((product) => distinctResolvedFeelingSlugs(product))),
   ]
@@ -758,8 +765,8 @@ export function getSearchResults({
     .map((slug) => ({ slug, name: optionName(slug) }));
 
   return {
-    baseDesigns: baseProducts.map(mapDesignCard),
-    designMatches: sortedProducts.map(mapDesignCard),
+    baseDesigns: listableBase.map(mapDesignCard),
+    designMatches: listableForGrid.map(mapDesignCard),
     vibeMatches: getMatchedVibes(vibeCounts, queryVariants),
     occasionMatches: getMatchedOccasions(occasionCounts, queryVariants),
     vibeOptions,

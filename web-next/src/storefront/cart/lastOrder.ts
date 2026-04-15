@@ -3,12 +3,18 @@ import type { CartLine } from './types';
 export const LAST_ORDER_STORAGE_KEY = 'horo-last-order-v1';
 
 export type LastOrderSnapshot = {
+  /** Customer-facing id, e.g. `HORO-123` when Medusa `display_id` exists. */
   orderId: string;
   lines: CartLine[];
   cartId?: string;
+  /** Medusa `order.id` (ULID) for support / payment correlation — not the primary display number. */
   medusaOrderId?: string;
   subtotal: number;
   giftWrapEgp?: number;
+  /** From Medusa `order.discount_total` when present (EGP, positive display amount). */
+  discountEgp?: number;
+  /** From Medusa `order.tax_total` when present. */
+  taxEgp?: number;
   shipping: number;
   total: number;
   paymentMethod: 'cod' | 'card';
@@ -22,6 +28,8 @@ export type LastOrderSnapshot = {
   shippingLine1?: string;
   shippingCity?: string;
   whatsappOptIn?: boolean;
+  /** From Medusa `order.metadata.horo_ops_handling` when set by internal ops. */
+  horoOpsHandling?: 'pending' | 'received' | 'collected';
 };
 
 export function saveLastOrder(snapshot: LastOrderSnapshot): void {

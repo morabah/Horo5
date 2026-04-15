@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { BilingualServiceBlock } from '../components/BilingualServiceBlock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { getCartLineViews } from '../cart/view';
@@ -13,10 +14,39 @@ import { useStableNow } from '../runtime/render-time';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { formatEgp } from '../utils/formatPrice';
 
+function isMedusaInternalOrderId(id: string) {
+  return id.startsWith('order_');
+}
+
 function buildPaymentMethodLabel(paymentMethod: LastOrderSnapshot['paymentMethod'], isArabic: boolean) {
   return paymentMethod === 'card'
     ? isArabic ? 'بطاقة' : 'Card'
     : isArabic ? 'الدفع عند الاستلام' : 'COD';
+}
+
+/** Mirrors checkout cart `metadata.whatsapp_opt_in`: explicit false opts out; key present + parseable wins. */
+function whatsappOptInFromMetadataValue(metadata: Record<string, unknown>): boolean {
+  const raw = metadata.whatsapp_opt_in;
+  if (raw === false) return false;
+  if (raw === true) return true;
+  if (typeof raw === 'string') {
+    const s = raw.trim().toLowerCase();
+    if (s === 'false' || s === '0') return false;
+    if (s === 'true' || s === '1') return true;
+  }
+  return true;
+}
+
+function resolveWhatsappOptInFromOrder(
+  order: Awaited<ReturnType<typeof getOrder>>['order'],
+  fallback: LastOrderSnapshot | null,
+): boolean {
+  const meta = order.metadata;
+  if (meta && typeof meta === 'object' && !Array.isArray(meta) && Object.prototype.hasOwnProperty.call(meta, 'whatsapp_opt_in')) {
+    return whatsappOptInFromMetadataValue(meta as Record<string, unknown>);
+  }
+  if (fallback?.whatsappOptIn != null) return fallback.whatsappOptIn;
+  return true;
 }
 
 function createSnapshotFromOrder(args: {
@@ -31,6 +61,20 @@ function createSnapshotFromOrder(args: {
   const shipping = medusaAmountToEgp((order.shipping_total ?? order.shipping_methods?.[0]?.amount ?? 0) || 0);
   const subtotal = medusaAmountToEgp((order.subtotal ?? 0) || 0);
   const total = medusaAmountToEgp((order.total ?? 0) || 0);
+  const rawTax = order.tax_total;
+  const taxEgp =
+    typeof rawTax === 'number' && rawTax > 0
+      ? medusaAmountToEgp(rawTax)
+      : typeof rawTax === 'string' && Number(rawTax) > 0
+        ? medusaAmountToEgp(Number(rawTax))
+        : undefined;
+  const rawDisc = order.discount_total;
+  const discountEgp =
+    typeof rawDisc === 'number' && rawDisc !== 0
+      ? medusaAmountToEgp(Math.abs(rawDisc))
+      : typeof rawDisc === 'string' && Number(rawDisc) !== 0
+        ? medusaAmountToEgp(Math.abs(Number(rawDisc)))
+        : undefined;
   const firstPaymentSession = order.payment_collections?.[0]?.payment_sessions?.[0];
   const providerId = firstPaymentSession?.provider_id || '';
   const paymentMethod: LastOrderSnapshot['paymentMethod'] =
@@ -38,6 +82,15 @@ function createSnapshotFromOrder(args: {
   const paymentLabel = buildPaymentMethodLabel(paymentMethod, isArabic);
   const shippingLabel = order.shipping_methods?.[0]?.name || (isArabic ? 'عادي' : 'Standard');
   const displayOrderId = order.display_id ? `HORO-${order.display_id}` : order.id;
+  const orderMeta =
+    order.metadata && typeof order.metadata === 'object' && !Array.isArray(order.metadata)
+      ? (order.metadata as Record<string, unknown>)
+      : null;
+  const rawHoroHandling = orderMeta?.horo_ops_handling;
+  const horoOpsHandling =
+    rawHoroHandling === 'pending' || rawHoroHandling === 'received' || rawHoroHandling === 'collected'
+      ? rawHoroHandling
+      : undefined;
   const contactName = [order.shipping_address?.first_name, order.shipping_address?.last_name]
     .filter(Boolean)
     .join(' ')
@@ -50,6 +103,8 @@ function createSnapshotFromOrder(args: {
     medusaOrderId: order.id,
     subtotal,
     giftWrapEgp: giftWrapEgp > 0 ? giftWrapEgp : undefined,
+    discountEgp: discountEgp && discountEgp > 0 ? discountEgp : undefined,
+    taxEgp: taxEgp && taxEgp > 0 ? taxEgp : undefined,
     shipping,
     total,
     paymentMethod,
@@ -62,7 +117,8 @@ function createSnapshotFromOrder(args: {
     contactPhone: order.shipping_address?.phone ?? fallback?.contactPhone,
     shippingLine1: order.shipping_address?.address_1 ?? fallback?.shippingLine1,
     shippingCity: order.shipping_address?.city ?? fallback?.shippingCity,
-    whatsappOptIn: fallback?.whatsappOptIn,
+    whatsappOptIn: resolveWhatsappOptInFromOrder(order, fallback),
+    horoOpsHandling,
   };
 }
 
@@ -112,9 +168,18 @@ export function OrderConfirmation() {
     };
   }, [isArabic, now, urlOrderId]);
 
-  const lineViews = useMemo(() => getCartLineViews(order?.lines || []), [order?.lines]);
+  const lineViews = useMemo(
+    () => getCartLineViews(order?.lines || [], { orderConfirmation: true }),
+    [order?.lines],
+  );
 
-  const displayOrderId = urlOrderId || order?.orderId || null;
+  /** Prefer session/API snapshot (`HORO-…`) over the raw `order_id` query param (ULID). */
+  const customerFacingOrderId =
+    order?.orderId && !isMedusaInternalOrderId(order.orderId) ? order.orderId : null;
+  const internalOrderRef =
+    order?.medusaOrderId ??
+    (urlOrderId && isMedusaInternalOrderId(urlOrderId) ? urlOrderId : null) ??
+    (order?.orderId && isMedusaInternalOrderId(order.orderId) ? order.orderId : null);
   const displayTotal = order?.total ?? null;
   const paymentLabel =
     order?.paymentLabel ??
@@ -134,9 +199,10 @@ export function OrderConfirmation() {
     : isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
       ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
       : null;
+  const whatsappOrderRef = customerFacingOrderId ?? internalOrderRef;
   const whatsappOrderUrl =
-    order?.whatsappOptIn && order?.contactPhone && displayOrderId
-      ? withSupportMessage(whatsappBaseUrl, `Track order #${displayOrderId}`)
+    order?.whatsappOptIn && order?.contactPhone && whatsappOrderRef
+      ? withSupportMessage(whatsappBaseUrl, `Track order #${whatsappOrderRef}`)
       : null;
   const canReferenceWhatsapp = Boolean(whatsappOrderUrl);
   const hasOrderSummary = lineViews.length > 0;
@@ -149,8 +215,9 @@ export function OrderConfirmation() {
     : copy.confirmation.breadcrumbTitle;
 
   function handleCopyOrderId() {
-    if (!displayOrderId || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) return;
-    void navigator.clipboard.writeText(displayOrderId).then(() => {
+    const toCopy = customerFacingOrderId ?? internalOrderRef;
+    if (!toCopy || typeof navigator === 'undefined' || !navigator.clipboard?.writeText) return;
+    void navigator.clipboard.writeText(toCopy).then(() => {
       setCopiedOrderId(true);
       window.setTimeout(() => setCopiedOrderId(false), 1800);
     }).catch(() => {
@@ -185,9 +252,13 @@ export function OrderConfirmation() {
                 {celebrationHeading}
               </h1>
               <p className="mt-3 max-w-xl font-body text-obsidian">
-                {displayOrderId
-                  ? isArabic ? `تم تأكيد الطلب #${displayOrderId}.` : `Order #${displayOrderId} confirmed.`
-                  : isArabic ? 'تم استلام طلبك.' : 'Your order was received.'}
+                {customerFacingOrderId
+                  ? isArabic
+                    ? `تم تأكيد الطلب ${customerFacingOrderId}.`
+                    : `Order ${customerFacingOrderId} confirmed.`
+                  : isArabic
+                    ? 'تم استلام طلبك.'
+                    : 'Your order was received.'}
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
                 <div className="rounded-2xl border border-stone/45 bg-white/80 px-4 py-3">
@@ -195,8 +266,25 @@ export function OrderConfirmation() {
                     {copy.confirmation.orderReceived}
                   </p>
                   <p className="mt-2 text-lg font-semibold text-obsidian">
-                    {displayOrderId ? `#${displayOrderId}` : isArabic ? 'تم الاستلام' : 'Received'}
+                    {customerFacingOrderId
+                      ? customerFacingOrderId
+                      : isArabic
+                        ? 'تم الاستلام'
+                        : 'Received'}
                   </p>
+                  {internalOrderRef && customerFacingOrderId !== internalOrderRef ? (
+                    <p className="mt-2 font-mono text-[11px] leading-snug text-clay">
+                      {copy.confirmation.referenceIdLabel}: {internalOrderRef}
+                    </p>
+                  ) : null}
+                  {order?.horoOpsHandling ? (
+                    <p className="mt-2 text-xs font-medium text-obsidian/90">
+                      {isArabic ? 'حالة التجهيز:' : 'Fulfillment desk:'}{' '}
+                      <span className="rounded-md bg-white/90 px-2 py-0.5 capitalize text-obsidian ring-1 ring-stone/30">
+                        {order.horoOpsHandling}
+                      </span>
+                    </p>
+                  ) : null}
                 </div>
                 <div className="rounded-2xl border border-stone/45 bg-white/80 px-4 py-3">
                   <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
@@ -208,7 +296,11 @@ export function OrderConfirmation() {
               <div className="mt-5 flex flex-wrap gap-3">
                 <button
                   type="button"
-                  disabled={!displayOrderId || typeof navigator === 'undefined' || !navigator.clipboard?.writeText}
+                  disabled={
+                    !(customerFacingOrderId ?? internalOrderRef) ||
+                    typeof navigator === 'undefined' ||
+                    !navigator.clipboard?.writeText
+                  }
                   onClick={handleCopyOrderId}
                   className="btn btn-ghost inline-flex min-h-12 items-center justify-center px-5 disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -221,12 +313,21 @@ export function OrderConfirmation() {
                     href={whatsappOrderUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn btn-primary inline-flex min-h-12 items-center justify-center gap-2 px-6"
+                    className="btn btn-primary inline-flex min-h-12 items-center justify-start gap-2 px-6"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="shrink-0" aria-hidden>
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                     </svg>
-                    {copy.confirmation.whatsappOrderHelp}
+                    {!isArabic && copy.confirmation.whatsappOrderHelpArabic.trim() ? (
+                      <BilingualServiceBlock
+                        locale="en"
+                        arabic={copy.confirmation.whatsappOrderHelpArabic}
+                        english={copy.confirmation.whatsappOrderHelp}
+                        className="min-w-0 text-left"
+                      />
+                    ) : (
+                      copy.confirmation.whatsappOrderHelp
+                    )}
                   </a>
                 ) : (
                   <Link to="/exchange" className="btn btn-primary inline-flex min-h-12 items-center justify-center px-6">
@@ -258,11 +359,105 @@ export function OrderConfirmation() {
             ) : null}
           </div>
 
-          <p className="mt-6 font-body text-sm text-clay">
-            {canReferenceWhatsapp
-              ? copy.confirmation.whatsappOrderHelp
-              : copy.confirmation.followUpFallback}
-          </p>
+          {order ? (
+            <div className="mt-8 border-t border-stone/35 pt-6">
+              <h2 className="font-headline text-[1rem] font-semibold text-obsidian">{copy.confirmation.timelineHeading}</h2>
+              <ol className="mt-4 list-none space-y-4 p-0">
+                <li className="flex gap-3">
+                  <span
+                    className="font-label mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-obsidian text-[11px] font-semibold text-obsidian"
+                    aria-hidden
+                  >
+                    1
+                  </span>
+                  <div>
+                    <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
+                      {copy.confirmation.timelineStep1Title}
+                    </p>
+                    {!isArabic && copy.confirmation.timelineStep1BodyArabic.trim() ? (
+                      <BilingualServiceBlock
+                        className="mt-1"
+                        locale="en"
+                        arabic={copy.confirmation.timelineStep1BodyArabic}
+                        english={copy.confirmation.timelineStep1Body}
+                      />
+                    ) : (
+                      <p className="mt-1 font-body text-sm text-obsidian">{copy.confirmation.timelineStep1Body}</p>
+                    )}
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span
+                    className="font-label mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-obsidian text-[11px] font-semibold text-obsidian"
+                    aria-hidden
+                  >
+                    2
+                  </span>
+                  <div>
+                    <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
+                      {copy.confirmation.timelineStep2Title}
+                    </p>
+                    <p className="mt-1 font-body text-sm text-obsidian">
+                      {paymentLabel ?? (isArabic ? 'قيد التأكيد' : 'Pending')}
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <span
+                    className="font-label mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-obsidian text-[11px] font-semibold text-obsidian"
+                    aria-hidden
+                  >
+                    3
+                  </span>
+                  <div>
+                    <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
+                      {copy.confirmation.timelineStep3Title}
+                    </p>
+                    {!isArabic && copy.confirmation.timelineStep3BodyPrefixArabic.trim() ? (
+                      <div className="mt-1 space-y-1">
+                        <BilingualServiceBlock
+                          locale="en"
+                          arabic={copy.confirmation.timelineStep3BodyPrefixArabic}
+                          english={copy.confirmation.timelineStep3BodyPrefix}
+                          className="font-body text-sm text-obsidian"
+                        />
+                        <p className="font-body text-sm text-obsidian">{arrivalWindow}</p>
+                      </div>
+                    ) : (
+                      <p className="mt-1 font-body text-sm text-obsidian">
+                        {copy.confirmation.timelineStep3BodyPrefix} {arrivalWindow}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              </ol>
+            </div>
+          ) : null}
+
+          {!isArabic &&
+          (canReferenceWhatsapp
+            ? copy.confirmation.whatsappOrderHelpArabic
+            : copy.confirmation.followUpFallbackArabic
+          ).trim() ? (
+            <BilingualServiceBlock
+              className="mt-6 font-body text-sm text-clay"
+              locale="en"
+              arabic={
+                canReferenceWhatsapp
+                  ? copy.confirmation.whatsappOrderHelpArabic
+                  : copy.confirmation.followUpFallbackArabic
+              }
+              english={
+                canReferenceWhatsapp ? copy.confirmation.whatsappOrderHelp : copy.confirmation.followUpFallback
+              }
+            />
+          ) : (
+            <p className="mt-6 font-body text-sm text-clay">
+              {canReferenceWhatsapp
+                ? copy.confirmation.whatsappOrderHelp
+                : copy.confirmation.followUpFallback}
+            </p>
+          )}
         </section>
 
         <section className="mb-8 rounded-2xl border border-stone/45 bg-white/75 p-5">
@@ -272,8 +467,12 @@ export function OrderConfirmation() {
               <p className="mt-2 text-sm text-clay">
                 {hasOrderSummary
                   ? isArabic
-                    ? `${itemCount} قطعة${displayTotal != null ? ` · ${formatEgp(displayTotal)}` : ''}`
-                    : `${itemCount} item${itemCount === 1 ? '' : 's'}${displayTotal != null ? ` · ${formatEgp(displayTotal)}` : ''}`
+                    ? order && displayTotal != null
+                      ? `${itemCount} قطعة`
+                      : `${itemCount} قطعة${displayTotal != null ? ` · ${formatEgp(displayTotal)}` : ''}`
+                    : order && displayTotal != null
+                      ? `${itemCount} item${itemCount === 1 ? '' : 's'}`
+                      : `${itemCount} item${itemCount === 1 ? '' : 's'}${displayTotal != null ? ` · ${formatEgp(displayTotal)}` : ''}`
                   : isArabic
                     ? 'سنرسل التفاصيل النهائية في تحديث الطلب التالي.'
                     : 'Final order details will follow in the next order update.'}
@@ -303,6 +502,40 @@ export function OrderConfirmation() {
                   </div>
                 </div>
               ))}
+              {order && displayTotal != null ? (
+                <div className="mt-6 space-y-2 border-t border-stone/25 pt-4">
+                  <div className="flex justify-between gap-4 text-sm text-obsidian">
+                    <span>{copy.confirmation.subtotalLabel}</span>
+                    <span className="font-medium tabular-nums">{formatEgp(order.subtotal)}</span>
+                  </div>
+                  {order.giftWrapEgp != null && order.giftWrapEgp > 0 ? (
+                    <div className="flex justify-between gap-4 text-sm text-obsidian">
+                      <span>{copy.confirmation.giftWrapLabel}</span>
+                      <span className="font-medium tabular-nums">{formatEgp(order.giftWrapEgp)}</span>
+                    </div>
+                  ) : null}
+                  {order.discountEgp != null && order.discountEgp > 0 ? (
+                    <div className="flex justify-between gap-4 text-sm text-obsidian">
+                      <span>{copy.confirmation.discountTotalLabel}</span>
+                      <span className="font-medium tabular-nums">{formatEgp(-order.discountEgp)}</span>
+                    </div>
+                  ) : null}
+                  {order.taxEgp != null && order.taxEgp > 0 ? (
+                    <div className="flex justify-between gap-4 text-sm text-obsidian">
+                      <span>{copy.confirmation.taxTotalLabel}</span>
+                      <span className="font-medium tabular-nums">{formatEgp(order.taxEgp)}</span>
+                    </div>
+                  ) : null}
+                  <div className="flex justify-between gap-4 text-sm text-obsidian">
+                    <span>{copy.confirmation.shippingTotalLabel}</span>
+                    <span className="font-medium tabular-nums">{formatEgp(order.shipping)}</span>
+                  </div>
+                  <div className="flex justify-between gap-4 border-t border-stone/25 pt-2 text-base font-semibold text-obsidian">
+                    <span>{copy.confirmation.orderTotalLabel}</span>
+                    <span className="tabular-nums">{formatEgp(order.total)}</span>
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : (
             <p className="mt-4 text-sm text-clay">

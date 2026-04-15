@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { getCartLineViews, type CartLineView } from '../cart/view';
+import { BilingualServiceBlock } from '../components/BilingualServiceBlock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import type { CartLine } from '../cart/types';
 import { CART_SCHEMA } from '../data/domain-config';
 import { giftWrapPreview, heroStreet } from '../data/images';
-import { useUiLocale } from '../i18n/ui-locale';
+import { useUiLocale, type UiLocale } from '../i18n/ui-locale';
 import { useStableNow } from '../runtime/render-time';
 import { getProduct, type ProductSizeKey } from '../data/site';
 import { formatEgp } from '../utils/formatPrice';
@@ -107,21 +108,35 @@ function CartSummary({
   giftWrapEgp,
   estimatedOrderTotal,
   now,
+  locale,
+  cartService,
 }: {
   itemCount: number;
   subtotalEgp: number;
   giftWrapEgp: number;
   estimatedOrderTotal: number;
   now: Date;
+  locale: UiLocale;
+  cartService: { shippingExplainerArabic: string; estimatedDeliveryCheckoutNoteArabic: string };
 }) {
   const copy = CART_SCHEMA.copy;
+  const showBilingual = locale === 'en' && Boolean(cartService?.shippingExplainerArabic?.trim());
 
   return (
     <aside className="cart-summary card-glass order-3 md:sticky md:top-20 md:col-start-2 md:row-start-1 md:row-span-2" aria-labelledby="cart-summary-title">
       <h2 id="cart-summary-title" className="cart-summary-title">
         {copy.orderSummaryHeading}
       </h2>
-      <p className="cart-summary-note">{copy.shippingExplainer}</p>
+      {showBilingual ? (
+        <BilingualServiceBlock
+          className="cart-summary-note"
+          locale="en"
+          arabic={cartService.shippingExplainerArabic}
+          english={copy.shippingExplainer}
+        />
+      ) : (
+        <p className="cart-summary-note">{copy.shippingExplainer}</p>
+      )}
 
       <div className="cart-summary-rows">
         <p className="cart-summary-row">
@@ -144,7 +159,16 @@ function CartSummary({
           <span>{copy.estimatedDeliveryLabel}</span>
           <span className="text-right font-body text-sm">{formatDeliveryWindow(3, 5, now)}</span>
         </p>
-        <p className="-mt-1 mb-2 font-body text-xs text-warm-charcoal">{copy.estimatedDeliveryCheckoutNote}</p>
+        {locale === 'en' && cartService?.estimatedDeliveryCheckoutNoteArabic?.trim() ? (
+          <BilingualServiceBlock
+            className="-mt-1 mb-2 font-body text-xs text-warm-charcoal"
+            locale="en"
+            arabic={cartService.estimatedDeliveryCheckoutNoteArabic}
+            english={copy.estimatedDeliveryCheckoutNote}
+          />
+        ) : (
+          <p className="-mt-1 mb-2 font-body text-xs text-warm-charcoal">{copy.estimatedDeliveryCheckoutNote}</p>
+        )}
         <p className="cart-summary-total">
           <span>{copy.totalLabel}</span>
           <span>{formatEgp(estimatedOrderTotal)}</span>
@@ -258,7 +282,7 @@ export function Cart() {
     removeGiftWrap,
     addItem,
   } = useCart();
-  const { copy: shellCopy } = useUiLocale();
+  const { copy: shellCopy, locale } = useUiLocale();
   const now = useStableNow();
   const copy = CART_SCHEMA.copy;
   const [statusMessage, setStatusMessage] = useState('');
@@ -443,7 +467,7 @@ export function Cart() {
             aria-live="polite"
             aria-atomic="true"
           >
-            <div className="pointer-events-auto flex w-full max-w-lg flex-wrap items-center justify-between gap-3 rounded-xl border border-stone/70 bg-white/95 px-4 py-3 shadow-[0_-8px_40px_-12px_rgba(26,26,26,0.35)] backdrop-blur-md">
+            <div className="pointer-events-auto flex w-full max-w-lg flex-wrap items-center justify-between gap-3 rounded-xl border border-stone/70 bg-white px-4 py-3 shadow-[0_-8px_40px_-12px_rgba(26,26,26,0.35)]">
               <p className="font-body text-sm text-warm-charcoal">{formatMessage(copy.removeUndoPrompt, undoProductName)}</p>
               <button
                 type="button"
@@ -496,6 +520,8 @@ export function Cart() {
             giftWrapEgp={giftWrapEgp}
             estimatedOrderTotal={estimatedOrderTotal}
             now={now}
+            locale={locale}
+            cartService={shellCopy.cartService}
           />
         </div>
       </div>

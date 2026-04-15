@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { AppIcon } from '../components/AppIcon';
 import {
+  getArtist,
   getFeeling,
   getFeelings,
   getSubfeelingsByFeeling,
@@ -11,7 +12,7 @@ import {
   productHasRealImage,
   productsByFeeling,
 } from '../data/site';
-import { getFeelingCollectionVisual, getProductMedia, imgUrl } from '../data/images';
+import { getFeelingCollectionVisual, heroVectorizedV2, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
@@ -397,7 +398,8 @@ export function FeelingCollection() {
 
           <div className="vibe-product-grid">
             {list.map((p) => {
-              const main = p.media?.main ?? p.thumbnail ?? getProductMedia(p.slug).main;
+              const main = p.media?.main ?? p.thumbnail ?? '';
+              const artistName = p.artistDisplay?.name?.trim() || getArtist(p.artistSlug)?.name?.trim();
               return (
                 <MerchProductCard
                   key={p.slug}
@@ -410,6 +412,7 @@ export function FeelingCollection() {
                   merchandisingBadge={p.merchandisingBadge}
                   eyebrow={feeling.name}
                   eyebrowAccent={feeling.accent}
+                  artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                   onQuickView={setQuickViewSlug}
                 />
               );
@@ -491,32 +494,35 @@ export function FeelingCollection() {
             Explore other feelings
           </h2>
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            {others.map((v) => (
-              <Link
-                key={v.slug}
-                to={`/feelings/${v.slug}`}
-                className="group overflow-hidden rounded-sm border border-stone/70 bg-white text-inherit no-underline shadow-sm transition-transform hover:-translate-y-1 hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-              >
-                <div className="overflow-hidden">
-                  <img
-                    alt={getFeelingCollectionVisual(v.slug).cover.alt}
-                    className="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                    src={imgUrl(getFeelingCollectionVisual(v.slug).cover.src, 720)}
-                    width={720}
-                    height={900}
-                    style={
-                      getFeelingCollectionVisual(v.slug).cover.objectPosition
-                        ? { objectPosition: getFeelingCollectionVisual(v.slug).cover.objectPosition }
-                        : undefined
-                    }
-                  />
-                </div>
-                <div className="space-y-2 px-4 py-4">
-                  <p className="font-headline text-lg font-semibold text-obsidian">{v.name}</p>
-                  <p className="font-body text-sm leading-relaxed text-warm-charcoal">{v.blurb || v.tagline}</p>
-                </div>
-              </Link>
-            ))}
+            {others.map((v) => {
+              const otherCover = getFeelingCollectionVisual(v.slug).cover;
+              const otherCoverSrc = otherCover.src?.trim() ? otherCover.src : heroVectorizedV2;
+              const otherImgSrc = otherCoverSrc === heroVectorizedV2 ? otherCoverSrc : imgUrl(otherCoverSrc, 720);
+              return (
+                <Link
+                  key={v.slug}
+                  to={`/feelings/${v.slug}`}
+                  className="group overflow-hidden rounded-sm border border-stone/70 bg-white text-inherit no-underline shadow-sm transition-transform hover:-translate-y-1 hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                >
+                  <div className="overflow-hidden">
+                    <img
+                      alt={otherCover.alt}
+                      className="aspect-[4/5] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                      src={otherImgSrc}
+                      width={720}
+                      height={900}
+                      style={
+                        otherCover.objectPosition ? { objectPosition: otherCover.objectPosition } : undefined
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2 px-4 py-4">
+                    <p className="font-headline text-lg font-semibold text-obsidian">{v.name}</p>
+                    <p className="font-body text-sm leading-relaxed text-warm-charcoal">{v.blurb || v.tagline}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
 

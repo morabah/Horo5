@@ -108,7 +108,7 @@ That script re-attaches `pp_system_default` and adds `pp_paymob_paymob` only whe
 
 ### Order confirmation email (buyer)
 
-When **`RESEND_API_KEY`** and **`ORDER_CONFIRMATION_FROM`** are set, the subscriber [`src/subscribers/order-confirmation-email.ts`](src/subscribers/order-confirmation-email.ts) runs on **`order.placed`** (same event as `completeCartWorkflow`). It loads the order via the core **Query** API, builds an HTML receipt (line items, totals, shipping method, ship/bill addresses, gift-wrap add-on if present), and sends it to **`order.email`** through [Resend](https://resend.com/)’s HTTP API (no extra npm dependency).
+When **`RESEND_API_KEY`** and **`ORDER_CONFIRMATION_FROM`** are set, the subscriber [`src/subscribers/order-confirmation-email.ts`](src/subscribers/order-confirmation-email.ts) runs on **`order.placed`** (same event as `completeCartWorkflow`). It loads the order via the core **Query** API, normalizes the graph row with [`src/lib/normalize-graph-order-for-email.ts`](src/lib/normalize-graph-order-for-email.ts) (nested `items.item` / `items.detail`, `shipping_methods.shipping_method`, and `summary` totals when root money fields are zero), then builds an HTML receipt (line items, totals, shipping method, ship/bill addresses, gift-wrap add-on if present), and sends it to **`order.email`** through [Resend](https://resend.com/)’s HTTP API (no extra npm dependency).
 
 - If those env vars are **missing**, the subscriber **no-ops** (orders still complete).
 - If the order has **no valid email**, it logs and skips (guest checkout must persist email on the cart before completion).
@@ -116,6 +116,38 @@ When **`RESEND_API_KEY`** and **`ORDER_CONFIRMATION_FROM`** are set, the subscri
 - **`STORE_URL`**: used for a storefront link to the order success path; keep it aligned with production.
 
 See [`.env.template`](.env.template) for variable names.
+
+#### Find an order by HORO-# or internal id (support / Admin)
+
+Medusa Admin’s global **Orders** search (`q`) only hits fields the core marks as **searchable** (e.g. numeric `display_id`, customer `email`, address-related text). It does **not** match:
+
+- The customer-facing string **`HORO-18`** (that prefix is storefront-only; the DB stores `display_id` as a number).
+- The full internal id **`order_…`** for free-text search.
+
+**Workarounds:** search the **numeric** part only (e.g. `18`), or use email/date filters, or call the HORO lookup route below.
+
+**Custom API (store + publishable key + ops secret):** `GET /store/custom/horo-ops/lookup?q=<query>`
+
+Medusa applies **global admin JWT** to **`/admin/*`** before custom route code runs, so ops tooling must not live under `/admin/`. These routes live under **`/store/custom/horo-ops/*`** and require the same **`x-publishable-api-key`** as the storefront, plus **`x-horo-ops-secret`** (or Medusa Admin session if you add a server path that forwards cookies).
+
+- **`q`** examples: `HORO-18`, `18`, `#18`, or `order_01KP…` (full internal id).
+- **Auth:** header **`x-publishable-api-key`** (publishable key from Medusa Admin → Settings) **and** **`x-horo-ops-secret`** matching **`HORO_OPS_BACKEND_SECRET`**. In **production**, `HORO_OPS_BACKEND_SECRET` must be set on the Medusa service or these routes return **503**.
+- **Response:** `{ matches: [...], friendly: "HORO-18" | null }` — `matches` is capped at 5 orders with `id`, `display_id`, `email`, `created_at`, `status`, `currency_code`, `total`.
+
+Example (`PK` and `HORO_OPS_BACKEND_SECRET` are the same values you use in `web-next/.env.local`):
+
+```bash
+curl -sS \
+  -H "x-publishable-api-key: PK" \
+  -H "x-horo-ops-secret: YOUR_HORO_OPS_BACKEND_SECRET" \
+  "https://<your-medusa-host>/store/custom/horo-ops/lookup?q=HORO-18"
+```
+
+#### Internal ops dashboard (web-next + Medusa)
+
+Staff use the **Next.js** app (not Medusa Admin UI): open **`/internal/horo-ops`** on the storefront host, sign in with **`HORO_OPS_UI_PASSWORD`**, then the UI loads data via same-origin **`/api/horo-ops/*`**, which calls Medusa with **`x-publishable-api-key`** and **`x-horo-ops-secret`**. Configure both apps from [`.env.template`](.env.template) and [`web-next/.env.example`](../web-next/.env.example).
+
+Medusa exposes a paged summary at **`GET /store/custom/horo-ops/dashboard?skip=&take=`** (same auth as lookup). Aggregates such as **due soon**, **alarms**, and **money collected** are computed **only over the loaded page** of orders (see `meta.note` in the JSON). Tune SLA and windows with **`HORO_OPS_*`** env vars in `.env.template`.
 
 ## 4) Local is the source of truth (remote must match)
 

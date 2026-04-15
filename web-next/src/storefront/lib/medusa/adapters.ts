@@ -20,6 +20,7 @@ export function getVariantSize(variant: MedusaProductVariant): ProductSizeKey {
   const normalized = String(raw || "").toUpperCase()
 
   if (
+    normalized === "XS" ||
     normalized === "S" ||
     normalized === "M" ||
     normalized === "L" ||
@@ -54,7 +55,14 @@ export function toProduct(medusa: MedusaProduct): Product {
   const metadata = medusa.metadata || {}
   const metadataAvailableSizes = Array.isArray(metadata.availableSizes)
     ? metadata.availableSizes.filter((value): value is ProductSizeKey => {
-        return value === "S" || value === "M" || value === "L" || value === "XL" || value === "XXL"
+        return (
+          value === "XS" ||
+          value === "S" ||
+          value === "M" ||
+          value === "L" ||
+          value === "XL" ||
+          value === "XXL"
+        )
       })
     : []
   const primaryFeelingSlug =
@@ -129,6 +137,7 @@ function toCartLine(item: MedusaCartLineItem): CartLine {
     productSlug: item.product_handle || item.variant_id,
     qty: item.quantity,
     size:
+      size === "XS" ||
       size === "S" ||
       size === "M" ||
       size === "L" ||

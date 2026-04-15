@@ -2,11 +2,15 @@ import {
   buildPaymentLabelFromOrderRow,
   buildWhatsAppOrderTemplateBody,
   buildWhatsAppTemplateMessagePayload,
+  extractWhatsAppIncomingMessageEvents,
   extractWhatsAppStatusEvents,
+  extractWhatsAppWebhookChangeMeta,
   normalizeBuyerPhoneE164,
   orderRefLabelForWhatsapp,
   resolveMetaWhatsAppToFromOrderRow,
+  stringifyWebhookBodyForLog,
   toMetaWhatsAppRecipientDigits,
+  WHATSAPP_WEBHOOK_RAW_JSON_LOG_MAX,
 } from "../whatsapp-cloud-order"
 
 describe("whatsapp-cloud-order", () => {
@@ -89,5 +93,67 @@ describe("whatsapp-cloud-order", () => {
     expect(extractWhatsAppStatusEvents(body)).toEqual([
       { id: "wamid.x", status: "delivered", errors: undefined },
     ])
+  })
+
+  it("extractWhatsAppIncomingMessageEvents parses buyer text messages", () => {
+    const body = {
+      entry: [
+        {
+          changes: [
+            {
+              field: "messages",
+              value: {
+                messages: [
+                  {
+                    from: "201234567890",
+                    id: "wamid.in",
+                    type: "text",
+                    timestamp: "1234567890",
+                    text: { body: "Hello HORO" },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    }
+    expect(extractWhatsAppIncomingMessageEvents(body)).toEqual([
+      {
+        from: "201234567890",
+        messageId: "wamid.in",
+        type: "text",
+        textBody: "Hello HORO",
+        timestamp: "1234567890",
+      },
+    ])
+  })
+
+  it("extractWhatsAppWebhookChangeMeta reports field and payload shape", () => {
+    const body = {
+      entry: [
+        {
+          changes: [
+            {
+              field: "messages",
+              value: {
+                messages: [{ from: "1", id: "a", type: "text", text: { body: "x" } }],
+                statuses: [{ id: "wamid.s", status: "sent" }],
+              },
+            },
+          ],
+        },
+      ],
+    }
+    expect(extractWhatsAppWebhookChangeMeta(body)).toEqual([
+      { field: "messages", hasMessages: true, hasStatuses: true },
+    ])
+  })
+
+  it("stringifyWebhookBodyForLog truncates very large payloads", () => {
+    const huge = { x: "y".repeat(WHATSAPP_WEBHOOK_RAW_JSON_LOG_MAX + 500) }
+    const s = stringifyWebhookBodyForLog(huge)
+    expect(s.length).toBeLessThanOrEqual(WHATSAPP_WEBHOOK_RAW_JSON_LOG_MAX + 80)
+    expect(s).toContain("...(truncated, total_chars=")
   })
 })

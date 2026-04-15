@@ -12,7 +12,8 @@ import {
   type RuntimeCatalog,
   type Subfeeling,
 } from "@/storefront/data/site";
-import { buildProductJsonLdSchema } from "@/storefront/seo/product-jsonld-schema";
+import { mergePdpDeliveryRules, parseJsonLdStandardShippingEgpFromStoreDelivery } from "@/storefront/data/domain-config";
+import { buildProductJsonLdSchema, type ProductJsonLdShippingHint } from "@/storefront/seo/product-jsonld-schema";
 
 function feelingFromCatalog(slug: string, catalog: Pick<RuntimeCatalog, "feelings"> | null | undefined): Feeling | undefined {
   if (catalog?.feelings?.length) {
@@ -458,7 +459,19 @@ export function buildProductMetadata(
 
 export function buildProductJsonLd(
   product: Product,
-  catalog?: Pick<RuntimeCatalog, "feelings" | "occasions"> | null
+  catalog?: Pick<RuntimeCatalog, "feelings" | "occasions"> | null,
+  /** Medusa `GET /storefront/settings` → `delivery`; used for optional JSON-LD shipping only when `jsonLdStandardShippingEgp` is set. */
+  storeDelivery?: unknown | null,
 ) {
-  return buildProductJsonLdSchema(product, { siteOrigin, catalog });
+  const priceEgp = parseJsonLdStandardShippingEgpFromStoreDelivery(storeDelivery ?? null);
+  const rules = mergePdpDeliveryRules(storeDelivery ?? null);
+  let jsonLdShipping: ProductJsonLdShippingHint | null = null;
+  if (priceEgp != null) {
+    jsonLdShipping = {
+      priceEgp,
+      transitMinDays: rules.standardMinDays,
+      transitMaxDays: rules.standardMaxDays,
+    };
+  }
+  return buildProductJsonLdSchema(product, { siteOrigin, catalog: catalog ?? null, jsonLdShipping });
 }

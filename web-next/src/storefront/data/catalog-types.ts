@@ -59,7 +59,7 @@ export type Artist = {
   style: string;
 };
 
-export type ProductSizeKey = 'S' | 'M' | 'L' | 'XL' | 'XXL';
+export type ProductSizeKey = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
 
 export type PdpFitModel = {
   heightCm: number;

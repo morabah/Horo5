@@ -2,8 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MerchProductCard } from './MerchProductCard';
 import { ProductQuickView } from './ProductQuickView';
-import { getProductMedia } from '../data/images';
-import { getFeeling, getProduct, productHasRealImage } from '../data/site';
+import { getArtist, getFeeling, getProduct, productHasRealImage } from '../data/site';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useUiLocale } from '../i18n/ui-locale';
 
@@ -53,7 +52,8 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
             {cards.map((p) => {
               const feeling = getFeeling(p.primaryFeelingSlug ?? p.feelingSlug);
-              const main = p.media?.main ?? p.thumbnail ?? getProductMedia(p.slug).main;
+              const main = p.media?.main ?? p.thumbnail ?? '';
+              const artistName = p.artistDisplay?.name?.trim() || getArtist(p.artistSlug)?.name?.trim();
               return (
                 <MerchProductCard
                   key={p.slug}
@@ -66,6 +66,7 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
                   merchandisingBadge={p.merchandisingBadge}
                   eyebrow={feeling?.name}
                   eyebrowAccent={feeling?.accent}
+                  artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                   variant="minimal"
                   onQuickView={setQuickViewSlug}
                 />

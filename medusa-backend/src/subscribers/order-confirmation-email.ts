@@ -1,10 +1,10 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
+import { normalizeGraphOrderForEmail } from "../lib/normalize-graph-order-for-email"
 import {
   buildOrderConfirmationHtml,
   sendOrderConfirmationResend,
-  type OrderConfirmationInput,
 } from "../lib/order-confirmation-email"
 
 type OrderPlacedPayload = { id?: string }
@@ -21,9 +21,13 @@ const ORDER_GRAPH_FIELDS = [
   "discount_total",
   "total",
   "items.*",
+  "items.item.*",
+  "items.detail.*",
+  "summary.*",
   "shipping_address.*",
   "billing_address.*",
   "shipping_methods.*",
+  "shipping_methods.shipping_method.*",
 ] as const
 
 export default async function orderConfirmationEmailHandler({
@@ -77,10 +81,9 @@ export default async function orderConfirmationEmailHandler({
   const storeUrl = process.env.STORE_URL?.trim() || process.env.STORE_CORS?.split(",")[0]?.trim() || ""
   const bcc = process.env.ORDER_CONFIRMATION_BCC?.trim() || null
 
-  const orderInput: OrderConfirmationInput = {
-    ...(orderRow as OrderConfirmationInput),
+  const orderInput = normalizeGraphOrderForEmail(orderRow, {
     storeUrl: storeUrl || null,
-  }
+  })
 
   const display =
     typeof orderRow.display_id === "number" && orderRow.display_id > 0

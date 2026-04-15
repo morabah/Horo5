@@ -1,6 +1,6 @@
 import type { Product, ProductSizeKey, ProductVariantRecord } from '../data/site';
 
-const SIZE_ORDER: ProductSizeKey[] = ['S', 'M', 'L', 'XL', 'XXL'];
+const SIZE_ORDER: ProductSizeKey[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
 function sizeOrderIndex(size: string): number {
   const index = SIZE_ORDER.indexOf(size as ProductSizeKey);

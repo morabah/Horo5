@@ -2,9 +2,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { trackBeginCheckout, trackPurchase } from '../analytics/events';
 import type { CartLine } from '../cart/types';
+import { BilingualServiceBlock } from '../components/BilingualServiceBlock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
+import { loadSavedShipping, saveSavedShipping } from '../cart/savedShipping';
 import { saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import { MEDUSA_CART_ID_STORAGE_KEY } from '../cart/types';
@@ -91,6 +93,21 @@ type ParsedGoogleAddress = {
   province: string;
 };
 
+const EGYPT_GOVERNORATE_LIST = EGYPT_CITY_OPTIONS as readonly string[];
+
+/** Map Google Places components to a canonical governorate from `EGYPT_CITY_OPTIONS` when possible. */
+function matchGovernorateToEgyptCatalog(parsed: { city: string; province: string }): string | null {
+  const hay = `${parsed.province} ${parsed.city}`.toLowerCase();
+  for (const opt of EGYPT_CITY_OPTIONS) {
+    if (hay.includes(opt.toLowerCase())) return opt;
+  }
+  return null;
+}
+
+/**
+ * Google Places is optional and only augments street (`address_1`) when `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` is set.
+ * Governorate is always the canonical `EGYPT_CITY_OPTIONS` select — never inferred pricing or payment methods from Google.
+ */
 const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() || '';
 let googlePlacesLoader: Promise<unknown> | null = null;
 
@@ -206,6 +223,20 @@ function humanizePaymentProviderId(providerId: string) {
     .join(' ');
 }
 
+/** Wallets first, then Paymob card, then other providers, COD last — Medusa ids only; labels unchanged below. */
+function checkoutPaymentProviderSortKey(providerId: string): number {
+  const id = providerId.toLowerCase();
+  const kind = resolveCheckoutPaymentMethodKind(providerId);
+  if (kind === 'wallet') {
+    if (id.includes('apple')) return 0;
+    if (id.includes('google')) return 1;
+    return 2;
+  }
+  if (kind === 'cod') return 100;
+  if (id.includes('paymob')) return 10;
+  return 20;
+}
+
 function buildCheckoutPaymentMethods(
   providers: MedusaPaymentProvider[],
   isArabic: boolean,
@@ -213,11 +244,9 @@ function buildCheckoutPaymentMethods(
   const dedupedProviders = normalizePaymentProviders(providers).filter(
     (provider, index, list) => list.findIndex((candidate) => candidate.id === provider.id) === index,
   ).sort((left, right) => {
-    const leftKind = resolveCheckoutPaymentMethodKind(left.id);
-    const rightKind = resolveCheckoutPaymentMethodKind(right.id);
-    if (leftKind === rightKind) return left.id.localeCompare(right.id);
-    if (leftKind === 'cod') return -1;
-    if (rightKind === 'cod') return 1;
+    const leftKey = checkoutPaymentProviderSortKey(left.id);
+    const rightKey = checkoutPaymentProviderSortKey(right.id);
+    if (leftKey !== rightKey) return leftKey - rightKey;
     return left.id.localeCompare(right.id);
   });
 
@@ -393,6 +422,20 @@ function buildOrderSnapshot(args: {
   const subtotal = medusaAmountToEgp((order.subtotal ?? 0) || 0);
   const shipping = medusaAmountToEgp((order.shipping_total ?? order.shipping_methods?.[0]?.amount ?? 0) || 0);
   const total = medusaAmountToEgp((order.total ?? 0) || 0);
+  const rawTax = order.tax_total;
+  const taxEgp =
+    typeof rawTax === 'number' && rawTax > 0
+      ? medusaAmountToEgp(rawTax)
+      : typeof rawTax === 'string' && Number(rawTax) > 0
+        ? medusaAmountToEgp(Number(rawTax))
+        : undefined;
+  const rawDisc = order.discount_total;
+  const discountEgp =
+    typeof rawDisc === 'number' && rawDisc !== 0
+      ? medusaAmountToEgp(Math.abs(rawDisc))
+      : typeof rawDisc === 'string' && Number(rawDisc) !== 0
+        ? medusaAmountToEgp(Math.abs(Number(rawDisc)))
+        : undefined;
   const giftWrapEgp = getOrderGiftWrapEgp(order);
   const paymentLabel = paymentMethod === 'card'
     ? isArabic ? 'بطاقة' : 'Card'
@@ -406,6 +449,8 @@ function buildOrderSnapshot(args: {
     medusaOrderId: order.id,
     subtotal,
     giftWrapEgp: giftWrapEgp > 0 ? giftWrapEgp : undefined,
+    discountEgp: discountEgp && discountEgp > 0 ? discountEgp : undefined,
+    taxEgp: taxEgp && taxEgp > 0 ? taxEgp : undefined,
     shipping,
     total,
     paymentMethod,
@@ -466,6 +511,7 @@ export function Checkout() {
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [placesReady, setPlacesReady] = useState(false);
   const [addressPlaceId, setAddressPlaceId] = useState<string | null>(null);
+  const [rememberAddressOnDevice, setRememberAddressOnDevice] = useState(false);
 
   const hydrateCheckoutFromCart = useCallback((cart: MedusaCart) => {
     const composedName = [cart.shipping_address?.first_name, cart.shipping_address?.last_name]
@@ -473,14 +519,16 @@ export function Checkout() {
       .join(' ')
       .trim();
 
+    const saved = loadSavedShipping();
+
     setCheckoutCart(cart);
-    setEmail(cart.email || '');
-    setPhone(cart.shipping_address?.phone || '');
-    setFullName(composedName);
-    setLine1(cart.shipping_address?.address_1 || '');
-    setCity(cart.shipping_address?.city || '');
-    setProvince(cart.shipping_address?.province || '');
-    setPostalCode(cart.shipping_address?.postal_code || '');
+    setEmail(cart.email || saved?.email || '');
+    setPhone(cart.shipping_address?.phone || saved?.phone || '');
+    setFullName(composedName || saved?.fullName || '');
+    setLine1(cart.shipping_address?.address_1 || saved?.line1 || '');
+    setCity(cart.shipping_address?.city || saved?.city || '');
+    setProvince(cart.shipping_address?.province || saved?.province || '');
+    setPostalCode(cart.shipping_address?.postal_code || saved?.postalCode || '');
     setWhatsappOptIn(cart.metadata?.whatsapp_opt_in === false ? false : true);
 
     const selectedProviderId = cart.payment_collection?.payment_sessions?.[0]?.provider_id;
@@ -760,6 +808,26 @@ export function Checkout() {
     () => buildCheckoutPaymentMethods(paymentProviders, isArabic),
     [isArabic, paymentProviders],
   );
+
+  /** Mirrors live Medusa `payment_providers` so the strip never promises card when only COD is enabled. */
+  const checkoutPaymentTrustLine = useMemo(() => {
+    if (paymentMethods.length === 0) return null;
+    const hasCod = paymentMethods.some((m) => m.kind === 'cod');
+    const hasOnline = paymentMethods.some((m) => m.kind === 'card' || m.kind === 'wallet');
+    if (hasCod && hasOnline) {
+      return isArabic
+        ? 'الدفع عند الاستلام وخيارات بطاقة / محفظة متاحة'
+        : 'COD plus card / wallet options available';
+    }
+    if (hasCod) return isArabic ? 'الدفع عند الاستلام' : 'Cash on delivery (COD)';
+    if (hasOnline) return isArabic ? 'دفع إلكتروني عبر المزود المفعّل' : 'Online payment via enabled provider';
+    return null;
+  }, [paymentMethods, isArabic]);
+
+  const governorateSelectValue = useMemo(() => {
+    const t = city.trim();
+    return EGYPT_GOVERNORATE_LIST.includes(t) ? t : '';
+  }, [city]);
   const selectedPaymentMethod = useMemo(
     () => paymentMethods.find((method) => method.id === selectedPaymentMethodId) || null,
     [paymentMethods, selectedPaymentMethodId],
@@ -818,8 +886,14 @@ export function Checkout() {
         autocompleteListener = autocomplete.addListener('place_changed', () => {
           const parsed = parseGoogleAddress(autocomplete.getPlace() || {});
           if (parsed.line1) setLine1(parsed.line1);
-          if (parsed.city) setCity(parsed.city);
-          setProvince(parsed.province);
+          const matchedGov = matchGovernorateToEgyptCatalog(parsed);
+          if (matchedGov) {
+            setCity(matchedGov);
+            setProvince(matchedGov);
+          } else {
+            if (parsed.city) setCity(parsed.city);
+            setProvince(parsed.province);
+          }
           setPostalCode(parsed.postalCode);
           setAddressPlaceId(parsed.placeId || null);
         });
@@ -966,6 +1040,17 @@ export function Checkout() {
         });
 
         saveLastOrder(snapshot);
+        if (rememberAddressOnDevice) {
+          saveSavedShipping({
+            email: email.trim(),
+            phone: phone.trim(),
+            fullName: fullName.trim(),
+            line1: line1.trim(),
+            city: city.trim(),
+            province: province.trim() || city.trim(),
+            postalCode: postalCode.trim(),
+          });
+        }
         trackPurchase({
           transactionId: snapshot.orderId,
           value: snapshot.total,
@@ -1251,7 +1336,7 @@ export function Checkout() {
       <div className="min-h-[60vh] bg-papyrus py-8 pb-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:py-10 md:pb-16">
         <div className="container mx-auto max-w-3xl px-4 md:px-8">
           <PageBreadcrumb className="mb-6" items={checkoutBreadcrumbItems} />
-          <div className="rounded-xl border border-stone bg-white/70 p-6 text-sm text-clay">
+          <div className="rounded-xl border border-stone bg-white p-6 text-sm text-clay">
             {paymentVerifying ? (
               <div className="flex flex-col items-center gap-4 text-center">
                 <span
@@ -1336,12 +1421,18 @@ export function Checkout() {
         </Link>
 
         <div className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-warm-charcoal" aria-label="Checkout trust signals">
-          {CHECKOUT_SCHEMA.trustStripItems.map((item) => (
+          {CHECKOUT_SCHEMA.trustStripItemsStatic.map((item) => (
             <span key={item} className="inline-flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-deep-teal" aria-hidden />
               <span>{item}</span>
             </span>
           ))}
+          {checkoutPaymentTrustLine ? (
+            <span key="payment-options-live" className="inline-flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-deep-teal" aria-hidden />
+              <span>{checkoutPaymentTrustLine}</span>
+            </span>
+          ) : null}
         </div>
 
         {/* 3-step progress indicator */}
@@ -1370,11 +1461,21 @@ export function Checkout() {
             <div>
               <h1 className="font-headline text-2xl font-semibold text-obsidian">{copy.checkout.breadcrumbTitle}</h1>
               <p className="mt-3 text-[0.9375rem] font-semibold text-obsidian">{copy.checkout.guestCheckout}</p>
+              {!isArabic ? (
+                <BilingualServiceBlock
+                  className="mt-4 max-w-xl"
+                  locale="en"
+                  arabic={copy.checkout.secureDataArabic}
+                  english={copy.checkout.secureData}
+                />
+              ) : (
+                <p className="mt-4 max-w-xl text-sm text-warm-charcoal">{copy.checkout.secureData}</p>
+              )}
 
               <div className="mt-6 lg:hidden">
                 <button
                   type="button"
-                  className="flex min-h-12 w-full items-center justify-between rounded-2xl border border-stone/35 bg-white/70 px-4 py-3 text-left shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  className="flex min-h-12 w-full items-center justify-between rounded-2xl border border-stone/35 bg-white px-4 py-3 text-left shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   aria-expanded={mobileSummaryOpen}
                   onClick={() => setMobileSummaryOpen((open) => !open)}
                 >
@@ -1394,7 +1495,7 @@ export function Checkout() {
                       cart={checkoutCart}
                       shipping={shippingCost}
                       cartId={cartId}
-                      className="rounded-2xl border border-stone/35 bg-white/80 p-4 shadow-sm"
+                      className="rounded-2xl border border-stone/35 bg-white p-4 shadow-sm"
                       onAfterLineChange={async (cartHint) => {
                         if (!cartId) return;
                         await refreshCartState(cartId, cartHint);
@@ -1404,7 +1505,7 @@ export function Checkout() {
                 ) : null}
               </div>
 
-              <section className="mt-8 rounded-2xl border border-stone/30 bg-white/60 p-5 shadow-sm">
+              <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
                 <h2 className="font-headline text-lg font-semibold text-obsidian">{copy.checkout.headingContact}</h2>
 
                 <label htmlFor="phone" className={labelClass}>
@@ -1452,7 +1553,7 @@ export function Checkout() {
                 </label>
               </section>
 
-              <section className="mt-8 rounded-2xl border border-stone/30 bg-white/60 p-5 shadow-sm">
+              <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
                 <h2 className="font-headline text-lg font-semibold text-obsidian">{copy.checkout.headingShippingAddress}</h2>
 
                 <label htmlFor="name" className={labelClass}>
@@ -1500,28 +1601,40 @@ export function Checkout() {
                       : 'Type your street address manually, then type or pick your governorate.'}
                 </p>
 
-                <label htmlFor="city" className={labelClass}>
-                  {isArabic ? 'المحافظة / المدينة *' : 'Governorate / city *'}
+                <label htmlFor="governorate" className={labelClass}>
+                  {isArabic ? 'المحافظة *' : 'Governorate *'}
                 </label>
-                <input
-                  id="city"
-                  type="text"
-                  list="city-options"
-                  autoComplete="address-level2"
-                  placeholder={isArabic ? 'اكتب أو اختر المحافظة' : 'Type or select governorate'}
-                  value={city}
+                <select
+                  id="governorate"
+                  name="governorate"
+                  required
+                  autoComplete="address-level1"
+                  value={governorateSelectValue}
                   onChange={(event) => {
-                    setCity(event.target.value);
+                    const v = event.target.value;
+                    setCity(v);
+                    setProvince(v);
                     setErrors((prev) => omitFieldError(prev, 'city'));
                   }}
                   onBlur={() => validateFieldOnBlur('city')}
-                  className={`${inputBaseClass} ${errors.city ? inputErrorClass : ''}`}
-                />
-                <datalist id="city-options">
+                  className={`${inputBaseClass} min-h-12 appearance-none bg-white ${errors.city ? inputErrorClass : ''}`}
+                >
+                  <option value="">
+                    {isArabic ? 'اختر المحافظة' : 'Select governorate'}
+                  </option>
                   {EGYPT_CITY_OPTIONS.map((option) => (
-                    <option key={option} value={option} />
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
                   ))}
-                </datalist>
+                </select>
+                {governorateSelectValue === '' && city.trim() && !EGYPT_GOVERNORATE_LIST.includes(city.trim()) ? (
+                  <p className="mt-2 text-xs text-clay">
+                    {isArabic
+                      ? 'العنوان الحالي لا يطابق قائمة المحافظات. اختر المحافظة من القائمة لإتمام الشحن.'
+                      : 'Your saved address is not on the governorate list. Pick a governorate to continue.'}
+                  </p>
+                ) : null}
                 {errors.city ? <p className={errTextClass}>{errors.city}</p> : null}
                 {(province || postalCode) ? (
                   <p className="mt-2 text-xs text-clay">
@@ -1530,10 +1643,19 @@ export function Checkout() {
                       .join(' · ')}
                   </p>
                 ) : null}
+                <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm text-obsidian">
+                  <input
+                    type="checkbox"
+                    checked={rememberAddressOnDevice}
+                    onChange={(event) => setRememberAddressOnDevice(event.target.checked)}
+                    className="h-[18px] w-[18px] accent-deep-teal"
+                  />
+                  {copy.checkout.rememberAddressOnDevice}
+                </label>
                 {shippingError ? <p className="mt-4 text-sm text-ember">{shippingError}</p> : null}
               </section>
 
-              <section className="mt-8 rounded-2xl border border-stone/30 bg-white/60 p-5 shadow-sm">
+              <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
                 <h2 className="font-headline text-lg font-semibold text-obsidian">{copy.checkout.headingShippingMethod}</h2>
                 <div className={`${radioCardClass(true)} mt-4`}>
                   <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-obsidian" aria-hidden />
@@ -1554,7 +1676,7 @@ export function Checkout() {
                 </p>
               </section>
 
-              <section className="mt-8 rounded-2xl border border-stone/30 bg-white/60 p-5 shadow-sm">
+              <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
                 <h2 className="font-headline text-lg font-semibold text-obsidian">{copy.checkout.headingPayment}</h2>
                 <p className="font-label mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">
                   {isArabic ? 'خيارات الدفع الحية' : 'Live payment options'}
@@ -1665,7 +1787,7 @@ export function Checkout() {
         </form>
 
         {/* Sticky mobile checkout CTA */}
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-stone/30 bg-white/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-3 shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.1)] backdrop-blur-md lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-stone/30 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-3 shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.1)] lg:hidden">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="font-headline text-lg font-semibold text-obsidian">{formatEgp(orderTotal)}</p>
