@@ -7,7 +7,7 @@ import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import type { CartLine } from '../cart/types';
 import { CART_SCHEMA } from '../data/domain-config';
-import { giftWrapPreview, heroStreet } from '../data/images';
+import { giftWrapPreview, heroVectorizedV2 } from '../data/images';
 import { useUiLocale, type UiLocale } from '../i18n/ui-locale';
 import { useStableNow } from '../runtime/render-time';
 import { getProduct, type ProductSizeKey } from '../data/site';
@@ -489,7 +489,7 @@ export function Cart() {
           <section className="cart-empty card-glass" aria-labelledby="cart-empty-title">
             <div className="cart-empty-media">
               <TeeImageFrame
-                src={heroStreet}
+                src={heroVectorizedV2}
                 alt="HORO editorial tee image for the empty cart state."
                 w={960}
                 eager

@@ -3,19 +3,8 @@ export type LegacyProductMedia = {
   main: string
 }
 
-const tee = {
-  flatLayStyle: "/images/tees/bg_tee_flatlay.png",
-  manCasual: "/images/tees/bg_tee_man_casual.png",
-  outdoorTee: "/images/tees/bg_tee_outdoor.png",
-  relaxedFit: "/images/tees/bg_vibe_career.png",
-  streetPose: "/images/tees/bg_vibe_zodiac.png",
-  studioTee: "/images/tees/bg_tee_studio_tee.png",
-  walkingStreet: "/images/tees/tee_walking_street.png",
-  whiteFront: "/images/tees/bg_tee_white_front.png",
-  womanStreet: "/images/tees/bg_tee_woman_street.png",
-  womanUrban: "/images/tees/bg_vibe_fictious.png",
-  yellowTee: "/images/tees/bg_vibe_trends.png",
-} as const
+/** On-brand vector from the storefront bundle (§3.4) — replaces non-compliant placeholder photography. */
+const BRAND_PLACEHOLDER = "/images/hero/horo_vectorized_v2.svg"
 
 const proofCards = {
   backFit: "/images/proof/back-fit-card.svg",
@@ -23,26 +12,6 @@ const proofCards = {
   macroDetail: "/images/proof/macro-detail-card.svg",
   washTest: "/images/proof/wash-test-card.svg",
   weightScale: "/images/proof/weight-scale-card.svg",
-} as const
-
-const newTees = {
-  career1: "/images/tees/career_vibe_1_1774374340994.png",
-  career2: "/images/tees/career_vibe_2_1774374359412.png",
-  emotions1: "/images/tees/emotions_vibe_1_1774374034307.png",
-  emotions2: "/images/tees/emotions_vibe_2_1774374055078.png",
-  emotions3: "/images/tees/emotions_vibe_3_1774374073378.png",
-  emotions4: "/images/tees/emotions_vibe_4_1774374088034.png",
-  emotions5: "/images/tees/emotions_vibe_5_1774374107073.png",
-  fiction1: "/images/tees/fiction_vibe_1_1774374247152.png",
-  fiction2: "/images/tees/fiction_vibe_2_1774374267156.png",
-  fiction3: "/images/tees/fiction_vibe_3_1774374284774.png",
-  fiction4: "/images/tees/fiction_vibe_4_1774374302082.png",
-  fiction5: "/images/tees/fiction_vibe_5_1774374319387.png",
-  zodiac1: "/images/tees/zodiac_vibe_1_1774374128029.png",
-  zodiac2: "/images/tees/zodiac_vibe_2_1774374153203.png",
-  zodiac3: "/images/tees/zodiac_vibe_3_1774374174567.png",
-  zodiac4: "/images/tees/zodiac_vibe_4_1774374196317.png",
-  zodiac5: "/images/tees/zodiac_vibe_5_1774374214170.png",
 } as const
 
 function uniqueGallery(values: Array<string | undefined>): string[] {
@@ -71,7 +40,7 @@ function legacyGallery(
     macroDetail?: string
     weightScale?: string
     washTest?: string
-  } = {}
+  } = {},
 ): LegacyProductMedia {
   return {
     gallery: uniqueGallery([
@@ -79,8 +48,8 @@ function legacyGallery(
       options.backOnBody ?? proofCards.backFit,
       options.macroDetail ?? proofCards.macroDetail,
       options.fabricTag ?? proofCards.fabricTag,
-      options.flatLay ?? tee.flatLayStyle,
-      options.lifestyle ?? tee.walkingStreet,
+      options.flatLay ?? proofCards.weightScale,
+      options.lifestyle ?? proofCards.washTest,
       options.weightScale ?? proofCards.weightScale,
       options.washTest ?? proofCards.washTest,
     ]),
@@ -89,156 +58,156 @@ function legacyGallery(
 }
 
 const LEGACY_MEDIA_BY_PRODUCT: Record<string, LegacyProductMedia> = {
-  "career-boardroom-rebel": legacyGallery(tee.whiteFront, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "career-boardroom-rebel": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "career-ceo-mindset": legacyGallery(newTees.career2, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "career-ceo-mindset": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "career-climb-the-ladder": legacyGallery(tee.relaxedFit, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "career-climb-the-ladder": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.weightScale,
   }),
-  "career-hustle-hard": legacyGallery(newTees.career1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.relaxedFit,
+  "career-hustle-hard": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "career-office-hours": legacyGallery(tee.walkingStreet, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.manCasual,
+  "career-office-hours": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.backFit,
   }),
-  "cairo-thread": legacyGallery(tee.walkingStreet, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.relaxedFit,
+  "cairo-thread": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "emotions-deep-waters": legacyGallery(newTees.emotions2, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanStreet,
+  "emotions-deep-waters": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "emotions-raw-nerve": legacyGallery(newTees.emotions4, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
+  "emotions-raw-nerve": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.weightScale,
   }),
-  "emotions-shattered-peace": legacyGallery(newTees.emotions3, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanUrban,
+  "emotions-shattered-peace": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "emotions-silent-scream": legacyGallery(newTees.emotions1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanStreet,
+  "emotions-silent-scream": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "emotions-unspoken": legacyGallery(newTees.emotions5, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "emotions-unspoken": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.backFit,
   }),
-  "fiction-cyber-ghost": legacyGallery(newTees.fiction4, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.streetPose,
+  "fiction-cyber-ghost": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "fiction-distanted-suns": legacyGallery(newTees.fiction3, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "fiction-distanted-suns": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "fiction-distant-suns": legacyGallery(newTees.fiction3, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "fiction-distant-suns": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "fiction-dragon-scale": legacyGallery(newTees.fiction2, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
+  "fiction-dragon-scale": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.weightScale,
   }),
-  "fiction-mythic-realm": legacyGallery(newTees.fiction5, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.studioTee,
+  "fiction-mythic-realm": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "fiction-neon-dreams": legacyGallery(newTees.fiction1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanUrban,
+  "fiction-neon-dreams": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "midnight-compass": legacyGallery(tee.yellowTee, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.streetPose,
+  "midnight-compass": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.backFit,
   }),
-  "quiet-revolt": legacyGallery(tee.womanUrban, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanStreet,
+  "quiet-revolt": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "signal-line": legacyGallery(tee.streetPose, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
+  "signal-line": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.weightScale,
   }),
-  "the-weight-of-light": legacyGallery(tee.whiteFront, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
+  "the-weight-of-light": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "trends-drop-culture": legacyGallery(tee.streetPose, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "trends-drop-culture": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.backFit,
   }),
-  "trends-hype-check": legacyGallery(tee.manCasual, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
+  "trends-hype-check": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.weightScale,
   }),
-  "trends-next-wave": legacyGallery(tee.outdoorTee, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.yellowTee,
+  "trends-next-wave": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "trends-street-culture": legacyGallery(tee.womanStreet, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "trends-street-culture": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "trends-viral-moment": legacyGallery(tee.yellowTee, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
+  "trends-viral-moment": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.weightScale,
   }),
-  "zodiac-astral-body": legacyGallery(newTees.zodiac1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.streetPose,
+  "zodiac-astral-body": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "zodiac-cosmic-dust": legacyGallery(newTees.zodiac5, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.relaxedFit,
+  "zodiac-cosmic-dust": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "zodiac-lunar-pull": legacyGallery(newTees.zodiac3, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.walkingStreet,
+  "zodiac-lunar-pull": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.backFit,
   }),
-  "zodiac-solar-flare": legacyGallery(newTees.zodiac4, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.outdoorTee,
+  "zodiac-solar-flare": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.weightScale,
   }),
-  "zodiac-star-alignment": legacyGallery(newTees.zodiac2, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.yellowTee,
+  "zodiac-star-alignment": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
   /** Egypt catalog hero SKUs (see egypt-products.ts + seed-egypt-catalog) */
-  "horo-career-vibe": legacyGallery(newTees.career1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.relaxedFit,
+  "horo-career-vibe": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "horo-emotions-vibe": legacyGallery(newTees.emotions1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanStreet,
+  "horo-emotions-vibe": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.fabricTag,
   }),
-  "horo-fiction-vibe": legacyGallery(newTees.fiction1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.womanUrban,
+  "horo-fiction-vibe": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.washTest,
   }),
-  "horo-signature-hero": legacyGallery("/images/hero/hero-model.png", {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.studioTee,
+  "horo-signature-hero": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.macroDetail,
   }),
-  "horo-zodiac-vibe": legacyGallery(newTees.zodiac1, {
-    flatLay: tee.flatLayStyle,
-    lifestyle: tee.streetPose,
+  "horo-zodiac-vibe": legacyGallery(BRAND_PLACEHOLDER, {
+    flatLay: proofCards.macroDetail,
+    lifestyle: proofCards.backFit,
   }),
 }
 
-const DEFAULT_MEDIA = legacyGallery(tee.manCasual, {
-  flatLay: tee.flatLayStyle,
-  lifestyle: tee.walkingStreet,
+const DEFAULT_MEDIA = legacyGallery(BRAND_PLACEHOLDER, {
+  flatLay: proofCards.macroDetail,
+  lifestyle: proofCards.washTest,
 })
 
 export function getLegacyProductMedia(slug: string): LegacyProductMedia {

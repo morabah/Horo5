@@ -1,6 +1,6 @@
 import type { CartLine } from './types';
 import { cartLineKey } from './types';
-import { getProductMedia } from '../data/images';
+import { getProductMedia, heroVectorizedV2 } from '../data/images';
 import { getArtist, getProduct } from '../data/site';
 
 /** Neutral mark when a Medusa order line has no thumbnail — avoids implying another SKU’s catalog art. */
@@ -39,7 +39,7 @@ export function getCartLineView(
       ? ORDER_LINE_IMAGE_PLACEHOLDER
       : product
         ? getProductMedia(product.slug).main
-        : '/images/hero/hero-model.png';
+        : heroVectorizedV2;
 
   return {
     ...line,

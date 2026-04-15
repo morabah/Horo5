@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 
 import {
@@ -41,13 +41,26 @@ export function TeeImage({
   const resolvedSrc = imgUrl(forDisplay, w);
   const defaultSizes = sizes ?? `(max-width: 1024px) 100vw, min(${Math.min(w * 2, 1600)}px, 45vw)`;
   const useNextOptimizer = useNextImageOptimizerForSrc(forDisplay);
+  const [errored, setErrored] = useState(false);
+  const missingSrc = !forDisplay.trim();
+  const showPlaceholder = missingSrc || errored;
 
   return (
     <div
       className={['relative h-full w-full min-h-0', className].filter(Boolean).join(' ')}
       style={{ ...style }}
     >
-      {useNextOptimizer ? (
+      {showPlaceholder ? (
+        <div
+          role="img"
+          aria-label={alt}
+          className="absolute inset-0 flex items-center justify-center bg-stone/40 text-obsidian/70"
+        >
+          <span className="font-headline text-sm font-semibold tracking-[0.24em] uppercase">
+            HORO
+          </span>
+        </div>
+      ) : useNextOptimizer ? (
         <Image
           src={resolvedSrc}
           alt={alt}
@@ -57,6 +70,7 @@ export function TeeImage({
           className="object-cover"
           placeholder={blurDataURL ? 'blur' : 'empty'}
           blurDataURL={blurDataURL || undefined}
+          onError={() => setErrored(true)}
         />
       ) : (
         <img
@@ -65,6 +79,7 @@ export function TeeImage({
           className="absolute inset-0 h-full w-full object-cover"
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"
+          onError={() => setErrored(true)}
         />
       )}
     </div>

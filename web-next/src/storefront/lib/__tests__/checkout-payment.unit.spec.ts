@@ -20,13 +20,15 @@ describe('checkout-payment', () => {
     expect(isOfflineCheckoutPaymentKind('wallet')).toBe(false);
   });
 
-  it('checkoutPaymentProviderSortKey orders wallets before paymob before instapay before cod', () => {
-    expect(checkoutPaymentProviderSortKey('pp_apple_x')).toBeLessThan(checkoutPaymentProviderSortKey('pp_paymob_paymob'));
-    expect(checkoutPaymentProviderSortKey('pp_paymob_paymob')).toBeLessThan(
+  it('checkoutPaymentProviderSortKey orders cod before instapay before paymob before wallets', () => {
+    expect(checkoutPaymentProviderSortKey('pp_system_default')).toBeLessThan(
       checkoutPaymentProviderSortKey('pp_instapay_instapay'),
     );
     expect(checkoutPaymentProviderSortKey('pp_instapay_instapay')).toBeLessThan(
-      checkoutPaymentProviderSortKey('pp_system_default'),
+      checkoutPaymentProviderSortKey('pp_paymob_paymob'),
+    );
+    expect(checkoutPaymentProviderSortKey('pp_paymob_paymob')).toBeLessThan(
+      checkoutPaymentProviderSortKey('pp_apple_x'),
     );
   });
 

@@ -13,51 +13,26 @@ import {
   productsBySubfeeling,
 } from './site.ts';
 
-/** Hero: urban, warm, model in tee */
-export const heroStreet = '/images/tees/tee_walking_street.png';
-
-/** Home hero: secondary vector artwork */
+/** On-brand vector mark — default storefront slot fill until Cairo photography ships (§3.4). */
 export const heroVectorizedV2 = '/images/hero/horo_vectorized_v2.svg';
 
-/** Home hero: model-led editorial cutout */
-export const heroModelHome = '/images/hero/hero-model.png';
-
-/** Models in tees / streetwear — varied angles (used across vibes & PDP) */
+/**
+ * Named slot paths for layouts — all point at the brand vector until real product/lifestyle photography exists.
+ */
 export const tee = {
-  whiteFront: '/images/tees/bg_tee_white_front.png',
-  womanSmile: '/images/tees/bg_vibe_emotions.png',
-  womanStreet: '/images/tees/bg_tee_woman_street.png',
-  manCasual: '/images/tees/bg_tee_man_casual.png',
-  womanUrban: '/images/tees/bg_vibe_fictious.png',
-  walkingStreet: '/images/tees/tee_walking_street.png',
-  yellowTee: '/images/tees/bg_vibe_trends.png',
-  relaxedFit: '/images/tees/bg_vibe_career.png',
-  studioTee: '/images/tees/bg_tee_studio_tee.png',
-  friendsTees: '/images/tees/bg_tee_friends_tees.png',
-  flatLayStyle: '/images/tees/bg_tee_flatlay.png',
-  outdoorTee: '/images/tees/bg_tee_outdoor.png',
-  streetPose: '/images/tees/bg_vibe_zodiac.png',
-} as const;
-
-/** Generated AI assets for new products */
-export const newTees = {
-  emotions1: '/images/tees/emotions_vibe_1_1774374034307.png',
-  emotions2: '/images/tees/emotions_vibe_2_1774374055078.png',
-  emotions3: '/images/tees/emotions_vibe_3_1774374073378.png',
-  emotions4: '/images/tees/emotions_vibe_4_1774374088034.png',
-  emotions5: '/images/tees/emotions_vibe_5_1774374107073.png',
-  zodiac1: '/images/tees/zodiac_vibe_1_1774374128029.png',
-  zodiac2: '/images/tees/zodiac_vibe_2_1774374153203.png',
-  zodiac3: '/images/tees/zodiac_vibe_3_1774374174567.png',
-  zodiac4: '/images/tees/zodiac_vibe_4_1774374196317.png',
-  zodiac5: '/images/tees/zodiac_vibe_5_1774374214170.png',
-  fiction1: '/images/tees/fiction_vibe_1_1774374247152.png',
-  fiction2: '/images/tees/fiction_vibe_2_1774374267156.png',
-  fiction3: '/images/tees/fiction_vibe_3_1774374284774.png',
-  fiction4: '/images/tees/fiction_vibe_4_1774374302082.png',
-  fiction5: '/images/tees/fiction_vibe_5_1774374319387.png',
-  career1: '/images/tees/career_vibe_1_1774374340994.png',
-  career2: '/images/tees/career_vibe_2_1774374359412.png',
+  whiteFront: heroVectorizedV2,
+  womanSmile: heroVectorizedV2,
+  womanStreet: heroVectorizedV2,
+  manCasual: heroVectorizedV2,
+  womanUrban: heroVectorizedV2,
+  walkingStreet: heroVectorizedV2,
+  yellowTee: heroVectorizedV2,
+  relaxedFit: heroVectorizedV2,
+  studioTee: heroVectorizedV2,
+  friendsTees: heroVectorizedV2,
+  flatLayStyle: heroVectorizedV2,
+  outdoorTee: heroVectorizedV2,
+  streetPose: heroVectorizedV2,
 } as const;
 
 export type StorefrontImageSlot = {
@@ -79,14 +54,14 @@ type OccasionStorefrontImages = {
 
 const FALLBACK_OCCASION_VISUALS: OccasionStorefrontImages = {
   hero: {
-    src: heroStreet,
-    alt: 'HORO occasion collection hero — editorial styling in a graphic tee.',
-    objectPosition: 'center 24%',
+    src: heroVectorizedV2,
+    alt: 'HORO occasion collection — brand mark placeholder.',
+    objectPosition: 'center 50%',
   },
   proof: {
-    src: heroStreet,
-    alt: 'HORO occasion proof image — editorial styling in a graphic tee.',
-    objectPosition: 'center 24%',
+    src: heroVectorizedV2,
+    alt: 'HORO occasion proof — brand mark placeholder.',
+    objectPosition: 'center 50%',
   },
 };
 
@@ -107,9 +82,9 @@ export const STOREFRONT_IMAGE_SLOTS: {
 } = {
   home: {
     hero: {
-      src: heroModelHome,
-      alt: 'HORO home hero — editorial model wearing a HORO graphic tee.',
-      objectPosition: 'center 18%',
+      src: heroVectorizedV2,
+      alt: 'HORO home hero — brand mark.',
+      objectPosition: 'center 50%',
     },
     proof: {
       src: tee.studioTee,
@@ -120,14 +95,14 @@ export const STOREFRONT_IMAGE_SLOTS: {
   feelings: {
     mood: {
       cover: {
-        src: '/images/tees/bg_vibe_emotions.png',
-        alt: 'Mood — calm editorial styling in a HORO tee.',
-        objectPosition: 'center 24%',
+        src: heroVectorizedV2,
+        alt: 'Mood — HORO collection placeholder.',
+        objectPosition: 'center 50%',
       },
       hero: {
-        src: '/images/tees/bg_vibe_emotions.png',
-        alt: 'Mood collection — reflective emotional energy, HORO tee.',
-        objectPosition: 'center 24%',
+        src: heroVectorizedV2,
+        alt: 'Mood collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
         src: tee.whiteFront,
@@ -137,14 +112,14 @@ export const STOREFRONT_IMAGE_SLOTS: {
     },
     zodiac: {
       cover: {
-        src: '/images/tees/bg_vibe_zodiac.png',
-        alt: 'Zodiac — gift-ready editorial styling in a HORO tee.',
-        objectPosition: 'center 18%',
+        src: heroVectorizedV2,
+        alt: 'Zodiac — HORO collection placeholder.',
+        objectPosition: 'center 50%',
       },
       hero: {
-        src: '/images/tees/bg_vibe_zodiac.png',
-        alt: 'Zodiac collection hero — thoughtful gifting mood.',
-        objectPosition: 'center 18%',
+        src: heroVectorizedV2,
+        alt: 'Zodiac collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
         src: tee.relaxedFit,
@@ -154,14 +129,14 @@ export const STOREFRONT_IMAGE_SLOTS: {
     },
     fiction: {
       cover: {
-        src: '/images/tees/bg_vibe_fictious.png',
-        alt: 'Fiction — expressive editorial styling in a HORO tee.',
-        objectPosition: 'center 26%',
+        src: heroVectorizedV2,
+        alt: 'Fiction — HORO collection placeholder.',
+        objectPosition: 'center 50%',
       },
       hero: {
-        src: '/images/tees/bg_vibe_fictious.png',
-        alt: 'Fiction collection hero — character-led HORO tee.',
-        objectPosition: 'center 26%',
+        src: heroVectorizedV2,
+        alt: 'Fiction collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
         src: tee.studioTee,
@@ -171,14 +146,14 @@ export const STOREFRONT_IMAGE_SLOTS: {
     },
     career: {
       cover: {
-        src: '/images/tees/bg_vibe_career.png',
-        alt: 'Career — repeat-wear editorial styling in a HORO tee.',
-        objectPosition: 'center 20%',
+        src: heroVectorizedV2,
+        alt: 'Career — HORO collection placeholder.',
+        objectPosition: 'center 50%',
       },
       hero: {
-        src: '/images/tees/bg_vibe_career.png',
-        alt: 'Career collection hero — daily confidence.',
-        objectPosition: 'center 20%',
+        src: heroVectorizedV2,
+        alt: 'Career collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
         src: tee.walkingStreet,
@@ -188,14 +163,14 @@ export const STOREFRONT_IMAGE_SLOTS: {
     },
     trends: {
       cover: {
-        src: '/images/tees/bg_vibe_trends.png',
-        alt: 'Trends — going-out editorial styling in a HORO tee.',
-        objectPosition: 'center 18%',
+        src: heroVectorizedV2,
+        alt: 'Trends — HORO collection placeholder.',
+        objectPosition: 'center 50%',
       },
       hero: {
-        src: '/images/tees/bg_vibe_trends.png',
-        alt: 'Trends collection hero — visible statement.',
-        objectPosition: 'center 18%',
+        src: heroVectorizedV2,
+        alt: 'Trends collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
         src: tee.outdoorTee,
@@ -207,62 +182,62 @@ export const STOREFRONT_IMAGE_SLOTS: {
   occasions: {
     'gift-something-real': {
       hero: {
-        src: '/images/tees/bg_tee_friends_tees.png',
-        alt: 'Gift Something Real collection hero — warm group styling in HORO graphic tees.',
-        objectPosition: 'center 22%',
+        src: heroVectorizedV2,
+        alt: 'Gift Something Real collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
-        src: '/images/tees/bg_tee_friends_tees.png',
-        alt: 'Gift Something Real proof image — gift-ready HORO styling with a shared moment.',
-        objectPosition: 'center 20%',
+        src: heroVectorizedV2,
+        alt: 'Gift Something Real proof — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
     },
     'graduation-season': {
       hero: {
-        src: tee.relaxedFit,
-        alt: 'Graduation Season collection hero — HORO tee styled with a polished, ambitious look.',
-        objectPosition: 'center 16%',
+        src: heroVectorizedV2,
+        alt: 'Graduation Season collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
-        src: '/images/tees/bg_vibe_career.png',
-        alt: 'Graduation Season proof image — confident career-led HORO styling for milestone gifting.',
-        objectPosition: 'center 18%',
+        src: heroVectorizedV2,
+        alt: 'Graduation Season proof — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
     },
     'eid-and-ramadan': {
       hero: {
-        src: tee.streetPose,
-        alt: 'Eid and Ramadan collection hero — close editorial styling for a seasonal HORO tee.',
-        objectPosition: 'center 22%',
+        src: heroVectorizedV2,
+        alt: 'Eid and Ramadan collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
-        src: tee.studioTee,
-        alt: 'Eid and Ramadan proof image — expressive seasonal HORO styling for meaningful gifting.',
-        objectPosition: 'center 20%',
+        src: heroVectorizedV2,
+        alt: 'Eid and Ramadan proof — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
     },
     'birthday-pick': {
       hero: {
-        src: '/images/tees/bg_tee_man_casual.png',
-        alt: 'Birthday Pick collection hero — editorial portrait of a model wearing a HORO tee.',
-        objectPosition: 'center 18%',
+        src: heroVectorizedV2,
+        alt: 'Birthday Pick collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
-        src: '/images/tees/bg_tee_man_casual.png',
-        alt: 'Birthday Pick proof image — personality-led HORO styling for an easy gift decision.',
-        objectPosition: 'center 18%',
+        src: heroVectorizedV2,
+        alt: 'Birthday Pick proof — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
     },
     'just-because': {
       hero: {
-        src: '/images/tees/bg_tee_outdoor.png',
-        alt: 'Just Because collection hero — relaxed self-treat styling in a HORO tee.',
-        objectPosition: 'center 22%',
+        src: heroVectorizedV2,
+        alt: 'Just Because collection — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
       proof: {
-        src: '/images/tees/bg_tee_outdoor.png',
-        alt: 'Just Because proof image — relaxed HORO styling for an everyday self-treat.',
-        objectPosition: 'center 22%',
+        src: heroVectorizedV2,
+        alt: 'Just Because proof — HORO placeholder.',
+        objectPosition: 'center 50%',
       },
     },
   },
@@ -286,9 +261,7 @@ export const STOREFRONT_IMAGE_SLOTS: {
   },
 };
 
-/**
- * Homepage hero — full-bleed model in tee (warm, editorial).
- */
+/** Homepage hero asset path — brand vector placeholder until editorial photography ships. */
 export const heroHomeTee = STOREFRONT_IMAGE_SLOTS.home.hero.src;
 export const giftWrapPreview = STOREFRONT_IMAGE_SLOTS.gifts.proof.src;
 export const aboutHero = STOREFRONT_IMAGE_SLOTS.about.hero.src;
@@ -348,7 +321,7 @@ export function getFeelingCollectionVisual(slug: string): FeelingStorefrontImage
   /** No generic street hero as pillar “photography” — cover stays empty until Medusa feeling art or a real product image exists. */
   const coverSrc = firstNonEmptyString(feeling?.cardImageSrc, feeling?.heroImageSrc, productFallback) ?? '';
   const heroSrc = firstNonEmptyString(feeling?.heroImageSrc, feeling?.cardImageSrc, productFallback, coverSrc) ?? coverSrc;
-  const proofSrc = firstNonEmptyString(heroSrc, coverSrc, productFallback, heroStreet) ?? heroStreet;
+  const proofSrc = firstNonEmptyString(heroSrc, coverSrc, productFallback, heroVectorizedV2) ?? heroVectorizedV2;
   const name = feeling?.name ?? slug.replace(/-/g, ' ');
 
   return {
@@ -387,8 +360,8 @@ export function getSubfeelingCollectionVisual(slug: string): StorefrontImageSlot
       parentFeeling?.cardImageSrc,
       parentFeeling?.heroImageSrc,
       parentFeelingFallback,
-      heroStreet
-    ) ?? heroStreet;
+      heroVectorizedV2
+    ) ?? heroVectorizedV2;
   const name = subfeeling?.name ?? slug.replace(/-/g, ' ');
 
   return {
@@ -426,7 +399,7 @@ export function getFeelingsHubHeroTiles() {
   return getFeelings().map((feeling) => {
     const { cover, hero, proof } = getFeelingCollectionVisual(feeling.slug);
     /** Hub uses `<img src>`; `cover` can be "" by design — fall back like proof does so src is never empty. */
-    const src = firstNonEmptyString(cover.src, hero.src, proof.src) ?? heroStreet;
+    const src = firstNonEmptyString(cover.src, hero.src, proof.src) ?? heroVectorizedV2;
     return {
       slug: feeling.slug,
       ...cover,
@@ -468,12 +441,7 @@ export type ProductMedia = {
   main: string;
 };
 
-const FALLBACK_PRODUCT_GALLERY = [
-  tee.studioTee,
-  tee.flatLayStyle,
-  tee.walkingStreet,
-  proofCards.macroDetail,
-];
+const FALLBACK_PRODUCT_GALLERY = [heroVectorizedV2, proofCards.macroDetail, proofCards.weightScale];
 
 /**
  * Unsplash-style transform params are only safe on hosts that honor them.

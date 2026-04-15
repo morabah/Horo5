@@ -1548,7 +1548,7 @@ export function ProductDetail({
       <section className="border-t border-stone/25 bg-papyrus">
         <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-8 md:py-12 lg:px-12">
           <div className="max-w-[980px]">
-            <AccordionSection title={copy.accordionProductDetails}>
+            <AccordionSection title={copy.accordionProductDetails} defaultOpen>
               {displayFitLines.length > 0 ? (
                 <div className="mb-5 space-y-3">
                   {displayFitLines.map((line, idx) => (

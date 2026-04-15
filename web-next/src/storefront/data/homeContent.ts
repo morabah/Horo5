@@ -1,3 +1,5 @@
+import { heroVectorizedV2 } from './images';
+
 export type HomeOrientationStep = {
   title: string;
   body: string;
@@ -104,8 +106,8 @@ export const HOME_TRUST_BADGES = [
 
 /** Macro / print hero for split proof section */
 export const HOME_PROOF_MACRO = {
-  imageSrc: '/images/tees/bg_tee_studio_tee.png',
-  imageAlt: 'Close studio view of a HORO graphic tee showing print clarity on cotton.',
+  imageSrc: heroVectorizedV2,
+  imageAlt: 'HORO brand mark — placeholder until studio proof photography is available.',
 } as const;
 
 export const HOME_COPY = {

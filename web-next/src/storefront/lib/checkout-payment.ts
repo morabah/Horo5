@@ -12,19 +12,19 @@ export function resolveCheckoutPaymentMethodKind(providerId: string): CheckoutPa
   return 'card';
 }
 
-/** Wallets first, then Paymob card, then other online, Instapay, COD last. */
+/** COD first (highest trust for EG mobile shoppers), then Instapay, then Paymob card, then wallets. */
 export function checkoutPaymentProviderSortKey(providerId: string): number {
   const id = providerId.toLowerCase();
   const kind = resolveCheckoutPaymentMethodKind(providerId);
+  if (kind === 'cod') return 0;
+  if (kind === 'instapay') return 10;
+  if (id.includes('paymob')) return 30;
+  if (kind === 'card') return 40;
   if (kind === 'wallet') {
-    if (id.includes('apple')) return 0;
-    if (id.includes('google')) return 1;
-    return 2;
+    if (id.includes('apple')) return 80;
+    if (id.includes('google')) return 81;
+    return 82;
   }
-  if (id.includes('paymob')) return 10;
-  if (kind === 'card') return 20;
-  if (kind === 'instapay') return 95;
-  if (kind === 'cod') return 100;
   return 50;
 }
 

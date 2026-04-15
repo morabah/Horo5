@@ -14,7 +14,12 @@ import { SearchSuggestionPanel } from '../components/SearchSuggestionPanel';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useUiLocale } from '../i18n/ui-locale';
 import { SEARCH_SCHEMA } from '../data/domain-config';
-import { getFeelingCollectionVisual, getOccasionCollectionVisual, heroStreet, imgUrl } from '../data/images';
+import {
+  getFeelingCollectionVisual,
+  getOccasionCollectionVisual,
+  heroVectorizedV2,
+  imgUrl,
+} from '../data/images';
 import { getFeeling, getOccasion, type Product } from '../data/site';
 import { trackSearchZeroResults } from '../analytics/events';
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -531,7 +536,7 @@ export function Search() {
     }
     if (designMatches[0]) return { src: designMatches[0].imageSrc, alt: designMatches[0].imageAlt };
     if (baseDesigns[0]) return { src: baseDesigns[0].imageSrc, alt: baseDesigns[0].imageAlt };
-    return { src: heroStreet, alt: 'HORO search — editorial styling in a graphic tee.' };
+    return { src: heroVectorizedV2, alt: 'HORO search — brand placeholder.' };
   }, [baseDesigns, designMatches, scopeOccasion, scopeFeeling]);
 
   const summaryText = hasDebouncedQuery

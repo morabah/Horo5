@@ -5,6 +5,7 @@ export type SavedShippingPayload = {
   phone: string;
   fullName: string;
   line1: string;
+  line2: string;
   city: string;
   province: string;
   postalCode: string;
@@ -25,6 +26,7 @@ export function loadSavedShipping(): SavedShippingPayload | null {
       phone: typeof parsed.phone === 'string' ? parsed.phone.trim() : '',
       fullName: typeof parsed.fullName === 'string' ? parsed.fullName.trim() : '',
       line1,
+      line2: typeof parsed.line2 === 'string' ? parsed.line2.trim() : '',
       city,
       province: typeof parsed.province === 'string' ? parsed.province.trim() : city,
       postalCode: typeof parsed.postalCode === 'string' ? parsed.postalCode.trim() : '',

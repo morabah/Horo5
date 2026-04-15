@@ -170,6 +170,21 @@ const UI_COPY = {
       instapayPayoutHeading: 'Complete your Instapay transfer',
       instapayPayoutIntro:
         'Pay the order total using Instapay or your bank app (phone number, IBAN, or wallet). If your bank allows a memo, include your order reference below.',
+      instapayStep1Title: 'Open your bank or wallet app',
+      instapayStep1Body:
+        'Any Egyptian bank app or wallet that supports Instapay works — transfer the order total.',
+      instapayStep2Title: 'Send the order total',
+      instapayStep2Body: 'Transfer the full amount to the recipient below.',
+      instapayStep2PlaceholderRecipient:
+        'Transfer details will be shared shortly — reply to the WhatsApp confirmation or contact support.',
+      instapayStep3Title: 'Add your order reference',
+      instapayStep3Body:
+        'Paste the reference into your transfer memo if your bank allows — this helps us match your payment.',
+      instapayCopyReference: 'Copy reference',
+      instapayCopyRecipient: 'Copy recipient',
+      instapayCopiedLabel: 'Copied',
+      instapayConfirmationNote:
+        "We'll confirm your payment within a few hours and update your order.",
       cartClearedReceiptNote: 'Your bag was cleared — this page is your receipt.',
       referenceIdLabel: 'System reference',
       timelineHeading: "What's next",
@@ -349,6 +364,21 @@ const UI_COPY = {
       instapayPayoutHeading: 'أكمل التحويل عبر إنستاباي',
       instapayPayoutIntro:
         'ادفع إجمالي الطلب عبر إنستاباي أو تطبيق البنك (هاتف مسجّل، أو آيبان، أو محفظة). إذا سمح البنك بملاحظة للمستفيد، اذكر رقم الطلب أدناه.',
+      instapayStep1Title: 'افتح تطبيق البنك أو المحفظة',
+      instapayStep1Body:
+        'أي تطبيق بنك مصري أو محفظة تدعم إنستاباي سيعمل — حوّل إجمالي الطلب.',
+      instapayStep2Title: 'حوّل إجمالي الطلب',
+      instapayStep2Body: 'أرسل المبلغ بالكامل إلى بيانات المستفيد أدناه.',
+      instapayStep2PlaceholderRecipient:
+        'سنشاركك تفاصيل التحويل قريبًا — ردّ على رسالة واتساب التأكيد أو تواصل مع الدعم.',
+      instapayStep3Title: 'أضف رقم الطلب في الملاحظات',
+      instapayStep3Body:
+        'الصق الرقم في ملاحظة التحويل إذا كان بنكك يسمح بذلك — هذا يساعدنا على مطابقة الدفعة.',
+      instapayCopyReference: 'نسخ رقم الطلب',
+      instapayCopyRecipient: 'نسخ بيانات المستفيد',
+      instapayCopiedLabel: 'تم النسخ',
+      instapayConfirmationNote:
+        'سنؤكد استلام الدفعة خلال ساعات قليلة ونحدّث حالة طلبك.',
       cartClearedReceiptNote: 'تم إفراغ السلة — هذه الصفحة هي إيصالك.',
       referenceIdLabel: 'مرجع النظام',
       timelineHeading: 'ماذا بعد؟',

@@ -17,7 +17,7 @@ describe('imgUrl', () => {
   });
 
   it('returns relative local paths unchanged', () => {
-    const local = '/images/tees/bg_tee_white_front.png';
+    const local = '/images/hero/horo_vectorized_v2.svg';
     expect(imgUrl(local, 400)).toBe(local);
   });
 

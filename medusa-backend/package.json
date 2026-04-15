@@ -21,6 +21,8 @@
     "seed:egypt:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/seed-egypt-catalog.ts",
     "ensure:egypt-payment-providers": "medusa exec ./src/scripts/ensure-egypt-payment-providers.ts",
     "ensure:egypt-payment-providers:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/ensure-egypt-payment-providers.ts",
+    "inspect:egypt-payment-providers": "medusa exec ./src/scripts/inspect-egypt-region-payment-providers.ts",
+    "inspect:egypt-payment-providers:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/inspect-egypt-region-payment-providers.ts",
     "diagnose:s3": "medusa exec ./src/scripts/diagnose-s3.ts",
     "rewrite:store-media-urls": "medusa exec ./src/scripts/rewrite-storage-urls-to-store-media.ts",
     "rewrite:store-media-urls:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/rewrite-storage-urls-to-store-media.ts",

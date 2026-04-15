@@ -22,7 +22,7 @@ function isMedusaInternalOrderId(id: string) {
 
 function buildPaymentMethodLabel(paymentMethod: LastOrderSnapshot['paymentMethod'], isArabic: boolean) {
   if (paymentMethod === 'card') return isArabic ? 'بطاقة' : 'Card';
-  if (paymentMethod === 'instapay') return isArabic ? 'إنستاباي (تحويل بنكي · هاتف · محفظة)' : 'Instapay (bank · phone · wallet)';
+  if (paymentMethod === 'instapay') return isArabic ? 'تحويل بنكي (إنستاباي)' : 'Bank transfer (Instapay)';
   return isArabic ? 'الدفع عند الاستلام' : 'COD';
 }
 
@@ -134,6 +134,8 @@ export function OrderConfirmation() {
   const isArabic = locale === 'ar';
   const [order, setOrder] = useState<LastOrderSnapshot | null>(null);
   const [copiedOrderId, setCopiedOrderId] = useState(false);
+  const [copiedInstapayRef, setCopiedInstapayRef] = useState(false);
+  const [copiedInstapayRecipient, setCopiedInstapayRecipient] = useState(false);
   // Read the order_id only after mount so SSR and the first client paint match
   // (avoids hydration mismatch from `window.location.search` during render).
   const [urlOrderId, setUrlOrderId] = useState<string | null>(null);
@@ -422,25 +424,131 @@ export function OrderConfirmation() {
             </div>
           ) : null}
 
-          {order?.paymentMethod === 'instapay' ? (
-            <div className="mt-8 rounded-2xl border border-deep-teal/25 bg-white/80 p-5">
-              <h2 className="font-headline text-[1rem] font-semibold text-obsidian">
-                {copy.confirmation.instapayPayoutHeading}
-              </h2>
-              <p className="mt-2 font-body text-sm text-obsidian">{copy.confirmation.instapayPayoutIntro}</p>
-              {instapayPayoutLines.length > 0 ? (
-                <ul className="mt-3 list-disc space-y-1 pl-5 font-body text-sm text-obsidian">
-                  {instapayPayoutLines.map((line, idx) => (
-                    <li key={idx}>{isArabic ? line.ar : line.en}</li>
-                  ))}
-                </ul>
-              ) : null}
-              <p className="mt-3 font-body text-sm text-clay">
-                {isArabic ? 'رقم الطلب: ' : 'Order reference: '}
-                <span className="font-medium text-obsidian">{customerFacingOrderId ?? internalOrderRef ?? '—'}</span>
-              </p>
-            </div>
-          ) : null}
+          {order?.paymentMethod === 'instapay' ? (() => {
+            const instapayOrderRef = customerFacingOrderId ?? internalOrderRef ?? '';
+            const recipientPlainText = instapayPayoutLines.length > 0
+              ? instapayPayoutLines.map((line) => (isArabic ? line.ar : line.en)).join('\n')
+              : '';
+            const canCopy =
+              typeof navigator !== 'undefined' && !!navigator.clipboard?.writeText;
+            const copyRecipient = () => {
+              if (!recipientPlainText || !canCopy) return;
+              void navigator.clipboard.writeText(recipientPlainText).then(() => {
+                setCopiedInstapayRecipient(true);
+                window.setTimeout(() => setCopiedInstapayRecipient(false), 1800);
+              }).catch(() => {
+                /* ignore */
+              });
+            };
+            const copyReference = () => {
+              if (!instapayOrderRef || !canCopy) return;
+              void navigator.clipboard.writeText(instapayOrderRef).then(() => {
+                setCopiedInstapayRef(true);
+                window.setTimeout(() => setCopiedInstapayRef(false), 1800);
+              }).catch(() => {
+                /* ignore */
+              });
+            };
+            return (
+              <div className="mt-8 rounded-2xl border border-deep-teal/25 bg-white/80 p-5">
+                <h2 className="font-headline text-[1rem] font-semibold text-obsidian">
+                  {copy.confirmation.instapayPayoutHeading}
+                </h2>
+                <ol className="mt-4 space-y-4">
+                  <li className="flex gap-3">
+                    <span
+                      aria-hidden
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-sm font-semibold text-deep-teal"
+                    >
+                      1
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-body text-sm font-semibold text-obsidian">
+                        {copy.confirmation.instapayStep1Title}
+                      </p>
+                      <p className="mt-1 font-body text-sm text-clay">
+                        {copy.confirmation.instapayStep1Body}
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span
+                      aria-hidden
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-sm font-semibold text-deep-teal"
+                    >
+                      2
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-body text-sm font-semibold text-obsidian">
+                        {copy.confirmation.instapayStep2Title}
+                      </p>
+                      <p className="mt-1 font-body text-sm text-clay">
+                        {copy.confirmation.instapayStep2Body}
+                      </p>
+                      {instapayPayoutLines.length > 0 ? (
+                        <>
+                          <ul className="mt-2 list-disc space-y-1 pl-5 font-body text-sm text-obsidian">
+                            {instapayPayoutLines.map((line, idx) => (
+                              <li key={idx}>{isArabic ? line.ar : line.en}</li>
+                            ))}
+                          </ul>
+                          <button
+                            type="button"
+                            disabled={!canCopy}
+                            onClick={copyRecipient}
+                            className="btn btn-ghost mt-2 inline-flex min-h-10 items-center justify-center px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {copiedInstapayRecipient
+                              ? copy.confirmation.instapayCopiedLabel
+                              : copy.confirmation.instapayCopyRecipient}
+                          </button>
+                        </>
+                      ) : (
+                        <p className="mt-2 font-body text-sm italic text-clay">
+                          {copy.confirmation.instapayStep2PlaceholderRecipient}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span
+                      aria-hidden
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-sm font-semibold text-deep-teal"
+                    >
+                      3
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-body text-sm font-semibold text-obsidian">
+                        {copy.confirmation.instapayStep3Title}
+                      </p>
+                      <p className="mt-1 font-body text-sm text-clay">
+                        {copy.confirmation.instapayStep3Body}
+                      </p>
+                      <p className="mt-2 font-body text-sm text-obsidian">
+                        <span className="font-medium">
+                          {isArabic ? 'رقم الطلب: ' : 'Order reference: '}
+                        </span>
+                        <span className="font-semibold">{instapayOrderRef || '—'}</span>
+                      </p>
+                      <button
+                        type="button"
+                        disabled={!instapayOrderRef || !canCopy}
+                        onClick={copyReference}
+                        className="btn btn-ghost mt-2 inline-flex min-h-10 items-center justify-center px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {copiedInstapayRef
+                          ? copy.confirmation.instapayCopiedLabel
+                          : copy.confirmation.instapayCopyReference}
+                      </button>
+                    </div>
+                  </li>
+                </ol>
+                <p className="mt-4 font-body text-sm text-clay">
+                  {copy.confirmation.instapayConfirmationNote}
+                </p>
+              </div>
+            );
+          })() : null}
 
           <p className="mt-6 font-body text-sm text-clay">
             {canReferenceWhatsapp ? copy.confirmation.whatsappOrderHelp : copy.confirmation.followUpFallback}

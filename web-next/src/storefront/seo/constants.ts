@@ -1,5 +1,5 @@
 /** Default social preview image (served from `public/`). */
-export const DEFAULT_OG_IMAGE_PATH = '/images/tees/emotions_vibe_1_1774374034307.png';
+export const DEFAULT_OG_IMAGE_PATH = '/images/hero/horo_vectorized_v2.svg';
 
 export const DEFAULT_SITE_TITLE = 'HORO Egypt | Graphic Tees & Streetwear';
 

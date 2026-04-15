@@ -239,10 +239,10 @@ function buildCheckoutPaymentMethods(
       return {
         id: provider.id,
         kind,
-        label: isArabic ? 'إنستاباي (تحويل بنكي · هاتف · محفظة)' : 'Instapay (bank · phone · wallet)',
+        label: isArabic ? 'تحويل بنكي (إنستاباي)' : 'Bank transfer (Instapay)',
         description: isArabic
-          ? 'بعد تأكيد الطلب، حوّل المبلغ عبر إنستاباي أو التطبيق البنكي باستخدام رقم الطلب في الملاحظات إن أمكن.'
-          : 'After you place the order, pay via Instapay or your bank app (phone, IBAN, or wallet). Use your order reference in the transfer notes if your bank allows it.',
+          ? 'بعد تأكيد الطلب ستظهر لك تعليمات التحويل ورقم الطلب للاستخدام في الملاحظات.'
+          : "You'll see transfer instructions after placing the order — pay via your bank app using the reference shown.",
       };
     }
 
@@ -252,8 +252,8 @@ function buildCheckoutPaymentMethods(
         kind,
         label: isArabic ? 'الدفع عند الاستلام' : 'Cash on delivery (COD)',
         description: isArabic
-          ? 'الطريقة الأسرع. نؤكد الطلب مباشرة بعد حفظ البيانات.'
-          : 'The fastest option. Your order is confirmed as soon as checkout is saved.',
+          ? 'ادفع عند الاستلام — لا تحتاج تحويل بنكي. استبدال مجاني خلال 14 يوماً.'
+          : 'Pay when it arrives — no bank transfer needed. Free 14-day exchange.',
       };
     }
 
@@ -439,7 +439,7 @@ function buildOrderSnapshot(args: {
     paymentMethod === 'card'
       ? isArabic ? 'بطاقة' : 'Card'
       : paymentMethod === 'instapay'
-        ? isArabic ? 'إنستاباي (تحويل بنكي · هاتف · محفظة)' : 'Instapay (bank · phone · wallet)'
+        ? isArabic ? 'تحويل بنكي (إنستاباي)' : 'Bank transfer (Instapay)'
         : isArabic ? 'الدفع عند الاستلام' : 'COD';
   const finalShippingLabel = shippingLabel || order.shipping_methods?.[0]?.name || (isArabic ? 'عادي' : 'Standard');
 
@@ -506,6 +506,7 @@ export function Checkout() {
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
   const [line1, setLine1] = useState('');
+  const [line2, setLine2] = useState('');
   const [city, setCity] = useState('');
   const [province, setProvince] = useState('');
   const [postalCode, setPostalCode] = useState('');
@@ -534,6 +535,7 @@ export function Checkout() {
     setPhone(cart.shipping_address?.phone || saved?.phone || '');
     setFullName(composedName || saved?.fullName || '');
     setLine1(cart.shipping_address?.address_1 || saved?.line1 || '');
+    setLine2(cart.shipping_address?.address_2 || saved?.line2 || '');
     setCity(cart.shipping_address?.city || saved?.city || '');
     setProvince(cart.shipping_address?.province || saved?.province || '');
     setPostalCode(cart.shipping_address?.postal_code || saved?.postalCode || '');
@@ -1073,6 +1075,7 @@ export function Checkout() {
         payment_method_provider_id: method.id,
         shipping_address: {
           address_1: line1.trim(),
+          address_2: line2.trim() || undefined,
           city: city.trim(),
           country_code: 'eg',
           phone: phone.trim(),
@@ -1138,6 +1141,7 @@ export function Checkout() {
             phone: phone.trim(),
             fullName: fullName.trim(),
             line1: line1.trim(),
+            line2: line2.trim(),
             city: city.trim(),
             province: province.trim() || city.trim(),
             postalCode: postalCode.trim(),
@@ -1276,6 +1280,7 @@ export function Checkout() {
         },
         shipping_address: {
           address_1: line1.trim(),
+          address_2: line2.trim() || undefined,
           city: city.trim(),
           country_code: 'eg',
           first_name: firstName,
@@ -1286,6 +1291,7 @@ export function Checkout() {
         },
         billing_address: {
           address_1: line1.trim(),
+          address_2: line2.trim() || undefined,
           city: city.trim(),
           country_code: 'eg',
           first_name: firstName,
@@ -1757,7 +1763,7 @@ export function Checkout() {
                 {errors.name ? <p className={errTextClass}>{errors.name}</p> : null}
 
                 <label htmlFor="line1" className={labelClass}>
-                  {isArabic ? 'العنوان *' : 'Address *'}
+                  {isArabic ? 'الشارع والعمارة *' : 'Street & building *'}
                 </label>
                 <input
                   id="line1"
@@ -1780,11 +1786,29 @@ export function Checkout() {
                 <p className="mt-2 text-xs text-clay">
                   {googleMapsApiKey && placesReady
                     ? isArabic
-                      ? 'ابدأ بكتابة العنوان ثم اختر اقتراح Google لتعبئة المدينة تلقائياً.'
-                      : 'Start typing your street address and pick a Google suggestion to fill the city automatically.'
+                      ? 'ابدأ بكتابة اسم الشارع ورقم العمارة، ثم اختر اقتراح Google لتعبئة المدينة تلقائياً.'
+                      : 'Start typing street name and building number — pick a Google suggestion to autofill the city.'
                     : isArabic
-                      ? 'اكتب عنوان الشارع يدوياً، ثم اختر أو اكتب المحافظة.'
-                      : 'Type your street address manually, then type or pick your governorate.'}
+                      ? 'اكتب اسم الشارع ورقم العمارة، ثم اختر المحافظة بالأسفل.'
+                      : 'Street name and building number. Pick your governorate below.'}
+                </p>
+
+                <label htmlFor="line2" className={labelClass}>
+                  {isArabic ? 'الحي أو علامة مميزة (اختياري)' : 'District or landmark (optional)'}
+                </label>
+                <input
+                  id="line2"
+                  type="text"
+                  autoComplete="address-line2"
+                  value={line2}
+                  onChange={(event) => setLine2(event.target.value)}
+                  className={inputBaseClass}
+                  placeholder={isArabic ? 'مثلاً: مدينة نصر — بجوار المول' : 'e.g. Nasr City — near the mall'}
+                />
+                <p className="mt-2 text-xs text-clay">
+                  {isArabic
+                    ? 'يساعد المندوب في الوصول أسرع — لن نشاركه مع أي طرف آخر.'
+                    : 'Helps the courier find you faster — not shared with anyone else.'}
                 </p>
 
                 <label htmlFor="governorate" className={labelClass}>

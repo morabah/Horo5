@@ -262,19 +262,19 @@ function resolveStorefrontPublicAsset(src: string) {
 
 const ARTIST_SEED = [
   {
-    avatarSrc: "/images/tees/bg_vibe_emotions.png",
+    avatarSrc: "/images/hero/horo_vectorized_v2.svg",
     name: "Nada Ibrahim",
     slug: "nada-ibrahim",
     style: "Bold linework with emotional depth.",
   },
   {
-    avatarSrc: "/images/tees/bg_tee_man_casual.png",
+    avatarSrc: "/images/hero/horo_vectorized_v2.svg",
     name: "Omar Hassan",
     slug: "omar-hassan",
     style: "Surreal scenes blending Egyptian motifs.",
   },
   {
-    avatarSrc: "/images/tees/bg_vibe_fictious.png",
+    avatarSrc: "/images/hero/horo_vectorized_v2.svg",
     name: "Layla Farid",
     slug: "layla-farid",
     style: "Soft gradients and cosmic symbolism.",

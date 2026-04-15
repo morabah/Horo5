@@ -22,10 +22,10 @@ export const merchEvents: MerchEventSeed[] = [
   {
     body: "A time-bound edit for gifting, launches, and sharper seasonal merchandising moments.",
     cardImageAlt: "HORO Eid drop campaign card.",
-    cardImageSrc: "/images/tees/zodiac_vibe_2_1774374153203.png",
+    cardImageSrc: "/images/hero/horo_vectorized_v2.svg",
     endsAt: "2026-04-30T21:00:00.000Z",
     heroImageAlt: "HORO Eid drop campaign hero.",
-    heroImageSrc: "/images/tees/zodiac_vibe_1_1774374128029.png",
+    heroImageSrc: "/images/hero/horo_vectorized_v2.svg",
     name: "Eid Gift Edit",
     occasionSlug: "eid-and-ramadan",
     productHandles: [
@@ -47,9 +47,9 @@ export const merchEvents: MerchEventSeed[] = [
   {
     body: "A launch-led edit for new drops, proofs, and statement tees that should stay easy to browse from home and search.",
     cardImageAlt: "HORO launch week card.",
-    cardImageSrc: "/images/hero/hero-model.png",
+    cardImageSrc: "/images/hero/horo_vectorized_v2.svg",
     heroImageAlt: "HORO launch week hero.",
-    heroImageSrc: "/images/hero/hero-model.png",
+    heroImageSrc: "/images/hero/horo_vectorized_v2.svg",
     name: "Launch Week",
     productHandles: [
       "quiet-revolt",

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { BRAND_COPY } from '../data/brand';
-import { heroModelHome } from '../data/images';
+import { STOREFRONT_IMAGE_SLOTS } from '../data/images';
 import { getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
@@ -12,6 +12,8 @@ const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 export function HomeHeroWearMean() {
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
+  const heroVisual = STOREFRONT_IMAGE_SLOTS.home.hero;
+  const isVectorHero = heroVisual.src.endsWith('.svg');
 
   const priceRange = (() => {
     const products = getProducts().filter(productHasRealImage);
@@ -60,7 +62,7 @@ export function HomeHeroWearMean() {
     <section
       id="home-hero"
       aria-labelledby="home-hero-heading"
-      className={`relative isolate flex min-h-[min(92svh,56rem)] w-full flex-col overflow-hidden bg-obsidian ${HERO_NAV_OFFSET}`}
+      className={`relative isolate flex min-h-[min(72svh,44rem)] w-full flex-col overflow-hidden bg-obsidian md:min-h-[min(92svh,56rem)] ${HERO_NAV_OFFSET}`}
     >
       {/* Warm radial ambience — centered behind the model */}
       <div
@@ -99,11 +101,13 @@ export function HomeHeroWearMean() {
 
         <div className="relative -my-4 flex w-full flex-1 items-center justify-center sm:-my-6 lg:-my-10">
           <img
-            src={heroModelHome}
-            alt={isArabic ? 'عارضة ترتدي تيشيرت هورو' : 'Model wearing a HORO graphic tee'}
+            src={heroVisual.src}
+            alt={isArabic ? 'شعار هورو' : heroVisual.alt}
+            width={isVectorHero ? 1200 : 1600}
+            height={isVectorHero ? 960 : 1600}
             fetchPriority="high"
             loading="eager"
-            className="hero-editorial-zoom relative z-20 h-auto max-h-[min(58svh,600px)] w-auto max-w-full object-contain drop-shadow-[0_30px_80px_rgba(0,0,0,0.6)] lg:max-h-[min(72svh,780px)]"
+            className={`hero-editorial-zoom relative z-20 h-auto max-h-[min(58svh,600px)] w-auto max-w-full object-contain drop-shadow-[0_30px_80px_rgba(0,0,0,0.6)] lg:max-h-[min(72svh,780px)] ${isVectorHero ? 'opacity-95' : ''}`}
           />
         </div>
 
