@@ -52,3 +52,12 @@ export function loadLastOrder(): LastOrderSnapshot | null {
     return null;
   }
 }
+
+/** True when the snapshot was saved for this Medusa order (`order_…` ULID). */
+export function sessionSnapshotBelongsToOrder(
+  snapshot: LastOrderSnapshot | null | undefined,
+  medusaOrderId: string | null | undefined,
+): boolean {
+  if (!snapshot || !medusaOrderId) return false;
+  return typeof snapshot.medusaOrderId === 'string' && snapshot.medusaOrderId === medusaOrderId;
+}

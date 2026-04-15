@@ -4,7 +4,8 @@ import { BilingualServiceBlock } from '../components/BilingualServiceBlock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { getCartLineViews } from '../cart/view';
-import { loadLastOrder, saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
+import { loadLastOrder, saveLastOrder, sessionSnapshotBelongsToOrder, type LastOrderSnapshot } from '../cart/lastOrder';
+import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, withSupportMessage } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
 import { getOrder } from '../lib/medusa/client';
@@ -81,7 +82,7 @@ function createSnapshotFromOrder(args: {
     providerId.includes('paymob') ? 'card' : 'cod';
   const paymentLabel = buildPaymentMethodLabel(paymentMethod, isArabic);
   const shippingLabel = order.shipping_methods?.[0]?.name || (isArabic ? 'عادي' : 'Standard');
-  const displayOrderId = order.display_id ? `HORO-${order.display_id}` : order.id;
+  const displayOrderId = buildHoroCustomerOrderRef(order);
   const orderMeta =
     order.metadata && typeof order.metadata === 'object' && !Array.isArray(order.metadata)
       ? (order.metadata as Record<string, unknown>)
@@ -139,11 +140,15 @@ export function OrderConfirmation() {
 
   useEffect(() => {
     const fallback = loadLastOrder();
-    setOrder(fallback);
 
     if (!urlOrderId) {
+      setOrder(fallback);
       return;
     }
+
+    /** Avoid showing another order’s `HORO-…` while this URL’s order loads. */
+    const safeFallback = sessionSnapshotBelongsToOrder(fallback, urlOrderId) ? fallback : null;
+    setOrder(safeFallback);
 
     let cancelled = false;
 
@@ -151,7 +156,7 @@ export function OrderConfirmation() {
       .then(({ order: medusaOrder }) => {
         if (cancelled) return;
         const snapshot = createSnapshotFromOrder({
-          fallback,
+          fallback: safeFallback,
           isArabic,
           now,
           order: medusaOrder,
@@ -160,7 +165,7 @@ export function OrderConfirmation() {
         setOrder(snapshot);
       })
       .catch(() => {
-        // Fall back to the session snapshot when the order fetch is unavailable.
+        // Keep `safeFallback` only; do not resurrect an unrelated session snapshot.
       });
 
     return () => {

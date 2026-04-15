@@ -47,27 +47,53 @@ function metaString(meta: unknown, key: string): string {
 
 const CAPTURE_ELIGIBLE = new Set(["authorized", "pending", "requires_capture"]);
 
+/** Order-level `payment_status` when nested `payments[]` is missing from the graph. */
+const ORDER_CAPTURE_ELIGIBLE = new Set([
+  "authorized",
+  "awaiting",
+  "partially_authorized",
+  "requires_action",
+]);
+
+const DELIVERED_LIKE_FULFILLMENT = new Set(["fulfilled", "shipped", "delivered", "partially_delivered"]);
+const FULFILLMENT_CREATE_BLOCKED = new Set(["canceled", "cancelled"]);
+
 function canCapturePayment(g: Record<string, unknown> | null): boolean {
   if (!g) return false;
   const cols = g.payment_collections;
-  if (!Array.isArray(cols)) return false;
-  for (const c of cols) {
-    if (!c || typeof c !== "object") continue;
-    const payments = (c as Record<string, unknown>).payments;
-    if (!Array.isArray(payments)) continue;
-    for (const p of payments) {
-      if (!p || typeof p !== "object") continue;
-      const st = typeof (p as Record<string, unknown>).status === "string" ? String((p as Record<string, unknown>).status).toLowerCase() : "";
-      if (CAPTURE_ELIGIBLE.has(st)) return true;
+  if (Array.isArray(cols)) {
+    for (const c of cols) {
+      if (!c || typeof c !== "object") continue;
+      const payments = (c as Record<string, unknown>).payments;
+      if (!Array.isArray(payments)) continue;
+      for (const p of payments) {
+        if (!p || typeof p !== "object") continue;
+        const st =
+          typeof (p as Record<string, unknown>).status === "string" ? String((p as Record<string, unknown>).status).toLowerCase() : "";
+        if (CAPTURE_ELIGIBLE.has(st)) return true;
+      }
     }
   }
+  const ps = typeof g.payment_status === "string" ? g.payment_status.toLowerCase() : "";
+  if (ps && ORDER_CAPTURE_ELIGIBLE.has(ps)) return true;
   return false;
+}
+
+function hasOrderLineItems(g: Record<string, unknown>): boolean {
+  const items = g.items;
+  if (!Array.isArray(items)) return false;
+  return items.some((it) => it && typeof it === "object");
 }
 
 function canCreateFulfillment(g: Record<string, unknown> | null): boolean {
   if (!g) return false;
   const fs = String(g.fulfillment_status ?? "").toLowerCase();
-  return fs === "not_fulfilled" || fs === "partially_fulfilled";
+  if (fs && FULFILLMENT_CREATE_BLOCKED.has(fs)) return false;
+  if (fs === "not_fulfilled" || fs === "partially_fulfilled" || fs === "pending") return true;
+  /** Graph sometimes omits `fulfillment_status`; if we have lines and Medusa has not closed out delivery, allow trying create (server validates). */
+  if (!fs && hasOrderLineItems(g)) return true;
+  if (fs && !DELIVERED_LIKE_FULFILLMENT.has(fs) && hasOrderLineItems(g)) return true;
+  return false;
 }
 
 function canMarkFulfillmentDelivered(g: Record<string, unknown> | null): boolean {
@@ -124,9 +150,9 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
       return;
     }
     setSaveError(null);
-
+    /** Dashboard `order_graphs` omits payment_collections / fulfillments — do not treat it as the action graph. */
+    setGraph(null);
     if (initialGraph && Object.keys(initialGraph).length > 0) {
-      setGraph(initialGraph);
       resetFromGraph(initialGraph);
     }
 
@@ -271,6 +297,10 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
             </p>
           ) : null}
 
+          {!loadError && !graph ? (
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">Loading full order graph for Medusa workflows…</p>
+          ) : null}
+
           {summary ? (
             <div className="grid gap-2 text-sm text-neutral-700 dark:text-neutral-300 sm:grid-cols-2">
               <p>
@@ -322,7 +352,7 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
                 </button>
               </div>
               <p className="mt-2 text-xs text-violet-900/80 dark:text-violet-200/80">
-                Buttons disable when the graph says the step does not apply (e.g. already captured). If a button stays disabled but Admin shows an action, refresh—payment rows load with this dialog&apos;s order fetch.
+                Uses the full order fetch (not the dashboard list payload). Capture also checks order <code className="rounded bg-white/80 px-0.5 dark:bg-violet-950">payment_status</code> when nested payments are missing.
               </p>
             </div>
           ) : null}

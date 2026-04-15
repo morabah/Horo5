@@ -36,9 +36,8 @@ export const ORDER_OPS_GRAPH_FIELDS = [
 /** Extra relations for ops actions (capture, fulfill, mark delivered). */
 export const ORDER_OPS_ACTION_GRAPH_FIELDS = [
   ...ORDER_OPS_GRAPH_FIELDS,
-  "payment_collections.id",
-  "payment_collections.payments.id",
-  "payment_collections.payments.status",
-  "fulfillments.id",
-  "fulfillments.delivered_at",
+  /** Wildcards load the relation reliably; narrow fields alone sometimes omit nested rows. */
+  "payment_collections.*",
+  "payment_collections.payments.*",
+  "fulfillments.*",
 ] as const

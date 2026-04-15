@@ -8,6 +8,7 @@ import { TeeImage } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { loadSavedShipping, saveSavedShipping } from '../cart/savedShipping';
 import { saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
+import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import { MEDUSA_CART_ID_STORAGE_KEY } from '../cart/types';
 import { CART_SCHEMA, CHECKOUT_SCHEMA, EGYPT_CITY_OPTIONS } from '../data/domain-config';
@@ -443,7 +444,7 @@ function buildOrderSnapshot(args: {
   const finalShippingLabel = shippingLabel || order.shipping_methods?.[0]?.name || (isArabic ? 'عادي' : 'Standard');
 
   return {
-    orderId: order.display_id ? `HORO-${order.display_id}` : order.id,
+    orderId: buildHoroCustomerOrderRef(order),
     lines,
     cartId: getStoredCartId() ?? undefined,
     medusaOrderId: order.id,
@@ -1052,7 +1053,7 @@ export function Checkout() {
           });
         }
         trackPurchase({
-          transactionId: snapshot.orderId,
+          transactionId: snapshot.medusaOrderId ?? snapshot.orderId,
           value: snapshot.total,
           currency: 'EGP',
           lines: snapshot.lines,
