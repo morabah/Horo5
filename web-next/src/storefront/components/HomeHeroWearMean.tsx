@@ -56,8 +56,8 @@ export function HomeHeroWearMean() {
       </h1>
 
       <div className="relative z-10 flex min-h-0 flex-1 items-end justify-start px-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-10 lg:pb-14">
-        <div className="pointer-events-none absolute inset-x-0 top-[max(5.25rem,calc(env(safe-area-inset-top,0px)+4.25rem))] z-20 px-4 text-center md:hidden">
-          <p className="font-headline text-[clamp(2.2rem,12.5vw,3.35rem)] font-semibold uppercase leading-[0.9] tracking-[-0.02em] text-[#f5f0e6] drop-shadow-[0_6px_22px_rgba(0,0,0,0.55)]">
+        <div className="pointer-events-none absolute inset-x-0 top-[max(4rem,calc(env(safe-area-inset-top,0px)+3.5rem))] z-20 px-4 text-center md:hidden">
+          <p className="font-headline text-[clamp(2rem,10.5vw,2.9rem)] font-semibold uppercase leading-[0.9] tracking-[-0.02em] text-[#f5f0e6] drop-shadow-[0_6px_22px_rgba(0,0,0,0.55)]">
             <span className="block">WEAR WHAT</span>
             <span className="block">YOU FEEL</span>
           </p>
