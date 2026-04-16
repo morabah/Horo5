@@ -37,7 +37,7 @@ export function HomeHeroWearMean() {
       <img
         src={homeHeroWearFeel.src}
         alt={isArabic ? 'هورو — ارتدِ ما تشعر به' : homeHeroWearFeel.alt}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover object-[50%_70%] md:object-[50%_50%]"
         fetchPriority="high"
         loading="eager"
         decoding="async"
@@ -48,7 +48,7 @@ export function HomeHeroWearMean() {
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-2 h-[26%] bg-linear-to-b from-black/55 to-transparent md:hidden"
+        className="pointer-events-none absolute inset-x-0 top-0 z-2 h-[34%] bg-linear-to-b from-black/65 via-black/25 to-transparent md:hidden"
       />
 
       <h1 id="home-hero-heading" className="sr-only">
@@ -56,11 +56,13 @@ export function HomeHeroWearMean() {
       </h1>
 
       <div className="relative z-10 flex min-h-0 flex-1 items-end justify-start px-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-10 lg:pb-14">
-        <div className="pointer-events-none absolute inset-x-0 top-[max(4rem,calc(env(safe-area-inset-top,0px)+3.5rem))] z-20 px-4 text-center md:hidden">
-          <p className="font-headline text-[clamp(2rem,10.5vw,2.9rem)] font-semibold uppercase leading-[0.9] tracking-[-0.02em] text-[#f5f0e6] drop-shadow-[0_6px_22px_rgba(0,0,0,0.55)]">
-            <span className="block">WEAR WHAT</span>
-            <span className="block">YOU FEEL</span>
-          </p>
+        <div className="pointer-events-none absolute inset-x-0 top-[max(4.25rem,calc(env(safe-area-inset-top,0px)+3.75rem))] z-20 px-4 text-center md:hidden">
+          <div className="mx-auto inline-block rounded-2xl border border-white/14 bg-black/22 px-4 py-3 shadow-[0_18px_44px_-24px_rgba(0,0,0,0.85)] backdrop-blur-xl">
+            <p className="font-headline text-[clamp(1.7rem,9.4vw,2.6rem)] font-semibold uppercase leading-[0.92] tracking-[-0.02em] text-[#f5f0e6] drop-shadow-[0_6px_20px_rgba(0,0,0,0.6)]">
+              <span className="block">WEAR WHAT</span>
+              <span className="block">YOU FEEL</span>
+            </p>
+          </div>
         </div>
         <div className="w-full max-w-[92vw] text-left sm:max-w-[80vw] md:max-w-[min(48ch,40vw)]">
           <p className="font-body text-[clamp(1.05rem,1.55vw,1.95rem)] leading-[1.2] text-[#f5f0e6] drop-shadow-[0_4px_18px_rgba(0,0,0,0.4)]">
