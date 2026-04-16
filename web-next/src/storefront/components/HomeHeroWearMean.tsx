@@ -56,12 +56,20 @@ export function HomeHeroWearMean() {
       </h1>
 
       <div className="relative z-10 flex min-h-0 flex-1 items-end justify-start px-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-10 lg:pb-14">
-        <div className="pointer-events-none absolute inset-x-0 top-[max(4.25rem,calc(env(safe-area-inset-top,0px)+3.75rem))] z-20 px-4 text-center md:hidden">
-          <div className="mx-auto inline-block rounded-2xl border border-white/14 bg-black/22 px-4 py-3 shadow-[0_18px_44px_-24px_rgba(0,0,0,0.85)] backdrop-blur-xl">
-            <p className="font-headline text-[clamp(1.7rem,9.4vw,2.6rem)] font-semibold uppercase leading-[0.92] tracking-[-0.02em] text-[#f5f0e6] drop-shadow-[0_6px_20px_rgba(0,0,0,0.6)]">
-              <span className="block">WEAR WHAT</span>
-              <span className="block">YOU FEEL</span>
-            </p>
+        <div className="pointer-events-none absolute inset-x-0 top-[max(4.1rem,calc(env(safe-area-inset-top,0px)+3.55rem))] z-20 px-4 md:hidden">
+          <div className="mx-auto grid w-full max-w-[92vw] grid-cols-2 gap-3">
+            <div className="text-left">
+              <p className="font-headline text-[clamp(1.6rem,9vw,2.4rem)] font-semibold uppercase leading-[0.9] tracking-[-0.02em] text-[#f5f0e6] drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
+                <span className="block">WEAR</span>
+                <span className="block">YOU</span>
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="font-headline text-[clamp(1.6rem,9vw,2.4rem)] font-semibold uppercase leading-[0.9] tracking-[-0.02em] text-[#f5f0e6] drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
+                <span className="block">WHAT</span>
+                <span className="block">FEEL</span>
+              </p>
+            </div>
           </div>
         </div>
         <div className="w-full max-w-[92vw] text-left sm:max-w-[80vw] md:max-w-[min(48ch,40vw)]">
