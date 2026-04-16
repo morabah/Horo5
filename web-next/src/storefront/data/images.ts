@@ -27,6 +27,12 @@ export const homeHeroShirtAnimation = {
   posterSrc: '/images/hero/home-hero-video-poster.png',
 } as const;
 
+/** Homepage "Wear What You Feel" hero — static editorial image with model + mantra typography. */
+export const homeHeroWearFeel = {
+  src: '/images/hero/home-hero-wear-feel.png',
+  alt: 'Model wearing HORO graphic tee — Wear What You Feel',
+} as const;
+
 /**
  * Named slot paths for layouts — all point at the brand vector until real product/lifestyle photography exists.
  */
