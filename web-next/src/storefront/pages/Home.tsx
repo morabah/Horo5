@@ -16,6 +16,7 @@ import {
   getFeeling,
   getFeelings,
   getProducts,
+  getSubfeeling,
   productHasRealImage,
   setRuntimeCatalog,
   type Product,
@@ -138,7 +139,14 @@ export function Home({
           </div>
           <div className="grid grid-cols-1 items-stretch gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {latestDrops.map((p, i) => {
-              const feeling = getFeeling(p.primaryFeelingSlug ?? p.feelingSlug);
+              const feelingSlug = p.primaryFeelingSlug ?? p.feelingSlug;
+              const feeling = getFeeling(feelingSlug);
+              const lineSlug = p.primarySubfeelingSlug ?? p.lineSlug;
+              const line = lineSlug ? getSubfeeling(lineSlug) : undefined;
+              const categoryEyebrow =
+                feeling && line?.feelingSlug === feelingSlug
+                  ? `${feeling.name} / ${line.name}`
+                  : feeling?.name;
               const artist = getArtist(p.artistSlug);
               const main = p.media?.main ?? p.thumbnail ?? '';
               return (
@@ -151,7 +159,7 @@ export function Home({
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
                   merchandisingBadge={p.merchandisingBadge}
-                  eyebrow={feeling?.name}
+                  eyebrow={categoryEyebrow}
                   eyebrowAccent={feeling?.accent}
                   useCase={p.useCase}
                   artistCredit={artist ? `Illustrated by ${artist.name}` : undefined}

@@ -293,6 +293,61 @@
     }
   }
 
+  /**
+   * Product card — feeling / line path (glass §3.5, matte-friendly).
+   * Top-right avoids overlap with merch badges (top-left) and quick-view / quick-add (bottom).
+   */
+  .category-chip {
+    background: color-mix(in srgb, var(--color-clean-white) 85%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-stone) 40%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(31, 28, 26, 0.08);
+  }
+
+  /**
+   * Shop-by-vibe cards: frosted dark glass for readable text over varied photos.
+   * Provides consistent contrast without fully obscuring the image.
+   */
+  .vibe-card-glass {
+    background: color-mix(in srgb, var(--color-ink) 72%, transparent);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px) saturate(1.1);
+    -webkit-backdrop-filter: blur(12px) saturate(1.1);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 8px 32px -8px rgba(0, 0, 0, 0.4);
+  }
+
+  /**
+   * Feelings hub hero — floating glass pill for eyebrow label.
+   * Subtle frosted effect that doesn't compete with photography.
+   */
+  .feelings-hub-glass-pill {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 4px 16px -4px rgba(0, 0, 0, 0.25);
+  }
+
+  /**
+   * Feelings hub hero — slim bottom bar for CTAs.
+   * Light frosted glass that lets photos show through.
+   */
+  .feelings-hub-glass-bar {
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.02) 0%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+    backdrop-filter: blur(20px) saturate(1.15);
+    -webkit-backdrop-filter: blur(20px) saturate(1.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
   /** Hero — text directly on photography (no glass card); WCAG-friendly contrast via scrim + shadow */
   .hero-overlay-heading,
   .hero-overlay-sub,

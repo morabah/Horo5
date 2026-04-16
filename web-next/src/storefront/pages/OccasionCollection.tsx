@@ -15,6 +15,7 @@ import {
   getFeeling,
   getOccasion,
   getOccasions,
+  getSubfeeling,
   productHasRealImage,
   productsByOccasion,
   type Occasion,
@@ -93,7 +94,14 @@ function OccasionProductCard({
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
 }) {
-  const feeling = getFeeling(product.primaryFeelingSlug ?? product.feelingSlug);
+  const feelingSlug = product.primaryFeelingSlug ?? product.feelingSlug;
+  const feeling = getFeeling(feelingSlug);
+  const lineSlug = product.primarySubfeelingSlug ?? product.lineSlug;
+  const line = lineSlug ? getSubfeeling(lineSlug) : undefined;
+  const categoryEyebrow =
+    feeling && line?.feelingSlug === feelingSlug
+      ? `${feeling.name} / ${line.name}`
+      : feeling?.name;
   const imageSrc = product.media?.main ?? product.thumbnail ?? '';
   const artistName = product.artistDisplay?.name?.trim() || getArtist(product.artistSlug)?.name?.trim();
 
@@ -106,7 +114,7 @@ function OccasionProductCard({
       imageSrc={imageSrc}
       imageAlt={`HORO “${product.name}” graphic tee for ${feeling?.name ?? 'the collection'}.`}
       merchandisingBadge={product.merchandisingBadge}
-      eyebrow={feeling?.name}
+      eyebrow={categoryEyebrow}
       eyebrowAccent={feeling?.accent}
       artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
       onQuickView={onQuickView}

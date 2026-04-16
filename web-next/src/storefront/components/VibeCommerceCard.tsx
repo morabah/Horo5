@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { VIBES_SCHEMA } from '../data/domain-config';
 import type { Feeling } from '../data/site';
-import { glassInteractive } from '../lib/glassInteractive';
 import { getFeelingCollectionVisual, heroVectorizedV2, imgUrl } from '../data/images';
 
 const linkBaseClass =
@@ -35,10 +34,8 @@ export function VibeCommerceCard({
     .replace('{cta}', ctaLabel.replace(/\s*→$/, '').trim())
     .replace('{name}', feeling.name);
 
-  const titleClassName = [
-    'font-headline mb-0.5 line-clamp-2 font-semibold leading-tight tracking-tight text-[clamp(1rem,5.2cqw,1.375rem)]',
-    glassInteractive.title,
-  ].join(' ');
+  const titleClassName =
+    'font-headline mb-0.5 line-clamp-2 font-semibold leading-tight tracking-tight text-[clamp(1rem,5.2cqw,1.375rem)] text-white';
   const footerSurfaceClassName =
     variant === 'see-vibe'
       ? 'bg-transparent'
@@ -84,37 +81,22 @@ export function VibeCommerceCard({
         <div className="absolute inset-x-0 bottom-0 p-[clamp(0.75rem,3.5cqw,1.25rem)]">
           <div
             className={[
-              'relative flex max-h-[min(28cqh,9.75rem)] flex-col justify-center overflow-hidden px-[clamp(0.95rem,4cqw,1.25rem)] py-[clamp(0.625rem,2cqh,0.875rem)] text-white',
+              'vibe-card-glass relative flex max-h-[min(28cqh,9.75rem)] flex-col justify-center overflow-hidden rounded-xl px-[clamp(0.95rem,4cqw,1.25rem)] py-[clamp(0.625rem,2cqh,0.875rem)] text-white',
               footerSurfaceClassName,
             ].join(' ')}
           >
-
-
             <div className="relative z-10 flex items-center gap-[clamp(0.5rem,2cqw,0.875rem)]">
               <span
-                className={[
-                  'mt-0.5 h-[clamp(0.375rem,1.8cqw,0.5rem)] w-[clamp(0.375rem,1.8cqw,0.5rem)] shrink-0 rounded-full shadow-md',
-                  glassInteractive.accentDot,
-                ].join(' ')}
+                className="mt-0.5 h-[clamp(0.375rem,1.8cqw,0.5rem)] w-[clamp(0.375rem,1.8cqw,0.5rem)] shrink-0 rounded-full shadow-md ring-2 ring-white/25"
                 style={{ backgroundColor: feeling.accent }}
                 aria-hidden
               />
               {titleEl}
             </div>
-            <p
-              className={[
-                'relative z-10 font-body mt-1 line-clamp-2 pl-[clamp(1.125rem,5cqw,1.375rem)] text-[clamp(0.6875rem,2.8cqw,0.84rem)] leading-snug',
-                glassInteractive.body,
-              ].join(' ')}
-            >
+            <p className="relative z-10 mt-1 line-clamp-2 pl-[clamp(1.125rem,5cqw,1.375rem)] font-body text-[clamp(0.6875rem,2.8cqw,0.84rem)] leading-snug text-white/90">
               {bodyCopy}
             </p>
-            <span
-              className={[
-                'relative z-10 font-body mt-2 inline-flex items-center gap-1.5 pl-[clamp(1.125rem,5cqw,1.375rem)] text-[clamp(0.75rem,2.7cqw,0.82rem)] font-medium',
-                glassInteractive.cta,
-              ].join(' ')}
-            >
+            <span className="relative z-10 mt-2 inline-flex items-center gap-1.5 pl-[clamp(1.125rem,5cqw,1.375rem)] font-body text-[clamp(0.75rem,2.7cqw,0.82rem)] font-medium text-white">
               <span className="relative inline-flex items-center gap-1.5 pb-0.5 after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-current after:opacity-90 after:transition-[width] after:duration-300 after:ease-out motion-reduce:after:transition-none group-hover:after:w-full">
                 {ctaLabel.replace(/\s*→$/, '').trim()}
                 <span

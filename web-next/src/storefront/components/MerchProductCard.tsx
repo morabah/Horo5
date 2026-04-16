@@ -55,6 +55,8 @@ export function MerchProductCard({
   imageAlt,
   merchandisingBadge,
   promoLabel: promoLabelProp,
+  eyebrow,
+  eyebrowAccent,
   artistCredit,
   compareAtPriceEgp,
   onQuickView,
@@ -162,6 +164,20 @@ export function MerchProductCard({
               }`}
             >
               {promoLabel}
+            </span>
+          ) : null}
+          {eyebrow?.trim() ? (
+            <span
+              className="category-chip font-label pointer-events-none absolute right-3 top-3 z-9 max-w-[min(100%-6rem,14rem)] truncate rounded-md px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.16em] text-obsidian/80"
+              style={
+                eyebrowAccent
+                  ? {
+                      borderColor: `color-mix(in srgb, ${eyebrowAccent} 38%, var(--color-stone))`,
+                    }
+                  : undefined
+              }
+            >
+              {eyebrow.trim()}
             </span>
           ) : null}
         </Link>

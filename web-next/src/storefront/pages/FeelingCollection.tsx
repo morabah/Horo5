@@ -7,6 +7,7 @@ import {
   getArtist,
   getFeeling,
   getFeelings,
+  getSubfeeling,
   getSubfeelingsByFeeling,
   productAppearsInFeelingLine,
   productHasRealImage,
@@ -47,6 +48,25 @@ function filterByPrice(list: import('../data/site').Product[], filter: PriceFilt
     case '900+': return list.filter((p) => p.priceEgp >= 900);
     default: return list;
   }
+}
+
+function categoryEyebrowForFeelingProduct(
+  feelingName: string,
+  feelingSlug: string,
+  activeLine: { name: string } | undefined,
+  product: import('../data/site').Product,
+): string {
+  if (activeLine) {
+    return `${feelingName} / ${activeLine.name}`;
+  }
+  const lineSlug = product.primarySubfeelingSlug ?? product.lineSlug;
+  if (lineSlug) {
+    const line = getSubfeeling(lineSlug);
+    if (line?.feelingSlug === feelingSlug) {
+      return `${feelingName} / ${line.name}`;
+    }
+  }
+  return feelingName;
 }
 
 function ChevronIcon() {
@@ -187,19 +207,14 @@ export function FeelingCollection() {
   }
 
   const feelingVisuals = getFeelingCollectionVisual(feeling.slug);
-  const heroLead =
-    activeLine?.blurb ||
-    feeling.tagline ||
-    feeling.blurb ||
-    `Browse all designs filed under ${feeling.name}.`;
   const storyLead =
     feeling.blurb ||
     feeling.tagline ||
     activeLine?.blurb ||
     `Browse all products assigned to ${feeling.name} in Medusa.`;
-  const manifestoLine = feeling.manifesto;
   const designCountLabel = baseList.length >= DESIGN_COUNT_MIN ? `${baseList.length} designs` : 'Curated selection';
   const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || Boolean(lineParam);
+  const heroTitle = activeLine ? `${feeling.name} / ${activeLine.name}` : feeling.name;
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -222,7 +237,7 @@ export function FeelingCollection() {
             style={feelingVisuals.hero.objectPosition ? { objectPosition: feelingVisuals.hero.objectPosition } : undefined}
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.32)_0%,rgba(18,18,18,0.52)_42%,rgba(18,18,18,0.92)_100%)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.2)_100%)]"
             aria-hidden
           />
           <div
@@ -231,52 +246,23 @@ export function FeelingCollection() {
             aria-hidden
           />
           <div className="absolute inset-x-0 bottom-0">
-            <div className="mx-auto max-w-7xl px-6 pb-8 md:px-10 md:pb-12 lg:pb-14">
-              <div className="max-w-2xl rounded-2xl border border-white/12 bg-obsidian/82 px-5 py-5 shadow-[0_24px_56px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md md:px-7 md:py-7">
-                <nav className="font-body mb-4 text-[13px] text-white/90 md:mb-5 md:text-sm" aria-label={copy.shell.breadcrumb}>
-                  <Link to="/" className="transition-colors hover:text-white">
-                    {copy.shell.home}
-                  </Link>
-                  <span className="text-white/60" aria-hidden>
-                    {' '}
-                    /{' '}
-                  </span>
-                  <Link to="/feelings" className="transition-colors hover:text-white">
-                    {copy.shell.shopByFeeling}
-                  </Link>
-                  <span className="text-white/60" aria-hidden>
-                    {' '}
-                    /{' '}
-                  </span>
-                  <span className="text-white">{feeling.name}</span>
-                </nav>
-                <p className="font-label mb-3 text-[10px] font-medium uppercase tracking-[0.28em] text-stone md:text-[11px]">
-                  {designCountLabel}
-                </p>
-                <h1
-                  id="feeling-collection-title"
-                  className="font-headline text-[clamp(2.4rem,6vw,4.9rem)] font-semibold leading-[0.94] tracking-tight text-white"
-                >
-                  {feeling.name}
-                </h1>
-                <p className="font-body mt-4 max-w-xl text-base leading-relaxed text-white/95 md:text-[1.0625rem]">
-                  {heroLead}
-                </p>
-                {manifestoLine ? (
-                  <p className="font-body mt-5 max-w-xl text-[1.05rem] italic leading-relaxed text-white/95 md:text-[1.16rem]">
-                    &ldquo;{manifestoLine}&rdquo;
-                  </p>
-                ) : null}
-                <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-                  <a
-                    href="#feeling-collection-products"
-                    className="font-label inline-flex min-h-12 items-center justify-center border border-white/25 bg-white/10 backdrop-blur-md px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-white hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  >
-                    Shop the designs
-                  </a>
-                </div>
-              </div>
+            <div className="feelings-hub-glass-bar flex items-center justify-center px-4 py-5 sm:py-6">
+              <h1
+                id="feeling-collection-title"
+                className="text-center font-headline text-[clamp(1.4rem,5vw,2.45rem)] font-semibold leading-tight tracking-tight text-white"
+              >
+                {heroTitle}
+              </h1>
             </div>
+          </div>
+          <div className="absolute left-4 top-4 sm:left-6 sm:top-6 md:left-8 md:top-8">
+            <Link
+              to="/products"
+              className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
+            >
+              {copy.shell.shopAll}
+              <span className="text-white/50" aria-hidden>→</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -410,7 +396,7 @@ export function FeelingCollection() {
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
                   merchandisingBadge={p.merchandisingBadge}
-                  eyebrow={feeling.name}
+                  eyebrow={categoryEyebrowForFeelingProduct(feeling.name, slug, activeLine, p)}
                   eyebrowAccent={feeling.accent}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                   onQuickView={setQuickViewSlug}

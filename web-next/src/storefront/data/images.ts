@@ -17,6 +17,17 @@ import {
 export const heroVectorizedV2 = '/images/hero/horo_vectorized_v2.svg';
 
 /**
+ * Homepage hero shirt animation (H.264 MP4 under `public/videos/`).
+ * Re-encode with ffmpeg for smaller files if needed, e.g. `-an -movflags +faststart`.
+ */
+export const homeHeroShirtAnimation = {
+  src: '/videos/home-hero-shirt-design.mp4',
+  type: 'video/mp4' as const,
+  /** Raster poster shown until the MP4 decodes; pair with the animation for a seamless handoff. */
+  posterSrc: '/images/hero/home-hero-video-poster.png',
+} as const;
+
+/**
  * Named slot paths for layouts — all point at the brand vector until real product/lifestyle photography exists.
  */
 export const tee = {

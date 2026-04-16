@@ -1,6 +1,7 @@
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Link } from 'react-router-dom';
 import { BRAND_COPY } from '../data/brand';
-import { STOREFRONT_IMAGE_SLOTS } from '../data/images';
+import { homeHeroShirtAnimation } from '../data/images';
 import { getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
@@ -9,11 +10,29 @@ const HERO_NAV_OFFSET =
   'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
+function subscribeReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  mq.addEventListener('change', onChange);
+  return () => mq.removeEventListener('change', onChange);
+}
+
+function getReducedMotionSnapshot() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function usePrefersReducedMotion() {
+  return useSyncExternalStore(subscribeReducedMotion, getReducedMotionSnapshot, () => false);
+}
+
+const heroMediaClassName =
+  'hero-editorial-zoom relative z-20 h-auto max-h-[min(58svh,600px)] w-full max-w-full object-contain drop-shadow-[0_30px_80px_rgba(0,0,0,0.6)] lg:max-h-[min(72svh,780px)]';
+
 export function HomeHeroWearMean() {
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
-  const heroVisual = STOREFRONT_IMAGE_SLOTS.home.hero;
-  const isVectorHero = heroVisual.src.endsWith('.svg');
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
 
   const priceRange = (() => {
     const products = getProducts().filter(productHasRealImage);
@@ -36,6 +55,33 @@ export function HomeHeroWearMean() {
   const splitIndex = Math.ceil(mantraTokens.length / 2);
   const topWords = mantraTokens.slice(0, splitIndex);
   const bottomWords = mantraTokens.slice(splitIndex);
+
+  /** Defer MP4 fetch until after first paint / idle so LCP stays on poster + layout. */
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    let idleId: number | undefined;
+    let timeoutId: number | undefined;
+    if (typeof requestIdleCallback !== 'undefined') {
+      idleId = requestIdleCallback(() => setShouldLoadVideo(true), { timeout: 2000 });
+    } else {
+      timeoutId = window.setTimeout(() => setShouldLoadVideo(true), 250);
+    }
+    return () => {
+      if (idleId !== undefined) cancelIdleCallback(idleId);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
+  }, [prefersReducedMotion]);
+
+  useEffect(() => {
+    if (!shouldLoadVideo || prefersReducedMotion) return;
+    const v = videoRef.current;
+    if (!v) return;
+    v.src = homeHeroShirtAnimation.src;
+    v.load();
+    void v.play().catch(() => {
+      /* Autoplay may be blocked; poster remains visible */
+    });
+  }, [shouldLoadVideo, prefersReducedMotion]);
 
   const renderTypographyRow = (words: string[], key: string) => (
     <div
@@ -64,7 +110,7 @@ export function HomeHeroWearMean() {
       aria-labelledby="home-hero-heading"
       className={`relative isolate flex min-h-[min(72svh,44rem)] w-full flex-col overflow-hidden bg-obsidian md:min-h-[min(92svh,56rem)] ${HERO_NAV_OFFSET}`}
     >
-      {/* Warm radial ambience — centered behind the model */}
+      {/* Warm radial ambience — centered behind the media */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-0"
@@ -73,7 +119,6 @@ export function HomeHeroWearMean() {
             'radial-gradient(ellipse at 50% 58%, rgba(196,140,96,0.38) 0%, rgba(120,80,52,0.28) 22%, rgba(46,34,26,0.7) 52%, rgba(14,12,10,0.97) 78%, #080706 100%)',
         }}
       />
-      {/* Edge vignette to deepen the frame */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-[1]"
@@ -82,7 +127,6 @@ export function HomeHeroWearMean() {
             'radial-gradient(ellipse at 50% 50%, transparent 42%, rgba(0,0,0,0.55) 100%)',
         }}
       />
-      {/* Editorial film grain */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-[2] opacity-[0.04] mix-blend-overlay"
@@ -100,15 +144,31 @@ export function HomeHeroWearMean() {
         {renderTypographyRow(topWords, 'top')}
 
         <div className="relative -my-4 flex w-full flex-1 items-center justify-center sm:-my-6 lg:-my-10">
-          <img
-            src={heroVisual.src}
-            alt={isArabic ? 'شعار هورو' : heroVisual.alt}
-            width={isVectorHero ? 1200 : 1600}
-            height={isVectorHero ? 960 : 1600}
-            fetchPriority="high"
-            loading="eager"
-            className={`hero-editorial-zoom relative z-20 h-auto max-h-[min(58svh,600px)] w-auto max-w-full object-contain drop-shadow-[0_30px_80px_rgba(0,0,0,0.6)] lg:max-h-[min(72svh,780px)] ${isVectorHero ? 'opacity-95' : ''}`}
-          />
+          {prefersReducedMotion ? (
+            <img
+              src={homeHeroShirtAnimation.posterSrc}
+              alt={isArabic ? 'هورو — ارتدِ ما تشعر به' : 'HORO — wear what you feel.'}
+              width={1200}
+              height={960}
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
+              className={heroMediaClassName}
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              className={heroMediaClassName}
+              poster={homeHeroShirtAnimation.posterSrc}
+              muted
+              loop
+              playsInline
+              preload="none"
+              disablePictureInPicture
+              controls={false}
+              aria-hidden="true"
+            />
+          )}
         </div>
 
         {renderTypographyRow(bottomWords, 'bottom')}

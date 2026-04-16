@@ -13,6 +13,7 @@ import {
   getOccasion,
   getOccasions,
   getProducts,
+  getSubfeeling,
   productHasRealImage,
   type OccasionSlug,
   type Product,
@@ -519,6 +520,10 @@ function occasionScore(occasionSlug: OccasionSlug, queryVariants: string[]): num
 function mapDesignCard(product: Product): SearchDesignCard {
   const feelingSlug = productFeelingSlug(product);
   const feeling = getFeeling(feelingSlug);
+  const lineSlug = product.primarySubfeelingSlug ?? product.lineSlug;
+  const line = lineSlug ? getSubfeeling(lineSlug) : undefined;
+  const feelingName =
+    feeling && line?.feelingSlug === feelingSlug ? `${feeling.name} / ${line.name}` : feeling?.name;
   const imageSrc = product.media?.main ?? product.thumbnail ?? '';
   const artistName = product.artistDisplay?.name?.trim() || getArtist(product.artistSlug)?.name?.trim();
 
@@ -526,7 +531,7 @@ function mapDesignCard(product: Product): SearchDesignCard {
     slug: product.slug,
     name: product.name,
     feelingSlug,
-    feelingName: feeling?.name,
+    feelingName,
     feelingAccent: feeling?.accent,
     artistCredit: artistName ? `Illustrated by ${artistName}` : undefined,
     originalPriceEgp: product.originalPriceEgp,

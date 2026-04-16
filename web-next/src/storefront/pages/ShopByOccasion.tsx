@@ -7,6 +7,21 @@ import { getOccasionCollectionVisual, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
 import { getOccasions, type Occasion } from '../data/site';
 
+function getOccasionHeroTiles(occasions: Occasion[]) {
+  return occasions
+    .slice(0, 6)
+    .map((o) => {
+      const visual = getOccasionCollectionVisual(o.slug);
+      return {
+        slug: o.slug,
+        src: visual.hero.src || visual.proof.src || o.cardImageSrc,
+        alt: visual.hero.alt || o.cardImageAlt || o.name,
+        objectPosition: visual.hero.objectPosition,
+      };
+    })
+    .filter((t) => t.src);
+}
+
 type ShopByOccasionProps = {
   /** When set (e.g. from Next RSC), replaces runtime/static getOccasions() for first paint. */
   initialOccasions?: Occasion[];
@@ -56,133 +71,98 @@ export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
       </div>
     );
   }
-  const featured = occasions[0];
-  const featuredVisual = getOccasionCollectionVisual(featured.slug).hero;
-  const secondaryOccasions = occasions.filter((occasion) => occasion.slug !== featured.slug);
-  const editorialOccasions = occasions.slice(0, 4);
+
+  const heroTiles = getOccasionHeroTiles(occasions);
+  const heroTileCount = Math.max(1, heroTiles.length);
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
-      <div className="mx-auto max-w-7xl px-4 pt-8 md:px-8 md:pt-10">
+      <div className="mx-auto flex min-h-[calc(100vh-10rem)] max-w-7xl flex-col gap-10 px-4 pt-8 md:gap-12 md:px-8 md:pt-10">
         <PageBreadcrumb
-          className="mb-6"
+          className="mb-0 md:-mb-2"
           items={[
             { label: copy.shell.home, to: '/' },
             { label: copy.shell.shopByMoment },
           ]}
         />
-      </div>
-      <section className="relative isolate overflow-hidden bg-obsidian text-white" aria-labelledby="occasion-hub-title">
-        <div className="relative h-[50vh] min-h-[26rem] md:h-[60vh] md:min-h-[34rem]">
-          <img
-            src={imgUrl(featuredVisual.src, 1800)}
-            alt={featuredVisual.alt}
-            className="absolute inset-0 h-full w-full object-cover"
-            width={1800}
-            height={1200}
-            decoding="async"
-            style={featuredVisual.objectPosition ? { objectPosition: featuredVisual.objectPosition } : undefined}
-          />
+
+        {/* Hero — photo grid with glass headline bar */}
+        <section
+          className="relative isolate overflow-hidden"
+          aria-label={OCCASION_SCHEMA.copy.hubEyebrow}
+        >
           <div
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.28)_0%,rgba(18,18,18,0.48)_45%,rgba(18,18,18,0.92)_100%)]"
+            className="grid min-h-[26rem] grid-cols-2 gap-0.5 bg-obsidian sm:min-h-[30rem] sm:grid-cols-3 sm:gap-1 lg:min-h-[34rem] lg:[grid-template-columns:repeat(var(--hero-tile-count),minmax(0,1fr))]"
+            style={{ ['--hero-tile-count' as string]: String(heroTileCount) }}
+          >
+            {heroTiles.map((tile) => (
+              <img
+                key={tile.slug}
+                src={imgUrl(tile.src, 900)}
+                alt={tile.alt}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: tile.objectPosition }}
+                width={900}
+                height={1200}
+                decoding="async"
+              />
+            ))}
+          </div>
+          {/* Minimal vignette — photos are the hero */}
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.2)_100%)]"
             aria-hidden
           />
+
+          {/* Bottom glass bar — headline only */}
           <div className="absolute inset-x-0 bottom-0">
-            <div className="mx-auto max-w-7xl px-6 pb-8 md:px-10 md:pb-12">
-              <div className="max-w-2xl rounded-2xl border border-white/12 bg-obsidian/82 px-5 py-5 shadow-[0_24px_56px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md md:px-7 md:py-7">
-                <p className="font-label mb-3 text-[10px] font-medium uppercase tracking-[0.24em] text-stone md:text-[11px]">
-                  {OCCASION_SCHEMA.copy.hubEyebrow}
-                </p>
-                <h1 id="occasion-hub-title" className="font-headline text-[clamp(2.3rem,5vw,4.4rem)] font-semibold leading-[0.95] tracking-tight text-white">
-                  {OCCASION_SCHEMA.copy.hubTitle}
-                </h1>
-                <p className="mt-4 max-w-xl font-body text-base leading-relaxed text-white/95 md:text-[1.0625rem]">
-                  {OCCASION_SCHEMA.copy.hubSubtitle}
-                </p>
-                {featured.priceHint ? (
-                  <p className="font-label mt-5 text-[10px] font-medium uppercase tracking-[0.22em] text-stone md:text-[11px]">
-                    {featured.priceHint}
-                  </p>
-                ) : null}
-                <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-                  <Link
-                    to={`/occasions/${featured.slug}`}
-                    className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-[0_18px_38px_-18px_rgba(0,0,0,0.72)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  >
-                    {OCCASION_SCHEMA.copy.featuredCta}
-                  </Link>
-                  <Link
-                    to="/feelings"
-                    className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/92 hover:text-white"
-                  >
-                    {OCCASION_SCHEMA.copy.secondaryNavCta}
-                  </Link>
-                </div>
-              </div>
+            <div className="feelings-hub-glass-bar flex items-center justify-center px-4 py-5 sm:py-6">
+              <h1 className="text-center font-headline text-[clamp(1.5rem,5vw,2.5rem)] font-semibold leading-tight tracking-tight text-white">
+                {OCCASION_SCHEMA.copy.hubTitle}
+              </h1>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="mx-auto max-w-7xl px-6 pt-8 md:px-10 md:pt-10" aria-labelledby="occasion-grid-title">
-        <div className="mb-8 md:mb-10">
-          <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{featured.name}</p>
-          <h2 id="occasion-grid-title" className="font-headline mt-3 text-[1.6rem] font-semibold tracking-tight text-obsidian md:text-[2rem]">
-            Explore the rest of the edit
-          </h2>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 md:gap-5">
-          {secondaryOccasions.map((occasion) => (
-            <SecondaryOccasionCard key={occasion.slug} {...occasion} />
-          ))}
-        </div>
-
-        <section
-          aria-labelledby="occasion-editorial-title"
-          className="mt-10 rounded-[1.5rem] border border-stone/25 bg-white/68 px-5 py-6 shadow-[0_16px_36px_-28px_rgba(26,26,26,0.24)] md:px-7 md:py-7"
-        >
-          <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Crawlable guide</p>
-          <h2 id="occasion-editorial-title" className="font-headline mt-3 text-[1.45rem] font-semibold tracking-tight text-obsidian md:text-[1.8rem]">
-            Gift-ready graphic tees for real occasions
-          </h2>
-          <div className="mt-4 space-y-4 font-body text-sm leading-relaxed text-warm-charcoal md:text-[0.98rem]">
-            {editorialOccasions.length >= 4 ? (
-              <p>
-                Browse{' '}
-                <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[0].slug}`}>
-                  {editorialOccasions[0].name}
-                </Link>
-                ,{' '}
-                <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[1].slug}`}>
-                  {editorialOccasions[1].name}
-                </Link>
-                ,{' '}
-                <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[2].slug}`}>
-                  {editorialOccasions[2].name}
-                </Link>
-                , or{' '}
-                <Link className="font-medium text-deep-teal underline decoration-deep-teal/30 underline-offset-4" to={`/occasions/${editorialOccasions[3].slug}`}>
-                  {editorialOccasions[3].name}
-                </Link>
-                {' '}when you need a gift, milestone pick, or just-because streetwear edit.
-              </p>
-            ) : null}
-            <p>
-              These landing pages turn gifting intent into browseable collections so shoppers can compare feeling, price, and story without dropping into generic search too early.
-            </p>
+          {/* Shop All pill — top left */}
+          <div className="absolute left-4 top-4 sm:left-6 sm:top-6 md:left-8 md:top-8">
+            <Link
+              to="/products"
+              className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
+            >
+              {copy.shell.shopAll}
+              <span className="text-white/50" aria-hidden>→</span>
+            </Link>
           </div>
         </section>
 
-        <div className="mt-10 border-t border-stone/40 pt-6">
-          <p className="font-body text-sm text-clay-earth">{OCCASION_SCHEMA.copy.secondaryNavLabel}</p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            <Link className="btn btn-ghost" to="/feelings">
-              {OCCASION_SCHEMA.copy.secondaryNavCta}
-            </Link>
+        {/* Occasion cards grid */}
+        <section aria-labelledby="occasion-grid-title" className="bg-papyrus pb-16 md:pb-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Start here</p>
+                <h2
+                  id="occasion-grid-title"
+                  className="font-headline mt-2 text-[1.35rem] font-semibold tracking-tight text-obsidian md:text-[1.6rem]"
+                >
+                  Browse by moment, then filter inside
+                </h2>
+              </div>
+              <Link
+                to="/feelings"
+                className="font-label inline-flex min-h-11 items-center text-[11px] font-semibold uppercase tracking-[0.18em] text-deep-teal transition-colors hover:text-obsidian"
+              >
+                {copy.shell.shopByFeeling}
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-7">
+              {occasions.map((occasion) => (
+                <SecondaryOccasionCard key={occasion.slug} {...occasion} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <RecentlyViewedStrip className="border-t border-stone/20" />
     </div>
