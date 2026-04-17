@@ -4,7 +4,7 @@ import {
   ADDITIONAL_FEELING_ALIASES,
   ADDITIONAL_OCCASION_ALIASES,
 } from '../data/searchSynonyms';
-import { getFeelingCollectionVisual, getOccasionCollectionVisual } from '../data/images';
+import { getFeelingCollectionVisual, getOccasionCollectionVisual, getProductCardImageSrc } from '../data/images';
 import { LEGACY_VIBE_SLUG_TO_FEELING_SLUG } from '../data/legacy-slugs';
 import {
   getArtist,
@@ -42,6 +42,7 @@ export type SearchDesignCard = {
   imageAlt: string;
   merchandisingBadge?: string;
   promoLabel?: string;
+  proofChip?: string;
 };
 
 export type SearchVibeCard = {
@@ -83,6 +84,12 @@ export type SearchSuggestion = {
 export type SearchSuggestionGroup = {
   kind: SearchSuggestionGroupKind;
   suggestions: SearchSuggestion[];
+};
+
+export type SearchFacetOptions = {
+  artistOptions: SearchOption[];
+  occasionOptions: SearchOption[];
+  colorOptions: string[];
 };
 
 export type SearchResults = {
@@ -231,14 +238,14 @@ const OCCASION_ALIAS_MERGED: Record<string, string[]> = (() => {
 })();
 
 const COMMON_QUERY_EXPANSIONS: Record<string, string[]> = {
-  '220 gsm': ['220 gsm cotton', 'graphic tee'],
-  cotton: ['220 gsm cotton', 'graphic tee'],
+  'premium cotton': ['premium cotton', 'graphic tee'],
+  cotton: ['premium cotton', 'graphic tee'],
   tee: ['graphic tee', 't shirt', 't-shirt'],
   tshirt: ['graphic tee', 't shirt', 't-shirt'],
   't shirt': ['graphic tee', 't-shirt'],
   't-shirt': ['graphic tee', 't shirt'],
   تيشيرت: ['graphic tee', 't-shirt'],
-  قطن: ['220 gsm cotton', 'graphic tee'],
+  قطن: ['premium cotton', 'graphic tee'],
   هدية: ['gift something real', 'birthday pick'],
   هديه: ['gift something real', 'birthday pick'],
 };
@@ -524,8 +531,13 @@ function mapDesignCard(product: Product): SearchDesignCard {
   const line = lineSlug ? getSubfeeling(lineSlug) : undefined;
   const feelingName =
     feeling && line?.feelingSlug === feelingSlug ? `${feeling.name} / ${line.name}` : feeling?.name;
-  const imageSrc = product.media?.main ?? product.thumbnail ?? '';
+  const imageSrc = getProductCardImageSrc(product);
   const artistName = product.artistDisplay?.name?.trim() || getArtist(product.artistSlug)?.name?.trim();
+  const proofChip =
+    product.fitLabel?.trim() ||
+    product.trustBadges?.find(Boolean) ||
+    (product.occasionSlugs.includes('gift-something-real') ? 'Gift-ready' : undefined) ||
+    (artistName ? 'Artist credited' : undefined);
 
   return {
     slug: product.slug,
@@ -540,6 +552,7 @@ function mapDesignCard(product: Product): SearchDesignCard {
     imageAlt: `HORO “${product.name}” graphic tee${feeling ? ` — ${feeling.name}` : ''}.`,
     merchandisingBadge: product.merchandisingBadge,
     promoLabel: product.promoLabel,
+    proofChip,
   };
 }
 
@@ -621,8 +634,7 @@ function getScopedProducts(scopeFeelingSlug?: string | null, scopeOccasionSlug?:
   return baseProducts;
 }
 
-export function getSearchFacetOptions(scopeFeelingSlug?: string | null, scopeOccasionSlug?: string | null) {
-  const baseProducts = getScopedProducts(scopeFeelingSlug, scopeOccasionSlug);
+export function getSearchFacetOptionsFromProducts(baseProducts: Product[]): SearchFacetOptions {
   const artistMap = new Map<string, string>();
   const occasionMap = new Map<OccasionSlug, string>();
   const colors = new Set<string>();
@@ -647,6 +659,10 @@ export function getSearchFacetOptions(scopeFeelingSlug?: string | null, scopeOcc
       .sort((a, b) => a.name.localeCompare(b.name)),
     colorOptions: [...colors].sort((a, b) => a.localeCompare(b)),
   };
+}
+
+export function getSearchFacetOptions(scopeFeelingSlug?: string | null, scopeOccasionSlug?: string | null) {
+  return getSearchFacetOptionsFromProducts(getScopedProducts(scopeFeelingSlug, scopeOccasionSlug));
 }
 
 function getScopedCounts(baseProducts: Product[]) {

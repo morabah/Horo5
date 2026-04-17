@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { giftWrapPreview, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
+import { TeeImage } from './TeeImage';
 
 export function HomeGiftBlock() {
   const { copy } = useUiLocale();
@@ -14,13 +15,11 @@ export function HomeGiftBlock() {
         <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-14">
           <div data-reveal className="order-2 md:order-1">
             <div className="aspect-[4/3] w-full overflow-hidden rounded-md border border-stone/30 bg-papyrus/50 shadow-[0_12px_32px_rgba(26,26,26,0.06)]">
-              <img
+              <TeeImage
                 src={imgUrl(giftWrapPreview, 1200)}
                 alt="Preview of the HORO story card and gift wrap add-on."
-                className="h-full w-full object-cover"
-                width={1200}
-                height={900}
-                decoding="async"
+                w={1200}
+                className="h-full w-full"
               />
             </div>
           </div>

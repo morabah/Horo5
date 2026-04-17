@@ -450,7 +450,7 @@ The HORO website must feel like walking through a gallery, not scrolling through
 
 3. **The Vibes:** 5 immersive cards. Asymmetric grid. Each card: background image \+ accent dot \+ name \+ tagline. Hover reveals “Explore →.”
 
-4. **The Proof:** Dark section. 4 trust badges on frosted glass: 220 GSM Cotton, Licensed Artwork, Free Exchange 14 Days, COD Available.
+4. **The Proof:** Dark section. 4 trust badges on frosted glass: premium cotton, Licensed Artwork, Free Exchange 14 Days, COD Available.
 
 5. **Real Stories:** 3 customer quote cards on warm-glow glass. Real names \+ cities. Specific, verifiable quotes.
 
@@ -470,7 +470,7 @@ The product page is where trust matters most. It must show both the story and th
 
 * **Size selector:** S/M/L/XL/XXL. Selected state in Ember. Out-of-stock sizes visually struck through.
 
-* **Trust strip below CTA:** 220 GSM • Artist name • Free Exchange 14d • COD Available.
+* **Trust strip below CTA:** premium cotton • Artist name • Free Exchange 14d • COD Available.
 
 * **Mobile sticky CTA:** Fixed bar at bottom with “Add to Cart — 799 EGP” in Obsidian text on Ember.
 
@@ -503,7 +503,7 @@ The product page is where trust matters most. It must show both the story and th
 | Touchpoint | Required Trust Signals |
 | :---- | :---- |
 | Product page | 5+ images incl. close-up \+ model measurements / Fabric specs / Artist name / Exchange policy / COD badge |
-| Instagram product post | Close-up detail in carousel / “220 GSM cotton” in caption / Artist tag |
+| Instagram product post | Close-up detail in carousel / “premium cotton” in caption / Artist tag |
 | Instagram ad | On-body shot \+ price visible \+ “COD available” |
 | WhatsApp reply | Product photo \+ size guide link \+ delivery timeline \+ exchange policy |
 | Checkout page | Order summary with image / Expected delivery date / COD \+ prepaid options / Exchange link |

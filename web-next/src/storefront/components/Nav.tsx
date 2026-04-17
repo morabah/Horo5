@@ -92,7 +92,7 @@ function LocaleToggle({
 }
 
 export function Nav() {
-  const { totalQty } = useCart();
+  const { totalQty, setMiniCartOpen } = useCart();
   const { locale, copy, setLocale } = useUiLocale();
   const [q, setQ] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
@@ -430,6 +430,10 @@ export function Nav() {
 
   const navOnHeroTransparent = isHome && !homeHeroSolidNav;
   const logoVariant = navOnHeroTransparent ? 'light' : 'dark';
+  const handleCartNavigation = useCallback(() => {
+    setMiniCartOpen(false);
+    navigate('/cart');
+  }, [navigate, setMiniCartOpen]);
 
   return (
     <header
@@ -442,7 +446,7 @@ export function Nav() {
           className={`border-b px-[max(1rem,env(safe-area-inset-left,0px))] py-2.5 pr-[max(1rem,env(safe-area-inset-right,0px))] font-body text-sm ${
             navOnHeroTransparent
               ? 'border-white/20 bg-obsidian/90 text-white'
-              : 'border-stone/35 bg-[var(--mint-frost)] text-obsidian'
+              : 'border-stone/35 bg-(--mint-frost) text-obsidian'
           }`}
           role="status"
         >
@@ -490,10 +494,11 @@ export function Nav() {
           <Link to="/" className="flex min-w-0 flex-1 justify-center" aria-label={copy.shell.home}>
             <BrandLogo variant={logoVariant} />
           </Link>
-          <Link
-            to="/cart"
+          <button
+            type="button"
             className={`relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
             aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
+            onClick={handleCartNavigation}
           >
             <AppIcon name="shopping_bag" className="h-6 w-6" />
             {totalQty > 0 ? (
@@ -501,7 +506,7 @@ export function Nav() {
                 {totalQty > 99 ? '99+' : totalQty}
               </span>
             ) : null}
-          </Link>
+          </button>
         </div>
 
         <div className="relative border-t border-white/8 px-[max(1rem,env(safe-area-inset-left,0px))] pb-3 pr-[max(1rem,env(safe-area-inset-right,0px))]">
@@ -679,12 +684,13 @@ export function Nav() {
               label={copy.shell.language}
             />
           </div>
-          <Link
-            to="/cart"
+          <button
+            type="button"
             className={`relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm transition-colors ${
-              navOnHeroTransparent ? 'text-white/82 hover:bg-white/[0.08]' : 'text-obsidian/85 hover:bg-black/4'
+              navOnHeroTransparent ? 'text-white/82 hover:bg-white/8' : 'text-obsidian/85 hover:bg-black/4'
             }`}
             aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
+            onClick={handleCartNavigation}
           >
             <AppIcon name="shopping_bag" className="h-6 w-6" />
             {totalQty > 0 ? (
@@ -692,7 +698,7 @@ export function Nav() {
                 {totalQty > 99 ? '99+' : totalQty}
               </span>
             ) : null}
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -756,7 +762,10 @@ export function Nav() {
                 <NavLink
                   to="/cart"
                   className={({ isActive }) => drawerNavLinkClass(isActive)}
-                  onClick={closeMenu}
+                  onClick={() => {
+                    setMiniCartOpen(false);
+                    closeMenu();
+                  }}
                   aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
                 >
                   {copy.shell.cart}

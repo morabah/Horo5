@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
   <title id="title">HORO weight verification proof card</title>
-  <desc id="desc">A proof panel showing the 220 GSM verification card for a HORO tee.</desc>
+  <desc id="desc">A proof panel showing the fabric verification card for a HORO tee.</desc>
   <rect width="1200" height="1500" fill="#1a1a1a"/>
   <rect x="92" y="92" width="1016" height="1316" rx="52" fill="#151514" stroke="#816a4f" stroke-width="6"/>
   <rect x="214" y="284" width="772" height="714" rx="44" fill="#fee5e2"/>

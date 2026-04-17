@@ -5,6 +5,8 @@ export type StorefrontFeelingBrowseAssignmentDTO = {
 }
 
 export type StorefrontMediaDTO = {
+  /** Optional curated crop for product cards / PLPs. */
+  card?: string | null
   gallery?: string[]
   main?: string | null
   /** Base64 data URL for Next.js `placeholder="blur"` (optional; set via `product.metadata.media`). */

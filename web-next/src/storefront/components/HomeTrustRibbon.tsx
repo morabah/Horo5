@@ -2,7 +2,7 @@ import { HOME_TRUST_BADGES } from '../data/homeContent';
 import { useUiLocale } from '../i18n/ui-locale';
 
 const AR_TITLES: Record<string, string> = {
-  '220 GSM': 'قطن 220 جرام',
+  'premium cotton': 'قطن فاخر',
   'Licensed art': 'فن مرخّص',
   'Free exchange 14d': 'استبدال مجاني 14 يوم',
   COD: 'الدفع عند الاستلام',

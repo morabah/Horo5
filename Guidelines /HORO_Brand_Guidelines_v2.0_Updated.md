@@ -212,7 +212,7 @@ The product page is where “Recognition” (Stage 3\) and “Epiphany” (Stage
 
 2. **Glassmorphic quick-view panel:** Floating overlay showing price, size selector, “Add to Cart” CTA. Stays visible while scrolling through images.
 
-3. **Trust strip:** Horizontal bar below gallery: “220 GSM cotton” \+ “Artist: \[name\]” \+ “Free exchange within 14 days” \+ “COD available.”
+3. **Trust strip:** Horizontal bar below gallery: “premium cotton” \+ “Artist: \[name\]” \+ “Free exchange within 14 days” \+ “COD available.”
 
 4. **Design story card:** Glassmorphic card with the illustration’s meaning: “For the one who...” \+ artist micro-bio (3 lines max).
 
@@ -286,7 +286,7 @@ In Egypt’s COD-dominant, social-commerce market, trust is the biggest conversi
 | Touchpoint | Required Trust Signals |
 | :---- | :---- |
 | Product page | 5+ images (incl. close-up print detail \+ model with measurements) / Fabric GSM \+ material / Artist name \+ micro-bio / Exchange policy / COD badge |
-| Instagram product post | Close-up detail shot in carousel / “220 GSM cotton” in caption / Artist tag |
+| Instagram product post | Close-up detail shot in carousel / “premium cotton” in caption / Artist tag |
 | Instagram ad | On-body shot \+ price visible \+ “COD available” |
 | WhatsApp reply | Product photo \+ size guide link \+ delivery timeline \+ exchange policy summary |
 | Checkout page | Order summary with product image / Expected delivery date / Clear COD vs. prepaid options / Exchange policy link |

@@ -13,7 +13,7 @@ export const ADDITIONAL_COMMON_QUERY_EXPANSIONS: Record<string, string[]> = {
   white: ['papyrus', 'clean white', 'graphic tee'],
   gift: ['gift something real', 'birthday pick', 'هدية'],
   عيد: ['eid and ramadan', 'eid', 'ramadan'],
-  قطون: ['220 gsm cotton', 'cotton', 'graphic tee'],
+  قطون: ['premium cotton', 'cotton', 'graphic tee'],
   'تي شيرت': ['graphic tee', 't shirt', 'tee'],
   سويتشيرت: ['graphic tee', 'hoodie', 'heavyweight'],
   oversized: ['oversized', 'relaxed unisex fit', 'quiet revolt'],

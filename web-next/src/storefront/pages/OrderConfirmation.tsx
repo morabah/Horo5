@@ -228,7 +228,7 @@ export function OrderConfirmation() {
   const celebrationHeading = heroLine
     ? isArabic
       ? `${heroLine.productName} في الطريق إليك`
-      : `Your ${heroLine.productName} is on the way`
+      : `"${heroLine.productName}" is on the way`
     : copy.confirmation.breadcrumbTitle;
 
   function handleCopyOrderId() {
@@ -421,6 +421,7 @@ export function OrderConfirmation() {
                   </div>
                 </li>
               </ol>
+              <p className="mt-4 font-body text-sm text-clay">{copy.confirmation.timelineReassurance}</p>
             </div>
           ) : null}
 
@@ -551,7 +552,9 @@ export function OrderConfirmation() {
           })() : null}
 
           <p className="mt-6 font-body text-sm text-clay">
-            {canReferenceWhatsapp ? copy.confirmation.whatsappOrderHelp : copy.confirmation.followUpFallback}
+            {canReferenceWhatsapp
+              ? `${copy.confirmation.whatsappOrderHelp}. ${isArabic ? 'إذا لم يظهر الزر فهذا يعني أن تحديث واتساب غير مفعّل لهذا الطلب.' : 'If the button is missing, WhatsApp updates are not enabled for this order.'}`
+              : copy.confirmation.followUpFallback}
           </p>
         </section>
 

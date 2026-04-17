@@ -4,6 +4,7 @@ import { z } from "zod"
 
 export const storefrontMediaSchema = z
   .object({
+    card: z.string().nullable().optional(),
     gallery: z.array(z.string()).optional(),
     main: z.string().nullable().optional(),
     blurDataUrlMain: z.string().nullable().optional(),

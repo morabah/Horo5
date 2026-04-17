@@ -3,7 +3,7 @@
  * token matching in `search/view.ts` (`expandQueryVariants`, `fuzzyTokenScore`), merged
  * with `SEARCH_SYNONYMS_SCHEMA` from `domain-config.ts` and `searchSynonyms.ts`.
  */
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { AppIcon } from '../components/AppIcon';
@@ -23,7 +23,11 @@ import {
 import { getFeeling, getOccasion, type Product } from '../data/site';
 import { trackSearchZeroResults } from '../analytics/events';
 import { useMediaQuery } from '../hooks/useMediaQuery';
-import { fetchStorefrontSearch, isStorefrontServerSearchConfigured } from '../lib/medusa/storefront-search-client';
+import {
+  fetchStorefrontSearch,
+  isStorefrontServerSearchConfigured,
+  shouldUseBrowserStorefrontSearch,
+} from '../lib/medusa/storefront-search-client';
 import {
   getSearchFacetOptions,
   getSearchResults,
@@ -45,6 +49,7 @@ const SEARCH_DEBOUNCE_MS = 250;
 const useMedusaServerSearch =
   typeof process !== 'undefined' &&
   isStorefrontServerSearchConfigured() &&
+  shouldUseBrowserStorefrontSearch() &&
   process.env.NEXT_PUBLIC_STOREFRONT_SERVER_SEARCH !== '0';
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -107,6 +112,14 @@ function formatResultCount(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+function browseChipClass(isActive: boolean) {
+  return `font-label inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] transition-colors ${
+    isActive
+      ? 'border-obsidian bg-obsidian text-white'
+      : 'border-stone bg-white text-obsidian hover:border-desert-sand'
+  }`;
+}
+
 function SearchProductCard({
   product,
   onQuickView,
@@ -126,6 +139,7 @@ function SearchProductCard({
       imageAlt={product.imageAlt}
       merchandisingBadge={product.merchandisingBadge}
       promoLabel={product.promoLabel}
+      proofChip={product.proofChip}
       eyebrow={product.feelingName}
       eyebrowAccent={product.feelingAccent}
       artistCredit={product.artistCredit}
@@ -190,6 +204,8 @@ function SearchOccasionResultCard({ occasion }: { occasion: SearchOccasionCard }
 export function Search() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isBrowsePage = location.pathname === '/products';
   const isMobile = useMediaQuery('(max-width: 767px)');
   const { copy } = useUiLocale();
   const searchRootRef = useRef<HTMLDivElement>(null);
@@ -205,6 +221,8 @@ export function Search() {
   const [medusaSearchPool, setMedusaSearchPool] = useState<Product[]>([]);
   const [medusaSearchStatus, setMedusaSearchStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [desktopAdvancedFiltersOpen, setDesktopAdvancedFiltersOpen] = useState(false);
+  const [showRelatedSections, setShowRelatedSections] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
 
@@ -512,6 +530,10 @@ export function Search() {
     totalResults === 0 &&
     !(useMedusaServerSearch && medusaSearchStatus === 'loading');
 
+  useEffect(() => {
+    setShowRelatedSections(hasDebouncedQuery);
+  }, [hasDebouncedQuery]);
+
   const scopeLabels = [scopeOccasion?.name, scopeFeeling?.name].filter(Boolean);
   const scopeSummary = scopeLabels.join(' · ');
 
@@ -543,7 +565,9 @@ export function Search() {
     ? SEARCH_SCHEMA.copy.resultsForQuery.replace('{count}', String(totalResults)).replace('{query}', debouncedQ.trim())
     : scopeSummary
       ? SEARCH_SCHEMA.copy.scopedResultsFallback.replace('{scope}', scopeSummary)
-      : SEARCH_SCHEMA.copy.resultsFallback;
+      : isBrowsePage
+        ? 'Browse all HORO designs. Use quick lanes first, then open filters only when needed.'
+        : SEARCH_SCHEMA.copy.resultsFallback;
 
   const popularSearches = useMemo(() => {
     const suggestions = [
@@ -570,6 +594,16 @@ export function Search() {
       fColor: 'all',
     });
   }, [updateParams]);
+
+  const quickFeelingOptions = useMemo(
+    () => vibeOptions.slice(0, 8).map((option) => ({ slug: option.slug, name: option.name })),
+    [vibeOptions],
+  );
+
+  const quickOccasionOptions = useMemo(
+    () => facetOptions.occasionOptions.filter((option) => option.slug !== 'all').slice(0, 8),
+    [facetOptions.occasionOptions],
+  );
 
   const buildSearchWithQuery = useCallback(
     (term: string) => {
@@ -617,9 +651,9 @@ export function Search() {
     } else if (scopeOccasion) {
       items.push({ label: scopeOccasion.name, to: `/occasions/${scopeOccasion.slug}` });
     }
-    items.push({ label: copy.shell.search });
+    items.push({ label: isBrowsePage ? copy.shell.shopAll : copy.shell.search });
     return items;
-  }, [copy.shell.home, copy.shell.search, scopeOccasion, scopeFeeling]);
+  }, [copy.shell.home, copy.shell.search, copy.shell.shopAll, isBrowsePage, scopeOccasion, scopeFeeling]);
 
   function handleSuggestionSelect(suggestion: SearchSuggestion) {
     navigate(suggestion.href);
@@ -662,6 +696,7 @@ export function Search() {
 
       <div className="mx-auto min-h-[calc(100vh-10rem)] max-w-7xl px-6 pt-8 pb-12 md:px-10 md:pt-10 md:pb-16">
         <PageBreadcrumb className="mb-6" items={breadcrumbItems} />
+        {!isBrowsePage ? (
         <section className="grid gap-6 lg:grid-cols-[minmax(0,33rem)_minmax(0,1fr)] lg:items-stretch">
           <div className="card-glass border border-white/60 bg-[linear-gradient(145deg,rgba(255,255,255,0.84),rgba(248,246,242,0.72))] p-5 shadow-[0_28px_60px_-36px_rgba(26,26,26,0.35)] md:p-7">
             <div className="flex flex-col gap-5">
@@ -775,10 +810,124 @@ export function Search() {
             />
           </div>
         </section>
+        ) : (
+          <section className="rounded-[1.25rem] border border-stone/40 bg-white/65 p-5 shadow-[0_20px_48px_-32px_rgba(26,26,26,0.35)] md:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Shop all</p>
+                <h1 className="font-headline mt-2 text-[1.6rem] font-semibold tracking-tight text-obsidian md:text-[1.85rem]">
+                  Browse designs
+                </h1>
+              </div>
+              <Link
+                to="/search?focus=1"
+                className="font-label inline-flex min-h-11 items-center rounded-full border border-stone/70 bg-white px-4 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
+              >
+                Advanced search
+              </Link>
+            </div>
+            <p className="font-body mt-3 text-sm leading-relaxed text-warm-charcoal md:text-[0.98rem]">{summaryText}</p>
+          </section>
+        )}
 
         <section id="search-results-panel" className="mt-10 scroll-mt-[calc(8rem+env(safe-area-inset-top,0px))] md:mt-12">
+          <div className="mb-6 space-y-3">
+            {isBrowsePage ? (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateParams({ sort: 'featured' })}
+                  className={browseChipClass(sortKey === 'featured')}
+                >
+                  Best sellers
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateParams({ sort: 'newest' })}
+                  className={browseChipClass(sortKey === 'newest')}
+                >
+                  New drop
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateParams({ fOccasion: 'gift-something-real' })}
+                  className={browseChipClass(filterOccasion === 'gift-something-real')}
+                >
+                  Gift-ready
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateParams({ price: 'under-800' })}
+                  className={browseChipClass(priceFilter === 'under-800')}
+                >
+                  Under 800 EGP
+                </button>
+              </div>
+            ) : null}
+            {quickFeelingOptions.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateParams({ feelingFilter: 'all', vibeFilter: null })}
+                  className={browseChipClass(feelingFilter === 'all')}
+                >
+                  All moods
+                </button>
+                {quickFeelingOptions.map((option) => (
+                  <button
+                    key={`quick-feeling-${option.slug}`}
+                    type="button"
+                    onClick={() => updateParams({ feelingFilter: option.slug, vibeFilter: null })}
+                    className={browseChipClass(feelingFilter === option.slug)}
+                  >
+                    {option.name}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {quickOccasionOptions.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateParams({ fOccasion: 'all' })}
+                  className={browseChipClass(filterOccasion === 'all')}
+                >
+                  All occasions
+                </button>
+                {quickOccasionOptions.map((option) => (
+                  <button
+                    key={`quick-occasion-${option.slug}`}
+                    type="button"
+                    onClick={() => updateParams({ fOccasion: option.slug })}
+                    className={browseChipClass(filterOccasion === option.slug)}
+                  >
+                    {option.name}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
           {isMobile ? (
             <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
+              {!isBrowsePage ? (
+              <div className="flex w-full flex-wrap gap-2">
+                {(['all', 'S', 'M', 'L'] as const).map((value) => (
+                  <button
+                    key={`quick-size-${value}`}
+                    type="button"
+                    onClick={() => updateParams({ size: value })}
+                    className={`font-label inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] ${
+                      sizeFilter === value
+                        ? 'border-obsidian bg-obsidian text-white'
+                        : 'border-stone bg-white text-obsidian'
+                    }`}
+                  >
+                    {value === 'all' ? SEARCH_SCHEMA.copy.allSizesLabel : value}
+                  </button>
+                ))}
+              </div>
+              ) : null}
               <button
                 type="button"
                 onClick={openMobileFilters}
@@ -799,6 +948,7 @@ export function Search() {
           ) : (
             <div className="sticky top-[calc(7.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 flex items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm">
               <div className="flex min-w-0 flex-wrap items-end gap-4">
+                {!isBrowsePage || desktopAdvancedFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     {SEARCH_SCHEMA.copy.sortLabel}
@@ -819,7 +969,9 @@ export function Search() {
                     <ChevronIcon />
                   </div>
                 </div>
+                ) : null}
 
+                {!isBrowsePage || desktopAdvancedFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     {SEARCH_SCHEMA.copy.priceLabel}
@@ -840,31 +992,9 @@ export function Search() {
                     <ChevronIcon />
                   </div>
                 </div>
-
-                {vibeOptions.length > 1 ? (
-                  <div className="flex min-w-[13rem] flex-col gap-2">
-                    <label htmlFor="search-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.vibeLabel}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="search-vibe"
-                        value={feelingFilter}
-                        onChange={(event) => updateParams({ feelingFilter: event.target.value, vibeFilter: null })}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
-                        {vibeOptions.map((option) => (
-                          <option key={option.slug} value={option.slug}>
-                            {option.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
                 ) : null}
 
+                {!isBrowsePage ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     {SEARCH_SCHEMA.copy.sizeFilterLabel}
@@ -885,56 +1015,10 @@ export function Search() {
                     <ChevronIcon />
                   </div>
                 </div>
-
-                {facetOptions.artistOptions.length > 1 ? (
-                  <div className="flex min-w-[13rem] flex-col gap-2">
-                    <label htmlFor="search-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.artistLabel}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="search-artist"
-                        value={filterArtist}
-                        onChange={(event) => updateParams({ fArtist: event.target.value })}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
-                        {facetOptions.artistOptions.map((option) => (
-                          <option key={option.slug} value={option.slug}>
-                            {option.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
-                ) : null}
-
-                {facetOptions.occasionOptions.length > 1 ? (
-                  <div className="flex min-w-[13rem] flex-col gap-2">
-                    <label htmlFor="search-occasion-facet" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.occasionFilterLabel}
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="search-occasion-facet"
-                        value={filterOccasion}
-                        onChange={(event) => updateParams({ fOccasion: event.target.value })}
-                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                      >
-                        <option value="all">{SEARCH_SCHEMA.copy.allOccasionsFilterLabel}</option>
-                        {facetOptions.occasionOptions.map((option) => (
-                          <option key={option.slug} value={option.slug}>
-                            {option.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronIcon />
-                    </div>
-                  </div>
                 ) : null}
 
                 {facetOptions.colorOptions.length > 1 ? (
+                  !isBrowsePage || desktopAdvancedFiltersOpen ? (
                   <div className="flex min-w-[13rem] flex-col gap-2">
                     <label htmlFor="search-color" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                       {SEARCH_SCHEMA.copy.colorLabel}
@@ -956,7 +1040,16 @@ export function Search() {
                       <ChevronIcon />
                     </div>
                   </div>
+                  ) : null
                 ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => setDesktopAdvancedFiltersOpen((open) => !open)}
+                  className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm"
+                >
+                  {desktopAdvancedFiltersOpen ? 'Hide filters' : 'More filters'}
+                </button>
               </div>
 
               {hasActiveFilters ? (
@@ -971,26 +1064,77 @@ export function Search() {
             </div>
           )}
 
-          {useMedusaServerSearch && medusaSearchStatus === 'loading' ? (
-            <div
-              role="status"
-              aria-live="polite"
-              className="mt-4 flex items-center gap-3 rounded-sm border border-stone/80 bg-white/90 px-4 py-3 font-body text-sm text-warm-charcoal"
-            >
-              <span
-                className="inline-block size-4 shrink-0 animate-spin rounded-full border-2 border-deep-teal border-t-transparent"
-                aria-hidden
-              />
-              Syncing with the live catalog…
-            </div>
-          ) : null}
-
-          {useMedusaServerSearch && medusaSearchStatus === 'error' ? (
-            <div
-              role="alert"
-              className="mt-4 rounded-sm border border-amber-200 bg-amber-50 px-4 py-3 font-body text-sm text-amber-950"
-            >
-              Live catalog search is unavailable. Showing offline results until the connection is restored.
+          {!isMobile && desktopAdvancedFiltersOpen ? (
+            <div className="mb-8 flex flex-wrap items-end gap-4 rounded-sm border border-stone/40 bg-white/70 p-4">
+              {vibeOptions.length > 1 ? (
+                <div className="flex min-w-[13rem] flex-col gap-2">
+                  <label htmlFor="search-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {SEARCH_SCHEMA.copy.vibeLabel}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="search-vibe"
+                      value={feelingFilter}
+                      onChange={(event) => updateParams({ feelingFilter: event.target.value, vibeFilter: null })}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
+                      {vibeOptions.map((option) => (
+                        <option key={option.slug} value={option.slug}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+              ) : null}
+              {facetOptions.artistOptions.length > 1 ? (
+                <div className="flex min-w-[13rem] flex-col gap-2">
+                  <label htmlFor="search-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {SEARCH_SCHEMA.copy.artistLabel}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="search-artist"
+                      value={filterArtist}
+                      onChange={(event) => updateParams({ fArtist: event.target.value })}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
+                      {facetOptions.artistOptions.map((option) => (
+                        <option key={option.slug} value={option.slug}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+              ) : null}
+              {facetOptions.occasionOptions.length > 1 ? (
+                <div className="flex min-w-[13rem] flex-col gap-2">
+                  <label htmlFor="search-occasion-facet" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {SEARCH_SCHEMA.copy.occasionFilterLabel}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="search-occasion-facet"
+                      value={filterOccasion}
+                      onChange={(event) => updateParams({ fOccasion: event.target.value })}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      <option value="all">{SEARCH_SCHEMA.copy.allOccasionsFilterLabel}</option>
+                      {facetOptions.occasionOptions.map((option) => (
+                        <option key={option.slug} value={option.slug}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -1018,7 +1162,7 @@ export function Search() {
                 <Link className="btn btn-secondary text-sm" to="/occasions">
                   {SEARCH_SCHEMA.copy.shopByOccasionCta}
                 </Link>
-                <Link className="btn btn-ghost" to="/search">
+                <Link className="btn btn-ghost" to="/products">
                   {SEARCH_SCHEMA.copy.browseAllDesignsCta}
                 </Link>
               </div>
@@ -1076,7 +1220,7 @@ export function Search() {
                 ) : null}
               </section>
 
-              {vibeMatches.length > 0 ? (
+              {vibeMatches.length > 0 && !isBrowsePage ? (
                 <section aria-labelledby="search-vibes-heading">
                   <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                     <div>
@@ -1087,15 +1231,25 @@ export function Search() {
                     </div>
                     <p className="font-body text-sm text-clay">{formatResultCount(vibeMatches.length, 'feeling', 'feelings')}</p>
                   </div>
-                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                    {vibeMatches.map((vibe) => (
-                      <SearchVibeResultCard key={vibe.slug} vibe={vibe} />
-                    ))}
-                  </div>
+                  {showRelatedSections ? (
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                      {vibeMatches.map((vibe) => (
+                        <SearchVibeResultCard key={vibe.slug} vibe={vibe} />
+                      ))}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowRelatedSections(true)}
+                      className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-5 py-3 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian"
+                    >
+                      Explore related feelings
+                    </button>
+                  )}
                 </section>
               ) : null}
 
-              {occasionMatches.length > 0 ? (
+              {occasionMatches.length > 0 && showRelatedSections && !isBrowsePage ? (
                 <section aria-labelledby="search-occasions-heading">
                   <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
                     <div>

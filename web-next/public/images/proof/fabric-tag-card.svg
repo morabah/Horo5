@@ -8,7 +8,7 @@
     <rect x="56" y="72" width="308" height="130" rx="20" fill="#fee5e2"/>
     <text x="94" y="150" fill="#1a1a1a" font-family="Georgia, Times New Roman, serif" font-size="72" letter-spacing="-3">HORO</text>
     <text x="76" y="266" fill="#fee5e2" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="38" font-weight="600" letter-spacing="4">SIZE / M</text>
-    <text x="76" y="334" fill="#fee5e2" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="32">220 GSM cotton</text>
+    <text x="76" y="334" fill="#fee5e2" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="32">premium cotton</text>
     <text x="76" y="394" fill="#fee5e2" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="32">Made in Egypt</text>
     <path d="M77 464h266M77 524h266M77 584h266" stroke="#c75f76" stroke-width="10" stroke-linecap="round"/>
   </g>

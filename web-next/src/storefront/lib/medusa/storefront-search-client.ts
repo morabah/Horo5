@@ -21,6 +21,16 @@ function publishableKey() {
   return (process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || '').trim();
 }
 
+function isLikelyCorsNetworkError(message: string) {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes('failed to fetch') ||
+    normalized.includes('networkerror') ||
+    normalized.includes('cors') ||
+    normalized.includes('load failed')
+  );
+}
+
 /**
  * Browser fetch to Medusa `GET /storefront/search` (publishable key).
  */
@@ -76,10 +86,34 @@ export async function fetchStorefrontSearch(params: {
       },
     };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    const message = e instanceof Error ? e.message : String(e);
+    if (isLikelyCorsNetworkError(message)) {
+      return {
+        ok: false,
+        error: 'Live catalog search is unreachable from this origin. Falling back to local search ranking.',
+      };
+    }
+    return { ok: false, error: message };
   }
 }
 
 export function isStorefrontServerSearchConfigured() {
   return Boolean(medusaBaseUrl() && publishableKey());
+}
+
+/**
+ * Browser-side cross-origin calls to Medusa search can be blocked when CORS
+ * isn't configured for the current storefront origin. In that case we skip
+ * the live call and rely on local ranking to keep discovery functional.
+ */
+export function shouldUseBrowserStorefrontSearch() {
+  if (!isStorefrontServerSearchConfigured()) return false;
+  if (typeof window === 'undefined') return true;
+  try {
+    const base = medusaBaseUrl();
+    if (!base) return false;
+    return new URL(base).origin === window.location.origin;
+  } catch {
+    return false;
+  }
 }

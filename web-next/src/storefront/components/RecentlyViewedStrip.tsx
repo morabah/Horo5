@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MerchProductCard } from './MerchProductCard';
 import { ProductQuickView } from './ProductQuickView';
+import { getProductCardImageSrc } from '../data/images';
 import { getArtist, getFeeling, getProduct, getSubfeeling, productHasRealImage } from '../data/site';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -59,7 +60,7 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
                 feeling && line?.feelingSlug === feelingSlug
                   ? `${feeling.name} / ${line.name}`
                   : feeling?.name;
-              const main = p.media?.main ?? p.thumbnail ?? '';
+              const main = getProductCardImageSrc(p);
               const artistName = p.artistDisplay?.name?.trim() || getArtist(p.artistSlug)?.name?.trim();
               return (
                 <MerchProductCard

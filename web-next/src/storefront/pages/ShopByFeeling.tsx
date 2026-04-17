@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
 import { VIBES_SCHEMA } from '../data/domain-config';
-import { getFeelingsHubHeroTiles, imgUrl } from '../data/images';
+import { getFeelingsHubHeroTiles, heroVectorizedV2, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
 import { getFeelings } from '../data/site';
 
@@ -12,6 +13,15 @@ export function ShopByFeeling() {
   const feelings = getFeelings();
   const heroTiles = getFeelingsHubHeroTiles();
   const heroTileCount = Math.max(1, heroTiles.length);
+  const [brokenHeroTiles, setBrokenHeroTiles] = useState<Record<string, boolean>>({});
+  const safeHeroTiles = useMemo(
+    () =>
+      heroTiles.map((tile) => ({
+        ...tile,
+        src: brokenHeroTiles[tile.slug] ? heroVectorizedV2 : tile.src,
+      })),
+    [brokenHeroTiles, heroTiles],
+  );
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -31,7 +41,7 @@ export function ShopByFeeling() {
             className="grid min-h-[26rem] grid-cols-2 gap-0.5 bg-obsidian sm:min-h-[30rem] sm:grid-cols-3 sm:gap-1 lg:min-h-[34rem] lg:[grid-template-columns:repeat(var(--hero-tile-count),minmax(0,1fr))]"
             style={{ ['--hero-tile-count' as string]: String(heroTileCount) }}
           >
-            {heroTiles.map((tile) => (
+            {safeHeroTiles.map((tile) => (
               <img
                 key={tile.slug}
                 src={imgUrl(tile.src, 900)}
@@ -41,6 +51,10 @@ export function ShopByFeeling() {
                 width={900}
                 height={1200}
                 decoding="async"
+                onError={() =>
+                  setBrokenHeroTiles((current) =>
+                    current[tile.slug] ? current : { ...current, [tile.slug]: true })
+                }
               />
             ))}
           </div>

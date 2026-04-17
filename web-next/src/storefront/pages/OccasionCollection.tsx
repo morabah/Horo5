@@ -8,7 +8,7 @@ import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { OCCASION_SCHEMA } from '../data/domain-config';
-import { getOccasionCollectionVisual, giftWrapPreview, imgUrl } from '../data/images';
+import { getOccasionCollectionVisual, getProductCardImageSrc, giftWrapPreview, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
 import {
   getArtist,
@@ -102,7 +102,7 @@ function OccasionProductCard({
     feeling && line?.feelingSlug === feelingSlug
       ? `${feeling.name} / ${line.name}`
       : feeling?.name;
-  const imageSrc = product.media?.main ?? product.thumbnail ?? '';
+  const imageSrc = getProductCardImageSrc(product);
   const artistName = product.artistDisplay?.name?.trim() || getArtist(product.artistSlug)?.name?.trim();
 
   return (
@@ -114,6 +114,7 @@ function OccasionProductCard({
       imageSrc={imageSrc}
       imageAlt={`HORO “${product.name}” graphic tee for ${feeling?.name ?? 'the collection'}.`}
       merchandisingBadge={product.merchandisingBadge}
+      proofChip={product.fitLabel ?? product.trustBadges?.find(Boolean) ?? (product.occasionSlugs.includes('gift-something-real') ? 'Gift-ready' : undefined)}
       eyebrow={categoryEyebrow}
       eyebrowAccent={feeling?.accent}
       artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
@@ -142,6 +143,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
   const [vibeFilter, setVibeFilter] = useState<string>('all');
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [desktopFiltersOpen, setDesktopFiltersOpen] = useState(false);
 
   const mobileFilterSheetRef = useRef<HTMLDivElement>(null);
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
@@ -155,6 +157,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
     setPriceFilter('all');
     setVibeFilter('all');
     setMobileFiltersOpen(false);
+    setDesktopFiltersOpen(false);
   }, [slug]);
 
   useEffect(() => {
@@ -340,10 +343,10 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl space-y-12 px-6 pt-8 pb-12 md:space-y-14 md:px-10 md:pt-10 md:pb-16">
+      <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 pt-8 pb-12 md:gap-14 md:px-10 md:pt-10 md:pb-16">
         <section
           id="occasion-proof"
-          className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-b border-stone/25 pb-10 md:pb-12"
+          className="order-2 scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-b border-stone/25 pb-10 md:pb-12"
           aria-labelledby="occasion-proof-heading"
         >
           <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-10 lg:gap-14">
@@ -371,10 +374,10 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                   <span className="mx-2 text-clay/50" aria-hidden>
                     |
                   </span>
-                  220 GSM cotton
+                  premium cotton
                 </p>
               ) : (
-                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">220 GSM cotton</p>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">premium cotton</p>
               )}
               <a
                 href="#occasion-collection-products"
@@ -387,7 +390,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
         </section>
 
         {occasion.isGiftOccasion ? (
-          <section className="card-glass grid gap-5 overflow-hidden border border-[rgba(212,164,78,0.22)] bg-[linear-gradient(135deg,rgba(255,245,230,0.98),rgba(255,255,255,0.82))] p-4 md:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)] md:items-center md:p-5">
+          <section className="card-glass order-3 grid gap-5 overflow-hidden border border-[rgba(212,164,78,0.22)] bg-[linear-gradient(135deg,rgba(255,245,230,0.98),rgba(255,255,255,0.82))] p-4 md:grid-cols-[minmax(11rem,13rem)_minmax(0,1fr)] md:items-center md:p-5">
             <div className="overflow-hidden rounded-[18px] border border-stone/60 bg-white/80">
               <img
                 src={giftWrapPreview}
@@ -407,7 +410,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
           </section>
         ) : null}
 
-        <section id="occasion-collection-products" className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
+        <section id="occasion-collection-products" className="order-1 scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
           {isMobile ? (
             <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
               <button
@@ -427,6 +430,14 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
           ) : (
             <div className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 flex items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm">
               <div className="flex min-w-0 flex-wrap items-end gap-4">
+                <button
+                  type="button"
+                  onClick={() => setDesktopFiltersOpen((open) => !open)}
+                  className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm"
+                >
+                  {desktopFiltersOpen ? 'Hide filters' : 'Filter & sort'}
+                </button>
+                {desktopFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="occasion-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     {OCCASION_SCHEMA.copy.sortLabel}
@@ -447,7 +458,9 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                     <ChevronIcon />
                   </div>
                 </div>
+                ) : null}
 
+                {desktopFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="occasion-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     {OCCASION_SCHEMA.copy.priceLabel}
@@ -468,8 +481,9 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                     <ChevronIcon />
                   </div>
                 </div>
+                ) : null}
 
-                {vibeOptions.length > 1 ? (
+                {vibeOptions.length > 1 && desktopFiltersOpen ? (
                   <div className="flex min-w-[13rem] flex-col gap-2">
                     <label htmlFor="occasion-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                       {OCCASION_SCHEMA.copy.vibeLabel}
@@ -539,7 +553,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
           ) : null}
         </section>
 
-        <section aria-labelledby="more-occasions-title">
+        <section aria-labelledby="more-occasions-title" className="order-4">
           <div className="mb-5 flex items-end justify-between gap-4">
             <h2 id="more-occasions-title" className="font-headline text-[1.4rem] font-semibold tracking-tight text-obsidian">
               {OCCASION_SCHEMA.copy.moreOccasionsHeading}

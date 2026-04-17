@@ -75,6 +75,8 @@ export type WearerStory = {
 };
 
 export type ProductMediaRecord = {
+  /** Optional curated crop for product cards / PLPs. */
+  card?: string | null;
   gallery?: string[];
   main?: string | null;
   blurDataUrlMain?: string | null;

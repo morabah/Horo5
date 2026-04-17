@@ -5,12 +5,14 @@ import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
 
 import { HomeHeroWearMean } from '../components/HomeHeroWearMean';
+import { HomeGiftBlock } from '../components/HomeGiftBlock';
 import { HomeMarqueeBand } from '../components/HomeMarqueeBand';
 import { HomeProofSplit } from '../components/HomeProofSplit';
+import { HomeStudioProof } from '../components/HomeStudioProof';
 import { HomeTrustRibbon } from '../components/HomeTrustRibbon';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import type { RuntimeCatalog } from '../data/catalog-types';
-import { getFeelingCollectionVisual, imgUrl } from '../data/images';
+import { getFeelingCollectionVisual, getProductCardImageSrc, imgUrl } from '../data/images';
 import {
   getArtist,
   getFeeling,
@@ -47,7 +49,7 @@ export function Home({
     if (q === '1') sessionStorage.setItem(COMPACT_HOME_STORAGE, '1');
     setCompactHome(q === '1' || sessionStorage.getItem(COMPACT_HOME_STORAGE) === '1');
   }, [searchParams]);
-  const latestDrops = (initialProducts ?? getProducts()).filter(productHasRealImage).slice(0, 6);
+  const latestDrops = (initialProducts ?? getProducts()).filter(productHasRealImage).slice(0, 8);
   const featuredFeelings = getFeelings().slice(0, 4);
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
 
@@ -110,6 +112,28 @@ export function Home({
     <div className="home-grain">
       <HomeHeroWearMean />
       <HomeTrustRibbon />
+      <section className="border-t border-stone/20 bg-papyrus px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2.5">
+          <Link
+            to="/products?sort=newest"
+            className="font-label inline-flex min-h-11 items-center rounded-full border border-obsidian bg-obsidian px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-obsidian/90"
+          >
+            {locale === 'ar' ? 'إصدار جديد' : 'New drop'}
+          </Link>
+          <Link
+            to="/products?sort=featured"
+            className="font-label inline-flex min-h-11 items-center rounded-full border border-stone bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
+          >
+            {locale === 'ar' ? 'الأكثر مبيعاً' : 'Best sellers'}
+          </Link>
+          <Link
+            to="/products?fOccasion=gift-something-real"
+            className="font-label inline-flex min-h-11 items-center rounded-full border border-stone bg-white px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
+          >
+            {locale === 'ar' ? 'جاهز للهدايا' : 'Gift-ready'}
+          </Link>
+        </div>
+      </section>
 
       <section
         aria-labelledby="home-latest-drop-title"
@@ -119,7 +143,7 @@ export function Home({
           <div className="mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="font-label text-[10px] font-medium uppercase tracking-[0.26em] text-label">
-                {locale === 'ar' ? 'الإصدار الأحدث' : 'Latest drop'}
+                {locale === 'ar' ? 'ابدأ من هنا' : 'Start here'}
               </p>
               <h2
                 id="home-latest-drop-title"
@@ -132,12 +156,12 @@ export function Home({
             <Link
               data-reveal="stagger-1"
               to="/products"
-              className="cta-clay font-body inline-flex min-h-10 w-fit items-center justify-center border border-obsidian/80 px-5 py-2.5 text-sm font-medium text-obsidian transition-colors hover:border-obsidian hover:bg-obsidian hover:text-clean-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
+              className="cta-clay font-body inline-flex min-h-12 w-fit items-center justify-center border border-obsidian/80 px-5 py-2.5 text-sm font-medium text-obsidian transition-colors hover:border-obsidian hover:bg-obsidian hover:text-clean-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
             >
               {copy.home.featuredCta}
             </Link>
           </div>
-          <div className="grid grid-cols-1 items-stretch gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 items-stretch gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-3">
             {latestDrops.map((p, i) => {
               const feelingSlug = p.primaryFeelingSlug ?? p.feelingSlug;
               const feeling = getFeeling(feelingSlug);
@@ -148,7 +172,7 @@ export function Home({
                   ? `${feeling.name} / ${line.name}`
                   : feeling?.name;
               const artist = getArtist(p.artistSlug);
-              const main = p.media?.main ?? p.thumbnail ?? '';
+              const main = getProductCardImageSrc(p);
               return (
                 <MerchProductCard
                   key={p.slug}
@@ -159,6 +183,7 @@ export function Home({
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
                   merchandisingBadge={p.merchandisingBadge}
+                  proofChip={p.fitLabel ?? p.trustBadges?.find(Boolean)}
                   eyebrow={categoryEyebrow}
                   eyebrowAccent={feeling?.accent}
                   useCase={p.useCase}
@@ -245,6 +270,8 @@ export function Home({
       <HomeMarqueeBand />
 
       <HomeProofSplit />
+      <HomeGiftBlock />
+      <HomeStudioProof />
 
       <ProductQuickView open={quickViewSlug !== null} productSlug={quickViewSlug} onClose={() => setQuickViewSlug(null)} />
     </div>

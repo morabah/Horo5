@@ -474,7 +474,7 @@ import { useState, useEffect } from 'react'
 const MSGS = [
   { ar: 'الدفع عند الاستلام متاح',       en: 'COD Available — Pay on delivery' },
   { ar: 'استبدال مجاني خلال ١٤ يوم',     en: '14-Day Exchanges — No questions asked' },
-  { ar: 'قطن مصري ١٠٠٪',               en: '100% Egyptian Cotton — 220 GSM' },
+  { ar: 'قطن مصري ١٠٠٪',               en: '100% Egyptian Cotton — premium cotton' },
   { ar: 'فن مصنوع بأيدي الفنانين',       en: 'Artist-Made — Not mass produced' },
 ]
 

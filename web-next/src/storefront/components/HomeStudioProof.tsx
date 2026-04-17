@@ -1,6 +1,7 @@
 import { HOME_COPY, HOME_PROOF_CARDS } from '../data/homeContent';
 import { imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
+import { TeeImage } from './TeeImage';
 
 export function HomeStudioProof() {
   const { copy } = useUiLocale();
@@ -33,13 +34,11 @@ export function HomeStudioProof() {
               data-reveal={(['stagger-1', 'stagger-2', 'stagger-3'] as const)[index]}
               className="overflow-hidden rounded-[1.35rem] border border-stone/35 bg-white shadow-[0_18px_42px_-28px_rgba(26,26,26,0.22)]"
             >
-              <img
+              <TeeImage
                 src={imgUrl(card.imageSrc, 900)}
                 alt={card.imageAlt}
-                className="aspect-[4/3] w-full object-cover"
-                width={900}
-                height={675}
-                decoding="async"
+                w={900}
+                className="aspect-[4/3] w-full"
               />
               <div className="space-y-3 p-5">
                 <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">

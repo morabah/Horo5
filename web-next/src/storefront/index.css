@@ -278,8 +278,8 @@
   /** Vibe collection PLP — clean comparison-first merchandising grid */
   .vibe-product-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 2.5rem 1.5rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 0.75rem;
   }
   @media (min-width: 768px) and (max-width: 1023px) {
     .vibe-product-grid {
@@ -1402,6 +1402,32 @@
 
   @media (prefers-reduced-motion: reduce) {
     .sticky-atc { transition: none; }
+  }
+
+  /* PDP content clearance for sticky add-to-cart bar on mobile */
+  @media (max-width: 767px) {
+    .pdp-page-content {
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  /* Cart: sticky checkout CTA on mobile */
+  @media (max-width: 767px) {
+    .cart-summary-actions {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 80;
+      padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      background: var(--color-chalk, #f4efe7);
+      border-top: 1px solid color-mix(in srgb, var(--color-stone) 50%, transparent);
+      box-shadow: 0 -4px 16px rgba(26, 26, 26, 0.1);
+    }
+
+    .cart-page {
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    }
   }
 
   /* ——— PDP Add-to-Cart Success Feedback ——— */

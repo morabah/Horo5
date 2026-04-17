@@ -983,7 +983,7 @@ export default function HoroVisualIdentity() {
               <div style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: '0.25em', color: '#C4A862', textTransform: 'uppercase', marginBottom: 24 }}>Brand Voice — How HORO Writes</div>
               {[
                 { label: 'Confident, not arrogant', ex: '"This is not a print shop." — not "We\'re different from other brands."' },
-                { label: 'Story-first, specs second', ex: '"Visions turned into reality" before "220 GSM Egyptian cotton."' },
+                { label: 'Story-first, specs second', ex: '"Visions turned into reality" before "premium cotton Egyptian cotton."' },
                 { label: 'Short sentences. Real words.', ex: '"12 pieces. No restocks." — not "Due to our limited production model..."' },
                 { label: 'Arabic is always welcome', ex: 'Bilingual captions are encouraged. Arabic comes first.' },
                 { label: 'The artist is always named', ex: '"Omar Tarek\'s Midnight Cairo" — never just "our Cairo piece."' },

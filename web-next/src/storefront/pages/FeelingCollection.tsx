@@ -13,7 +13,7 @@ import {
   productHasRealImage,
   productsByFeeling,
 } from '../data/site';
-import { getFeelingCollectionVisual, heroVectorizedV2, imgUrl } from '../data/images';
+import { getFeelingCollectionVisual, getProductCardImageSrc, heroVectorizedV2, imgUrl } from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
@@ -114,6 +114,9 @@ export function FeelingCollection() {
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [desktopFiltersOpen, setDesktopFiltersOpen] = useState(false);
+  const [heroImageBroken, setHeroImageBroken] = useState(false);
+  const [proofImageBroken, setProofImageBroken] = useState(false);
   const isMobile = useMediaQuery('(max-width: 767px)');
   const mobileFilterSheetRef = useRef<HTMLDivElement>(null);
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
@@ -123,6 +126,9 @@ export function FeelingCollection() {
     setSortKey('featured');
     setPriceFilter('all');
     setMobileFiltersOpen(false);
+    setDesktopFiltersOpen(false);
+    setHeroImageBroken(false);
+    setProofImageBroken(false);
   }, [slug, lineParam]);
 
   useEffect(() => {
@@ -215,6 +221,8 @@ export function FeelingCollection() {
   const designCountLabel = baseList.length >= DESIGN_COUNT_MIN ? `${baseList.length} designs` : 'Curated selection';
   const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || Boolean(lineParam);
   const heroTitle = activeLine ? `${feeling.name} / ${activeLine.name}` : feeling.name;
+  const heroImageSrc = heroImageBroken || !feelingVisuals.hero.src?.trim() ? heroVectorizedV2 : feelingVisuals.hero.src;
+  const proofImageSrc = proofImageBroken || !feelingVisuals.proof.src?.trim() ? heroVectorizedV2 : feelingVisuals.proof.src;
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -230,11 +238,12 @@ export function FeelingCollection() {
           <img
             alt={feelingVisuals.hero.alt}
             className="absolute inset-0 h-full w-full object-cover"
-            src={imgUrl(feelingVisuals.hero.src, 1600)}
+            src={imgUrl(heroImageSrc, 1600)}
             width={1600}
             height={1200}
             decoding="async"
             style={feelingVisuals.hero.objectPosition ? { objectPosition: feelingVisuals.hero.objectPosition } : undefined}
+            onError={() => setHeroImageBroken(true)}
           />
           <div
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.2)_100%)]"
@@ -333,6 +342,14 @@ export function FeelingCollection() {
               className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 flex items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm"
             >
               <div className="flex min-w-0 flex-wrap items-end gap-4">
+                <button
+                  type="button"
+                  onClick={() => setDesktopFiltersOpen((open) => !open)}
+                  className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm"
+                >
+                  {desktopFiltersOpen ? 'Hide filters' : 'Filter & sort'}
+                </button>
+                {desktopFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="vibe-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     Sort
@@ -351,7 +368,9 @@ export function FeelingCollection() {
                     <ChevronIcon />
                   </div>
                 </div>
+                ) : null}
 
+                {desktopFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="vibe-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     Price
@@ -370,6 +389,7 @@ export function FeelingCollection() {
                     <ChevronIcon />
                   </div>
                 </div>
+                ) : null}
 
               </div>
 
@@ -384,7 +404,7 @@ export function FeelingCollection() {
 
           <div className="vibe-product-grid">
             {list.map((p) => {
-              const main = p.media?.main ?? p.thumbnail ?? '';
+              const main = getProductCardImageSrc(p);
               const artistName = p.artistDisplay?.name?.trim() || getArtist(p.artistSlug)?.name?.trim();
               return (
                 <MerchProductCard
@@ -396,6 +416,7 @@ export function FeelingCollection() {
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
                   merchandisingBadge={p.merchandisingBadge}
+                  proofChip={p.fitLabel ?? p.trustBadges?.find(Boolean)}
                   eyebrow={categoryEyebrowForFeelingProduct(feeling.name, slug, activeLine, p)}
                   eyebrowAccent={feeling.accent}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
@@ -437,11 +458,12 @@ export function FeelingCollection() {
                 <img
                   alt={feelingVisuals.proof.alt}
                   className="h-auto w-full object-cover"
-                  src={imgUrl(feelingVisuals.proof.src, 1200)}
+                  src={imgUrl(proofImageSrc, 1200)}
                   width={1200}
                   height={900}
                   loading="lazy"
                   style={feelingVisuals.proof.objectPosition ? { objectPosition: feelingVisuals.proof.objectPosition } : undefined}
+                  onError={() => setProofImageBroken(true)}
                 />
               </div>
             </div>
@@ -463,7 +485,7 @@ export function FeelingCollection() {
                 <span className="mx-2 text-clay/50" aria-hidden>
                   |
                 </span>
-                220 GSM cotton
+                premium cotton
               </p>
               <a
                 href="#feeling-collection-products"

@@ -379,7 +379,7 @@ export const PDP_SCHEMA = {
     'fabric and tag proof panel',
     'warm textured flat lay',
     'street lifestyle setting',
-    '220 GSM proof card',
+    'fabric proof card',
     '3x wash proof card',
   ],
   sizes: [
@@ -392,7 +392,7 @@ export const PDP_SCHEMA = {
   ] as PdpSizeSchemaEntry[],
   sizeTable: [...PDP_DEFAULT_SIZE_PRESET.measurements],
   features: [
-    { label: '220 GSM heavyweight cotton', icon: 'FabricIcon' as const },
+    { label: 'heavyweight cotton', icon: 'FabricIcon' as const },
     { label: 'High-fidelity DTF print', icon: 'PrintIcon' as const },
     { label: 'Relaxed unisex fit', icon: 'SilhouetteIcon' as const },
     { label: 'Machine wash cold', icon: 'CareIcon' as const },
@@ -403,7 +403,7 @@ export const PDP_SCHEMA = {
     { label: 'Secure checkout', icon: 'Lock' as const },
   ],
   /** Persistent PDP trust line (Guidelines §8.3) */
-  trustStripItems: ['220 GSM cotton', 'Licensed art', 'Free exchange 14d', 'COD available'] as const,
+  trustStripItems: ['premium cotton', 'Licensed art', 'Free exchange 14d', 'COD available'] as const,
   /** StoryBrand micro-plan strip */
   storyPlanSteps: ['Find your feeling', 'Pick your design', 'It arrives at your door'] as const,
   /** Gallery image indices (0-based) for the “See it styled” grid */
@@ -570,7 +570,7 @@ export function fillPdpCopyTemplate(template: string, vars: Record<string, strin
 }
 
 export const CART_SCHEMA = {
-  trustStripItems: ['Free exchange 14d', 'COD available', '220 GSM cotton'] as const,
+  trustStripItems: ['Free exchange 14d', 'COD available', 'premium cotton'] as const,
   copy: {
     heading: 'Your cart',
     emptyCta: 'Find Your Design',
@@ -682,7 +682,7 @@ export const OCCASION_SCHEMA = {
 } as const;
 
 export const BRAND_TRUST_POINTS = [
-  { icon: 'layers', title: '220 GSM Cotton', sub: 'Heavyweight feel that keeps its shape' },
+  { icon: 'layers', title: 'premium cotton', sub: 'Heavyweight feel that keeps its shape' },
   { icon: 'verified', title: 'Original Licensed Design', sub: 'Clearly credited and properly sourced' },
   { icon: 'history', title: 'Free Exchange 14 Days', sub: 'Less sizing stress, easier decisions' },
   { icon: 'payments', title: 'COD Available', sub: 'Pay at your doorstep' },
@@ -775,7 +775,7 @@ export const SEARCH_SCHEMA = {
     designPlural: 'designs',
     viewDesignsCta: 'See designs →',
     viewVibeCta: 'Explore feeling →',
-    shopByVibeCta: 'Shop by feeling',
+    shopByVibeCta: 'Browse feelings',
     browseAllDesignsCta: 'Browse All Designs',
     noFilteredResults: 'No designs match these filters.',
     noDesignResults: 'No designs match this search yet.',
@@ -785,7 +785,7 @@ export const SEARCH_SCHEMA = {
     resultsForQuery: '{count} results for “{query}”',
     noResultsForQuery: 'No results for “{query}”',
     zeroResultsSuggestionsHeading: 'Try these instead',
-    shopByOccasionCta: 'Shop by moment',
+    shopByOccasionCta: 'Browse occasions',
     sizeFilterLabel: 'Size in stock',
     allSizesLabel: 'All sizes',
     artistLabel: 'Artist',

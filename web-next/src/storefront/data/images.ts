@@ -11,6 +11,7 @@ import {
   getSubfeeling,
   productsByFeeling,
   productsBySubfeeling,
+  type Product,
 } from './site.ts';
 
 /** On-brand vector mark — default storefront slot fill until Cairo photography ships (§3.4). */
@@ -302,8 +303,8 @@ export const homeProofGallery = [
   },
   {
     src: proofCards.weightScale,
-    alt: 'Proof card showing the HORO 220 GSM verification panel.',
-    label: '220 GSM proof',
+    alt: 'Proof card showing the HORO fabric verification panel.',
+    label: 'fabric proof',
   },
   {
     src: proofCards.washTest,
@@ -460,6 +461,9 @@ export type ProductMedia = {
 
 const FALLBACK_PRODUCT_GALLERY = [heroVectorizedV2, proofCards.macroDetail, proofCards.weightScale];
 
+const PDP_INFOGRAPHIC_IMAGE_PATTERN =
+  /(proof|story-card|size-guide|weight-scale|wash-test|macro-detail|fabric-tag|_card|\/cards?\/)/i;
+
 /**
  * Unsplash-style transform params are only safe on hosts that honor them.
  * Medusa/R2/CDN URLs often break or ignore `w`/`fit` query params.
@@ -509,6 +513,9 @@ export function resolveProductImageSrcForDisplay(src: string): string {
 export function useNextImageOptimizerForSrc(resolvedSrc: string): boolean {
   const t = resolvedSrc.trim();
   if (!t) return false;
+  if (t.toLowerCase().endsWith('.svg')) {
+    return false;
+  }
   if (t.startsWith('/') && !t.startsWith('//')) {
     return true;
   }
@@ -526,10 +533,24 @@ export function getProductMedia(slug: string): ProductMedia {
   };
 }
 
+export function getProductCardImageSrc(product: Product): string {
+  return (
+    firstNonEmptyString(
+      product.media?.card,
+      product.media?.main,
+      ...(product.media?.gallery ?? []),
+      product.thumbnail,
+      FALLBACK_PRODUCT_GALLERY[0],
+    ) ?? FALLBACK_PRODUCT_GALLERY[0]
+  );
+}
+
 export function buildProductPdpGallery(productName: string, media: ProductMedia): ProductPdpGalleryView[] {
   const ordered = Array.from(new Set([media.main, ...(media.gallery ?? [])].filter(Boolean)));
+  const productPhotoOnly = ordered.filter((src) => !PDP_INFOGRAPHIC_IMAGE_PATTERN.test(src));
+  const gallerySources = productPhotoOnly.length > 0 ? productPhotoOnly : ordered;
 
-  return ordered.map((src, index) => ({
+  return gallerySources.map((src, index) => ({
     alt: `HORO “${productName}” gallery image ${index + 1}.`,
     key: (PDP_VIEW_ORDER[index] ?? `gallery-${index}`) as ProductPdpViewKey,
     label: index === 0 ? 'hero image' : `gallery image ${index + 1}`,

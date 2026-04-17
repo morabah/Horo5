@@ -2,6 +2,7 @@ import { AppIcon } from './AppIcon';
 import { imgUrl } from '../data/images';
 import { HOME_COPY, HOME_PROOF_MACRO, HOME_TRUST_BADGES } from '../data/homeContent';
 import { useUiLocale } from '../i18n/ui-locale';
+import { TeeImage } from './TeeImage';
 
 export function HomeProofSplit() {
   const { copy } = useUiLocale();
@@ -25,12 +26,12 @@ export function HomeProofSplit() {
           <p className="mt-3 font-body text-sm leading-relaxed text-stone md:text-[15px]">{HOME_COPY.proofBody}</p>
         </div>
 
-        {/* Large decorative weight callout */}
+        {/* Large decorative quality callout */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute right-[3%] top-[8%] z-0 select-none font-headline text-[min(22vw,16rem)] font-bold leading-none tracking-tighter text-white/[0.06]"
         >
-          220g
+          COTTON
         </div>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-10">
@@ -38,10 +39,11 @@ export function HomeProofSplit() {
             className="relative min-h-[min(56vh,460px)] flex-1 overflow-hidden rounded-xl lg:max-w-[52%]"
             data-reveal="stagger-1"
           >
-            <img
+            <TeeImage
               src={imgUrl(HOME_PROOF_MACRO.imageSrc, 900)}
               alt={HOME_PROOF_MACRO.imageAlt}
-              className="h-full w-full object-cover object-center"
+              w={900}
+              className="h-full w-full object-center"
             />
           </div>
 

@@ -21,6 +21,8 @@ export type TeeImageProps = {
   sizes?: string;
   /** Optional LQIP from catalog (`media.blurDataUrlMain`). */
   blurDataURL?: string | null;
+  /** Optional framing override (e.g. torso-first crop in product cards). */
+  objectPosition?: string;
 };
 
 /**
@@ -36,6 +38,7 @@ export function TeeImage({
   style,
   sizes,
   blurDataURL,
+  objectPosition,
 }: TeeImageProps) {
   const forDisplay = resolveProductImageSrcForDisplay(src);
   const resolvedSrc = imgUrl(forDisplay, w);
@@ -68,6 +71,7 @@ export function TeeImage({
           sizes={defaultSizes}
           priority={eager}
           className="object-cover"
+          style={objectPosition ? { objectPosition } : undefined}
           placeholder={blurDataURL ? 'blur' : 'empty'}
           blurDataURL={blurDataURL || undefined}
           onError={() => setErrored(true)}
@@ -77,6 +81,7 @@ export function TeeImage({
           src={resolvedSrc}
           alt={alt}
           className="absolute inset-0 h-full w-full object-cover"
+          style={objectPosition ? { objectPosition } : undefined}
           loading={eager ? 'eager' : 'lazy'}
           decoding="async"
           onError={() => setErrored(true)}
@@ -102,6 +107,7 @@ export function TeeImageFrame({
   frameStyle,
   sizes,
   blurDataURL,
+  objectPosition,
 }: FrameProps) {
   return (
     <div
@@ -120,6 +126,7 @@ export function TeeImageFrame({
         eager={eager}
         sizes={sizes ?? '(min-width: 1024px) 33vw, 100vw'}
         blurDataURL={blurDataURL}
+        objectPosition={objectPosition}
         style={{ height: '100%' }}
       />
     </div>

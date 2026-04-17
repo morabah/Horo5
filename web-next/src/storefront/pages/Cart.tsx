@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { getCartLineViews, type CartLineView } from '../cart/view';
@@ -133,6 +133,7 @@ function CartSummary({
   cartService: { shippingExplainerArabic: string; estimatedDeliveryCheckoutNoteArabic: string };
 }) {
   const copy = CART_SCHEMA.copy;
+  const navigate = useNavigate();
   const shippingNote =
     locale === 'ar' && cartService.shippingExplainerArabic.trim()
       ? cartService.shippingExplainerArabic
@@ -148,6 +149,11 @@ function CartSummary({
         {copy.orderSummaryHeading}
       </h2>
       <p className="cart-summary-note">{shippingNote}</p>
+      <p className="font-body mt-1 text-xs text-clay">
+        {locale === 'ar'
+          ? 'تُعرض هذه الأرقام كمعاينة سريعة. يتم تثبيت قيمة الشحن النهائية بعد حفظ العنوان في الدفع.'
+          : 'These numbers are a fast preview. Final shipping is locked after your address is saved in checkout.'}
+      </p>
 
       <div className="cart-summary-rows">
         <p className="cart-summary-row">
@@ -189,12 +195,22 @@ function CartSummary({
       </div>
 
       <div className="cart-summary-actions">
-        <Link className="btn btn-primary" to="/checkout" style={{ width: '100%' }}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          style={{ width: '100%' }}
+          onClick={() => navigate('/checkout')}
+        >
           {copy.primaryCta}
-        </Link>
-        <Link className="btn btn-ghost" to="/feelings" style={{ width: '100%' }}>
-          {copy.secondaryCta}
-        </Link>
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          style={{ width: '100%' }}
+          onClick={() => navigate('/feelings')}
+        >
+          {locale === 'ar' ? 'متابعة التسوق' : 'Continue shopping'}
+        </button>
       </div>
 
       <ul className="cart-trust-strip" aria-label="Cart trust signals">
@@ -313,6 +329,7 @@ export function Cart() {
   const [statusMessage, setStatusMessage] = useState('');
   const [giftUpsellDismissed, setGiftUpsellDismissed] = useState(false);
   const [undoLine, setUndoLine] = useState<CartLine | null>(null);
+  const [clientReady, setClientReady] = useState(false);
 
   const lineViews = useMemo(() => getCartLineViews(items), [items]);
   const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
@@ -386,6 +403,10 @@ export function Cart() {
   }, [shippingFetch, subtotalEgp, giftWrapEgp]);
 
   const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && giftWrapEgp === 0);
+
+  useEffect(() => {
+    setClientReady(true);
+  }, []);
 
   useEffect(() => {
     if (!statusMessage) return undefined;
@@ -474,6 +495,27 @@ export function Cart() {
       setStatusMessage(copy.giftWrapRemoved);
     }
   };
+
+  if (!clientReady) {
+    return (
+      <div className="cart-page pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
+        <div className="container cart-page-shell">
+          <PageBreadcrumb
+            className="mb-6"
+            items={[
+              { label: shellCopy.shell.home, to: '/' },
+              { label: copy.heading },
+            ]}
+          />
+          <section className="card-glass rounded-2xl border border-stone/60 px-6 py-8" aria-live="polite">
+            <p className="font-body text-sm text-warm-charcoal">
+              {locale === 'ar' ? 'جاري تحميل السلة…' : 'Loading your bag…'}
+            </p>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   if (lineViews.length === 0 && !undoLine) {
     return (

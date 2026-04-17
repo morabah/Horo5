@@ -6,6 +6,16 @@ import { getArtist, getProduct } from '../data/site';
 /** Neutral mark when a Medusa order line has no thumbnail — avoids implying another SKU’s catalog art. */
 const ORDER_LINE_IMAGE_PLACEHOLDER = '/images/hero/horo_vectorized_v2.svg';
 
+function isLikelyRenderableImageSrc(src: string | null | undefined): src is string {
+  const value = src?.trim();
+  if (!value) return false;
+  if (value.startsWith('data:image/')) return true;
+  if (value.startsWith('blob:')) return true;
+  if (value.startsWith('/')) return true;
+  if (value.startsWith('http://') || value.startsWith('https://')) return true;
+  return false;
+}
+
 export type CartLineView = CartLine & {
   key: string;
   productName: string;
@@ -32,14 +42,11 @@ export function getCartLineView(
       : unitPrice * line.qty;
   const productName = line.productName ?? product?.name ?? line.productSlug;
   const productUrl = product ? `/products/${product.slug}` : '/search';
-  const hasLineThumb = Boolean(line.imageSrc?.trim());
-  const imageSrc = hasLineThumb
-    ? line.imageSrc!
-    : options?.orderConfirmation
-      ? ORDER_LINE_IMAGE_PLACEHOLDER
-      : product
-        ? getProductMedia(product.slug).main
-        : heroVectorizedV2;
+  const productImageSrc = product ? getProductMedia(product.slug).main : null;
+  const imageSrc =
+    (productImageSrc && isLikelyRenderableImageSrc(productImageSrc) ? productImageSrc : null) ??
+    (isLikelyRenderableImageSrc(line.imageSrc) ? line.imageSrc : null) ??
+    (options?.orderConfirmation ? ORDER_LINE_IMAGE_PLACEHOLDER : heroVectorizedV2);
 
   return {
     ...line,

@@ -11,8 +11,8 @@ const UI_COPY = {
     shell: {
       home: 'Home',
       shopAll: 'Shop All',
-      shopByFeeling: 'Shop by feeling',
-      shopByMoment: 'Shop by moment',
+      shopByFeeling: 'Feelings',
+      shopByMoment: 'Occasions',
       about: 'About',
       search: 'Search',
       cart: 'Cart',
@@ -35,7 +35,7 @@ const UI_COPY = {
       orderPlacedDismiss: 'Dismiss',
     },
     home: {
-      heroCta: 'Shop by feeling',
+      heroCta: 'Browse designs',
       feelingsEyebrow: 'The feelings',
       feelingsTitle: 'Choose by feeling',
       momentsEyebrow: 'Choose by moment',
@@ -140,6 +140,12 @@ const UI_COPY = {
         'Estimate only; the exact shipping line confirms once your address is saved in Medusa.',
       paymentErrorCodRecoveryHint:
         'If online payment keeps failing, use “Switch to cash on delivery” below (when available) and submit again.',
+      paymentDependencyHeading: 'Checkout status',
+      paymentDependencyAddressSaved: 'Address saved',
+      paymentDependencyShippingAttached: 'Shipping attached',
+      paymentDependencyProvidersLoaded: 'Payment methods loaded',
+      paymentDependencyYes: 'Yes',
+      paymentDependencyNo: 'No',
     },
     confirmation: {
       breadcrumbTitle: 'Order confirmed',
@@ -192,7 +198,9 @@ const UI_COPY = {
       timelineStep1Body: 'We logged your order and will prepare it for shipping.',
       timelineStep2Title: 'Payment',
       timelineStep3Title: 'Delivery',
-      timelineStep3BodyPrefix: 'Estimated window:',
+      timelineStep3BodyPrefix: 'Estimated delivery:',
+      timelineReassurance:
+        'You will receive the next update when your order moves from preparation to shipping.',
       timelineStep1BodyArabic: 'سجّلنا طلبك وسنبدأ تجهيزه للشحن.',
       timelineStep3BodyPrefixArabic: 'النافذة المتوقعة:',
       followUpFallbackArabic: 'سنستخدم بيانات الدفع والشحن المسجّلة لإرسال التحديث التالي.',
@@ -203,8 +211,8 @@ const UI_COPY = {
     shell: {
       home: 'الرئيسية',
       shopAll: 'تسوّق الكل',
-      shopByFeeling: 'تسوّق حسب الشعور',
-      shopByMoment: 'تسوّق حسب المناسبة',
+      shopByFeeling: 'المشاعر',
+      shopByMoment: 'المناسبات',
       about: 'عن HORO',
       search: 'البحث',
       cart: 'السلة',
@@ -227,7 +235,7 @@ const UI_COPY = {
       orderPlacedDismiss: 'إخفاء',
     },
     home: {
-      heroCta: 'تسوّق حسب الشعور',
+      heroCta: 'تصفح التصاميم',
       feelingsEyebrow: 'المشاعر',
       feelingsTitle: 'اختر حسب الشعور',
       momentsEyebrow: 'اختر حسب المناسبة',
@@ -334,6 +342,12 @@ const UI_COPY = {
         'تقدير فقط؛ يُثبَّت سطر الشحن النهائي بعد حفظ العنوان في Medusa.',
       paymentErrorCodRecoveryHint:
         'إذا استمر فشل الدفع الإلكتروني، استخدم «التبديل إلى الدفع عند الاستلام» أدناه (إن وُجد) ثم أعد الإرسال.',
+      paymentDependencyHeading: 'حالة إتمام الشراء',
+      paymentDependencyAddressSaved: 'تم حفظ العنوان',
+      paymentDependencyShippingAttached: 'تم ربط الشحن',
+      paymentDependencyProvidersLoaded: 'تم تحميل طرق الدفع',
+      paymentDependencyYes: 'نعم',
+      paymentDependencyNo: 'لا',
     },
     confirmation: {
       breadcrumbTitle: 'تم تأكيد الطلب',
@@ -386,7 +400,9 @@ const UI_COPY = {
       timelineStep1Body: 'سجّلنا طلبك وسنبدأ تجهيزه للشحن.',
       timelineStep2Title: 'الدفع',
       timelineStep3Title: 'التوصيل',
-      timelineStep3BodyPrefix: 'النافذة المتوقعة:',
+      timelineStep3BodyPrefix: 'نافذة التوصيل المتوقعة:',
+      timelineReassurance:
+        'سيصلك التحديث التالي عندما ينتقل الطلب من التجهيز إلى الشحن.',
       timelineStep1BodyArabic: '',
       timelineStep3BodyPrefixArabic: '',
       followUpFallbackArabic: '',

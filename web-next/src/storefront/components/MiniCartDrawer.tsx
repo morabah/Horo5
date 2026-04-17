@@ -98,12 +98,12 @@ export function MiniCartDrawer() {
 
   const handleViewBag = useCallback(() => {
     close();
-    navigate('/cart');
+    requestAnimationFrame(() => navigate('/cart'));
   }, [close, navigate]);
 
   const handleCheckout = useCallback(() => {
     close();
-    navigate('/checkout');
+    requestAnimationFrame(() => navigate('/checkout'));
   }, [close, navigate]);
 
   if (!miniCartOpen || !lastAddedItem) return null;

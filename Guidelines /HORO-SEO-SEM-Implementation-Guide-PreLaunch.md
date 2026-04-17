@@ -39,7 +39,7 @@ Kingsnorth’s Digital Marketing Strategy (4th edition) emphasizes that startups
 | :---- | :---- | :---- |
 | Zero revenue | No cash flow to fund large ad campaigns | Start with free tools only. SEM budget capped at $150–300/month maximum. |
 | No brand awareness | Nobody searches for "HORO" yet | Focus on category keywords ("graphic tees Egypt") not brand keywords. |
-| No customer reviews | No social proof for product pages or ads | Use artist credibility, 220 GSM specs, and trust signals (COD, free exchange) as substitute proof. |
+| No customer reviews | No social proof for product pages or ads | Use artist credibility, premium cotton specs, and trust signals (COD, free exchange) as substitute proof. |
 | Small team | Founder \+ maybe 1–2 people | Prioritize ruthlessly. Do 5 things well over 20 things poorly. |
 | Egyptian market | Arabic-first audience, COD-dominant, mobile-first | Bilingual keyword strategy. Arabic ads convert higher. Mobile speed is non-negotiable. |
 
@@ -90,11 +90,11 @@ On-page SEO is the single highest-impact, lowest-cost activity. Every page on ho
 
 | Page | Title Tag (Under 60 Chars) | Meta Description (Under 160 Chars) |
 | :---- | :---- | :---- |
-| Homepage | HORO Egypt | Original Illustration T-Shirts — Wear What You Mean | Discover identity-led graphic tees from original digital art. 220 GSM cotton. COD available. Free exchange. Shop by mood, zodiac, or occasion. |
+| Homepage | HORO Egypt | Original Illustration T-Shirts — Wear What You Mean | Discover identity-led graphic tees from original digital art. premium cotton. COD available. Free exchange. Shop by mood, zodiac, or occasion. |
 | Emotions | Mood Graphic Tees | Emotions Collection | HORO Egypt | T-shirts that say what words can’t. Original illustrations for every mood. Premium cotton, delivered to your door. From 799 EGP. |
-| Zodiac | Zodiac T-Shirts Egypt | Your Sign, Your Look | HORO | Wear your star sign. Original zodiac illustration tees on 220 GSM cotton. All 12 signs. COD across Egypt. Free exchange 14 days. |
+| Zodiac | Zodiac T-Shirts Egypt | Your Sign, Your Look | HORO | Wear your star sign. Original zodiac illustration tees on premium cotton. All 12 signs. COD across Egypt. Free exchange 14 days. |
 | Gift Bundle | Meaningful Gifts Egypt | Art T-Shirt Gift Bundles | HORO | Give something that means something. Tee \+ story card \+ gift wrap from 999 EGP. Perfect for Eid, birthdays, graduation. COD available. |
-| Product Page | \[Design Name\] | \[Vibe\] Graphic Tee | HORO Egypt | "For the one who \[story\]." Original illustration on 220 GSM cotton. S–XXL. Free exchange. COD or card. By \[Artist\]. |
+| Product Page | \[Design Name\] | \[Vibe\] Graphic Tee | HORO Egypt | "For the one who \[story\]." Original illustration on premium cotton. S–XXL. Free exchange. COD or card. By \[Artist\]. |
 
 ## **3.2 Product Page Optimization**
 
@@ -104,7 +104,7 @@ On-page SEO is the single highest-impact, lowest-cost activity. Every page on ho
 
 **Image alt text:** Descriptive and keyword-aware. Example: "HORO The Weight of Light t-shirt, flat lay on linen, emotion vibe graphic tee Egypt."
 
-**Trust strip:** 220 GSM Cotton • Licensed Art • Free Exchange 14d • COD Available — rendered as crawlable HTML text, not as an image.
+**Trust strip:** premium cotton • Licensed Art • Free Exchange 14d • COD Available — rendered as crawlable HTML text, not as an image.
 
 **URL structure:** horoegypt.com/shop/emotions/the-weight-of-light (not /product?id=4821)
 
@@ -155,7 +155,7 @@ Apply HORO’s 70/30 content rule (70% customer-world, 30% brand-process). Each 
 | 3 | "Why Your T-Shirt Should Say Something" | graphic tees meaning, expressive clothing | Homepage, Emotions Vibe |
 | 4 | "How a Digital Illustration Becomes a Wearable Design" | illustration t-shirt, digital art clothing | About page, Artist credits |
 | 5 | "Graduation Gifts They’ll Actually Wear" | graduation gift Egypt | Career Vibe, Graduation Occasion |
-| 6 | "The Difference Between a Print Tee and an Art Tee" | quality graphic tee, 220 GSM cotton | Product pages, Trust strip |
+| 6 | "The Difference Between a Print Tee and an Art Tee" | quality graphic tee, premium cotton | Product pages, Trust strip |
 | 7 | "How to Style a Graphic Tee for Any Occasion" | style graphic tee Egypt | Full collection |
 | 8 | "Eid Gift Guide: What to Give Someone Who Has Everything" | Eid gift guide Egypt | Eid Occasion, Gift bundles |
 
@@ -189,7 +189,7 @@ Kingsnorth recommends startups treat first SEM campaigns as paid experiments, no
 
 **Ad Groups:** (1) Graphic Tees Egypt, (2) Gift Ideas Egypt, (3) Zodiac/Personality Tees. Each with 5–8 tightly related keywords.
 
-**Ad Copy Formula:** Headline 1: Keyword ("Original Graphic Tees Egypt"). Headline 2: Value ("Wear What You Mean — From 799 EGP"). Description: Trust ("220 GSM Cotton • COD Available • Free Exchange 14 Days").
+**Ad Copy Formula:** Headline 1: Keyword ("Original Graphic Tees Egypt"). Headline 2: Value ("Wear What You Mean — From 799 EGP"). Description: Trust ("premium cotton • COD Available • Free Exchange 14 Days").
 
 **Landing Pages:** Each ad group → most relevant collection page. Gift ads → Shop by Occasion. Never the homepage.
 

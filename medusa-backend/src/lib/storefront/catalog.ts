@@ -288,7 +288,7 @@ const PRODUCT_QUERY_FIELDS = [
 const DEFAULT_APPAREL_CATEGORY_PATH = "apparel/tops/t-shirts"
 const DEFAULT_SIZE_ORDER = ["S", "M", "L", "XL", "XXL"] as const
 const LEGACY_STOREFRONT_TRUST_BADGES = [
-  "220 GSM cotton",
+  "premium cotton",
   "Free exchange 14d",
   "COD available",
 ] as const
@@ -417,11 +417,15 @@ function asMedia(value: unknown): StorefrontMediaDTO | undefined {
   }
 
   const media = value as StorefrontMediaDTO
+  const card =
+    typeof (media as { card?: unknown }).card === "string" && (media as { card: string }).card.trim().length > 0
+      ? (media as { card: string }).card
+      : undefined
   const gallery = Array.isArray(media.gallery)
     ? media.gallery.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
     : []
 
-  if (!media.main && gallery.length === 0) {
+  if (!media.main && !card && gallery.length === 0) {
     return undefined
   }
 
@@ -435,6 +439,7 @@ function asMedia(value: unknown): StorefrontMediaDTO | undefined {
       : undefined
 
   return {
+    ...(card ? { card } : {}),
     gallery: gallery.length > 0 ? gallery : undefined,
     main: media.main ?? undefined,
     ...(blurDataUrlMain ? { blurDataUrlMain } : {}),
@@ -1070,8 +1075,9 @@ function buildProduct(
     sunsetAt: sunsetAt || undefined,
     lineSlug: primarySubfeelingSlug,
     media:
-      mainImage || gallery.length > 0
+      mainImage || gallery.length > 0 || legacyMedia?.card
         ? {
+            ...(legacyMedia?.card ? { card: legacyMedia.card } : {}),
             gallery: gallery.length > 0 ? gallery : undefined,
             main: mainImage,
             ...(legacyMedia?.blurDataUrlMain ? { blurDataUrlMain: legacyMedia.blurDataUrlMain } : {}),

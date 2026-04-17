@@ -514,6 +514,8 @@ export function Checkout() {
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
+  const [showAddressExtras, setShowAddressExtras] = useState(false);
+  const [showAllPaymentMethods, setShowAllPaymentMethods] = useState(false);
   const [placesReady, setPlacesReady] = useState(false);
   const [addressPlaceId, setAddressPlaceId] = useState<string | null>(null);
   const [rememberAddressOnDevice, setRememberAddressOnDevice] = useState(true);
@@ -890,6 +892,13 @@ export function Checkout() {
     }
     setSelectedPaymentMethodId(getDefaultCheckoutPaymentMethod(paymentMethods)?.id || null);
   }, [paymentMethods, selectedPaymentMethodId]);
+
+  useEffect(() => {
+    if (city.trim()) return;
+    if (!EGYPT_CITY_OPTIONS.includes('Cairo')) return;
+    setCity('Cairo');
+    setProvince('Cairo');
+  }, [city]);
 
   useEffect(() => {
     setPaymentStepComplete(false);
@@ -1586,6 +1595,9 @@ export function Checkout() {
     : `${checkoutLines.length} ${checkoutLines.length === 1 ? 'item' : 'items'}`;
   const hasSavedShipping = Boolean(checkoutCart?.shipping_methods?.length);
   const noPaymentProvidersAfterShipping = hasSavedShipping && paymentMethods.length === 0;
+  const dependencyAddressSaved = Boolean(checkoutCart?.shipping_address?.address_1?.trim() && checkoutCart?.shipping_address?.city?.trim());
+  const dependencyShippingAttached = hasSavedShipping;
+  const dependencyProvidersLoaded = paymentMethods.length > 0;
   const shippingSummaryPending = Boolean(
     cartId &&
       checkoutCart &&
@@ -1793,23 +1805,31 @@ export function Checkout() {
                       : 'Street name and building number. Pick your governorate below.'}
                 </p>
 
-                <label htmlFor="line2" className={labelClass}>
-                  {isArabic ? 'الحي أو علامة مميزة (اختياري)' : 'District or landmark (optional)'}
-                </label>
-                <input
-                  id="line2"
-                  type="text"
-                  autoComplete="address-line2"
-                  value={line2}
-                  onChange={(event) => setLine2(event.target.value)}
-                  className={inputBaseClass}
-                  placeholder={isArabic ? 'مثلاً: مدينة نصر — بجوار المول' : 'e.g. Nasr City — near the mall'}
-                />
-                <p className="mt-2 text-xs text-clay">
-                  {isArabic
-                    ? 'يساعد المندوب في الوصول أسرع — لن نشاركه مع أي طرف آخر.'
-                    : 'Helps the courier find you faster — not shared with anyone else.'}
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowAddressExtras((open) => !open)}
+                  className="font-label mt-4 inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
+                >
+                  {showAddressExtras
+                    ? (isArabic ? 'إخفاء تفاصيل إضافية' : 'Hide optional details')
+                    : (isArabic ? 'إضافة علامة مميزة (اختياري)' : 'Add landmark (optional)')}
+                </button>
+                {showAddressExtras ? (
+                  <>
+                    <label htmlFor="line2" className={labelClass}>
+                      {isArabic ? 'الحي أو علامة مميزة (اختياري)' : 'District or landmark (optional)'}
+                    </label>
+                    <input
+                      id="line2"
+                      type="text"
+                      autoComplete="address-line2"
+                      value={line2}
+                      onChange={(event) => setLine2(event.target.value)}
+                      className={inputBaseClass}
+                      placeholder={isArabic ? 'مثلاً: مدينة نصر — بجوار المول' : 'e.g. Nasr City — near the mall'}
+                    />
+                  </>
+                ) : null}
 
                 <label htmlFor="governorate" className={labelClass}>
                   {isArabic ? 'المحافظة *' : 'Governorate *'}
@@ -1898,6 +1918,29 @@ export function Checkout() {
 
               <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
                 <h2 className="font-headline text-lg font-semibold text-obsidian">{copy.checkout.headingPayment}</h2>
+                <div className="mt-4 rounded-xl border border-stone/30 bg-papyrus/60 p-4">
+                  <p className="font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">
+                    {copy.checkout.paymentDependencyHeading}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {[
+                      { label: copy.checkout.paymentDependencyAddressSaved, ready: dependencyAddressSaved },
+                      { label: copy.checkout.paymentDependencyShippingAttached, ready: dependencyShippingAttached },
+                      { label: copy.checkout.paymentDependencyProvidersLoaded, ready: dependencyProvidersLoaded },
+                    ].map((item) => (
+                      <span
+                        key={item.label}
+                        className={`font-label inline-flex min-h-9 items-center rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] ${
+                          item.ready
+                            ? 'border-deep-teal/35 bg-deep-teal/10 text-deep-teal'
+                            : 'border-stone bg-white text-clay'
+                        }`}
+                      >
+                        {item.label}: {item.ready ? copy.checkout.paymentDependencyYes : copy.checkout.paymentDependencyNo}
+                      </span>
+                    ))}
+                  </div>
+                </div>
                 <p className="font-label mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">
                   {isArabic ? 'خيارات الدفع الحية' : 'Live payment options'}
                 </p>
@@ -1934,7 +1977,10 @@ export function Checkout() {
                   </div>
                 ) : null}
 
-                {paymentMethods.map((method, index) => (
+                {(showAllPaymentMethods
+                  ? paymentMethods
+                  : paymentMethods.filter((method) => method.id === selectedPaymentMethodId || method.kind === 'cod').slice(0, 1)
+                ).map((method, index) => (
                   <label
                     key={method.id}
                     className={`${radioCardClass(selectedPaymentMethodId === method.id)} ${index === 0 ? 'mt-4' : ''} mb-3`}
@@ -1952,6 +1998,17 @@ export function Checkout() {
                     </span>
                   </label>
                 ))}
+                {paymentMethods.length > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllPaymentMethods((open) => !open)}
+                    className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
+                  >
+                    {showAllPaymentMethods
+                      ? (isArabic ? 'إخفاء طرق أخرى' : 'Hide other methods')
+                      : (isArabic ? 'عرض كل طرق الدفع' : 'Show all payment methods')}
+                  </button>
+                ) : null}
 
                 {paymentMethods.length === 0 ? (
                   <div className="mt-4 text-sm text-ember">
@@ -2055,34 +2112,37 @@ export function Checkout() {
         </form>
 
         {/* Sticky mobile checkout CTA */}
-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-stone/30 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-3 shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.1)] lg:hidden">
+        <div
+          className="fixed inset-x-0 bottom-0 z-50 border-t border-stone/30 bg-white px-4 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pt-3 shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.1)] lg:hidden"
+          aria-hidden="true"
+        >
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="font-headline text-lg font-semibold text-obsidian">{formatEgp(orderTotal)}</p>
               <p className="truncate text-xs text-warm-charcoal">{mobileLineCountLabel}</p>
             </div>
-            <button
-              type="button"
+            <div
               onClick={() => {
+                if (submitDisabled) return;
                 const el = document.getElementById('checkout-main-form');
                 if (el instanceof HTMLFormElement) el.requestSubmit();
               }}
-              className="btn btn-primary inline-flex min-h-12 shrink-0 items-center justify-center px-6 disabled:pointer-events-none disabled:opacity-60"
-              disabled={submitDisabled}
-              aria-busy={savingInfo || placingOrder || preparingPayment}
+              className={`btn btn-primary inline-flex min-h-12 shrink-0 items-center justify-center px-6 ${submitDisabled ? 'pointer-events-none opacity-60' : ''}`}
             >
-              {savingInfo
-                ? isArabic ? 'حفظ…' : 'Saving…'
-                : preparingPayment
-                  ? isArabic ? 'جاري الربط…' : 'Connecting…'
-                  : placingOrder
-                    ? isArabic ? 'جارٍ…' : 'Placing…'
-                    : !selectedPaymentMethod && !hasSavedShipping
-                      ? isArabic ? 'المتابعة' : 'Continue'
-                    : externalPaymentSelected
-                      ? isArabic ? 'الدفع' : 'Pay now'
-                      : isArabic ? 'أكّد الطلب' : 'Place order'}
-            </button>
+              <span>
+                {savingInfo
+                  ? isArabic ? 'حفظ…' : 'Saving…'
+                  : preparingPayment
+                    ? isArabic ? 'جاري الربط…' : 'Connecting…'
+                    : placingOrder
+                      ? isArabic ? 'جارٍ…' : 'Placing…'
+                      : !selectedPaymentMethod && !hasSavedShipping
+                        ? isArabic ? 'المتابعة' : 'Continue'
+                      : externalPaymentSelected
+                        ? isArabic ? 'الدفع' : 'Pay now'
+                        : isArabic ? 'أكّد الطلب' : 'Place order'}
+              </span>
+            </div>
           </div>
         </div>
       </div>

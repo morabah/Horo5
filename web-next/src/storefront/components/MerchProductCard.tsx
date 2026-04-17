@@ -55,6 +55,7 @@ export function MerchProductCard({
   imageAlt,
   merchandisingBadge,
   promoLabel: promoLabelProp,
+  proofChip,
   eyebrow,
   eyebrowAccent,
   artistCredit,
@@ -70,6 +71,16 @@ export function MerchProductCard({
   const minimal = variant === 'minimal';
   const product = useMemo(() => getProduct(slug), [slug]);
   const promoLabel = promoLabelProp ?? product?.promoLabel;
+  const fallbackProofChip =
+    product?.fitLabel?.trim() ||
+    product?.trustBadges?.find(Boolean) ||
+    (artistCredit?.trim() ? (locale === 'ar' ? 'فنان معتمد' : 'Artist credited') : undefined) ||
+    undefined;
+  const resolvedProofChip = proofChip?.trim() || fallbackProofChip;
+  const showPromo = Boolean(promoLabel);
+  const showProof = !showPromo && Boolean(resolvedProofChip);
+  const showMerch = !showPromo && !showProof && Boolean(merchandisingBadge);
+  const showEyebrow = minimal && Boolean(eyebrow?.trim());
   const availableSizes = useMemo(() => {
     if (!product) return [] as ProductSizeKey[];
     return productAvailableSizes(product).filter((size) =>
@@ -98,6 +109,16 @@ export function MerchProductCard({
     };
   }, []);
 
+  /** Open size UI, or add immediately when there is nothing to choose. */
+  function handleQuickAddPrimaryClick() {
+    if (addedFeedback) return;
+    if (availableSizes.length === 1) {
+      handleQuickAdd(availableSizes[0]);
+      return;
+    }
+    setQuickAddOpen((open) => !open);
+  }
+
   function handleQuickAdd(size: ProductSizeKey) {
     addItem(slug, size, 1);
     setMiniCartOpen(true);
@@ -114,8 +135,8 @@ export function MerchProductCard({
     }, 2200);
   }
 
-  const desktopQuickAddClasses = [
-    'font-label absolute bottom-3 right-3 z-10 hidden min-h-11 items-center justify-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-sm backdrop-blur-sm transition-colors duration-200 md:inline-flex',
+  const desktopQuickAddButtonClasses = [
+    'font-label inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-sm backdrop-blur-sm transition-colors duration-200',
     quickAddOpen || addedFeedback
       ? 'border-obsidian bg-white text-obsidian shadow-md'
       : 'border-obsidian/15 bg-white/95 text-obsidian hover:border-obsidian hover:bg-white',
@@ -148,25 +169,36 @@ export function MerchProductCard({
                 : 'transition-transform duration-700 ease-out group-hover:scale-[1.03]'
             }
           >
-            <TeeImageFrame src={imageSrc} alt={imageAlt} w={700} aspectRatio="4/5" borderRadius="0.375rem" frameStyle={{ marginBottom: 0 }} />
+            <TeeImageFrame
+              src={imageSrc}
+              alt={imageAlt}
+              w={560}
+              aspectRatio="4/5"
+              borderRadius="0.375rem"
+              objectPosition="center 24%"
+              frameStyle={{ marginBottom: 0 }}
+            />
           </div>
-          {merchandisingBadge ? (
+          {showMerch ? (
             <span
               className="font-label absolute left-3 top-3 z-10 rounded-md bg-white/90 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm"
             >
               {merchandisingBadge}
             </span>
           ) : null}
-          {promoLabel ? (
+          {showPromo ? (
             <span
-              className={`font-label absolute left-3 z-10 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-950 shadow-sm backdrop-blur-sm ${
-                merchandisingBadge ? 'top-12' : 'top-3'
-              }`}
+              className="font-label absolute left-3 top-3 z-10 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-950 shadow-sm backdrop-blur-sm"
             >
               {promoLabel}
             </span>
           ) : null}
-          {eyebrow?.trim() ? (
+          {showProof ? (
+            <span className="font-label absolute left-3 top-3 z-10 rounded-md border border-deep-teal/25 bg-white/92 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-deep-teal shadow-sm backdrop-blur-sm">
+              {resolvedProofChip}
+            </span>
+          ) : null}
+          {showEyebrow ? (
             <span
               className="category-chip font-label pointer-events-none absolute right-3 top-3 z-9 max-w-[min(100%-6rem,14rem)] truncate rounded-md px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.16em] text-obsidian/80"
               style={
@@ -177,50 +209,55 @@ export function MerchProductCard({
                   : undefined
               }
             >
-              {eyebrow.trim()}
+              {eyebrow?.trim()}
             </span>
           ) : null}
         </Link>
-        {quickAddAvailable ? (
-          <>
-            {quickAddOpen ? (
-              <div className="absolute inset-x-3 bottom-14 z-20 hidden rounded-2xl border border-obsidian/10 bg-white/96 p-3 shadow-xl backdrop-blur-sm md:block">
-                <p className="font-label mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
-                  {chooseSizeLabel}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {availableSizes.map((size) => (
-                    <button
-                      key={`${slug}-${size}`}
-                      type="button"
-                      className={`font-label inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors ${
-                        recommendedSize === size
-                          ? 'border-obsidian bg-obsidian text-white'
-                          : 'border-stone/60 bg-white text-obsidian hover:border-obsidian'
-                      }`}
-                      onClick={() => handleQuickAdd(size)}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
+        {/* Desktop: single bottom action strip (flex) — avoids overlapping absolutes; size picker stacks above via column flow */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden flex-col gap-2 p-3 md:flex">
+          {quickAddAvailable && quickAddOpen ? (
+            <div className="pointer-events-auto rounded-2xl border border-obsidian/10 bg-white/96 p-3 shadow-xl backdrop-blur-sm">
+              <p className="font-label mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
+                {chooseSizeLabel}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {availableSizes.map((size) => (
+                  <button
+                    key={`${slug}-${size}`}
+                    type="button"
+                    className={`font-label inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors ${
+                      recommendedSize === size
+                        ? 'border-obsidian bg-obsidian text-white'
+                        : 'border-stone/60 bg-white text-obsidian hover:border-obsidian'
+                    }`}
+                    onClick={() => handleQuickAdd(size)}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
+            </div>
+          ) : null}
+          <div className="pointer-events-auto flex w-full min-w-0 items-end justify-between gap-2 rounded-b-md bg-linear-to-t from-black/35 via-black/15 to-transparent pt-8">
+            <QuickViewTrigger
+              productName={name}
+              onClick={() => onQuickView(slug)}
+              visibilityMode="plp-bar"
+              className="min-w-0"
+            />
+            {quickAddAvailable ? (
+              <button
+                type="button"
+                className={desktopQuickAddButtonClasses}
+                onClick={handleQuickAddPrimaryClick}
+                aria-expanded={quickAddOpen}
+                aria-label={`${quickAddLabel}: ${name}`}
+              >
+                {addedFeedback ? addedLabel : quickAddLabel}
+              </button>
             ) : null}
-            <button
-              type="button"
-              className={desktopQuickAddClasses}
-              onClick={() => {
-                if (addedFeedback) return;
-                setQuickAddOpen((current) => !current);
-              }}
-              aria-expanded={quickAddOpen}
-              aria-label={`${quickAddLabel}: ${name}`}
-            >
-              {addedFeedback ? addedLabel : quickAddLabel}
-            </button>
-          </>
-        ) : null}
-        <QuickViewTrigger productName={name} onClick={() => onQuickView(slug)} />
+          </div>
+        </div>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3 md:hidden">
@@ -228,10 +265,7 @@ export function MerchProductCard({
           <button
             type="button"
             className={mobileQuickAddClasses}
-            onClick={() => {
-              if (addedFeedback) return;
-              setQuickAddOpen((current) => !current);
-            }}
+            onClick={handleQuickAddPrimaryClick}
             aria-expanded={quickAddOpen}
             aria-label={`${quickAddLabel}: ${name}`}
           >

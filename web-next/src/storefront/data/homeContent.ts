@@ -29,10 +29,10 @@ export type HomeProofPanel = {
 
 export const HOME_PROOF_PANELS: HomeProofPanel[] = [
   {
-    title: '220 GSM weight check',
+    title: 'premium cotton weight check',
     body: 'Launch proof starts with the actual fabric claim, not a soft adjective.',
     imageSrc: '/images/proof/weight-scale-card.svg',
-    imageAlt: 'Proof card showing 220 GSM weight verification for HORO launch products.',
+    imageAlt: 'Proof card showing premium cotton weight verification for HORO launch products.',
   },
   {
     title: 'Print texture review',
@@ -84,7 +84,7 @@ export const HOME_PROOF_CARDS: HomeProofCard[] = [
 export const HOME_TRUST_BADGES = [
   {
     icon: 'layers' as const,
-    title: '220 GSM',
+    title: 'premium cotton',
     sub: 'Heavyweight feel that keeps its shape',
   },
   {

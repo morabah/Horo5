@@ -191,7 +191,7 @@ Every page is a miniature story: setup → confrontation → resolution.
 - Obsidian background
 - Label: "WHY HORO?" — Desert Sand (valid on dark: 6.51:1)
 - 4 glassmorphic badges (Frost Blue at 6–8% on Obsidian): icon (24px, Desert Sand) + text (Inter 500, 14px, Stone)
-- Badges: "220 GSM Premium Cotton" (Shield) / "Licensed Original Artwork" (Palette) / "Free Exchange · 14 Days" (RefreshCw) / "Cash on Delivery Available" (Truck)
+- Badges: "premium cotton Premium Cotton" (Shield) / "Licensed Original Artwork" (Palette) / "Free Exchange · 14 Days" (RefreshCw) / "Cash on Delivery Available" (Truck)
 - Interaction note: counters animate on scroll — "220" counts from 0, "14" counts from 0
 
 **SECTION 5 — "Real Stories" (social proof — SB7 element 7: Success vision)**
@@ -249,7 +249,7 @@ Every page is a miniature story: setup → confrontation → resolution.
 - Size selector: S / M / L / XL / XXL buttons. Default: Stone/50% border. Selected: 2px Ember border + Ember/5% bg. Out of stock: diagonal strikethrough.
 - "Size Guide" link: Deep Teal + Ruler icon → expands **inline** (not modal — test showed inline reduces exit rate)
 - **Add to Cart:** Full-width, Ember bg, Obsidian text, ShoppingBag icon. Disabled at 60% opacity when no size selected.
-- **Trust strip below CTA:** Horizontal row: "220 GSM Cotton" • "Artist: [name]" • "Free Exchange · 14 Days" • "COD Available" — Inter 500, 14px, Clay Earth
+- **Trust strip below CTA:** Horizontal row: "premium cotton" • "Artist: [name]" • "Free Exchange · 14 Days" • "COD Available" — Inter 500, 14px, Clay Earth
 
 **Mobile sticky CTA bar:** Fixed bottom, glass-nav background (85%), full-width Ember button: "Add to Cart — 799 EGP" in Obsidian text.
 

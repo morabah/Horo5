@@ -92,7 +92,7 @@ type LegacyProduct = {
 }
 
 const DEFAULT_PRODUCT_TRUST_BADGES = [
-  "220 GSM cotton",
+  "premium cotton",
   "Free exchange 14d",
   "COD available",
 ] as const

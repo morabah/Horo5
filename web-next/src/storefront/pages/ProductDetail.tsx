@@ -203,7 +203,8 @@ export function ProductDetail({
 }: ProductDetailProps = {}) {
   const { slug: routeSlug = '' } = useParams();
   const slug = initialSlug ?? routeSlug;
-  const { copy: shellCopy } = useUiLocale();
+  const { copy: shellCopy, locale } = useUiLocale();
+  const isArabic = locale === 'ar';
   const now = useStableNow();
   const [searchParams] = useSearchParams();
   const { addItem, setMiniCartOpen } = useCart();
@@ -279,6 +280,7 @@ export function ProductDetail({
   const [notifyEmail, setNotifyEmail] = useState('');
   const [notifyError, setNotifyError] = useState(false);
   const [notifySuccess, setNotifySuccess] = useState(false);
+  const [designStoryExpanded, setDesignStoryExpanded] = useState(false);
   const [galleryLiveText, setGalleryLiveText] = useState('');
   const [stickyCtaVisible, setStickyCtaVisible] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState(false);
@@ -492,6 +494,12 @@ export function ProductDetail({
     return null;
   }, [displayPriceSelection.size, displayPriceSelection.isSelected, pricingVariesBySize]);
   const productDescription = product?.description ?? product?.story ?? '';
+  const compactProductDescription = useMemo(() => {
+    if (!productDescription) return '';
+    const trimmed = productDescription.trim();
+    if (trimmed.length <= 180) return trimmed;
+    return `${trimmed.slice(0, 180).trimEnd()}…`;
+  }, [productDescription]);
 
   /** Hero chip: prefer Medusa product description; fallback to pillar tagline (see PDP / Medusa README). */
   const HERO_SUBTITLE_MAX_LEN = 280;
@@ -1036,7 +1044,7 @@ export function ProductDetail({
       : null;
 
   return (
-    <div className="product-page bg-papyrus text-obsidian">
+    <div className="product-page pdp-page-content bg-papyrus text-obsidian">
       {renderJsonLd ? (
         <ProductJsonLd
           product={product}
@@ -1236,9 +1244,9 @@ export function ProductDetail({
               </h1>
 
               {heroSubtitle || heroCategoryTagItems.length > 0 || product.capsuleSlugs?.includes('zodiac') ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 overflow-visible">
                   {heroSubtitle ? (
-                    <span className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+                    <span className="font-label max-w-full rounded-lg border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal whitespace-normal break-words leading-relaxed sm:rounded-full">
                       {heroSubtitle}
                     </span>
                   ) : null}
@@ -1257,6 +1265,19 @@ export function ProductDetail({
                   ) : null}
                 </div>
               ) : null}
+              <div className="flex flex-wrap gap-2">
+                <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+                  {product.fitLabel?.trim() || 'Oversized fit'}
+                </span>
+                <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+                  premium cotton
+                </span>
+                {trustItems[0] ? (
+                  <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+                    {trustItems[0]}
+                  </span>
+                ) : null}
+              </div>
             </header>
 
             <div className="space-y-5">
@@ -1500,9 +1521,13 @@ export function ProductDetail({
                   <p className="font-body text-sm leading-snug text-warm-charcoal">{deliveryDynamic.arrivesLine}</p>
                 ) : null}
                 {trustItems.length > 0 ? (
-                  <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
-                    {trustItems.join(' · ')}
-                  </p>
+                  <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2" aria-label="Product trust highlights">
+                    {trustItems.slice(0, 4).map((item) => (
+                      <li key={item} className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-warm-charcoal">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 ) : null}
                 {whatsappSupportUrl ? (
                   <a
@@ -1543,6 +1568,16 @@ export function ProductDetail({
             </div>
           </div>
         </aside>
+      </section>
+
+      <section className="border-t border-stone/25 bg-papyrus">
+        <div className="mx-auto max-w-[1600px] px-4 py-5 md:px-8 lg:px-12">
+          <p className="font-body text-sm leading-relaxed text-warm-charcoal">
+            {isArabic
+              ? 'تفاصيل القصة وجودة الطباعة موجودة بالأسفل ضمن أقسام المنتج، بينما المعرض بالأعلى مخصص لصور المنتج فقط.'
+              : 'Design story and print/fit specs are listed below in the product sections. The gallery above now focuses on product photos only.'}
+          </p>
+        </div>
       </section>
 
       <section className="border-t border-stone/25 bg-papyrus">
@@ -1603,9 +1638,20 @@ export function ProductDetail({
                 </figure>
               ) : null}
               {productDescription ? (
-                <p className="mb-4 font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
-                  {productDescription}
-                </p>
+                <div className="mb-4 space-y-2">
+                  <p className="font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
+                    {designStoryExpanded ? productDescription : compactProductDescription}
+                  </p>
+                  {productDescription.trim().length > 180 ? (
+                    <button
+                      type="button"
+                      onClick={() => setDesignStoryExpanded((open) => !open)}
+                      className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
+                    >
+                      {designStoryExpanded ? 'Show less' : 'Read more'}
+                    </button>
+                  ) : null}
+                </div>
               ) : null}
               <p className="font-body text-sm font-medium leading-relaxed text-warm-charcoal md:text-[15px]">
                 {copy.designStoryAccordionBody}{' '}
