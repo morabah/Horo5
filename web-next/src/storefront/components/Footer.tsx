@@ -100,7 +100,7 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="mx-auto mt-24 flex max-w-[1400px] flex-col items-center justify-between gap-4 border-t border-stone/25 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-10 font-body text-sm text-stone sm:mt-40 sm:px-8 md:flex-row md:px-12 md:pt-12">
+      <div className="mx-auto mt-12 flex max-w-[1400px] flex-col items-center justify-between gap-4 border-t border-stone/25 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-10 font-body text-sm text-stone sm:mt-24 sm:px-8 md:mt-40 md:flex-row md:px-12 md:pt-12">
         <div>{`© ${year} HORO Egypt. ${BRAND_COPY.footerSignoff}`}</div>
         <div className="flex flex-wrap justify-center gap-x-12 gap-y-2">
           <Link className="text-sm text-stone transition-colors hover:text-papyrus" to="/privacy">

@@ -143,7 +143,7 @@ export function MerchProductCard({
   ].join(' ');
 
   const mobileQuickAddClasses = [
-    'font-label inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors',
+    'font-label inline-flex min-h-10 md:min-h-11 items-center justify-center rounded-full border px-3 md:px-4 text-[9px] md:text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors',
     quickAddOpen || addedFeedback
       ? 'border-obsidian bg-obsidian text-white'
       : 'border-stone/60 bg-white text-obsidian hover:border-obsidian',
@@ -181,26 +181,26 @@ export function MerchProductCard({
           </div>
           {showMerch ? (
             <span
-              className="font-label absolute left-3 top-3 z-10 rounded-md bg-white/90 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm"
+              className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md bg-white/90 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm"
             >
               {merchandisingBadge}
             </span>
           ) : null}
           {showPromo ? (
             <span
-              className="font-label absolute left-3 top-3 z-10 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-950 shadow-sm backdrop-blur-sm"
+              className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md border border-amber-200 bg-amber-50 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-amber-950 shadow-sm backdrop-blur-sm"
             >
               {promoLabel}
             </span>
           ) : null}
           {showProof ? (
-            <span className="font-label absolute left-3 top-3 z-10 rounded-md border border-deep-teal/25 bg-white/92 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-deep-teal shadow-sm backdrop-blur-sm">
+            <span className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md border border-deep-teal/25 bg-white/92 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-deep-teal shadow-sm backdrop-blur-sm">
               {resolvedProofChip}
             </span>
           ) : null}
           {showEyebrow ? (
             <span
-              className="category-chip font-label pointer-events-none absolute right-3 top-3 z-9 max-w-[min(100%-6rem,14rem)] truncate rounded-md px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.16em] text-obsidian/80"
+              className="category-chip font-label pointer-events-none absolute right-2 top-2 z-9 max-w-[40%] truncate rounded-md px-1.5 py-0.5 text-[7px] md:right-3 md:top-3 md:max-w-[min(100%-7rem,14rem)] md:px-2.5 md:py-1 md:text-[9px] font-medium uppercase tracking-[0.16em] text-obsidian/80"
               style={
                 eyebrowAccent
                   ? {
@@ -303,19 +303,19 @@ export function MerchProductCard({
         <Link
           to={`/products/${slug}`}
           className={`font-headline block font-semibold leading-snug tracking-[0.01em] text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-            minimal ? 'mt-3 text-[1rem]' : 'mt-2 text-[1.08rem]'
+            minimal ? 'mt-3 text-[0.92rem] md:text-[1rem]' : 'mt-2 text-[1rem] md:text-[1.08rem]'
           }`}
           onClick={onProductClick}
         >
           {name}
         </Link>
         {artistCredit?.trim() ? (
-          <p className="font-label mt-2 text-[10px] font-medium uppercase tracking-[0.16em] text-warm-charcoal">
+          <p className="font-label mt-1.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-warm-charcoal md:mt-2 md:text-[10px]">
             {artistCredit.trim()}
           </p>
         ) : null}
         {product?.fitLabel?.trim() ? (
-          <p className="font-label mt-2 text-[10px] font-medium uppercase tracking-[0.16em] text-warm-charcoal">
+          <p className="font-label mt-1.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-warm-charcoal md:mt-2 md:text-[10px]">
             {product.fitLabel.trim()}
           </p>
         ) : null}

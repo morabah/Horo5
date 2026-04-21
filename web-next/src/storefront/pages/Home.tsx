@@ -161,7 +161,7 @@ export function Home({
               {copy.home.featuredCta}
             </Link>
           </div>
-          <div className="grid grid-cols-2 items-stretch gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-3">
+          <div className="grid grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-3">
             {latestDrops.map((p, i) => {
               const feelingSlug = p.primaryFeelingSlug ?? p.feelingSlug;
               const feeling = getFeeling(feelingSlug);
@@ -218,7 +218,7 @@ export function Home({
               {locale === 'ar' ? 'عرض كل المشاعر ←' : 'See all feelings →'}
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 gap-3.5 sm:gap-4">
             {featuredFeelings.map((feeling, i) => {
               const visual = getFeelingCollectionVisual(feeling.slug).cover;
               const hasImage = Boolean(visual?.src);

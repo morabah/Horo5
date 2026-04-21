@@ -254,11 +254,11 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
             className="flex w-full shrink-0 flex-col border-b border-white/10 md:min-h-[min(600px,84dvh)] md:w-[52%] md:border-b-0 md:border-r"
             aria-label={pdpCopy.pdpGalleryRegionAria}
           >
-            <div className="relative min-h-[280px] flex-1 bg-black/10 md:min-h-0">
+            <div className="relative min-h-[220px] flex-1 bg-black/10 sm:min-h-[280px] md:min-h-0">
               <img
                 src={imgUrl(mainView.src, 1200)}
                 alt={mainView.alt}
-                className="h-full min-h-[280px] w-full object-cover md:absolute md:inset-0 md:min-h-full"
+                className="h-full min-h-[220px] w-full object-cover sm:min-h-[280px] md:absolute md:inset-0 md:min-h-full"
                 width={1200}
                 height={1500}
               />

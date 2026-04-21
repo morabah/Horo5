@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"text-white/\\\\|border-white/\" /Volumes/Rabah_SSD/enrpreneurship/Horo5/web-next/src/storefront/components/*.tsx)"
+    ]
+  }
+}

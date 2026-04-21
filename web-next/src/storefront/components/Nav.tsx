@@ -509,7 +509,7 @@ export function Nav() {
           </button>
         </div>
 
-        <div className="relative border-t border-white/8 px-[max(1rem,env(safe-area-inset-left,0px))] pb-3 pr-[max(1rem,env(safe-area-inset-right,0px))]">
+        <div className={`relative border-t px-[max(1rem,env(safe-area-inset-left,0px))] pb-3 pr-[max(1rem,env(safe-area-inset-right,0px))] ${navOnHeroTransparent ? 'border-white/8' : 'border-stone/25'}`}>
           <form onSubmit={handleSearchSubmit} className="relative pt-3">
             <label htmlFor="nav-search-mobile" className="sr-only">
               {copy.nav.searchPlaceholder}
