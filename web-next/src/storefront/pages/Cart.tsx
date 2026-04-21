@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { trackCartViewed } from '../analytics/events';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { getCartLineViews, type CartLineView } from '../cart/view';
@@ -330,6 +331,7 @@ export function Cart() {
   const [giftUpsellDismissed, setGiftUpsellDismissed] = useState(false);
   const [undoLine, setUndoLine] = useState<CartLine | null>(null);
   const [clientReady, setClientReady] = useState(false);
+  const trackedCartViewRef = useRef(false);
 
   const lineViews = useMemo(() => getCartLineViews(items), [items]);
   const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
@@ -407,6 +409,12 @@ export function Cart() {
   useEffect(() => {
     setClientReady(true);
   }, []);
+
+  useEffect(() => {
+    if (trackedCartViewRef.current || lineViews.length === 0) return;
+    trackedCartViewRef.current = true;
+    trackCartViewed(items, subtotalEgp, giftWrapEgp);
+  }, [giftWrapEgp, items, lineViews.length, subtotalEgp]);
 
   useEffect(() => {
     if (!statusMessage) return undefined;

@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState, type SyntheticEvent } from
 import { Link, useNavigate } from 'react-router-dom';
 import { buildProductPdpGallery, getProductMedia, imgUrl } from '../data/images';
 import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
+import { trackSizeSelected } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
 import {
   fillPdpCopyTemplate,
@@ -201,6 +202,15 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     setMiniCartOpen(true);
   };
 
+  const handleSizeSelect = (size: ProductSizeKey, isSelected: boolean) => {
+    const nextSize = isSelected ? null : size;
+    setSelectedSize(nextSize);
+    setAddedToBag(false);
+    if (product && nextSize) {
+      trackSizeSelected(product, nextSize, 'quick_view');
+    }
+  };
+
   const handlePrimaryCta = () => {
     if (!product) return;
     if (oosSelected && selectedSize) {
@@ -352,10 +362,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                       <button
                         key={size.key}
                         type="button"
-                        onClick={() => {
-                          setSelectedSize(isSelected ? null : size.key);
-                          setAddedToBag(false);
-                        }}
+                        onClick={() => handleSizeSelect(size.key, isSelected)}
                         className={`font-label min-h-12 min-w-12 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                           disabled
                             ? isSelected

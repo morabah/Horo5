@@ -1,6 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { trackBeginCheckout, trackPurchase } from '../analytics/events';
+import {
+  trackBeginCheckout,
+  trackCheckoutSubmitted,
+  trackPaymentMethodSelected,
+  trackPurchase,
+} from '../analytics/events';
 import type { CartLine } from '../cart/types';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
@@ -893,6 +898,17 @@ export function Checkout() {
     setSelectedPaymentMethodId(getDefaultCheckoutPaymentMethod(paymentMethods)?.id || null);
   }, [paymentMethods, selectedPaymentMethodId]);
 
+  function handlePaymentMethodSelect(method: CheckoutPaymentMethod, source = 'checkout') {
+    if (selectedPaymentMethodId !== method.id) {
+      trackPaymentMethodSelected({
+        paymentMethodKind: method.kind,
+        paymentMethodProviderId: method.id,
+        source,
+      });
+    }
+    setSelectedPaymentMethodId(method.id);
+  }
+
   useEffect(() => {
     if (city.trim()) return;
     if (!EGYPT_CITY_OPTIONS.includes('Cairo')) return;
@@ -1402,6 +1418,14 @@ export function Checkout() {
       }
       return;
     }
+
+    trackCheckoutSubmitted({
+      lines: checkoutLines,
+      subtotalEgp: merchandiseSubtotalEgp,
+      giftWrapEgp: giftWrapLineEgp,
+      paymentMethodKind: selectedPaymentMethod?.kind,
+      shippingEgp: shippingCost,
+    });
 
     setSavingInfo(true);
     try {
@@ -1989,7 +2013,7 @@ export function Checkout() {
                       type="radio"
                       name="pay"
                       checked={selectedPaymentMethodId === method.id}
-                      onChange={() => setSelectedPaymentMethodId(method.id)}
+                      onChange={() => handlePaymentMethodSelect(method)}
                     />
                     <span className="font-body text-sm text-obsidian">
                       <strong>{method.label}</strong>
@@ -2067,7 +2091,7 @@ export function Checkout() {
                         className="btn btn-ghost min-h-12 w-full border border-stone sm:w-auto"
                         onClick={() => {
                           setPaymentError(null);
-                          setSelectedPaymentMethodId(codMethodForFallback.id);
+                          handlePaymentMethodSelect(codMethodForFallback, 'checkout_error_recovery');
                         }}
                       >
                         {copy.checkout.useCodInstead}

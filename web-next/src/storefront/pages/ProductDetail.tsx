@@ -28,7 +28,7 @@ import {
   type ProductSizeKey,
   type RuntimeCatalog,
 } from '../data/site';
-import { trackViewItem } from '../analytics/events';
+import { trackSizeSelected, trackViewItem } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
 import { StickyAddToCart } from '../components/StickyAddToCart';
 import {
@@ -939,6 +939,14 @@ export function ProductDetail({
     setNotifySuccess(true);
   }
 
+  function handleSizeSelect(size: ProductSizeKey, isSelected: boolean) {
+    const nextSize = isSelected ? null : size;
+    setSelectedSize(nextSize);
+    if (product && nextSize) {
+      trackSizeSelected(product, nextSize, 'pdp');
+    }
+  }
+
   function handlePrimaryAction() {
     if (!product) return;
 
@@ -1358,7 +1366,7 @@ export function ProductDetail({
                         key={key}
                         type="button"
                         title={disabled ? copy.pdpSizeOosHint : undefined}
-                        onClick={() => setSelectedSize(isSelected ? null : key)}
+                        onClick={() => handleSizeSelect(key, isSelected)}
                         aria-pressed={isSelected}
                         className={`flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border px-4 font-headline text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
                           disabled

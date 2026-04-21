@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
+import { trackPurchase } from '../analytics/events';
 import { getCartLineViews } from '../cart/view';
 import { loadLastOrder, saveLastOrder, sessionSnapshotBelongsToOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
@@ -184,6 +185,16 @@ export function OrderConfirmation() {
     () => getCartLineViews(order?.lines || [], { orderConfirmation: true }),
     [order?.lines],
   );
+
+  useEffect(() => {
+    if (!order) return;
+    trackPurchase({
+      transactionId: order.medusaOrderId ?? order.orderId,
+      value: order.total,
+      currency: 'EGP',
+      lines: order.lines,
+    });
+  }, [order]);
 
   /** Prefer session/API snapshot (`HORO-…`) over the raw `order_id` query param (ULID). */
   const customerFacingOrderId =

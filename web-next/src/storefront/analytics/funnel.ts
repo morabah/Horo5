@@ -1,3 +1,4 @@
+import { capturePostHogEvent } from '@/lib/posthog-client';
 import { HYPOTHESIS_PRIMARY_SEGMENT } from './hypothesisContext';
 
 function gtagEvent(name: string, params: Record<string, string | number | undefined>) {
@@ -19,6 +20,12 @@ export type HoroFunnelStepPayload = {
 
 /** Custom GA4 funnel steps from home and hubs (configure as custom dimensions in GA4 UI). */
 export function trackHoroFunnelStep(payload: HoroFunnelStepPayload) {
+  capturePostHogEvent('horo_funnel_step', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    funnel_step: payload.step,
+    target: payload.target,
+    ...(payload.compact_home !== undefined ? { compact_home: payload.compact_home } : {}),
+  });
   gtagEvent('horo_funnel_step', {
     hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
     funnel_step: payload.step,
@@ -28,6 +35,10 @@ export function trackHoroFunnelStep(payload: HoroFunnelStepPayload) {
 }
 
 export function trackHomeView(extra: { compact_home: boolean }) {
+  capturePostHogEvent('horo_home_view', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    compact_home: extra.compact_home,
+  });
   gtagEvent('horo_home_view', {
     hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
     compact_home: extra.compact_home ? 1 : 0,
@@ -57,6 +68,11 @@ export function trackHomeScrollMilestone(percentBucket: number, compact_home: bo
   if (milestones.has(percentBucket)) return;
   milestones.add(percentBucket);
   saveMilestones(milestones);
+  capturePostHogEvent('horo_home_scroll', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    scroll_depth_bucket: percentBucket,
+    compact_home,
+  });
   gtagEvent('horo_home_scroll', {
     hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
     scroll_depth_bucket: percentBucket,

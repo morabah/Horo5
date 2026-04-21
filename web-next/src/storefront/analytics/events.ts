@@ -1,3 +1,4 @@
+import { capturePostHogEvent } from '@/lib/posthog-client';
 import type { CartLine } from '../cart/types';
 import { getFeeling, getOccasion, getProduct, type Product, type ProductSizeKey } from '../data/site';
 import { HYPOTHESIS_PRIMARY_SEGMENT } from './hypothesisContext';
@@ -8,7 +9,18 @@ type AnalyticsItemContext = {
 };
 
 const RECENT_EVENT_WINDOW_MS = 1200;
+const PURCHASE_EVENT_STORAGE_PREFIX = 'horo-analytics-purchase-v1:';
 const recentEvents = new Map<string, number>();
+
+type PostHogCommerceEventName =
+  | 'commerce_product_viewed'
+  | 'commerce_size_selected'
+  | 'commerce_cart_viewed'
+  | 'commerce_add_to_cart'
+  | 'commerce_checkout_started'
+  | 'commerce_checkout_submitted'
+  | 'commerce_payment_method_selected'
+  | 'commerce_order_completed';
 
 function buildEventKey(name: string, key: string) {
   return `${name}:${key}`;
@@ -41,6 +53,30 @@ export function buildAnalyticsItem(product: Product, quantity: number, context: 
   };
 }
 
+function capturePostHogCommerceEvent(eventName: PostHogCommerceEventName, properties: Record<string, unknown>) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent(eventName, {
+    ...properties,
+    commerce_event: eventName,
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+  });
+}
+
+function shouldSuppressTrackedPurchase(transactionId: string) {
+  if (shouldSuppressDuplicateEvent('purchase', transactionId)) return true;
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const key = `${PURCHASE_EVENT_STORAGE_PREFIX}${transactionId}`;
+    if (window.sessionStorage.getItem(key)) return true;
+    window.sessionStorage.setItem(key, String(Date.now()));
+  } catch {
+    /* ignore */
+  }
+
+  return false;
+}
+
 export function createViewItemPayload(product: Product) {
   return {
     currency: 'EGP',
@@ -49,15 +85,7 @@ export function createViewItemPayload(product: Product) {
   };
 }
 
-export function createAddToCartPayload(product: Product, quantity: number, size: ProductSizeKey) {
-  return {
-    currency: 'EGP',
-    value: product.priceEgp * quantity,
-    items: [buildAnalyticsItem(product, quantity, { size })],
-  };
-}
-
-export function createBeginCheckoutPayload(lines: CartLine[], subtotalEgp: number, giftWrapEgp: number) {
+function createCartPayload(lines: CartLine[], subtotalEgp: number, giftWrapEgp: number) {
   const items = lines
     .map((line) => {
       const product = getProduct(line.productSlug);
@@ -78,7 +106,40 @@ export function createBeginCheckoutPayload(lines: CartLine[], subtotalEgp: numbe
   return {
     currency: 'EGP',
     value: subtotalEgp + giftWrapEgp,
+    item_count: lines.reduce((s, l) => s + l.qty, 0),
+    line_count: lines.length,
     items,
+  };
+}
+
+export function createAddToCartPayload(product: Product, quantity: number, size: ProductSizeKey) {
+  return {
+    currency: 'EGP',
+    value: product.priceEgp * quantity,
+    items: [buildAnalyticsItem(product, quantity, { size })],
+  };
+}
+
+export function createSizeSelectedPayload(product: Product, size: ProductSizeKey, source: string) {
+  const variant = product.variantsBySize?.[size];
+  const value = variant?.priceEgp ?? product.priceEgp;
+  return {
+    currency: 'EGP',
+    value,
+    source,
+    product_slug: product.slug,
+    product_name: product.name,
+    size,
+    item: buildAnalyticsItem(product, 1, { size }),
+  };
+}
+
+export function createBeginCheckoutPayload(lines: CartLine[], subtotalEgp: number, giftWrapEgp: number) {
+  const payload = createCartPayload(lines, subtotalEgp, giftWrapEgp);
+  return {
+    currency: payload.currency,
+    value: payload.value,
+    items: payload.items,
   };
 }
 
@@ -120,6 +181,12 @@ export function trackViewItem(product: Product) {
   if (shouldSuppressDuplicateEvent('view_item', product.slug)) return;
   const payload = createViewItemPayload(product);
 
+  capturePostHogCommerceEvent('commerce_product_viewed', {
+    ...payload,
+    product_slug: product.slug,
+    product_name: product.name,
+  });
+
   if (window.gtag && gaId) {
     window.gtag('event', 'view_item', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
@@ -138,6 +205,14 @@ export function trackAddToCart(product: Product, quantity: number, size: Product
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
   const payload = createAddToCartPayload(product, quantity, size);
+  capturePostHogCommerceEvent('commerce_add_to_cart', {
+    ...payload,
+    product_slug: product.slug,
+    product_name: product.name,
+    size,
+    quantity,
+    item_count: quantity,
+  });
   if (window.gtag && gaId) {
     window.gtag('event', 'add_to_cart', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
@@ -151,6 +226,26 @@ export function trackAddToCart(product: Product, quantity: number, size: Product
   }
 }
 
+export function trackCartViewed(lines: CartLine[], subtotalEgp: number, giftWrapEgp: number) {
+  if (typeof window === 'undefined') return;
+  const payload = createCartPayload(lines, subtotalEgp, giftWrapEgp);
+  if (payload.items.length === 0) return;
+
+  capturePostHogCommerceEvent('commerce_cart_viewed', payload);
+}
+
+export function trackSizeSelected(product: Product, size: ProductSizeKey, source = 'pdp') {
+  if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const payload = createSizeSelectedPayload(product, size, source);
+
+  capturePostHogCommerceEvent('commerce_size_selected', payload);
+
+  if (window.gtag && gaId) {
+    window.gtag('event', 'size_selected', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
+  }
+}
+
 export function trackBeginCheckout(lines: CartLine[], subtotalEgp: number, giftWrapEgp: number) {
   if (typeof window === 'undefined') return;
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
@@ -158,6 +253,10 @@ export function trackBeginCheckout(lines: CartLine[], subtotalEgp: number, giftW
   const payload = createBeginCheckoutPayload(lines, subtotalEgp, giftWrapEgp);
 
   if (payload.items.length === 0) return;
+
+  capturePostHogCommerceEvent('commerce_checkout_started', {
+    ...createCartPayload(lines, subtotalEgp, giftWrapEgp),
+  });
 
   if (window.gtag && gaId) {
     window.gtag('event', 'begin_checkout', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
@@ -172,6 +271,38 @@ export function trackBeginCheckout(lines: CartLine[], subtotalEgp: number, giftW
   }
 }
 
+export function trackCheckoutSubmitted(payload: {
+  lines: CartLine[];
+  subtotalEgp: number;
+  giftWrapEgp: number;
+  paymentMethodKind?: string;
+  shippingEgp?: number;
+}) {
+  if (typeof window === 'undefined') return;
+  const cartPayload = createCartPayload(payload.lines, payload.subtotalEgp, payload.giftWrapEgp);
+  if (cartPayload.items.length === 0) return;
+
+  capturePostHogCommerceEvent('commerce_checkout_submitted', {
+    ...cartPayload,
+    ...(payload.paymentMethodKind ? { payment_method_kind: payload.paymentMethodKind } : {}),
+    ...(typeof payload.shippingEgp === 'number' ? { shipping: payload.shippingEgp } : {}),
+  });
+}
+
+export function trackPaymentMethodSelected(payload: {
+  paymentMethodKind: string;
+  paymentMethodProviderId?: string;
+  source?: string;
+}) {
+  if (typeof window === 'undefined') return;
+
+  capturePostHogCommerceEvent('commerce_payment_method_selected', {
+    payment_method_kind: payload.paymentMethodKind,
+    ...(payload.paymentMethodProviderId ? { payment_method_provider_id: payload.paymentMethodProviderId } : {}),
+    source: payload.source ?? 'checkout',
+  });
+}
+
 export function trackPurchase(payload: {
   transactionId: string;
   value: number;
@@ -184,6 +315,13 @@ export function trackPurchase(payload: {
   const eventPayload = createPurchasePayload(payload);
 
   if (eventPayload.items.length === 0) return;
+  if (shouldSuppressTrackedPurchase(payload.transactionId)) return;
+
+  capturePostHogCommerceEvent('commerce_order_completed', {
+    ...eventPayload,
+    item_count: payload.lines.reduce((s, l) => s + l.qty, 0),
+    line_count: payload.lines.length,
+  });
 
   if (window.gtag && gaId) {
     window.gtag('event', 'purchase', { ...eventPayload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
@@ -215,6 +353,10 @@ export type SearchZeroResultsPayload = {
 export function trackSearchZeroResults(payload: SearchZeroResultsPayload) {
   if (typeof window === 'undefined') return;
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  capturePostHogEvent('search_zero_results', {
+    ...payload,
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+  });
   if (window.gtag && gaId) {
     window.gtag('event', 'search_zero_results', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }

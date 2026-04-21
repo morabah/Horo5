@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../cart/CartContext';
+import { trackSizeSelected } from '../analytics/events';
 import { PDP_SCHEMA } from '../data/domain-config';
 import { getProduct, type ProductSizeKey } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -120,6 +121,9 @@ export function MerchProductCard({
   }
 
   function handleQuickAdd(size: ProductSizeKey) {
+    if (product) {
+      trackSizeSelected(product, size, 'product_card_quick_add');
+    }
     addItem(slug, size, 1);
     setMiniCartOpen(true);
     setQuickAddOpen(false);
