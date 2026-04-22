@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 
 type PolicySection = {
@@ -11,11 +12,13 @@ export function PolicyPageLayout({
   title,
   intro,
   sections,
+  children,
 }: {
   eyebrow: string;
   title: string;
   intro: string;
   sections: PolicySection[];
+  children?: ReactNode;
 }) {
   const instagramUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.instagramUrl)
     ? HORO_SUPPORT_CHANNELS.instagramUrl
@@ -67,6 +70,7 @@ export function PolicyPageLayout({
                 </div>
               </section>
             ))}
+            {children ? <div>{children}</div> : null}
           </div>
         </section>
 

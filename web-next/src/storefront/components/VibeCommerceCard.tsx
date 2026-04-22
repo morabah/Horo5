@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
 import { VIBES_SCHEMA } from '../data/domain-config';
 import type { Feeling } from '../data/site';
-import { getFeelingCollectionVisual, heroVectorizedV2, imgUrl } from '../data/images';
+import {
+  getFeelingCollectionVisual,
+  heroVectorizedV2,
+  imgUrl,
+  resolveProductImageSrcForDisplay,
+} from '../data/images';
 
 const linkBaseClass =
   'group flex h-full min-h-0 flex-col overflow-hidden transition-all duration-700 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal';
@@ -28,6 +33,8 @@ export function VibeCommerceCard({
 }: VibeCommerceCardProps) {
   const cover = getFeelingCollectionVisual(feeling.slug).cover;
   const coverSrc = cover.src?.trim() ? cover.src : heroVectorizedV2;
+  const displayCoverSrc = resolveProductImageSrcForDisplay(coverSrc);
+  const accentColor = feeling.accent?.trim() || '#53706c';
   const bodyCopy = feeling.blurb || feeling.tagline || '';
   const ctaLabel = variant === 'see-vibe' ? VIBES_SCHEMA.copy.cardSeeVibeCta : VIBES_SCHEMA.copy.cardExploreCta;
   const ariaLabel = VIBES_SCHEMA.copy.cardAriaTemplate
@@ -58,7 +65,7 @@ export function VibeCommerceCard({
     >
       <div className="relative @container/vibe-card flex aspect-[4/5] w-full flex-1 flex-col overflow-hidden">
         <img
-          src={coverSrc === heroVectorizedV2 ? coverSrc : imgUrl(coverSrc, 960)}
+          src={coverSrc === heroVectorizedV2 ? coverSrc : imgUrl(displayCoverSrc, 960)}
           alt={cover.alt}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out motion-safe:group-hover:scale-105 motion-reduce:group-hover:scale-100"
           decoding="async"
@@ -73,7 +80,7 @@ export function VibeCommerceCard({
         <div
           className="pointer-events-none absolute inset-0 bg-linear-to-tr opacity-25"
           style={{
-            background: `linear-gradient(to top right, ${feeling.accent}55, transparent 50%)`,
+            background: `linear-gradient(to top right, color-mix(in srgb, ${accentColor} 34%, transparent), transparent 50%)`,
           }}
           aria-hidden
         />
@@ -88,7 +95,7 @@ export function VibeCommerceCard({
             <div className="relative z-10 flex items-center gap-[clamp(0.5rem,2cqw,0.875rem)]">
               <span
                 className="mt-0.5 h-[clamp(0.375rem,1.8cqw,0.5rem)] w-[clamp(0.375rem,1.8cqw,0.5rem)] shrink-0 rounded-full shadow-md ring-2 ring-white/25"
-                style={{ backgroundColor: feeling.accent }}
+                style={{ backgroundColor: accentColor }}
                 aria-hidden
               />
               {titleEl}

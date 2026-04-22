@@ -414,16 +414,24 @@ export function getOccasionCollectionVisual(slug: string): OccasionStorefrontIma
 }
 
 export function getFeelingsHubHeroTiles() {
-  return getFeelings().map((feeling) => {
-    const { cover, hero, proof } = getFeelingCollectionVisual(feeling.slug);
-    /** Hub uses `<img src>`; `cover` can be "" by design — fall back like proof does so src is never empty. */
-    const src = firstNonEmptyString(cover.src, hero.src, proof.src) ?? heroVectorizedV2;
-    return {
-      slug: feeling.slug,
-      ...cover,
-      src,
-    };
-  });
+  return getFeelings()
+    .filter((feeling) => feeling.active !== false)
+    .map((feeling, index) => ({ feeling, index }))
+    .sort(
+      (left, right) =>
+        (left.feeling.sortOrder ?? left.index) - (right.feeling.sortOrder ?? right.index) ||
+        left.index - right.index,
+    )
+    .map(({ feeling }) => {
+      const { cover, hero, proof } = getFeelingCollectionVisual(feeling.slug);
+      /** Hub uses `<img src>`; `cover` can be "" by design — fall back like proof does so src is never empty. */
+      const src = firstNonEmptyString(cover.src, hero.src, proof.src) ?? heroVectorizedV2;
+      return {
+        slug: feeling.slug,
+        ...cover,
+        src,
+      };
+    });
 }
 
 export function getFeelingEditorialImagery(slug: string) {
@@ -498,7 +506,7 @@ export function resolveProductImageSrcForDisplay(src: string): string {
   if (!t) return t;
   if (t.startsWith('http://') || t.startsWith('https://')) return t;
   if (t.startsWith('//')) return `https:${t}`;
-  if (t.startsWith('/') && !t.startsWith('//')) {
+  if (t.startsWith('/static/') && !t.startsWith('//')) {
     const base = (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL : '') || '';
     const origin = base.replace(/\/+$/, '');
     if (origin) return `${origin}${t}`;
@@ -540,6 +548,18 @@ export function getProductCardImageSrc(product: Product): string {
       product.media?.main,
       ...(product.media?.gallery ?? []),
       product.thumbnail,
+      FALLBACK_PRODUCT_GALLERY[0],
+    ) ?? FALLBACK_PRODUCT_GALLERY[0]
+  );
+}
+
+export function getProductComparisonImageSrc(product: Product): string {
+  return (
+    firstNonEmptyString(
+      product.media?.main,
+      product.thumbnail,
+      ...(product.media?.gallery ?? []),
+      product.media?.card,
       FALLBACK_PRODUCT_GALLERY[0],
     ) ?? FALLBACK_PRODUCT_GALLERY[0]
   );

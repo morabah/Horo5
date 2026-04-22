@@ -368,6 +368,57 @@ export function buildOccasionMetadata(occasion: Occasion): Metadata {
   };
 }
 
+export function buildFeelingMetadata(feeling: Feeling, subfeeling?: Subfeeling | null): Metadata {
+  const titleSource = subfeeling?.seoTitle || feeling.seoTitle;
+  const title =
+    titleSource ||
+    (subfeeling
+      ? `${feeling.name} / ${subfeeling.name} Graphic Tees | HORO Egypt`
+      : `${feeling.name} Graphic Tees | HORO Egypt`);
+  const description =
+    subfeeling?.seoDescription ||
+    feeling.seoDescription ||
+    subfeeling?.blurb ||
+    feeling.blurb ||
+    feeling.tagline ||
+    `Shop ${feeling.name} graphic tees from HORO Egypt with COD and 14-day exchange in Egypt.`;
+  const path = subfeeling
+    ? `/feelings/${feeling.slug}/${subfeeling.slug}`
+    : `/feelings/${feeling.slug}`;
+  const canonical = siteOrigin ? `${siteOrigin}${path}` : path;
+  const image = toAbsoluteUrl(
+    subfeeling?.heroImageSrc ||
+      subfeeling?.cardImageSrc ||
+      feeling.heroImageSrc ||
+      feeling.cardImageSrc,
+  );
+  const imageAlt =
+    subfeeling?.heroImageAlt ||
+    subfeeling?.cardImageAlt ||
+    feeling.heroImageAlt ||
+    feeling.cardImageAlt ||
+    title;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+      images: image ? [{ url: image, alt: imageAlt }] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
+
 export function buildProductMetadata(
   product: Product,
   catalog?: Pick<RuntimeCatalog, "feelings"> | null

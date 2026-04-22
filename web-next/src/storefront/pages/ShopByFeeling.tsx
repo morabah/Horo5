@@ -4,13 +4,44 @@ import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
 import { VIBES_SCHEMA } from '../data/domain-config';
-import { getFeelingsHubHeroTiles, heroVectorizedV2, imgUrl } from '../data/images';
+import {
+  getFeelingsHubHeroTiles,
+  heroVectorizedV2,
+  imgUrl,
+  resolveProductImageSrcForDisplay,
+} from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
-import { getFeelings } from '../data/site';
+import {
+  getFeelings,
+  setRuntimeCatalog,
+  type Feeling,
+  type RuntimeCatalog,
+} from '../data/site';
 
-export function ShopByFeeling() {
+type ShopByFeelingProps = {
+  /** Server catalog from Medusa, matching the homepage first-paint data flow. */
+  initialCatalog?: Partial<RuntimeCatalog> | null;
+};
+
+function sortActiveFeelings(feelings: Feeling[]) {
+  return feelings
+    .filter((feeling) => feeling.active !== false)
+    .map((feeling, index) => ({ feeling, index }))
+    .sort(
+      (left, right) =>
+        (left.feeling.sortOrder ?? left.index) - (right.feeling.sortOrder ?? right.index) ||
+        left.index - right.index,
+    )
+    .map((entry) => entry.feeling);
+}
+
+export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
+  if (initialCatalog) {
+    setRuntimeCatalog(initialCatalog);
+  }
+
   const { copy } = useUiLocale();
-  const feelings = getFeelings();
+  const feelings = sortActiveFeelings(getFeelings());
   const heroTiles = getFeelingsHubHeroTiles();
   const heroTileCount = Math.max(1, heroTiles.length);
   const [brokenHeroTiles, setBrokenHeroTiles] = useState<Record<string, boolean>>({});
@@ -22,6 +53,26 @@ export function ShopByFeeling() {
       })),
     [brokenHeroTiles, heroTiles],
   );
+
+  if (feelings.length === 0) {
+    return (
+      <div className="bg-papyrus pb-16 md:pb-20">
+        <div className="mx-auto max-w-7xl px-4 pt-8 md:px-8 md:pt-10">
+          <PageBreadcrumb
+            className="mb-6"
+            items={[
+              { label: copy.shell.home, to: '/' },
+              { label: copy.shell.shopByFeeling },
+            ]}
+          />
+          <p className="font-body text-warm-charcoal">Feeling collections are not available yet. Try again shortly.</p>
+          <Link className="btn btn-primary mt-6 inline-flex" to="/">
+            {copy.shell.home}
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -44,7 +95,7 @@ export function ShopByFeeling() {
             {safeHeroTiles.map((tile) => (
               <img
                 key={tile.slug}
-                src={imgUrl(tile.src, 900)}
+                src={imgUrl(resolveProductImageSrcForDisplay(tile.src), 900)}
                 alt={tile.alt}
                 className="h-full w-full object-cover"
                 style={{ objectPosition: tile.objectPosition }}

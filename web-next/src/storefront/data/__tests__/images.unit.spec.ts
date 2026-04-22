@@ -51,8 +51,8 @@ describe('resolveProductImageSrcForDisplay', () => {
     expect(resolveProductImageSrcForDisplay('/static/abc.jpg')).toBe('http://localhost:9000/static/abc.jpg');
   });
 
-  it('leaves root-relative paths when Medusa origin is missing', () => {
-    delete process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+  it('leaves local public image paths on the storefront origin even when Medusa origin is set', () => {
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = 'http://localhost:9000/';
     expect(resolveProductImageSrcForDisplay('/images/local.png')).toBe('/images/local.png');
   });
 });

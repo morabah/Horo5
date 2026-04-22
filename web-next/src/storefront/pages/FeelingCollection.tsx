@@ -12,8 +12,20 @@ import {
   productAppearsInFeelingLine,
   productHasRealImage,
   productsByFeeling,
+  setRuntimeCatalog,
+  type Feeling,
+  type Product,
+  type RuntimeCatalog,
+  type Subfeeling,
 } from '../data/site';
-import { getFeelingCollectionVisual, getProductCardImageSrc, heroVectorizedV2, imgUrl } from '../data/images';
+import {
+  getFeelingCollectionVisual,
+  getProductCardImageSrc,
+  getSubfeelingCollectionVisual,
+  heroVectorizedV2,
+  imgUrl,
+  resolveProductImageSrcForDisplay,
+} from '../data/images';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
@@ -41,7 +53,49 @@ const PRICE_FILTERS: { value: PriceFilter; label: string }[] = [
   { value: '900+', label: '900+ EGP' },
 ];
 
-function filterByPrice(list: import('../data/site').Product[], filter: PriceFilter) {
+type FeelingCollectionProps = {
+  /** Server catalog from Medusa, matching the homepage first-paint data flow. */
+  initialCatalog?: Partial<RuntimeCatalog> | null;
+  initialSlug?: string;
+  initialSubfeelingSlug?: string;
+};
+
+function sortActiveFeelings(feelings: Feeling[]) {
+  return feelings
+    .filter((feeling) => feeling.active !== false)
+    .map((feeling, index) => ({ feeling, index }))
+    .sort(
+      (left, right) =>
+        (left.feeling.sortOrder ?? left.index) - (right.feeling.sortOrder ?? right.index) ||
+        left.index - right.index,
+    )
+    .map((entry) => entry.feeling);
+}
+
+function sortActiveSubfeelings(subfeelings: Subfeeling[]) {
+  return subfeelings
+    .filter((line) => line.active !== false)
+    .map((line, index) => ({ line, index }))
+    .sort(
+      (left, right) =>
+        (left.line.sortOrder ?? left.index) - (right.line.sortOrder ?? right.index) ||
+        left.index - right.index,
+    )
+    .map((entry) => entry.line);
+}
+
+function firstCollectionTrustLabel(products: Product[]) {
+  return products
+    .flatMap((product) => product.trustBadges ?? [])
+    .find((label) => typeof label === 'string' && label.trim().length > 0)
+    ?.trim();
+}
+
+function displayImageUrl(src: string, width: number) {
+  return imgUrl(resolveProductImageSrcForDisplay(src), width);
+}
+
+function filterByPrice(list: Product[], filter: PriceFilter) {
   switch (filter) {
     case 'under-800': return list.filter((p) => p.priceEgp < 800);
     case '800-899': return list.filter((p) => p.priceEgp >= 800 && p.priceEgp < 900);
@@ -54,7 +108,7 @@ function categoryEyebrowForFeelingProduct(
   feelingName: string,
   feelingSlug: string,
   activeLine: { name: string } | undefined,
-  product: import('../data/site').Product,
+  product: Product,
 ): string {
   if (activeLine) {
     return `${feelingName} / ${activeLine.name}`;
@@ -92,14 +146,24 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   });
 }
 
-export function FeelingCollection() {
-  const { slug = '', subfeelingSlug = '' } = useParams<{ slug?: string; subfeelingSlug?: string }>();
+export function FeelingCollection({
+  initialCatalog,
+  initialSlug,
+  initialSubfeelingSlug,
+}: FeelingCollectionProps = {}) {
+  if (initialCatalog) {
+    setRuntimeCatalog(initialCatalog);
+  }
+
+  const params = useParams<{ slug?: string; subfeelingSlug?: string }>();
+  const slug = initialSlug || params.slug || '';
+  const subfeelingSlug = initialSubfeelingSlug || params.subfeelingSlug || '';
   const [searchParams] = useSearchParams();
   const lineFromQuery = searchParams.get('line')?.trim() || '';
   const lineParam = subfeelingSlug || lineFromQuery;
   const { copy } = useUiLocale();
   const feeling = getFeeling(slug);
-  const subfeelings = useMemo(() => getSubfeelingsByFeeling(slug), [slug]);
+  const subfeelings = useMemo(() => sortActiveSubfeelings(getSubfeelingsByFeeling(slug)), [slug]);
   const activeLine = lineParam ? subfeelings.find((line) => line.slug === lineParam) : undefined;
   const baseFeelingPath = `/feelings/${slug}`;
 
@@ -140,7 +204,7 @@ export function FeelingCollection() {
   const sorted = useMemo(() => sortProductList(baseList, sortKey), [baseList, sortKey]);
   const list = useMemo(() => filterByPrice(sorted, priceFilter), [sorted, priceFilter]);
 
-  const others = getFeelings().filter((f) => f.slug !== slug).slice(0, 4);
+  const others = sortActiveFeelings(getFeelings()).filter((f) => f.slug !== slug).slice(0, 4);
 
   const closeMobileFilters = useCallback(() => {
     setMobileFiltersOpen(false);
@@ -213,16 +277,23 @@ export function FeelingCollection() {
   }
 
   const feelingVisuals = getFeelingCollectionVisual(feeling.slug);
+  const activeLineVisual = activeLine ? getSubfeelingCollectionVisual(activeLine.slug) : null;
   const storyLead =
+    activeLine?.blurb ||
     feeling.blurb ||
     feeling.tagline ||
-    activeLine?.blurb ||
     `Browse all products assigned to ${feeling.name} in Medusa.`;
   const designCountLabel = baseList.length >= DESIGN_COUNT_MIN ? `${baseList.length} designs` : 'Curated selection';
+  const collectionTrustLabel = firstCollectionTrustLabel(baseList);
   const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || Boolean(lineParam);
   const heroTitle = activeLine ? `${feeling.name} / ${activeLine.name}` : feeling.name;
-  const heroImageSrc = heroImageBroken || !feelingVisuals.hero.src?.trim() ? heroVectorizedV2 : feelingVisuals.hero.src;
-  const proofImageSrc = proofImageBroken || !feelingVisuals.proof.src?.trim() ? heroVectorizedV2 : feelingVisuals.proof.src;
+  const heroVisualSrc = activeLineVisual?.src || feelingVisuals.hero.src;
+  const proofVisualSrc = activeLineVisual?.src || feelingVisuals.proof.src;
+  const heroImageSrc = heroImageBroken || !heroVisualSrc?.trim() ? heroVectorizedV2 : heroVisualSrc;
+  const proofImageSrc = proofImageBroken || !proofVisualSrc?.trim() ? heroVectorizedV2 : proofVisualSrc;
+  const heroImageAlt = activeLineVisual?.alt || feelingVisuals.hero.alt;
+  const proofImageAlt = activeLineVisual?.alt || feelingVisuals.proof.alt;
+  const feelingAccent = feeling.accent?.trim() || '#53706c';
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -234,11 +305,11 @@ export function FeelingCollection() {
       </a>
 
       <section className="relative isolate overflow-hidden bg-obsidian text-white" aria-labelledby="feeling-collection-title">
-        <div className="relative h-[36vh] min-h-[21rem] sm:h-[40vh] md:h-[44vh] md:min-h-[26rem] lg:h-[48vh]">
+        <div className="relative h-[clamp(21rem,34vh,30rem)] sm:h-[clamp(22rem,34vh,31rem)] md:h-[clamp(24rem,36vh,32rem)]">
           <img
-            alt={feelingVisuals.hero.alt}
+            alt={heroImageAlt}
             className="absolute inset-0 h-full w-full object-cover"
-            src={imgUrl(heroImageSrc, 1600)}
+            src={displayImageUrl(heroImageSrc, 1600)}
             width={1600}
             height={1200}
             decoding="async"
@@ -251,7 +322,9 @@ export function FeelingCollection() {
           />
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.22]"
-            style={{ background: `linear-gradient(135deg, ${feeling.accent}55, transparent 48%)` }}
+            style={{
+              background: `linear-gradient(135deg, color-mix(in srgb, ${feelingAccent} 34%, transparent), transparent 48%)`,
+            }}
             aria-hidden
           />
           <div className="absolute inset-x-0 bottom-0">
@@ -418,7 +491,7 @@ export function FeelingCollection() {
                   merchandisingBadge={p.merchandisingBadge}
                   proofChip={p.fitLabel ?? p.trustBadges?.find(Boolean)}
                   eyebrow={categoryEyebrowForFeelingProduct(feeling.name, slug, activeLine, p)}
-                  eyebrowAccent={feeling.accent}
+                  eyebrowAccent={feelingAccent}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                   onQuickView={setQuickViewSlug}
                 />
@@ -456,9 +529,9 @@ export function FeelingCollection() {
             <div className="w-full">
               <div className="editorial-shadow overflow-hidden rounded-sm shadow-2xl ring-1 ring-black/5">
                 <img
-                  alt={feelingVisuals.proof.alt}
+                  alt={proofImageAlt}
                   className="h-auto w-full object-cover"
-                  src={imgUrl(proofImageSrc, 1200)}
+                  src={displayImageUrl(proofImageSrc, 1200)}
                   width={1200}
                   height={900}
                   loading="lazy"
@@ -482,10 +555,14 @@ export function FeelingCollection() {
               </p>
               <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">
                 {designCountLabel}
-                <span className="mx-2 text-clay/50" aria-hidden>
-                  |
-                </span>
-                premium cotton
+                {collectionTrustLabel ? (
+                  <>
+                    <span className="mx-2 text-clay/50" aria-hidden>
+                      |
+                    </span>
+                    {collectionTrustLabel}
+                  </>
+                ) : null}
               </p>
               <a
                 href="#feeling-collection-products"
@@ -505,7 +582,7 @@ export function FeelingCollection() {
             {others.map((v) => {
               const otherCover = getFeelingCollectionVisual(v.slug).cover;
               const otherCoverSrc = otherCover.src?.trim() ? otherCover.src : heroVectorizedV2;
-              const otherImgSrc = otherCoverSrc === heroVectorizedV2 ? otherCoverSrc : imgUrl(otherCoverSrc, 720);
+              const otherImgSrc = otherCoverSrc === heroVectorizedV2 ? otherCoverSrc : displayImageUrl(otherCoverSrc, 720);
               return (
                 <Link
                   key={v.slug}

@@ -42,6 +42,14 @@ export function Footer() {
             <li>
               <Link
                 className="font-body text-sm text-stone transition-colors hover:text-papyrus"
+                to={NAV_ROUTE.products.path}
+              >
+                {copy.shell.shopAll}
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="font-body text-sm text-stone transition-colors hover:text-papyrus"
                 to={NAV_ROUTE.collection.path}
               >
                 {copy.shell.shopByFeeling}
@@ -58,7 +66,30 @@ export function Footer() {
           </ul>
         </div>
         <div>
-          <h4 className="font-body mb-8 text-sm font-semibold text-primary">{copy.shell.aboutHeading}</h4>
+          <h4 className="font-body mb-8 text-sm font-semibold text-primary">{copy.shell.helpHeading}</h4>
+          <ul className="space-y-4">
+            <li>
+              <Link
+                className="font-body text-sm text-stone transition-colors hover:text-papyrus"
+                to="/exchange"
+              >
+                {copy.shell.deliveryReturns}
+              </Link>
+            </li>
+            <li>
+              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" to="/size-guide">
+                {copy.shell.sizeGuide}
+              </Link>
+            </li>
+            <li>
+              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" to="/faq">
+                {copy.shell.faq}
+              </Link>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-body mb-8 text-sm font-semibold text-primary">{copy.shell.contactHeading}</h4>
           <ul className="space-y-4">
             <li>
               <Link
@@ -69,26 +100,20 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" to="/exchange">
-                {copy.shell.exchangePolicy}
-              </Link>
+              {whatsappSupportUrl ? (
+                <a className="font-body text-sm text-stone transition-colors hover:text-papyrus" href={whatsappSupportUrl} target="_blank" rel="noreferrer">
+                  {copy.shell.contactWhatsapp}
+                </a>
+              ) : (
+                <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" to="/faq">
+                  {copy.shell.contactWhatsapp}
+                </Link>
+              )}
             </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-body mb-8 text-sm font-semibold text-primary">{copy.shell.contactHeading}</h4>
-          <ul className="space-y-4">
             {instagramUrl ? (
               <li>
                 <a className="font-body text-sm text-stone transition-colors hover:text-papyrus" href={instagramUrl} target="_blank" rel="noreferrer">
                   Instagram
-                </a>
-              </li>
-            ) : null}
-            {whatsappSupportUrl ? (
-              <li>
-                <a className="font-body text-sm text-stone transition-colors hover:text-papyrus" href={whatsappSupportUrl} target="_blank" rel="noreferrer">
-                  WhatsApp
                 </a>
               </li>
             ) : null}

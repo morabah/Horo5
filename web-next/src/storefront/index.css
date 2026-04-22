@@ -838,6 +838,22 @@
     background-size: 200px 200px;
   }
 
+  .home-route-card,
+  .home-why-block,
+  .home-artist-spotlight,
+  .home-ugc-grid,
+  .home-detail-fallback {
+    contain: layout paint;
+  }
+
+  .home-route-card,
+  .home-why-block,
+  .home-detail-fallback {
+    transition:
+      transform 300ms cubic-bezier(0.33, 1, 0.68, 1),
+      box-shadow 300ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
   /* ——— Feeling section — dramatic typographic glow ——— */
   .home-feeling-glow {
     background:

@@ -46,8 +46,6 @@ function flattenSuggestions(groups: ReturnType<typeof getSearchSuggestions>) {
   return groups.flatMap((group) => group.suggestions);
 }
 
-const HOME_HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
-
 function LocaleToggle({
   locale,
   setLocale,
@@ -101,7 +99,6 @@ export function Nav() {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const headerRef = useRef<HTMLElement>(null);
   const desktopSearchInputRef = useRef<HTMLInputElement>(null);
-  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
   const prevMenuVisibleRef = useRef(false);
   const menuVisibleRef = useRef(menuVisible);
   const menuTriggerFocusRef = useRef<HTMLElement | null>(null);
@@ -402,29 +399,22 @@ export function Nav() {
       return;
     }
 
-    setHomeHeroSolidNav(false);
-    let observer: IntersectionObserver | null = null;
-    const t = window.setTimeout(() => {
-      const sentinel = document.getElementById(HOME_HERO_BOTTOM_SENTINEL_ID);
-      if (!sentinel) return;
-
+    const updateHeroNavState = () => {
+      const hero = document.getElementById('home-hero');
+      if (!hero) {
+        setHomeHeroSolidNav(false);
+        return;
+      }
       const effectiveHeaderHeight = Math.max(headerHeight, 1);
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          setHomeHeroSolidNav(!entry.isIntersecting);
-        },
-        {
-          root: null,
-          rootMargin: `-${effectiveHeaderHeight}px 0px 0px 0px`,
-          threshold: 0,
-        },
-      );
-      observer.observe(sentinel);
-    }, 0);
+      setHomeHeroSolidNav(hero.getBoundingClientRect().bottom <= effectiveHeaderHeight + 1);
+    };
 
+    updateHeroNavState();
+    window.addEventListener('scroll', updateHeroNavState, { passive: true });
+    window.addEventListener('resize', updateHeroNavState);
     return () => {
-      window.clearTimeout(t);
-      observer?.disconnect();
+      window.removeEventListener('scroll', updateHeroNavState);
+      window.removeEventListener('resize', updateHeroNavState);
     };
   }, [headerHeight, pathname]);
 
@@ -438,7 +428,7 @@ export function Nav() {
   return (
     <header
       ref={headerRef}
-      className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${navOnHeroTransparent ? 'glass-nav--hero-transparent' : ''} ${isHeaderHidden ? '-translate-y-full' : 'translate-y-0'}`}
+      className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${navOnHeroTransparent ? 'glass-nav--hero-transparent' : ''} ${isHeaderHidden ? 'md:-translate-y-full' : 'translate-y-0'}`}
       role="banner"
     >
       {placedOrderMedusaId ? (
@@ -494,83 +484,29 @@ export function Nav() {
           <Link to="/" className="flex min-w-0 flex-1 justify-center" aria-label={copy.shell.home}>
             <BrandLogo variant={logoVariant} />
           </Link>
-          <button
-            type="button"
-            className={`relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
-            aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
-            onClick={handleCartNavigation}
-          >
-            <AppIcon name="shopping_bag" className="h-6 w-6" />
-            {totalQty > 0 ? (
-              <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-obsidian">
-                {totalQty > 99 ? '99+' : totalQty}
-              </span>
-            ) : null}
-          </button>
-        </div>
-
-        <div className={`relative border-t px-[max(1rem,env(safe-area-inset-left,0px))] pb-3 pr-[max(1rem,env(safe-area-inset-right,0px))] ${navOnHeroTransparent ? 'border-white/8' : 'border-stone/25'}`}>
-          <form onSubmit={handleSearchSubmit} className="relative pt-3">
-            <label htmlFor="nav-search-mobile" className="sr-only">
-              {copy.nav.searchPlaceholder}
-            </label>
-            <input
-              ref={mobileSearchInputRef}
-              id="nav-search-mobile"
-              type="search"
-              value={q}
-              onChange={(event) => setQ(event.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onKeyDown={handleSearchKeyDown}
-              placeholder={copy.nav.searchPlaceholder}
-              className={`font-body min-h-12 w-full border-b px-2 py-3 pr-24 text-sm placeholder:text-clay/70 transition-colors focus:border-obsidian focus-visible:outline-none bg-transparent ${
-                navOnHeroTransparent
-                  ? 'border-white/20 text-white placeholder:text-white/60 focus:border-white'
-                  : 'border-stone/30 text-obsidian focus:border-obsidian'
-              }`}
-              autoComplete="off"
-              aria-expanded={suggestionsOpen}
-              aria-controls="nav-search-suggestions"
-              aria-activedescendant={activeSuggestionId}
-              role="combobox"
-            />
-            <div className="absolute right-2 top-[calc(0.75rem+50%)] flex -translate-y-1/2 items-center gap-1">
-              {q.trim() ? (
-                <button
-                  type="button"
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${
-                    navOnHeroTransparent ? 'text-white/82 hover:bg-white/10' : 'text-obsidian/72 hover:bg-black/5'
-                  }`}
-                  aria-label={copy.nav.searchClear}
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                    clearSearch();
-                  }}
-                >
-                  <AppIcon name="close" className="h-5 w-5" />
-                </button>
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
+              aria-label={copy.nav.searchOpen}
+              onClick={() => navigate('/search?focus=1')}
+            >
+              <AppIcon name="search" className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              className={`relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
+              aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
+              onClick={handleCartNavigation}
+            >
+              <AppIcon name="shopping_bag" className="h-6 w-6" />
+              {totalQty > 0 ? (
+                <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-obsidian">
+                  {totalQty > 99 ? '99+' : totalQty}
+                </span>
               ) : null}
-              <button
-                type="submit"
-                className={`inline-flex h-10 min-w-10 items-center justify-center rounded-full px-3 transition-colors ${navOnHeroTransparent ? 'text-white hover:bg-white/10' : 'text-obsidian hover:bg-black/5'}`}
-                aria-label={copy.nav.searchSubmit}
-              >
-                <AppIcon name="search" className="h-5 w-5" />
-              </button>
-            </div>
-          </form>
-
-          {suggestionsOpen ? (
-            <div className="absolute inset-x-[max(1rem,env(safe-area-inset-left,0px))] top-[calc(100%-0.15rem)] z-120">
-              <SearchSuggestionPanel
-                groups={suggestionGroups}
-                activeIndex={activeSuggestionIndex}
-                listboxId="nav-search-suggestions"
-                onHover={setActiveSuggestionIndex}
-                onSelect={handleSuggestionSelect}
-              />
-            </div>
-          ) : null}
+            </button>
+          </div>
         </div>
       </div>
 

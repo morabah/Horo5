@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { homeHeroWearFeel } from '../data/images';
 import { getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -9,7 +9,6 @@ const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
 export function HomeHeroWearMean() {
   const { locale } = useUiLocale();
-  const navigate = useNavigate();
   const isArabic = locale === 'ar';
 
   const priceRange = (() => {
@@ -27,8 +26,8 @@ export function HomeHeroWearMean() {
       ? `من ${formatEgp(priceRange)}`
       : `From ${formatEgp(priceRange)}`
     : null;
-  const primaryCtaLabel = isArabic ? 'تسوّق الآن' : 'Shop now';
-  const secondaryCtaLabel = isArabic ? 'تصفح التصاميم' : 'Browse designs';
+  const primaryCtaLabel = isArabic ? 'تسوّق الكل' : 'Shop All';
+  const secondaryCtaLabel = isArabic ? 'تسوّق حسب الشعور' : 'Shop by Feeling';
 
   return (
     <section
@@ -59,26 +58,27 @@ export function HomeHeroWearMean() {
 
       <div className="relative z-10 flex min-h-0 flex-1 items-end justify-start px-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-10 lg:pb-14">
         <div className="pointer-events-none absolute inset-x-0 top-[max(4.1rem,calc(env(safe-area-inset-top,0px)+3.55rem))] z-20 px-4 md:hidden">
-          <div className="mx-auto w-full max-w-[92vw] text-center">
-            <p className="font-headline text-[clamp(1.7rem,9vw,2.6rem)] font-semibold uppercase leading-[0.92] tracking-[-0.02em] text-[#f5f0e6] drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
-              <span className="block">WEAR WHAT</span>
-              <span className="block">YOU FEEL</span>
+          <div className="mx-auto w-full max-w-[92vw]">
+            <p className="grid grid-cols-2 gap-x-16 gap-y-1 font-headline text-[clamp(1.75rem,9.5vw,2.8rem)] font-semibold uppercase leading-[0.88] tracking-tight text-[#f5f0e6] drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
+              <span className="block text-left">WEAR</span>
+              <span className="block text-right">WHAT</span>
+              <span className="block text-left">YOU</span>
+              <span className="block text-right">FEEL</span>
             </p>
           </div>
         </div>
         <div className="w-full max-w-[92vw] text-left sm:max-w-[80vw] md:max-w-[min(48ch,40vw)]">
           <p className="font-body text-[clamp(1.12rem,1.7vw,2.05rem)] font-medium leading-[1.18] text-[#f5f0e6] drop-shadow-[0_4px_18px_rgba(0,0,0,0.4)]">
             <span>{promiseLine}</span>
-            {priceToken ? <span className="font-semibold text-[#f5f0e6]"> · {priceToken}</span> : null}
+            {priceToken ? <span className="text-[0.86em] font-medium text-[#f5f0e6]/88"> · {priceToken}</span> : null}
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate('/products')}
+            <Link
+              to="/products"
               className="font-body inline-flex min-h-12 items-center justify-center rounded-md bg-[#f5f0e6] px-7 py-3 text-[14px] font-semibold text-[#2a2d26] transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {primaryCtaLabel}
-            </button>
+            </Link>
             <Link
               to="/feelings"
               className="font-body inline-flex min-h-12 items-center justify-center rounded-md border border-[#f5f0e6]/40 bg-black/20 px-7 py-3 text-[14px] font-semibold text-[#f5f0e6] transition-colors duration-200 hover:border-[#f5f0e6]/75 hover:bg-black/28 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
