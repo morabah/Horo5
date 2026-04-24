@@ -1942,32 +1942,17 @@ export function Checkout() {
 
               <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
                 <h2 className="font-headline text-lg font-semibold text-obsidian">{copy.checkout.headingPayment}</h2>
-                <div className="mt-4 rounded-xl border border-stone/30 bg-papyrus/60 p-4">
-                  <p className="font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">
-                    {copy.checkout.paymentDependencyHeading}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {[
-                      { label: copy.checkout.paymentDependencyAddressSaved, ready: dependencyAddressSaved },
-                      { label: copy.checkout.paymentDependencyShippingAttached, ready: dependencyShippingAttached },
-                      { label: copy.checkout.paymentDependencyProvidersLoaded, ready: dependencyProvidersLoaded },
-                    ].map((item) => (
-                      <span
-                        key={item.label}
-                        className={`font-label inline-flex min-h-9 items-center rounded-full border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] ${
-                          item.ready
-                            ? 'border-deep-teal/35 bg-deep-teal/10 text-deep-teal'
-                            : 'border-stone bg-white text-clay'
-                        }`}
-                      >
-                        {item.label}: {item.ready ? copy.checkout.paymentDependencyYes : copy.checkout.paymentDependencyNo}
-                      </span>
-                    ))}
+                {!(dependencyAddressSaved && dependencyShippingAttached && dependencyProvidersLoaded) ? (
+                  <div className="mt-4 flex items-center gap-3 rounded-xl border border-stone/30 bg-papyrus/60 p-4" role="status">
+                    <span
+                      className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-stone/40 border-t-deep-teal"
+                      aria-hidden
+                    />
+                    <p className="font-body text-sm text-warm-charcoal">
+                      {isArabic ? 'جاري تجهيز خيارات الدفع…' : 'Setting up your payment options…'}
+                    </p>
                   </div>
-                </div>
-                <p className="font-label mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-clay">
-                  {isArabic ? 'خيارات الدفع الحية' : 'Live payment options'}
-                </p>
+                ) : null}
                 {paymentVerifying ? (
                   <div className="mt-4 flex gap-3 rounded-xl border border-stone bg-white p-4" role="status">
                     <span

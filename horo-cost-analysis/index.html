@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HORO — Financial Analysis Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- LANGUAGE TOGGLE -->
+  <button id="langToggle" onclick="toggleLang()">عربي / EN</button>
+
+  <header>
+    <div class="header-inner">
+      <h1>HORO<span class="accent">.</span> <span data-en="Financial Analysis" data-ar="التحليل المالي">Financial Analysis</span></h1>
+      <p class="subtitle" data-en="Premium Streetwear — Cost & Breakeven Dashboard" data-ar="ستريت وير بريميوم — لوحة التكاليف ونقطة التعادل">Premium Streetwear — Cost & Breakeven Dashboard</p>
+    </div>
+  </header>
+
+  <nav id="tabNav">
+    <button class="tab active" data-tab="brief">📋 <span data-en="Brief" data-ar="ملخص">Brief</span></button>
+    <button class="tab" data-tab="overview">📊 <span data-en="Cost Overview" data-ar="هيكل التكاليف">Cost Overview</span></button>
+    <button class="tab" data-tab="assumptions">⚙️ <span data-en="Edit Assumptions" data-ar="تعديل الافتراضات">Edit Assumptions</span></button>
+    <button class="tab" data-tab="scenario-test">🧪 <span data-en="Test Phase" data-ar="مرحلة الاختبار">Test Phase</span></button>
+    <button class="tab" data-tab="scenario-growth">🚀 <span data-en="Growth Phase" data-ar="مرحلة النمو">Growth Phase</span></button>
+    <button class="tab" data-tab="scenario-full">🏢 <span data-en="Full Ops (Yr 2+)" data-ar="التشغيل الكامل (السنة الثانية+)">Full Ops (Yr 2+)</span></button>
+    <button class="tab" data-tab="projection">📈 <span data-en="12-Month Projection" data-ar="توقعات 12 شهر">12-Month Projection</span></button>
+    <button class="tab" data-tab="market">🌍 <span data-en="Market Benchmark" data-ar="مقارنة السوق">Market Benchmark</span></button>
+  </nav>
+
+  <main>
+    <!-- BRIEF TAB -->
+    <section id="tab-brief" class="tab-content active">
+      <div id="briefContent" class="card card-wide brief-card"></div>
+    </section>
+
+    <!-- ASSUMPTIONS TAB -->
+    <section id="tab-assumptions" class="tab-content">
+      <div class="scenario-header" style="border-color:rgba(124,92,255,.3);background:linear-gradient(135deg,rgba(124,92,255,.08),rgba(52,211,153,.04))">
+        <h2>⚙️ <span data-en="Edit All Assumptions" data-ar="تعديل جميع الافتراضات">Edit All Assumptions</span></h2>
+        <p data-en="Change any number below — all charts and calculations update automatically" data-ar="غيّر أي رقم — كل الرسومات والحسابات تتحدث تلقائياً">Change any number below — all charts and calculations update automatically</p>
+      </div>
+      <div class="card card-wide control-card">
+        <div class="control-header">
+          <div>
+            <h2 data-en="Startup Price Optimization & JSON Save" data-ar="تحسين سعر الستارت أب وحفظ JSON">Startup Price Optimization & JSON Save</h2>
+            <p data-en="Find Egypt-ready startup fashion prices from the current costs, then save or reset your changed assumptions." data-ar="اعرف أفضل أسعار مناسبة لستارت أب أزياء في مصر من الأرقام الحالية، ثم احفظ أو ارجع الافتراضات للأصل.">Find Egypt-ready startup fashion prices from the current costs, then save or reset your changed assumptions.</p>
+          </div>
+          <div class="button-row">
+            <button type="button" class="action-btn primary" onclick="runPriceOptimization()" data-en="Optimize Price" data-ar="حساب أفضل سعر">Optimize Price</button>
+            <button type="button" class="action-btn" onclick="saveAssumptionsJson()" data-en="Save JSON" data-ar="حفظ JSON">Save JSON</button>
+            <button type="button" class="action-btn danger" onclick="resetAssumptions()" data-en="Reset Original" data-ar="رجوع للأصل">Reset Original</button>
+          </div>
+        </div>
+        <p id="assumptionStatus" class="status-line"></p>
+        <div id="priceOptimizationResult"></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h2 data-en="Unit Costs (per T-shirt)" data-ar="تكلفة القطعة الواحدة">Unit Costs (per T-shirt)</h2>
+          <div id="editUnitCosts"></div>
+        </div>
+        <div class="card">
+          <h2 data-en="Variable Costs (per unit)" data-ar="التكاليف المتغيرة (للقطعة)">Variable Costs (per unit)</h2>
+          <div id="editVarCosts"></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h2 data-en="One-Time Fixed Costs" data-ar="التكاليف الثابتة (لمرة واحدة)">One-Time Fixed Costs</h2>
+          <div id="editFixedCosts"></div>
+        </div>
+        <div class="card">
+          <h2 data-en="Monthly Recurring Costs" data-ar="التكاليف الشهرية المتكررة">Monthly Recurring Costs</h2>
+          <div id="editMonthlyCosts"></div>
+        </div>
+      </div>
+      <div class="card card-wide">
+        <h2 data-en="Other Parameters" data-ar="متغيرات أخرى">Other Parameters</h2>
+        <div id="editOther"></div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW TAB -->
+    <section id="tab-overview" class="tab-content">
+      <div class="grid-2">
+        <div class="card"><h2 data-en="Unit Economics" data-ar="اقتصاديات القطعة">Unit Economics</h2><table class="data-table" id="unitEconTable"></table></div>
+        <div class="card"><h2 data-en="Unit Economics Breakdown" data-ar="توزيع تكلفة القطعة">Unit Economics Breakdown</h2><canvas id="chartUnitEcon"></canvas></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><h2 data-en="Fixed Costs — One-Time" data-ar="التكاليف الثابتة">Fixed Costs — One-Time</h2><table class="data-table" id="fixedTable"></table></div>
+        <div class="card"><h2 data-en="Monthly Recurring Costs" data-ar="التكاليف الشهرية">Monthly Recurring Costs</h2><table class="data-table" id="monthlyTable"></table><div class="insight"><h3>💡 <span data-en="CPA Classification" data-ar="تصنيف تكلفة جلب العميل">CPA Classification</span></h3><p id="cpaNote"></p></div></div>
+      </div>
+      <div class="card card-wide"><h2 data-en="Fixed Costs Breakdown" data-ar="توزيع التكاليف الثابتة">Fixed Costs Breakdown</h2><canvas id="chartFixedCosts"></canvas></div>
+    </section>
+
+    <!-- TEST PHASE -->
+    <section id="tab-scenario-test" class="tab-content">
+      <div class="scenario-header scenario-test"><h2>🧪 <span id="testScenarioTitle" data-en="Scenario A: Test Phase" data-ar="السيناريو أ: مرحلة الاختبار">Scenario A: Test Phase</span></h2><p id="testScenarioSubtitle" data-en="Pilot assumptions update automatically" data-ar="افتراضات البايلوت تتحدث تلقائياً">Pilot assumptions update automatically</p></div>
+      <div class="grid-3">
+        <div class="kpi-card kpi-red"><div class="kpi-label" data-en="Total Revenue" data-ar="إجمالي الإيرادات">Total Revenue</div><div class="kpi-value" id="testRevenue">—</div></div>
+        <div class="kpi-card kpi-red"><div class="kpi-label" data-en="Total Costs" data-ar="إجمالي التكاليف">Total Costs</div><div class="kpi-value" id="testCosts">—</div></div>
+        <div class="kpi-card kpi-red"><div class="kpi-label" data-en="Net P&L" data-ar="صافي الربح/الخسارة">Net P&L</div><div class="kpi-value" id="testPL">—</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><h2 data-en="Test Phase — Cost Breakdown" data-ar="مرحلة الاختبار — تفصيل التكاليف">Test Phase — Cost Breakdown</h2><table class="data-table" id="testTable"></table></div>
+        <div class="card"><h2 data-en="Test Phase — P&L Waterfall" data-ar="مرحلة الاختبار — شلال الأرباح">Test Phase — P&L Waterfall</h2><canvas id="chartTestWaterfall"></canvas></div>
+      </div>
+      <div class="card card-wide"><h2 data-en="Monthly Breakdown" data-ar="التفصيل الشهري">Monthly Breakdown</h2><canvas id="chartTestMonthly"></canvas></div>
+      <div class="card card-wide insight"><h3>📋 <span data-en="Test Phase Analysis" data-ar="تحليل مرحلة الاختبار">Test Phase Analysis</span></h3><div id="testAnalysis"></div></div>
+    </section>
+
+    <!-- GROWTH PHASE -->
+    <section id="tab-scenario-growth" class="tab-content">
+      <div class="scenario-header scenario-growth"><h2>🚀 <span data-en="Scenario B: Growth Phase (Months 4–12)" data-ar="السيناريو ب: مرحلة النمو (الأشهر 4-12)">Scenario B: Growth Phase (Months 4–12)</span></h2><p data-en="Scaling sales • No Operator salary • All other costs active" data-ar="توسيع المبيعات • بدون راتب المشغل • جميع التكاليف الأخرى مفعلة">Scaling sales • No Operator salary • All other costs active</p></div>
+      <div class="grid-3">
+        <div class="kpi-card kpi-blue"><div class="kpi-label" data-en="Monthly Breakeven" data-ar="نقطة التعادل الشهرية">Monthly Breakeven</div><div class="kpi-value" id="growthBE">—</div><div class="kpi-sub" data-en="units/month" data-ar="قطعة/شهر">units/month</div></div>
+        <div class="kpi-card kpi-blue"><div class="kpi-label" data-en="Units to Recover Fixed" data-ar="قطع لاسترداد التكاليف">Units to Recover Fixed</div><div class="kpi-value" id="growthRecover">—</div><div class="kpi-sub" data-en="total units" data-ar="إجمالي القطع">total units</div></div>
+        <div class="kpi-card kpi-blue"><div class="kpi-label" data-en="First Profit Month" data-ar="أول شهر ربح">First Profit Month</div><div class="kpi-value" id="growthProfitMonth">—</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><h2 data-en="Breakeven Calculator" data-ar="حاسبة نقطة التعادل">Breakeven Calculator</h2>
+          <div class="slider-group"><label><span data-en="Monthly Sales Target:" data-ar="هدف المبيعات الشهري:">Monthly Sales Target:</span> <strong id="growthSliderVal">150</strong></label><input type="range" id="growthSlider" min="50" max="500" value="150" step="10"></div>
+          <div id="growthCalcResult" class="calc-result"></div>
+        </div>
+        <div class="card"><h2 data-en="Revenue vs Cost Curve" data-ar="الإيرادات مقابل التكاليف">Revenue vs Cost Curve</h2><canvas id="chartGrowthMargin"></canvas></div>
+      </div>
+      <div class="card card-wide"><h2 data-en="Growth Phase — 9-Month Projection" data-ar="مرحلة النمو — توقعات 9 أشهر">Growth Phase — 9-Month Projection</h2><canvas id="chartGrowthProjection"></canvas></div>
+    </section>
+
+    <!-- FULL OPS -->
+    <section id="tab-scenario-full" class="tab-content">
+      <div class="scenario-header scenario-full"><h2>🏢 <span data-en="Scenario C: Full Operations (Year 2+)" data-ar="السيناريو ج: التشغيل الكامل (السنة الثانية+)">Scenario C: Full Operations (Year 2+)</span></h2><p id="fullScenarioSubtitle" data-en="All costs active including Operator" data-ar="كل التكاليف مفعلة بما فيها الأوبريتور">All costs active including Operator</p></div>
+      <div class="grid-3">
+        <div class="kpi-card kpi-purple"><div class="kpi-label" data-en="Monthly Breakeven" data-ar="نقطة التعادل">Monthly Breakeven</div><div class="kpi-value" id="fullBE">—</div><div class="kpi-sub" data-en="units/month" data-ar="قطعة/شهر">units/month</div></div>
+        <div class="kpi-card kpi-purple"><div class="kpi-label" data-en="Revenue Needed/Mo" data-ar="الإيرادات المطلوبة/شهر">Revenue Needed/Mo</div><div class="kpi-value" id="fullRevNeeded">—</div><div class="kpi-sub" data-en="EGP" data-ar="جنيه">EGP</div></div>
+        <div class="kpi-card kpi-purple"><div class="kpi-label" data-en="Good Growth Target" data-ar="هدف النمو الجيد">Good Growth Target</div><div class="kpi-value" id="fullGrowthTarget">—</div><div class="kpi-sub" data-en="units for 30% margin" data-ar="قطعة لهامش 30%">units for 30% margin</div></div>
+      </div>
+      <div class="card card-wide"><h2 data-en="Year 2 Projection" data-ar="توقعات السنة الثانية">Year 2 Projection</h2><canvas id="chartFullProjection"></canvas></div>
+      <div class="card card-wide insight" id="operatorAnalysis"></div>
+    </section>
+
+    <!-- 12 MONTH -->
+    <section id="tab-projection" class="tab-content">
+      <div class="scenario-header scenario-proj"><h2>📈 <span data-en="Complete 12-Month Projection" data-ar="توقعات 12 شهر كاملة">Complete 12-Month Projection</span></h2><p data-en="Combined: Test → Growth → Stabilization" data-ar="مجتمعة: اختبار ← نمو ← استقرار">Combined: Test → Growth → Stabilization</p></div>
+      <div class="grid-4">
+        <div class="kpi-card kpi-green"><div class="kpi-label" data-en="Total Revenue" data-ar="إجمالي الإيرادات">Total Revenue</div><div class="kpi-value" id="projRevenue">—</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label" data-en="Total Costs" data-ar="إجمالي التكاليف">Total Costs</div><div class="kpi-value" id="projCosts">—</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label" data-en="Net P&L" data-ar="صافي الربح">Net P&L</div><div class="kpi-value" id="projPL">—</div></div>
+        <div class="kpi-card kpi-green"><div class="kpi-label" data-en="Breakeven Month" data-ar="شهر التعادل">Breakeven Month</div><div class="kpi-value" id="projBEMonth">—</div></div>
+      </div>
+      <div class="card card-wide"><h2 data-en="Revenue vs Costs" data-ar="الإيرادات مقابل التكاليف">Revenue vs Costs</h2><canvas id="chart12Month"></canvas></div>
+      <div class="card card-wide"><h2 data-en="Cumulative P&L" data-ar="الربح التراكمي">Cumulative P&L</h2><canvas id="chartCumulative"></canvas></div>
+      <div class="card card-wide"><h2 data-en="Monthly Sales Assumptions" data-ar="افتراضات المبيعات الشهرية">Monthly Sales Assumptions</h2><div class="sales-inputs" id="salesInputs"></div></div>
+    </section>
+
+    <!-- MARKET -->
+    <section id="tab-market" class="tab-content">
+      <div class="scenario-header scenario-market"><h2>🌍 <span data-en="Market Benchmark" data-ar="مقارنة السوق">Market Benchmark</span></h2><p data-en="HORO vs Egypt Fashion E-Commerce" data-ar="HORO مقابل سوق الأزياء الإلكتروني في مصر">HORO vs Egypt Fashion E-Commerce</p></div>
+      <div class="grid-2">
+        <div class="card"><h2 data-en="Your Metrics vs Industry" data-ar="أرقامك مقابل سوق مصر">Your Metrics vs Industry</h2><canvas id="chartMarketRadar"></canvas></div>
+        <div class="card"><h2 data-en="Price Positioning" data-ar="تموضع السعر">Price Positioning</h2><canvas id="chartPricePos"></canvas></div>
+      </div>
+      <div class="card card-wide"><h2 data-en="Benchmark Table" data-ar="جدول المقارنة">Benchmark Table</h2><table class="data-table" id="benchmarkTable"><thead><tr><th data-en="Metric" data-ar="المقياس">Metric</th><th data-en="HORO" data-ar="HORO">HORO</th><th data-en="Egypt / Target" data-ar="مصر / الهدف">Egypt / Target</th><th data-en="Assessment" data-ar="التقييم">Assessment</th></tr></thead><tbody></tbody></table></div>
+      <div class="card card-wide insight"><h3>🎯 <span data-en="Strategic Recommendations" data-ar="توصيات استراتيجية">Strategic Recommendations</span></h3><div id="recommendations"></div></div>
+    </section>
+  </main>
+
+  <footer><p data-en="HORO Financial Analysis Dashboard — April 2026 — All figures in EGP" data-ar="لوحة HORO للتحليل المالي — أبريل 2026 — كل الأرقام بالجنيه المصري">HORO Financial Analysis Dashboard — April 2026 — All figures in EGP</p></footer>
+  <script src="app.js"></script>
+  <script src="charts.js"></script>
+</body>
+</html>

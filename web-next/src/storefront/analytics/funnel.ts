@@ -79,3 +79,78 @@ export function trackHomeScrollMilestone(percentBucket: number, compact_home: bo
     compact_home: compact_home ? 1 : 0,
   });
 }
+
+/* ─── Browse page view tracking (once-per-session per page type) ──────── */
+
+const BROWSE_VIEW_PREFIX = 'horo_browse_view_v1:';
+
+function trackBrowsePageViewOnce(
+  pageType: string,
+  properties: Record<string, string | number | boolean | undefined> = {},
+) {
+  if (typeof window === 'undefined') return;
+  const key = `${BROWSE_VIEW_PREFIX}${pageType}`;
+  try {
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+  } catch {
+    /* ignore */
+  }
+  capturePostHogEvent(`horo_${pageType}_view`, {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    ...properties,
+  });
+  gtagEvent(`horo_${pageType}_view`, {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    ...(Object.fromEntries(
+      Object.entries(properties).filter(([, v]) => v !== undefined),
+    ) as Record<string, string | number>),
+  });
+}
+
+/** Feelings hub — `/feelings` */
+export function trackFeelingsHubView(feelingCount: number) {
+  trackBrowsePageViewOnce('feelings_hub', { feeling_count: feelingCount });
+}
+
+/** Occasions hub — `/occasions` */
+export function trackOccasionsHubView(occasionCount: number) {
+  trackBrowsePageViewOnce('occasions_hub', { occasion_count: occasionCount });
+}
+
+/** Shop All — `/products` */
+export function trackShopAllView(productCount: number) {
+  trackBrowsePageViewOnce('shop_all', { product_count: productCount });
+}
+
+/** Single feeling collection — `/feelings/:slug` */
+export function trackFeelingCollectionView(feelingSlug: string, productCount: number) {
+  trackBrowsePageViewOnce(`feeling_${feelingSlug}`, {
+    feeling_slug: feelingSlug,
+    product_count: productCount,
+  });
+}
+
+/** Single occasion collection — `/occasions/:slug` */
+export function trackOccasionCollectionView(occasionSlug: string, productCount: number) {
+  trackBrowsePageViewOnce(`occasion_${occasionSlug}`, {
+    occasion_slug: occasionSlug,
+    product_count: productCount,
+  });
+}
+
+/** Search results viewed with a query */
+export function trackSearchView(query: string, resultCount: number) {
+  if (!query.trim()) return;
+  capturePostHogEvent('horo_search_view', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    search_query: query.trim().slice(0, 100),
+    result_count: resultCount,
+  });
+  gtagEvent('horo_search_view', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    search_query: query.trim().slice(0, 100),
+    result_count: resultCount,
+  });
+}
+

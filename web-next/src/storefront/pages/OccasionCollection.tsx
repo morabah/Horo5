@@ -25,6 +25,7 @@ import {
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { formatEgp } from '../utils/formatPrice';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
+import { trackOccasionCollectionView } from '../analytics/funnel';
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -159,6 +160,10 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
     setMobileFiltersOpen(false);
     setDesktopFiltersOpen(false);
   }, [slug]);
+
+  useEffect(() => {
+    if (occasionSlug && baseList.length > 0) trackOccasionCollectionView(occasionSlug, baseList.length);
+  }, [occasionSlug, baseList.length]);
 
   useEffect(() => {
     if (!isMobile) {

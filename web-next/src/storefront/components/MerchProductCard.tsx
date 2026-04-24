@@ -78,9 +78,18 @@ export function MerchProductCard({
     (artistCredit?.trim() ? (locale === 'ar' ? 'فنان معتمد' : 'Artist credited') : undefined) ||
     undefined;
   const resolvedProofChip = proofChip?.trim() || fallbackProofChip;
+  const isNew = useMemo(() => {
+    if (!product?.createdAt) return false;
+    const createdDate = new Date(product.createdAt);
+    if (isNaN(createdDate.getTime())) return false;
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 30;
+  }, [product?.createdAt]);
   const showPromo = Boolean(promoLabel);
   const showProof = !showPromo && Boolean(resolvedProofChip);
   const showMerch = !showPromo && !showProof && Boolean(merchandisingBadge);
+  const showNewBadge = !showPromo && !showProof && !showMerch && isNew;
   const showEyebrow = minimal && Boolean(eyebrow?.trim());
   const availableSizes = useMemo(() => {
     if (!product) return [] as ProductSizeKey[];
@@ -200,6 +209,11 @@ export function MerchProductCard({
           {showProof ? (
             <span className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md border border-deep-teal/25 bg-white/92 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-deep-teal shadow-sm backdrop-blur-sm">
               {resolvedProofChip}
+            </span>
+          ) : null}
+          {showNewBadge ? (
+            <span className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-emerald-900 shadow-sm backdrop-blur-sm">
+              {locale === 'ar' ? 'جديد' : 'New'}
             </span>
           ) : null}
           {showEyebrow ? (

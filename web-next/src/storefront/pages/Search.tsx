@@ -22,6 +22,7 @@ import {
 } from '../data/images';
 import { getFeeling, getOccasion, type Product } from '../data/site';
 import { trackSearchZeroResults } from '../analytics/events';
+import { trackSearchView } from '../analytics/funnel';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
   fetchStorefrontSearch,
@@ -533,6 +534,12 @@ export function Search() {
   useEffect(() => {
     setShowRelatedSections(hasDebouncedQuery);
   }, [hasDebouncedQuery]);
+
+  useEffect(() => {
+    if (hasDebouncedQuery && totalResults > 0) {
+      trackSearchView(debouncedQ, totalResults);
+    }
+  }, [hasDebouncedQuery, debouncedQ, totalResults]);
 
   const scopeLabels = [scopeOccasion?.name, scopeFeeling?.name].filter(Boolean);
   const scopeSummary = scopeLabels.join(' · ');

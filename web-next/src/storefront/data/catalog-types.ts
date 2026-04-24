@@ -160,6 +160,8 @@ export type Product = {
   originalPriceEgp?: number | null;
   priceEgp: number;
   story: string;
+  /** Longer background for PDP 'Design Story' accordion. */
+  storyDescription?: string;
   /** Card + quick view merchandising label, e.g. "Bestseller" */
   merchandisingBadge?: string;
   /** Time-boxed campaign chip from Medusa `metadata.promoLabel` / `promo_ends_at`. */
@@ -191,6 +193,8 @@ export type Product = {
   launchAt?: string;
   /** ISO datetime — hide from catalog after this instant when set. */
   sunsetAt?: string;
+  /** Medusa `created_at` for launch recency logic. */
+  createdAt?: string;
   /** Medusa `updated_at` for sitemap freshness. */
   updatedAt?: string;
   /** If set, restricts which sizes appear in stock (search filter + PDP). Omit = all non-disabled catalog sizes. */

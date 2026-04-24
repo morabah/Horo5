@@ -25,6 +25,7 @@ import {
 } from '../search/view';
 import { defaultCatalogSizeKeys } from '../utils/productSizes';
 import type { Product } from '../data/site';
+import { trackShopAllView } from '../analytics/funnel';
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -206,6 +207,11 @@ export function ShopAll() {
 
   const visibleCount = results.designMatches.length;
   const totalCount = results.baseDesigns.length;
+
+  useEffect(() => {
+    if (totalCount > 0) trackShopAllView(totalCount);
+  }, [totalCount]);
+
   const designSingularLabel = isArabic ? 'تصميم' : SEARCH_SCHEMA.copy.designSingular;
   const designPluralLabel = isArabic ? 'تصاميم' : SEARCH_SCHEMA.copy.designPlural;
   const hasActiveFilters =

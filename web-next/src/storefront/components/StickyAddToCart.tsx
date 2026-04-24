@@ -1,4 +1,5 @@
 import { imgUrl } from '../data/images';
+import { PDP_SCHEMA } from '../data/domain-config';
 import { formatEgp } from '../utils/formatPrice';
 
 type StickyAddToCartProps = {
@@ -72,6 +73,9 @@ export function StickyAddToCart({
           >
             {ctaLabel}
           </button>
+          <p className="sticky-atc-trust font-body mt-1 text-center text-[9px] tracking-wide text-warm-charcoal/70">
+            {PDP_SCHEMA.trustStripItems.slice(0, 3).join(' · ')}
+          </p>
         </div>
       </div>
     </div>

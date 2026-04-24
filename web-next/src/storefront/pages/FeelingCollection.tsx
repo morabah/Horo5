@@ -31,6 +31,7 @@ import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useUiLocale } from '../i18n/ui-locale';
+import { trackFeelingCollectionView } from '../analytics/funnel';
 
 /** Show numeric design count in hero only when catalog feels substantial */
 const DESIGN_COUNT_MIN = 4;
@@ -194,6 +195,10 @@ export function FeelingCollection({
     setHeroImageBroken(false);
     setProofImageBroken(false);
   }, [slug, lineParam]);
+
+  useEffect(() => {
+    if (slug && baseList.length > 0) trackFeelingCollectionView(slug, baseList.length);
+  }, [slug, baseList.length]);
 
   useEffect(() => {
     if (!isMobile) {

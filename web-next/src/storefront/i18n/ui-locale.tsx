@@ -249,7 +249,7 @@ const UI_COPY = {
       instapayPayoutDetailsToggleHide: 'Hide transfer details',
       instapayPayoutInlineHeading: 'Instapay transfer details',
       shippingDisplayFallbackNote:
-        'Estimate only; the exact shipping line confirms once your address is saved in Medusa.',
+        'Shipping cost confirms once your address is saved.',
       paymentErrorCodRecoveryHint:
         'If online payment keeps failing, use “Switch to cash on delivery” below (when available) and submit again.',
       paymentDependencyHeading: 'Checkout status',
@@ -563,7 +563,7 @@ const UI_COPY = {
       instapayPayoutDetailsToggleHide: 'إخفاء تفاصيل التحويل',
       instapayPayoutInlineHeading: 'تفاصيل تحويل إنستاباي',
       shippingDisplayFallbackNote:
-        'تقدير فقط؛ يُثبَّت سطر الشحن النهائي بعد حفظ العنوان في Medusa.',
+        'تكلفة الشحن تُثبَّت بعد حفظ عنوانك.',
       paymentErrorCodRecoveryHint:
         'إذا استمر فشل الدفع الإلكتروني، استخدم «التبديل إلى الدفع عند الاستلام» أدناه (إن وُجد) ثم أعد الإرسال.',
       paymentDependencyHeading: 'حالة إتمام الشراء',

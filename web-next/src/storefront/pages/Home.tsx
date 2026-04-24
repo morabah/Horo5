@@ -14,10 +14,12 @@ import { HomeWhyHoro } from '../components/HomeWhyHoro';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import type { RuntimeCatalog } from '../data/catalog-types';
 import {
+  getArtists,
   getFeeling,
   setRuntimeCatalog,
   type Product,
 } from '../data/site';
+import { HOME_FEATURED_ARTIST, HOME_SEEN_ON_YOU } from '../data/homeContent';
 
 const COMPACT_HOME_STORAGE = 'horo_home_compact';
 const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
@@ -99,8 +101,8 @@ export function Home({
       <HomeOccasionCards />
       <HomeWhyHoro />
       <HomeGiftBlock />
-      <HomeArtistSpotlight />
-      <HomeSeenOnYou />
+      {(HOME_FEATURED_ARTIST || getArtists().length > 0) && <HomeArtistSpotlight />}
+      {HOME_SEEN_ON_YOU.length >= 4 && <HomeSeenOnYou />}
     </div>
   );
 }

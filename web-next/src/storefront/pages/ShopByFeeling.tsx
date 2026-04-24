@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
@@ -17,6 +17,7 @@ import {
   type Feeling,
   type RuntimeCatalog,
 } from '../data/site';
+import { trackFeelingsHubView } from '../analytics/funnel';
 
 type ShopByFeelingProps = {
   /** Server catalog from Medusa, matching the homepage first-paint data flow. */
@@ -53,6 +54,10 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
       })),
     [brokenHeroTiles, heroTiles],
   );
+
+  useEffect(() => {
+    if (feelings.length > 0) trackFeelingsHubView(feelings.length);
+  }, [feelings.length]);
 
   if (feelings.length === 0) {
     return (

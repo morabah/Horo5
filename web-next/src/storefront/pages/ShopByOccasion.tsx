@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
@@ -6,6 +7,7 @@ import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
 import { getOccasions, type Occasion } from '../data/site';
+import { trackOccasionsHubView } from '../analytics/funnel';
 
 function getOccasionHeroTiles(occasions: Occasion[]) {
   return occasions
@@ -52,6 +54,11 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
 export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
   const { copy } = useUiLocale();
   const occasions = initialOccasions && initialOccasions.length > 0 ? initialOccasions : getOccasions();
+
+  useEffect(() => {
+    if (occasions.length > 0) trackOccasionsHubView(occasions.length);
+  }, [occasions.length]);
+
   if (occasions.length === 0) {
     return (
       <div className="bg-papyrus pb-16 md:pb-20">

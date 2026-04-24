@@ -493,7 +493,7 @@ export function ProductDetail({
     }
     return null;
   }, [displayPriceSelection.size, displayPriceSelection.isSelected, pricingVariesBySize]);
-  const productDescription = product?.description ?? product?.story ?? '';
+  const productDescription = product?.storyDescription ?? product?.description ?? product?.story ?? '';
   const compactProductDescription = useMemo(() => {
     if (!productDescription) return '';
     const trimmed = productDescription.trim();
@@ -1675,17 +1675,37 @@ export function ProductDetail({
                   ) : (
                     'collection'
                   )}{' '}
-                  line — artwork by{' '}
-                  {pdpArtist ? (
-                    <span className="font-medium text-deep-teal">
-                      {pdpArtist.name}
-                    </span>
-                  ) : (
-                    'the artist'
-                  )}
-                  .
+                  line.
                 </span>
               </p>
+              {pdpArtist ? (
+                <div className="mt-5 flex items-center gap-3.5 rounded-xl border border-stone/35 bg-white/50 p-3.5">
+                  {pdpArtist.avatarSrc ? (
+                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/40">
+                      <TeeImage
+                        src={pdpArtist.avatarSrc}
+                        alt={pdpArtist.name}
+                        w={88}
+                        className="h-full w-full"
+                        sizes="44px"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-deep-teal ring-1 ring-deep-teal/20">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-body text-sm leading-snug text-warm-charcoal">
+                      <span className="text-clay">{copy.illustratedByLabel}</span>{' '}
+                      <span className="font-medium text-obsidian">{pdpArtist.name}</span>
+                    </p>
+                    {artist?.style ? (
+                      <p className="mt-0.5 truncate font-body text-xs text-clay">{artist.style}</p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
             </AccordionSection>
 
             <AccordionSection title={copy.accordionShipping}>
