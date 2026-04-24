@@ -122,6 +122,16 @@ export function HomeStartHere({ products }: { products?: Product[] }) {
                   <p className="font-headline mt-2 text-[16px] font-semibold text-obsidian md:text-[18px]">
                     {formatEgp(product.priceEgp)}
                   </p>
+                  {product.feelsLike && product.feelsLike.length > 0 ? (
+                    <p className="font-label mt-1 text-[9px] font-medium uppercase tracking-[0.16em] text-clay">
+                      Feels like: {product.feelsLike.join(' · ')}
+                    </p>
+                  ) : null}
+                  {product.worksFor && product.worksFor.length > 0 ? (
+                    <p className="font-label mt-0.5 text-[9px] font-medium uppercase tracking-[0.16em] text-clay">
+                      Works for: {product.worksFor.join(' · ')}
+                    </p>
+                  ) : null}
                   <div className="mt-auto pt-4">
                     <Link
                       to={`/products/${product.slug}`}

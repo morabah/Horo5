@@ -1280,15 +1280,28 @@ export function ProductDetail({
                 <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
                   {product.fitLabel?.trim() || 'Oversized fit'}
                 </span>
-                <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
-                  premium cotton
-                </span>
-                {trustItems[0] ? (
-                  <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
-                    {trustItems[0]}
+                {trustItems.slice(0, 2).map((item) => (
+                  <span key={item} className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+                    {item}
                   </span>
-                ) : null}
+                ))}
               </div>
+              {(product.feelsLike?.length || product.worksFor?.length) ? (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  {product.feelsLike && product.feelsLike.length > 0 ? (
+                    <div>
+                      <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">Feels like</span>
+                      <p className="font-body mt-0.5 text-sm text-warm-charcoal">{product.feelsLike.join(' · ')}</p>
+                    </div>
+                  ) : null}
+                  {product.worksFor && product.worksFor.length > 0 ? (
+                    <div>
+                      <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">Works for</span>
+                      <p className="font-body mt-0.5 text-sm text-warm-charcoal">{product.worksFor.join(' · ')}</p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </header>
 
             <div className="space-y-5">

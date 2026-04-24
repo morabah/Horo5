@@ -72,6 +72,8 @@ export type StorefrontProductDTO = {
   customersAlsoBoughtSlugs?: string[]
   decorationType?: "plain" | "graphic" | "embroidered" | "mixed"
   description?: string
+  /** Emotion/mood cues from metadata.feelsLike — e.g. ["quiet confidence", "rebel energy"]. */
+  feelsLike?: string[]
   feelingSlug: string
   /** Thematic line under a feeling (emotions, zodiac, fiction, career, trends). */
   lineSlug?: string
@@ -129,6 +131,8 @@ export type StorefrontProductDTO = {
   /** ISO from Medusa `product.updated_at` (sitemap / freshness). */
   updatedAt?: string
   trustBadges?: string[]
+  /** Occasion/moment cues from metadata.worksFor — e.g. ["night out", "gift", "Eid"]. */
+  worksFor?: string[]
   useCase?: string
   variantsBySize: Record<string, StorefrontVariantDTO>
   /**

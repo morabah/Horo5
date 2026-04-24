@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { trackHomeScrollMilestone, trackHomeView } from '../analytics/funnel';
 import { HomeArtistSpotlight } from '../components/HomeArtistSpotlight';
+import { HomeBehindThePiece } from '../components/HomeBehindThePiece';
 import { HomeFeelingCards } from '../components/HomeFeelingCards';
+import { HomeFeaturedPiece } from '../components/HomeFeaturedPiece';
+import { HomeFirstDropCircle } from '../components/HomeFirstDropCircle';
 import { HomeHeroWearMean } from '../components/HomeHeroWearMean';
 import { HomeGiftBlock } from '../components/HomeGiftBlock';
 import { HomeOccasionCards } from '../components/HomeOccasionCards';
@@ -97,10 +100,13 @@ export function Home({
       <HomeTrustRibbon />
       <HomePrimaryRoutes />
       <HomeStartHere products={initialProducts} />
+      <HomeFeaturedPiece />
+      <HomeBehindThePiece />
       <HomeFeelingCards />
       <HomeOccasionCards />
       <HomeWhyHoro />
       <HomeGiftBlock />
+      <HomeFirstDropCircle />
       {(HOME_FEATURED_ARTIST || getArtists().length > 0) && <HomeArtistSpotlight />}
       {HOME_SEEN_ON_YOU.length >= 4 && <HomeSeenOnYou />}
     </div>

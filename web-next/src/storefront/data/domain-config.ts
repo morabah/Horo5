@@ -403,7 +403,7 @@ export const PDP_SCHEMA = {
     { label: 'Secure checkout', icon: 'Lock' as const },
   ],
   /** Persistent PDP trust line (Guidelines §8.3) */
-  trustStripItems: ['premium cotton', 'Licensed art', 'Free exchange 14d', 'COD available'] as const,
+  trustStripItems: ['Artist-made design', 'Licensed art', 'Free exchange 14d', 'COD available'] as const,
   /** StoryBrand micro-plan strip */
   storyPlanSteps: ['Find your feeling', 'Pick your design', 'It arrives at your door'] as const,
   /** Gallery image indices (0-based) for the “See it styled” grid */
@@ -573,7 +573,7 @@ export function fillPdpCopyTemplate(template: string, vars: Record<string, strin
 }
 
 export const CART_SCHEMA = {
-  trustStripItems: ['Free exchange 14d', 'COD available', 'premium cotton'] as const,
+  trustStripItems: ['Free exchange 14d', 'COD available', 'Artist-made design'] as const,
   copy: {
     heading: 'Your cart',
     emptyCta: 'Find Your Design',
@@ -691,7 +691,7 @@ export const OCCASION_SCHEMA = {
 } as const;
 
 export const BRAND_TRUST_POINTS = [
-  { icon: 'layers', title: 'premium cotton', sub: 'Heavyweight feel that keeps its shape' },
+  { icon: 'layers', title: 'Artist-made design', sub: 'Original illustration by Egyptian artists — credited on every piece' },
   { icon: 'verified', title: 'Original Licensed Design', sub: 'Clearly credited and properly sourced' },
   { icon: 'history', title: 'Free Exchange 14 Days', sub: 'Less sizing stress, easier decisions' },
   { icon: 'payments', title: 'COD Available', sub: 'Pay at your doorstep' },

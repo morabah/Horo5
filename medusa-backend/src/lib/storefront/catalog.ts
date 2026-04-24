@@ -399,6 +399,19 @@ function asStringArray(value: unknown): string[] | undefined {
   return items.length > 0 ? items : undefined
 }
 
+/** Accept arrays or comma-separated strings; normalize to string[]. */
+function asStringArrayOrCSV(value: unknown): string[] | undefined {
+  if (Array.isArray(value)) {
+    const items = value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+    return items.length > 0 ? items : undefined
+  }
+  if (typeof value === "string") {
+    const items = value.split(",").map((s) => s.trim()).filter((s) => s.length > 0)
+    return items.length > 0 ? items : undefined
+  }
+  return undefined
+}
+
 function asNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined
 }
@@ -1072,6 +1085,7 @@ function buildProduct(
     feelingBrowseAssignments,
     description: product.description || asString(metadata.story) || undefined,
     feelingSlug: primaryFeelingSlug,
+    feelsLike: asStringArrayOrCSV(metadata.feelsLike),
     fitLabel: asString(metadata.fitLabel),
     sizeTableKey: asString(metadata.sizeTableKey)?.trim() || undefined,
     frequentlyBoughtWithSlugs: asStringArray(metadata.frequentlyBoughtWithSlugs),
@@ -1112,6 +1126,7 @@ function buildProduct(
     thumbnail: mainImage,
     ...(product.updated_at ? { updatedAt: product.updated_at } : {}),
     trustBadges: trustBadges.length > 0 ? trustBadges : [...LEGACY_STOREFRONT_TRUST_BADGES],
+    worksFor: asStringArrayOrCSV(metadata.worksFor),
     useCase: asString(metadata.useCase),
     variantsBySize,
     ...(variantsByColor ? { variantsByColor } : {}),

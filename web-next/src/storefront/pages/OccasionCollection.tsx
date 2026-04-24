@@ -379,10 +379,10 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                   <span className="mx-2 text-clay/50" aria-hidden>
                     |
                   </span>
-                  premium cotton
+                  Artist-made design
                 </p>
               ) : (
-                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">premium cotton</p>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-clay">Artist-made design</p>
               )}
               <a
                 href="#occasion-collection-products"

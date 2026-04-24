@@ -168,6 +168,8 @@ export type Product = {
   promoLabel?: string;
   /** ISO-8601 deadline for the active promo; used to render a live countdown on cards. */
   promoEndsAt?: string;
+  /** Emotion/mood cues from Medusa metadata.feelsLike — e.g. ["quiet confidence"]. */
+  feelsLike?: string[];
   /** Shown as "FEELING / FIT" in quick view */
   fitLabel?: string;
   /** Named preset under `store.metadata.sizeTables` (e.g. `oversized`). Editable as a string in Medusa Admin metadata. */
@@ -217,6 +219,8 @@ export type Product = {
   customersAlsoBoughtSlugs?: string[];
   /** Garment/tee body colors for search filtering (display labels, e.g. "Black"). */
   garmentColors?: readonly string[];
+  /** Occasion/moment cues from Medusa metadata.worksFor — e.g. ["night out", "gift"]. */
+  worksFor?: string[];
   thumbnail?: string | null;
   media?: ProductMediaRecord;
   variantsBySize?: Partial<Record<ProductSizeKey, ProductVariantRecord>>;

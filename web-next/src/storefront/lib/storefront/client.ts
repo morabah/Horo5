@@ -45,6 +45,7 @@ type StorefrontProductResponse = {
   decorationType?: Product["decorationType"];
   description?: string;
   feelingSlug: string;
+  feelsLike?: string[];
   lineSlug?: string;
   fitLabel?: string;
   sizeTableKey?: string;
@@ -74,6 +75,7 @@ type StorefrontProductResponse = {
   storyDescription?: string;
   thumbnail?: string | null;
   trustBadges?: string[];
+  worksFor?: string[];
   useCase?: string;
   variantsBySize?: Record<string, StorefrontVariantResponse>;
   wearerStories?: Product["wearerStories"];
@@ -163,6 +165,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     decorationType: product.decorationType,
     description: product.description,
     feelingSlug: product.feelingSlug,
+    feelsLike: product.feelsLike,
     lineSlug: product.lineSlug,
     fitLabel: product.fitLabel,
     sizeTableKey: product.sizeTableKey,
@@ -192,6 +195,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     storyDescription: product.storyDescription,
     thumbnail: product.thumbnail,
     trustBadges: product.trustBadges,
+    worksFor: product.worksFor,
     useCase: product.useCase,
     variantsBySize: normalizeVariantMap(product.variantsBySize),
     wearerStories: product.wearerStories,

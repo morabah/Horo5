@@ -27,6 +27,8 @@ type MerchProductCardProps = {
   proofChip?: string;
   useCase?: string;
   artistCredit?: string;
+  feelsLike?: string[];
+  worksFor?: string[];
   compareAtPriceEgp?: number;
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
@@ -64,6 +66,8 @@ export function MerchProductCard({
   eyebrow,
   eyebrowAccent,
   artistCredit,
+  feelsLike,
+  worksFor,
   compareAtPriceEgp,
   onQuickView,
   onProductClick,
@@ -341,6 +345,16 @@ export function MerchProductCard({
         {product?.fitLabel?.trim() ? (
           <p className="font-label mt-1.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-warm-charcoal md:mt-2 md:text-[10px]">
             {product.fitLabel.trim()}
+          </p>
+        ) : null}
+        {feelsLike && feelsLike.length > 0 ? (
+          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-clay md:mt-1.5 md:text-[10px]">
+            Feels like: {feelsLike.join(' · ')}
+          </p>
+        ) : null}
+        {worksFor && worksFor.length > 0 ? (
+          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-clay md:mt-1.5 md:text-[10px]">
+            Works for: {worksFor.join(' · ')}
           </p>
         ) : null}
         <div className={`mt-auto ${minimal ? 'pt-2.5' : 'pt-3'}`}>

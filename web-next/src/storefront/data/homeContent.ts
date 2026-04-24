@@ -1,16 +1,19 @@
 /** Trust strip on home — short titles for dark factual badges */
 export const HOME_TRUST_BADGES = [
   {
-    key: 'premiumCotton',
+    key: 'artistMade',
   },
   {
     key: 'printedEgypt',
   },
   {
-    key: 'codExchange',
+    key: 'codAvailable',
   },
   {
-    key: 'artistSigned',
+    key: 'exchange14d',
+  },
+  {
+    key: 'whatsappSupport',
   },
 ] as const;
 
@@ -25,6 +28,11 @@ export const HOME_PRIMARY_ROUTES = [
     href: '/occasions',
     accent: '#556F73',
   },
+  {
+    key: 'gift',
+    href: '',
+    accent: '#D4A44E',
+  },
 ] as const;
 
 export const HOME_WHY_HORO_BLOCKS = [
@@ -32,10 +40,19 @@ export const HOME_WHY_HORO_BLOCKS = [
     key: 'localArtists',
   },
   {
-    key: 'heavyweightQuality',
+    key: 'printedInEgypt',
   },
   {
-    key: 'personalMeaning',
+    key: 'madeToFeelPersonal',
+  },
+  {
+    key: 'clearFitDetails',
+  },
+  {
+    key: 'codAndExchange',
+  },
+  {
+    key: 'realProofOnly',
   },
 ] as const;
 

@@ -26,11 +26,33 @@ function getRouteVisual(routeKey: (typeof HOME_PRIMARY_ROUTES)[number]['key']) {
     return src && src !== heroVectorizedV2 ? src : '';
   }
 
+  if (routeKey === 'gift') {
+    const giftOccasion = byHomepageOrder(getOccasions().filter((o) => o.isGiftOccasion))[0];
+    if (giftOccasion) {
+      const visual = getOccasionCollectionVisual(giftOccasion.slug);
+      const src = visual.hero.src || visual.proof.src || giftOccasion.cardImageSrc;
+      if (src && src !== heroVectorizedV2) return src;
+    }
+    // Fallback: first active occasion with a valid visual
+    const fallbackOccasion = byHomepageOrder(getOccasions())[0];
+    if (fallbackOccasion) {
+      const visual = getOccasionCollectionVisual(fallbackOccasion.slug);
+      const src = visual.hero.src || visual.proof.src || fallbackOccasion.cardImageSrc;
+      if (src && src !== heroVectorizedV2) return src;
+    }
+    return '';
+  }
+
   const occasion = byHomepageOrder(getOccasions())[0];
   if (!occasion) return '';
   const visual = getOccasionCollectionVisual(occasion.slug);
   const src = visual.hero.src || visual.proof.src || occasion.cardImageSrc;
   return src && src !== heroVectorizedV2 ? src : '';
+}
+
+function getGiftHref(): string {
+  const giftOccasion = byHomepageOrder(getOccasions().filter((o) => o.isGiftOccasion))[0];
+  return giftOccasion ? `/occasions/${giftOccasion.slug}` : '/occasions';
 }
 
 export function HomePrimaryRoutes() {
@@ -45,17 +67,19 @@ export function HomePrimaryRoutes() {
         {copy.shell.shopHeading}
       </h2>
       <div className="mx-auto max-w-6xl">
-        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
+        <div className="grid gap-3 md:grid-cols-3 md:gap-4">
           {HOME_PRIMARY_ROUTES.map((route) => {
             const isFeeling = route.key === 'feeling';
-            const title = isFeeling ? copy.home.routesFeelingLabel : copy.home.routesOccasionLabel;
-            const body = isFeeling ? copy.home.routesFeelingBlurb : copy.home.routesOccasionBlurb;
+            const isGift = route.key === 'gift';
+            const title = isFeeling ? copy.home.routesFeelingLabel : isGift ? copy.home.routesGiftLabel : copy.home.routesOccasionLabel;
+            const body = isFeeling ? copy.home.routesFeelingBlurb : isGift ? copy.home.routesGiftBlurb : copy.home.routesOccasionBlurb;
             const imageSrc = getRouteVisual(route.key);
+            const href = isGift ? getGiftHref() : route.href;
 
             return (
               <Link
                 key={route.key}
-                to={route.href}
+                to={href}
                 className={`home-route-card group relative isolate flex min-h-[132px] overflow-hidden rounded-[18px] border border-stone/55 p-5 shadow-[0_18px_44px_-30px_rgba(26,26,26,0.2)] transition-transform duration-300 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:min-h-[190px] md:p-6 ${
                   imageSrc ? 'bg-obsidian text-white' : 'bg-white/82 text-obsidian'
                 }`}
