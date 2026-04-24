@@ -57,7 +57,7 @@ type CartContextValue = {
   cartPromotionDiscountEgp: number;
   giftWrapEgp: number;
   giftWrapCatalogPriceEgp: number | null;
-  addGiftWrap: () => void;
+  addGiftWrap: () => Promise<void>;
   removeGiftWrap: () => void;
   miniCartOpen: boolean;
   setMiniCartOpen: (open: boolean) => void;
@@ -189,6 +189,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  /** Clear stale cart ID when Medusa returns 404 so next operation creates a fresh cart. */
+  const clearStaleCartIf404 = useCallback((err: unknown, generation: number) => {
+    const msg = err instanceof Error ? err.message : '';
+    if (msg.includes('(404)') && cartGenerationRef.current === generation) {
+      setMedusaCartId(null);
+    }
+  }, []);
+
   const syncFromMedusaCart = useCallback(async (cartId: string) => {
     const generation = cartGenerationRef.current;
     try {
@@ -197,10 +205,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // so we don't accidentally re-set the medusaCartId after clearCart().
       if (cartGenerationRef.current !== generation) return;
       applyCartFromResponse(cart, generation);
-    } catch {
-      // Keep local fallback state if backend is unavailable.
+    } catch (err: unknown) {
+      // If the cart no longer exists (404), clear the stale ID so the next
+      // cart operation creates a fresh cart instead of repeatedly hitting 404.
+      clearStaleCartIf404(err, generation);
     }
-  }, [applyCartFromResponse]);
+  }, [applyCartFromResponse, clearStaleCartIf404]);
 
   const flushPendingQtyUpdatesInternal = useCallback(async () => {
     try {
@@ -323,10 +333,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const resolveGiftWrapOffer = useCallback(async () => {
     if (!giftWrapOfferPromiseRef.current) {
       giftWrapOfferPromiseRef.current = getProductByHandle(GIFT_WRAP_PRODUCT_HANDLE)
-        .then((response) => ({
-          priceEgp: getMedusaProductPriceEgp(response?.product),
-          variantId: response?.product.variants?.[0]?.id ?? null,
-        }))
+        .then((response) => {
+          const product = response?.product;
+          // Pick the first variant that has a calculated price — strong signal
+          // the variant is published and can be added to a cart.
+          const usableVariant = product?.variants?.find(
+            (v) => v.calculated_price?.calculated_amount != null,
+          ) ?? product?.variants?.[0];
+          return {
+            priceEgp: getMedusaProductPriceEgp(product),
+            variantId: usableVariant?.id ?? null,
+          };
+        })
         .catch(() => ({ priceEgp: null, variantId: null }));
     }
 
@@ -403,12 +421,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const { cart } = await addLineItem(cartId, resolvedVariantId, add);
         if (cartGenerationRef.current !== gen) return;
         applyCartFromResponse(cart, gen);
-      } catch {
+      } catch (err: unknown) {
         // Keep optimistic cart updates when Medusa call fails.
+        clearStaleCartIf404(err, gen);
       }
     })();
     trackOp(p);
-  }, [applyCartFromResponse, ensureMedusaCartId, resolveVariantId, trackOp]);
+  }, [applyCartFromResponse, clearStaleCartIf404, ensureMedusaCartId, resolveVariantId, trackOp]);
 
   const removeItem = useCallback(
     (productSlug: string, size: ProductSizeKey, variantId?: string) => {
@@ -423,13 +442,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const { cart } = await removeLineItem(medusaCartId, line.lineId!);
           if (cartGenerationRef.current !== gen) return;
           applyCartFromResponse(cart, gen);
-        } catch {
+        } catch (err: unknown) {
           // Keep optimistic removal.
+          clearStaleCartIf404(err, gen);
         }
       })();
       trackOp(p);
     },
-    [applyCartFromResponse, items, medusaCartId, trackOp],
+    [applyCartFromResponse, clearStaleCartIf404, items, medusaCartId, trackOp],
   );
 
   const setLineQty = useCallback(
@@ -450,8 +470,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
               const { cart } = await removeLineItem(medusaCartId, line.lineId!);
               if (cartGenerationRef.current !== gen) return;
               applyCartFromResponse(cart, gen);
-            } catch {
+            } catch (err: unknown) {
               /* keep optimistic removal */
+              clearStaleCartIf404(err, gen);
             }
           })();
           trackOp(p);
@@ -465,10 +486,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         scheduleQtyFlush();
       }
     },
-    [applyCartFromResponse, items, medusaCartId, scheduleQtyFlush, trackOp],
+    [applyCartFromResponse, clearStaleCartIf404, items, medusaCartId, scheduleQtyFlush, trackOp],
   );
 
-  const addGiftWrap = useCallback(() => {
+  const addGiftWrap = useCallback(async () => {
     if (giftWrapEgp > 0) return;
     const previousGiftWrap = giftWrapEgp;
 
@@ -500,12 +521,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         const { cart: added } = await addLineItem(cartId, offer.variantId, 1);
         if (cartGenerationRef.current === gen) applyCartFromResponse(added, gen);
-      } catch {
+      } catch (err: unknown) {
         setGiftWrapEgpState(previousGiftWrap);
+        clearStaleCartIf404(err, gen);
+        // If gift-wrap variant is invalid (400), clear the cached offer so it's re-resolved next time.
+        const msg = err instanceof Error ? err.message : '';
+        if (msg.includes('(400)')) {
+          giftWrapOfferPromiseRef.current = null;
+        }
       }
     })();
     trackOp(p);
-  }, [applyCartFromResponse, ensureMedusaCartId, giftWrapEgp, resolveGiftWrapOffer, trackOp]);
+    return p;
+  }, [applyCartFromResponse, clearStaleCartIf404, ensureMedusaCartId, giftWrapEgp, resolveGiftWrapOffer, trackOp]);
 
   const removeGiftWrap = useCallback(() => {
     if (giftWrapEgp === 0) return;
@@ -528,12 +556,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         } else if (cartGenerationRef.current === gen) {
           applyCartFromResponse(cart, gen);
         }
-      } catch {
+      } catch (err: unknown) {
         setGiftWrapEgpState(previousGiftWrap);
+        clearStaleCartIf404(err, gen);
       }
     })();
     trackOp(p);
-  }, [applyCartFromResponse, giftWrapEgp, medusaCartId, trackOp]);
+  }, [applyCartFromResponse, clearStaleCartIf404, giftWrapEgp, medusaCartId, trackOp]);
 
   const clearCart = useCallback(() => {
     // Bump generation so any in-flight syncFromMedusaCart discards its result.

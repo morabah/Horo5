@@ -1,6 +1,7 @@
 import {
   ContainerRegistrationKeys,
   QueryContext,
+  remoteQueryObjectFromString,
 } from "@medusajs/framework/utils"
 import type { MedusaContainer } from "@medusajs/types"
 
@@ -961,7 +962,8 @@ function resolveArtistDisplay(
 function buildProduct(
   product: QueryProduct,
   categoriesById?: Map<string, FlatCategoryRow>,
-  artistsBySlug?: Map<string, StorefrontArtistDTO>
+  artistsBySlug?: Map<string, StorefrontArtistDTO>,
+  priceListEndsAtByVariantId?: Map<string, string>
 ): StorefrontProductDTO {
   const metadata = asRecord(product.metadata)
   const legacyMedia = asMedia(metadata.media)
@@ -1040,11 +1042,17 @@ function buildProduct(
   const sunsetAt = asString(metadata.sunset_at)?.trim()
 
   const promoLabelRaw = asString(metadata.promoLabel)?.trim()
-  const promoEndsAtRaw = asString(metadata.promo_ends_at)?.trim()
   let promoLabel: string | undefined
+  let promoEndsAt: string | undefined
+  // Resolve promoEndsAt from active Price Lists (single source of truth — no metadata needed).
+  const variantIds = (product.variants ?? []).map((v) => v.id).filter(Boolean)
+  for (const vid of variantIds) {
+    const endsAt = priceListEndsAtByVariantId?.get(vid)
+    if (endsAt) { promoEndsAt = endsAt; break }
+  }
   if (promoLabelRaw) {
-    const endMs = promoEndsAtRaw ? Date.parse(promoEndsAtRaw) : NaN
-    if (!promoEndsAtRaw || !Number.isFinite(endMs) || Date.now() <= endMs) {
+    // Show label only when promo is still running (or has no deadline)
+    if (!promoEndsAt || Date.parse(promoEndsAt) > Date.now()) {
       promoLabel = promoLabelRaw
     }
   }
@@ -1095,10 +1103,12 @@ function buildProduct(
     primaryOccasionSlug: asString(metadata.primaryOccasionSlug),
     primarySubfeelingSlug,
     ...(promoLabel ? { promoLabel } : {}),
+    ...(promoEndsAt ? { promoEndsAt } : {}),
     priceEgp: defaultVariant?.price_egp ?? legacyPrice ?? 0,
     slug: product.handle,
     stockNote: asString(metadata.stockNote),
     story: asString(metadata.story) || product.description || "",
+    storyDescription: asString(metadata.storyDescription) || undefined,
     thumbnail: mainImage,
     ...(product.updated_at ? { updatedAt: product.updated_at } : {}),
     trustBadges: trustBadges.length > 0 ? trustBadges : [...LEGACY_STOREFRONT_TRUST_BADGES],
@@ -1232,7 +1242,8 @@ export async function resolveEgyptPricingContext(scope: MedusaContainer) {
 function sortStorefrontProducts(
   products: QueryProduct[],
   categoriesById?: Map<string, FlatCategoryRow>,
-  artistsBySlug?: Map<string, StorefrontArtistDTO>
+  artistsBySlug?: Map<string, StorefrontArtistDTO>,
+  priceListEndsAtByVariantId?: Map<string, string>
 ) {
   const now = new Date()
   return products
@@ -1241,7 +1252,7 @@ function sortStorefrontProducts(
       const metadata = asRecord(product.metadata)
       return {
         order: asNumber(metadata.catalogOrder) ?? Number.MAX_SAFE_INTEGER,
-        product: buildProduct(product, categoriesById, artistsBySlug),
+        product: buildProduct(product, categoriesById, artistsBySlug, priceListEndsAtByVariantId),
       }
     })
     .sort((left, right) => left.order - right.order)
@@ -1301,6 +1312,47 @@ async function loadCategoriesByIdMap(
   return categoriesById
 }
 
+/**
+ * Queries all active "sale" price lists and returns a map of variantId → ISO endsAt.
+ * Used to auto-populate promoEndsAt on the product DTO without needing metadata.
+ */
+async function loadActivePriceListEndsAtByVariantId(scope: MedusaContainer): Promise<Map<string, string>> {
+  try {
+    const remoteQuery = scope.resolve(ContainerRegistrationKeys.REMOTE_QUERY)
+    const queryObject = remoteQueryObjectFromString({
+      entryPoint: "price_list",
+      fields: ["id", "type", "status", "ends_at", "prices.price_set.variant.id"],
+    })
+    const result = await remoteQuery(queryObject)
+    type PriceListRow = {
+      type?: string
+      status?: string
+      ends_at?: string | null
+      prices?: Array<{ price_set?: { variant?: { id?: string } } }>
+    }
+    const rows: PriceListRow[] = Array.isArray(result) ? result : (result?.rows ?? [])
+    const map = new Map<string, string>()
+    for (const pl of rows) {
+      if (pl.type !== "sale" || pl.status !== "active") continue
+      if (!pl.ends_at) continue
+      const endsMs = Date.parse(pl.ends_at)
+      if (!Number.isFinite(endsMs) || endsMs <= Date.now()) continue
+      const endsAt = new Date(endsMs).toISOString()
+      for (const price of pl.prices ?? []) {
+        const vid = price.price_set?.variant?.id
+        if (vid) map.set(vid, endsAt)
+      }
+    }
+    if (process.env.STOREFRONT_PROFILE_CATALOG === "1") {
+      console.info(`[storefront/promo] price_list_map_size=${map.size} total_rows=${rows.length}`)
+    }
+    return map
+  } catch (err) {
+    console.error("[storefront/promo] loadActivePriceListEndsAtByVariantId failed:", err)
+    return new Map()
+  }
+}
+
 async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQueryFilters = {}, take = 200) {
   const profileCatalog = String(process.env.STOREFRONT_PROFILE_CATALOG || "").trim() === "1"
   const query = scope.resolve(ContainerRegistrationKeys.QUERY)
@@ -1314,28 +1366,31 @@ async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQ
     : undefined
 
   const tProducts = profileCatalog ? Date.now() : 0
-  const { data } = await query.graph(
-    {
-      entity: "product",
-      fields: PRODUCT_QUERY_FIELDS,
-      filters,
-      pagination: {
-        order: {
-          created_at: "ASC",
+  const [{ data }, categoriesById, priceListEndsAtByVariantId] = await Promise.all([
+    query.graph(
+      {
+        entity: "product",
+        fields: PRODUCT_QUERY_FIELDS,
+        filters,
+        pagination: {
+          order: {
+            created_at: "ASC",
+          },
+          take,
         },
-        take,
-      },
-      context,
-    }
-  )
+        context,
+      }
+    ),
+    loadCategoriesByIdMap(scope, profileCatalog),
+    loadActivePriceListEndsAtByVariantId(scope),
+  ])
   if (profileCatalog) {
     console.info(`[storefront/profile] product_graph_ms=${Date.now() - tProducts}`)
   }
 
-  const categoriesById = await loadCategoriesByIdMap(scope, profileCatalog)
-
   return {
     products: data as QueryProduct[],
+    priceListEndsAtByVariantId,
     categoriesById,
   }
 }
@@ -1344,7 +1399,7 @@ export async function listStorefrontProducts(scope: MedusaContainer, artists?: S
   const artistList = artists ?? (await listStorefrontArtists(scope))
   const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
   const result = await queryStorefrontProducts(scope)
-  return sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug)
+  return sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId)
 }
 
 export async function retrieveStorefrontProduct(scope: MedusaContainer, handle: string) {
@@ -1353,7 +1408,7 @@ export async function retrieveStorefrontProduct(scope: MedusaContainer, handle: 
     queryStorefrontProducts(scope, { handle }, 1),
   ])
   const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
-  const products = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug)
+  const products = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId)
   return products[0] || null
 }
 
@@ -1373,7 +1428,7 @@ export async function retrieveStorefrontProductsByHandles(
 
   const out: StorefrontProductDTO[] = []
   for (const result of results) {
-    const sorted = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug)
+    const sorted = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId)
     if (sorted[0]) {
       out.push(sorted[0])
     }
@@ -1590,7 +1645,7 @@ export async function buildStorefrontCatalog(scope: MedusaContainer): Promise<St
     listStorefrontOccasions(scope),
     listStorefrontMerchEvents(scope),
   ])
-  const products = sortStorefrontProducts(pq.products, pq.categoriesById, artistsBySlug)
+  const products = sortStorefrontProducts(pq.products, pq.categoriesById, artistsBySlug, pq.priceListEndsAtByVariantId)
 
   const { feelings, subfeelings } = feelingsBundle
 

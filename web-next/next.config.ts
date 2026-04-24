@@ -9,6 +9,12 @@ function buildImageRemotePatterns(): NonNullable<NonNullable<NextConfig["images"
     { protocol: "https", hostname: "horo5-production.up.railway.app", pathname: "/**" },
   ];
 
+  const baseUrl =
+    typeof window !== "undefined" &&
+    (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").includes("railway.app")
+      ? ""
+      : (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "");
+
   const medusa = (
     process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
     process.env.MEDUSA_BACKEND_URL ||
@@ -97,6 +103,30 @@ const nextConfig: NextConfig = {
       "react-helmet-async": path.resolve(__dirname, "src/lib/react-helmet-async-shim.tsx"),
     };
     return config;
+  },
+  async rewrites() {
+    const medusa = (
+      process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+      process.env.MEDUSA_BACKEND_URL ||
+      ""
+    )
+      .trim()
+      .replace(/\/+$/, "");
+
+    if (!medusa || medusa.includes("localhost") || medusa.includes("127.0.0.1")) {
+      return [];
+    }
+
+    return [
+      {
+        source: "/store/:path*",
+        destination: `${medusa}/store/:path*`,
+      },
+      {
+        source: "/storefront/:path*",
+        destination: `${medusa}/storefront/:path*`,
+      },
+    ];
   },
 };
 

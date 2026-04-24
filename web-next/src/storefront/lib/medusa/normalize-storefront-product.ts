@@ -28,6 +28,8 @@ export type StorefrontProductApi = {
   merchandisingBadge?: string;
   /** Campaign chip; backend omits when `promo_ends_at` passed. */
   promoLabel?: string;
+  /** ISO-8601 promo deadline for countdown. */
+  promoEndsAt?: string;
   name: string;
   pdpTagLabels?: string[];
   occasionSlugs: string[];
@@ -135,6 +137,7 @@ export function normalizeStorefrontProductApi(product: StorefrontProductApi): Pr
     media: product.media,
     merchandisingBadge: product.merchandisingBadge,
     promoLabel: product.promoLabel,
+    promoEndsAt: product.promoEndsAt,
     name: product.name,
     pdpTagLabels: product.pdpTagLabels,
     occasionSlugs: product.occasionSlugs,

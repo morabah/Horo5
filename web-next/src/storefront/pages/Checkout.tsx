@@ -16,7 +16,7 @@ import { setPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
 import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import { MEDUSA_CART_ID_STORAGE_KEY } from '../cart/types';
-import { CART_SCHEMA, CHECKOUT_SCHEMA, EGYPT_CITY_OPTIONS } from '../data/domain-config';
+import { CART_SCHEMA, CHECKOUT_SCHEMA, EGYPT_CITY_OPTIONS, PDP_SCHEMA } from '../data/domain-config';
 import { getProduct } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import {
@@ -1430,12 +1430,12 @@ export function Checkout() {
     setSavingInfo(true);
     try {
       const persisted = await persistInformationAndShipping();
-      setSavingInfo(false);
       const paymentMethodsAfterSave = buildCheckoutPaymentMethods(persisted.paymentProviders, isArabic);
       const fallbackMethod = selectedPaymentMethod ?? getDefaultCheckoutPaymentMethod(paymentMethodsAfterSave);
       if (fallbackMethod && selectedPaymentMethodId !== fallbackMethod.id) {
         setSelectedPaymentMethodId(fallbackMethod.id);
       }
+      setSavingInfo(false);
       await handlePlaceOrder(persisted.cartId, persisted.cart, fallbackMethod);
     } catch (error) {
       setShippingError(getReadableCheckoutError(error, isArabic, {
@@ -1685,6 +1685,11 @@ export function Checkout() {
               <h1 className="font-headline text-2xl font-semibold text-obsidian">{copy.checkout.breadcrumbTitle}</h1>
               <p className="mt-3 text-[0.9375rem] font-semibold text-obsidian">{copy.checkout.guestCheckout}</p>
               <p className="mt-4 max-w-xl text-sm text-warm-charcoal">{copy.checkout.secureData}</p>
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+                {PDP_SCHEMA.trustStripItems.slice(0, 3).map((chip) => (
+                  <span key={chip} className="font-body text-[10px] tracking-wide text-warm-charcoal/70">{chip}</span>
+                ))}
+              </div>
 
               <div className="mt-6 lg:hidden">
                 <button

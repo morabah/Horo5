@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCountdown } from '../hooks/useCountdown';
 import { Link } from 'react-router-dom';
 import { useCart } from '../cart/CartContext';
 import { trackSizeSelected } from '../analytics/events';
@@ -19,6 +20,8 @@ type MerchProductCardProps = {
   merchandisingBadge?: string;
   /** Overrides catalog `product.promoLabel` when the card is driven by a server list (e.g. search). */
   promoLabel?: string;
+  /** ISO-8601 promo deadline — drives countdown below the price. Overrides catalog value. */
+  promoEndsAt?: string;
   eyebrow?: string;
   eyebrowAccent?: string;
   proofChip?: string;
@@ -56,6 +59,7 @@ export function MerchProductCard({
   imageAlt,
   merchandisingBadge,
   promoLabel: promoLabelProp,
+  promoEndsAt: promoEndsAtProp,
   proofChip,
   eyebrow,
   eyebrowAccent,
@@ -72,6 +76,8 @@ export function MerchProductCard({
   const minimal = variant === 'minimal';
   const product = useMemo(() => getProduct(slug), [slug]);
   const promoLabel = promoLabelProp ?? product?.promoLabel;
+  const promoEndsAt = promoEndsAtProp ?? product?.promoEndsAt;
+  const countdown = useCountdown(compareAtPriceEgp ? promoEndsAt : null);
   const fallbackProofChip =
     product?.fitLabel?.trim() ||
     product?.trustBadges?.find(Boolean) ||
@@ -337,13 +343,27 @@ export function MerchProductCard({
             {product.fitLabel.trim()}
           </p>
         ) : null}
-        <div className={`mt-auto flex flex-wrap items-center gap-3 ${minimal ? 'pt-2.5' : 'pt-3'}`}>
-          <div className="flex items-center gap-2">
-            <p className={`font-headline font-semibold text-obsidian ${minimal ? 'text-[1rem]' : 'text-[1.125rem]'}`}>
+        <div className={`mt-auto ${minimal ? 'pt-2.5' : 'pt-3'}`}>
+          <div className="flex flex-wrap items-baseline gap-2">
+            <p className={`font-headline font-semibold ${compareAtPriceEgp ? 'text-red-600' : 'text-obsidian'} ${minimal ? 'text-[1rem]' : 'text-[1.125rem]'}`}>
               {formatEgp(priceEgp)}
             </p>
             {compareAtPriceEgp ? (
-              <p className="font-headline text-[0.95rem] text-stone line-through">{formatEgp(compareAtPriceEgp)}</p>
+              <p className="font-headline text-[0.875rem] text-stone line-through">{formatEgp(compareAtPriceEgp)}</p>
+            ) : null}
+            {countdown && !countdown.expired ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 ring-1 ring-red-200">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-red-500" aria-hidden>
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span className="font-label text-[11px] font-semibold tabular-nums leading-none text-red-600">
+                  {countdown.days > 0
+                    ? `${countdown.days}d ${String(countdown.hours).padStart(2, '0')}h ${String(countdown.minutes).padStart(2, '0')}m`
+                    : `${String(countdown.hours).padStart(2, '0')}:${String(countdown.minutes).padStart(2, '0')}:${String(countdown.seconds).padStart(2, '0')}`
+                  }
+                </span>
+              </span>
             ) : null}
           </div>
         </div>

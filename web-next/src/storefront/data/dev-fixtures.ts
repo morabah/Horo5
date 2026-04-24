@@ -15,8 +15,8 @@ export const FEELING_FIXTURES: Feeling[] = [
   {
     slug: 'mood',
     name: 'Mood',
-    tagline: 'For emotional honesty, slower days, and pieces that read like a feeling before they read like a trend.',
-    blurb: 'For emotional honesty, slower days, and pieces that read like a feeling before they read like a trend.',
+    tagline: 'Wear what you can\'t say out loud — emotional honesty, slower days, and pieces that feel before they trend.',
+    blurb: 'Wear what you can\'t say out loud — emotional honesty, slower days, and pieces that feel before they trend.',
     accent: '#B77A67',
     manifesto: 'Wear the feeling before you explain it.',
     sortOrder: 0,
@@ -25,8 +25,8 @@ export const FEELING_FIXTURES: Feeling[] = [
   {
     slug: 'zodiac',
     name: 'Zodiac',
-    tagline: 'For cosmic identity, signs, and symbolism-led stories.',
-    blurb: 'For cosmic identity, signs, and symbolism-led stories.',
+    tagline: 'Your sign, your energy — cosmic identity and symbolism-led stories you carry on your chest.',
+    blurb: 'Your sign, your energy — cosmic identity and symbolism-led stories you carry on your chest.',
     accent: '#C5A15C',
     manifesto: 'Personal signs, bigger energy.',
     sortOrder: 10,
@@ -35,8 +35,8 @@ export const FEELING_FIXTURES: Feeling[] = [
   {
     slug: 'trends',
     name: 'Trends',
-    tagline: 'For streetwear language, visible statements, and culture-led drops.',
-    blurb: 'For streetwear language, visible statements, and culture-led drops.',
+    tagline: 'Streetwear language, visible statements, and culture-led drops that don\'t blend in.',
+    blurb: 'Streetwear language, visible statements, and culture-led drops that don\'t blend in.',
     accent: '#556F73',
     manifesto: 'Current without becoming disposable.',
     sortOrder: 20,
@@ -45,8 +45,8 @@ export const FEELING_FIXTURES: Feeling[] = [
   {
     slug: 'career',
     name: 'Career',
-    tagline: 'For ambition, office humor, and work-life identity.',
-    blurb: 'For ambition, office humor, and work-life identity.',
+    tagline: 'Ambition, office humor, and work-life identity — because the grind deserves its own graphics.',
+    blurb: 'Ambition, office humor, and work-life identity — because the grind deserves its own graphics.',
     accent: '#7D8771',
     manifesto: 'Built for the work mode and the jokes about it.',
     sortOrder: 30,
@@ -55,8 +55,8 @@ export const FEELING_FIXTURES: Feeling[] = [
   {
     slug: 'fiction',
     name: 'Fiction',
-    tagline: 'For fandoms, story worlds, and reference-heavy graphics.',
-    blurb: 'For fandoms, story worlds, and reference-heavy graphics.',
+    tagline: 'Fandoms, story worlds, and reference-heavy graphics — wear the universe you belong to.',
+    blurb: 'Fandoms, story worlds, and reference-heavy graphics — wear the universe you belong to.',
     accent: '#6A5B76',
     manifesto: 'Specific stories beat generic graphics.',
     sortOrder: 40,
@@ -91,7 +91,7 @@ export const OCCASION_FIXTURES: Occasion[] = [
   {
     slug: 'gift-something-real',
     name: 'Gift Something Real',
-    blurb: 'Curated designs with bundle option.',
+    blurb: 'A design they won\'t find anywhere else — with gift wrap and a card from the artist.',
     cardImageSrc: '/images/hero/horo_vectorized_v2.svg',
     cardImageAlt: 'Gift Something Real occasion — brand placeholder.',
     heroImageSrc: '/images/hero/horo_vectorized_v2.svg',
@@ -102,7 +102,7 @@ export const OCCASION_FIXTURES: Occasion[] = [
   {
     slug: 'graduation-season',
     name: 'Graduation Season',
-    blurb: 'Career pride and achievement themes.',
+    blurb: 'Mark the milestone — career pride, achievement themes, and a tee they\'ll actually keep.',
     cardImageSrc: '/images/hero/horo_vectorized_v2.svg',
     cardImageAlt: 'Graduation Season occasion — brand placeholder.',
     heroImageSrc: '/images/hero/horo_vectorized_v2.svg',
@@ -113,7 +113,7 @@ export const OCCASION_FIXTURES: Occasion[] = [
   {
     slug: 'eid-and-ramadan',
     name: 'Eid & Ramadan',
-    blurb: 'Seasonal capsule for the moments that matter.',
+    blurb: 'A seasonal capsule for the moments that matter — gift-ready, meaningful, not mass-made.',
     cardImageSrc: '/images/hero/horo_vectorized_v2.svg',
     cardImageAlt: 'Eid and Ramadan occasion — brand placeholder.',
     heroImageSrc: '/images/hero/horo_vectorized_v2.svg',
@@ -124,7 +124,7 @@ export const OCCASION_FIXTURES: Occasion[] = [
   {
     slug: 'birthday-pick',
     name: 'Birthday Pick',
-    blurb: 'Personality-matched collections.',
+    blurb: 'Match the personality, not just the budget — curated by feeling, not by price.',
     cardImageSrc: '/images/hero/horo_vectorized_v2.svg',
     cardImageAlt: 'Birthday Pick occasion — brand placeholder.',
     heroImageSrc: '/images/hero/horo_vectorized_v2.svg',
@@ -135,7 +135,7 @@ export const OCCASION_FIXTURES: Occasion[] = [
   {
     slug: 'just-because',
     name: 'Just Because',
-    blurb: 'Everyday self-treat. No reason needed.',
+    blurb: 'Everyday self-treat — no occasion needed, just a tee that gets you.',
     cardImageSrc: '/images/hero/horo_vectorized_v2.svg',
     cardImageAlt: 'Just Because occasion — brand placeholder.',
     heroImageSrc: '/images/hero/horo_vectorized_v2.svg',

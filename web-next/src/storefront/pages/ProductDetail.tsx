@@ -60,6 +60,7 @@ import {
 } from '../data/domain-config';
 import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+import { useCountdown } from '../hooks/useCountdown';
 import { useStableNow } from '../runtime/render-time';
 import type { PdpDeliveryRules } from '../utils/deliveryEstimate';
 import {
@@ -481,6 +482,8 @@ export function ProductDetail({
   const displayOriginalPriceEgp = displayPriceSelection.variant
     ? compareAtPrice(displayPriceSelection.variant.priceEgp, displayPriceSelection.variant.originalPriceEgp)
     : compareAtPrice(scopeProduct?.priceEgp ?? 0, scopeProduct?.originalPriceEgp);
+  const promoEndsAt = displayOriginalPriceEgp ? (scopeProduct?.promoEndsAt ?? null) : null;
+  const promoCountdown = useCountdown(promoEndsAt);
   const pricingVariesBySize = scopeProduct ? productHasVariablePricing(scopeProduct) : false;
   const priceSizeLabel = useMemo(() => {
     if (!displayPriceSelection.size) return null;
@@ -1290,15 +1293,29 @@ export function ProductDetail({
 
             <div className="space-y-5">
               <div className="space-y-2">
-                <div className="flex flex-wrap items-end gap-3">
+                <div className="flex flex-wrap items-baseline gap-3">
                   {displayOriginalPriceEgp ? (
                     <p className="font-headline text-[1.05rem] font-medium text-clay line-through md:text-[1.15rem]">
                       {formatEgp(displayOriginalPriceEgp)}
                     </p>
                   ) : null}
-                  <p className="font-headline text-[1.8rem] font-semibold leading-none text-obsidian md:text-[2rem]">
+                  <p className={`font-headline text-[1.8rem] font-semibold leading-none md:text-[2rem] ${displayOriginalPriceEgp ? 'text-red-600' : 'text-obsidian'}`}>
                     {formatEgp(displayPriceEgp)}
                   </p>
+                  {promoCountdown && !promoCountdown.expired ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 ring-1 ring-red-200">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-red-500" aria-hidden>
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                      <span className="font-label text-[13px] font-semibold tabular-nums leading-none text-red-600">
+                        {promoCountdown.days > 0
+                          ? `${promoCountdown.days}d ${String(promoCountdown.hours).padStart(2, '0')}h ${String(promoCountdown.minutes).padStart(2, '0')}m`
+                          : `${String(promoCountdown.hours).padStart(2, '0')}:${String(promoCountdown.minutes).padStart(2, '0')}:${String(promoCountdown.seconds).padStart(2, '0')}`
+                        }
+                      </span>
+                    </span>
+                  ) : null}
                 </div>
                 {priceSizeLabel ? (
                   <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-label">
@@ -1413,6 +1430,12 @@ export function ProductDetail({
                 ) : null}
               </div>
 
+              {compactProductDescription ? (
+                <p className="font-body text-[13px] leading-relaxed text-warm-charcoal/80 line-clamp-2">
+                  {compactProductDescription}
+                </p>
+              ) : null}
+
               <div ref={mainCtaRef} className="space-y-3">
                 <button
                   type="button"
@@ -1479,6 +1502,10 @@ export function ProductDetail({
                   </div>
                 ) : null}
               </div>
+
+              <p className="font-body text-center text-[10px] tracking-wide text-warm-charcoal/70 md:text-left">
+                {PDP_SCHEMA.trustStripItems.slice(0, 3).join(' · ')}
+              </p>
 
               {showCrossSellSection ? (
                 <CrossSellWidget
@@ -1565,12 +1592,18 @@ export function ProductDetail({
                       />
                     </div>
                   ) : null}
-                  <p className="font-body text-sm leading-snug text-warm-charcoal">
-                    <span className="text-clay">{copy.illustratedByLabel}</span>{' '}
-                    <span className="font-medium text-obsidian">
-                      {pdpArtist.name}
+                  <div className="min-w-0">
+                    <p className="font-body text-sm leading-snug text-warm-charcoal">
+                      <span className="text-clay">{isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}</span>{' '}
+                      <span className="font-medium text-obsidian">
+                        {pdpArtist.name}
+                      </span>
+                    </p>
+                    <span className="mt-1 inline-flex items-center gap-1 font-label text-[9px] font-medium uppercase tracking-[0.14em] text-deep-teal">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
+                      {isArabic ? copy.verifiedArtistLabelAr : copy.verifiedArtistLabel}
                     </span>
-                  </p>
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -1697,7 +1730,7 @@ export function ProductDetail({
                   )}
                   <div className="min-w-0">
                     <p className="font-body text-sm leading-snug text-warm-charcoal">
-                      <span className="text-clay">{copy.illustratedByLabel}</span>{' '}
+                      <span className="text-clay">{isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}</span>{' '}
                       <span className="font-medium text-obsidian">{pdpArtist.name}</span>
                     </p>
                     {artist?.style ? (
@@ -1735,7 +1768,7 @@ export function ProductDetail({
         </div>
       </section>
 
-      {related.length > 0 ? (
+      {related.length >= 3 ? (
         <section className="border-t border-stone/25 bg-papyrus">
           <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-8 md:px-8 md:pb-12 md:pt-10 lg:px-12">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-4">

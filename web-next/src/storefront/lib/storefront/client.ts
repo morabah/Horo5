@@ -10,7 +10,11 @@ import type {
   Subfeeling,
 } from "../../data/catalog-types";
 
-const baseUrl = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "");
+const baseUrl =
+  typeof window !== "undefined" &&
+  (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").includes("railway.app")
+    ? ""
+    : (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "");
 const publishableApiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 const missingPublishableKeyMessage =
   "Missing Medusa publishable key. Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY in web-next/.env.local (or VITE_MEDUSA_PUBLISHABLE_KEY for the Vite app) and restart the frontend.";
@@ -49,6 +53,8 @@ type StorefrontProductResponse = {
   inventoryHintBySize?: Record<string, string>;
   media?: Product["media"];
   merchandisingBadge?: string;
+  promoLabel?: string;
+  promoEndsAt?: string;
   name: string;
   pdpTagLabels?: string[];
   occasionSlugs: string[];
@@ -65,6 +71,7 @@ type StorefrontProductResponse = {
   slug: string;
   stockNote?: string;
   story: string;
+  storyDescription?: string;
   thumbnail?: string | null;
   trustBadges?: string[];
   useCase?: string;
@@ -164,6 +171,8 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     inventoryHintBySize: product.inventoryHintBySize as Product["inventoryHintBySize"],
     media: product.media,
     merchandisingBadge: product.merchandisingBadge,
+    promoLabel: product.promoLabel,
+    promoEndsAt: product.promoEndsAt,
     name: product.name,
     pdpTagLabels: product.pdpTagLabels,
     occasionSlugs: product.occasionSlugs,
@@ -180,6 +189,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     slug: product.slug,
     stockNote: product.stockNote,
     story: product.story,
+    storyDescription: product.storyDescription,
     thumbnail: product.thumbnail,
     trustBadges: product.trustBadges,
     useCase: product.useCase,

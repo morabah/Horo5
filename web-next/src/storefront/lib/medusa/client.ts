@@ -11,9 +11,11 @@ import type {
   MedusaStoreProductsResponse,
 } from "./types"
 
-const baseUrl = (
-  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-).replace(/\/+$/, "")
+const baseUrl =
+  typeof window !== "undefined" &&
+  (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").includes("railway.app")
+    ? ""
+    : (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "")
 const publishableApiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 const missingPublishableKeyMessage =
   "Missing Medusa publishable key. Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY in web-next/.env.local (or VITE_MEDUSA_PUBLISHABLE_KEY for the Vite app) and restart the frontend."

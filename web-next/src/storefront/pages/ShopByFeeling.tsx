@@ -41,7 +41,8 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
     setRuntimeCatalog(initialCatalog);
   }
 
-  const { copy } = useUiLocale();
+  const { copy, locale } = useUiLocale();
+  const isArabic = locale === 'ar';
   const feelings = sortActiveFeelings(getFeelings());
   const heroTiles = getFeelingsHubHeroTiles();
   const heroTileCount = Math.max(1, heroTiles.length);
@@ -145,12 +146,12 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
           <div className="mx-auto max-w-7xl">
             <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Start here</p>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{isArabic ? VIBES_SCHEMA.copy.hubGridEyebrowAr : VIBES_SCHEMA.copy.hubGridEyebrow}</p>
                 <h2
                   id="feelings-grid-title"
                   className="font-headline mt-2 text-[1.35rem] font-semibold tracking-tight text-obsidian md:text-[1.6rem]"
                 >
-                  Browse by feeling, then filter inside
+                  {isArabic ? VIBES_SCHEMA.copy.hubGridTitleAr : VIBES_SCHEMA.copy.hubGridTitle}
                 </h2>
               </div>
               <Link

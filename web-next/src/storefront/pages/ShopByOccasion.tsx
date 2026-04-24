@@ -52,7 +52,8 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
 }
 
 export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
-  const { copy } = useUiLocale();
+  const { copy, locale } = useUiLocale();
+  const isArabic = locale === 'ar';
   const occasions = initialOccasions && initialOccasions.length > 0 ? initialOccasions : getOccasions();
 
   useEffect(() => {
@@ -147,12 +148,12 @@ export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
           <div className="mx-auto max-w-7xl">
             <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">Start here</p>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{isArabic ? OCCASION_SCHEMA.copy.hubGridEyebrowAr : OCCASION_SCHEMA.copy.hubGridEyebrow}</p>
                 <h2
                   id="occasion-grid-title"
                   className="font-headline mt-2 text-[1.35rem] font-semibold tracking-tight text-obsidian md:text-[1.6rem]"
                 >
-                  Browse by moment, then filter inside
+                  {isArabic ? OCCASION_SCHEMA.copy.hubGridTitleAr : OCCASION_SCHEMA.copy.hubGridTitle}
                 </h2>
               </div>
               <Link

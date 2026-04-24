@@ -9,6 +9,9 @@ export const HOME_TRUST_BADGES = [
   {
     key: 'codExchange',
   },
+  {
+    key: 'artistSigned',
+  },
 ] as const;
 
 export const HOME_PRIMARY_ROUTES = [

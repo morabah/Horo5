@@ -347,9 +347,7 @@ export function ShopAll() {
                 {copy.shell.shopAll}
               </h1>
               <p className="mt-3 font-body text-[1rem] leading-relaxed text-warm-charcoal md:text-[1.05rem]">
-                {isArabic
-                  ? 'شاهد كل التصاميم أولاً، ثم استخدم الفلاتر فقط إذا احتجت لتضييق الاختيار.'
-                  : 'See the full product grid first, then narrow only if you need to.'}
+                {copy.shell.shopAllIntro}
               </p>
             </div>
 

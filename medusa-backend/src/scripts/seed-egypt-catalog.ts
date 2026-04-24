@@ -1238,6 +1238,16 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     })
   }
 
+  // Force-delete the gift-wrap product so stale variant IDs are replaced.
+  // The update path does not touch variants, so an old/invalid variant persists
+  // and causes 400 errors when the storefront tries to add it to a cart.
+  const existingGiftWrap = existingProductRowByHandle.get(GIFT_WRAP_HANDLE)
+  if (existingGiftWrap) {
+    const { deleteProductsWorkflow } = await import("@medusajs/medusa/core-flows")
+    await deleteProductsWorkflow(container).run({ input: { ids: [existingGiftWrap.id] } })
+    existingProductRowByHandle.delete(GIFT_WRAP_HANDLE)
+  }
+
   productsInput.push({
     title: "Gift Wrap",
     handle: GIFT_WRAP_HANDLE,

@@ -117,10 +117,14 @@ export type StorefrontProductDTO = {
   primarySubfeelingSlug: string
   /** Campaign line from `metadata.promoLabel` (hidden when `metadata.promo_ends_at` is past). */
   promoLabel?: string
+  /** ISO-8601 deadline for the promo; storefront uses this to render a live countdown. */
+  promoEndsAt?: string
   priceEgp: number
   slug: string
   stockNote?: string
   story: string
+  /** Longer background for PDP 'Design Story' accordion. */
+  storyDescription?: string
   thumbnail?: string | null
   /** ISO from Medusa `product.updated_at` (sitemap / freshness). */
   updatedAt?: string

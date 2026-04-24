@@ -166,6 +166,8 @@ export type Product = {
   merchandisingBadge?: string;
   /** Time-boxed campaign chip from Medusa `metadata.promoLabel` / `promo_ends_at`. */
   promoLabel?: string;
+  /** ISO-8601 deadline for the active promo; used to render a live countdown on cards. */
+  promoEndsAt?: string;
   /** Shown as "FEELING / FIT" in quick view */
   fitLabel?: string;
   /** Named preset under `store.metadata.sizeTables` (e.g. `oversized`). Editable as a string in Medusa Admin metadata. */

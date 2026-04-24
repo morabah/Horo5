@@ -8,7 +8,7 @@ const HERO_NAV_OFFSET = 'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem)
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
 export function HomeHeroWearMean() {
-  const { locale } = useUiLocale();
+  const { locale, copy } = useUiLocale();
   const isArabic = locale === 'ar';
 
   const priceRange = (() => {
@@ -18,16 +18,14 @@ export function HomeHeroWearMean() {
     return Math.min(...products.map((p) => p.priceEgp));
   })();
 
-  const promiseLine = isArabic
-    ? 'تيشيرتات بطباعة فنانين محليين، مصنوعة في مصر.'
-    : 'Graphic tees by local artists — printed in Egypt.';
+  const promiseLine = copy.home.heroPromiseLine;
   const priceToken = priceRange
     ? isArabic
       ? `من ${formatEgp(priceRange)}`
       : `From ${formatEgp(priceRange)}`
     : null;
-  const primaryCtaLabel = isArabic ? 'تسوّق الكل' : 'Shop All';
-  const secondaryCtaLabel = isArabic ? 'تسوّق حسب الشعور' : 'Shop by Feeling';
+  const primaryCtaLabel = copy.home.heroPrimaryCta;
+  const secondaryCtaLabel = copy.home.heroSecondaryCta;
 
   return (
     <section
