@@ -96,7 +96,6 @@ function ShopAllProductCard({
       imageSrc={product.imageSrc}
       imageAlt={product.imageAlt}
       eyebrow={product.feelingName}
-      eyebrowAccent={product.feelingAccent}
       artistCredit={product.artistCredit}
       onQuickView={onQuickView}
     />

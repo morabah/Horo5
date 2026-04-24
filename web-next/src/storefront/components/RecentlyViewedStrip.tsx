@@ -45,7 +45,7 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
             <div>
               <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{copy.home.recentHeading}</p>
               <h2 id="recently-viewed-heading" className="font-headline mt-2 text-xl font-semibold tracking-tight text-obsidian md:text-2xl">
-                Pick up where you left off
+                {copy.home.recentTitle}
               </h2>
             </div>
             <Link
@@ -77,7 +77,6 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
                   imageSrc={main}
                   imageAlt={`HORO "${p.name}" graphic tee`}
                   eyebrow={categoryEyebrow}
-                  eyebrowAccent={feeling?.accent}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                   variant="minimal"
                   onQuickView={setQuickViewSlug}

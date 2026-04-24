@@ -64,7 +64,9 @@ const UI_COPY = {
       studioTitle: 'Proof before public praise',
       inviteCta: 'Shop by feeling',
       recentHeading: 'Recently viewed',
+      recentTitle: 'Pick up where you left off',
       recentCta: 'Browse all designs',
+      viewPiece: 'View piece',
       trustBadges: {
         artistMade: 'Artist-made designs',
         printedEgypt: 'Printed in Egypt',
@@ -418,7 +420,9 @@ const UI_COPY = {
       studioTitle: 'الدليل قبل المديح',
       inviteCta: 'تسوّق حسب الشعور',
       recentHeading: 'شوهد مؤخراً',
+      recentTitle: 'واصل من حيث توقفت',
       recentCta: 'تصفّح كل التصاميم',
+      viewPiece: 'عرض القطعة',
       trustBadges: {
         artistMade: 'تصاميم فنانين',
         printedEgypt: 'مطبوع في مصر',

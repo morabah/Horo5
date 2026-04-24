@@ -491,7 +491,6 @@ export function FeelingCollection({
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
                   eyebrow={categoryEyebrowForFeelingProduct(feeling.name, slug, activeLine, p)}
-                  eyebrowAccent={feelingAccent}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                   onQuickView={setQuickViewSlug}
                 />

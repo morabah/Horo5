@@ -17,18 +17,12 @@ type MerchProductCardProps = {
   priceEgp: number;
   imageSrc: string;
   imageAlt: string;
-  merchandisingBadge?: string;
   /** Overrides catalog `product.promoLabel` when the card is driven by a server list (e.g. search). */
   promoLabel?: string;
   /** ISO-8601 promo deadline — drives countdown below the price. Overrides catalog value. */
   promoEndsAt?: string;
   eyebrow?: string;
-  eyebrowAccent?: string;
-  proofChip?: string;
-  useCase?: string;
   artistCredit?: string;
-  feelsLike?: string[];
-  worksFor?: string[];
   compareAtPriceEgp?: number;
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
@@ -70,7 +64,7 @@ export function MerchProductCard({
   className,
   'data-reveal': dataReveal,
 }: MerchProductCardProps) {
-  const { locale } = useUiLocale();
+  const { locale, copy } = useUiLocale();
   const { addItem, setMiniCartOpen } = useCart();
   const minimal = variant === 'minimal';
   const product = useMemo(() => getProduct(slug), [slug]);
@@ -136,7 +130,7 @@ export function MerchProductCard({
   }
 
   const desktopQuickAddButtonClasses = [
-    'font-label inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-sm backdrop-blur-sm transition-colors duration-200',
+    'font-label inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.18em] shadow-sm backdrop-blur-sm transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal',
     quickAddOpen || addedFeedback
       ? 'border-obsidian bg-white text-obsidian shadow-md'
       : 'border-obsidian/15 bg-white/95 text-obsidian hover:border-obsidian hover:bg-white',
@@ -232,7 +226,7 @@ export function MerchProductCard({
           className="font-label inline-flex min-h-10 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
           onClick={onProductClick}
         >
-          {locale === 'ar' ? 'عرض القطعة' : 'View piece'}
+          {copy.home.viewPiece}
         </Link>
       </div>
 

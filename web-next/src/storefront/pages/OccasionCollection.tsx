@@ -115,7 +115,6 @@ function OccasionProductCard({
       imageSrc={imageSrc}
       imageAlt={`HORO “${product.name}” graphic tee for ${feeling?.name ?? 'the collection'}.`}
       eyebrow={categoryEyebrow}
-      eyebrowAccent={feeling?.accent}
       artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
       onQuickView={onQuickView}
       onProductClick={onProductClick}
