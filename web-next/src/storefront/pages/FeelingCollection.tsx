@@ -399,26 +399,24 @@ export function FeelingCollection({
             </div>
           ) : null}
 
-          {isMobile ? (
-            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
-              <button
-                type="button"
-                onClick={openMobileFilters}
-                className="font-label inline-flex items-center justify-center border-b border-obsidian/30 pb-1 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors hover:border-obsidian focus-visible:outline-none"
-              >
-                Filter &amp; sort
-              </button>
-              <Link
-                to={`/search?feeling=${encodeURIComponent(slug)}&focus=1`}
-                className="link-underline-reveal font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
-              >
-                Search this feeling
-              </Link>
-            </div>
-          ) : (
-            <div
-              className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 flex items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm"
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4 md:hidden">
+            <button
+              type="button"
+              onClick={openMobileFilters}
+              className="font-label inline-flex items-center justify-center border-b border-obsidian/30 pb-1 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors hover:border-obsidian focus-visible:outline-none"
             >
+              Filter &amp; sort
+            </button>
+            <Link
+              to={`/search?feeling=${encodeURIComponent(slug)}&focus=1`}
+              className="link-underline-reveal font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
+            >
+              Search this feeling
+            </Link>
+          </div>
+          <div
+            className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex"
+          >
               <div className="flex min-w-0 flex-wrap items-end gap-4">
                 <button
                   type="button"
@@ -478,7 +476,6 @@ export function FeelingCollection({
                 Search this feeling
               </Link>
             </div>
-          )}
 
           <div className="vibe-product-grid">
             {list.map((p) => {
@@ -493,8 +490,6 @@ export function FeelingCollection({
                   priceEgp={p.priceEgp}
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
-                  merchandisingBadge={p.merchandisingBadge}
-                  proofChip={p.fitLabel ?? p.trustBadges?.find(Boolean)}
                   eyebrow={categoryEyebrowForFeelingProduct(feeling.name, slug, activeLine, p)}
                   eyebrowAccent={feelingAccent}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}

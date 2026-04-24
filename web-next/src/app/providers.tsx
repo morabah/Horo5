@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { AnalyticsRoot } from "@/storefront/analytics/AnalyticsRoot";
 import { AppProviders } from "@/storefront/AppProviders";
+import { RouteLoadingSpinner } from "@/storefront/components/RouteLoadingSpinner";
 import type { RuntimeCatalog } from "@/storefront/data/site";
 
 export function Providers({
@@ -20,7 +21,7 @@ export function Providers({
 }) {
   return (
     <HelmetProvider>
-      <Suspense fallback={null}>
+      <Suspense fallback={<RouteLoadingSpinner />}>
         <AnalyticsRoot />
       </Suspense>
       <AppProviders

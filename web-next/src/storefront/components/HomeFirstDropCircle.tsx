@@ -40,9 +40,21 @@ export function HomeFirstDropCircle() {
     setMounted(true);
   }, []);
 
-  const whatsappUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
+  const rawWhatsappUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
     ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
     : undefined;
+
+  // Ensure wa.me links include a recipient (pathname longer than "/")
+  const whatsappUrl = (() => {
+    if (!rawWhatsappUrl) return undefined;
+    try {
+      const u = new URL(rawWhatsappUrl);
+      if (u.hostname === 'wa.me' && u.pathname.length <= 1) return undefined;
+      return rawWhatsappUrl;
+    } catch {
+      return undefined;
+    }
+  })();
 
   const whatsappMessage = encodeURIComponent(
     'Hi HORO — I\'d like to join the First Drop Circle and hear about new pieces first.',
@@ -51,12 +63,12 @@ export function HomeFirstDropCircle() {
   // Build WhatsApp deep link with prefilled message
   const whatsappHref = whatsappUrl
     ? `${whatsappUrl}${whatsappUrl.includes('?') ? '&' : '?'}text=${whatsappMessage}`
-    : `https://wa.me/?text=${whatsappMessage}`;
+    : undefined;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const val = inputValue.trim();
-    if (!val) return;
+    if (!val || !whatsappHref) return;
 
     // Primary: open WhatsApp
     if (mounted) {
@@ -86,7 +98,13 @@ export function HomeFirstDropCircle() {
           {copy.home.firstDropBody}
         </p>
 
-        {submitted ? (
+        {!whatsappUrl ? (
+          <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4" role="status">
+            <p className="font-body text-sm font-medium text-white">
+              {copy.home.firstDropUnavailableMessage}
+            </p>
+          </div>
+        ) : submitted ? (
           <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4" role="status">
             <p className="font-body text-sm font-medium text-white">
               {copy.home.firstDropConfirm}

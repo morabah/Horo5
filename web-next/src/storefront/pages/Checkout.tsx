@@ -9,6 +9,7 @@ import {
 import type { CartLine } from '../cart/types';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
+import { Skeleton } from '../components/ui/Skeleton';
 import { useCart } from '../cart/CartContext';
 import { loadSavedShipping, saveSavedShipping } from '../cart/savedShipping';
 import { saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
@@ -1526,9 +1527,9 @@ export function Checkout() {
                     : 'We are syncing your items with the server. Your order summary stays visible on the right.'}
                 </p>
                 <div className="mt-6 space-y-3" aria-hidden>
-                  <div className="h-10 animate-pulse rounded-lg bg-stone/50" />
-                  <div className="h-10 animate-pulse rounded-lg bg-stone/40" />
-                  <div className="h-24 animate-pulse rounded-lg bg-stone/35" />
+                  <Skeleton className="h-10 rounded-lg" />
+                  <Skeleton className="h-10 rounded-lg" />
+                  <Skeleton className="h-24 rounded-lg" />
                 </div>
               </div>
               <OrderSummary

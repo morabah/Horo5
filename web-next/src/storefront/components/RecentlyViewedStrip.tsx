@@ -23,7 +23,12 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
       .filter((s) => s !== excludeSlug)
       .map((slug) => getProduct(slug))
       .filter((p): p is NonNullable<typeof p> => Boolean(p))
-      .filter((p) => productHasRealImage(p))
+      .filter((p) =>
+        p.slug &&
+        p.name?.trim() &&
+        p.priceEgp != null &&
+        productHasRealImage(p)
+      )
       .slice(0, 4);
   }, [excludeSlug, slugs]);
 
@@ -70,8 +75,7 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
                   compareAtPriceEgp={p.originalPriceEgp ?? undefined}
                   priceEgp={p.priceEgp}
                   imageSrc={main}
-                  imageAlt={`HORO “${p.name}” graphic tee`}
-                  merchandisingBadge={p.merchandisingBadge}
+                  imageAlt={`HORO "${p.name}" graphic tee`}
                   eyebrow={categoryEyebrow}
                   eyebrowAccent={feeling?.accent}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}

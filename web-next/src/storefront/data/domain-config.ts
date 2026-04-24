@@ -392,7 +392,7 @@ export const PDP_SCHEMA = {
   ] as PdpSizeSchemaEntry[],
   sizeTable: [...PDP_DEFAULT_SIZE_PRESET.measurements],
   features: [
-    { label: 'heavyweight cotton', icon: 'FabricIcon' as const },
+    { label: 'Cotton tee', icon: 'FabricIcon' as const },
     { label: 'High-fidelity DTF print', icon: 'PrintIcon' as const },
     { label: 'Relaxed unisex fit', icon: 'SilhouetteIcon' as const },
     { label: 'Machine wash cold', icon: 'CareIcon' as const },

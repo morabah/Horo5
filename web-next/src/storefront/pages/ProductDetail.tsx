@@ -40,6 +40,7 @@ import { CrossSellWidget } from '../components/CrossSellWidget';
 import { PdpShareStrip } from '../components/PdpShareStrip';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { ProductJsonLd } from '../components/ProductJsonLd';
+import { Skeleton, SkeletonText } from '../components/ui/Skeleton';
 import { TeeImage, TeeImageFrame } from '../components/TeeImage';
 import { PdpSizeFlatDiagram } from '../components/PdpSizeFlatDiagram';
 import { ProductQuickView } from '../components/ProductQuickView';
@@ -1039,6 +1040,29 @@ export function ProductDetail({
     : null;
 
   if (!product) {
+    if (preferBackendCatalog) {
+      return (
+        <div className="product-page pdp-page-content bg-papyrus px-4 py-8 md:px-8 md:py-10">
+          <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-12 lg:gap-16">
+            <div className="flex flex-col gap-4">
+              <Skeleton className="aspect-[4/5] w-full rounded-[18px]" />
+              <div className="flex gap-3">
+                <Skeleton className="h-16 w-16 rounded-lg" />
+                <Skeleton className="h-16 w-16 rounded-lg" />
+                <Skeleton className="h-16 w-16 rounded-lg" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-6">
+              <SkeletonText lines={2} />
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <SkeletonText lines={4} />
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="bg-papyrus px-4 py-16 text-center">
         <p className="font-body text-warm-charcoal">{copy.pdpProductNotFound}</p>
@@ -1290,13 +1314,13 @@ export function ProductDetail({
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                   {product.feelsLike && product.feelsLike.length > 0 ? (
                     <div>
-                      <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">Feels like</span>
+                      <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">{shellCopy.home.feelsLikeLabel}</span>
                       <p className="font-body mt-0.5 text-sm text-warm-charcoal">{product.feelsLike.join(' · ')}</p>
                     </div>
                   ) : null}
                   {product.worksFor && product.worksFor.length > 0 ? (
                     <div>
-                      <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">Works for</span>
+                      <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">{shellCopy.home.worksForLabel}</span>
                       <p className="font-body mt-0.5 text-sm text-warm-charcoal">{product.worksFor.join(' · ')}</p>
                     </div>
                   ) : null}

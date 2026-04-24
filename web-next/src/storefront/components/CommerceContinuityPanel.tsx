@@ -1,3 +1,4 @@
+import { Badge } from './ui/Badge';
 import { STOREFRONT_IMAGE_SLOTS, imgUrl, type StorefrontImageSlot } from '../data/images';
 
 type CommerceContinuityPanelProps = {
@@ -43,12 +44,9 @@ export function CommerceContinuityPanel({
           {chips.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {chips.map((chip) => (
-                <span
-                  key={chip}
-                  className="font-label inline-flex min-h-11 items-center rounded-full border border-stone bg-papyrus/84 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian"
-                >
+                <Badge key={chip} className="min-h-11 border-stone bg-papyrus/84 px-4 text-obsidian">
                   {chip}
-                </span>
+                </Badge>
               ))}
             </div>
           ) : null}

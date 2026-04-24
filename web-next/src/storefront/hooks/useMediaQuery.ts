@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Client-only breakpoint match; avoids duplicate responsive trees (e.g. PDP layout).
+ * Client-only breakpoint match. Use ONLY for non-critical post-hydration behavior
+ * (e.g. closing a mobile panel on resize). Do NOT use for first-paint layout
+ * branches or conditional rendering that affects SSR/hydration alignment.
+ * For layout differences, prefer Tailwind responsive prefixes (md:, lg:) instead.
  */
 export function useMediaQuery(query: string): boolean {
-  // Keep first server + client render aligned; hydrate the media query after mount.
+  // Default false on SSR and first client render; hydrate the actual match after mount.
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {

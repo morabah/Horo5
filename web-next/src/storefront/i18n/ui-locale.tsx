@@ -11,7 +11,7 @@ const UI_COPY = {
     shell: {
       home: 'Home',
       shopAll: 'Shop All',
-      shopAllIntro: 'Our launch collection — original art by Egyptian illustrators, printed on 180 gsm cotton.',
+      shopAllIntro: 'Our launch collection — original art by Egyptian illustrators, printed in Egypt.',
       shopByFeeling: 'Feelings',
       shopByMoment: 'Occasions',
       about: 'About',
@@ -43,7 +43,7 @@ const UI_COPY = {
     },
     home: {
       heroCta: 'Browse designs',
-      heroPromiseLine: 'Original art by Egyptian illustrators — every design credited, every tee signed.',
+      heroPromiseLine: 'Artist-made graphic tees printed in Egypt — made for moods, moments, and gifts that feel personal.',
       heroPrimaryCta: 'Shop All',
       heroSecondaryCta: 'Shop by Feeling',
       feelingsEyebrow: 'The feelings',
@@ -84,9 +84,12 @@ const UI_COPY = {
       startHereCta: 'View Tee',
       feelingsCta: 'See all feelings',
       occasionsTitle: 'For the Moment',
-      occasionsCta: 'Shop by Occasion',
+      occasionsCta: 'Shop the moment',
       whyHoroTitle: 'Why HORO',
       giftHeadline: 'Meaningful pieces for meaningful moments',
+      feelsLikeLabel: 'Feels like',
+      worksForLabel: 'Works for',
+      artByLabel: 'Art by',
       artistSpotlightTitle: 'Artist Spotlight',
       artistSpotlightCta: 'Meet the Artists',
       craftFallbackTitle: 'Made with proof, not placeholders',
@@ -105,7 +108,7 @@ const UI_COPY = {
         },
         madeToFeelPersonal: {
           title: 'Made to Feel Personal',
-          body: 'Browse by feeling, occasion, or gift intent — not just a grid of thumbnails. The right piece finds you.',
+          body: 'Browse by feeling, moment, or gift intent — not just a grid of thumbnails. The right piece finds you.',
         },
         clearFitDetails: {
           title: 'Clear Fit Details',
@@ -137,7 +140,8 @@ const UI_COPY = {
       firstDropPlaceholder: 'Email or WhatsApp number',
       firstDropCta: 'Join the first drop',
       firstDropConfirm: 'You\'re on the list — we\'ll reach out when the next drop is ready.',
-      firstDropDisclaimer: 'We use WhatsApp or email only for drop announcements. No resale, no spam.'
+      firstDropDisclaimer: 'We use WhatsApp or email only for drop announcements. No resale, no spam.',
+      firstDropUnavailableMessage: 'First Drop Circle signup will open when WhatsApp support is configured.'
     },
     pages: {
       sizeGuide: {
@@ -361,7 +365,7 @@ const UI_COPY = {
     shell: {
       home: 'الرئيسية',
       shopAll: 'تسوّق الكل',
-      shopAllIntro: 'أول مجموعة إطلاق من HORO — تصاميم أصلية لفنانين مصريين، مطبوعة على قطن ١٨٠ جرام.',
+      shopAllIntro: 'أول مجموعة إطلاق من HORO — تصاميم أصلية لفنانين مصريين، مطبوعة في مصر.',
       shopByFeeling: 'المشاعر',
       shopByMoment: 'المناسبات',
       about: 'عن HORO',
@@ -393,14 +397,14 @@ const UI_COPY = {
     },
     home: {
       heroCta: 'تصفح التصاميم',
-      heroPromiseLine: 'تيشيرتات بطباعة فنانين مصريين — كل تصميم أصلي، كل قطعة موقّعة.',
+      heroPromiseLine: 'تيشيرتات جرافيك بتصاميم فنانين مصريين — معمولة للمشاعر، اللحظات، والهدايا اللي لها معنى.',
       heroPrimaryCta: 'تسوّق الكل',
       heroSecondaryCta: 'تسوّق حسب الشعور',
       feelingsEyebrow: 'المشاعر',
       feelingsTitle: 'تسوّق حسب الشعور',
-      momentsEyebrow: 'اختر حسب المناسبة',
+      momentsEyebrow: 'اختر حسب اللحظة',
       momentsTitle: 'هدية، خروجة، أو إعادة ضبط اليوم',
-      momentsCta: 'تسوّق حسب المناسبة',
+      momentsCta: 'تسوّق حسب اللحظة',
       featuredTitle: 'قطع مختارة',
       featuredCta: 'عرض كل المنتجات',
       planEyebrow: 'خطوات واضحة',
@@ -434,9 +438,12 @@ const UI_COPY = {
       startHereCta: 'شاهد التيشيرت',
       feelingsCta: 'عرض كل المشاعر',
       occasionsTitle: 'للحظة',
-      occasionsCta: 'تسوّق حسب المناسبة',
+      occasionsCta: 'تسوّق اللحظة',
       whyHoroTitle: 'لماذا HORO',
       giftHeadline: 'قطع لها معنى للحظات لها معنى',
+      feelsLikeLabel: 'الإحساس',
+      worksForLabel: 'مناسب لـ',
+      artByLabel: 'تصميم',
       artistSpotlightTitle: 'فنان مختار',
       artistSpotlightCta: 'تعرّف على الفنانين',
       craftFallbackTitle: 'تفاصيل حقيقية بدلاً من صور مؤقتة',
@@ -455,7 +462,7 @@ const UI_COPY = {
         },
         madeToFeelPersonal: {
           title: 'مصمّم يحسّسك',
-          body: 'تصفّح حسب الشعور أو المناسبة أو نية الهدية — وليس فقط شبكة صور. القطعة المناسبة تجدك.',
+          body: 'تصفّح حسب الشعور أو اللحظة أو نية الهدية — وليس فقط شبكة صور. القطعة المناسبة تجدك.',
         },
         clearFitDetails: {
           title: 'مقاسات واضحة',
@@ -487,7 +494,8 @@ const UI_COPY = {
       firstDropPlaceholder: 'إيميل أو رقم واتساب',
       firstDropCta: 'انضم للإطلاق',
       firstDropConfirm: 'تم التسجيل — هنوصل معاك لما الإطلاق الجاي يبقى جاهز.',
-      firstDropDisclaimer: 'بنستخدم واتساب أو إيميل بس لإعلانات الإطلاق. مفيش بيع بيانات ولا سبام.'
+      firstDropDisclaimer: 'بنستخدم واتساب أو إيميل بس لإعلانات الإطلاق. مفيش بيع بيانات ولا سبام.',
+      firstDropUnavailableMessage: 'سيتم فتح التسجيل لدائرة الإطلاق الأول عند تفعيل واتساب.'
     },
     pages: {
       sizeGuide: {

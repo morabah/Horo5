@@ -59,15 +59,10 @@ export function MerchProductCard({
   priceEgp,
   imageSrc,
   imageAlt,
-  merchandisingBadge,
   promoLabel: promoLabelProp,
   promoEndsAt: promoEndsAtProp,
-  proofChip,
   eyebrow,
-  eyebrowAccent,
   artistCredit,
-  feelsLike,
-  worksFor,
   compareAtPriceEgp,
   onQuickView,
   onProductClick,
@@ -82,25 +77,7 @@ export function MerchProductCard({
   const promoLabel = promoLabelProp ?? product?.promoLabel;
   const promoEndsAt = promoEndsAtProp ?? product?.promoEndsAt;
   const countdown = useCountdown(compareAtPriceEgp ? promoEndsAt : null);
-  const fallbackProofChip =
-    product?.fitLabel?.trim() ||
-    product?.trustBadges?.find(Boolean) ||
-    (artistCredit?.trim() ? (locale === 'ar' ? 'فنان معتمد' : 'Artist credited') : undefined) ||
-    undefined;
-  const resolvedProofChip = proofChip?.trim() || fallbackProofChip;
-  const isNew = useMemo(() => {
-    if (!product?.createdAt) return false;
-    const createdDate = new Date(product.createdAt);
-    if (isNaN(createdDate.getTime())) return false;
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 && diffDays <= 30;
-  }, [product?.createdAt]);
-  const showPromo = Boolean(promoLabel);
-  const showProof = !showPromo && Boolean(resolvedProofChip);
-  const showMerch = !showPromo && !showProof && Boolean(merchandisingBadge);
-  const showNewBadge = !showPromo && !showProof && !showMerch && isNew;
-  const showEyebrow = minimal && Boolean(eyebrow?.trim());
+  const showFitBadge = Boolean(product?.fitLabel?.trim());
   const availableSizes = useMemo(() => {
     if (!product) return [] as ProductSizeKey[];
     return productAvailableSizes(product).filter((size) =>
@@ -165,13 +142,6 @@ export function MerchProductCard({
       : 'border-obsidian/15 bg-white/95 text-obsidian hover:border-obsidian hover:bg-white',
   ].join(' ');
 
-  const mobileQuickAddClasses = [
-    'font-label inline-flex min-h-10 md:min-h-11 items-center justify-center rounded-full border px-3 md:px-4 text-[9px] md:text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors',
-    quickAddOpen || addedFeedback
-      ? 'border-obsidian bg-obsidian text-white'
-      : 'border-stone/60 bg-white text-obsidian hover:border-obsidian',
-  ].join(' ');
-
   return (
     <article
       className={['group merch-card-lift flex flex-col', className].filter(Boolean).join(' ')}
@@ -202,47 +172,14 @@ export function MerchProductCard({
               frameStyle={{ marginBottom: 0 }}
             />
           </div>
-          {showMerch ? (
-            <span
-              className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md bg-white/90 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm"
-            >
-              {merchandisingBadge}
-            </span>
-          ) : null}
-          {showPromo ? (
-            <span
-              className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md border border-amber-200 bg-amber-50 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-amber-950 shadow-sm backdrop-blur-sm"
-            >
-              {promoLabel}
-            </span>
-          ) : null}
-          {showProof ? (
-            <span className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md border border-deep-teal/25 bg-white/92 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-deep-teal shadow-sm backdrop-blur-sm">
-              {resolvedProofChip}
-            </span>
-          ) : null}
-          {showNewBadge ? (
-            <span className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-emerald-900 shadow-sm backdrop-blur-sm">
-              {locale === 'ar' ? 'جديد' : 'New'}
-            </span>
-          ) : null}
-          {showEyebrow ? (
-            <span
-              className="category-chip font-label pointer-events-none absolute right-2 top-2 z-9 max-w-[40%] truncate rounded-md px-1.5 py-0.5 text-[7px] md:right-3 md:top-3 md:max-w-[min(100%-7rem,14rem)] md:px-2.5 md:py-1 md:text-[9px] font-medium uppercase tracking-[0.16em] text-obsidian/80"
-              style={
-                eyebrowAccent
-                  ? {
-                      borderColor: `color-mix(in srgb, ${eyebrowAccent} 38%, var(--color-stone))`,
-                    }
-                  : undefined
-              }
-            >
-              {eyebrow?.trim()}
+          {showFitBadge ? (
+            <span className="font-label absolute left-2 top-2 z-10 max-w-[55%] truncate rounded-md border border-stone/30 bg-white/90 px-1.5 py-1 text-[8px] md:left-3 md:top-3 md:px-2.5 md:py-1.5 md:text-[10px] font-semibold uppercase tracking-[0.16em] md:tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm">
+              {product?.fitLabel?.trim()}
             </span>
           ) : null}
         </Link>
-        {/* Desktop: single bottom action strip (flex) — avoids overlapping absolutes; size picker stacks above via column flow */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden flex-col gap-2 p-3 md:flex">
+        {/* Desktop: single bottom action strip — hidden until hover/focus */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden flex-col gap-2 p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex">
           {quickAddAvailable && quickAddOpen ? (
             <div className="pointer-events-auto rounded-2xl border border-obsidian/10 bg-white/96 p-3 shadow-xl backdrop-blur-sm">
               <p className="font-label mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
@@ -288,44 +225,16 @@ export function MerchProductCard({
         </div>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3 md:hidden">
-        {quickAddAvailable ? (
-          <button
-            type="button"
-            className={mobileQuickAddClasses}
-            onClick={handleQuickAddPrimaryClick}
-            aria-expanded={quickAddOpen}
-            aria-label={`${quickAddLabel}: ${name}`}
-          >
-            {addedFeedback ? addedLabel : quickAddLabel}
-          </button>
-        ) : null}
-        <QuickViewTrigger
-          productName={name}
-          onClick={() => onQuickView(slug)}
-          visibilityMode="mobile-inline"
-          className={minimal ? '' : 'mt-0'}
-        />
+      {/* Mobile: single compact CTA */}
+      <div className="mb-3 md:hidden">
+        <Link
+          to={`/products/${slug}`}
+          className="font-label inline-flex min-h-10 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
+          onClick={onProductClick}
+        >
+          {locale === 'ar' ? 'عرض القطعة' : 'View piece'}
+        </Link>
       </div>
-
-      {quickAddAvailable && quickAddOpen ? (
-        <div className="mb-4 flex flex-wrap gap-2 md:hidden">
-          {availableSizes.map((size) => (
-            <button
-              key={`${slug}-${size}-mobile`}
-              type="button"
-              className={`font-label inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border px-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors ${
-                recommendedSize === size
-                  ? 'border-obsidian bg-obsidian text-white'
-                  : 'border-stone/60 bg-white text-obsidian hover:border-obsidian'
-              }`}
-              onClick={() => handleQuickAdd(size)}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       <div className="flex min-h-0 flex-1 flex-col text-left">
         <Link
@@ -342,19 +251,14 @@ export function MerchProductCard({
             {artistCredit.trim()}
           </p>
         ) : null}
-        {product?.fitLabel?.trim() ? (
-          <p className="font-label mt-1.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-warm-charcoal md:mt-2 md:text-[10px]">
-            {product.fitLabel.trim()}
+        {eyebrow?.trim() ? (
+          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-clay md:mt-1.5 md:text-[10px]">
+            {eyebrow.trim()}
           </p>
         ) : null}
-        {feelsLike && feelsLike.length > 0 ? (
-          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-clay md:mt-1.5 md:text-[10px]">
-            Feels like: {feelsLike.join(' · ')}
-          </p>
-        ) : null}
-        {worksFor && worksFor.length > 0 ? (
-          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-clay md:mt-1.5 md:text-[10px]">
-            Works for: {worksFor.join(' · ')}
+        {promoLabel?.trim() ? (
+          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-amber-700 md:mt-1.5 md:text-[10px]">
+            {promoLabel.trim()}
           </p>
         ) : null}
         <div className={`mt-auto ${minimal ? 'pt-2.5' : 'pt-3'}`}>

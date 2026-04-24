@@ -5,6 +5,8 @@ import { AppIcon } from '../components/AppIcon';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { ProductQuickView } from '../components/ProductQuickView';
+import { SkeletonGrid } from '../components/ui/Skeleton';
+import { Button } from '../components/ui/Button';
 import { SEARCH_SCHEMA } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -78,14 +80,6 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   });
 }
 
-function browseChipClass(isActive: boolean) {
-  return `font-label inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
-    isActive
-      ? 'border-obsidian bg-obsidian text-white'
-      : 'border-stone bg-white text-obsidian hover:border-desert-sand'
-  }`;
-}
-
 function ShopAllProductCard({
   product,
   onQuickView,
@@ -101,9 +95,6 @@ function ShopAllProductCard({
       priceEgp={product.priceEgp}
       imageSrc={product.imageSrc}
       imageAlt={product.imageAlt}
-      merchandisingBadge={product.merchandisingBadge}
-      promoLabel={product.promoLabel}
-      proofChip={product.proofChip}
       eyebrow={product.feelingName}
       eyebrowAccent={product.feelingAccent}
       artistCredit={product.artistCredit}
@@ -365,34 +356,38 @@ export function ShopAll() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2.5">
-            <button
-              type="button"
-              className={browseChipClass(sortKey === 'featured')}
+            <Button
+              variant="chip"
+              size="sm"
+              active={sortKey === 'featured'}
               onClick={() => updateParams({ sort: 'featured' })}
             >
               {isArabic ? 'الأكثر مبيعاً' : 'Best sellers'}
-            </button>
-            <button
-              type="button"
-              className={browseChipClass(sortKey === 'newest')}
+            </Button>
+            <Button
+              variant="chip"
+              size="sm"
+              active={sortKey === 'newest'}
               onClick={() => updateParams({ sort: sortKey === 'newest' ? null : 'newest' })}
             >
               {isArabic ? 'إصدار جديد' : 'New drop'}
-            </button>
-            <button
-              type="button"
-              className={browseChipClass(filterOccasion === 'gift-something-real')}
+            </Button>
+            <Button
+              variant="chip"
+              size="sm"
+              active={filterOccasion === 'gift-something-real'}
               onClick={() => updateParams({ fOccasion: filterOccasion === 'gift-something-real' ? null : 'gift-something-real' })}
             >
               {isArabic ? 'جاهز للهدايا' : 'Gift-ready'}
-            </button>
-            <button
-              type="button"
-              className={browseChipClass(priceFilter === 'under-800')}
+            </Button>
+            <Button
+              variant="chip"
+              size="sm"
+              active={priceFilter === 'under-800'}
               onClick={() => updateParams({ price: priceFilter === 'under-800' ? null : 'under-800' })}
             >
               {SEARCH_SCHEMA.copy.under800Label}
-            </button>
+            </Button>
           </div>
         </section>
       </div>
@@ -431,8 +426,8 @@ export function ShopAll() {
             </div>
           </div>
 
-          {!isMobile && desktopFiltersOpen ? (
-            <div className="mb-8 flex flex-wrap items-end gap-4 rounded-[18px] border border-stone/35 bg-white/72 p-4 shadow-[0_18px_44px_-30px_rgba(26,26,26,0.18)]">
+          {desktopFiltersOpen ? (
+            <div className="mb-8 hidden flex-wrap items-end gap-4 rounded-[18px] border border-stone/35 bg-white/72 p-4 shadow-[0_18px_44px_-30px_rgba(26,26,26,0.18)] md:flex">
               <div className="flex min-w-[13rem] flex-col gap-2">
                 <label htmlFor="shop-all-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                   {SEARCH_SCHEMA.copy.sortLabel}
@@ -594,7 +589,9 @@ export function ShopAll() {
             </div>
           ) : null}
 
-          {results.designMatches.length > 0 ? (
+          {useMedusaServerBrowse && medusaBrowseStatus === 'loading' && results.designMatches.length === 0 ? (
+            <SkeletonGrid count={6} />
+          ) : results.designMatches.length > 0 ? (
             <div className="vibe-product-grid">
               {results.designMatches.map((product) => (
                 <ShopAllProductCard

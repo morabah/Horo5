@@ -146,12 +146,17 @@
     }
   }
   /* Homepage — editorial scroll-reveal (hero excluded); dividers only draw strokes */
+  /* Default: visible. JS adds data-reveal-pending before observing to avoid flicker. */
   [data-reveal] {
-    opacity: 0;
-    transform: translateY(32px) scale(0.98);
+    opacity: 1;
+    transform: translateY(0) scale(1);
     transition:
       opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
       transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  [data-reveal].data-reveal-pending {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
   }
   [data-reveal='divider'] {
     opacity: 1;
@@ -182,8 +187,10 @@
     transition-delay: 0.6s;
   }
   /* Feeling commerce cards — longer ease + subtle zoom (Shop by Feeling + homepage grid) */
-  [data-reveal].vibe-commerce-card {
+  [data-reveal].vibe-commerce-card.data-reveal-pending {
     transform: translateY(24px) scale(0.95);
+  }
+  [data-reveal].vibe-commerce-card {
     transition:
       opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
       transform 1s cubic-bezier(0.16, 1, 0.3, 1);
@@ -191,27 +198,6 @@
   [data-reveal].vibe-commerce-card.revealed {
     opacity: 1;
     transform: translateY(0) scale(1);
-  }
-  /* If scroll-reveal JS never runs or is blocked, avoid leaving content invisible forever */
-  @keyframes data-reveal-fallback {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  @keyframes data-reveal-fallback-vibe {
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    [data-reveal]:not([data-reveal='divider']):not(.revealed):not(.vibe-commerce-card) {
-      animation: data-reveal-fallback 0.01s ease 2s forwards;
-    }
-    [data-reveal].vibe-commerce-card:not([data-reveal='divider']):not(.revealed) {
-      animation: data-reveal-fallback-vibe 0.01s ease 2s forwards;
-    }
   }
   @keyframes section-divider-draw {
     from {

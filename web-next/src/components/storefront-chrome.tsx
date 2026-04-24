@@ -7,6 +7,8 @@ import { AppErrorBoundary } from "./app-error-boundary";
 import { FunnelNavigationTracker } from "@/storefront/components/FunnelNavigationTracker";
 import { Nav } from "@/storefront/components/Nav";
 import { Footer } from "@/storefront/components/Footer";
+import { RouteLoadingSpinner } from "@/storefront/components/RouteLoadingSpinner";
+import { PageSkeleton } from "@/storefront/components/ui/Skeleton";
 
 /** App shell for main storefront pages: skip link, nav, footer, analytics wrapper. */
 export function StorefrontChrome({ children }: { children: ReactNode }) {
@@ -21,13 +23,13 @@ export function StorefrontChrome({ children }: { children: ReactNode }) {
       >
         Skip to main content
       </a>
-      <Suspense fallback={null}>
+      <Suspense fallback={<RouteLoadingSpinner />}>
         <FunnelNavigationTracker />
         <Nav />
       </Suspense>
       <main id="main-content" className={isHome ? "" : "pt-32 md:pt-24"}>
         <AppErrorBoundary key={pathname}>
-          <Suspense fallback={null}>{children}</Suspense>
+          <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
         </AppErrorBoundary>
       </main>
       <Footer />

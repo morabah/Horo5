@@ -6,6 +6,7 @@ import { useCart } from '../cart/CartContext';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
+import { Skeleton } from '../components/ui/Skeleton';
 import type { CartLine } from '../cart/types';
 import { CART_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, PDP_SCHEMA } from '../data/domain-config';
 import { giftWrapPreview, heroVectorizedV2 } from '../data/images';
@@ -173,10 +174,7 @@ function CartSummary({
           <span>{copy.shippingLabel}</span>
           <span className="text-right">
             {shippingRow.mode === 'loading' ? (
-              <span
-                className="inline-block h-4 w-16 animate-pulse rounded bg-stone/70 align-middle"
-                aria-label={locale === 'ar' ? 'جاري تحميل الشحن' : 'Loading shipping'}
-              />
+              <Skeleton className="inline-block h-4 w-16 align-middle" />
             ) : null}
             {shippingRow.mode === 'amount' ? formatEgp(shippingRow.egp) : null}
             {shippingRow.mode === 'copy' ? (

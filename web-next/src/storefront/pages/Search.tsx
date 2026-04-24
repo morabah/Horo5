@@ -12,6 +12,7 @@ import { MerchProductCard } from '../components/MerchProductCard';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { SearchSuggestionPanel } from '../components/SearchSuggestionPanel';
 import { TeeImageFrame } from '../components/TeeImage';
+import { SkeletonGrid } from '../components/ui/Skeleton';
 import { useUiLocale } from '../i18n/ui-locale';
 import { SEARCH_SCHEMA } from '../data/domain-config';
 import {
@@ -138,9 +139,6 @@ function SearchProductCard({
       priceEgp={product.priceEgp}
       imageSrc={product.imageSrc}
       imageAlt={product.imageAlt}
-      merchandisingBadge={product.merchandisingBadge}
-      promoLabel={product.promoLabel}
-      proofChip={product.proofChip}
       eyebrow={product.feelingName}
       eyebrowAccent={product.feelingAccent}
       artistCredit={product.artistCredit}
@@ -915,46 +913,45 @@ export function Search() {
             ) : null}
           </div>
 
-          {isMobile ? (
-            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
-              {!isBrowsePage ? (
-              <div className="flex w-full flex-wrap gap-2">
-                {(['all', 'S', 'M', 'L'] as const).map((value) => (
-                  <button
-                    key={`quick-size-${value}`}
-                    type="button"
-                    onClick={() => updateParams({ size: value })}
-                    className={`font-label inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] ${
-                      sizeFilter === value
-                        ? 'border-obsidian bg-obsidian text-white'
-                        : 'border-stone bg-white text-obsidian'
-                    }`}
-                  >
-                    {value === 'all' ? SEARCH_SCHEMA.copy.allSizesLabel : value}
-                  </button>
-                ))}
-              </div>
-              ) : null}
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4 md:hidden">
+            {!isBrowsePage ? (
+            <div className="flex w-full flex-wrap gap-2">
+              {(['all', 'S', 'M', 'L'] as const).map((value) => (
+                <button
+                  key={`quick-size-${value}`}
+                  type="button"
+                  onClick={() => updateParams({ size: value })}
+                  className={`font-label inline-flex min-h-11 items-center rounded-full border px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] ${
+                    sizeFilter === value
+                      ? 'border-obsidian bg-obsidian text-white'
+                      : 'border-stone bg-white text-obsidian'
+                  }`}
+                >
+                  {value === 'all' ? SEARCH_SCHEMA.copy.allSizesLabel : value}
+                </button>
+              ))}
+            </div>
+            ) : null}
+            <button
+              type="button"
+              onClick={openMobileFilters}
+              className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+            >
+              {SEARCH_SCHEMA.copy.filterAndSortCta}
+            </button>
+            {hasActiveFilters ? (
               <button
                 type="button"
-                onClick={openMobileFilters}
-                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                onClick={resetFilters}
+                className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
-                {SEARCH_SCHEMA.copy.filterAndSortCta}
+                {SEARCH_SCHEMA.copy.resetFiltersCta}
               </button>
-              {hasActiveFilters ? (
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                >
-                  {SEARCH_SCHEMA.copy.resetFiltersCta}
-                </button>
-              ) : null}
-            </div>
-          ) : (
-            <div className="sticky top-[calc(7.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 flex items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm">
-              <div className="flex min-w-0 flex-wrap items-end gap-4">
+            ) : null}
+          </div>
+
+          <div className="sticky top-[calc(7.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex">
+            <div className="flex min-w-0 flex-wrap items-end gap-4">
                 {!isBrowsePage || desktopAdvancedFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
@@ -1069,10 +1066,9 @@ export function Search() {
                 </button>
               ) : null}
             </div>
-          )}
 
-          {!isMobile && desktopAdvancedFiltersOpen ? (
-            <div className="mb-8 flex flex-wrap items-end gap-4 rounded-sm border border-stone/40 bg-white/70 p-4">
+          {desktopAdvancedFiltersOpen ? (
+            <div className="mb-8 hidden flex-wrap items-end gap-4 rounded-sm border border-stone/40 bg-white/70 p-4 md:flex">
               {vibeOptions.length > 1 ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
@@ -1145,7 +1141,9 @@ export function Search() {
             </div>
           ) : null}
 
-          {noResultsAcrossSections ? (
+          {useMedusaServerSearch && medusaSearchStatus === 'loading' && designMatches.length === 0 ? (
+            <SkeletonGrid count={6} />
+          ) : noResultsAcrossSections ? (
             <div className="card-glass mt-4 flex flex-col items-center border border-stone/70 px-6 py-10 text-center md:py-12">
               <h2 className="font-headline text-[1.45rem] font-semibold tracking-tight text-obsidian">
                 {SEARCH_SCHEMA.copy.noResultsForQuery.replace('{query}', debouncedQ.trim())}
@@ -1188,9 +1186,7 @@ export function Search() {
                 ))}
               </div>
             </div>
-          ) : null}
-
-          {!noResultsAcrossSections ? (
+          ) : (
             <div className="space-y-12">
               <section aria-labelledby="search-designs-heading">
                 <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -1275,7 +1271,7 @@ export function Search() {
                 </section>
               ) : null}
             </div>
-          ) : null}
+          )}
         </section>
       </div>
 

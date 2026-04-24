@@ -59,7 +59,7 @@ export function HomeFeaturedPiece() {
             ) : null}
             {featuredProduct.artistDisplay?.name ? (
               <p className="font-label mt-3 text-[10px] font-medium uppercase tracking-[0.18em] text-clay">
-                Art by {featuredProduct.artistDisplay.name}
+                {copy.home.artByLabel} {featuredProduct.artistDisplay.name}
               </p>
             ) : null}
             <p className="font-headline mt-3 text-[1.25rem] font-semibold text-obsidian">

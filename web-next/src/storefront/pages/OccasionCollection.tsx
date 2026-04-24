@@ -114,8 +114,6 @@ function OccasionProductCard({
       priceEgp={product.priceEgp}
       imageSrc={imageSrc}
       imageAlt={`HORO “${product.name}” graphic tee for ${feeling?.name ?? 'the collection'}.`}
-      merchandisingBadge={product.merchandisingBadge}
-      proofChip={product.fitLabel ?? product.trustBadges?.find(Boolean) ?? (product.occasionSlugs.includes('gift-something-real') ? 'Gift-ready' : undefined)}
       eyebrow={categoryEyebrow}
       eyebrowAccent={feeling?.accent}
       artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
@@ -416,33 +414,31 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
         ) : null}
 
         <section id="occasion-collection-products" className="order-1 scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
-          {isMobile ? (
-            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4">
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4 md:hidden">
+            <button
+              type="button"
+              onClick={openMobileFilters}
+              className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+            >
+              {OCCASION_SCHEMA.copy.filterAndSortCta}
+            </button>
+            <Link
+              to={scopeSearchTo}
+              className="link-underline-reveal font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
+            >
+              {OCCASION_SCHEMA.copy.searchThisOccasionCta}
+            </Link>
+          </div>
+          <div className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex">
+            <div className="flex min-w-0 flex-wrap items-end gap-4">
               <button
                 type="button"
-                onClick={openMobileFilters}
-                className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                onClick={() => setDesktopFiltersOpen((open) => !open)}
+                className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm"
               >
-                {OCCASION_SCHEMA.copy.filterAndSortCta}
+                {desktopFiltersOpen ? 'Hide filters' : 'Filter & sort'}
               </button>
-              <Link
-                to={scopeSearchTo}
-                className="link-underline-reveal font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
-              >
-                {OCCASION_SCHEMA.copy.searchThisOccasionCta}
-              </Link>
-            </div>
-          ) : (
-            <div className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 flex items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm">
-              <div className="flex min-w-0 flex-wrap items-end gap-4">
-                <button
-                  type="button"
-                  onClick={() => setDesktopFiltersOpen((open) => !open)}
-                  className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-4 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm"
-                >
-                  {desktopFiltersOpen ? 'Hide filters' : 'Filter & sort'}
-                </button>
-                {desktopFiltersOpen ? (
+              {desktopFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="occasion-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     {OCCASION_SCHEMA.copy.sortLabel}
@@ -524,7 +520,6 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 {OCCASION_SCHEMA.copy.searchThisOccasionCta}
               </Link>
             </div>
-          )}
 
           <div className="vibe-product-grid">
             {list.map((product) => (
