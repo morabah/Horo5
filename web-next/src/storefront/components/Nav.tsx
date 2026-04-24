@@ -352,16 +352,14 @@ export function Nav() {
     }
   }
 
-  const isHome = pathname === '/';
-  const [homeHeroSolidNav, setHomeHeroSolidNav] = useState(pathname !== '/');
-  const [headerHeight, setHeaderHeight] = useState(0);
-
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const lastScrollY = useRef(0);
+  const headerHeightRef = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const headerHeight = headerHeightRef.current;
       if (currentScrollY > lastScrollY.current && currentScrollY > headerHeight && currentScrollY > 200) {
         setIsHeaderHidden(true);
       } else {
@@ -371,14 +369,14 @@ export function Nav() {
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [headerHeight]);
+  }, []);
 
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
 
     const updateHeaderHeight = () => {
-      setHeaderHeight(Math.round(header.getBoundingClientRect().height));
+      headerHeightRef.current = Math.round(header.getBoundingClientRect().height);
     };
 
     updateHeaderHeight();
@@ -393,33 +391,7 @@ export function Nav() {
     return () => window.removeEventListener('resize', updateHeaderHeight);
   }, []);
 
-  useEffect(() => {
-    if (pathname !== '/') {
-      setHomeHeroSolidNav(true);
-      return;
-    }
-
-    const updateHeroNavState = () => {
-      const hero = document.getElementById('home-hero');
-      if (!hero) {
-        setHomeHeroSolidNav(false);
-        return;
-      }
-      const effectiveHeaderHeight = Math.max(headerHeight, 1);
-      setHomeHeroSolidNav(hero.getBoundingClientRect().bottom <= effectiveHeaderHeight + 1);
-    };
-
-    updateHeroNavState();
-    window.addEventListener('scroll', updateHeroNavState, { passive: true });
-    window.addEventListener('resize', updateHeroNavState);
-    return () => {
-      window.removeEventListener('scroll', updateHeroNavState);
-      window.removeEventListener('resize', updateHeroNavState);
-    };
-  }, [headerHeight, pathname]);
-
-  const navOnHeroTransparent = isHome && !homeHeroSolidNav;
-  const logoVariant = navOnHeroTransparent ? 'light' : 'dark';
+  const logoVariant = 'dark';
   const handleCartNavigation = useCallback(() => {
     setMiniCartOpen(false);
     navigate('/cart');
@@ -428,16 +400,12 @@ export function Nav() {
   return (
     <header
       ref={headerRef}
-      className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${navOnHeroTransparent ? 'glass-nav--hero-transparent' : ''} ${isHeaderHidden ? 'md:-translate-y-full' : 'translate-y-0'}`}
+      className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${isHeaderHidden ? 'md:-translate-y-full' : 'translate-y-0'}`}
       role="banner"
     >
       {placedOrderMedusaId ? (
         <div
-          className={`border-b px-[max(1rem,env(safe-area-inset-left,0px))] py-2.5 pr-[max(1rem,env(safe-area-inset-right,0px))] font-body text-sm ${
-            navOnHeroTransparent
-              ? 'border-white/20 bg-obsidian/90 text-white'
-              : 'border-stone/35 bg-(--mint-frost) text-obsidian'
-          }`}
+          className="border-b border-stone/35 bg-(--mint-frost) px-[max(1rem,env(safe-area-inset-left,0px))] py-2.5 pr-[max(1rem,env(safe-area-inset-right,0px))] font-body text-sm text-obsidian"
           role="status"
         >
           <div className="mx-auto flex max-w-[1920px] flex-wrap items-center justify-between gap-3">
@@ -445,19 +413,13 @@ export function Nav() {
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               <Link
                 to={`/checkout/success?order_id=${encodeURIComponent(placedOrderMedusaId)}`}
-                className={`font-label inline-flex min-h-10 items-center rounded-sm px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest ${
-                  navOnHeroTransparent
-                    ? 'border border-white/35 text-white hover:bg-white/10'
-                    : 'border border-obsidian/25 text-obsidian hover:bg-white/80'
-                }`}
+                className="font-label inline-flex min-h-10 items-center rounded-sm border border-obsidian/25 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-obsidian hover:bg-white/80"
               >
                 {copy.shell.orderPlacedViewReceipt}
               </Link>
               <button
                 type="button"
-                className={`font-label inline-flex min-h-10 items-center rounded-sm px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest underline-offset-4 ${
-                  navOnHeroTransparent ? 'text-white/85 hover:underline' : 'text-clay hover:text-obsidian hover:underline'
-                }`}
+                className="font-label inline-flex min-h-10 items-center rounded-sm px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-clay underline-offset-4 hover:text-obsidian hover:underline"
                 onClick={() => {
                   clearPlacedOrderMedusaIdHint();
                   setPlacedOrderMedusaId(null);
@@ -473,7 +435,7 @@ export function Nav() {
         <div className="flex items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
           <button
             type="button"
-            className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${navOnHeroTransparent ? 'text-white/84' : 'text-obsidian/90'}`}
+            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/90"
             aria-expanded={menuVisible && menuPanelOpen}
             aria-controls="primary-nav-drawer"
             aria-label={menuVisible && menuPanelOpen ? copy.shell.closeMenu : copy.shell.openMenu}
@@ -487,7 +449,7 @@ export function Nav() {
           <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
-              className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/85"
               aria-label={copy.nav.searchOpen}
               onClick={() => navigate('/search?focus=1')}
             >
@@ -495,13 +457,13 @@ export function Nav() {
             </button>
             <button
               type="button"
-              className={`relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${navOnHeroTransparent ? 'text-white/82' : 'text-obsidian/85'}`}
+              className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
               aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
               onClick={handleCartNavigation}
             >
               <AppIcon name="shopping_bag" className="h-6 w-6" />
               {totalQty > 0 ? (
-                <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-obsidian">
+                <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
                   {totalQty > 99 ? '99+' : totalQty}
                 </span>
               ) : null}
@@ -525,12 +487,8 @@ export function Nav() {
               className={({ isActive }) =>
                 `nav-link-underline font-body px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
                   isActive
-                    ? navOnHeroTransparent
-                      ? 'nav-link-underline--active rounded-full border border-white/20 bg-white/12 text-white shadow-sm'
-                      : 'nav-link-underline--active rounded-full bg-obsidian text-white shadow-sm'
-                    : navOnHeroTransparent
-                      ? 'rounded-sm text-white/80 hover:text-white'
-                      : 'rounded-sm text-obsidian/90 hover:text-obsidian'
+                    ? 'nav-link-underline--active rounded-full bg-obsidian text-white shadow-sm'
+                    : 'rounded-sm text-obsidian/90 hover:text-obsidian'
                 }`
               }
             >
@@ -561,8 +519,8 @@ export function Nav() {
               onKeyDown={handleSearchKeyDown}
               className={`font-body box-border h-10 w-full border-b text-[13px] leading-normal transition-all duration-500 bg-transparent outline-none ${
                 searchFocused || q.trim()
-                  ? `px-4 pl-10 pr-20 ${navOnHeroTransparent ? 'border-white/30 text-white placeholder:text-white/60 focus:border-white' : 'border-stone/30 text-obsidian focus:border-obsidian placeholder:text-clay/70'}`
-                  : `px-0 pl-10 border-transparent text-transparent placeholder:text-transparent cursor-pointer`
+                  ? 'px-4 pl-10 pr-20 border-stone/30 text-obsidian focus:border-obsidian placeholder:text-clay/70'
+                  : 'px-0 pl-10 border-transparent text-transparent placeholder:text-transparent cursor-pointer'
               }`}
               autoComplete="off"
               aria-expanded={suggestionsOpen}
@@ -571,7 +529,7 @@ export function Nav() {
               role="combobox"
             />
             <span
-              className={`pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 transition-colors ${navOnHeroTransparent ? 'text-white/70' : 'text-obsidian/62'}`}
+              className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-obsidian/62 transition-colors"
               aria-hidden
             >
               <AppIcon name="search" className="h-[18px] w-[18px]" />
@@ -580,9 +538,7 @@ export function Nav() {
               {q.trim() ? (
                 <button
                   type="button"
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${
-                    navOnHeroTransparent ? 'text-white/78 hover:bg-white/10' : 'text-obsidian/70 hover:bg-black/5'
-                  }`}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-obsidian/70 hover:bg-black/5"
                   aria-label={copy.nav.searchClear}
                   onMouseDown={(event) => {
                     event.preventDefault();
@@ -592,7 +548,7 @@ export function Nav() {
                   <AppIcon name="close" className="h-5 w-5" />
                 </button>
               ) : null}
-              <button type="submit" className={`inline-flex h-8 items-center justify-center rounded-full px-3 transition-colors ${navOnHeroTransparent ? 'text-white/90 hover:text-white' : 'text-obsidian/80 hover:text-obsidian'}`}>
+              <button type="submit" className="inline-flex h-8 items-center justify-center rounded-full px-3 text-obsidian/80 transition-colors hover:text-obsidian">
                 <span className="font-label text-[10px] font-semibold uppercase tracking-[0.18em]">{copy.nav.searchSubmit}</span>
               </button>
             </div>
@@ -616,21 +572,19 @@ export function Nav() {
             <LocaleToggle
               locale={locale}
               setLocale={setLocale}
-              tone={navOnHeroTransparent ? 'light' : 'dark'}
+              tone="dark"
               label={copy.shell.language}
             />
           </div>
           <button
             type="button"
-            className={`relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm transition-colors ${
-              navOnHeroTransparent ? 'text-white/82 hover:bg-white/8' : 'text-obsidian/85 hover:bg-black/4'
-            }`}
+            className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
             aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
             onClick={handleCartNavigation}
           >
             <AppIcon name="shopping_bag" className="h-6 w-6" />
             {totalQty > 0 ? (
-              <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 font-label text-[10px] font-semibold leading-none text-obsidian">
+              <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
                 {totalQty > 99 ? '99+' : totalQty}
               </span>
             ) : null}
