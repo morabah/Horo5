@@ -11,8 +11,6 @@ import {
   useRef,
   useState,
   type FormEvent,
-  type KeyboardEvent as ReactKeyboardEvent,
-  type ReactNode,
 } from 'react';
 import {
   getArtist,
@@ -41,10 +39,8 @@ import { PdpShareStrip } from '../components/PdpShareStrip';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { ProductJsonLd } from '../components/ProductJsonLd';
 import { Skeleton, SkeletonText } from '../components/ui/Skeleton';
-import { TeeImage, TeeImageFrame } from '../components/TeeImage';
 import { PdpSizeFlatDiagram } from '../components/PdpSizeFlatDiagram';
 import { ProductQuickView } from '../components/ProductQuickView';
-import { QuickViewTrigger } from '../components/QuickViewTrigger';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { humanizeArtistSlugForDisplay } from '../utils/humanizeArtistSlug';
@@ -59,13 +55,11 @@ import {
   isConfiguredExternalUrl,
   type PdpSizeTableConfig,
 } from '../data/domain-config';
-import { PDP_FEATURE_ICONS } from '../data/pdpIconRegistry';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useCountdown } from '../hooks/useCountdown';
 import { useStableNow } from '../runtime/render-time';
 import type { PdpDeliveryRules } from '../utils/deliveryEstimate';
 import {
-  defaultPdpModelParagraph,
   formatPdpFitModelLine,
   formatPdpFitModelLineForSizeSelection,
 } from '../utils/pdpFitModels';
@@ -74,9 +68,19 @@ import { productAvailableSizes } from '../utils/productSizes';
 import {
   buildPdpDeliveryLines,
   formatDeliveryWindow,
-  formatPdpExpressBadgeLabel,
-  formatPdpStandardBadgeLabel,
 } from '../utils/deliveryEstimate';
+import {
+  PdpTrustStrip,
+  PdpHeroGallery,
+  PdpBuyBox,
+  PdpStoryCard,
+  PdpArtistCard,
+  PdpQualityProofCard,
+  PdpDeliveryPaymentCard,
+  PdpGiftReadyCard,
+  PdpLaunchTrustCard,
+  PdpRelatedProducts,
+} from '../components/pdp';
 
 const { copy } = PDP_SCHEMA;
 
@@ -84,65 +88,6 @@ const EMPTY_PRODUCT_LIST: Product[] = [];
 const EMPTY_FEELING_LIST: Feeling[] = [];
 const EMPTY_ARTIST_LIST: Artist[] = [];
 const EMPTY_OCCASION_LIST: Occasion[] = [];
-
-const featureStripItems = PDP_SCHEMA.features.map((feature) => ({
-  label: feature.label,
-  Icon: PDP_FEATURE_ICONS[feature.icon],
-}));
-
-function formatTitleLines(name: string) {
-  const words = name.trim().split(/\s+/);
-  if (words.length <= 1) return name;
-  const mid = Math.ceil(words.length / 2);
-  return (
-    <>
-      {words.slice(0, mid).join(' ')}
-      <br />
-      {words.slice(mid).join(' ')}
-    </>
-  );
-}
-
-function getPreferredDefaultSize(product?: Product | null): ProductSizeKey | null {
-  if (!product) return null;
-
-  const availableSizes = productAvailableSizes(product).filter((size) =>
-    PDP_SCHEMA.sizes.some((definition) => definition.key === size && !definition.disabled),
-  );
-
-  if (availableSizes.length === 0) {
-    return null;
-  }
-
-  return availableSizes.includes('M') ? 'M' : availableSizes[0];
-}
-
-function IconCart() {
-  return (
-    <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-      <path
-        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-      />
-    </svg>
-  );
-}
-
-function IconChevronDown() {
-  return (
-    <svg
-      className="h-5 w-5 shrink-0 transition-transform duration-200 group-open:rotate-180"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      aria-hidden
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 9l-7 7-7-7" />
-    </svg>
-  );
-}
 
 function IconChevronLeft({ className = 'h-6 w-6' }: { className?: string }) {
   return (
@@ -160,23 +105,42 @@ function IconChevronRight({ className = 'h-6 w-6' }: { className?: string }) {
   );
 }
 
+function IconCart() {
+  return (
+    <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path
+        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+      />
+    </svg>
+  );
+}
+
 function formatSizeTablePresetLabel(presetKey: string): string {
   const t = presetKey.trim();
   if (!t) return presetKey;
   return t.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function AccordionSection({ title, children, defaultOpen }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
-  return (
-    <details className="group border-t border-stone/30" open={defaultOpen}>
-      <summary className="font-headline flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-sm font-medium uppercase tracking-wide text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal [&::-webkit-details-marker]:hidden">
-        {title}
-        <IconChevronDown />
-      </summary>
-      <div className="animate-fade-in pb-6 pt-1">{children}</div>
-    </details>
+
+
+function getPreferredDefaultSize(product?: Product | null): ProductSizeKey | null {
+  if (!product) return null;
+
+  const availableSizes = productAvailableSizes(product).filter((size) =>
+    PDP_SCHEMA.sizes.some((definition) => definition.key === size && !definition.disabled),
   );
+
+  if (availableSizes.length === 0) {
+    return null;
+  }
+
+  return availableSizes.includes('M') ? 'M' : availableSizes[0];
 }
+
+
 
 type ProductDetailProps = {
   catalogSnapshot?: Partial<Pick<RuntimeCatalog, 'artists' | 'feelings' | 'occasions' | 'products'>> | null;
@@ -472,7 +436,6 @@ export function ProductDetail({
       }),
     };
 
-  const detailView = gallery[1] ?? null;
   const hasGalleryRail = gallery.length > 1;
   const primaryGallerySrc = gallery[0]?.src ?? media.main;
   const scopeProduct = pdpProduct ?? product;
@@ -505,28 +468,6 @@ export function ProductDetail({
     return `${trimmed.slice(0, 180).trimEnd()}…`;
   }, [productDescription]);
 
-  /** Hero chip: prefer Medusa product description; fallback to pillar tagline (see PDP / Medusa README). */
-  const HERO_SUBTITLE_MAX_LEN = 280;
-  const heroSubtitle = useMemo(() => {
-    const fromDesc = product?.description?.trim();
-    if (fromDesc) {
-      return fromDesc.length <= HERO_SUBTITLE_MAX_LEN
-        ? fromDesc
-        : `${fromDesc.slice(0, HERO_SUBTITLE_MAX_LEN).trimEnd()}…`;
-    }
-    if (preferBackendCatalog) {
-      const fromStory = product?.story?.trim();
-      if (fromStory) {
-        return fromStory.length <= HERO_SUBTITLE_MAX_LEN
-          ? fromStory
-          : `${fromStory.slice(0, HERO_SUBTITLE_MAX_LEN).trimEnd()}…`;
-      }
-      return '';
-    }
-    return feeling?.tagline?.trim() ?? '';
-  }, [preferBackendCatalog, product?.description, product?.story, feeling?.tagline]);
-
-  /** Medusa-backed PDP: category chips only (`pdpTagLabels`). Fixture catalog still maps `occasionSlugs`. */
   const heroCategoryTagItems = useMemo(() => {
     if (!product) return [];
     if (product.pdpTagLabels && product.pdpTagLabels.length > 0) {
@@ -596,13 +537,6 @@ export function ProductDetail({
     [displayFitModelsResolved],
   );
 
-  const fallbackModelParagraph =
-    displayFitModelsResolved.length > 0
-      ? formatPdpFitModelLine(displayFitModelsResolved[0]!)
-      : product
-        ? defaultPdpModelParagraph(product)
-        : '';
-
   const inlineFitModelPart =
     formatPdpFitModelLineForSizeSelection(displayFitModelsResolved, selectedSize) ??
     (displayFitModelsResolved[0] ? formatPdpFitModelLine(displayFitModelsResolved[0]) : undefined);
@@ -668,8 +602,6 @@ export function ProductDetail({
     () => deliveryRulesProp ?? mergePdpDeliveryRules(undefined),
     [deliveryRulesProp],
   );
-  const deliveryStandardBadgeLabel = useMemo(() => formatPdpStandardBadgeLabel(deliveryRules), [deliveryRules]);
-  const deliveryExpressBadgeLabel = useMemo(() => formatPdpExpressBadgeLabel(deliveryRules), [deliveryRules]);
   const standardDeliveryWindow = formatDeliveryWindow(
     deliveryRules.standardMinDays,
     deliveryRules.standardMaxDays,
@@ -997,19 +929,7 @@ export function ProductDetail({
     window.setTimeout(() => setAddedFeedback(false), 2200);
   }
 
-  function handleGalleryKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
-    if (lightboxOpen || gallery.length < 2) return;
 
-    if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      setPhotoIndex((index) => (index <= 0 ? gallery.length - 1 : index - 1));
-    }
-
-    if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      setPhotoIndex((index) => (index >= gallery.length - 1 ? 0 : index + 1));
-    }
-  }
 
   function primaryCtaLabel() {
     if (oosSelected) return copy.notifyMeCTA;
@@ -1017,16 +937,25 @@ export function ProductDetail({
     return copy.selectSizePrompt;
   }
 
-  const desktopCtaClass = `cta-clay flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-    oosSelected
-      ? 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90 opacity-90'
-      : 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90'
-  }`;
+  const storyTagLabels = useMemo(() => {
+    const tags: string[] = [];
+    if (feeling) tags.push(feeling.name);
+    if (product?.fitLabel?.trim()) tags.push(product.fitLabel.trim());
+    heroCategoryTagItems.forEach(({ label }) => tags.push(label));
+    return [...new Set(tags)];
+  }, [feeling, product?.fitLabel, heroCategoryTagItems]);
+
+  const storyText = useMemo(() => {
+    const desc = productDescription.trim();
+    if (!desc) return '';
+    if (desc.length <= 400) return desc;
+    return designStoryExpanded ? desc : `${desc.slice(0, 400).trimEnd()}…`;
+  }, [productDescription, designStoryExpanded]);
 
   const mobileCtaClass = `cta-clay flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
     oosSelected
-      ? 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90 opacity-90'
-      : 'border-[#b77a67] bg-[#b77a67] text-white hover:bg-[#b77a67]/90'
+      ? 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90 opacity-90'
+      : 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90'
   }`;
 
   const deliveryDynamic = product
@@ -1042,8 +971,8 @@ export function ProductDetail({
   if (!product) {
     if (preferBackendCatalog) {
       return (
-        <div className="product-page pdp-page-content bg-papyrus px-4 py-8 md:px-8 md:py-10">
-          <div className="mx-auto grid max-w-7xl gap-8 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-12 lg:gap-16">
+        <div className="product-page pdp-page-content bg-papyrus px-4 py-8 md:px-12 md:py-10">
+          <div className="mx-auto grid max-w-[1320px] gap-8 md:grid-cols-[minmax(0,1.45fr)_minmax(22rem,30rem)] md:gap-12 lg:gap-16">
             <div className="flex flex-col gap-4">
               <Skeleton className="aspect-[4/5] w-full rounded-[18px]" />
               <div className="flex gap-3">
@@ -1078,6 +1007,10 @@ export function ProductDetail({
       ? product.media.blurDataUrlMain
       : null;
 
+  const colorOptions = product?.variantsByColor
+    ? Object.keys(product.variantsByColor).sort()
+    : null;
+
   return (
     <div className="product-page pdp-page-content bg-papyrus text-obsidian">
       {renderJsonLd ? (
@@ -1097,20 +1030,20 @@ export function ProductDetail({
         {copy.sizeRequiredPrompt}
       </span>
 
+      <PdpTrustStrip />
+
       <nav
-        className="bg-papyrus px-4 pb-2 pt-6 font-body text-[11px] uppercase tracking-wider text-clay md:px-8 md:pb-4 md:pt-8"
+        className="bg-papyrus px-4 pb-2 pt-6 font-body text-[11px] uppercase tracking-wider text-clay md:px-12 md:pb-4 md:pt-8"
         aria-label={shellCopy.shell.breadcrumb}
       >
-        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             to="/"
             className="inline-flex min-h-11 items-center rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
           >
             {shellCopy.shell.home}
           </Link>
-          <span className="text-clay/50" aria-hidden>
-            /
-          </span>
+          <span className="text-clay/50" aria-hidden>/</span>
           {feeling ? (
             <>
               <Link
@@ -1119,775 +1052,147 @@ export function ProductDetail({
               >
                 {feeling.name}
               </Link>
-              <span className="text-clay/50" aria-hidden>
-                /
-              </span>
+              <span className="text-clay/50" aria-hidden>/</span>
             </>
           ) : null}
           <span className="min-h-11 max-w-[min(100%,100vw-8rem)] truncate py-2 text-warm-charcoal">{product.name}</span>
         </div>
       </nav>
 
-      <section className="mx-auto grid max-w-[1600px] gap-6 px-4 pb-12 pt-4 md:grid-cols-[minmax(0,1.45fr)_minmax(22rem,30rem)] md:gap-8 md:px-8 md:pb-16 md:pt-6 lg:px-12">
-        <div className="space-y-4 md:space-y-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-4">
-            {hasGalleryRail ? (
-              <div
-                className="scrollbar-thin hidden max-h-[min(75vh,42rem)] w-[4.5rem] shrink-0 flex-col gap-2 overflow-y-auto overflow-x-hidden py-0.5 pr-1 [scrollbar-width:thin] md:flex lg:w-[5.25rem]"
-                aria-label={copy.pdpGalleryThumbnailsAria}
-              >
-                {gallery.map((view, index) => (
-                  <button
-                    key={`${product.slug}-v-${view.key}`}
-                    id={`pdp-gallery-thumb-v-${product.slug}-${index}`}
-                    type="button"
-                    onClick={() => setPhotoIndex(index)}
-                    className={`w-full shrink-0 overflow-hidden border transition-all focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                      photoIndex === index
-                        ? 'border-obsidian opacity-100'
-                        : 'border-transparent opacity-60 hover:opacity-100'
-                    }`}
-                    aria-pressed={photoIndex === index}
-                    aria-label={fillPdpCopyTemplate(copy.pdpGalleryShowImageTemplate, { label: view.label })}
-                  >
-                    <div className="aspect-[4/5] w-full">
-                      <TeeImage
-                        src={view.src}
-                        alt=""
-                        w={320}
-                        className="h-full w-full"
-                        blurDataURL={blurForProductMain(view.src)}
-                        sizes="72px"
-                      />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
-            <div
-              className="relative min-w-0 flex-1 outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-              onKeyDown={handleGalleryKeyDown}
-              tabIndex={0}
-              role="region"
-              aria-label={copy.pdpGalleryRegionAria}
-            >
-              {hasGalleryRail ? (
-                <span id={galleryLiveRegionId} className="sr-only" aria-live="polite" aria-atomic="true">
-                  {galleryLiveText}
-                </span>
-              ) : null}
-              <button
-                type="button"
-                className="block w-full overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                onClick={() => setLightboxOpen(true)}
-                aria-label={fillPdpCopyTemplate(copy.pdpGalleryOpenFullScreenTemplate, { label: heroView.label })}
-              >
-                <div className="aspect-[4/5] w-full overflow-hidden">
-                  <TeeImage
-                    src={heroView.src}
-                    alt={heroView.alt}
-                    w={1600}
-                    eager
-                    className="h-full w-full"
-                    blurDataURL={blurForProductMain(heroView.src)}
-                    sizes="(min-width: 1024px) 50vw, 100vw"
-                  />
-                </div>
-              </button>
-
-              {gallery.length > 1 ? (
-                <>
-                  <button
-                    type="button"
-                    className="absolute left-2 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-stone/55 bg-white/92 text-obsidian shadow-md backdrop-blur-sm transition-colors hover:border-obsidian hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:left-3 md:h-12 md:w-12"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setPhotoIndex((i) => (i <= 0 ? gallery.length - 1 : i - 1));
-                    }}
-                    aria-label={copy.pdpGalleryPrev}
-                  >
-                    <IconChevronLeft />
-                  </button>
-                  <button
-                    type="button"
-                    className="absolute right-2 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-stone/55 bg-white/92 text-obsidian shadow-md backdrop-blur-sm transition-colors hover:border-obsidian hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:right-3 md:h-12 md:w-12"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setPhotoIndex((i) => (i >= gallery.length - 1 ? 0 : i + 1));
-                    }}
-                    aria-label={copy.pdpGalleryNext}
-                  >
-                    <IconChevronRight />
-                  </button>
-                </>
-              ) : null}
-
-            </div>
-          </div>
-
-          {hasGalleryRail ? (
-            <div
-              className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] touch-pan-x md:hidden"
-              aria-label={copy.pdpGalleryThumbnailsAria}
-            >
-              {gallery.map((view, index) => (
-                <button
-                  key={`${product.slug}-h-${view.key}`}
-                  type="button"
-                  onClick={() => setPhotoIndex(index)}
-                  className={`w-[4.25rem] shrink-0 snap-start overflow-hidden border transition-all focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-[4.75rem] ${
-                    photoIndex === index
-                      ? 'border-obsidian opacity-100'
-                      : 'border-transparent opacity-60 hover:opacity-100'
-                  }`}
-                  aria-pressed={photoIndex === index}
-                  aria-label={fillPdpCopyTemplate(copy.pdpGalleryShowImageTemplate, { label: view.label })}
-                >
-                  <div className="aspect-[4/5] w-full">
-                    <TeeImage
-                      src={view.src}
-                      alt=""
-                      w={320}
-                      className="h-full w-full"
-                      blurDataURL={blurForProductMain(view.src)}
-                      sizes="72px"
-                    />
-                  </div>
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        <aside className="md:sticky md:top-24 md:self-start">
-          <div className="space-y-6 md:p-4 lg:p-6">
-            <header className="space-y-4">
-              {feeling ? (
-                <Link
-                  to={`/feelings/${feeling.slug}`}
-                  className="font-label inline-flex min-h-11 items-center rounded-full border border-dusk-violet/35 bg-dusk-violet/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet transition-colors hover:border-dusk-violet/60 hover:bg-dusk-violet/14"
-                >
-                  {feeling.name}
-                </Link>
-              ) : null}
-
-              <h1 className="font-headline text-[clamp(2rem,5vw,3.2rem)] font-semibold leading-[1.02] tracking-tight text-obsidian">
-                {formatTitleLines(product.name)}
-              </h1>
-
-              {heroSubtitle || heroCategoryTagItems.length > 0 || product.capsuleSlugs?.includes('zodiac') ? (
-                <div className="flex flex-wrap gap-2 overflow-visible">
-                  {heroSubtitle ? (
-                    <span className="font-label max-w-full rounded-lg border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal whitespace-normal break-words leading-relaxed sm:rounded-full">
-                      {heroSubtitle}
-                    </span>
-                  ) : null}
-                  {heroCategoryTagItems.map(({ key, label }) => (
-                    <span
-                      key={key}
-                      className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                  {product.capsuleSlugs?.includes('zodiac') ? (
-                    <span className="font-label rounded-full border border-moon-gold/40 bg-moon-gold/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian">
-                      {copy.pdpZodiacCapsuleLabel}
-                    </span>
-                  ) : null}
-                </div>
-              ) : null}
-              <div className="flex flex-wrap gap-2">
-                <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
-                  {product.fitLabel?.trim() || 'Oversized fit'}
-                </span>
-                {trustItems.slice(0, 2).map((item) => (
-                  <span key={item} className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
-                    {item}
-                  </span>
-                ))}
-              </div>
-              {(product.feelsLike?.length || product.worksFor?.length) ? (
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                  {product.feelsLike && product.feelsLike.length > 0 ? (
-                    <div>
-                      <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">{shellCopy.home.feelsLikeLabel}</span>
-                      <p className="font-body mt-0.5 text-sm text-warm-charcoal">{product.feelsLike.join(' · ')}</p>
-                    </div>
-                  ) : null}
-                  {product.worksFor && product.worksFor.length > 0 ? (
-                    <div>
-                      <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">{shellCopy.home.worksForLabel}</span>
-                      <p className="font-body mt-0.5 text-sm text-warm-charcoal">{product.worksFor.join(' · ')}</p>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-            </header>
-
-            <div className="space-y-5">
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-baseline gap-3">
-                  {displayOriginalPriceEgp ? (
-                    <p className="font-headline text-[1.05rem] font-medium text-clay line-through md:text-[1.15rem]">
-                      {formatEgp(displayOriginalPriceEgp)}
-                    </p>
-                  ) : null}
-                  <p className={`font-headline text-[1.8rem] font-semibold leading-none md:text-[2rem] ${displayOriginalPriceEgp ? 'text-red-600' : 'text-obsidian'}`}>
-                    {formatEgp(displayPriceEgp)}
-                  </p>
-                  {promoCountdown && !promoCountdown.expired ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 ring-1 ring-red-200">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-red-500" aria-hidden>
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                      <span className="font-label text-[13px] font-semibold tabular-nums leading-none text-red-600">
-                        {promoCountdown.days > 0
-                          ? `${promoCountdown.days}d ${String(promoCountdown.hours).padStart(2, '0')}h ${String(promoCountdown.minutes).padStart(2, '0')}m`
-                          : `${String(promoCountdown.hours).padStart(2, '0')}:${String(promoCountdown.minutes).padStart(2, '0')}:${String(promoCountdown.seconds).padStart(2, '0')}`
-                        }
-                      </span>
-                    </span>
-                  ) : null}
-                </div>
-                {priceSizeLabel ? (
-                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-label">
-                    {priceSizeLabel}
-                  </p>
-                ) : null}
-              </div>
-
-              {product.variantsByColor ? (
-                <div className="space-y-2">
-                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">Color</p>
-                  <div className="flex flex-wrap gap-2" role="group" aria-label="Product color">
-                    {Object.keys(product.variantsByColor)
-                      .sort()
-                      .map((color) => {
-                        const isSelected = selectedColor === color;
-                        return (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => setSelectedColor(color)}
-                            aria-pressed={isSelected}
-                            className={`font-label min-h-11 rounded-full border px-4 text-[11px] font-semibold uppercase tracking-[0.16em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                              isSelected
-                                ? 'border-obsidian bg-obsidian text-white'
-                                : 'border-stone/60 bg-white/80 text-obsidian hover:border-obsidian'
-                            }`}
-                          >
-                            {color}
-                          </button>
-                        );
-                      })}
-                  </div>
-                </div>
-              ) : null}
-
-              <div ref={sizeSectionRef} className="space-y-3 border-t border-stone/30 pt-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
-                    {copy.pdpSizeSectionLabel}
-                  </p>
-                  <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-                    <span
-                      className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian"
-                      title={sizeTableResolved.presetKeyUsed}
-                    >
-                      {formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed)}
-                    </span>
-                    <button
-                      ref={sizeGuideTriggerRef}
-                      type="button"
-                      onClick={() => setSizeGuideOpen(true)}
-                      className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
-                    >
-                      {copy.sizeGuideLabel}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2.5" role="group" aria-label={copy.pdpSizeGroupAria}>
-                  {sizeButtons.map(({ key, disabled }) => {
-                    const isSelected = selectedSize === key;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        title={disabled ? copy.pdpSizeOosHint : undefined}
-                        onClick={() => handleSizeSelect(key, isSelected)}
-                        aria-pressed={isSelected}
-                        className={`flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border px-4 font-headline text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-                          disabled
-                            ? isSelected
-                              ? 'border-obsidian bg-obsidian text-white line-through decoration-white/70'
-                              : 'border-stone/40 text-clay line-through decoration-obsidian/30 hover:border-obsidian/45'
-                            : isSelected
-                              ? 'border-obsidian bg-obsidian text-white shadow-sm'
-                              : 'border-stone/60 bg-white/80 text-obsidian hover:border-obsidian'
-                        }`}
-                      >
-                        <span aria-disabled={disabled}>{key}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {silhouetteCueLabel ? (
-                  <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
-                    {silhouetteCueLabel}
-                  </p>
-                ) : null}
-
-                <p className="font-body text-sm leading-relaxed">
-                  <span className="text-obsidian">{inlineFitModelDisplay}</span>
-                  {inlineFitMeasurementsPart ? (
-                    <>
-                      {' '}
-                      <span className="font-medium text-obsidian">{inlineFitMeasurementsPart}</span>
-                    </>
-                  ) : null}
-                </p>
-
-                {inventoryHint ? (
-                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
-                    {inventoryHint}
-                  </p>
-                ) : null}
-
-                {oosSelected ? (
-                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
-                    {copy.pdpOutOfStockForSize}
-                  </p>
-                ) : null}
-              </div>
-
-              {compactProductDescription ? (
-                <p className="font-body text-[13px] leading-relaxed text-warm-charcoal/80 line-clamp-2">
-                  {compactProductDescription}
-                </p>
-              ) : null}
-
-              <div ref={mainCtaRef} className="space-y-3">
-                <button
-                  type="button"
-                  onClick={handlePrimaryAction}
-                  className={`${desktopCtaClass}${addedFeedback ? ' pdp-cta-added' : ''}`}
-                  aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
-                >
-                  {addedFeedback ? (
-                    <>
-                      <span className="pdp-cta-check" aria-hidden>
-                        ✓
-                      </span>
-                      <span>{copy.pdpPrimaryCtaAddedLabel}</span>
-                    </>
-                  ) : (
-                    <><IconCart /><span>{primaryCtaLabel()}</span></>
-                  )}
-                </button>
-
-                {oosSelected ? (
-                  <div ref={notifyFormRef} className="space-y-3">
-                    {notifySuccess ? (
-                      <p
-                        className="rounded-xl border border-deep-teal/25 bg-frost-blue/40 px-4 py-3 font-body text-sm text-obsidian"
-                        role="status"
-                      >
-                        {copy.notifySuccess}
-                      </p>
-                    ) : (
-                      <form onSubmit={handleNotifySubmit} className="space-y-3">
-                        <label
-                          htmlFor={notifyFieldId}
-                          className="font-label block text-[11px] font-medium uppercase tracking-[0.18em] text-label"
-                        >
-                          {copy.notifyFieldLabel}
-                        </label>
-                        <input
-                          ref={notifyInputRef}
-                          id={notifyFieldId}
-                          type="email"
-                          name="notify-email"
-                          autoComplete="email"
-                          placeholder={copy.notifyEmailPlaceholder}
-                          value={notifyEmail}
-                          onChange={(event) => {
-                            setNotifyEmail(event.target.value);
-                            setNotifyError(false);
-                          }}
-                          className="min-h-12 w-full rounded-xl border border-stone bg-white px-4 py-3 font-body text-sm text-obsidian shadow-sm placeholder:text-clay/80 focus:border-deep-teal focus:outline-none focus:ring-2 focus:ring-deep-teal/25"
-                          aria-invalid={notifyError}
-                          aria-describedby={notifyError ? `${notifyFieldId}-error` : undefined}
-                        />
-                        {notifyError ? (
-                          <p id={`${notifyFieldId}-error`} className="font-body text-xs text-obsidian">
-                            {copy.notifyInvalidEmail}
-                          </p>
-                        ) : null}
-                        <button type="submit" className={desktopCtaClass}>
-                          <IconCart />
-                          <span>{copy.notifyMeCTA}</span>
-                        </button>
-                      </form>
-                    )}
-                  </div>
-                ) : null}
-              </div>
-
-              <p className="font-body text-center text-[10px] tracking-wide text-warm-charcoal/70 md:text-left">
-                {PDP_SCHEMA.trustStripItems.slice(0, 3).join(' · ')}
-              </p>
-
-              {showCrossSellSection ? (
-                <CrossSellWidget
-                  frequentlyBoughtWith={primaryCrossSellProducts}
-                  styleWith={fallbackCrossSellProducts}
-                  copy={{
-                    fbtEyebrow: copy.frequentlyBoughtTogetherEyebrow,
-                    fbtTitle: copy.frequentlyBoughtTogetherTitle,
-                    fbtSubtitle: copy.frequentlyBoughtTogetherSubtitle,
-                    styleEyebrow: copy.styleItWithEyebrow,
-                    styleTitle: copy.styleItWithTitle,
-                    styleSubtitle: copy.styleItWithSubtitle,
-                    bundleFbtCta: copy.crossSellBundleFbtCta,
-                    bundleStyleCta: copy.crossSellBundleStyleCta,
-                    needSize: copy.crossSellNeedSize,
-                  }}
-                  sizeReady={sizeReady}
-                  oosSelected={oosSelected}
-                  selectedSize={selectedSize as ProductSizeKey | null}
-                  currentSlug={product.slug}
-                  onQuickView={setRelatedQuickViewSlug}
-                  onMissingSize={handleMissingSize}
-                  onAddBundle={handleCrossSellBundle}
-                />
-              ) : null}
-
-              <div
-                className="space-y-2 rounded-xl border border-stone/35 bg-white/55 px-4 py-3"
-                aria-labelledby="pdp-delivery-est-heading"
-              >
-                <p
-                  id="pdp-delivery-est-heading"
-                  className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label"
-                >
-                  {copy.deliveryEyebrow}
-                </p>
-                {deliveryDynamic ? (
-                  <p className="font-body text-sm font-medium leading-snug text-obsidian">{deliveryDynamic.urgencyLine}</p>
-                ) : null}
-                <p className="font-body text-sm leading-relaxed text-warm-charcoal">
-                  <span className="font-medium text-obsidian">{deliveryStandardBadgeLabel}</span> {standardDeliveryWindow}
-                  <span className="mx-2 text-clay/50" aria-hidden>
-                    ·
-                  </span>
-                  <span className="font-medium text-obsidian">{deliveryExpressBadgeLabel}</span> {expressDeliveryWindow}
-                </p>
-                {deliveryDynamic ? (
-                  <p className="font-body text-sm leading-snug text-warm-charcoal">{deliveryDynamic.arrivesLine}</p>
-                ) : null}
-                {trustItems.length > 0 ? (
-                  <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2" aria-label="Product trust highlights">
-                    {trustItems.slice(0, 4).map((item) => (
-                      <li key={item} className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-warm-charcoal">
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-                {whatsappSupportUrl ? (
-                  <a
-                    href={whatsappSupportUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
-                  >
-                    {copy.whatsappHelpLabel}
-                  </a>
-                ) : null}
-              </div>
-
-              {!compactPdp ? <PdpShareStrip productName={product.name} productSlug={product.slug} /> : null}
-
-              {pdpArtist ? (
-                <div className="flex items-center gap-3 border-t border-stone/30 pt-5">
-                  {pdpArtist.avatarSrc ? (
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/45">
-                      <TeeImage
-                        src={pdpArtist.avatarSrc}
-                        alt={pdpArtist.name}
-                        w={160}
-                        eager
-                        className="h-full w-full"
-                        sizes="48px"
-                      />
-                    </div>
-                  ) : null}
-                  <div className="min-w-0">
-                    <p className="font-body text-sm leading-snug text-warm-charcoal">
-                      <span className="text-clay">{isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}</span>{' '}
-                      <span className="font-medium text-obsidian">
-                        {pdpArtist.name}
-                      </span>
-                    </p>
-                    <span className="mt-1 inline-flex items-center gap-1 font-label text-[9px] font-medium uppercase tracking-[0.14em] text-deep-teal">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>
-                      {isArabic ? copy.verifiedArtistLabelAr : copy.verifiedArtistLabel}
-                    </span>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </aside>
+      <section className="mx-auto grid max-w-[1320px] gap-6 px-4 pb-12 pt-4 md:grid-cols-[minmax(0,1.45fr)_minmax(22rem,30rem)] md:gap-12 md:px-12 md:pb-16 md:pt-6 lg:gap-16">
+        <PdpHeroGallery
+          product={product}
+          gallery={gallery}
+          photoIndex={photoIndex}
+          hasGalleryRail={hasGalleryRail}
+          heroView={heroView}
+          galleryLiveRegionId={galleryLiveRegionId}
+          galleryLiveText={galleryLiveText}
+          onSetPhotoIndex={setPhotoIndex}
+          onOpenLightbox={() => setLightboxOpen(true)}
+          onBlurForMain={blurForProductMain}
+        />
+        <PdpBuyBox
+          product={product}
+          feeling={feeling}
+          pdpArtist={pdpArtist}
+          isArabic={isArabic}
+          displayPriceEgp={displayPriceEgp}
+          displayOriginalPriceEgp={displayOriginalPriceEgp}
+          promoCountdown={promoCountdown}
+          priceSizeLabel={priceSizeLabel}
+          compactProductDescription={compactProductDescription}
+          heroCategoryTagItems={heroCategoryTagItems}
+          trustItems={trustItems}
+          selectedColor={selectedColor}
+          colorOptions={colorOptions}
+          onColorSelect={setSelectedColor}
+          sizeButtons={sizeButtons}
+          selectedSize={selectedSize}
+          oosSelected={oosSelected}
+          sizeReady={sizeReady}
+          sizeTableResolved={sizeTableResolved}
+          silhouetteCueLabel={silhouetteCueLabel}
+          inlineFitModelDisplay={inlineFitModelDisplay}
+          inlineFitMeasurementsPart={inlineFitMeasurementsPart}
+          inventoryHint={inventoryHint}
+          sizeSectionRef={sizeSectionRef}
+          sizeGuideTriggerRef={sizeGuideTriggerRef}
+          onSizeSelect={handleSizeSelect}
+          onOpenSizeGuide={() => setSizeGuideOpen(true)}
+          mainCtaRef={mainCtaRef}
+          addedFeedback={addedFeedback}
+          onPrimaryAction={handlePrimaryAction}
+          notifyFormRef={notifyFormRef}
+          notifyInputRef={notifyInputRef}
+          notifyFieldId={notifyFieldId}
+          notifyEmail={notifyEmail}
+          notifyError={notifyError}
+          notifySuccess={notifySuccess}
+          onNotifyEmailChange={(email: string) => { setNotifyEmail(email); setNotifyError(false); }}
+          onNotifySubmit={handleNotifySubmit}
+          whatsappSupportUrl={whatsappSupportUrl}
+        />
       </section>
 
-      <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[1600px] px-4 py-5 md:px-8 lg:px-12">
-          <p className="font-body text-sm leading-relaxed text-warm-charcoal">
-            {isArabic
-              ? 'تفاصيل القصة وجودة الطباعة موجودة بالأسفل ضمن أقسام المنتج، بينما المعرض بالأعلى مخصص لصور المنتج فقط.'
-              : 'Design story and print/fit specs are listed below in the product sections. The gallery above now focuses on product photos only.'}
-          </p>
-        </div>
-      </section>
-
-      <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-8 md:py-12 lg:px-12">
-          <div className="max-w-[980px]">
-            <AccordionSection title={copy.accordionProductDetails} defaultOpen>
-              {displayFitLines.length > 0 ? (
-                <div className="mb-5 space-y-3">
-                  {displayFitLines.map((line, idx) => (
-                    <p key={`fit-line-${idx}`} className="font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              ) : physicalFitDisplayLines.length > 0 ? (
-                <div className="mb-5 space-y-3">
-                  {physicalFitDisplayLines.map((line, idx) => (
-                    <p
-                      key={`phys-line-${idx}`}
-                      className="font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]"
-                    >
-                      {line}
-                    </p>
-                  ))}
-                </div>
-              ) : (
-                <p className="mb-5 font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
-                  {fallbackModelParagraph}
-                </p>
-              )}
-              <div className="pdp-feature-strip" role="list">
-                {featureStripItems.map(({ label, Icon }) => (
-                  <div key={label} className="pdp-feature-item" role="listitem">
-                    <div className="pdp-feature-icon" aria-hidden>
-                      <Icon />
-                    </div>
-                    <p className="font-body text-center text-[11px] font-medium leading-snug text-warm-charcoal md:text-left md:text-xs">
-                      {label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </AccordionSection>
-
-            <AccordionSection title={copy.accordionDesignStory}>
-              {detailView && detailView.src !== primaryGallerySrc ? (
-                <figure className="mb-4 overflow-hidden rounded-[18px] border border-stone/30 bg-surface-container-high">
-                  <div className="aspect-[4/5] w-full md:aspect-[16/10]">
-                    <TeeImage
-                      src={detailView.src}
-                      alt={detailView.alt}
-                      w={1200}
-                      className="h-full w-full"
-                      blurDataURL={blurForProductMain(detailView.src)}
-                      sizes="(min-width: 768px) 66vw, 100vw"
-                    />
-                  </div>
-                </figure>
-              ) : null}
-              {productDescription ? (
-                <div className="mb-4 space-y-2">
-                  <p className="font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
-                    {designStoryExpanded ? productDescription : compactProductDescription}
-                  </p>
-                  {productDescription.trim().length > 180 ? (
-                    <button
-                      type="button"
-                      onClick={() => setDesignStoryExpanded((open) => !open)}
-                      className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
-                    >
-                      {designStoryExpanded ? 'Show less' : 'Read more'}
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-              <p className="font-body text-sm font-medium leading-relaxed text-warm-charcoal md:text-[15px]">
-                {copy.designStoryAccordionBody}{' '}
-                <span className="block pt-2 text-warm-charcoal/95">
-                  Part of the{' '}
-                  {feeling ? (
-                    <Link
-                      to={`/feelings/${feeling.slug}`}
-                      className="border-b border-obsidian/25 font-medium text-obsidian transition-colors hover:text-deep-teal"
-                    >
-                      {feeling.name}
-                    </Link>
-                  ) : (
-                    'collection'
-                  )}{' '}
-                  line.
-                </span>
-              </p>
-              {pdpArtist ? (
-                <div className="mt-5 flex items-center gap-3.5 rounded-xl border border-stone/35 bg-white/50 p-3.5">
-                  {pdpArtist.avatarSrc ? (
-                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/40">
-                      <TeeImage
-                        src={pdpArtist.avatarSrc}
-                        alt={pdpArtist.name}
-                        w={88}
-                        className="h-full w-full"
-                        sizes="44px"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-deep-teal/10 text-deep-teal ring-1 ring-deep-teal/20">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <p className="font-body text-sm leading-snug text-warm-charcoal">
-                      <span className="text-clay">{isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}</span>{' '}
-                      <span className="font-medium text-obsidian">{pdpArtist.name}</span>
-                    </p>
-                    {artist?.style ? (
-                      <p className="mt-0.5 truncate font-body text-xs text-clay">{artist.style}</p>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null}
-            </AccordionSection>
-
-            <AccordionSection title={copy.accordionShipping}>
-              <div className="space-y-3 font-body text-sm text-warm-charcoal">
-                <div className="rounded-lg border border-stone/35 bg-white/40 px-3 py-2.5">
-                  <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {copy.deliveryEstimateTitle}
-                  </p>
-                  <p className="mt-1.5 leading-relaxed">
-                    <span className="font-medium text-obsidian">{deliveryStandardBadgeLabel}:</span>{' '}
-                    {standardDeliveryWindow}
-                  </p>
-                  <p className="mt-1 leading-relaxed">
-                    <span className="font-medium text-obsidian">{deliveryExpressBadgeLabel}:</span>{' '}
-                    {expressDeliveryWindow}
-                  </p>
-                  <p className="mt-2 text-xs text-clay">{copy.deliveryEstimateNote}</p>
-                </div>
-                {copy.shippingSections.map((section) => (
-                  <p key={section.title}>
-                    <strong>{section.title}:</strong> {section.body}
-                  </p>
-                ))}
-              </div>
-            </AccordionSection>
-          </div>
-        </div>
-      </section>
-
-      {related.length >= 3 ? (
+      {showCrossSellSection ? (
         <section className="border-t border-stone/25 bg-papyrus">
-          <div className="mx-auto max-w-[1600px] px-4 pb-10 pt-8 md:px-8 md:pb-12 md:pt-10 lg:px-12">
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
-                  {copy.pdpRelatedEyebrow}
-                </span>
-                <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
-                  {fillPdpCopyTemplate(copy.pdpRelatedMoreFromTemplate, {
-                    feeling: feeling?.name ?? copy.pdpRelatedFallbackFeeling,
-                  })}
-                </h2>
-                <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
-              </div>
-              {feeling ? (
-                <Link
-                  to={`/feelings/${feeling.slug}`}
-                  className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
-                >
-                  {shellCopy.shell.shopByFeeling}
-                </Link>
-              ) : null}
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3 md:gap-6">
-              {related.map((item) => (
-                <article
-                  key={item.slug}
-                  className="group relative overflow-hidden rounded-[18px] bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md"
-                >
-                  <Link
-                    to={`/products/${item.slug}`}
-                    className="absolute inset-0 z-[1] rounded-[18px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  >
-                    <span className="sr-only">
-                      {fillPdpCopyTemplate(copy.pdpRelatedCardSrTemplate, {
-                        name: item.name,
-                        price: formatEgp(item.priceEgp),
-                      })}
-                    </span>
-                  </Link>
-
-                  <div className="pointer-events-none relative z-[2]">
-                    <div className="relative overflow-hidden rounded-t-[18px]">
-                      <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
-                        <TeeImageFrame
-                          src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
-                          alt={fillPdpCopyTemplate(copy.pdpRelatedCardImageAltTemplate, { name: item.name })}
-                          w={500}
-                          aspectRatio="4/5"
-                          borderRadius="1.125rem 1.125rem 0 0"
-                          frameStyle={{ marginBottom: 0 }}
-                          blurDataURL={item.media?.blurDataUrlMain ?? null}
-                        />
-                      </div>
-                      <QuickViewTrigger
-                        productName={item.name}
-                        className="pointer-events-auto bottom-3 left-3 right-3"
-                        onClick={() => setRelatedQuickViewSlug(item.slug)}
-                      />
-                    </div>
-
-                    <div className="p-4">
-                      <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
-                        {item.name}
-                      </h3>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <p className="font-body text-xs text-clay">{formatEgp(item.priceEgp)}</p>
-                        {compareAtPrice(item.priceEgp, item.originalPriceEgp) ? (
-                          <p className="font-body text-[11px] text-clay/80 line-through">
-                            {formatEgp(compareAtPrice(item.priceEgp, item.originalPriceEgp) ?? 0)}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+          <div className="mx-auto max-w-[1320px] px-4 py-10 md:px-12 md:py-12">
+            <CrossSellWidget
+              frequentlyBoughtWith={primaryCrossSellProducts}
+              styleWith={fallbackCrossSellProducts}
+              copy={{
+                fbtEyebrow: copy.frequentlyBoughtTogetherEyebrow,
+                fbtTitle: copy.frequentlyBoughtTogetherTitle,
+                fbtSubtitle: copy.frequentlyBoughtTogetherSubtitle,
+                styleEyebrow: copy.styleItWithEyebrow,
+                styleTitle: copy.styleItWithTitle,
+                styleSubtitle: copy.styleItWithSubtitle,
+                bundleFbtCta: copy.crossSellBundleFbtCta,
+                bundleStyleCta: copy.crossSellBundleStyleCta,
+                needSize: copy.crossSellNeedSize,
+              }}
+              sizeReady={sizeReady}
+              oosSelected={oosSelected}
+              selectedSize={selectedSize as ProductSizeKey | null}
+              currentSlug={product.slug}
+              onQuickView={setRelatedQuickViewSlug}
+              onMissingSize={handleMissingSize}
+              onAddBundle={handleCrossSellBundle}
+            />
           </div>
         </section>
       ) : null}
+
+      {!compactPdp ? <PdpShareStrip productName={product.name} productSlug={product.slug} /> : null}
+
+      <PdpStoryCard storyText={storyText} tagLabels={storyTagLabels} />
+
+      <section className="border-t border-stone/25 bg-papyrus">
+        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <PdpArtistCard artistDisplay={pdpArtist} catalogArtist={artist} isArabic={isArabic} />
+            <PdpQualityProofCard physicalLines={physicalFitDisplayLines} />
+            <PdpDeliveryPaymentCard
+              deliveryRules={deliveryRules}
+              deliveryDynamic={deliveryDynamic}
+              standardDeliveryWindow={standardDeliveryWindow}
+              expressDeliveryWindow={expressDeliveryWindow}
+              trustItems={trustItems}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-stone/25 bg-papyrus">
+        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
+          <div className="grid gap-6 md:grid-cols-2">
+            <PdpGiftReadyCard giftWrapAvailable />
+            <PdpLaunchTrustCard />
+          </div>
+        </div>
+      </section>
+
+      {productDescription && productDescription.trim().length > 400 ? (
+        <section className="border-t border-stone/25 bg-papyrus">
+          <div className="mx-auto max-w-[1320px] px-4 py-6 md:px-12">
+            <button
+              type="button"
+              onClick={() => setDesignStoryExpanded((open) => !open)}
+              className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
+            >
+              {designStoryExpanded ? 'Show less' : 'Read full story'}
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      <PdpRelatedProducts
+        products={related}
+        feeling={feeling}
+        shopByFeelingLabel={shellCopy.shell.shopByFeeling}
+        onQuickView={setRelatedQuickViewSlug}
+      />
 
       {product ? (
         <StickyAddToCart
