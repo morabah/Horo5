@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { AppIcon } from '../components/AppIcon';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { BRAND_COPY } from '../data/brand';
 import { ABOUT_SCHEMA, BRAND_TRUST_POINTS, PDP_SCHEMA } from '../data/domain-config';
 import { PAGE_HEROES } from '../content/page-heroes';
 import { aboutBridgeAlt, aboutBridgeImage, imgUrl } from '../data/images';
@@ -51,12 +50,27 @@ export function About() {
                 <h1 className="font-headline text-[clamp(2.2rem,5vw,4.3rem)] font-semibold leading-[0.94] tracking-tight text-white">{t(config.title) ?? 'Our story'}</h1>
                 <div className="mt-5 space-y-6 font-body text-[1.02rem] leading-relaxed text-white/88 md:text-[1.08rem]">
                   <p>
-                    {BRAND_COPY.aboutLead}
+                    HORO was created for people who do not want to disappear into places, routines, or clothes that do not feel like them.
                   </p>
                   <p>
-                    {BRAND_COPY.aboutSupport}
+                    We believe what you wear can carry more than style. It can carry a mood, a memory, a thought, or a part of yourself that words do not always reach.
                   </p>
-                  <p className="text-[1.15rem] text-secondary-fixed md:text-[1.22rem]">{BRAND_COPY.aboutClose}</p>
+                  <p>
+                    Each HORO piece begins as a feeling, then becomes artist-made wearable art. A face, a color, a line, or a symbol is chosen not only for how it looks, but for what it holds. Confidence. Softness. Mystery. Joy. Nostalgia. Rebellion. Calm. A version of yourself still becoming clear.
+                  </p>
+                  <p>
+                    HORO moves with personal rhythm — the rhythm of changing moods, daily rituals, new seasons, and quiet transformations. It is made for the days you feel bold, romantic, strange, peaceful, playful, distant, or impossible to explain.
+                  </p>
+                  <p>
+                    And because feelings are rarely ours alone, every piece can become a signal. A way to find your circle — people who recognize the same mood, even when they wear it differently.
+                  </p>
+                  <p>
+                    We do not design around trends only.
+                    We design around feeling, meaning, and the personal rhythm behind what people choose to wear.
+                  </p>
+                  <p className="text-[1.15rem] text-secondary-fixed md:text-[1.22rem]">
+                    Wear What You Feel.
+                  </p>
                 </div>
 
                 <div className="mt-7 flex flex-col gap-5">
