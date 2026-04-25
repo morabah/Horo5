@@ -2027,22 +2027,11 @@ export function Checkout() {
 
                 {paymentMethods.length === 0 ? (
                   <div className="mt-4 text-sm text-ember">
-                    {hasSavedShipping ? (
-                      <p>
-                        {isArabic
-                          ? 'لا توجد طريقة دفع مفعّلة لهذه المنطقة حالياً.'
-                          : 'No payment provider is enabled for this region yet.'}
-                      </p>
-                    ) : (
-                      <>
-                        <p>{copy.checkout.paymentOptionsLoadingNote}</p>
-                        <p className="mt-2 text-xs text-clay">
-                          {isArabic
-                            ? 'يرجى حفظ عنوان التوصيل لعرض خيارات الدفع المتاحة.'
-                            : 'Please save your delivery address to see available payment options.'}
-                        </p>
-                      </>
-                    )}
+                    {hasSavedShipping
+                      ? isArabic
+                        ? 'الدفع غير متاح حالياً لمنطقة التوصيل هذه. تواصل معنا عبر واتساب أو جرّب عنواناً آخر.'
+                        : 'Payment is not available for this delivery area yet. Please contact us on WhatsApp or try another address.'
+                      : copy.checkout.paymentOptionsLoadingNote}
                   </div>
                 ) : null}
 
