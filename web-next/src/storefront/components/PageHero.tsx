@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { Link } from "react-router-dom";
 
@@ -20,10 +22,10 @@ const FOCAL_POINT_MAP: Record<string, string> = {
   right: "object-right",
 };
 
-const THEME_SCRIM: Record<NonNullable<PageHeroConfig["theme"]>, string> = {
+const THEME_SURFACE: Record<NonNullable<PageHeroConfig["theme"]>, string> = {
   dark: "bg-obsidian",
   light: "bg-papyrus",
-  beige: "bg-[#e6ddd1]",
+  beige: "bg-papyrus",
 };
 
 const THEME_TEXT: Record<NonNullable<PageHeroConfig["theme"]>, string> = {
@@ -39,14 +41,14 @@ const THEME_EYEBROW: Record<NonNullable<PageHeroConfig["theme"]>, string> = {
 };
 
 const THEME_CTA_PRIMARY: Record<NonNullable<PageHeroConfig["theme"]>, string> = {
-  dark: "bg-[#f5f0e6] text-[#2a2d26] hover:bg-white",
-  light: "bg-obsidian text-white hover:bg-[#2a2d26]/90",
-  beige: "bg-obsidian text-white hover:bg-[#2a2d26]/90",
+  dark: "bg-papyrus text-obsidian hover:bg-white",
+  light: "bg-obsidian text-white hover:bg-obsidian/90",
+  beige: "bg-obsidian text-white hover:bg-obsidian/90",
 };
 
 const THEME_CTA_SECONDARY: Record<NonNullable<PageHeroConfig["theme"]>, string> = {
   dark:
-    "border border-[#f5f0e6]/40 bg-black/20 text-[#f5f0e6] hover:border-[#f5f0e6]/75 hover:bg-black/28",
+    "border border-papyrus/40 bg-black/20 text-papyrus hover:border-papyrus/75 hover:bg-black/28",
   light:
     "border border-obsidian/30 bg-white/60 text-obsidian hover:border-obsidian/60 hover:bg-white/80",
   beige:
@@ -65,23 +67,25 @@ export function PageHero({
   const title = t(config.title);
   const subtitle = t(config.subtitle);
   const primaryLabel = t(config.primaryCta?.label);
-  const primaryHref = config.primaryCta?.href;
+  const primaryHref = config.primaryCta?.href?.trim();
   const secondaryLabel = t(config.secondaryCta?.label);
-  const secondaryHref = config.secondaryCta?.href;
+  const secondaryHref = config.secondaryCta?.href?.trim();
 
-  const hasPrimary = Boolean(primaryLabel && primaryHref?.trim());
-  const hasSecondary = Boolean(secondaryLabel && secondaryHref?.trim());
+  const hasPrimary = Boolean(primaryLabel && primaryHref);
+  const hasSecondary = Boolean(secondaryLabel && secondaryHref);
   const hasCtas = hasPrimary || hasSecondary;
 
-  const desktopSrc = config.desktopImage?.src;
-  const mobileSrc = config.mobileImage?.src ?? desktopSrc;
-  const hasImage = Boolean(desktopSrc?.trim());
+  const desktopSrc = config.desktopImage?.src?.trim();
+  const mobileSrc = config.mobileImage?.src?.trim();
+  const hasDesktopImage = Boolean(desktopSrc);
+  const hasMobileImage = Boolean(mobileSrc && mobileSrc !== desktopSrc);
 
   const focalClass = FOCAL_POINT_MAP[config.focalPoint ?? "center"] ?? "object-center";
   const theme = config.theme ?? "dark";
   const textClass = THEME_TEXT[theme];
   const eyebrowClass = THEME_EYEBROW[theme];
-  const scrimBg = THEME_SCRIM[theme];
+  const surfaceBg = THEME_SURFACE[theme];
+  const headingId = `${config.pageKey}-page-hero-heading`;
 
   const heightClass = compact
     ? "min-h-[18rem] sm:min-h-[22rem] md:min-h-[26rem]"
@@ -89,23 +93,30 @@ export function PageHero({
 
   return (
     <section
-      aria-labelledby="page-hero-heading"
-      className={`relative isolate overflow-hidden ${scrimBg} ${textClass}`}
+      aria-labelledby={headingId}
+      className={`relative isolate overflow-hidden ${surfaceBg} ${textClass}`}
     >
-      {hasImage ? (
-        <picture className="absolute inset-0 z-0">
-          {mobileSrc && mobileSrc !== desktopSrc && (
-            <source media="(max-width: 767px)" srcSet={mobileSrc} />
-          )}
+      {hasDesktopImage ? (
+        <div className="absolute inset-0 z-0" aria-hidden={!t(config.desktopImage?.alt)}>
+          {hasMobileImage ? (
+            <Image
+              src={mobileSrc!}
+              alt={t(config.mobileImage?.alt) ?? t(config.desktopImage?.alt) ?? ""}
+              fill
+              priority
+              className={`block object-cover md:hidden ${focalClass}`}
+              sizes="100vw"
+            />
+          ) : null}
           <Image
             src={desktopSrc!}
             alt={t(config.desktopImage?.alt) ?? ""}
             fill
             priority
-            className={`object-cover ${focalClass}`}
+            className={`${hasMobileImage ? "hidden md:block" : "block"} object-cover ${focalClass}`}
             sizes="100vw"
           />
-        </picture>
+        </div>
       ) : (
         <div className="absolute inset-0 z-0 bg-papyrus" aria-hidden />
       )}
@@ -129,7 +140,7 @@ export function PageHero({
           ) : null}
 
           <H
-            id="page-hero-heading"
+            id={headingId}
             className="font-headline text-[clamp(2rem,5vw,3.6rem)] font-semibold leading-[0.98] tracking-tight"
           >
             {title}
