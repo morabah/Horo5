@@ -14,14 +14,12 @@ const { copy } = PDP_SCHEMA;
 type PdpRelatedProductsProps = {
   products: Product[];
   feeling: Feeling | undefined;
-  shopByFeelingLabel: string;
   onQuickView: (slug: string) => void;
 };
 
 export function PdpRelatedProducts({
   products,
   feeling,
-  shopByFeelingLabel,
   onQuickView,
 }: PdpRelatedProductsProps) {
   if (products.length < 3) return null;
@@ -29,37 +27,34 @@ export function PdpRelatedProducts({
   return (
     <section className="border-t border-stone/25 bg-papyrus">
       <div className="mx-auto max-w-[1320px] px-4 pb-14 pt-12 md:px-12 md:pb-16 md:pt-14 lg:px-12">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="mb-2 flex items-end justify-between gap-4">
           <div>
-            <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
-              {copy.pdpRelatedEyebrow}
-            </span>
-            <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
+            <h2 className="font-headline text-[clamp(1.5rem,3vw,2.2rem)] font-normal tracking-tight text-obsidian">
               {fillPdpCopyTemplate(copy.pdpRelatedMoreFromTemplate, {
                 feeling: feeling?.name ?? copy.pdpRelatedFallbackFeeling,
               })}
             </h2>
-            <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
+            <p className="mt-1 font-body text-[13px] text-warm-charcoal/60">{copy.relatedMoreFromSubtitle}</p>
           </div>
           {feeling ? (
             <Link
               to={`/feelings/${feeling.slug}`}
-              className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
+              className="mb-2 font-body text-[14px] font-medium text-obsidian transition-colors hover:text-deep-teal"
             >
-              {shopByFeelingLabel}
+              View all
             </Link>
           ) : null}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
           {products.slice(0, 4).map((item) => (
             <article
               key={item.slug}
-              className="group relative overflow-hidden rounded-[18px] bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md"
+              className="group relative"
             >
               <Link
                 to={`/products/${item.slug}`}
-                className="absolute inset-0 z-[1] rounded-[18px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                className="absolute inset-0 z-[1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 <span className="sr-only">
                   {fillPdpCopyTemplate(copy.pdpRelatedCardSrTemplate, {
@@ -70,14 +65,14 @@ export function PdpRelatedProducts({
               </Link>
 
               <div className="pointer-events-none relative z-[2]">
-                <div className="relative overflow-hidden rounded-t-[18px]">
-                  <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
+                <div className="relative overflow-hidden rounded-lg">
+                  <div className="transition-transform duration-500 ease-out group-hover:scale-[1.02]">
                     <TeeImageFrame
                       src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
                       alt={fillPdpCopyTemplate(copy.pdpRelatedCardImageAltTemplate, { name: item.name })}
                       w={500}
                       aspectRatio="4/5"
-                      borderRadius="1.125rem 1.125rem 0 0"
+                      borderRadius="0.5rem"
                       frameStyle={{ marginBottom: 0 }}
                       blurDataURL={item.media?.blurDataUrlMain ?? null}
                     />
@@ -89,12 +84,12 @@ export function PdpRelatedProducts({
                   />
                 </div>
 
-                <div className="p-4">
-                  <h3 className="font-headline text-[11px] font-semibold uppercase tracking-wide text-obsidian group-hover:text-deep-teal md:text-xs">
+                <div className="mt-2.5 px-0.5">
+                  <h3 className="font-body text-[14px] font-semibold text-obsidian group-hover:text-deep-teal">
                     {item.name}
                   </h3>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <p className="font-body text-xs text-clay">{formatEgp(item.priceEgp)}</p>
+                  <div className="mt-0.5 flex items-center gap-2">
+                    <p className="font-body text-[13px] text-warm-charcoal">{formatEgp(item.priceEgp)}</p>
                     {compareAtPrice(item.priceEgp, item.originalPriceEgp) ? (
                       <p className="font-body text-[11px] text-clay/80 line-through">
                         {formatEgp(compareAtPrice(item.priceEgp, item.originalPriceEgp) ?? 0)}

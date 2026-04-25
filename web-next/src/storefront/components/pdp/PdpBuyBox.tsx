@@ -127,10 +127,10 @@ export function PdpBuyBox({
     return copy.selectSizePrompt;
   }
 
-  const ctaClass = `cta-clay flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+  const ctaClass = `flex min-h-12 w-full items-center justify-center gap-2 rounded-sm border px-4 py-3.5 text-[15px] font-medium tracking-[-0.02em] transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
     oosSelected
-      ? 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90 opacity-90'
-      : 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90'
+      ? 'bg-obsidian text-white opacity-90'
+      : 'bg-obsidian text-white hover:opacity-90'
   }`;
 
   return (
@@ -199,25 +199,15 @@ export function PdpBuyBox({
             </p>
           ) : null}
 
-          {/* Product badges */}
-          <div className="flex flex-wrap gap-2">
-            <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
-              {product.fitLabel?.trim() || 'Unisex fit'}
-            </span>
-            {heroCategoryTagItems.map(({ key, label }) => (
-              <span
-                key={key}
-                className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal"
-              >
-                {label}
-              </span>
-            ))}
-            {product.capsuleSlugs?.includes('zodiac') ? (
-              <span className="font-label rounded-full border border-moon-gold/40 bg-moon-gold/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian">
-                {copy.pdpZodiacCapsuleLabel}
-              </span>
-            ) : null}
-          </div>
+          {/* Meta line — single line like mock */}
+          <p className="font-body text-[15.5px] leading-relaxed text-warm-charcoal/80">
+            {[
+              'Artist-made',
+              product.fitLabel?.trim() || 'Unisex',
+              ...(heroCategoryTagItems.map(t => t.label)),
+              ...(product.capsuleSlugs?.includes('zodiac') ? [copy.pdpZodiacCapsuleLabel] : []),
+            ].join(' · ')}
+          </p>
         </header>
 
         {/* Color selector */}
@@ -288,7 +278,7 @@ export function PdpBuyBox({
               href={whatsappSupportUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone/60 bg-white/80 px-4 py-3 font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian hover:bg-white"
+              className="flex min-h-12 w-full items-center justify-center gap-3 rounded-sm border border-stone/60 bg-white px-4 py-3 text-[15px] text-obsidian transition-colors hover:border-obsidian"
             >
               <IconWhatsApp />
               Order on WhatsApp
@@ -341,11 +331,11 @@ export function PdpBuyBox({
           ) : null}
         </div>
 
-        {/* CTA trust line — only key items not already in trust strip */}
-        <p className="font-body text-center text-[10px] tracking-wide text-warm-charcoal/70 md:text-left">
+        {/* CTA proof line */}
+        <p className="font-body text-[14px] text-warm-charcoal/70">
           {trustItems.length > 0
-            ? trustItems.slice(0, 2).join(' · ')
-            : PDP_SCHEMA.trustStripItems.slice(0, 2).join(' · ')}
+            ? trustItems.slice(0, 3).join(' · ')
+            : PDP_SCHEMA.trustStripItems.slice(0, 3).join(' · ')}
         </p>
       </div>
     </aside>

@@ -15,42 +15,33 @@ type PdpQualityProofCardProps = {
 
 export function PdpQualityProofCard({ physicalLines }: PdpQualityProofCardProps) {
   return (
-    <div className="rounded-2xl border border-stone/30 bg-white/60 p-6 md:p-8">
-      <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
-        Quality & Craft
-      </span>
-      <h3 className="font-headline mt-2 text-lg font-semibold tracking-tight text-obsidian">
-        What goes into your piece
-      </h3>
+    <div className="rounded-lg border border-stone/25 bg-white/88 p-6 shadow-[0_1px_2px_rgba(32,25,18,.04),0_12px_26px_rgba(32,25,18,.04)] md:p-7">
+      <h2 className="font-headline text-[clamp(1.5rem,3vw,1.95rem)] font-normal leading-1 tracking-tight text-obsidian">
+        Quality you can feel
+      </h2>
 
-      <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="relative mt-5 grid grid-cols-1 gap-y-2 sm:grid-cols-2 sm:gap-x-6">
+        {/* Center divider on 2-col */}
+        <div className="absolute left-1/2 top-1 bottom-1 hidden w-px bg-stone/25 sm:block" aria-hidden />
         {featureStripItems.map(({ label, Icon }) => (
-          <div key={label} className="flex flex-col items-center text-center md:items-start md:text-left">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-obsidian/5 text-obsidian">
+          <p key={label} className="flex items-center gap-2 font-body text-[14px] text-warm-charcoal">
+            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-obsidian/5 text-obsidian">
               <Icon />
-            </div>
-            <p className="mt-2 font-body text-[11px] font-medium leading-snug text-warm-charcoal">
-              {label}
-            </p>
-          </div>
+            </span>
+            {label}
+          </p>
         ))}
       </div>
 
       {physicalLines.length > 0 ? (
-        <div className="mt-5 border-t border-stone/25 pt-4">
-          <ul className="space-y-1.5">
-            {physicalLines.map((line, idx) => (
-              <li key={idx} className="font-body text-sm text-warm-charcoal">
-                {line}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ul className="mt-5 space-y-1 border-t border-stone/25 pt-4 pl-4">
+          {physicalLines.map((line, idx) => (
+            <li key={idx} className="font-body text-[14px] text-warm-charcoal/80">
+              {line}
+            </li>
+          ))}
+        </ul>
       ) : null}
-
-      <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal/80">
-        {PDP_SCHEMA.copy.designStoryAccordionBody}
-      </p>
     </div>
   );
 }

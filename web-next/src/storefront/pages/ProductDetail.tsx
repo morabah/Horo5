@@ -1059,7 +1059,7 @@ export function ProductDetail({
         </div>
       </nav>
 
-      <section className="mx-auto grid max-w-[1320px] gap-6 px-4 pb-12 pt-4 md:grid-cols-[minmax(0,1.45fr)_minmax(22rem,30rem)] md:gap-12 md:px-12 md:pb-16 md:pt-6 lg:gap-16">
+      <section className="mx-auto grid max-w-[1320px] gap-6 px-4 pb-12 pt-4 md:grid-cols-[minmax(0,1.5fr)_minmax(22rem,0.95fr)] md:gap-7 md:px-12 md:pb-16 md:pt-6 lg:gap-10">
         <PdpHeroGallery
           product={product}
           gallery={gallery}
@@ -1150,9 +1150,16 @@ export function ProductDetail({
 
       <section className="border-t border-stone/25 bg-papyrus">
         <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-[1fr_1.14fr]">
             <PdpArtistCard artistDisplay={pdpArtist} catalogArtist={artist} isArabic={isArabic} />
             <PdpQualityProofCard physicalLines={physicalFitDisplayLines} />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-stone/25 bg-papyrus">
+        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
+          <div className="grid gap-4 md:grid-cols-[0.93fr_1.24fr]">
             <PdpDeliveryPaymentCard
               deliveryRules={deliveryRules}
               deliveryDynamic={deliveryDynamic}
@@ -1160,16 +1167,14 @@ export function ProductDetail({
               expressDeliveryWindow={expressDeliveryWindow}
               trustItems={trustItems}
             />
+            <PdpGiftReadyCard giftWrapAvailable />
           </div>
         </div>
       </section>
 
       <section className="border-t border-stone/25 bg-papyrus">
         <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
-          <div className="grid gap-6 md:grid-cols-2">
-            <PdpGiftReadyCard giftWrapAvailable />
-            <PdpLaunchTrustCard />
-          </div>
+          <PdpLaunchTrustCard />
         </div>
       </section>
 
@@ -1190,7 +1195,6 @@ export function ProductDetail({
       <PdpRelatedProducts
         products={related}
         feeling={feeling}
-        shopByFeelingLabel={shellCopy.shell.shopByFeeling}
         onQuickView={setRelatedQuickViewSlug}
       />
 
