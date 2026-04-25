@@ -1,15 +1,9 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
 import { VIBES_SCHEMA } from '../data/domain-config';
-import {
-  getFeelingsHubHeroTiles,
-  heroVectorizedV2,
-  imgUrl,
-  resolveProductImageSrcForDisplay,
-} from '../data/images';
 import { PAGE_HEROES } from '../content/page-heroes';
 import { useUiLocale } from '../i18n/ui-locale';
 import {
@@ -45,17 +39,6 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
   const { copy, locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const feelings = sortActiveFeelings(getFeelings());
-  const heroTiles = getFeelingsHubHeroTiles();
-  const heroTileCount = Math.max(1, heroTiles.length);
-  const [brokenHeroTiles, setBrokenHeroTiles] = useState<Record<string, boolean>>({});
-  const safeHeroTiles = useMemo(
-    () =>
-      heroTiles.map((tile) => ({
-        ...tile,
-        src: brokenHeroTiles[tile.slug] ? heroVectorizedV2 : tile.src,
-      })),
-    [brokenHeroTiles, heroTiles],
-  );
 
   useEffect(() => {
     if (feelings.length > 0) trackFeelingsHubView(feelings.length);
@@ -95,26 +78,18 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
           className="relative isolate overflow-hidden"
           aria-label={PAGE_HEROES.feelings.eyebrow?.[locale as 'en' | 'ar'] ?? VIBES_SCHEMA.copy.hubHeroAlt}
         >
-          <div
-            className="grid min-h-[26rem] grid-cols-2 gap-0.5 bg-obsidian sm:min-h-[30rem] sm:grid-cols-3 sm:gap-1 lg:min-h-[34rem] lg:[grid-template-columns:repeat(var(--hero-tile-count),minmax(0,1fr))]"
-            style={{ ['--hero-tile-count' as string]: String(heroTileCount) }}
-          >
-            {safeHeroTiles.map((tile) => (
+          <div className="relative min-h-[26rem] w-full bg-obsidian sm:min-h-[30rem] lg:min-h-[34rem]">
+            {PAGE_HEROES.feelings.desktopImage?.src && (
               <img
-                key={tile.slug}
-                src={imgUrl(resolveProductImageSrcForDisplay(tile.src), 900)}
-                alt={tile.alt}
-                className="h-full w-full object-cover"
-                style={{ objectPosition: tile.objectPosition }}
-                width={900}
-                height={1200}
+                src={PAGE_HEROES.feelings.desktopImage.src}
+                alt={PAGE_HEROES.feelings.desktopImage.alt[locale as 'en' | 'ar'] ?? VIBES_SCHEMA.copy.hubHeroAlt}
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: PAGE_HEROES.feelings.focalPoint || 'center' }}
+                width={1600}
+                height={900}
                 decoding="async"
-                onError={() =>
-                  setBrokenHeroTiles((current) =>
-                    current[tile.slug] ? current : { ...current, [tile.slug]: true })
-                }
               />
-            ))}
+            )}
           </div>
           {/* Minimal vignette — photos are the hero */}
           <div
