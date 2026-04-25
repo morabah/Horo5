@@ -81,7 +81,7 @@ export function storeMediaPublicPath(): string {
   return STORE_MEDIA_PATH
 }
 
-const SAFE_KEY = /^[a-zA-Z0-9._-]+$/
+const SAFE_KEY = /^[a-zA-Z0-9._\-%]+$/
 
 export function isSafePublicS3FileKey(key: string): boolean {
   if (!key || key.length === 0 || key.length > 512) {
