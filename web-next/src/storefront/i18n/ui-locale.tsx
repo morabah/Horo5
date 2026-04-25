@@ -393,7 +393,7 @@ const UI_COPY = {
       englishShort: 'EN',
       arabicShort: 'AR',
       pageNotFound: 'الصفحة غير موجودة',
-      orderPlacedHint: 'تم إفراغ السلة بعد إتمام الطلب.',
+      orderPlacedHint: 'تم تأكيد طلبك — يمكنك عرض صفحة التأكيد.',
       orderPlacedViewReceipt: 'عرض الإيصال',
       orderPlacedDismiss: 'إخفاء',
     },

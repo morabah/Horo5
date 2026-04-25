@@ -2027,18 +2027,22 @@ export function Checkout() {
 
                 {paymentMethods.length === 0 ? (
                   <div className="mt-4 text-sm text-ember">
-                    <p>
-                      {hasSavedShipping
-                        ? isArabic
+                    {hasSavedShipping ? (
+                      <p>
+                        {isArabic
                           ? 'لا توجد طريقة دفع مفعّلة لهذه المنطقة حالياً.'
-                          : 'No payment provider is enabled for this region yet.'
-                        : copy.checkout.paymentOptionsLoadingNote}
-                    </p>
-                    <p className="mt-2 text-xs text-clay">
-                      {isArabic
-                        ? 'إذا بقيت هذه المساحة فارغة بعد حفظ العنوان، فهذه مشكلة إعداد في Medusa وليست مشكلة في السلة.'
-                        : 'If this section still stays empty after saving the address, that is a Medusa payment-configuration issue, not a cart issue.'}
-                    </p>
+                          : 'No payment provider is enabled for this region yet.'}
+                      </p>
+                    ) : (
+                      <>
+                        <p>{copy.checkout.paymentOptionsLoadingNote}</p>
+                        <p className="mt-2 text-xs text-clay">
+                          {isArabic
+                            ? 'يرجى حفظ عنوان التوصيل لعرض خيارات الدفع المتاحة.'
+                            : 'Please save your delivery address to see available payment options.'}
+                        </p>
+                      </>
+                    )}
                   </div>
                 ) : null}
 

@@ -173,7 +173,7 @@ export function MerchProductCard({
           ) : null}
         </Link>
         {/* Desktop: single bottom action strip — hidden until hover/focus */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden flex-col gap-2 p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-within:opacity-100 md:flex">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden flex-col gap-2 p-3 invisible opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 md:flex">
           {quickAddAvailable && quickAddOpen ? (
             <div className="pointer-events-auto rounded-2xl border border-obsidian/10 bg-white/96 p-3 shadow-xl backdrop-blur-sm">
               <p className="font-label mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">

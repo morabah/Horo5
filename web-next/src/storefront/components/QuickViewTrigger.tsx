@@ -49,7 +49,7 @@ export function QuickViewTrigger({
     /** desktop-hover — absolute overlay; used by cross-sell / PDP related rows when not using plp-bar */
     return [
       ...base,
-      'absolute z-10 hidden items-center justify-center bottom-3 left-3 text-[10px] tracking-[0.18em] font-medium text-obsidian bg-transparent border-b border-transparent hover:border-obsidian md:inline-flex opacity-0 group-hover:opacity-100',
+      'absolute z-10 hidden items-center justify-center bottom-3 left-3 text-[10px] tracking-[0.18em] font-medium text-obsidian bg-transparent border-b border-transparent hover:border-obsidian md:inline-flex opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
       className,
     ]
       .filter(Boolean)
