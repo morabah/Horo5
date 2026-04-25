@@ -6,12 +6,6 @@ import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 
 const { copy } = PDP_SCHEMA;
 
-function formatSizeTablePresetLabel(presetKey: string): string {
-  const t = presetKey.trim();
-  if (!t) return presetKey;
-  return t.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
 type PdpSizeSelectorProps = {
   sizeButtons: { key: string; disabled?: boolean }[];
   selectedSize: string | null;
@@ -33,7 +27,7 @@ export function PdpSizeSelector({
   selectedSize,
   oosSelected,
   sizeReady: _sizeReady,
-  sizeTableResolved,
+  sizeTableResolved: _sizeTableResolved,
   silhouetteCueLabel,
   inlineFitModelDisplay,
   inlineFitMeasurementsPart,
@@ -44,30 +38,12 @@ export function PdpSizeSelector({
   onOpenSizeGuide,
 }: PdpSizeSelectorProps) {
   return (
-    <div ref={sizeSectionRef} className="space-y-3 border-t border-stone/30 pt-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="font-label text-[11px] font-medium uppercase tracking-[0.24em] text-label">
-          {copy.pdpSizeSectionLabel}
-        </p>
-        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-          <span
-            className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian"
-            title={sizeTableResolved.presetKeyUsed}
-          >
-            {formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed)}
-          </span>
-          <button
-            ref={sizeGuideTriggerRef}
-            type="button"
-            onClick={onOpenSizeGuide}
-            className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
-          >
-            {copy.sizeGuideLabel}
-          </button>
-        </div>
-      </div>
+    <div ref={sizeSectionRef} className="space-y-3 pt-4">
+      <p className="m-0 mb-[10px] text-[16px] font-bold text-obsidian">
+        {copy.pdpSizeSectionLabel}
+      </p>
 
-      <div className="flex flex-wrap gap-2.5" role="group" aria-label={copy.pdpSizeGroupAria}>
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 sm:gap-[12px]" role="group" aria-label={copy.pdpSizeGroupAria}>
         {sizeButtons.map(({ key, disabled }) => {
           const isSelected = selectedSize === key;
           return (
@@ -77,14 +53,14 @@ export function PdpSizeSelector({
               title={disabled ? copy.pdpSizeOosHint : undefined}
               onClick={() => onSizeSelect(key as ProductSizeKey, isSelected)}
               aria-pressed={isSelected}
-              className={`flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border px-4 font-headline text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+              className={`flex h-[45px] items-center justify-center rounded-[6px] border text-[14px] font-medium transition-colors focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
                 disabled
                   ? isSelected
                     ? 'border-obsidian bg-obsidian text-white line-through decoration-white/70'
-                    : 'border-stone/40 text-clay line-through decoration-obsidian/30 hover:border-obsidian/45'
+                    : 'border-[#cfc8c0] bg-white text-[#514c48] line-through decoration-obsidian/30 hover:border-obsidian/45'
                   : isSelected
                     ? 'border-obsidian bg-obsidian text-white shadow-sm'
-                    : 'border-stone/60 bg-white/80 text-obsidian hover:border-obsidian'
+                    : 'border-[#cfc8c0] bg-white text-[#514c48] hover:border-obsidian'
               }`}
             >
               <span aria-disabled={disabled}>{key}</span>
@@ -94,12 +70,12 @@ export function PdpSizeSelector({
       </div>
 
       {silhouetteCueLabel ? (
-        <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+        <p className="m-0 mb-[12px] text-[14px] text-[#4b4641]">
           {silhouetteCueLabel}
         </p>
       ) : null}
 
-      <p className="font-body text-sm leading-relaxed">
+      <p className="m-0 mb-[12px] text-[14px] text-[#4b4641]">
         <span className="text-obsidian">{inlineFitModelDisplay}</span>
         {inlineFitMeasurementsPart ? (
           <>
@@ -109,14 +85,27 @@ export function PdpSizeSelector({
         ) : null}
       </p>
 
+      <p className="m-0 mb-[30px] flex gap-[10px] text-[14px] text-[#4b4641]">
+        <button
+          ref={sizeGuideTriggerRef}
+          type="button"
+          onClick={onOpenSizeGuide}
+          className="text-[14px] text-[#4b4641] underline decoration-[#4b4641]/35 underline-offset-[3px] transition-colors hover:text-obsidian"
+        >
+          {copy.sizeGuideLabel}
+        </button>
+        <span aria-hidden>·</span>
+        <span className="text-[14px] text-[#4b4641]">14d exchange</span>
+      </p>
+
       {inventoryHint ? (
-        <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5a554f]">
           {inventoryHint}
         </p>
       ) : null}
 
       {oosSelected ? (
-        <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
+        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#5a554f]">
           {copy.pdpOutOfStockForSize}
         </p>
       ) : null}

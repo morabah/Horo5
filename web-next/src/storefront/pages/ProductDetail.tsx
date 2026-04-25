@@ -1033,10 +1033,10 @@ export function ProductDetail({
       <PdpTrustStrip />
 
       <nav
-        className="bg-papyrus px-4 pb-2 pt-6 font-body text-[11px] uppercase tracking-wider text-clay md:px-12 md:pb-4 md:pt-8"
+        className="px-4 pb-2 pt-6 font-body text-[11px] uppercase tracking-wider text-clay md:px-0 md:pb-4 md:pt-8"
         aria-label={shellCopy.shell.breadcrumb}
       >
-        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="mx-auto flex max-w-[1080px] flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             to="/"
             className="inline-flex min-h-11 items-center rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
@@ -1059,7 +1059,7 @@ export function ProductDetail({
         </div>
       </nav>
 
-      <section className="mx-auto grid max-w-[1320px] gap-6 px-4 pb-12 pt-4 md:grid-cols-[minmax(0,1.5fr)_minmax(22rem,0.95fr)] md:gap-7 md:px-12 md:pb-16 md:pt-6 lg:gap-10">
+      <section className="mx-auto grid max-w-[1080px] gap-6 px-4 pb-12 pt-4 md:grid-cols-[650px_1fr] md:gap-7 md:px-0 md:pb-16 md:pt-6">
         <PdpHeroGallery
           product={product}
           gallery={gallery}
@@ -1116,8 +1116,8 @@ export function ProductDetail({
       </section>
 
       {showCrossSellSection ? (
-        <section className="border-t border-stone/25 bg-papyrus">
-          <div className="mx-auto max-w-[1320px] px-4 py-10 md:px-12 md:py-12">
+        <section>
+          <div className="mx-auto max-w-[1080px] px-4 py-10 md:px-0 md:py-12">
             <CrossSellWidget
               frequentlyBoughtWith={primaryCrossSellProducts}
               styleWith={fallbackCrossSellProducts}
@@ -1148,39 +1148,31 @@ export function ProductDetail({
 
       <PdpStoryCard storyText={storyText} tagLabels={storyTagLabels} />
 
-      <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
-          <div className="grid gap-4 md:grid-cols-[1fr_1.14fr]">
-            <PdpArtistCard artistDisplay={pdpArtist} catalogArtist={artist} isArabic={isArabic} />
-            <PdpQualityProofCard physicalLines={physicalFitDisplayLines} />
-          </div>
+      <div className="mx-auto max-w-[1080px] px-4 md:px-0">
+        <div className="mt-[18px] grid gap-[16px] md:grid-cols-[1fr_1.14fr]">
+          <PdpArtistCard artistDisplay={pdpArtist} catalogArtist={artist} isArabic={isArabic} />
+          <PdpQualityProofCard physicalLines={physicalFitDisplayLines} />
         </div>
-      </section>
 
-      <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
-          <div className="grid gap-4 md:grid-cols-[0.93fr_1.24fr]">
-            <PdpDeliveryPaymentCard
-              deliveryRules={deliveryRules}
-              deliveryDynamic={deliveryDynamic}
-              standardDeliveryWindow={standardDeliveryWindow}
-              expressDeliveryWindow={expressDeliveryWindow}
-              trustItems={trustItems}
-            />
-            <PdpGiftReadyCard giftWrapAvailable />
-          </div>
+        <div className="mt-[18px] grid gap-[16px] md:grid-cols-[0.93fr_1.24fr] items-stretch">
+          <PdpDeliveryPaymentCard
+            deliveryRules={deliveryRules}
+            deliveryDynamic={deliveryDynamic}
+            standardDeliveryWindow={standardDeliveryWindow}
+            expressDeliveryWindow={expressDeliveryWindow}
+            trustItems={trustItems}
+          />
+          <PdpGiftReadyCard giftWrapAvailable />
         </div>
-      </section>
 
-      <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
+        <div className="mt-[18px]">
           <PdpLaunchTrustCard />
         </div>
-      </section>
+      </div>
 
       {productDescription && productDescription.trim().length > 400 ? (
-        <section className="border-t border-stone/25 bg-papyrus">
-          <div className="mx-auto max-w-[1320px] px-4 py-6 md:px-12">
+        <section>
+          <div className="mx-auto max-w-[1080px] px-4 py-6 md:px-0">
             <button
               type="button"
               onClick={() => setDesignStoryExpanded((open) => !open)}

@@ -21,12 +21,12 @@ export function PdpArtistCard({ artistDisplay, catalogArtist, isArabic = false }
   const location = catalogArtist?.slug ? 'Egypt' : undefined;
 
   return (
-    <div className="rounded-lg border border-stone/25 bg-white/88 p-6 shadow-[0_1px_2px_rgba(32,25,18,.04),0_12px_26px_rgba(32,25,18,.04)] md:p-7">
-      <h2 className="font-headline text-[clamp(1.5rem,3vw,1.95rem)] font-normal leading-1 tracking-tight text-obsidian">
+    <div className="min-h-[268px] rounded-[8px] border border-[#ded7ce] bg-white/88 p-[24px_27px] shadow-[0_1px_2px_rgba(32,25,18,.04),0_12px_26px_rgba(32,25,18,.04)]">
+      <h2 className="mb-[18px] font-headline text-[31px] font-normal leading-1 tracking-[-1.1px] text-obsidian">
         {isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}
       </h2>
 
-      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-[128px_1fr] md:items-start">
+      <div className="grid grid-cols-1 gap-[26px] md:grid-cols-[128px_1fr] md:items-start">
         {artistDisplay.avatarSrc ? (
           <div className="h-[122px] w-[122px] shrink-0 overflow-hidden rounded-full bg-surface-container-high ring-1 ring-stone/30">
             <TeeImage
@@ -48,27 +48,27 @@ export function PdpArtistCard({ artistDisplay, catalogArtist, isArabic = false }
           </div>
         )}
         <div className="min-w-0">
-          <h3 className="font-body text-[14px] font-semibold text-obsidian">
+          <h3 className="my-[8px_0_1px] text-[14px] font-semibold text-obsidian">
             {artistDisplay.name}
           </h3>
           {location ? (
-            <p className="mt-1 font-body text-[14px] text-warm-charcoal/60">{location}</p>
+            <p className="mb-[14px] text-[14px] text-[#625c55]">{location}</p>
           ) : null}
-          <span className="mt-1 inline-flex items-center gap-1 font-label text-[9px] font-medium uppercase tracking-[0.14em] text-deep-teal">
+          <span className="mt-1 inline-flex items-center gap-1 text-[9px] font-medium uppercase tracking-[0.14em] text-deep-teal">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
             </svg>
             {isArabic ? copy.verifiedArtistLabelAr : copy.verifiedArtistLabel}
           </span>
           {style ? (
-            <p className="mt-3 max-w-[250px] font-body text-[14px] leading-relaxed text-warm-charcoal/80">
+            <p className="mb-[18px] mt-3 max-w-[250px] text-[14px] leading-relaxed text-[#4a4540]">
               {style}
             </p>
           ) : null}
           {catalogArtist?.slug ? (
             <a
               href={`/artists/${catalogArtist.slug}`}
-              className="mt-4 inline-flex min-h-11 min-w-[156px] items-center justify-center rounded-sm border border-stone/40 bg-white px-5 text-[13px] font-medium text-obsidian transition-colors hover:border-obsidian"
+              className="inline-flex min-h-[44px] min-w-[156px] items-center justify-center rounded-[4px] border border-[#d5cdc4] bg-white px-5 text-[13px] text-[#333] transition-colors hover:border-obsidian"
             >
               View Artist Profile
             </a>
