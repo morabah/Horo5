@@ -47,7 +47,7 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
     titleLayout: "mantra-grid",
     subtitle: {
       en: "Artist-made graphic tees printed in Egypt — made for moods, moments, and gifts that feel personal.",
-      ar: "تيشيرتات فنية مصرية — مصنوعة للمزاج، اللحظات، والهدايا التي تشعر بالخصوصية.",
+      ar: "تيشيرتات فنية مطبوعة في مصر — للمود، اللحظة، والهدية اللي شبه صاحبها.",
     },
     primaryCta: {
       label: { en: "Shop All", ar: "تسوق الكل" },
@@ -67,14 +67,14 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
 
   shop: {
     pageKey: "shop",
-    eyebrow: { en: "Shop", ar: "تسوق" },
-    title: { en: "Every design, in one place", ar: "كل التصاميم في مكان واحد" },
+    eyebrow: { en: "FOUNDING DROP", ar: "أول مجموعة" },
+    title: { en: "The first HORO pieces", ar: "أول قطع من HORO" },
     subtitle: {
-      en: "Browse the full collection. Filter by feeling, occasion, or price to find your piece.",
-      ar: "تصفّح المجموعة الكاملة. رشّح حسب الشعور، المناسبة، أو السعر لتجد قطعتك.",
+      en: "Artist-made graphic tees, printed in Egypt, ready to wear or gift.",
+      ar: "تيشيرتات برسومات فنانين، مطبوعة في مصر، جاهزة للبس أو الهدية.",
     },
     primaryCta: {
-      label: { en: "Shop All", ar: "تسوق الكل" },
+      label: { en: "Browse the drop", ar: "تصفح المجموعة" },
       href: "/products",
     },
     desktopImage: {
@@ -85,6 +85,8 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
     theme: "dark",
   },
 
+  // Current Feelings hub keeps its dynamic multi-tile photo grid.
+  // This image is reserved for a future generic hero or campaign landing page.
   feelings: {
     pageKey: "feelings",
     eyebrow: { en: "Shop by feeling", ar: "تسوق حسب الشعور" },
@@ -108,13 +110,15 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
     theme: "dark",
   },
 
+  // Current Occasions hub keeps its dynamic multi-tile photo grid.
+  // This image is reserved for a future generic hero or campaign landing page.
   occasions: {
     pageKey: "occasions",
     eyebrow: { en: "Shop by occasion", ar: "تسوق حسب المناسبة" },
-    title: { en: "Give something that means something", ar: "أعطِ شيئًا يعني شيئًا" },
+    title: { en: "Give something that means something", ar: "اهدي حاجة لها معنى" },
     subtitle: {
       en: "Find the design that fits the moment.",
-      ar: "اعثر على التصميم الذي يناسب اللحظة.",
+      ar: "اختار تصميم يناسب عيد ميلاد، تخرج، العيد، رمضان، أو هدية بدون مناسبة.",
     },
     primaryCta: {
       label: { en: "Shop All", ar: "تسوق الكل" },
@@ -131,10 +135,10 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
   gifts: {
     pageKey: "gifts",
     eyebrow: { en: "Gifts", ar: "هدايا" },
-    title: { en: "Meaningful pieces for meaningful moments", ar: "قطع ذات معنى للحظات ذات معنى" },
+    title: { en: "Meaningful pieces for meaningful moments", ar: "هدية شبه اللي في بالك" },
     subtitle: {
       en: "Pieces chosen for the person on your mind.",
-      ar: "قطع مختارة للشخص الذي في بالك.",
+      ar: "قطع فنية مختارة لشخص يستاهل حاجة مختلفة.",
     },
     primaryCta: {
       label: { en: "Shop gift-ready pieces", ar: "تسوق قطع جاهزة للهدايا" },
@@ -148,13 +152,15 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
     theme: "dark",
   },
 
+  // Current About page uses BRAND_COPY.aboutLead for the story body.
+  // The subtitle remains here as a secondary/reserved field for future generic hero reuse.
   about: {
     pageKey: "about",
     eyebrow: { en: "Our story", ar: "قصتنا" },
-    title: { en: "Our story", ar: "قصتنا" },
+    title: { en: "Our story", ar: "عن HORO" },
     subtitle: {
       en: "Artist-made graphic tees printed in Egypt — made for moods, moments, and gifts that feel personal.",
-      ar: "تيشيرتات فنية مصرية — مصنوعة للمزاج، اللحظات، والهدايا التي تشعر بالخصوصية.",
+      ar: "HORO بتصنع قطع فنية قابلة للبس، للناس اللي عايزة لبسها يعبّر عن إحساس حقيقي.",
     },
     primaryCta: {
       label: { en: "Shop by feeling", ar: "تسوق حسب الشعور" },
