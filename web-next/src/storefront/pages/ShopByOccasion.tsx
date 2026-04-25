@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
+import { PAGE_HEROES } from '../content/page-heroes';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -97,7 +98,7 @@ export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
         {/* Hero — photo grid with glass headline bar */}
         <section
           className="relative isolate overflow-hidden"
-          aria-label={OCCASION_SCHEMA.copy.hubEyebrow}
+          aria-label={PAGE_HEROES.occasions.eyebrow?.[locale as 'en' | 'ar'] ?? OCCASION_SCHEMA.copy.hubEyebrow}
         >
           <div
             className="grid min-h-[26rem] grid-cols-2 gap-0.5 bg-obsidian sm:min-h-[30rem] sm:grid-cols-3 sm:gap-1 lg:min-h-[34rem] lg:[grid-template-columns:repeat(var(--hero-tile-count),minmax(0,1fr))]"
@@ -126,20 +127,30 @@ export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
           <div className="absolute inset-x-0 bottom-0">
             <div className="feelings-hub-glass-bar flex items-center justify-center px-4 py-5 sm:py-6">
               <h1 className="text-center font-headline text-[clamp(1.5rem,5vw,2.5rem)] font-semibold leading-tight tracking-tight text-white">
-                {OCCASION_SCHEMA.copy.hubTitle}
+                {PAGE_HEROES.occasions.title[locale as 'en' | 'ar'] ?? OCCASION_SCHEMA.copy.hubTitle}
               </h1>
             </div>
           </div>
 
           {/* Shop All pill — top left */}
           <div className="absolute left-4 top-4 sm:left-6 sm:top-6 md:left-8 md:top-8">
-            <Link
-              to="/products"
-              className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
-            >
-              {copy.shell.shopAll}
-              <span className="text-white/50" aria-hidden>→</span>
-            </Link>
+            {PAGE_HEROES.occasions.primaryCta?.href && PAGE_HEROES.occasions.primaryCta.label[locale as 'en' | 'ar'] ? (
+              <Link
+                to={PAGE_HEROES.occasions.primaryCta.href}
+                className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
+              >
+                {PAGE_HEROES.occasions.primaryCta.label[locale as 'en' | 'ar']}
+                <span className="text-white/50" aria-hidden>→</span>
+              </Link>
+            ) : (
+              <Link
+                to="/products"
+                className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
+              >
+                {copy.shell.shopAll}
+                <span className="text-white/50" aria-hidden>→</span>
+              </Link>
+            )}
           </div>
         </section>
 

@@ -4,14 +4,18 @@ import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { BRAND_COPY } from '../data/brand';
 import { ABOUT_SCHEMA, BRAND_TRUST_POINTS, PDP_SCHEMA } from '../data/domain-config';
-import { aboutBridgeAlt, aboutBridgeImage, aboutHero, aboutHeroAlt, imgUrl } from '../data/images';
+import { PAGE_HEROES } from '../content/page-heroes';
+import { aboutBridgeAlt, aboutBridgeImage, imgUrl } from '../data/images';
 import { useUiLocale } from '../i18n/ui-locale';
 
 const STORY_PLAN_STEP_ICONS = ['explore', 'checkroom', 'local_shipping'] as const;
 
 export function About() {
   useScrollReveal();
-  const { copy } = useUiLocale();
+  const { copy, locale } = useUiLocale();
+  const config = PAGE_HEROES.about;
+  const t = (v: { en: string; ar: string } | undefined) =>
+    v ? v[locale as 'en' | 'ar'] : undefined;
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -27,8 +31,8 @@ export function About() {
           <div className="grid min-h-[34rem] lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
             <div className="relative min-h-[20rem] lg:min-h-full">
               <img
-                src={imgUrl(aboutHero, 1600)}
-                alt={aboutHeroAlt}
+                src={imgUrl(config.desktopImage?.src ?? '/images/heroes/about-hero.svg', 1600)}
+                alt={t(config.desktopImage?.alt) ?? 'HORO brand story'}
                 className="absolute inset-0 h-full w-full object-cover object-center"
                 width={1600}
                 height={1200}
@@ -44,7 +48,7 @@ export function About() {
 
             <div className="relative flex items-end lg:items-center">
               <div className="relative z-10 m-4 w-full rounded-[1.35rem] border border-white/65 bg-[linear-gradient(135deg,rgba(26,26,26,0.78),rgba(26,26,26,0.5))] px-5 py-5 shadow-[0_18px_48px_-28px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:m-6 sm:px-6 sm:py-6 md:px-8 md:py-8 lg:m-8">
-                <h1 className="font-headline text-[clamp(2.2rem,5vw,4.3rem)] font-semibold leading-[0.94] tracking-tight text-white">Our story</h1>
+                <h1 className="font-headline text-[clamp(2.2rem,5vw,4.3rem)] font-semibold leading-[0.94] tracking-tight text-white">{t(config.title) ?? 'Our story'}</h1>
                 <div className="mt-5 space-y-6 font-body text-[1.02rem] leading-relaxed text-white/88 md:text-[1.08rem]">
                   <p>
                     {BRAND_COPY.aboutLead}
@@ -56,12 +60,14 @@ export function About() {
                 </div>
 
                 <div className="mt-7 flex flex-col gap-5">
-                  <Link
-                    to="/feelings"
-                    className="font-body inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
-                  >
-                    {ABOUT_SCHEMA.copy.primaryCta}
-                  </Link>
+                  {config.primaryCta?.href && t(config.primaryCta.label) ? (
+                    <Link
+                      to={config.primaryCta.href}
+                      className="font-body inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
+                    >
+                      {t(config.primaryCta.label)}
+                    </Link>
+                  ) : null}
 
                   <div className="flex flex-wrap gap-2">
                     {PDP_SCHEMA.trustStripItems.map((item) => (

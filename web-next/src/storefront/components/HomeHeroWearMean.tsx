@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { homeHeroWearFeel } from '../data/images';
+import { PAGE_HEROES } from '../content/page-heroes';
 import { getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
@@ -10,6 +10,9 @@ const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 export function HomeHeroWearMean() {
   const { locale, copy } = useUiLocale();
   const isArabic = locale === 'ar';
+  const config = PAGE_HEROES.home;
+  const t = (v: { en: string; ar: string } | undefined) =>
+    v ? v[locale as 'en' | 'ar'] : undefined;
 
   const priceRange = (() => {
     // Match the same "featured" merchandising slice users see first on home.
@@ -18,14 +21,19 @@ export function HomeHeroWearMean() {
     return Math.min(...products.map((p) => p.priceEgp));
   })();
 
-  const promiseLine = copy.home.heroPromiseLine;
+  const subtitleBase = t(config.subtitle);
   const priceToken = priceRange
     ? isArabic
       ? `من ${formatEgp(priceRange)}`
       : `From ${formatEgp(priceRange)}`
     : null;
-  const primaryCtaLabel = copy.home.heroPrimaryCta;
-  const secondaryCtaLabel = copy.home.heroSecondaryCta;
+  const promiseLine = subtitleBase ?? copy.home.heroPromiseLine;
+  const primaryCtaLabel = t(config.primaryCta?.label) ?? copy.home.heroPrimaryCta;
+  const primaryHref = config.primaryCta?.href ?? '/products';
+  const secondaryCtaLabel = t(config.secondaryCta?.label) ?? copy.home.heroSecondaryCta;
+  const secondaryHref = config.secondaryCta?.href ?? '/feelings';
+  const heroImageSrc = config.desktopImage?.src ?? '/images/heroes/home-hero.png';
+  const heroImageAlt = t(config.desktopImage?.alt) ?? 'Model wearing HORO graphic tee — Wear What You Feel';
 
   return (
     <section
@@ -34,8 +42,8 @@ export function HomeHeroWearMean() {
       className={`home-hero-wear-feel relative isolate flex min-h-svh w-full flex-col overflow-hidden ${HERO_NAV_OFFSET}`}
     >
       <img
-        src={homeHeroWearFeel.src}
-        alt={isArabic ? 'هورو — ارتدِ ما تشعر به' : homeHeroWearFeel.alt}
+        src={heroImageSrc}
+        alt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
         className="absolute inset-0 h-full w-full object-cover object-[50%_70%] md:object-[50%_50%]"
         fetchPriority="high"
         loading="eager"
@@ -51,20 +59,22 @@ export function HomeHeroWearMean() {
       />
 
       <h1 id="home-hero-heading" className="sr-only">
-        Wear What You Feel — {promiseLine}
+        {t(config.title) ?? 'Wear What You Feel'} — {promiseLine}
       </h1>
 
       <div className="relative z-10 flex min-h-0 flex-1 items-end justify-start px-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-10 lg:pb-14">
-        <div className="pointer-events-none absolute inset-x-0 top-[max(4.1rem,calc(env(safe-area-inset-top,0px)+3.55rem))] z-20 px-4 md:hidden">
-          <div className="mx-auto w-full max-w-[92vw]">
-            <p className="grid grid-cols-2 gap-x-16 gap-y-1 font-headline text-[clamp(1.75rem,9.5vw,2.8rem)] font-semibold uppercase leading-[0.88] tracking-tight text-[#f5f0e6] drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
-              <span className="block text-left">WEAR</span>
-              <span className="block text-right">WHAT</span>
-              <span className="block text-left">YOU</span>
-              <span className="block text-right">FEEL</span>
-            </p>
+        {config.titleLayout === 'mantra-grid' ? (
+          <div className="pointer-events-none absolute inset-x-0 top-[max(4.1rem,calc(env(safe-area-inset-top,0px)+3.55rem))] z-20 px-4 md:hidden">
+            <div className="mx-auto w-full max-w-[92vw]">
+              <p className="grid grid-cols-2 gap-x-16 gap-y-1 font-headline text-[clamp(1.75rem,9.5vw,2.8rem)] font-semibold uppercase leading-[0.88] tracking-tight text-[#f5f0e6] drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
+                <span className="block text-left">WEAR</span>
+                <span className="block text-right">WHAT</span>
+                <span className="block text-left">YOU</span>
+                <span className="block text-right">FEEL</span>
+              </p>
+            </div>
           </div>
-        </div>
+        ) : null}
         <div className="w-full max-w-[92vw] text-left sm:max-w-[80vw] md:max-w-[min(48ch,40vw)]">
           <p className="font-body text-[clamp(1.12rem,1.7vw,2.05rem)] font-medium leading-[1.18] text-[#f5f0e6] drop-shadow-[0_4px_18px_rgba(0,0,0,0.4)]">
             <span>{promiseLine}</span>
@@ -72,13 +82,13 @@ export function HomeHeroWearMean() {
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Link
-              to="/products"
+              to={primaryHref}
               className="font-body inline-flex min-h-12 items-center justify-center rounded-md bg-[#f5f0e6] px-7 py-3 text-[14px] font-semibold text-[#2a2d26] transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {primaryCtaLabel}
             </Link>
             <Link
-              to="/feelings"
+              to={secondaryHref}
               className="font-body inline-flex min-h-12 items-center justify-center rounded-md border border-[#f5f0e6]/40 bg-black/20 px-7 py-3 text-[14px] font-semibold text-[#f5f0e6] transition-colors duration-200 hover:border-[#f5f0e6]/75 hover:bg-black/28 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {secondaryCtaLabel}

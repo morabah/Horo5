@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppIcon } from '../components/AppIcon';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
+import { PageHero } from '../components/PageHero';
+import { PAGE_HEROES } from '../content/page-heroes';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { SkeletonGrid } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
@@ -318,6 +320,7 @@ export function ShopAll() {
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
+      <PageHero config={PAGE_HEROES.shop} locale={isArabic ? 'ar' : 'en'} compact />
       <div className="mx-auto max-w-7xl px-4 pt-8 md:px-8 md:pt-10">
         <PageBreadcrumb
           className="mb-6"
