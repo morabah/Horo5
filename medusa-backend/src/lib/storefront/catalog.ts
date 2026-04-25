@@ -1,5 +1,6 @@
 import {
   ContainerRegistrationKeys,
+  ProductStatus,
   QueryContext,
   remoteQueryObjectFromString,
 } from "@medusajs/framework/utils"
@@ -233,6 +234,7 @@ type MerchEventRecord = {
 
 type ProductQueryFilters = {
   handle?: string
+  status?: ProductStatus
 }
 
 const PRODUCT_QUERY_FIELDS = [
@@ -1386,7 +1388,7 @@ async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQ
       {
         entity: "product",
         fields: PRODUCT_QUERY_FIELDS,
-        filters,
+        filters: { status: ProductStatus.PUBLISHED, ...filters },
         pagination: {
           order: {
             created_at: "ASC",

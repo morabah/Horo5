@@ -9,66 +9,49 @@ export function PdpLaunchTrustCard() {
   const hasInstagram = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.instagramUrl);
 
   return (
-    <div className="min-h-[153px] rounded-[8px] border border-[#ded7ce] bg-white/88 p-[18px_18px_18px_27px] shadow-[0_1px_2px_rgba(32,25,18,.04),0_12px_26px_rgba(32,25,18,.04)] md:grid md:grid-cols-[390px_210px_1fr] md:items-center md:gap-[12px]">
-      {/* Honest launch message */}
-      <div>
-        <h2 className="mb-[12px] font-headline text-[34px] font-normal leading-1 tracking-[-1.1px] text-obsidian">
-          {copy.reviewsSoonTitle}
-        </h2>
-        <p className="text-[14px] leading-[1.45] text-[#3f3a35]">
-          {copy.reviewsSoonBody}
-        </p>
-      </div>
-
-      {/* Support / size help */}
-      <div className="mt-5 md:mt-0">
-        <p className="text-[14px] font-medium text-obsidian">Size help available</p>
-        <p className="mt-1 text-[14px] text-[#403c37]">
-          WhatsApp for sizing questions
-        </p>
-        {(hasWhatsapp || hasInstagram) ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {hasWhatsapp ? (
-              <a
-                href={HORO_SUPPORT_CHANNELS.whatsappSupportUrl!}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-[44px] min-w-[156px] items-center justify-center rounded-[4px] border border-[#d5cdc4] bg-white px-4 text-[13px] text-[#333] transition-colors hover:border-obsidian"
-              >
-                {copy.reviewsSoonWhatsappCta}
-              </a>
-            ) : null}
-            {hasInstagram ? (
-              <a
-                href={HORO_SUPPORT_CHANNELS.instagramUrl!}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-[44px] min-w-[156px] items-center justify-center rounded-[4px] border border-[#d5cdc4] bg-white px-4 text-[13px] text-[#333] transition-colors hover:border-obsidian"
-              >
-                {copy.reviewsSoonInstagramCta}
-              </a>
-            ) : null}
-          </div>
-        ) : (
-          <p className="mt-2 text-[12px] text-[#5a554f]/60">
-            {copy.reviewsSoonNoLinks}
+    <section className="border-t border-stone/25 bg-papyrus">
+      <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16 lg:px-12">
+        <div className="mx-auto max-w-[640px] text-center">
+          <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
+            {copy.reviewsSoonEyebrow}
+          </span>
+          <h2 className="font-headline mt-3 text-2xl font-semibold tracking-tight text-obsidian md:text-3xl">
+            {copy.reviewsSoonTitle}
+          </h2>
+          <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal md:text-[15px]">
+            {copy.reviewsSoonBody}
           </p>
-        )}
-      </div>
 
-      {/* Delivery / exchange / payment trust */}
-      <div className="mt-5 md:mt-0">
-        <ul className="m-0 space-y-2 pl-[18px]">
-          {PDP_SCHEMA.trustStripItems.map((item) => (
-            <li key={item} className="my-[1px] flex items-center gap-2 text-[14px] text-[#3f3a35]">
-              <svg className="h-4 w-4 shrink-0 text-obsidian/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              {item}
-            </li>
-          ))}
-        </ul>
+          {(hasWhatsapp || hasInstagram) ? (
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {hasWhatsapp ? (
+                <a
+                  href={HORO_SUPPORT_CHANNELS.whatsappSupportUrl!}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-label inline-flex min-h-11 items-center rounded-full border border-obsidian/60 bg-white/80 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian hover:bg-obsidian hover:text-white"
+                >
+                  {copy.reviewsSoonWhatsappCta}
+                </a>
+              ) : null}
+              {hasInstagram ? (
+                <a
+                  href={HORO_SUPPORT_CHANNELS.instagramUrl!}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-label inline-flex min-h-11 items-center rounded-full border border-obsidian/60 bg-white/80 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian hover:bg-obsidian hover:text-white"
+                >
+                  {copy.reviewsSoonInstagramCta}
+                </a>
+              ) : null}
+            </div>
+          ) : (
+            <p className="mt-5 font-body text-xs text-clay">
+              {copy.reviewsSoonNoLinks}
+            </p>
+          )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

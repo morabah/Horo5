@@ -15,31 +15,42 @@ type PdpQualityProofCardProps = {
 
 export function PdpQualityProofCard({ physicalLines }: PdpQualityProofCardProps) {
   return (
-    <div className="min-h-[268px] rounded-[8px] border border-[#ded7ce] bg-white/88 p-[24px_27px] shadow-[0_1px_2px_rgba(32,25,18,.04),0_12px_26px_rgba(32,25,18,.04)]">
-      <h2 className="mb-[18px] font-headline text-[31px] font-normal leading-1 tracking-[-1.1px] text-obsidian">
-        Quality you can feel
-      </h2>
+    <div className="rounded-2xl border border-stone/30 bg-white/60 p-6 md:p-8">
+      <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
+        Quality & Craft
+      </span>
+      <h3 className="font-headline mt-2 text-lg font-semibold tracking-tight text-obsidian">
+        What goes into your piece
+      </h3>
 
-      <div className="relative grid grid-cols-1 gap-y-[9px] sm:grid-cols-2 sm:gap-x-[26px]">
-        {/* Center divider on 2-col */}
-        <div className="absolute left-1/2 top-[4px] bottom-[4px] hidden w-px bg-[#ded7ce] sm:block" aria-hidden />
+      <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4 md:grid-cols-2 lg:grid-cols-4">
         {featureStripItems.map(({ label, Icon }) => (
-          <p key={label} className="m-0 text-[14px] text-[#4d4741]">
-            <span className="inline-block w-[22px] text-[#625c55]"><Icon /></span>
-            {label}
-          </p>
+          <div key={label} className="flex flex-col items-center text-center md:items-start md:text-left">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-obsidian/5 text-obsidian">
+              <Icon />
+            </div>
+            <p className="mt-2 font-body text-[11px] font-medium leading-snug text-warm-charcoal">
+              {label}
+            </p>
+          </div>
         ))}
       </div>
 
       {physicalLines.length > 0 ? (
-        <ul className="mt-5 space-y-1 border-t border-[#ded7ce] pt-4 pl-[18px]">
-          {physicalLines.map((line, idx) => (
-            <li key={idx} className="my-[1px] text-[14px] text-[#3f3a35]">
-              {line}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-5 border-t border-stone/25 pt-4">
+          <ul className="space-y-1.5">
+            {physicalLines.map((line, idx) => (
+              <li key={idx} className="font-body text-sm text-warm-charcoal">
+                {line}
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : null}
+
+      <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal/80">
+        {PDP_SCHEMA.copy.designStoryAccordionBody}
+      </p>
     </div>
   );
 }

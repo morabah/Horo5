@@ -67,7 +67,7 @@ export function PdpHeroGallery({
   }
 
   return (
-    <div className="gallery min-w-0">
+    <div className="space-y-4 md:space-y-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-4">
         {/* Vertical thumbnail rail (desktop) */}
         {hasGalleryRail ? (
@@ -81,9 +81,9 @@ export function PdpHeroGallery({
                 id={`pdp-gallery-thumb-v-${product.slug}-${index}`}
                 type="button"
                 onClick={() => onSetPhotoIndex(index)}
-                className={`h-[130px] w-full shrink-0 overflow-hidden rounded-[6px] border bg-[#ece4d9] transition-all focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+                className={`w-full shrink-0 overflow-hidden border transition-all focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
                   photoIndex === index
-                    ? 'border-[#d4cbc0] opacity-100'
+                    ? 'border-obsidian opacity-100'
                     : 'border-transparent opacity-60 hover:opacity-100'
                 }`}
                 aria-pressed={photoIndex === index}
@@ -119,11 +119,11 @@ export function PdpHeroGallery({
           ) : null}
           <button
             type="button"
-            className="block w-full overflow-hidden rounded-[8px] bg-[#e7dfd4] shadow-[0_1px_2px_rgba(32,25,18,.04),0_12px_26px_rgba(32,25,18,.04)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+            className="block w-full overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
             onClick={onOpenLightbox}
             aria-label={fillPdpCopyTemplate(copy.pdpGalleryOpenFullScreenTemplate, { label: heroView.label })}
           >
-            <div className="aspect-[4/5] w-full overflow-hidden md:aspect-auto md:h-[525px]">
+            <div className="aspect-[4/5] w-full overflow-hidden">
               <TeeImage
                 src={heroView.src}
                 alt={heroView.alt}
@@ -171,7 +171,7 @@ export function PdpHeroGallery({
       {/* Mobile horizontal thumbnail strip */}
       {hasGalleryRail ? (
         <div
-          className="-mx-4 mt-[11px] grid grid-cols-5 gap-2 overflow-x-auto px-4 pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] touch-pan-x md:hidden"
+          className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] touch-pan-x md:hidden"
           aria-label={copy.pdpGalleryThumbnailsAria}
         >
           {gallery.map((view, index) => (
@@ -179,22 +179,24 @@ export function PdpHeroGallery({
               key={`${product.slug}-h-${view.key}`}
               type="button"
               onClick={() => onSetPhotoIndex(index)}
-              className={`h-[82px] min-w-[68px] shrink-0 snap-start overflow-hidden rounded-[6px] border bg-[#ece4d9] transition-all focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+              className={`w-[4.25rem] shrink-0 snap-start overflow-hidden border transition-all focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-[4.75rem] ${
                 photoIndex === index
-                  ? 'border-[#d4cbc0] opacity-100'
+                  ? 'border-obsidian opacity-100'
                   : 'border-transparent opacity-60 hover:opacity-100'
               }`}
               aria-pressed={photoIndex === index}
               aria-label={fillPdpCopyTemplate(copy.pdpGalleryShowImageTemplate, { label: view.label })}
             >
-              <TeeImage
-                src={view.src}
-                alt=""
-                w={320}
-                className="h-full w-full object-cover"
-                blurDataURL={onBlurForMain(view.src)}
-                sizes="72px"
-              />
+              <div className="aspect-[4/5] w-full">
+                <TeeImage
+                  src={view.src}
+                  alt=""
+                  w={320}
+                  className="h-full w-full"
+                  blurDataURL={onBlurForMain(view.src)}
+                  sizes="72px"
+                />
+              </div>
             </button>
           ))}
         </div>

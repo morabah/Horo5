@@ -127,35 +127,35 @@ export function PdpBuyBox({
     return copy.selectSizePrompt;
   }
 
-  const ctaClass = `flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[4px] border-0 px-4 py-3.5 text-[15px] font-medium tracking-[-0.02em] transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal mb-[15px] ${
+  const ctaClass = `cta-clay flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
     oosSelected
-      ? 'bg-obsidian text-white opacity-90'
-      : 'bg-obsidian text-white hover:opacity-90'
+      ? 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90 opacity-90'
+      : 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90'
   }`;
 
   return (
     <aside className="md:sticky md:top-24 md:self-start">
-      <div className="pt-[2px]">
-        <header>
+      <div className="space-y-6 md:p-4 lg:p-6">
+        <header className="space-y-4">
           {/* Eyebrow / feeling link */}
           {feeling ? (
             <Link
               to={`/feelings/${feeling.slug}`}
-              className="mb-[12px] inline-flex items-center text-[12px] font-bold uppercase tracking-[0.12em] text-moon-gold transition-colors hover:text-obsidian"
+              className="font-label inline-flex min-h-11 items-center rounded-full border border-dusk-violet/35 bg-dusk-violet/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet transition-colors hover:border-dusk-violet/60 hover:bg-dusk-violet/14"
             >
               {feeling.name}
             </Link>
           ) : null}
 
           {/* Product title */}
-          <h1 className="mb-[8px] font-headline text-[56px] font-normal leading-[0.98] tracking-[-2.4px] text-obsidian">
+          <h1 className="font-headline text-[clamp(2rem,5vw,3.2rem)] font-semibold leading-[1.02] tracking-tight text-obsidian">
             {product.name}
           </h1>
 
           {/* Artist attribution */}
           {pdpArtist ? (
-            <p className="mb-[26px] text-[16px] text-[#3b3733]">
-              {isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}{' '}
+            <p className="font-body text-sm leading-snug text-warm-charcoal">
+              <span className="text-clay">{isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}</span>{' '}
               <span className="font-medium text-obsidian">{pdpArtist.name}</span>
             </p>
           ) : null}
@@ -168,7 +168,7 @@ export function PdpBuyBox({
                   {formatEgp(displayOriginalPriceEgp)}
                 </p>
               ) : null}
-              <p className={`mb-[17px] text-[26px] font-medium tracking-[-0.02em] ${displayOriginalPriceEgp ? 'text-red-600' : 'text-obsidian'}`}>
+              <p className={`font-headline text-[1.8rem] font-semibold leading-none md:text-[2rem] ${displayOriginalPriceEgp ? 'text-red-600' : 'text-obsidian'}`}>
                 {formatEgp(displayPriceEgp)}
               </p>
               {promoCountdown && !promoCountdown.expired ? (
@@ -194,20 +194,30 @@ export function PdpBuyBox({
 
           {/* Short description */}
           {compactProductDescription ? (
-            <p className="mb-[18px] max-w-[340px] text-[15.5px] leading-[1.45] text-[#3b3733]">
+            <p className="font-body text-[13px] leading-relaxed text-warm-charcoal/80 line-clamp-2">
               {compactProductDescription}
             </p>
           ) : null}
 
-          {/* Meta line — single line like mock */}
-          <p className="mb-[31px] text-[15.5px] text-[#413c37]">
-            {[
-              'Artist-made',
-              product.fitLabel?.trim() || 'Unisex',
-              ...(heroCategoryTagItems.map(t => t.label)),
-              ...(product.capsuleSlugs?.includes('zodiac') ? [copy.pdpZodiacCapsuleLabel] : []),
-            ].join(' · ')}
-          </p>
+          {/* Product badges */}
+          <div className="flex flex-wrap gap-2">
+            <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+              {product.fitLabel?.trim() || 'Unisex fit'}
+            </span>
+            {heroCategoryTagItems.map(({ key, label }) => (
+              <span
+                key={key}
+                className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal"
+              >
+                {label}
+              </span>
+            ))}
+            {product.capsuleSlugs?.includes('zodiac') ? (
+              <span className="font-label rounded-full border border-moon-gold/40 bg-moon-gold/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian">
+                {copy.pdpZodiacCapsuleLabel}
+              </span>
+            ) : null}
+          </div>
         </header>
 
         {/* Color selector */}
@@ -278,7 +288,7 @@ export function PdpBuyBox({
               href={whatsappSupportUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex min-h-[48px] w-full items-center justify-center gap-[13px] rounded-[4px] border border-[#b9b3ac] bg-white px-4 py-3 text-[15px] text-[#2f2b27] transition-colors hover:border-obsidian"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone/60 bg-white/80 px-4 py-3 font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian hover:bg-white"
             >
               <IconWhatsApp />
               Order on WhatsApp
@@ -331,11 +341,11 @@ export function PdpBuyBox({
           ) : null}
         </div>
 
-        {/* CTA proof line */}
-        <p className="mt-[21px] text-[14px] text-[#5a554f]">
+        {/* CTA trust line — only key items not already in trust strip */}
+        <p className="font-body text-center text-[10px] tracking-wide text-warm-charcoal/70 md:text-left">
           {trustItems.length > 0
-            ? trustItems.slice(0, 3).join(' · ')
-            : PDP_SCHEMA.trustStripItems.slice(0, 3).join(' · ')}
+            ? trustItems.slice(0, 2).join(' · ')
+            : PDP_SCHEMA.trustStripItems.slice(0, 2).join(' · ')}
         </p>
       </div>
     </aside>
