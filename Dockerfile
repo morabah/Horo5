@@ -14,7 +14,7 @@ COPY medusa-backend/package*.json ./
 
 RUN npm config set fetch-retries 10 && \
     npm config set fetch-retry-maxtimeout 120000 && \
-    npm ci --no-audit --no-fund
+    npm ci --no-audit --no-fund --legacy-peer-deps
 
 COPY medusa-backend/ ./
 # Seed resolves ../web-next/public/... from medusa-backend cwd; map into container as /web-next/public
