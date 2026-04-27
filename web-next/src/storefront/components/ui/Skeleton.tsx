@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 
 export function Skeleton({ className = "" }: { className?: string }) {
   return (
-    <div
+    <span
       className={`animate-pulse rounded-sm bg-linen ${className}`}
       aria-hidden="true"
     />

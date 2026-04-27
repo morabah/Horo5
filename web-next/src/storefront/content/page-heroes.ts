@@ -46,11 +46,11 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
     title: { en: "WEAR WHAT YOU FEEL", ar: "ارتدِ ما تشعر به" },
     titleLayout: "mantra-grid",
     subtitle: {
-      en: "Artist-made graphic tees printed in Egypt — made for moods, moments, and gifts that feel personal.",
-      ar: "تيشيرتات فنية مطبوعة في مصر — للمود، اللحظة، والهدية اللي شبه صاحبها.",
+      en: "Artist-made tees · Printed in Egypt · COD",
+      ar: "تيشيرتات فنانين · مطبوعة في مصر · الدفع عند الاستلام",
     },
     primaryCta: {
-      label: { en: "Shop All", ar: "تسوق الكل" },
+      label: { en: "Shop the Founding Drop", ar: "تسوّق الإطلاق الأول" },
       href: "/products",
     },
     secondaryCta: {

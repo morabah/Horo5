@@ -27,8 +27,8 @@ export function PdpRelatedProducts({
   if (products.length < 3) return null;
 
   return (
-    <section className="border-t border-stone/25 bg-papyrus">
-      <div className="mx-auto max-w-[1320px] px-4 pb-14 pt-12 md:px-12 md:pb-16 md:pt-14 lg:px-12">
+    <section className="bg-papyrus">
+      <div className="mx-auto max-w-[1080px] px-4 pb-14 pt-12 md:px-12 lg:px-8 md:pb-16 md:pt-14">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">

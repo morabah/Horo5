@@ -7,5 +7,4 @@ export { PdpArtistCard } from './PdpArtistCard';
 export { PdpQualityProofCard } from './PdpQualityProofCard';
 export { PdpDeliveryPaymentCard } from './PdpDeliveryPaymentCard';
 export { PdpGiftReadyCard } from './PdpGiftReadyCard';
-export { PdpLaunchTrustCard } from './PdpLaunchTrustCard';
 export { PdpRelatedProducts } from './PdpRelatedProducts';

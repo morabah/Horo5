@@ -137,20 +137,38 @@ export function PdpBuyBox({
     <aside className="md:sticky md:top-24 md:self-start">
       <div className="space-y-6 md:p-4 lg:p-6">
         <header className="space-y-4">
-          {/* Eyebrow / feeling link */}
-          {feeling ? (
-            <Link
-              to={`/feelings/${feeling.slug}`}
-              className="font-label inline-flex min-h-11 items-center rounded-full border border-dusk-violet/35 bg-dusk-violet/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet transition-colors hover:border-dusk-violet/60 hover:bg-dusk-violet/14"
-            >
-              {feeling.name}
-            </Link>
-          ) : null}
+          {/* Eyebrow row — feeling chip + low-emphasis meta tags (audit P7: chips out of conversion zone) */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            {feeling ? (
+              <Link
+                to={`/feelings/${feeling.slug}`}
+                className="font-label inline-flex min-h-11 items-center rounded-full border border-dusk-violet/35 bg-dusk-violet/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet transition-colors hover:border-dusk-violet/60 hover:bg-dusk-violet/14"
+              >
+                {feeling.name}
+              </Link>
+            ) : null}
+            <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-clay">
+              {[
+                product.fitLabel?.trim() || 'Unisex fit',
+                ...heroCategoryTagItems.map(({ label }) => label),
+                ...(product.capsuleSlugs?.includes('zodiac') ? [copy.pdpZodiacCapsuleLabel] : []),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+          </div>
 
           {/* Product title */}
           <h1 className="font-headline text-[clamp(2rem,5vw,3.2rem)] font-semibold leading-[1.02] tracking-tight text-obsidian">
             {product.name}
           </h1>
+
+          {/* Design meaning — 1-line "what this design says" for gift / self-expression buyers */}
+          {product.useCase?.trim() ? (
+            <p className="font-body text-[15px] leading-snug text-warm-charcoal">
+              {product.useCase.trim()}
+            </p>
+          ) : null}
 
           {/* Artist attribution */}
           {pdpArtist ? (
@@ -198,26 +216,6 @@ export function PdpBuyBox({
               {compactProductDescription}
             </p>
           ) : null}
-
-          {/* Product badges */}
-          <div className="flex flex-wrap gap-2">
-            <span className="font-label rounded-full border border-stone/35 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
-              {product.fitLabel?.trim() || 'Unisex fit'}
-            </span>
-            {heroCategoryTagItems.map(({ key, label }) => (
-              <span
-                key={key}
-                className="font-label rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-warm-charcoal"
-              >
-                {label}
-              </span>
-            ))}
-            {product.capsuleSlugs?.includes('zodiac') ? (
-              <span className="font-label rounded-full border border-moon-gold/40 bg-moon-gold/10 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian">
-                {copy.pdpZodiacCapsuleLabel}
-              </span>
-            ) : null}
-          </div>
         </header>
 
         {/* Color selector */}
@@ -281,6 +279,23 @@ export function PdpBuyBox({
               <><IconCart /><span>{primaryCtaLabel()}</span></>
             )}
           </button>
+
+          {/* Task 1.3: Trust badges below Add to Bag */}
+          <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-warm-charcoal">
+            <span className="inline-flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span>{isArabic ? 'الدفع عند الاستلام' : 'Pay on Delivery (COD)'}</span>
+            </span>
+            <span className="text-stone">·</span>
+            <span className="inline-flex items-center gap-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+                <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              <span>{isArabic ? 'استبدال سهل ١٤ يوم' : '14-Day Easy Exchange'}</span>
+            </span>
+          </div>
 
           {/* WhatsApp order button */}
           {whatsappSupportUrl ? (

@@ -11,9 +11,8 @@ export function PdpStoryCard({ storyText, tagLabels }: PdpStoryCardProps) {
   if (!storyText && tagLabels.length === 0) return null;
 
   return (
-    <section className="border-t border-stone/25 bg-papyrus">
-      <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16 lg:px-12">
-        <div className="mx-auto max-w-[720px]">
+    <section className="rounded-2xl border border-stone/30 bg-white/60 p-6 md:p-8 shadow-sm">
+      <div className="mx-auto w-full">
           <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
             The Story
           </span>
@@ -35,7 +34,6 @@ export function PdpStoryCard({ storyText, tagLabels }: PdpStoryCardProps) {
             </div>
           ) : null}
         </div>
-      </div>
     </section>
   );
 }

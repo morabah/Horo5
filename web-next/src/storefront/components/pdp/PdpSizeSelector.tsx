@@ -3,13 +3,29 @@
 import React from 'react';
 import type { ProductSizeKey } from '../../data/catalog-types';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
+import { useUiLocale } from '../../i18n/ui-locale';
 
 const { copy } = PDP_SCHEMA;
 
+/**
+ * Plain-language preset labels (audit P-Size-jargon). When Medusa exposes
+ * `store.metadata.sizeTables[key].label_en/ar` (Phase 2), the resolved label
+ * will be passed in via `sizeTableResolved.displayLabel` and used directly.
+ * For now, map known internal keys to human copy and never expose raw kebab/snake.
+ */
+const SIZE_PRESET_HUMAN_LABEL: Record<string, string> = {
+  regular: 'Relaxed unisex',
+  oversized: 'Intentional oversized',
+  fitted: 'Closer body fit',
+  'comfort-modern': 'Relaxed unisex',
+  'comfort-modern-fit': 'Relaxed unisex',
+};
+
 function formatSizeTablePresetLabel(presetKey: string): string {
   const t = presetKey.trim();
-  if (!t) return presetKey;
-  return t.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  if (!t) return '';
+  const normalized = t.toLowerCase();
+  return SIZE_PRESET_HUMAN_LABEL[normalized] ?? '';
 }
 
 type PdpSizeSelectorProps = {
@@ -43,6 +59,11 @@ export function PdpSizeSelector({
   onSizeSelect,
   onOpenSizeGuide,
 }: PdpSizeSelectorProps) {
+  const { locale } = useUiLocale();
+  const isArabic = locale === 'ar';
+  const fitConfidenceLine = isArabic
+    ? 'مش متأكد؟ اختر مقاس أكبر — استبدال مجاني خلال ١٤ يوم.'
+    : 'Unsure? Size up — exchange free for 14 days.';
   return (
     <div ref={sizeSectionRef} className="space-y-3 border-t border-stone/30 pt-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -50,12 +71,18 @@ export function PdpSizeSelector({
           {copy.pdpSizeSectionLabel}
         </p>
         <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-          <span
-            className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian"
-            title={sizeTableResolved.presetKeyUsed}
-          >
-            {formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed)}
-          </span>
+          {(() => {
+            const humanLabel = formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed);
+            if (!humanLabel) return null;
+            return (
+              <span
+                className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian"
+                title={sizeTableResolved.presetKeyUsed}
+              >
+                {humanLabel}
+              </span>
+            );
+          })()}
           <button
             ref={sizeGuideTriggerRef}
             type="button"
@@ -112,6 +139,13 @@ export function PdpSizeSelector({
       {inventoryHint ? (
         <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-warm-charcoal">
           {inventoryHint}
+        </p>
+      ) : null}
+
+      {/* Fit-confidence reassurance — reduces size-fit risk before CTA (audit P-Size). */}
+      {!oosSelected ? (
+        <p className="font-body text-[12px] leading-snug text-warm-charcoal/85">
+          {fitConfidenceLine}
         </p>
       ) : null}
 

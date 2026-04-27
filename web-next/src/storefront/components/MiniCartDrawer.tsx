@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, usePathname } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
@@ -7,6 +7,11 @@ import { MINI_CART_SCHEMA } from '../data/domain-config';
 import { imgUrl } from '../data/images';
 import { formatEgp } from '../utils/formatPrice';
 import { useUiLocale } from '../i18n/ui-locale';
+import {
+  fetchStorefrontIncentivesClient,
+  pickLocalizedText,
+  type StorefrontIncentivesClient,
+} from '../lib/storefront/incentives-client';
 import { AppIcon } from './AppIcon';
 
 const AUTO_DISMISS_MS = 5000;
@@ -29,6 +34,20 @@ export function MiniCartDrawer() {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
+
+  /* Fetch incentives after mount so SSR / first client render stay matched. */
+  useEffect(() => {
+    if (!miniCartOpen) return;
+    let cancelled = false;
+    void fetchStorefrontIncentivesClient().then((data) => {
+      if (cancelled) return;
+      setIncentives(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [miniCartOpen]);
 
   const close = useCallback(() => {
     setMiniCartOpen(false);
@@ -193,6 +212,44 @@ export function MiniCartDrawer() {
             {t('shippingAtCheckoutNote', isArabic)}
           </p>
         </div>
+
+        {/*
+          Audit S8: free-shipping progress.
+          Threshold + label come from the native Medusa Promotion via /storefront/incentives.
+          Cart math (shipping_total going to 0 once subtotal ≥ threshold) is computed by Medusa,
+          not the storefront. Hidden when no automatic free-ship promotion is configured.
+        */}
+        {incentives?.freeShipping && incentives.freeShipping.thresholdEgp > 0 ? (() => {
+          const threshold = incentives.freeShipping.thresholdEgp;
+          const remaining = Math.max(0, threshold - subtotalEgp);
+          const pct = Math.min(100, Math.max(0, Math.round((subtotalEgp / threshold) * 100)));
+          const unlocked = subtotalEgp >= threshold;
+          const labelFromOps = pickLocalizedText(incentives.freeShipping.label, isArabic ? 'ar' : 'en');
+          const headline = unlocked
+            ? isArabic
+              ? 'مبروك! تم تفعيل الشحن المجاني'
+              : 'Free shipping unlocked'
+            : isArabic
+              ? `أضف ${formatEgp(remaining)} للحصول على شحن مجاني`
+              : `Add ${formatEgp(remaining)} for free shipping`;
+          return (
+            <div className="mini-cart-freeship" role="status" aria-live="polite">
+              <p className="mini-cart-freeship-headline">{headline}</p>
+              <div
+                className="mini-cart-freeship-track"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={pct}
+              >
+                <span className="mini-cart-freeship-fill" style={{ width: `${pct}%` }} />
+              </div>
+              {labelFromOps ? (
+                <p className="mini-cart-freeship-label">{labelFromOps}</p>
+              ) : null}
+            </div>
+          );
+        })() : null}
 
         {/* Actions */}
         <div className="mini-cart-actions">

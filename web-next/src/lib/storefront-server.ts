@@ -213,6 +213,41 @@ type StorefrontPdpApiResponse = {
   crossSellProducts: StorefrontProductResponse[];
 };
 
+function normalizeStorefrontSettings(data: StorefrontSettingsResponse | null | undefined): StorefrontSettingsPayload {
+  return {
+    delivery: data?.delivery ?? null,
+    sizeTables: data?.sizeTables ?? null,
+    defaultSizeTableKey:
+      typeof data?.defaultSizeTableKey === "string" && data.defaultSizeTableKey.trim()
+        ? data.defaultSizeTableKey.trim()
+        : null,
+    navigation: data?.navigation
+      ? {
+          primary: (data.navigation.primary || []).map((item) => ({ ...item })),
+          drawer: (data.navigation.drawer || []).map((item) => ({ ...item })),
+        }
+      : null,
+    checkout: data?.checkout
+      ? {
+          governorates: (data.checkout.governorates || []).map((item) => ({ ...item })),
+          paymentMethodOrder: [...(data.checkout.paymentMethodOrder || [])],
+        }
+      : null,
+    search: data?.search
+      ? {
+          priceBands: (data.search.priceBands || []).map((item) => ({ ...item })),
+        }
+      : null,
+    homepage: data?.homepage
+      ? {
+          sectionsEnabled: data.homepage.sectionsEnabled
+            ? [...data.homepage.sectionsEnabled]
+            : null,
+        }
+      : null,
+  };
+}
+
 async function fetchStorefrontPdpServerImpl(
   slug: string,
   init: NextFetchOptions = {}
@@ -231,14 +266,7 @@ async function fetchStorefrontPdpServerImpl(
     }
     return {
       product: normalizeProduct(data.product),
-      settings: {
-        delivery: data.settings?.delivery ?? null,
-        sizeTables: data.settings?.sizeTables ?? null,
-        defaultSizeTableKey:
-          typeof data.settings?.defaultSizeTableKey === "string" && data.settings.defaultSizeTableKey.trim()
-            ? data.settings.defaultSizeTableKey.trim()
-            : null,
-      },
+      settings: normalizeStorefrontSettings(data.settings),
       crossSellProducts: (data.crossSellProducts || []).map(normalizeProduct),
     };
   } catch (error) {
@@ -294,17 +322,79 @@ export const fetchStorefrontOccasionServer = cache((slug: string) =>
   })
 );
 
+type StorefrontLocalizedTextRaw = string | { en?: string; ar?: string };
+
+type StorefrontNavItemRaw = {
+  key: string;
+  label: StorefrontLocalizedTextRaw;
+  href: string;
+  badge?: StorefrontLocalizedTextRaw;
+  active: boolean;
+  sortOrder: number;
+};
+
+type StorefrontGovernorateRaw = {
+  code: string;
+  name: StorefrontLocalizedTextRaw;
+  codEligible: boolean;
+  expressEligible: boolean;
+};
+
+type StorefrontPriceBandRaw = {
+  key: string;
+  minEgp: number | null;
+  maxEgp: number | null;
+  label: StorefrontLocalizedTextRaw;
+};
+
 type StorefrontSettingsResponse = {
   delivery?: unknown | null;
   sizeTables?: unknown | null;
   defaultSizeTableKey?: string | null;
+  navigation?: { primary: StorefrontNavItemRaw[]; drawer: StorefrontNavItemRaw[] } | null;
+  checkout?: { governorates: StorefrontGovernorateRaw[]; paymentMethodOrder: string[] } | null;
+  search?: { priceBands: StorefrontPriceBandRaw[] } | null;
+  homepage?: { sectionsEnabled: string[] | null } | null;
 };
 
-/** Medusa `GET /storefront/settings` payload (delivery + size table presets). */
+/** Localized text — operators provide either a flat string or {en, ar}. */
+export type StorefrontLocalizedText = string | { en?: string; ar?: string };
+
+export type StorefrontNavItem = {
+  key: string;
+  label: StorefrontLocalizedText;
+  href: string;
+  badge?: StorefrontLocalizedText;
+  active: boolean;
+  sortOrder: number;
+};
+
+export type StorefrontGovernorate = {
+  code: string;
+  name: StorefrontLocalizedText;
+  codEligible: boolean;
+  expressEligible: boolean;
+};
+
+export type StorefrontPriceBand = {
+  key: string;
+  /** Inclusive min in EGP, null = no minimum. */
+  minEgp: number | null;
+  /** Inclusive max in EGP, null = no maximum. */
+  maxEgp: number | null;
+  label: StorefrontLocalizedText;
+};
+
+/** Medusa `GET /storefront/settings` payload. */
 export type StorefrontSettingsPayload = {
   delivery: unknown | null;
   sizeTables: unknown | null;
   defaultSizeTableKey: string | null;
+  navigation: { primary: StorefrontNavItem[]; drawer: StorefrontNavItem[] } | null;
+  checkout: { governorates: StorefrontGovernorate[]; paymentMethodOrder: string[] } | null;
+  search: { priceBands: StorefrontPriceBand[] } | null;
+  /** Operator-controlled homepage layout. When null, storefront uses its built-in 5-section default. */
+  homepage: { sectionsEnabled: string[] | null } | null;
 };
 
 async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPayload | null> {
@@ -315,18 +405,11 @@ async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPa
         tags: ["storefront", "settings"],
       },
     });
-    return {
-      delivery: data.delivery ?? null,
-      sizeTables: data.sizeTables ?? null,
-      defaultSizeTableKey:
-        typeof data.defaultSizeTableKey === "string" && data.defaultSizeTableKey.trim()
-          ? data.defaultSizeTableKey.trim()
-          : null,
-    };
+    return normalizeStorefrontSettings(data);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.warn(
-        "[storefront] GET /storefront/settings failed — PDP delivery and size tables fall back to defaults.",
+        "[storefront] GET /storefront/settings failed — PDP delivery, size tables, navigation, and checkout fall back to defaults.",
         error instanceof Error ? error.message : error,
       );
     }
@@ -339,6 +422,58 @@ async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPa
  * Cached with `revalidate: 300` and tag `settings`; bust via Medusa `store.updated` → `POST /api/revalidate/storefront`.
  */
 export const fetchStorefrontSettingsServer = cache(fetchStorefrontSettingsServerImpl);
+
+/** Display-only projection of native Medusa Promotions and the gift-wrap product. */
+export type StorefrontIncentivesPayload = {
+  freeShipping: {
+    promotionId: string;
+    thresholdEgp: number;
+    currency: string;
+    label: StorefrontLocalizedText;
+  } | null;
+  bundle: {
+    promotionId: string;
+    type: "buyget";
+    requireQuantity: number;
+    applyToQuantity: number;
+    applicationValue: number;
+    applicationKind: "fixed" | "percentage";
+    label: StorefrontLocalizedText;
+  } | null;
+  giftWrapProductHandle: string | null;
+  giftWrapPriceEgp: number | null;
+  giftWrapLabel: StorefrontLocalizedText | null;
+};
+
+async function fetchStorefrontIncentivesServerImpl(): Promise<StorefrontIncentivesPayload | null> {
+  try {
+    const data = await storefrontRequest<StorefrontIncentivesPayload>("/storefront/incentives", {
+      next: {
+        revalidate: 300,
+        tags: ["storefront", "incentives"],
+      },
+    });
+    return data ?? null;
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[storefront] GET /storefront/incentives failed — free shipping / bundle UI degrades to off.",
+        error instanceof Error ? error.message : error,
+      );
+    }
+    return null;
+  }
+}
+
+/**
+ * Display-only incentives payload (free shipping threshold + bundle label + gift wrap handle).
+ * Cached with `revalidate: 300` and tag `incentives`; bust via Medusa `promotion.updated` /
+ * `product.updated` (when gift-wrap price changes) → `POST /api/revalidate/storefront`.
+ *
+ * The cart math is **always** computed by Medusa (auto-applied Promotions); this payload only
+ * powers progress bars, upsell strips, and the gift-wrap toggle copy.
+ */
+export const fetchStorefrontIncentivesServer = cache(fetchStorefrontIncentivesServerImpl);
 
 export function buildOccasionMetadata(occasion: Occasion): Metadata {
   const title = `${occasion.name} | HORO Egypt`;

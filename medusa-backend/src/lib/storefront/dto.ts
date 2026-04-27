@@ -91,10 +91,75 @@ export const storefrontProductSchema = z
   })
   .passthrough()
 
+const storefrontLocalizedTextSchema = z.union([
+  z.string(),
+  z
+    .object({
+      en: z.string().optional(),
+      ar: z.string().optional(),
+    })
+    .passthrough(),
+])
+
+const storefrontNavItemSchema = z
+  .object({
+    key: z.string(),
+    label: storefrontLocalizedTextSchema,
+    href: z.string(),
+    badge: storefrontLocalizedTextSchema.optional(),
+    active: z.boolean(),
+    sortOrder: z.number(),
+  })
+  .passthrough()
+
+const storefrontGovernorateSchema = z
+  .object({
+    code: z.string(),
+    name: storefrontLocalizedTextSchema,
+    codEligible: z.boolean(),
+    expressEligible: z.boolean(),
+  })
+  .passthrough()
+
+const storefrontPriceBandSchema = z
+  .object({
+    key: z.string(),
+    minEgp: z.number().nullable(),
+    maxEgp: z.number().nullable(),
+    label: storefrontLocalizedTextSchema,
+  })
+  .passthrough()
+
 export const storefrontSettingsSchema = z.object({
   delivery: z.record(z.string(), z.unknown()).nullable(),
   sizeTables: z.record(z.string(), z.unknown()).nullable(),
   defaultSizeTableKey: z.string().nullable(),
+  navigation: z
+    .object({
+      primary: z.array(storefrontNavItemSchema),
+      drawer: z.array(storefrontNavItemSchema),
+    })
+    .nullable()
+    .optional(),
+  checkout: z
+    .object({
+      governorates: z.array(storefrontGovernorateSchema),
+      paymentMethodOrder: z.array(z.string()),
+    })
+    .nullable()
+    .optional(),
+  search: z
+    .object({
+      priceBands: z.array(storefrontPriceBandSchema),
+    })
+    .nullable()
+    .optional(),
+  homepage: z
+    .object({
+      sectionsEnabled: z.array(z.string()).nullable(),
+    })
+    .nullable()
+    .optional(),
 })
 
 export const storefrontPdpResponseSchema = z.object({

@@ -32,7 +32,7 @@ export function HomeTrustRibbon() {
           <span
             key={badge.key}
             role="listitem"
-            className="font-label inline-flex items-center text-[11px] font-semibold uppercase tracking-[0.18em] text-obsidian"
+            className="font-label inline-flex items-center text-[12px] font-semibold uppercase tracking-[0.12em] text-obsidian sm:text-[13px]"
           >
             <span
               aria-hidden

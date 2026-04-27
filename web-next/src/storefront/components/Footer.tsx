@@ -5,6 +5,7 @@ import { useUiLocale } from '../i18n/ui-locale';
 import { NAV_ROUTE } from '../lib/navLinks';
 import { useRenderTime } from '../runtime/render-time';
 import { BrandLogo } from './BrandLogo';
+import { HomeTrustRibbon } from './HomeTrustRibbon';
 
 export function Footer() {
   const renderTime = useRenderTime();
@@ -17,6 +18,9 @@ export function Footer() {
     ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
     : null;
   return (
+    <>
+      {/* Late-scroll trust reinforcement (audit P8). Rendered above the dark footer. */}
+      <HomeTrustRibbon />
     <footer className="bg-obsidian pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 text-[#f5f0e8] sm:pt-32">
       {/* Brand manifesto — cinematic closing typography */}
       <div className="mx-auto max-w-[1400px] px-[max(1rem,env(safe-area-inset-left,0px))] sm:px-8 md:px-12 mb-16 sm:mb-24">
@@ -137,5 +141,6 @@ export function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

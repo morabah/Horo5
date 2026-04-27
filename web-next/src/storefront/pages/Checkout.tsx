@@ -1948,7 +1948,33 @@ export function Checkout() {
 
               <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
                 <h2 className="font-headline text-lg font-semibold text-obsidian">{copy.checkout.headingPayment}</h2>
-                {!(dependencyAddressSaved && dependencyShippingAttached && dependencyProvidersLoaded) ? (
+                {/*
+                  Audit P-Checkout-COD: optimistic COD pre-render.
+                  - Address & shipping persisted, providers still loading → show COD radio card + small "Loading more options…" hint.
+                  - Address or shipping NOT yet persisted → keep the existing single-line spinner (we genuinely don't know yet).
+                  Once Medusa providers resolve, the reconciliation effect swaps the selection to the real COD method id.
+                */}
+                {dependencyAddressSaved && dependencyShippingAttached && !dependencyProvidersLoaded ? (
+                  <div className="mt-4">
+                    <div className={`${radioCardClass(true)} mb-2 cursor-default`} aria-disabled>
+                      <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-obsidian" aria-hidden />
+                      <span className="font-body text-sm text-obsidian">
+                        <strong>{isArabic ? 'الدفع عند الاستلام' : 'Cash on Delivery (COD)'}</strong>
+                        <br />
+                        <span className="text-xs text-clay">
+                          {isArabic ? 'الدفع نقداً عند توصيل الطلب' : 'Pay in cash when your order arrives'}
+                        </span>
+                      </span>
+                    </div>
+                    <p className="flex items-center gap-2 px-1 font-body text-xs text-clay" role="status">
+                      <span
+                        className="inline-block h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-stone/40 border-t-deep-teal"
+                        aria-hidden
+                      />
+                      {isArabic ? 'تحميل المزيد من خيارات الدفع…' : 'Loading more payment options…'}
+                    </p>
+                  </div>
+                ) : !(dependencyAddressSaved && dependencyShippingAttached && dependencyProvidersLoaded) ? (
                   <div className="mt-4 flex items-center gap-3 rounded-xl border border-stone/30 bg-papyrus/60 p-4" role="status">
                     <span
                       className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-stone/40 border-t-deep-teal"

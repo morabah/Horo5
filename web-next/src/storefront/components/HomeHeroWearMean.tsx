@@ -80,18 +80,19 @@ export function HomeHeroWearMean() {
             <span>{promiseLine}</span>
             {priceToken ? <span className="text-[0.86em] font-medium text-[#f5f0e6]/88"> · {priceToken}</span> : null}
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
               to={primaryHref}
-              className="font-body inline-flex min-h-12 items-center justify-center rounded-md bg-[#f5f0e6] px-7 py-3 text-[14px] font-semibold text-[#2a2d26] transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
+              className="font-body inline-flex min-h-14 items-center justify-center rounded-md bg-[#f5f0e6] px-7 py-3 text-[14px] font-semibold text-[#2a2d26] transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {primaryCtaLabel}
             </Link>
             <Link
               to={secondaryHref}
-              className="font-body inline-flex min-h-12 items-center justify-center rounded-md border border-[#f5f0e6]/40 bg-black/20 px-7 py-3 text-[14px] font-semibold text-[#f5f0e6] transition-colors duration-200 hover:border-[#f5f0e6]/75 hover:bg-black/28 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
+              className="font-body inline-flex min-h-11 items-center text-[14px] font-medium text-[#f5f0e6]/85 underline decoration-[#f5f0e6]/40 underline-offset-4 transition-colors duration-200 hover:text-[#f5f0e6] hover:decoration-[#f5f0e6]/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {secondaryCtaLabel}
+              <span aria-hidden className="ml-1.5">→</span>
             </Link>
           </div>
         </div>

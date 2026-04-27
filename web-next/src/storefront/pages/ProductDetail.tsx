@@ -78,7 +78,6 @@ import {
   PdpQualityProofCard,
   PdpDeliveryPaymentCard,
   PdpGiftReadyCard,
-  PdpLaunchTrustCard,
   PdpRelatedProducts,
 } from '../components/pdp';
 
@@ -1165,11 +1164,8 @@ export function ProductDetail({
       </section>
 
       <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
-          <div className="grid gap-6 md:grid-cols-2">
-            <PdpGiftReadyCard giftWrapAvailable />
-            <PdpLaunchTrustCard />
-          </div>
+        <div className="mx-auto max-w-[820px] px-4 py-14 md:px-12 md:py-16">
+          <PdpGiftReadyCard giftWrapAvailable />
         </div>
       </section>
 

@@ -22,6 +22,11 @@ import {
   resolveShippingQuoteFromCartAndOptions,
 } from '../lib/medusa/cart-money';
 import type { MedusaCart, MedusaShippingOption } from '../lib/medusa/types';
+import {
+  fetchStorefrontIncentivesClient,
+  pickLocalizedText,
+  type StorefrontIncentivesClient,
+} from '../lib/storefront/incentives-client';
 
 type CartShippingFetchState =
   | { kind: 'inactive' }
@@ -43,6 +48,8 @@ function CartUpsell({
   totalQty,
   giftWrapSelected,
   giftWrapPriceEgp,
+  bundle,
+  locale,
   onAddGiftWrap,
   onDeclineGiftWrap,
   onRemoveGiftWrap,
@@ -50,6 +57,9 @@ function CartUpsell({
   totalQty: number;
   giftWrapSelected: boolean;
   giftWrapPriceEgp: number | null;
+  /** Operator-configured bundle promotion. When null the bundle slot stays hidden. */
+  bundle: StorefrontIncentivesClient['bundle'];
+  locale: UiLocale;
   onAddGiftWrap: () => void;
   onDeclineGiftWrap: () => void;
   onRemoveGiftWrap: () => void;
@@ -94,12 +104,13 @@ function CartUpsell({
     );
   }
 
-  if (totalQty >= 2) {
+  if (totalQty >= 2 && bundle && totalQty < bundle.requireQuantity) {
+    const bundleHeading = pickLocalizedText(bundle.label, locale === 'ar' ? 'ar' : 'en') ?? copy.bundleUpsellHeading;
     return (
       <section className="cart-upsell card-glass" aria-labelledby="cart-upsell-title">
         <div className="cart-upsell-content cart-upsell-content--compact">
           <h2 id="cart-upsell-title" className="cart-upsell-title">
-            {copy.bundleUpsellHeading}
+            {bundleHeading}
           </h2>
           <p className="cart-upsell-body">{copy.bundleUpsellBody}</p>
           <div className="cart-upsell-actions">
@@ -124,6 +135,7 @@ function CartSummary({
   now,
   locale,
   cartService,
+  incentives,
 }: {
   itemCount: number;
   subtotalEgp: number;
@@ -133,6 +145,8 @@ function CartSummary({
   now: Date;
   locale: UiLocale;
   cartService: { shippingExplainerArabic: string; estimatedDeliveryCheckoutNoteArabic: string };
+  /** Operator-controlled free-shipping incentive used for the progress bar. */
+  incentives: StorefrontIncentivesClient | null;
 }) {
   const copy = CART_SCHEMA.copy;
   const navigate = useNavigate();
@@ -156,6 +170,41 @@ function CartSummary({
           ? 'تُعرض هذه الأرقام كمعاينة سريعة. يتم تثبيت قيمة الشحن النهائية بعد حفظ العنوان في الدفع.'
           : 'These numbers are a fast preview. Final shipping is locked after your address is saved in checkout.'}
       </p>
+
+      {/*
+        Audit S8: free-shipping progress on the full cart page (mirrors mini-cart drawer).
+        Threshold + label come from the native Medusa Promotion via /storefront/incentives.
+        Cart math (shipping going to 0) is computed by Medusa at checkout, not the storefront.
+      */}
+      {incentives?.freeShipping && incentives.freeShipping.thresholdEgp > 0 ? (() => {
+        const threshold = incentives.freeShipping.thresholdEgp;
+        const remaining = Math.max(0, threshold - subtotalEgp);
+        const pct = Math.min(100, Math.max(0, Math.round((subtotalEgp / threshold) * 100)));
+        const unlocked = subtotalEgp >= threshold;
+        const labelFromOps = pickLocalizedText(incentives.freeShipping.label, locale === 'ar' ? 'ar' : 'en');
+        const headline = unlocked
+          ? locale === 'ar'
+            ? 'مبروك! تم تفعيل الشحن المجاني'
+            : 'Free shipping unlocked'
+          : locale === 'ar'
+            ? `أضف ${formatEgp(remaining)} للحصول على شحن مجاني`
+            : `Add ${formatEgp(remaining)} for free shipping`;
+        return (
+          <div className="mini-cart-freeship mt-3" role="status" aria-live="polite">
+            <p className="mini-cart-freeship-headline">{headline}</p>
+            <div
+              className="mini-cart-freeship-track"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={pct}
+            >
+              <span className="mini-cart-freeship-fill" style={{ width: `${pct}%` }} />
+            </div>
+            {labelFromOps ? <p className="mini-cart-freeship-label">{labelFromOps}</p> : null}
+          </div>
+        );
+      })() : null}
 
       <div className="cart-summary-rows">
         <p className="cart-summary-row">
@@ -345,6 +394,19 @@ export function Cart() {
   const lineViews = useMemo(() => getCartLineViews(items), [items]);
   const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
   const [shippingFetch, setShippingFetch] = useState<CartShippingFetchState>({ kind: 'inactive' });
+  const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
+
+  /* Fetch incentives after mount (per repo hydration baseline: server render uses null). */
+  useEffect(() => {
+    let cancelled = false;
+    void fetchStorefrontIncentivesClient().then((data) => {
+      if (cancelled) return;
+      setIncentives(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (lineViews.length === 0) {
@@ -376,8 +438,21 @@ export function Cart() {
     };
   }, [lineViews.length, medusaCartId, itemCount, giftWrapEgp, subtotalEgp]);
 
+  const freeShippingUnlocked =
+    !!incentives?.freeShipping &&
+    incentives.freeShipping.thresholdEgp > 0 &&
+    subtotalEgp >= incentives.freeShipping.thresholdEgp;
+
   const { shippingRow, estimatedOrderTotal } = useMemo(() => {
     const base = subtotalEgp + giftWrapEgp;
+    /* Audit S8: when an operator-configured free-shipping promo is unlocked, the
+       preview must agree with what Medusa will compute at checkout. */
+    if (freeShippingUnlocked) {
+      return {
+        shippingRow: { mode: 'amount' as const, egp: 0 },
+        estimatedOrderTotal: base,
+      };
+    }
     if (shippingFetch.kind === 'inactive' || shippingFetch.kind === 'pending_cart_id') {
       return {
         shippingRow: { mode: 'loading' as const },
@@ -411,7 +486,7 @@ export function Cart() {
       shippingRow: { mode: 'amount' as const, egp: quoteEgp },
       estimatedOrderTotal: base + quoteEgp,
     };
-  }, [shippingFetch, subtotalEgp, giftWrapEgp]);
+  }, [shippingFetch, subtotalEgp, giftWrapEgp, freeShippingUnlocked]);
 
   const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && giftWrapEgp === 0);
 
@@ -464,7 +539,7 @@ export function Cart() {
       return;
     }
 
-    setLineQty(line.productSlug, line.size, line.qty - 1);
+    setLineQty(line.productSlug, line.size, line.qty - 1, line.variantId);
     setStatusMessage(formatMessage(copy.quantityUpdated, line.productName));
   };
 
@@ -680,6 +755,8 @@ export function Cart() {
                 totalQty={itemCount}
                 giftWrapSelected={giftWrapEgp > 0}
                 giftWrapPriceEgp={giftWrapCatalogPriceEgp}
+                bundle={incentives?.bundle ?? null}
+                locale={locale}
                 onAddGiftWrap={handleAddGiftWrap}
                 onDeclineGiftWrap={handleDeclineGiftWrap}
                 onRemoveGiftWrap={handleRemoveGiftWrap}
@@ -696,6 +773,7 @@ export function Cart() {
             now={now}
             locale={locale}
             cartService={shellCopy.cartService}
+            incentives={incentives}
           />
         </div>
       </div>
