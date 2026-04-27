@@ -1,3 +1,5 @@
+'use client';
+
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';

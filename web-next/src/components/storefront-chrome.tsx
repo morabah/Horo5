@@ -9,9 +9,16 @@ import { Nav } from "@/storefront/components/Nav";
 import { Footer } from "@/storefront/components/Footer";
 import { RouteLoadingSpinner } from "@/storefront/components/RouteLoadingSpinner";
 import { PageSkeleton } from "@/storefront/components/ui/Skeleton";
+import type { StorefrontSettingsPayload } from "@/lib/storefront-server";
 
 /** App shell for main storefront pages: skip link, nav, footer, analytics wrapper. */
-export function StorefrontChrome({ children }: { children: ReactNode }) {
+export function StorefrontChrome({
+  children,
+  navigation = null,
+}: {
+  children: ReactNode;
+  navigation?: StorefrontSettingsPayload["navigation"];
+}) {
   const pathname = usePathname() ?? "/";
   const isHome = pathname === "/";
 
@@ -25,7 +32,7 @@ export function StorefrontChrome({ children }: { children: ReactNode }) {
       </a>
       <Suspense fallback={<RouteLoadingSpinner />}>
         <FunnelNavigationTracker />
-        <Nav />
+        <Nav navigation={navigation} />
       </Suspense>
       <main id="main-content" className={isHome ? "" : "pt-32 md:pt-24"}>
         <AppErrorBoundary key={pathname}>

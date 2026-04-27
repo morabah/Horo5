@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { ShopAllPage } from "@/components/shop-all-page";
+import { fetchStorefrontSettingsServer, logStorefrontFetchError } from "@/lib/storefront-server";
 
 const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ?? "";
 
@@ -16,6 +17,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <ShopAllPage />;
+export default async function Page() {
+  const settings = await fetchStorefrontSettingsServer().catch((error) => {
+    logStorefrontFetchError("[storefront] Failed to fetch shop settings", error);
+    return null;
+  });
+
+  return <ShopAllPage priceBands={settings?.search?.priceBands ?? null} />;
 }

@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
@@ -28,6 +30,7 @@ function getOccasionHeroTiles(occasions: Occasion[]) {
 type ShopByOccasionProps = {
   /** When set (e.g. from Next RSC), replaces runtime/static getOccasions() for first paint. */
   initialOccasions?: Occasion[];
+  mode?: 'occasions' | 'gifts';
 };
 
 function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }: Occasion) {
@@ -52,10 +55,24 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
   );
 }
 
-export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
+export function ShopByOccasion({ initialOccasions, mode = 'occasions' }: ShopByOccasionProps = {}) {
   const { copy, locale } = useUiLocale();
   const isArabic = locale === 'ar';
-  const occasions = initialOccasions && initialOccasions.length > 0 ? initialOccasions : getOccasions();
+  const isGiftsHub = mode === 'gifts';
+  const hubLabel = isGiftsHub ? (isArabic ? 'هدايا' : 'Gifts') : copy.shell.shopByMoment;
+  const hubTitle = isGiftsHub
+    ? (isArabic ? 'هدية بتقول حاجة حقيقية' : 'Gift something real')
+    : (PAGE_HEROES.occasions.title[locale as 'en' | 'ar'] ?? OCCASION_SCHEMA.copy.hubTitle);
+  const hubEyebrow = isGiftsHub
+    ? (isArabic ? 'اختيارات جاهزة للهدايا' : 'Gift-ready routes')
+    : (PAGE_HEROES.occasions.eyebrow?.[locale as 'en' | 'ar'] ?? OCCASION_SCHEMA.copy.hubEyebrow);
+  const gridEyebrow = isGiftsHub
+    ? (isArabic ? 'اختر حسب الشخص' : 'Choose by person')
+    : (isArabic ? OCCASION_SCHEMA.copy.hubGridEyebrowAr : OCCASION_SCHEMA.copy.hubGridEyebrow);
+  const gridTitle = isGiftsHub
+    ? (isArabic ? 'أربع طرق للهدايا' : 'Four gift archetypes')
+    : (isArabic ? OCCASION_SCHEMA.copy.hubGridTitleAr : OCCASION_SCHEMA.copy.hubGridTitle);
+  const occasions = initialOccasions !== undefined ? initialOccasions : getOccasions();
 
   useEffect(() => {
     if (occasions.length > 0) trackOccasionsHubView(occasions.length);
@@ -69,7 +86,7 @@ export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
             className="mb-6"
             items={[
               { label: copy.shell.home, to: '/' },
-              { label: copy.shell.shopByMoment },
+              { label: hubLabel },
             ]}
           />
           <p className="font-body text-warm-charcoal">Moment collections are not available yet. Try again shortly.</p>
@@ -91,14 +108,14 @@ export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
           className="mb-0 md:-mb-2"
           items={[
             { label: copy.shell.home, to: '/' },
-            { label: copy.shell.shopByMoment },
+            { label: hubLabel },
           ]}
         />
 
         {/* Hero — photo grid with glass headline bar */}
         <section
           className="relative isolate overflow-hidden"
-          aria-label={PAGE_HEROES.occasions.eyebrow?.[locale as 'en' | 'ar'] ?? OCCASION_SCHEMA.copy.hubEyebrow}
+          aria-label={hubEyebrow}
         >
           <div
             className="grid min-h-[26rem] grid-cols-2 gap-0.5 bg-obsidian sm:min-h-[30rem] sm:grid-cols-3 sm:gap-1 lg:min-h-[34rem] lg:[grid-template-columns:repeat(var(--hero-tile-count),minmax(0,1fr))]"
@@ -127,7 +144,7 @@ export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
           <div className="absolute inset-x-0 bottom-0">
             <div className="feelings-hub-glass-bar flex items-center justify-center px-4 py-5 sm:py-6">
               <h1 className="text-center font-headline text-[clamp(1.5rem,5vw,2.5rem)] font-semibold leading-tight tracking-tight text-white">
-                {PAGE_HEROES.occasions.title[locale as 'en' | 'ar'] ?? OCCASION_SCHEMA.copy.hubTitle}
+                {hubTitle}
               </h1>
             </div>
           </div>
@@ -159,12 +176,12 @@ export function ShopByOccasion({ initialOccasions }: ShopByOccasionProps = {}) {
           <div className="mx-auto max-w-7xl">
             <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{isArabic ? OCCASION_SCHEMA.copy.hubGridEyebrowAr : OCCASION_SCHEMA.copy.hubGridEyebrow}</p>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{gridEyebrow}</p>
                 <h2
                   id="occasion-grid-title"
                   className="font-headline mt-2 text-[1.35rem] font-semibold tracking-tight text-obsidian md:text-[1.6rem]"
                 >
-                  {isArabic ? OCCASION_SCHEMA.copy.hubGridTitleAr : OCCASION_SCHEMA.copy.hubGridTitle}
+                  {gridTitle}
                 </h2>
               </div>
               <Link

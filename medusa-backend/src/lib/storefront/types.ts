@@ -1,3 +1,15 @@
+export type StorefrontMediaGalleryTag =
+  | "proof_fabric"
+  | "proof_print"
+  | "proof_wash"
+  | "lifestyle"
+  | "flat_lay"
+
+export type StorefrontMediaGalleryItemDTO = {
+  url: string
+  tag?: StorefrontMediaGalleryTag
+}
+
 export type StorefrontFeelingBrowseAssignmentDTO = {
   feelingSlug: string
   /** Empty string when browse applies to the whole pillar (product linked only to that feeling category). */
@@ -7,7 +19,7 @@ export type StorefrontFeelingBrowseAssignmentDTO = {
 export type StorefrontMediaDTO = {
   /** Optional curated crop for product cards / PLPs. */
   card?: string | null
-  gallery?: string[]
+  gallery?: StorefrontMediaGalleryItemDTO[]
   main?: string | null
   /** Base64 data URL for Next.js `placeholder="blur"` (optional; set via `product.metadata.media`). */
   blurDataUrlMain?: string | null

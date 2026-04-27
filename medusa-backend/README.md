@@ -47,6 +47,20 @@ What this seeds:
   - `../web-next/public/images/tees/career_vibe_1_1774374340994.png`
   - `../web-next/public/images/hero/hero-model.png`
 
+### PDP proof gallery tags
+
+`product.metadata.media.gallery` may contain either legacy URL strings or objects:
+
+```json
+[
+  { "url": "https://cdn.example.com/fabric.jpg", "tag": "proof_fabric" },
+  { "url": "https://cdn.example.com/print.jpg", "tag": "proof_print" },
+  { "url": "https://cdn.example.com/wash.jpg", "tag": "proof_wash" }
+]
+```
+
+Supported tags are `proof_fabric`, `proof_print`, `proof_wash`, `lifestyle`, and `flat_lay`. The storefront renders the PDP proof strip only from the three `proof_*` tags and renders nothing when they are absent.
+
 ## 3) Deploy on Railway (PostgreSQL + Node)
 
 **If Railway shows “Railpack could not determine how to build the app”:** the service is building from the **repository root** (monorepo) instead of only `medusa-backend`. Fix it in either of these ways:
@@ -289,6 +303,22 @@ The storefront prefers **`metadata.artist`** on the product (Medusa Admin → Pr
 - `artist`: `{ "name": "…", "avatarUrl": "https://…" }` (`avatarUrl` optional)
 
 If `artist` is missing, the API falls back to **`metadata.artistSlug`** plus the **`storefront_artist`** module (same as before). Run **`npm run backfill:product-artist-metadata`** to copy name/avatar from that module into `metadata.artist` for each product so PDP data lives on the product row. Optional: `DRY_RUN=1` logs only. Single product: `PRODUCT_HANDLE=…`.
+
+### Homepage sections
+
+Homepage merchandising lives in the `homepage_section` module and is exposed by **`GET /storefront/homepage`**. Rows are ordered by `sort_order` and filtered to `active=true`. The launch seed creates:
+
+`hero`, `trust_ribbon`, `founding_drop`, `feeling_grid`, `gift_block`
+
+Seed or refresh the default rows:
+
+```bash
+npm run seed:homepage-sections
+# Railway / DATABASE_PUBLIC_URL:
+npm run seed:homepage-sections:public
+```
+
+The older `store.metadata.homepage.sectionsEnabled` list remains a fallback when the module has no active rows.
 
 ### First-time or fresh database
 

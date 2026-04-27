@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Link,
   useParams,
@@ -31,6 +33,7 @@ import { useCart } from '../cart/CartContext';
 import { StickyAddToCart } from '../components/StickyAddToCart';
 import {
   buildProductPdpGallery,
+  galleryItemsToSrcList,
   getProductMedia,
   imgUrl,
 } from '../data/images';
@@ -73,6 +76,8 @@ import {
   PdpTrustStrip,
   PdpHeroGallery,
   PdpBuyBox,
+  PdpProofStrip,
+  PdpReviewsZone,
   PdpStoryCard,
   PdpArtistCard,
   PdpQualityProofCard,
@@ -116,14 +121,6 @@ function IconCart() {
     </svg>
   );
 }
-
-function formatSizeTablePresetLabel(presetKey: string): string {
-  const t = presetKey.trim();
-  if (!t) return presetKey;
-  return t.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-
 
 function getPreferredDefaultSize(product?: Product | null): ProductSizeKey | null {
   if (!product) return null;
@@ -307,7 +304,7 @@ export function ProductDetail({
     if (!product?.variantsByColor || !selectedColor) return null;
     const row = product.variantsByColor[selectedColor];
     const withMedia = row.find(
-      (v) => v.media && (v.media.main || (v.media.gallery && v.media.gallery.length > 0)),
+      (v) => v.media && (v.media.main || galleryItemsToSrcList(v.media.gallery).length > 0),
     );
     return withMedia?.media ?? null;
   }, [product, selectedColor]);
@@ -317,26 +314,28 @@ export function ProductDetail({
       return getProductMedia('');
     }
 
-    if (colorVariantMedia?.main || (colorVariantMedia?.gallery && colorVariantMedia.gallery.length > 0)) {
+    const colorMain = colorVariantMedia?.main ?? undefined;
+    const colorGallery = galleryItemsToSrcList(colorVariantMedia?.gallery);
+    if (colorMain || colorGallery.length > 0) {
       const backendGallery = Array.from(
         new Set(
           [
-            colorVariantMedia.main ?? undefined,
-            ...(colorVariantMedia.gallery ?? []),
+            colorMain,
+            ...colorGallery,
             product.thumbnail ?? undefined,
           ].filter((value): value is string => Boolean(value)),
         ),
       );
       return {
         gallery: backendGallery,
-        main: colorVariantMedia.main ?? backendGallery[0] ?? product.thumbnail ?? '',
+        main: colorMain ?? backendGallery[0] ?? product.thumbnail ?? '',
       };
     }
 
     const backendGallery = Array.from(
       new Set([
         product.media?.main ?? undefined,
-        ...(product.media?.gallery ?? []),
+        ...galleryItemsToSrcList(product.media?.gallery),
         product.thumbnail ?? undefined,
       ].filter((value): value is string => Boolean(value))),
     );
@@ -1009,6 +1008,11 @@ export function ProductDetail({
   const colorOptions = product?.variantsByColor
     ? Object.keys(product.variantsByColor).sort()
     : null;
+  const sizeTableDisplayLabel = sizeTableResolved.displayLabel
+    ? isArabic
+      ? sizeTableResolved.displayLabel.ar || sizeTableResolved.displayLabel.en || ''
+      : sizeTableResolved.displayLabel.en || sizeTableResolved.displayLabel.ar || ''
+    : '';
 
   return (
     <div className="product-page pdp-page-content bg-papyrus text-obsidian">
@@ -1114,6 +1118,8 @@ export function ProductDetail({
         />
       </section>
 
+      <PdpProofStrip product={product} />
+
       {showCrossSellSection ? (
         <section className="border-t border-stone/25 bg-papyrus">
           <div className="mx-auto max-w-[1320px] px-4 py-10 md:px-12 md:py-12">
@@ -1144,6 +1150,8 @@ export function ProductDetail({
       ) : null}
 
       {!compactPdp ? <PdpShareStrip productName={product.name} productSlug={product.slug} /> : null}
+
+      <PdpReviewsZone product={product} />
 
       <PdpStoryCard storyText={storyText} tagLabels={storyTagLabels} />
 
@@ -1321,9 +1329,11 @@ export function ProductDetail({
                 <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                   {copy.sizeGuidePresetEyebrow}
                 </p>
-                <span className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
-                  {formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed)}
-                </span>
+                {sizeTableDisplayLabel ? (
+                  <span className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+                    {sizeTableDisplayLabel}
+                  </span>
+                ) : null}
               </div>
               <button
                 type="button"

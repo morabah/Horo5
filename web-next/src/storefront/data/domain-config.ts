@@ -144,6 +144,10 @@ export type PdpSizeTableRow = {
 export type PdpSizeTablePresetBody = {
   measurements: PdpSizeTableRow[];
   fitModels: PdpFitModel[];
+  displayLabel?: {
+    en?: string;
+    ar?: string;
+  };
 };
 
 /** Resolved preset for PDP + size guide modal. */
@@ -258,7 +262,16 @@ function parsePresetBody(raw: unknown): PdpSizeTablePresetBody | null {
   const measurements = parseMeasurementsArray(o.measurements);
   if (measurements.length === 0) return null;
   const fitModels = parseFitModelsArray(o.fitModels);
-  return { measurements, fitModels };
+  const labelEn = coalesceTrimmedString(o.label_en) ?? coalesceTrimmedString(o.labelEn);
+  const labelAr = coalesceTrimmedString(o.label_ar) ?? coalesceTrimmedString(o.labelAr);
+  const displayLabel =
+    labelEn || labelAr
+      ? {
+          ...(labelEn ? { en: labelEn } : {}),
+          ...(labelAr ? { ar: labelAr } : {}),
+        }
+      : undefined;
+  return { measurements, fitModels, ...(displayLabel ? { displayLabel } : {}) };
 }
 
 function parseSizeTablesRecord(raw: unknown): Record<string, PdpSizeTablePresetBody> {

@@ -5,7 +5,18 @@ import { z } from "zod"
 export const storefrontMediaSchema = z
   .object({
     card: z.string().nullable().optional(),
-    gallery: z.array(z.string()).optional(),
+    gallery: z
+      .array(
+        z
+          .object({
+            url: z.string(),
+            tag: z
+              .enum(["proof_fabric", "proof_print", "proof_wash", "lifestyle", "flat_lay"])
+              .optional(),
+          })
+          .passthrough()
+      )
+      .optional(),
     main: z.string().nullable().optional(),
     blurDataUrlMain: z.string().nullable().optional(),
     dominantColorMain: z.string().nullable().optional(),
@@ -130,6 +141,57 @@ const storefrontPriceBandSchema = z
   })
   .passthrough()
 
+export const storefrontHomepageSectionSchema = z
+  .object({
+    id: z.string(),
+    key: z.string(),
+    type: z.enum([
+      "hero",
+      "trust_ribbon",
+      "primary_routes",
+      "founding_drop",
+      "featured_piece",
+      "feeling_grid",
+      "occasion_grid",
+      "gift_block",
+      "why_horo",
+      "first_drop_circle",
+      "proof_strip",
+      "seen_on_you",
+      "artist_spotlight",
+    ]),
+    eyebrow: storefrontLocalizedTextSchema.nullable(),
+    title: storefrontLocalizedTextSchema.nullable(),
+    body: storefrontLocalizedTextSchema.nullable(),
+    primaryCta: z
+      .object({
+        label: storefrontLocalizedTextSchema.nullable(),
+        href: z.string().nullable(),
+      })
+      .nullable(),
+    secondaryCta: z
+      .object({
+        label: storefrontLocalizedTextSchema.nullable(),
+        href: z.string().nullable(),
+      })
+      .nullable(),
+    image: z
+      .object({
+        src: z.string(),
+        alt: storefrontLocalizedTextSchema.nullable(),
+      })
+      .nullable(),
+    accent: z.string().nullable(),
+    sortOrder: z.number(),
+    active: z.boolean(),
+    payload: z.record(z.string(), z.unknown()).nullable(),
+  })
+  .passthrough()
+
+export const storefrontHomepageResponseSchema = z.object({
+  sections: z.array(storefrontHomepageSectionSchema),
+})
+
 export const storefrontSettingsSchema = z.object({
   delivery: z.record(z.string(), z.unknown()).nullable(),
   sizeTables: z.record(z.string(), z.unknown()).nullable(),
@@ -160,6 +222,13 @@ export const storefrontSettingsSchema = z.object({
     })
     .nullable()
     .optional(),
+  loyalty: z
+    .object({
+      creditOnSecondOrderEgp: z.number().nullable(),
+      expiryDays: z.number().nullable(),
+    })
+    .nullable()
+    .optional(),
 })
 
 export const storefrontPdpResponseSchema = z.object({
@@ -169,3 +238,4 @@ export const storefrontPdpResponseSchema = z.object({
 })
 
 export type StorefrontPdpResponse = z.infer<typeof storefrontPdpResponseSchema>
+export type StorefrontHomepageResponse = z.infer<typeof storefrontHomepageResponseSchema>

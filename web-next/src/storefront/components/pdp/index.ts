@@ -1,6 +1,8 @@
 export { PdpTrustStrip } from './PdpTrustStrip';
 export { PdpHeroGallery } from './PdpHeroGallery';
 export { PdpBuyBox } from './PdpBuyBox';
+export { PdpProofStrip } from './PdpProofStrip';
+export { PdpReviewsZone } from './PdpReviewsZone';
 export { PdpSizeSelector } from './PdpSizeSelector';
 export { PdpStoryCard } from './PdpStoryCard';
 export { PdpArtistCard } from './PdpArtistCard';

@@ -50,6 +50,8 @@
     "remove:legacy-taxonomy-feelings:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/remove-legacy-taxonomy-feelings-category.ts",
     "seed:incentives": "medusa exec ./src/scripts/seed-incentives.ts",
     "seed:incentives:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/seed-incentives.ts",
+    "seed:homepage-sections": "medusa exec ./src/scripts/seed-homepage-sections.ts",
+    "seed:homepage-sections:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/seed-homepage-sections.ts",
     "inspect:incentives": "medusa exec ./src/scripts/inspect-incentives.ts",
     "parity:snapshot:local": "sh -c 'mkdir -p .parity && PARITY_OUTPUT_FILE=.parity/local.json medusa exec ./src/scripts/parity-snapshot.ts'",
     "parity:snapshot:remote": "sh -c 'mkdir -p .parity && export PARITY_OUTPUT_FILE=.parity/railway.json && sh scripts/medusa-exec-public-db.sh ./src/scripts/parity-snapshot.ts'",

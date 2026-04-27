@@ -1,3 +1,5 @@
+'use client';
+
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';

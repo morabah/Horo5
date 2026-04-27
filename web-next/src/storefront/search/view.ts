@@ -22,7 +22,12 @@ import {
 import { productHasCatalogSize } from '../utils/productSizes';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 
-export type SearchPriceFilter = 'all' | 'under-800' | '800-899' | '900+';
+export type SearchPriceFilter = string;
+export type SearchPriceBand = {
+  key: string;
+  minEgp: number | null;
+  maxEgp: number | null;
+};
 export type SearchSizeFilter = 'all' | ProductSizeKey;
 export type SearchSortKey = 'relevance' | ProductSortKey;
 export type SearchSuggestionKind = 'design' | 'vibe' | 'occasion';
@@ -107,6 +112,7 @@ export type ScopedSearchParams = {
   scopeOccasionSlug?: string | null;
   sortKey: SearchSortKey;
   priceFilter: SearchPriceFilter;
+  priceBands?: SearchPriceBand[];
   feelingFilter: string;
   sizeFilter: SearchSizeFilter;
   filterArtist: string;
@@ -419,7 +425,16 @@ function fieldScore(
   return bestScore;
 }
 
-function filterByPrice(list: Product[], filter: SearchPriceFilter) {
+function filterByPrice(list: Product[], filter: SearchPriceFilter, priceBands?: SearchPriceBand[]) {
+  const configured = priceBands?.find((band) => band.key === filter);
+  if (configured) {
+    return list.filter((product) => {
+      if (configured.minEgp != null && product.priceEgp < configured.minEgp) return false;
+      if (configured.maxEgp != null && product.priceEgp > configured.maxEgp) return false;
+      return true;
+    });
+  }
+
   switch (filter) {
     case 'under-800':
       return list.filter((product) => product.priceEgp < 800);
@@ -730,6 +745,7 @@ export function getSearchResultsFromProducts(
     scopeOccasionSlug,
     sortKey,
     priceFilter,
+    priceBands,
     feelingFilter,
     sizeFilter,
     filterArtist,
@@ -775,7 +791,7 @@ export function getSearchResultsFromProducts(
   const sizeFiltered =
     sizeFilter === 'all' ? facetFiltered : facetFiltered.filter((p) => productHasCatalogSize(p, sizeFilter));
 
-  const filteredProducts = filterByPrice(sizeFiltered, priceFilter);
+  const filteredProducts = filterByPrice(sizeFiltered, priceFilter, priceBands);
 
   const sortedProducts =
     sortKey === 'relevance'

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Result ranking and suggestions use synonym expansion plus Levenshtein-bounded fuzzy
  * token matching in `search/view.ts` (`expandQueryVariants`, `fuzzyTokenScore`), merged

@@ -41,6 +41,7 @@ const UI_COPY = {
       orderPlacedViewReceipt: 'View receipt',
       orderPlacedDismiss: 'Dismiss',
     },
+    // Fallback copy only. Merchandising/homepage source of truth is Medusa store metadata / homepage section payloads.
     home: {
       heroCta: 'Browse designs',
       heroPromiseLine: 'Artist-made tees · Printed in Egypt · COD',

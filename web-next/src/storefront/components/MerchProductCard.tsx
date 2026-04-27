@@ -223,7 +223,7 @@ export function MerchProductCard({
       <div className="mb-3 md:hidden">
         <Link
           to={`/products/${slug}`}
-          className="font-label inline-flex min-h-10 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
+          className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
           onClick={onProductClick}
         >
           {copy.home.viewPiece}

@@ -15,6 +15,7 @@ import { feelingLineMatchesAssignments } from './feelingLineBrowse';
 import { mapLegacyFeelingSlug } from './legacy-slugs';
 
 import type { Artist, Feeling, MerchEvent, Occasion, Product, RuntimeCatalog, Subfeeling } from './catalog-types';
+import { productMediaGalleryItemSrc } from './catalog-types';
 
 function viteDevFixturesEnabled(): boolean {
   return process.env.NODE_ENV === "development";
@@ -226,7 +227,7 @@ export function productsByOccasion(occasionSlug: import('./catalog-types').Occas
 export function productHasRealImage(product: Product): boolean {
   if (product.media?.card) return true;
   if (product.media?.main) return true;
-  if (product.media?.gallery && product.media.gallery.filter(Boolean).length > 0) return true;
+  if (product.media?.gallery && product.media.gallery.some((entry) => Boolean(productMediaGalleryItemSrc(entry)))) return true;
   if (product.thumbnail) return true;
   return false;
 }

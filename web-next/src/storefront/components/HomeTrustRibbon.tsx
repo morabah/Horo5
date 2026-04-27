@@ -1,4 +1,9 @@
 import type { ReactNode } from 'react';
+import {
+  pickLocalizedStorefrontText,
+  type LocalizedStorefrontText,
+  type StorefrontHomepageSection,
+} from '../data/catalog-types';
 import { HOME_TRUST_BADGES } from '../data/homeContent';
 import { useUiLocale } from '../i18n/ui-locale';
 
@@ -17,9 +22,43 @@ const TRUST_ICONS: Record<string, ReactNode> = {
   ),
 };
 
-export function HomeTrustRibbon() {
+type TrustRibbonItem = {
+  key: string;
+  icon?: string;
+  label?: LocalizedStorefrontText;
+  label_en?: string;
+  label_ar?: string;
+};
+
+function trustItemsFromSection(section: StorefrontHomepageSection | undefined): TrustRibbonItem[] {
+  const items = section?.payload?.items;
+  if (!Array.isArray(items)) return [];
+  return items.filter((item): item is TrustRibbonItem => {
+    return Boolean(item && typeof item === 'object' && typeof (item as { key?: unknown }).key === 'string');
+  });
+}
+
+export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSection }) {
   const { copy, locale } = useUiLocale();
   const isArabic = locale === 'ar';
+  const sectionItems = trustItemsFromSection(section);
+  const items =
+    sectionItems.length > 0
+      ? sectionItems.map((item) => {
+          const localizedLabel =
+            pickLocalizedStorefrontText(item.label, locale as 'en' | 'ar') ||
+            pickLocalizedStorefrontText({ en: item.label_en, ar: item.label_ar }, locale as 'en' | 'ar');
+          return {
+            key: item.key,
+            icon: item.icon || item.key,
+            label: localizedLabel || copy.home.trustBadges[item.key as keyof typeof copy.home.trustBadges],
+          };
+        })
+      : HOME_TRUST_BADGES.map((badge) => ({
+          key: badge.key,
+          icon: badge.key,
+          label: copy.home.trustBadges[badge.key],
+        }));
 
   return (
     <div
@@ -28,7 +67,7 @@ export function HomeTrustRibbon() {
       className="border-y border-obsidian/10 bg-linen"
     >
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4 py-3 sm:gap-x-8 sm:px-6 lg:px-8">
-        {HOME_TRUST_BADGES.map((badge, i) => (
+        {items.map((badge, i) => (
           <span
             key={badge.key}
             role="listitem"
@@ -38,8 +77,8 @@ export function HomeTrustRibbon() {
               aria-hidden
               className={`mr-3 inline-block h-1 w-1 rounded-full bg-obsidian/40 ${i === 0 ? 'hidden' : ''}`}
             />
-            {TRUST_ICONS[badge.key] ?? null}
-            {copy.home.trustBadges[badge.key]}
+            {TRUST_ICONS[badge.icon ?? badge.key] ?? null}
+            {badge.label}
           </span>
         ))}
       </div>

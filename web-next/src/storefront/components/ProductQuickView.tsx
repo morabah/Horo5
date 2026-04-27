@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { buildProductPdpGallery, getProductMedia, imgUrl } from '../data/images';
+import { buildProductPdpGallery, galleryItemsToSrcList, getProductMedia, imgUrl } from '../data/images';
 import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
 import { trackSizeSelected } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
@@ -67,7 +67,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     const backendGallery = Array.from(
       new Set([
         product.media?.main ?? undefined,
-        ...(product.media?.gallery ?? []),
+        ...galleryItemsToSrcList(product.media?.gallery),
         product.thumbnail ?? undefined,
       ].filter((value): value is string => Boolean(value))),
     );

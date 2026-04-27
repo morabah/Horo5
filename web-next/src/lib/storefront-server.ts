@@ -9,6 +9,7 @@ import {
   type Occasion,
   type Product,
   type RuntimeCatalog,
+  type StorefrontHomepageSection,
   type Subfeeling,
 } from "@/storefront/data/site";
 import { mergePdpDeliveryRules, parseJsonLdStandardShippingEgpFromStoreDelivery } from "@/storefront/data/domain-config";
@@ -245,6 +246,12 @@ function normalizeStorefrontSettings(data: StorefrontSettingsResponse | null | u
             : null,
         }
       : null,
+    loyalty: data?.loyalty
+      ? {
+          creditOnSecondOrderEgp: data.loyalty.creditOnSecondOrderEgp ?? null,
+          expiryDays: data.loyalty.expiryDays ?? null,
+        }
+      : null,
   };
 }
 
@@ -355,6 +362,11 @@ type StorefrontSettingsResponse = {
   checkout?: { governorates: StorefrontGovernorateRaw[]; paymentMethodOrder: string[] } | null;
   search?: { priceBands: StorefrontPriceBandRaw[] } | null;
   homepage?: { sectionsEnabled: string[] | null } | null;
+  loyalty?: { creditOnSecondOrderEgp: number | null; expiryDays: number | null } | null;
+};
+
+type StorefrontHomepageResponse = {
+  sections?: StorefrontHomepageSection[];
 };
 
 /** Localized text — operators provide either a flat string or {en, ar}. */
@@ -395,6 +407,7 @@ export type StorefrontSettingsPayload = {
   search: { priceBands: StorefrontPriceBand[] } | null;
   /** Operator-controlled homepage layout. When null, storefront uses its built-in 5-section default. */
   homepage: { sectionsEnabled: string[] | null } | null;
+  loyalty: { creditOnSecondOrderEgp: number | null; expiryDays: number | null } | null;
 };
 
 async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPayload | null> {
@@ -422,6 +435,35 @@ async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPa
  * Cached with `revalidate: 300` and tag `settings`; bust via Medusa `store.updated` → `POST /api/revalidate/storefront`.
  */
 export const fetchStorefrontSettingsServer = cache(fetchStorefrontSettingsServerImpl);
+
+async function fetchStorefrontHomepageServerImpl(): Promise<{ sections: StorefrontHomepageSection[] } | null> {
+  try {
+    const data = await storefrontRequest<StorefrontHomepageResponse>("/storefront/homepage", {
+      next: {
+        revalidate: 300,
+        tags: ["storefront", "homepage"],
+      },
+    });
+    return {
+      sections: Array.isArray(data?.sections)
+        ? data.sections
+            .filter((section) => section && section.active !== false && section.key && section.type)
+            .sort((left, right) => Number(left.sortOrder || 0) - Number(right.sortOrder || 0))
+        : [],
+    };
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "[storefront] GET /storefront/homepage failed — home sections fall back to store settings/defaults.",
+        error instanceof Error ? error.message : error,
+      );
+    }
+    return null;
+  }
+}
+
+/** Medusa homepage sections (`homepage_section` module), cached with the `homepage` ISR tag. */
+export const fetchStorefrontHomepageServer = cache(fetchStorefrontHomepageServerImpl);
 
 /** Display-only projection of native Medusa Promotions and the gift-wrap product. */
 export type StorefrontIncentivesPayload = {

@@ -10,6 +10,29 @@ import { AppIcon } from './AppIcon';
 import { BrandLogo } from './BrandLogo';
 import { SearchSuggestionPanel } from './SearchSuggestionPanel';
 
+type LocalizedNavText = string | { en?: string; ar?: string };
+type SettingsNavItem = {
+  key: string;
+  label: LocalizedNavText;
+  href: string;
+  badge?: LocalizedNavText;
+  active: boolean;
+  sortOrder: number;
+};
+
+type NavSettings = {
+  primary: SettingsNavItem[];
+  drawer: SettingsNavItem[];
+} | null;
+
+type RenderedNavItem = {
+  key: string;
+  label: string;
+  href: string;
+  badge?: string;
+  end?: boolean;
+};
+
 function drawerNavLinkClass(isActive: boolean) {
   return `font-body box-border flex min-h-14 w-full items-center rounded-sm py-4 pl-4 pr-4 text-[0.98rem] font-medium transition-colors ${
     isActive
@@ -44,6 +67,44 @@ function usePrefersReducedMotion(): boolean {
 
 function flattenSuggestions(groups: ReturnType<typeof getSearchSuggestions>) {
   return groups.flatMap((group) => group.suggestions);
+}
+
+function localizedNavText(value: LocalizedNavText | undefined, locale: 'en' | 'ar'): string | null {
+  if (!value) return null;
+  if (typeof value === 'string') return value.trim() || null;
+  const preferred = locale === 'ar' ? value.ar : value.en;
+  const fallback = locale === 'ar' ? value.en : value.ar;
+  return (preferred || fallback || '').trim() || null;
+}
+
+function navItemsFromSettings(
+  items: SettingsNavItem[] | undefined,
+  locale: 'en' | 'ar',
+): RenderedNavItem[] {
+  return (items ?? [])
+    .filter((item) => item.active !== false && item.href.trim())
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((item) => {
+      const label = localizedNavText(item.label, locale);
+      if (!label) return null;
+      const badge = localizedNavText(item.badge, locale);
+      return {
+        key: item.key,
+        label,
+        href: item.href,
+        ...(badge ? { badge } : {}),
+      };
+    })
+    .filter((item): item is RenderedNavItem => item !== null);
+}
+
+function fallbackNavItem(routeKey: NavRouteKey, label: string): RenderedNavItem {
+  return {
+    key: routeKey,
+    label,
+    href: NAV_ROUTE[routeKey].path,
+    end: Boolean(NAV_ROUTE[routeKey].end),
+  };
 }
 
 function LocaleToggle({
@@ -89,7 +150,7 @@ function LocaleToggle({
   );
 }
 
-export function Nav() {
+export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const { totalQty, setMiniCartOpen } = useCart();
   const { locale, copy, setLocale } = useUiLocale();
   const [q, setQ] = useState('');
@@ -149,15 +210,30 @@ export function Nav() {
   const suggestionsOpen = searchFocused && (suggestionGroups.length > 0 || q.trim().length > 0);
   const activeSuggestion = activeSuggestionIndex >= 0 ? flatSuggestions[activeSuggestionIndex] : null;
   const activeSuggestionId = activeSuggestion ? `nav-search-suggestions-${activeSuggestionIndex}` : undefined;
-  const routeLabelByKey: Record<NavRouteKey, string> = {
+  const routeLabelByKey = useMemo<Record<NavRouteKey, string>>(() => ({
     home: copy.shell.home,
     products: copy.shell.shopAll,
     collection: copy.shell.shopByFeeling,
     occasions: copy.shell.shopByMoment,
+    gifts: locale === 'ar' ? 'هدايا' : 'Gifts',
+    drops: locale === 'ar' ? 'إصدارات جديدة' : 'New Drop',
     about: copy.shell.about,
     search: copy.shell.search,
     cart: copy.shell.cart,
-  };
+  }), [copy.shell.about, copy.shell.cart, copy.shell.home, copy.shell.search, copy.shell.shopAll, copy.shell.shopByFeeling, copy.shell.shopByMoment, locale]);
+  const primaryNavItems = useMemo(() => {
+    const fromSettings = navItemsFromSettings(navigation?.primary, locale);
+    return fromSettings.length > 0
+      ? fromSettings
+      : NAV_PRIMARY_ROUTE_KEYS.map((routeKey) => fallbackNavItem(routeKey, routeLabelByKey[routeKey]));
+  }, [locale, navigation?.primary, routeLabelByKey]);
+
+  const drawerNavItems = useMemo(() => {
+    const fromSettings = navItemsFromSettings(navigation?.drawer, locale);
+    return fromSettings.length > 0
+      ? fromSettings
+      : NAV_DRAWER_ROUTE_KEYS.map((routeKey) => fallbackNavItem(routeKey, routeLabelByKey[routeKey]));
+  }, [locale, navigation?.drawer, routeLabelByKey]);
 
   const closeMenu = useCallback(() => {
     setMenuPanelOpen(false);
@@ -480,10 +556,11 @@ export function Nav() {
         </div>
 
         <nav className="hidden shrink-0 items-center gap-1 md:flex" aria-label="Primary shortcuts">
-          {NAV_PRIMARY_ROUTE_KEYS.map((routeKey) => (
+          {primaryNavItems.map((item) => (
             <NavLink
-              key={routeKey}
-              to={NAV_ROUTE[routeKey].path}
+              key={item.key}
+              to={item.href}
+              end={item.end}
               className={({ isActive }) =>
                 `nav-link-underline font-body px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
                   isActive
@@ -492,7 +569,12 @@ export function Nav() {
                 }`
               }
             >
-              {routeLabelByKey[routeKey]}
+              {item.label}
+              {item.badge ? (
+                <span className="ml-1 rounded-full bg-ember/10 px-1.5 py-0.5 text-[9px] text-ember">
+                  {item.badge}
+                </span>
+              ) : null}
             </NavLink>
           ))}
         </nav>
@@ -638,15 +720,20 @@ export function Nav() {
                   <p className="mb-3 font-body text-sm font-medium text-warm-charcoal">{copy.shell.language}</p>
                   <LocaleToggle locale={locale} setLocale={setLocale} tone="dark" label={copy.shell.language} />
                 </div>
-                {NAV_DRAWER_ROUTE_KEYS.map((routeKey) => (
+                {drawerNavItems.map((item) => (
                   <NavLink
-                    key={routeKey}
-                    to={NAV_ROUTE[routeKey].path}
-                    end={Boolean(NAV_ROUTE[routeKey].end)}
+                    key={item.key}
+                    to={item.href}
+                    end={item.end}
                     className={({ isActive }) => drawerNavLinkClass(isActive)}
                     onClick={closeMenu}
                   >
-                    {routeLabelByKey[routeKey]}
+                    <span className="min-w-0 flex-1">{item.label}</span>
+                    {item.badge ? (
+                      <span className="ml-3 rounded-full bg-ember/10 px-2 py-1 font-label text-[9px] font-semibold uppercase tracking-[0.12em] text-ember">
+                        {item.badge}
+                      </span>
+                    ) : null}
                   </NavLink>
                 ))}
                 <NavLink

@@ -11,6 +11,8 @@ import { MERCH_EVENT_MODULE } from "../modules/merch-event"
 import type MerchEventModuleService from "../modules/merch-event/service"
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
+import { HOMEPAGE_SECTION_MODULE } from "../modules/homepage-section"
+import type HomepageSectionModuleService from "../modules/homepage-section/service"
 
 type CatRow = {
   id: string
@@ -75,6 +77,7 @@ export default async function paritySnapshot({ container }: ExecArgs) {
   const occasionService = container.resolve<OccasionModuleService>(OCCASION_MODULE)
   const artistService = container.resolve<ArtistModuleService>(ARTIST_MODULE)
   const merchEventService = container.resolve<MerchEventModuleService>(MERCH_EVENT_MODULE)
+  const homepageSectionService = container.resolve<HomepageSectionModuleService>(HOMEPAGE_SECTION_MODULE)
 
   const { data: rawCategories } = await query.graph({
     entity: "product_category",
@@ -137,6 +140,12 @@ export default async function paritySnapshot({ container }: ExecArgs) {
   const occasions = (await occasionService.listOccasions({})) as Array<{ slug?: string }>
   const artists = (await artistService.listArtists({})) as Array<{ slug?: string }>
   const merchEvents = (await merchEventService.listMerchEvents({})) as Array<{ slug?: string }>
+  const homepageSections = (await homepageSectionService.listHomepageSections({})) as Array<{
+    active?: boolean
+    key?: string
+    sort_order?: number
+    type?: string
+  }>
 
   const products = ((rawProducts || []) as Array<{ handle: string; thumbnail?: string | null }>).slice()
   const thumbs = products
@@ -163,6 +172,15 @@ export default async function paritySnapshot({ container }: ExecArgs) {
     occasionSlugs: occasions.map((o) => o.slug || "").filter(Boolean).sort(),
     artistSlugs: artists.map((a) => a.slug || "").filter(Boolean).sort(),
     merchEventSlugs: merchEvents.map((e) => e.slug || "").filter(Boolean).sort(),
+    homepageSections: homepageSections
+      .map((s) => ({
+        key: s.key || "",
+        type: s.type || "",
+        active: s.active !== false,
+        sortOrder: Number(s.sort_order || 0),
+      }))
+      .filter((s) => Boolean(s.key))
+      .sort((a, b) => a.sortOrder - b.sortOrder || a.key.localeCompare(b.key)),
     /** Thumbnail URL hosts (detect mixed localhost vs production media). */
     productThumbnailHosts: mediaHosts,
   }

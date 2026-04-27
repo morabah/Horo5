@@ -1,4 +1,8 @@
 import { Link } from 'react-router-dom';
+import {
+  pickLocalizedStorefrontText,
+  type StorefrontHomepageSection,
+} from '../data/catalog-types';
 import { getProductComparisonImageSrc } from '../data/images';
 import {
   getProducts,
@@ -42,8 +46,11 @@ function resolveHomeProducts(inputProducts?: Product[]) {
   return selected.slice(0, 6);
 }
 
-export function HomeStartHere({ products }: { products?: Product[] }) {
-  const { copy } = useUiLocale();
+export function HomeStartHere({ products, section }: { products?: Product[]; section?: StorefrontHomepageSection }) {
+  const { copy, locale } = useUiLocale();
+  const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
+  const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
+  const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
   const featuredProducts = resolveHomeProducts(products);
 
   if (featuredProducts.length === 0) {
@@ -59,21 +66,21 @@ export function HomeStartHere({ products }: { products?: Product[] }) {
         <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="font-label text-[12px] font-semibold uppercase tracking-[0.2em] text-label">
-              {copy.home.startHereEyebrow}
+              {sectionEyebrow ?? copy.home.startHereEyebrow}
             </p>
             <h2
               id="home-start-here-title"
               data-reveal
               className="font-headline mt-2 text-[1.6rem] font-semibold leading-tight tracking-tight text-obsidian md:text-[1.75rem]"
             >
-              {copy.home.startHereTitle}
+              {sectionTitle ?? copy.home.startHereTitle}
             </h2>
           </div>
           <Link
-            to="/products"
+            to={section?.primaryCta?.href ?? '/products'}
             className="font-body inline-flex min-h-11 w-fit items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
-            {copy.shell.shopAll}
+            {sectionCta ?? copy.shell.shopAll}
           </Link>
         </div>
 

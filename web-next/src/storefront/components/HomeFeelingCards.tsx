@@ -4,6 +4,10 @@ import {
   imgUrl,
   resolveProductImageSrcForDisplay,
 } from '../data/images';
+import {
+  pickLocalizedStorefrontText,
+  type StorefrontHomepageSection,
+} from '../data/catalog-types';
 import { getFeelings, productHasRealImage, productsByFeeling } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 
@@ -19,8 +23,11 @@ function getFeaturedFeelings() {
     .slice(0, 4);
 }
 
-export function HomeFeelingCards() {
-  const { copy } = useUiLocale();
+export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSection }) {
+  const { copy, locale } = useUiLocale();
+  const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
+  const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
+  const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
   const feelings = getFeaturedFeelings();
 
   if (feelings.length === 0) {
@@ -36,17 +43,17 @@ export function HomeFeelingCards() {
         <div className="mb-8 flex items-end justify-between gap-4" data-reveal>
           <div>
             <p className="font-label text-[12px] font-semibold uppercase tracking-[0.2em] text-label">
-              {copy.home.feelingsEyebrow}
+              {sectionEyebrow ?? copy.home.feelingsEyebrow}
             </p>
             <h2 id="home-feelings-title" className="font-headline mt-2 text-[1.6rem] font-semibold leading-tight tracking-tight text-obsidian md:text-[1.75rem]">
-              {copy.home.feelingsTitle}
+              {sectionTitle ?? copy.home.feelingsTitle}
             </h2>
           </div>
           <Link
-            to="/feelings"
+            to={section?.primaryCta?.href ?? '/feelings'}
             className="font-body hidden min-h-11 items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:inline-flex"
           >
-            {copy.home.feelingsCta}
+            {sectionCta ?? copy.home.feelingsCta}
           </Link>
         </div>
 
@@ -93,10 +100,10 @@ export function HomeFeelingCards() {
 
         <div className="mt-6 sm:hidden">
           <Link
-            to="/feelings"
+            to={section?.primaryCta?.href ?? '/feelings'}
             className="font-body inline-flex min-h-11 items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
-            {copy.home.feelingsCta}
+            {sectionCta ?? copy.home.feelingsCta}
           </Link>
         </div>
       </div>

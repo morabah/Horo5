@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { trackHomeScrollMilestone, trackHomeView } from '../analytics/funnel';
@@ -15,7 +17,7 @@ import { HomeStartHere } from '../components/HomeStartHere';
 import { HomeTrustRibbon } from '../components/HomeTrustRibbon';
 import { HomeWhyHoro } from '../components/HomeWhyHoro';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import type { RuntimeCatalog } from '../data/catalog-types';
+import type { RuntimeCatalog, StorefrontHomepageSection } from '../data/catalog-types';
 import {
   getArtists,
   getFeeling,
@@ -33,9 +35,9 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
  * Keep the launch-mode storefront short and shop-led (audit P1):
  * hero · trust ribbon · founding drop grid · feeling grid · gift block.
  *
- * Operators can override the order or re-enable additional sections from Medusa
- * Admin via `store.metadata.homepage.sectionsEnabled`. The storefront only renders
- * keys present in this map; unknown keys are ignored at render time.
+ * Operators can override the order or re-enable additional sections from the
+ * homepage_section module. `store.metadata.homepage.sectionsEnabled` remains a
+ * backward-compatible lightweight fallback. Unknown keys are ignored at render time.
  */
 const HOME_DEFAULT_SECTIONS: readonly string[] = [
   'hero',
@@ -45,19 +47,19 @@ const HOME_DEFAULT_SECTIONS: readonly string[] = [
   'gift_block',
 ];
 
-type HomeSectionRenderer = (ctx: { initialProducts?: Product[] }) => ReactNode;
+type HomeSectionRenderer = (ctx: { initialProducts?: Product[]; section?: StorefrontHomepageSection }) => ReactNode;
 
 const HOME_SECTION_COMPONENTS: Record<string, HomeSectionRenderer> = {
-  hero: () => <HomeHeroWearMean />,
-  trust_ribbon: () => <HomeTrustRibbon />,
+  hero: ({ section }) => <HomeHeroWearMean section={section} />,
+  trust_ribbon: ({ section }) => <HomeTrustRibbon section={section} />,
   primary_routes: () => <HomePrimaryRoutes />,
-  founding_drop: ({ initialProducts }) => <HomeStartHere products={initialProducts} />,
+  founding_drop: ({ initialProducts, section }) => <HomeStartHere products={initialProducts} section={section} />,
   featured_piece: () => <HomeFeaturedPiece />,
   behind_the_piece: () => <HomeBehindThePiece />,
-  feeling_grid: () => <HomeFeelingCards />,
+  feeling_grid: ({ section }) => <HomeFeelingCards section={section} />,
   occasion_grid: () => <HomeOccasionCards />,
   why_horo: () => <HomeWhyHoro />,
-  gift_block: () => <HomeGiftBlock />,
+  gift_block: ({ section }) => <HomeGiftBlock section={section} />,
   first_drop_circle: () => <HomeFirstDropCircle />,
   artist_spotlight: () =>
     HOME_FEATURED_ARTIST || getArtists().length > 0 ? <HomeArtistSpotlight /> : null,
@@ -65,13 +67,15 @@ const HOME_SECTION_COMPONENTS: Record<string, HomeSectionRenderer> = {
 };
 
 export function Home({
+  homepageSections,
   initialCatalog,
   initialProducts,
   sectionsEnabled,
 }: {
+  homepageSections?: StorefrontHomepageSection[] | null;
   initialCatalog?: RuntimeCatalog | null;
   initialProducts?: Product[];
-  /** Operator-controlled section list from Medusa `store.metadata.homepage.sectionsEnabled`. Falls back to the default 5-section list. */
+  /** Backward-compatible section list from Medusa `store.metadata.homepage.sectionsEnabled`. */
   sectionsEnabled?: string[] | null;
 } = {}) {
   if (initialCatalog) {
@@ -137,19 +141,30 @@ export function Home({
     return () => window.removeEventListener('scroll', onScroll);
   }, [location.pathname, compactHome]);
 
-  const orderedSectionKeys = useMemo(() => {
+  const orderedSections = useMemo(() => {
+    const fromHomepage = (homepageSections ?? [])
+      .filter((section) => section.active !== false)
+      .map((section) => ({
+        key: section.key in HOME_SECTION_COMPONENTS ? section.key : section.type,
+        section,
+      }))
+      .filter((entry) => entry.key in HOME_SECTION_COMPONENTS);
+    if (fromHomepage.length > 0) {
+      return fromHomepage;
+    }
+
     const fromOps = (sectionsEnabled ?? []).filter((key) => key in HOME_SECTION_COMPONENTS);
-    return fromOps.length > 0 ? fromOps : HOME_DEFAULT_SECTIONS;
-  }, [sectionsEnabled]);
+    return (fromOps.length > 0 ? fromOps : HOME_DEFAULT_SECTIONS).map((key) => ({ key, section: undefined }));
+  }, [homepageSections, sectionsEnabled]);
 
   return (
     <div className="home-grain">
-      {orderedSectionKeys.map((key) => {
+      {orderedSections.map(({ key, section }) => {
         const renderer = HOME_SECTION_COMPONENTS[key];
         if (!renderer) return null;
-        const node = renderer({ initialProducts });
+        const node = renderer({ initialProducts, section });
         if (!node) return null;
-        return <div key={key}>{node}</div>;
+        return <div key={section?.id ?? key}>{node}</div>;
       })}
     </div>
   );

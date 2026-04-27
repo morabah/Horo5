@@ -1,6 +1,9 @@
+'use client';
+
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
+import { LoyaltyCreditBanner } from '../components/LoyaltyCreditBanner';
 import { TeeImage } from '../components/TeeImage';
 import { trackPurchase } from '../analytics/events';
 import { getCartLineViews } from '../cart/view';
@@ -264,6 +267,7 @@ export function OrderConfirmation() {
             { label: copy.confirmation.breadcrumbTitle },
           ]}
         />
+        <LoyaltyCreditBanner customerMetadata={null} isArabic={isArabic} />
         <section className="mb-8 overflow-hidden rounded-[var(--radius-card)] bg-[var(--mint-frost)] px-5 py-6 md:px-7 md:py-7">
           <div className="grid gap-6 md:grid-cols-[minmax(0,1.15fr)_minmax(14rem,18rem)] md:items-center">
             <div>

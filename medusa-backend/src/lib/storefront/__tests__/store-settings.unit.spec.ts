@@ -44,6 +44,7 @@ describe("storefront/store-settings parsers", () => {
       expect(out.navigation).toBeNull()
       expect(out.checkout).toBeNull()
       expect(out.search).toBeNull()
+      expect(out.loyalty).toBeNull()
     })
 
     test("parses navigation with EN/AR labels and sortOrder", async () => {
@@ -121,6 +122,19 @@ describe("storefront/store-settings parsers", () => {
       const out = await retrieveStorefrontSettingsPayload(buildScope(meta))
       expect(out.navigation?.primary).toHaveLength(1)
       expect(out.navigation?.primary[0].key).toBe("products")
+    })
+
+    test("parses loyalty policy for future customer-credit UI", async () => {
+      const out = await retrieveStorefrontSettingsPayload(buildScope({
+        loyalty: {
+          creditOnSecondOrderEgp: "100",
+          expiryDays: 45,
+        },
+      }))
+      expect(out.loyalty).toEqual({
+        creditOnSecondOrderEgp: 100,
+        expiryDays: 45,
+      })
     })
   })
 })

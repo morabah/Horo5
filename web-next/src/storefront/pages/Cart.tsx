@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { trackCartViewed } from '../analytics/events';
@@ -9,13 +11,14 @@ import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { Skeleton } from '../components/ui/Skeleton';
 import type { CartLine } from '../cart/types';
 import { CART_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, PDP_SCHEMA } from '../data/domain-config';
-import { giftWrapPreview, heroVectorizedV2 } from '../data/images';
+import { getProductCardImageSrc, giftWrapPreview, heroVectorizedV2 } from '../data/images';
 import { useUiLocale, type UiLocale } from '../i18n/ui-locale';
 import { useStableNow } from '../runtime/render-time';
-import { getProduct, type ProductSizeKey } from '../data/site';
+import { getProduct, getProducts, productHasRealImage, type Product, type ProductSizeKey } from '../data/site';
 import { formatEgp } from '../utils/formatPrice';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
 import { getCart, listShippingOptions } from '../lib/medusa/client';
+import { productAvailableSizes } from '../utils/productSizes';
 import { getFreshShippingOptions } from '../lib/medusa/checkout-aux-cache';
 import {
   readCheckoutDisplayShippingFallbackEgpFromEnv,
@@ -368,6 +371,67 @@ function CartLineItem({
   );
 }
 
+function CartPairWithStrip({
+  products,
+  bundle,
+  locale,
+  onAddProduct,
+}: {
+  products: Product[];
+  bundle: StorefrontIncentivesClient['bundle'];
+  locale: UiLocale;
+  onAddProduct: (product: Product) => void;
+}) {
+  if (products.length === 0) return null;
+  const bundleLabel = bundle ? pickLocalizedText(bundle.label, locale === 'ar' ? 'ar' : 'en') : null;
+  return (
+    <section className="mt-5 rounded-2xl border border-stone/45 bg-white/75 p-4">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
+            {locale === 'ar' ? 'نسّقها مع' : 'Pair with'}
+          </p>
+          {bundleLabel ? <p className="mt-1 font-body text-xs text-warm-charcoal">{bundleLabel}</p> : null}
+        </div>
+        <Link to="/products" className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-deep-teal">
+          {locale === 'ar' ? 'كل التصاميم' : 'All designs'}
+        </Link>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {products.map((product) => (
+          <article key={product.slug} className="flex gap-3 rounded-xl border border-stone/35 bg-papyrus/70 p-2">
+            <Link to={`/products/${product.slug}`} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-stone/30">
+              <TeeImageFrame
+                src={getProductCardImageSrc(product)}
+                alt={`HORO ${product.name}`}
+                w={220}
+                aspectRatio="1"
+                borderRadius="0"
+                frameStyle={{ height: '100%' }}
+              />
+            </Link>
+            <div className="min-w-0 flex-1">
+              <Link to={`/products/${product.slug}`} className="font-body line-clamp-2 text-sm font-medium text-obsidian">
+                {product.name}
+              </Link>
+              <p className="mt-1 font-label text-[10px] font-semibold uppercase tracking-[0.14em] text-clay">
+                {formatEgp(product.priceEgp)}
+              </p>
+              <button
+                type="button"
+                className="font-label mt-2 inline-flex min-h-10 items-center rounded-full border border-obsidian px-3 text-[9px] font-semibold uppercase tracking-[0.14em] text-obsidian"
+                onClick={() => onAddProduct(product)}
+              >
+                {locale === 'ar' ? 'أضف' : 'Add'}
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function Cart() {
   const {
     medusaCartId,
@@ -393,6 +457,12 @@ export function Cart() {
 
   const lineViews = useMemo(() => getCartLineViews(items), [items]);
   const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
+  const pairWithProducts = useMemo(() => {
+    const inCart = new Set(items.map((item) => item.productSlug));
+    return getProducts()
+      .filter((product) => !inCart.has(product.slug) && productHasRealImage(product))
+      .slice(0, 2);
+  }, [items]);
   const [shippingFetch, setShippingFetch] = useState<CartShippingFetchState>({ kind: 'inactive' });
   const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
 
@@ -591,6 +661,12 @@ export function Cart() {
       setStatusMessage(copy.giftWrapRemoved);
     }
   };
+  const handleAddPairWithProduct = (product: Product) => {
+    const size = productAvailableSizes(product)[0];
+    if (!size) return;
+    addItem(product.slug, size as ProductSizeKey, 1, product.variantsBySize?.[size as ProductSizeKey]?.id);
+    setStatusMessage(locale === 'ar' ? 'تمت إضافة القطعة للسلة.' : 'Added to your bag.');
+  };
 
   if (!clientReady) {
     return (
@@ -736,6 +812,12 @@ export function Cart() {
                 onRemove={handleRemove}
               />
             ))}
+            <CartPairWithStrip
+              products={pairWithProducts}
+              bundle={incentives?.bundle ?? null}
+              locale={locale}
+              onAddProduct={handleAddPairWithProduct}
+            />
             {isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl) ? (
               <a
                 href={HORO_SUPPORT_CHANNELS.whatsappSupportUrl}

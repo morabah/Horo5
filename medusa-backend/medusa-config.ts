@@ -191,6 +191,12 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/merch-event",
     },
+    {
+      resolve: "./src/modules/homepage-section",
+    },
+    {
+      resolve: "./src/modules/product-review",
+    },
   ],
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL,

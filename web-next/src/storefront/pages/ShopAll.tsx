@@ -1,3 +1,5 @@
+'use client';
+
 import { Link, useSearchParams } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -24,6 +26,7 @@ import {
   getSearchResultsFromProducts,
   parseSearchSizeFilter,
   type SearchDesignCard,
+  type SearchPriceBand,
   type SearchPriceFilter,
   type SearchSortKey,
 } from '../search/view';
@@ -47,7 +50,7 @@ const SORT_OPTIONS: { value: SearchSortKey; label: string }[] = [
   { value: 'price-desc', label: 'Price: High to Low' },
 ];
 
-const PRICE_OPTIONS: { value: SearchPriceFilter; label: string }[] = [
+const DEFAULT_PRICE_OPTIONS: { value: SearchPriceFilter; label: string }[] = [
   { value: 'all', label: SEARCH_SCHEMA.copy.allPricesLabel },
   { value: 'under-800', label: SEARCH_SCHEMA.copy.under800Label },
   { value: '800-899', label: SEARCH_SCHEMA.copy.between800And899Label },
@@ -108,7 +111,19 @@ function formatDesignCount(count: number, singular: string, plural: string) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
-export function ShopAll() {
+type LocalizedText = string | { en?: string; ar?: string };
+type ShopAllPriceBand = SearchPriceBand & {
+  label: LocalizedText;
+};
+
+function pickLocalizedText(value: LocalizedText, locale: 'en' | 'ar') {
+  if (typeof value === 'string') return value.trim();
+  const preferred = locale === 'ar' ? value.ar : value.en;
+  const fallback = locale === 'ar' ? value.en : value.ar;
+  return (preferred || fallback || '').trim();
+}
+
+export function ShopAll({ priceBands = null }: { priceBands?: ShopAllPriceBand[] | null } = {}) {
   const [params, setParams] = useSearchParams();
   const { copy, locale } = useUiLocale();
   const isArabic = locale === 'ar';
@@ -123,10 +138,23 @@ export function ShopAll() {
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
   const mobileFilterTriggerRef = useRef<HTMLElement | null>(null);
 
+  const priceOptions = useMemo(() => {
+    const configured =
+      priceBands
+        ?.filter((band) => band.key.trim() && pickLocalizedText(band.label, isArabic ? 'ar' : 'en'))
+        .map((band) => ({
+          value: band.key as SearchPriceFilter,
+          label: pickLocalizedText(band.label, isArabic ? 'ar' : 'en'),
+        })) ?? [];
+    return configured.length > 0
+      ? [{ value: 'all', label: SEARCH_SCHEMA.copy.allPricesLabel }, ...configured]
+      : DEFAULT_PRICE_OPTIONS;
+  }, [isArabic, priceBands]);
+
   const sortKey = SORT_OPTIONS.some((option) => option.value === params.get('sort'))
     ? (params.get('sort') as SearchSortKey)
     : 'featured';
-  const priceFilter = PRICE_OPTIONS.some((option) => option.value === params.get('price'))
+  const priceFilter = priceOptions.some((option) => option.value === params.get('price'))
     ? (params.get('price') as SearchPriceFilter)
     : 'all';
   const sizeFilter = parseSearchSizeFilter(params.get('size'));
@@ -183,6 +211,7 @@ export function ShopAll() {
       query: '',
       sortKey,
       priceFilter,
+      priceBands: priceBands ?? undefined,
       feelingFilter,
       sizeFilter,
       filterArtist,
@@ -195,7 +224,7 @@ export function ShopAll() {
       return getSearchResultsFromProducts(medusaBrowsePool, queryParams);
     }
     return getSearchResults(queryParams);
-  }, [feelingFilter, filterArtist, filterColor, filterOccasion, medusaBrowsePool, medusaBrowseStatus, priceFilter, sizeFilter, sortKey]);
+  }, [feelingFilter, filterArtist, filterColor, filterOccasion, medusaBrowsePool, medusaBrowseStatus, priceBands, priceFilter, sizeFilter, sortKey]);
 
   const visibleCount = results.designMatches.length;
   const totalCount = results.baseDesigns.length;
@@ -385,10 +414,13 @@ export function ShopAll() {
             <Button
               variant="chip"
               size="sm"
-              active={priceFilter === 'under-800'}
-              onClick={() => updateParams({ price: priceFilter === 'under-800' ? null : 'under-800' })}
+              active={priceFilter === (priceOptions[1]?.value ?? 'under-800')}
+              onClick={() => {
+                const firstBand = priceOptions[1]?.value ?? 'under-800';
+                updateParams({ price: priceFilter === firstBand ? null : firstBand });
+              }}
             >
-              {SEARCH_SCHEMA.copy.under800Label}
+              {priceOptions[1]?.label ?? SEARCH_SCHEMA.copy.under800Label}
             </Button>
           </div>
         </section>
@@ -405,6 +437,29 @@ export function ShopAll() {
               >
                 {SEARCH_SCHEMA.copy.filterAndSortCta}
               </button>
+              <div className="hidden flex-wrap gap-2 md:flex">
+                <button
+                  type="button"
+                  onClick={() => setDesktopFiltersOpen(true)}
+                  className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.16em] ${sizeFilter !== 'all' ? 'border-obsidian bg-obsidian text-white' : 'border-stone bg-white text-obsidian'}`}
+                >
+                  {SEARCH_SCHEMA.copy.sizeFilterLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDesktopFiltersOpen(true)}
+                  className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.16em] ${priceFilter !== 'all' ? 'border-obsidian bg-obsidian text-white' : 'border-stone bg-white text-obsidian'}`}
+                >
+                  {SEARCH_SCHEMA.copy.priceLabel}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDesktopFiltersOpen(true)}
+                  className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.16em] ${feelingFilter !== 'all' ? 'border-obsidian bg-obsidian text-white' : 'border-stone bg-white text-obsidian'}`}
+                >
+                  {SEARCH_SCHEMA.copy.vibeLabel}
+                </button>
+              </div>
               {hasActiveFilters ? (
                 <button
                   type="button"
@@ -462,7 +517,7 @@ export function ShopAll() {
                     onChange={(event) => updateParams({ price: event.target.value })}
                     className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   >
-                    {PRICE_OPTIONS.map((option) => (
+                    {priceOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -691,7 +746,7 @@ export function ShopAll() {
                       onChange={(event) => updateParams({ price: event.target.value })}
                       className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
-                      {PRICE_OPTIONS.map((option) => (
+                      {priceOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
                         </option>

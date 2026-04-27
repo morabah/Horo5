@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom';
 import { PAGE_HEROES } from '../content/page-heroes';
+import {
+  pickLocalizedStorefrontText,
+  type StorefrontHomepageSection,
+} from '../data/catalog-types';
 import { getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
@@ -7,12 +11,14 @@ import { formatEgp } from '../utils/formatPrice';
 const HERO_NAV_OFFSET = 'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
-export function HomeHeroWearMean() {
+export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSection }) {
   const { locale, copy } = useUiLocale();
   const isArabic = locale === 'ar';
   const config = PAGE_HEROES.home;
   const t = (v: { en: string; ar: string } | undefined) =>
     v ? v[locale as 'en' | 'ar'] : undefined;
+  const fromSection = (value: Parameters<typeof pickLocalizedStorefrontText>[0]) =>
+    pickLocalizedStorefrontText(value, locale as 'en' | 'ar');
 
   const priceRange = (() => {
     // Match the same "featured" merchandising slice users see first on home.
@@ -21,19 +27,23 @@ export function HomeHeroWearMean() {
     return Math.min(...products.map((p) => p.priceEgp));
   })();
 
-  const subtitleBase = t(config.subtitle);
+  const subtitleBase = fromSection(section?.body) ?? t(config.subtitle);
   const priceToken = priceRange
     ? isArabic
       ? `من ${formatEgp(priceRange)}`
       : `From ${formatEgp(priceRange)}`
     : null;
+  const title = fromSection(section?.title) ?? t(config.title) ?? 'Wear What You Feel';
   const promiseLine = subtitleBase ?? copy.home.heroPromiseLine;
-  const primaryCtaLabel = t(config.primaryCta?.label) ?? copy.home.heroPrimaryCta;
-  const primaryHref = config.primaryCta?.href ?? '/products';
-  const secondaryCtaLabel = t(config.secondaryCta?.label) ?? copy.home.heroSecondaryCta;
-  const secondaryHref = config.secondaryCta?.href ?? '/feelings';
-  const heroImageSrc = config.desktopImage?.src ?? '/images/heroes/home-hero.png';
-  const heroImageAlt = t(config.desktopImage?.alt) ?? 'Model wearing HORO graphic tee — Wear What You Feel';
+  const primaryCtaLabel = fromSection(section?.primaryCta?.label) ?? t(config.primaryCta?.label) ?? copy.home.heroPrimaryCta;
+  const primaryHref = section?.primaryCta?.href ?? config.primaryCta?.href ?? '/products';
+  const secondaryCtaLabel = fromSection(section?.secondaryCta?.label) ?? t(config.secondaryCta?.label) ?? copy.home.heroSecondaryCta;
+  const secondaryHref = section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/feelings';
+  const heroImageSrc = section?.image?.src ?? config.desktopImage?.src ?? '/images/heroes/home-hero.png';
+  const heroImageAlt =
+    fromSection(section?.image?.alt) ??
+    t(config.desktopImage?.alt) ??
+    'Model wearing HORO graphic tee — Wear What You Feel';
 
   return (
     <section
@@ -59,7 +69,7 @@ export function HomeHeroWearMean() {
       />
 
       <h1 id="home-hero-heading" className="sr-only">
-        {t(config.title) ?? 'Wear What You Feel'} — {promiseLine}
+        {title} — {promiseLine}
       </h1>
 
       <div className="relative z-10 flex min-h-0 flex-1 items-end justify-start px-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-10 lg:pb-14">

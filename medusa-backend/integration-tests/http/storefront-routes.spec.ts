@@ -15,6 +15,13 @@ medusaIntegrationTestRunner({
         expect(response.data).toHaveProperty("defaultSizeTableKey")
       })
 
+      it("GET /storefront/homepage returns a sections envelope", async () => {
+        const response = await api.get("/storefront/homepage")
+        expect(response.status).toEqual(200)
+        expect(response.data).toHaveProperty("sections")
+        expect(Array.isArray(response.data.sections)).toBe(true)
+      })
+
       it("GET /storefront/search returns a product list envelope", async () => {
         const response = await api.get("/storefront/search?q=a&page=1")
         expect(response.status).toEqual(200)

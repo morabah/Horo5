@@ -1,4 +1,5 @@
 import type { Product, ProductVariantRecord, RuntimeCatalog } from "../data/catalog-types";
+import { productMediaGalleryItemSrc } from "../data/catalog-types";
 
 function feelingFromCatalogOnly(
   slug: string,
@@ -53,7 +54,7 @@ export function buildProductJsonLdSchema(
           .filter((value): value is string => Boolean(value));
   const images = Array.from(
     new Set(
-      [product.thumbnail, product.media?.main, ...(product.media?.gallery || [])]
+      [product.thumbnail, product.media?.main, ...(product.media?.gallery || []).map(productMediaGalleryItemSrc)]
         .filter((value): value is string => Boolean(value))
         .map((src) => toAbsoluteUrl(src, siteOrigin))
     )

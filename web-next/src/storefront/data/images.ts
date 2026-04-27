@@ -13,6 +13,7 @@ import {
   productsBySubfeeling,
   type Product,
 } from './site.ts';
+import { productMediaGalleryItemSrc, type ProductMediaGalleryItem } from './catalog-types';
 
 /** On-brand vector mark — default storefront slot fill until Cairo photography ships (§3.4). */
 export const heroVectorizedV2 = '/images/hero/horo_vectorized_v2.svg';
@@ -317,9 +318,17 @@ function firstNonEmptyString(...values: Array<string | null | undefined>): strin
   return values.find((value): value is string => typeof value === 'string' && value.trim().length > 0);
 }
 
+export function galleryItemSrc(item: ProductMediaGalleryItem | string | null | undefined): string | undefined {
+  return productMediaGalleryItemSrc(item);
+}
+
+export function galleryItemsToSrcList(items: Array<ProductMediaGalleryItem | string> | null | undefined): string[] {
+  return (items ?? []).map(galleryItemSrc).filter((value): value is string => Boolean(value));
+}
+
 function runtimeProductImage(productSlug: string): string | undefined {
   const product = getProduct(productSlug);
-  return firstNonEmptyString(product?.media?.main, ...(product?.media?.gallery ?? []), product?.thumbnail);
+  return firstNonEmptyString(product?.media?.main, ...galleryItemsToSrcList(product?.media?.gallery), product?.thumbnail);
 }
 
 function firstRuntimeProductImage(productSlugs: string[]): string | undefined {
@@ -532,7 +541,7 @@ export function useNextImageOptimizerForSrc(resolvedSrc: string): boolean {
 
 export function getProductMedia(slug: string): ProductMedia {
   const product = getProduct(slug);
-  const runtimeGallery = product?.media?.gallery?.filter(Boolean) ?? [];
+  const runtimeGallery = galleryItemsToSrcList(product?.media?.gallery);
   const main = product?.media?.main ?? runtimeGallery[0] ?? product?.thumbnail ?? FALLBACK_PRODUCT_GALLERY[0];
 
   return {
@@ -546,7 +555,7 @@ export function getProductCardImageSrc(product: Product): string {
     firstNonEmptyString(
       product.media?.card,
       product.media?.main,
-      ...(product.media?.gallery ?? []),
+      ...galleryItemsToSrcList(product.media?.gallery),
       product.thumbnail,
       FALLBACK_PRODUCT_GALLERY[0],
     ) ?? FALLBACK_PRODUCT_GALLERY[0]
@@ -558,7 +567,7 @@ export function getProductComparisonImageSrc(product: Product): string {
     firstNonEmptyString(
       product.media?.main,
       product.thumbnail,
-      ...(product.media?.gallery ?? []),
+      ...galleryItemsToSrcList(product.media?.gallery),
       product.media?.card,
       FALLBACK_PRODUCT_GALLERY[0],
     ) ?? FALLBACK_PRODUCT_GALLERY[0]

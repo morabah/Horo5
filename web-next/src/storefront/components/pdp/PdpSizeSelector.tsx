@@ -4,28 +4,16 @@ import React from 'react';
 import type { ProductSizeKey } from '../../data/catalog-types';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import { useUiLocale } from '../../i18n/ui-locale';
+import { PdpSizeFlatDiagram } from '../PdpSizeFlatDiagram';
 
 const { copy } = PDP_SCHEMA;
 
-/**
- * Plain-language preset labels (audit P-Size-jargon). When Medusa exposes
- * `store.metadata.sizeTables[key].label_en/ar` (Phase 2), the resolved label
- * will be passed in via `sizeTableResolved.displayLabel` and used directly.
- * For now, map known internal keys to human copy and never expose raw kebab/snake.
- */
-const SIZE_PRESET_HUMAN_LABEL: Record<string, string> = {
-  regular: 'Relaxed unisex',
-  oversized: 'Intentional oversized',
-  fitted: 'Closer body fit',
-  'comfort-modern': 'Relaxed unisex',
-  'comfort-modern-fit': 'Relaxed unisex',
-};
-
-function formatSizeTablePresetLabel(presetKey: string): string {
-  const t = presetKey.trim();
-  if (!t) return '';
-  const normalized = t.toLowerCase();
-  return SIZE_PRESET_HUMAN_LABEL[normalized] ?? '';
+function localizedSizeTableLabel(config: PdpSizeTableConfig, locale: 'en' | 'ar') {
+  const label = config.displayLabel;
+  if (!label) return '';
+  const preferred = locale === 'ar' ? label.ar : label.en;
+  const fallback = locale === 'ar' ? label.en : label.ar;
+  return (preferred || fallback || '').trim();
 }
 
 type PdpSizeSelectorProps = {
@@ -48,7 +36,6 @@ export function PdpSizeSelector({
   sizeButtons,
   selectedSize,
   oosSelected,
-  sizeReady: _sizeReady,
   sizeTableResolved,
   silhouetteCueLabel,
   inlineFitModelDisplay,
@@ -61,6 +48,11 @@ export function PdpSizeSelector({
 }: PdpSizeSelectorProps) {
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
+  const [diagramOpen, setDiagramOpen] = React.useState(false);
+  const selectedMeasurementRow = selectedSize
+    ? sizeTableResolved.measurements.find((row) => row.size === selectedSize) ?? null
+    : null;
+  const sizeTableLabel = localizedSizeTableLabel(sizeTableResolved, isArabic ? 'ar' : 'en');
   const fitConfidenceLine = isArabic
     ? 'مش متأكد؟ اختر مقاس أكبر — استبدال مجاني خلال ١٤ يوم.'
     : 'Unsure? Size up — exchange free for 14 days.';
@@ -71,18 +63,11 @@ export function PdpSizeSelector({
           {copy.pdpSizeSectionLabel}
         </p>
         <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-          {(() => {
-            const humanLabel = formatSizeTablePresetLabel(sizeTableResolved.presetKeyUsed);
-            if (!humanLabel) return null;
-            return (
-              <span
-                className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian"
-                title={sizeTableResolved.presetKeyUsed}
-              >
-                {humanLabel}
-              </span>
-            );
-          })()}
+          {sizeTableLabel ? (
+            <span className="inline-flex max-w-full rounded-full border border-obsidian/25 bg-white px-3 py-1 font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+              {sizeTableLabel}
+            </span>
+          ) : null}
           <button
             ref={sizeGuideTriggerRef}
             type="button"
@@ -92,6 +77,39 @@ export function PdpSizeSelector({
             {copy.sizeGuideLabel}
           </button>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-stone/45 bg-white/72 px-3 py-3">
+        <button
+          type="button"
+          onClick={() => setDiagramOpen((open) => !open)}
+          aria-expanded={diagramOpen}
+          className="flex min-h-11 w-full items-center justify-between gap-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+        >
+          <span className="min-w-0">
+            <span className="font-label block text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian">
+              {copy.sizeGuideFlatDiagramTitle}
+            </span>
+            <span className="font-body mt-1 block text-[12px] leading-snug text-warm-charcoal">
+              {selectedMeasurementRow
+                ? `${selectedMeasurementRow.size}: chest ${selectedMeasurementRow.chest} · length ${selectedMeasurementRow.length}`
+                : copy.sizeGuideFlatDiagramSelectSize}
+            </span>
+          </span>
+          <span className="font-label shrink-0 text-[10px] font-semibold uppercase tracking-[0.16em] text-deep-teal">
+            {diagramOpen ? (isArabic ? 'إخفاء' : 'Hide') : (isArabic ? 'عرض' : 'View')}
+          </span>
+        </button>
+        {diagramOpen ? (
+          <PdpSizeFlatDiagram
+            className="mt-3"
+            row={selectedMeasurementRow}
+            noSelectionMessage={copy.sizeGuideFlatDiagramSelectSize}
+            sectionTitle={copy.sizeGuideFlatDiagramTitle}
+            disclaimer={copy.sizeGuideFlatDiagramDisclaimer}
+            diagramAriaTemplate={copy.sizeGuideFlatDiagramAriaTemplate}
+          />
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-2.5" role="group" aria-label={copy.pdpSizeGroupAria}>

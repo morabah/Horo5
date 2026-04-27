@@ -1,16 +1,23 @@
 import { Link } from 'react-router-dom';
+import {
+  pickLocalizedStorefrontText,
+  type StorefrontHomepageSection,
+} from '../data/catalog-types';
 import { getProductComparisonImageSrc, imgUrl } from '../data/images';
 import { getOccasions, getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
 
-export function HomeGiftBlock() {
-  const { copy } = useUiLocale();
+export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection }) {
+  const { copy, locale } = useUiLocale();
+  const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
+  const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
+  const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
   const giftOccasion = getOccasions()
     .filter((occasion) => occasion.active !== false && occasion.isGiftOccasion)
     .map((occasion, index) => ({ occasion, index }))
     .sort((a, b) => (a.occasion.sortOrder ?? a.index) - (b.occasion.sortOrder ?? b.index) || a.index - b.index)[0]?.occasion;
-  const giftHref = giftOccasion ? `/occasions/${giftOccasion.slug}` : '/occasions';
+  const giftHref = section?.primaryCta?.href ?? (giftOccasion ? `/occasions/${giftOccasion.slug}` : '/gifts');
   const giftProduct =
     (giftOccasion
       ? getProducts().find((product) => product.occasionSlugs.includes(giftOccasion.slug) && productHasRealImage(product))
@@ -39,20 +46,20 @@ export function HomeGiftBlock() {
           ) : null}
           <div data-reveal="stagger-1" className="order-1 flex flex-col justify-center md:order-2">
             <p className="font-label text-[12px] font-semibold uppercase tracking-[0.2em] text-label">
-              {copy.home.giftEyebrow}
+              {sectionEyebrow ?? copy.home.giftEyebrow}
             </p>
             <h2
               id="home-gift-title"
               className="font-headline mt-2 text-[1.6rem] font-semibold leading-tight tracking-tight text-obsidian md:text-[1.75rem]"
             >
-              {copy.home.giftHeadline}
+              {sectionTitle ?? copy.home.giftHeadline}
             </h2>
             <div className="mt-6">
               <Link
                 to={giftHref}
                 className="cta-clay font-body inline-flex min-h-12 items-center justify-center rounded-md border border-obsidian/80 bg-white px-7 py-3 text-sm font-semibold text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
-                {copy.home.giftCta}
+                {sectionCta ?? copy.home.giftCta}
               </Link>
             </div>
           </div>

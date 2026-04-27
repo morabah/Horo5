@@ -130,6 +130,11 @@ export type StorefrontHomepageSettingsDTO = {
   sectionsEnabled: string[] | null
 }
 
+export type StorefrontLoyaltySettingsDTO = {
+  creditOnSecondOrderEgp: number | null
+  expiryDays: number | null
+}
+
 export type StorefrontSettingsDTO = {
   delivery: Record<string, unknown> | null
   sizeTables: Record<string, unknown> | null
@@ -138,6 +143,7 @@ export type StorefrontSettingsDTO = {
   checkout: StorefrontCheckoutDTO | null
   search: StorefrontSearchSettingsDTO | null
   homepage: StorefrontHomepageSettingsDTO | null
+  loyalty: StorefrontLoyaltySettingsDTO | null
 }
 
 function asString(value: unknown): string | undefined {
@@ -279,6 +285,22 @@ function parseHomepage(raw: unknown): StorefrontHomepageSettingsDTO | null {
   return { sectionsEnabled }
 }
 
+function asNonNegativeInt(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null
+  const num = typeof value === "number" ? value : Number(value)
+  if (!Number.isFinite(num) || num < 0) return null
+  return Math.trunc(num)
+}
+
+function parseLoyalty(raw: unknown): StorefrontLoyaltySettingsDTO | null {
+  const obj = parseObjectBlob(raw)
+  if (!obj) return null
+  const creditOnSecondOrderEgp = asNonNegativeInt(obj.creditOnSecondOrderEgp)
+  const expiryDays = asNonNegativeInt(obj.expiryDays)
+  if (creditOnSecondOrderEgp == null && expiryDays == null) return null
+  return { creditOnSecondOrderEgp, expiryDays }
+}
+
 /**
  * Public storefront settings subset (no secrets).
  * Operators set `store.metadata.delivery`, `store.metadata.sizeTables`, `store.metadata.defaultSizeTableKey`,
@@ -299,6 +321,7 @@ export async function retrieveStorefrontSettingsPayload(scope: MedusaContainer):
   const checkout = parseCheckout(meta.checkout)
   const search = parseSearch(meta.search)
   const homepage = parseHomepage(meta.homepage)
+  const loyalty = parseLoyalty(meta.loyalty)
 
-  return { delivery, sizeTables, defaultSizeTableKey, navigation, checkout, search, homepage }
+  return { delivery, sizeTables, defaultSizeTableKey, navigation, checkout, search, homepage, loyalty }
 }

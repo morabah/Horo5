@@ -28,6 +28,8 @@ import {
 } from "./legacy-compat"
 import { medusaAmountToEgp } from "../egp-amount"
 import type {
+  StorefrontMediaGalleryItemDTO,
+  StorefrontMediaGalleryTag,
   StorefrontArtistDTO,
   StorefrontCatalogDTO,
   StorefrontFeelingBrowseAssignmentDTO,
@@ -427,6 +429,69 @@ function asObjectArray<T extends Record<string, unknown>>(value: unknown): T[] |
   return items.length > 0 ? items : undefined
 }
 
+const STOREFRONT_MEDIA_GALLERY_TAGS = new Set<StorefrontMediaGalleryTag>([
+  "proof_fabric",
+  "proof_print",
+  "proof_wash",
+  "lifestyle",
+  "flat_lay",
+])
+
+function asGalleryTag(value: unknown): StorefrontMediaGalleryTag | undefined {
+  if (typeof value !== "string") return undefined
+  const tag = value.trim()
+  return STOREFRONT_MEDIA_GALLERY_TAGS.has(tag as StorefrontMediaGalleryTag)
+    ? (tag as StorefrontMediaGalleryTag)
+    : undefined
+}
+
+function galleryItemUrl(item: StorefrontMediaGalleryItemDTO | null | undefined): string | undefined {
+  const url = item?.url?.trim()
+  return url ? url : undefined
+}
+
+function normalizeGalleryItem(value: unknown): StorefrontMediaGalleryItemDTO | null {
+  if (typeof value === "string") {
+    const url = value.trim()
+    return url ? { url } : null
+  }
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null
+  }
+
+  const raw = value as Record<string, unknown>
+  const url =
+    typeof raw.url === "string" && raw.url.trim()
+      ? raw.url.trim()
+      : typeof raw.src === "string" && raw.src.trim()
+        ? raw.src.trim()
+        : null
+  if (!url) return null
+
+  const tag = asGalleryTag(raw.tag)
+  return {
+    url,
+    ...(tag ? { tag } : {}),
+  }
+}
+
+function normalizeGalleryList(value: unknown): StorefrontMediaGalleryItemDTO[] {
+  if (!Array.isArray(value)) return []
+  const seen = new Set<string>()
+  const out: StorefrontMediaGalleryItemDTO[] = []
+
+  for (const entry of value) {
+    const item = normalizeGalleryItem(entry)
+    const url = galleryItemUrl(item)
+    if (!item || !url || seen.has(url)) continue
+    seen.add(url)
+    out.push(item)
+  }
+
+  return out
+}
+
 function asMedia(value: unknown): StorefrontMediaDTO | undefined {
   if (!value || typeof value !== "object") {
     return undefined
@@ -437,9 +502,7 @@ function asMedia(value: unknown): StorefrontMediaDTO | undefined {
     typeof (media as { card?: unknown }).card === "string" && (media as { card: string }).card.trim().length > 0
       ? (media as { card: string }).card
       : undefined
-  const gallery = Array.isArray(media.gallery)
-    ? media.gallery.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
-    : []
+  const gallery = normalizeGalleryList((media as { gallery?: unknown }).gallery)
 
   if (!media.main && !card && gallery.length === 0) {
     return undefined
@@ -479,12 +542,32 @@ function orderedUniqueStrings(values: Array<string | null | undefined>): string[
   return ordered
 }
 
-function galleryFromLegacyMedia(media: StorefrontMediaDTO | undefined): string[] {
+function orderedUniqueGalleryItems(values: Array<StorefrontMediaGalleryItemDTO | null | undefined>): StorefrontMediaGalleryItemDTO[] {
+  const seen = new Set<string>()
+  const ordered: StorefrontMediaGalleryItemDTO[] = []
+
+  for (const item of values) {
+    const url = galleryItemUrl(item)
+    if (!item || !url || seen.has(url)) {
+      continue
+    }
+
+    seen.add(url)
+    ordered.push(item)
+  }
+
+  return ordered
+}
+
+function galleryFromLegacyMedia(media: StorefrontMediaDTO | undefined): StorefrontMediaGalleryItemDTO[] {
   if (!media) {
     return []
   }
 
-  return orderedUniqueStrings([media.main ?? undefined, ...(media.gallery || [])])
+  return orderedUniqueGalleryItems([
+    media.main ? { url: media.main } : undefined,
+    ...(media.gallery || []),
+  ])
 }
 
 function variantSize(variant: QueryVariant): string {
@@ -988,12 +1071,12 @@ function buildProduct(
   const defaultVariant = mappedVariants.find((variant) => variant.available) || mappedVariants[0]
   const { variantsBySize, variantsByColor } = groupVariantsByColorForStorefront(mappedVariants, defaultVariant)
   const physicalAttributes = buildPhysicalAttributes(product, defaultVariant?.id)
-  const gallery = orderedUniqueStrings([
-    ...(product.images || []).map((image) => image.url || undefined),
+  const gallery = orderedUniqueGalleryItems([
+    ...(product.images || []).map((image) => image.url ? { url: image.url } : undefined),
     ...galleryFromLegacyMedia(legacyMedia),
-    product.thumbnail || undefined,
+    product.thumbnail ? { url: product.thumbnail } : undefined,
   ])
-  const mainImage = gallery[0] || product.thumbnail || legacyMedia?.main || null
+  const mainImage = galleryItemUrl(gallery[0]) || product.thumbnail || legacyMedia?.main || null
   const inventoryHints = asRecord(metadata.inventoryHintBySize) as Record<string, string>
   const derived = categoriesById
     ? derivePrimaryFeelingSlugsFromFlat(

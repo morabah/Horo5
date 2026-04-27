@@ -7,6 +7,8 @@ import { MERCH_EVENT_MODULE } from "../modules/merch-event"
 import type MerchEventModuleService from "../modules/merch-event/service"
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
+import { HOMEPAGE_SECTION_MODULE } from "../modules/homepage-section"
+import type HomepageSectionModuleService from "../modules/homepage-section/service"
 import { triggerStorefrontRevalidation } from "../lib/storefront/revalidate"
 
 type EventPayload = { id?: string }
@@ -19,7 +21,7 @@ async function resolveRevalidateTags(
   const coarse = ["catalog", "taxonomy"] as string[]
 
   if (eventName.startsWith("store.")) {
-    return [...coarse, "settings"]
+    return [...coarse, "settings", "homepage"]
   }
 
   if (eventName.startsWith("product.product-category")) {
@@ -88,6 +90,25 @@ async function resolveRevalidateTags(
     return coarse
   }
 
+  if (eventName.startsWith("homepage_section.homepage_section.")) {
+    if (!data?.id) {
+      return ["homepage", "storefront"]
+    }
+
+    try {
+      const homepageSectionService = container.resolve<HomepageSectionModuleService>(HOMEPAGE_SECTION_MODULE)
+      const rows = await homepageSectionService.listHomepageSections({ id: data.id })
+      const key = (rows as Array<{ key?: string }>)[0]?.key
+      if (key) {
+        return ["homepage", "storefront", `homepage:${key}`]
+      }
+    } catch {
+      // ignore
+    }
+
+    return ["homepage", "storefront"]
+  }
+
   if (eventName.startsWith("artist.artist.")) {
     if (!data?.id) {
       return [...coarse, "taxonomy:artists"]
@@ -141,6 +162,9 @@ export const config: SubscriberConfig = {
     "merch_event.merch_event.created",
     "merch_event.merch_event.updated",
     "merch_event.merch_event.deleted",
+    "homepage_section.homepage_section.created",
+    "homepage_section.homepage_section.updated",
+    "homepage_section.homepage_section.deleted",
     "product.product-category.created",
     "product.product-category.updated",
     "product.product-category.deleted",

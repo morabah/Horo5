@@ -25,7 +25,18 @@ function t(key: keyof typeof MINI_CART_SCHEMA.copy, isArabic: boolean): string {
 }
 
 export function MiniCartDrawer() {
-  const { miniCartOpen, setMiniCartOpen, lastAddedItem, subtotalEgp, totalQty, cartPromotionDiscountEgp } =
+  const {
+    miniCartOpen,
+    setMiniCartOpen,
+    lastAddedItem,
+    subtotalEgp,
+    totalQty,
+    cartPromotionDiscountEgp,
+    giftWrapEgp,
+    giftWrapCatalogPriceEgp,
+    addGiftWrap,
+    removeGiftWrap,
+  } =
     useCart();
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
@@ -250,6 +261,36 @@ export function MiniCartDrawer() {
             </div>
           );
         })() : null}
+
+        {(incentives?.giftWrapProductHandle || giftWrapCatalogPriceEgp) ? (
+          <div className="rounded-xl border border-stone/45 bg-white/75 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian">
+                  {pickLocalizedText(incentives?.giftWrapLabel, isArabic ? 'ar' : 'en') ?? (isArabic ? 'تغليف هدية' : 'Gift wrap')}
+                </p>
+                <p className="font-body mt-1 text-xs text-warm-charcoal">
+                  {giftWrapCatalogPriceEgp
+                    ? `${isArabic ? 'أضفها للطلب' : 'Add it to this order'} (+${formatEgp(giftWrapCatalogPriceEgp)})`
+                    : isArabic ? 'جاهزة كإضافة في السلة' : 'Available as a cart add-on'}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="font-label inline-flex min-h-11 shrink-0 items-center rounded-full border border-obsidian px-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
+                onClick={() => {
+                  if (giftWrapEgp > 0) {
+                    removeGiftWrap();
+                  } else {
+                    void addGiftWrap();
+                  }
+                }}
+              >
+                {giftWrapEgp > 0 ? (isArabic ? 'إزالة' : 'Remove') : (isArabic ? 'أضف' : 'Add')}
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         {/* Actions */}
         <div className="mini-cart-actions">

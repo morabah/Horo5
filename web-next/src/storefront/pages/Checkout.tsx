@@ -1,3 +1,5 @@
+'use client';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
@@ -94,6 +96,16 @@ type CheckoutPaymentMethod = {
   label: string;
   description: string;
 };
+type CheckoutGovernorateSettings = {
+  code: string;
+  name: string | { en?: string; ar?: string };
+  codEligible: boolean;
+  expressEligible: boolean;
+};
+type CheckoutSettings = {
+  governorates: CheckoutGovernorateSettings[];
+  paymentMethodOrder: string[];
+} | null;
 type ParsedGoogleAddress = {
   city: string;
   line1: string;
@@ -101,8 +113,6 @@ type ParsedGoogleAddress = {
   postalCode: string;
   province: string;
 };
-
-const EGYPT_GOVERNORATE_LIST = EGYPT_CITY_OPTIONS as readonly string[];
 
 /** Map Google Places components to a canonical governorate from `EGYPT_CITY_OPTIONS` when possible. */
 function matchGovernorateToEgyptCatalog(parsed: { city: string; province: string }): string | null {
@@ -225,15 +235,27 @@ function humanizePaymentProviderId(providerId: string) {
     .join(' ');
 }
 
+function paymentProviderSortKey(providerId: string, order: string[]) {
+  if (order.length === 0) return checkoutPaymentProviderSortKey(providerId);
+  const kind = resolveCheckoutPaymentMethodKind(providerId);
+  const id = providerId.toLowerCase();
+  const idx = order.findIndex((entry) => {
+    const normalized = entry.trim().toLowerCase();
+    return normalized === kind || normalized === id || id.includes(normalized);
+  });
+  return idx >= 0 ? idx : order.length + checkoutPaymentProviderSortKey(providerId);
+}
+
 function buildCheckoutPaymentMethods(
   providers: MedusaPaymentProvider[],
   isArabic: boolean,
+  paymentMethodOrder: string[] = [],
 ): CheckoutPaymentMethod[] {
   const dedupedProviders = normalizePaymentProviders(providers).filter(
     (provider, index, list) => list.findIndex((candidate) => candidate.id === provider.id) === index,
   ).sort((left, right) => {
-    const leftKey = checkoutPaymentProviderSortKey(left.id);
-    const rightKey = checkoutPaymentProviderSortKey(right.id);
+    const leftKey = paymentProviderSortKey(left.id, paymentMethodOrder);
+    const rightKey = paymentProviderSortKey(right.id, paymentMethodOrder);
     if (leftKey !== rightKey) return leftKey - rightKey;
     return left.id.localeCompare(right.id);
   });
@@ -315,6 +337,13 @@ function resolveCartLineVariantId(line: CartLine) {
 
 function getDefaultCheckoutPaymentMethod(methods: CheckoutPaymentMethod[]) {
   return methods.find((method) => method.kind === 'cod') || methods[0] || null;
+}
+
+function localizedGovernorateName(row: CheckoutGovernorateSettings, locale: 'en' | 'ar') {
+  if (typeof row.name === 'string') return row.name.trim();
+  const preferred = locale === 'ar' ? row.name.ar : row.name.en;
+  const fallback = locale === 'ar' ? row.name.en : row.name.ar;
+  return (preferred || fallback || row.code).trim();
 }
 
 function appendCodRecoveryHint(message: string, providers: MedusaPaymentProvider[], hint: string) {
@@ -478,7 +507,7 @@ function buildOrderSnapshot(args: {
   };
 }
 
-export function Checkout() {
+export function Checkout({ checkoutSettings = null }: { checkoutSettings?: CheckoutSettings } = {}) {
   const navigate = useNavigate();
   const { items, subtotalEgp, giftWrapEgp, clearCart, replaceMedusaCartId, awaitPendingCartSync } = useCart();
   const { locale, copy } = useUiLocale();
@@ -529,6 +558,26 @@ export function Checkout() {
   const [paymentStepComplete, setPaymentStepComplete] = useState(false);
   const [paymobLongWait, setPaymobLongWait] = useState(false);
   const [instapayPayoutOpen, setInstapayPayoutOpen] = useState(true);
+  const governorateOptions = useMemo(() => {
+    const fromSettings = checkoutSettings?.governorates
+      ?.filter((row) => row.code.trim() && localizedGovernorateName(row, isArabic ? 'ar' : 'en'))
+      .map((row) => ({
+        code: row.code,
+        value: typeof row.name === 'string' ? row.name.trim() : (row.name.en || row.code).trim(),
+        label: localizedGovernorateName(row, isArabic ? 'ar' : 'en'),
+        codEligible: row.codEligible,
+        expressEligible: row.expressEligible,
+      })) ?? [];
+    return fromSettings.length > 0
+      ? fromSettings
+      : EGYPT_CITY_OPTIONS.map((name) => ({
+          code: name.toLowerCase().replace(/\s+/g, '-'),
+          value: name,
+          label: name,
+          codEligible: true,
+          expressEligible: true,
+        }));
+  }, [checkoutSettings?.governorates, isArabic]);
 
   const hydrateCheckoutFromCart = useCallback((cart: MedusaCart) => {
     const composedName = [cart.shipping_address?.first_name, cart.shipping_address?.last_name]
@@ -835,8 +884,8 @@ export function Checkout() {
   }, [cartId, clearCart, hydrateCheckoutFromCart, isArabic, items.length, mounted, navigate]);
 
   const paymentMethods = useMemo(
-    () => buildCheckoutPaymentMethods(paymentProviders, isArabic),
-    [isArabic, paymentProviders],
+    () => buildCheckoutPaymentMethods(paymentProviders, isArabic, checkoutSettings?.paymentMethodOrder ?? []),
+    [checkoutSettings?.paymentMethodOrder, isArabic, paymentProviders],
   );
 
   /** Mirrors live Medusa `payment_providers` so the strip never promises card when only COD is enabled. */
@@ -871,8 +920,13 @@ export function Checkout() {
 
   const governorateSelectValue = useMemo(() => {
     const t = city.trim();
-    return EGYPT_GOVERNORATE_LIST.includes(t) ? t : '';
-  }, [city]);
+    return governorateOptions.some((option) => option.value === t) ? t : '';
+  }, [city, governorateOptions]);
+  const selectedGovernorateOption = useMemo(() => {
+    const value = city.trim() || province.trim();
+    return governorateOptions.find((option) => option.value === value || option.label === value || option.code === value) ?? null;
+  }, [city, governorateOptions, province]);
+  const codEligibleForGovernorate = selectedGovernorateOption?.codEligible ?? true;
   const selectedPaymentMethod = useMemo(
     () => paymentMethods.find((method) => method.id === selectedPaymentMethodId) || null,
     [paymentMethods, selectedPaymentMethodId],
@@ -912,10 +966,10 @@ export function Checkout() {
 
   useEffect(() => {
     if (city.trim()) return;
-    if (!EGYPT_CITY_OPTIONS.includes('Cairo')) return;
+    if (!governorateOptions.some((option) => option.value === 'Cairo')) return;
     setCity('Cairo');
     setProvince('Cairo');
-  }, [city]);
+  }, [city, governorateOptions]);
 
   useEffect(() => {
     setPaymentStepComplete(false);
@@ -1394,7 +1448,7 @@ export function Checkout() {
       return;
     }
     const fieldErrors = validateCheckoutFields({ email, phone, name: fullName, line1, city }, isArabic);
-    const governorateOk = !city.trim() || EGYPT_GOVERNORATE_LIST.includes(city.trim());
+    const governorateOk = !city.trim() || governorateOptions.some((option) => option.value === city.trim());
     const mergedErrors: FieldErrors = governorateOk
       ? fieldErrors
       : {
@@ -1883,13 +1937,13 @@ export function Checkout() {
                   <option value="">
                     {isArabic ? 'اختر المحافظة' : 'Select governorate'}
                   </option>
-                  {EGYPT_CITY_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                  {governorateOptions.map((option) => (
+                    <option key={option.code} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </select>
-                {governorateSelectValue === '' && city.trim() && !EGYPT_GOVERNORATE_LIST.includes(city.trim()) ? (
+                {governorateSelectValue === '' && city.trim() && !governorateOptions.some((option) => option.value === city.trim()) ? (
                   <p className="mt-2 text-xs text-clay">
                     {isArabic
                       ? 'العنوان الحالي لا يطابق قائمة المحافظات. اختر المحافظة من القائمة لإتمام الشحن.'
@@ -1954,7 +2008,7 @@ export function Checkout() {
                   - Address or shipping NOT yet persisted → keep the existing single-line spinner (we genuinely don't know yet).
                   Once Medusa providers resolve, the reconciliation effect swaps the selection to the real COD method id.
                 */}
-                {dependencyAddressSaved && dependencyShippingAttached && !dependencyProvidersLoaded ? (
+                {codEligibleForGovernorate && dependencyAddressSaved && dependencyShippingAttached && !dependencyProvidersLoaded ? (
                   <div className="mt-4">
                     <div className={`${radioCardClass(true)} mb-2 cursor-default`} aria-disabled>
                       <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-obsidian" aria-hidden />

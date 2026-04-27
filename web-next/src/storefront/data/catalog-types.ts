@@ -74,10 +74,74 @@ export type WearerStory = {
   rating?: 1 | 2 | 3 | 4 | 5;
 };
 
+export type ProductMediaGalleryTag =
+  | 'proof_fabric'
+  | 'proof_print'
+  | 'proof_wash'
+  | 'lifestyle'
+  | 'flat_lay';
+
+export type ProductMediaGalleryItem = {
+  url: string;
+  tag?: ProductMediaGalleryTag;
+};
+
+export function productMediaGalleryItemSrc(
+  item: ProductMediaGalleryItem | string | null | undefined,
+): string | undefined {
+  if (typeof item === 'string') return item.trim() || undefined;
+  const url = item?.url?.trim();
+  return url || undefined;
+}
+
+export type LocalizedStorefrontText = string | { en?: string; ar?: string } | null;
+
+export type StorefrontHomepageSection = {
+  id: string;
+  key: string;
+  type:
+    | 'hero'
+    | 'trust_ribbon'
+    | 'primary_routes'
+    | 'founding_drop'
+    | 'featured_piece'
+    | 'feeling_grid'
+    | 'occasion_grid'
+    | 'gift_block'
+    | 'why_horo'
+    | 'first_drop_circle'
+    | 'proof_strip'
+    | 'seen_on_you'
+    | 'artist_spotlight';
+  eyebrow: LocalizedStorefrontText;
+  title: LocalizedStorefrontText;
+  body: LocalizedStorefrontText;
+  primaryCta: { label: LocalizedStorefrontText; href: string | null } | null;
+  secondaryCta: { label: LocalizedStorefrontText; href: string | null } | null;
+  image: { src: string; alt: LocalizedStorefrontText } | null;
+  accent: string | null;
+  sortOrder: number;
+  active: boolean;
+  payload: Record<string, unknown> | null;
+};
+
+export function pickLocalizedStorefrontText(
+  value: LocalizedStorefrontText | undefined,
+  locale: 'en' | 'ar',
+): string | undefined {
+  if (!value) return undefined;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed || undefined;
+  }
+  const localized = value[locale]?.trim() || value.en?.trim() || value.ar?.trim();
+  return localized || undefined;
+}
+
 export type ProductMediaRecord = {
   /** Optional curated crop for product cards / PLPs. */
   card?: string | null;
-  gallery?: string[];
+  gallery?: Array<ProductMediaGalleryItem | string>;
   main?: string | null;
   blurDataUrlMain?: string | null;
   dominantColorMain?: string | null;
