@@ -10,5 +10,6 @@ export async function GET(req: MedusaRequest<{ slug: string }>, res: MedusaRespo
     throw new MedusaError(MedusaError.Types.NOT_FOUND, `Storefront occasion "${req.params.slug}" was not found`)
   }
 
+  res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=900")
   res.status(200).json({ occasion })
 }

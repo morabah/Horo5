@@ -34,9 +34,12 @@ export function ensurePostHogInitialized() {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
     defaults: "2026-01-30",
     person_profiles: "identified_only",
+    // Manual capture only: $pageview is sent from PostHogPageview, and storefront
+    // events live in src/storefront/analytics/events.ts. Autocapture intercepts every
+    // click for heuristic event detection — that adds INP cost on mobile.
     capture_pageview: false,
-    capture_pageleave: true,
-    autocapture: true,
+    capture_pageleave: false,
+    autocapture: false,
   });
 
   postHogInitialized = true;

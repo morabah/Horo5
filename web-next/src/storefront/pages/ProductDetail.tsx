@@ -37,13 +37,30 @@ import {
   getProductMedia,
   imgUrl,
 } from '../data/images';
-import { CrossSellWidget } from '../components/CrossSellWidget';
-import { PdpShareStrip } from '../components/PdpShareStrip';
-import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
+import dynamic from 'next/dynamic';
 import { ProductJsonLd } from '../components/ProductJsonLd';
 import { Skeleton, SkeletonText } from '../components/ui/Skeleton';
-import { PdpSizeFlatDiagram } from '../components/PdpSizeFlatDiagram';
-import { ProductQuickView } from '../components/ProductQuickView';
+
+const CrossSellWidget = dynamic(
+  () => import('../components/CrossSellWidget').then((m) => m.CrossSellWidget),
+  { ssr: false, loading: () => <div className="h-48" /> },
+);
+const PdpShareStrip = dynamic(
+  () => import('../components/PdpShareStrip').then((m) => m.PdpShareStrip),
+  { ssr: false, loading: () => <div className="h-12" /> },
+);
+const RecentlyViewedStrip = dynamic(
+  () => import('../components/RecentlyViewedStrip').then((m) => m.RecentlyViewedStrip),
+  { ssr: false, loading: () => <div className="h-32" /> },
+);
+const PdpSizeFlatDiagram = dynamic(
+  () => import('../components/PdpSizeFlatDiagram').then((m) => m.PdpSizeFlatDiagram),
+  { ssr: false, loading: () => <div className="h-40" /> },
+);
+const ProductQuickView = dynamic(
+  () => import('../components/ProductQuickView').then((m) => m.ProductQuickView),
+  { ssr: false },
+);
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { humanizeArtistSlugForDisplay } from '../utils/humanizeArtistSlug';

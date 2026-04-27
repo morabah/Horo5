@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Link } from 'react-router-dom';
 import { PAGE_HEROES } from '../content/page-heroes';
 import {
@@ -7,6 +8,10 @@ import {
 import { getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
+
+/** Tiny dark blur placeholder matching the hero's muted aesthetic. */
+const HERO_BLUR_DATA_URL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFklEQVR4nGMQERP6TwxmGFUoQtfgAQAHCnsNFNbySQAAAABJRU5ErkJggg==';
 
 const HERO_NAV_OFFSET = 'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
@@ -51,13 +56,15 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
       aria-labelledby="home-hero-heading"
       className={`home-hero-wear-feel relative isolate flex min-h-svh w-full flex-col overflow-hidden ${HERO_NAV_OFFSET}`}
     >
-      <img
+      <Image
         src={heroImageSrc}
         alt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
+        fill
+        sizes="100vw"
+        priority
+        placeholder="blur"
+        blurDataURL={HERO_BLUR_DATA_URL}
         className="absolute inset-0 h-full w-full object-cover object-[50%_70%] md:object-[50%_50%]"
-        fetchPriority="high"
-        loading="eager"
-        decoding="async"
       />
       <div
         aria-hidden="true"

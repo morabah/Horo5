@@ -9,5 +9,6 @@ import { retrieveStorefrontIncentivesPayload } from "../../../lib/storefront/inc
  */
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const payload = await retrieveStorefrontIncentivesPayload(req.scope)
+  res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=900")
   res.status(200).json(payload)
 }

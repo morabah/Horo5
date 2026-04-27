@@ -1,5 +1,6 @@
 "use client";
 
+import NextLink from "next/link";
 import { useParams as useNextParams, usePathname, useRouter, useSearchParams as useNextSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
@@ -37,9 +38,9 @@ export function NavLink({
   const cn = className as NavLinkClass | undefined;
   const resolvedClass = typeof cn === "function" ? cn({ isActive }) : cn;
   return (
-    <a href={to} className={resolvedClass} {...rest}>
+    <NextLink href={to} className={resolvedClass} {...rest}>
       {children}
-    </a>
+    </NextLink>
   );
 }
 
@@ -51,9 +52,9 @@ export function Link({
   ...props
 }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { to: ToValue }) {
   return (
-    <a href={to} {...props}>
+    <NextLink href={to} {...props}>
       {children}
-    </a>
+    </NextLink>
   );
 }
 

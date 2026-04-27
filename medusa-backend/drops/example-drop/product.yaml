@@ -1,0 +1,51 @@
+# HORO product drop — edit this template, then run: npm run import:drops
+# Fields marked (required) must be present; all others are optional.
+
+handle: example-drop          # (required) URL-safe slug, unique across catalog
+title: Example Drop Tee       # (required) Display name
+story: "A template product to show the drop format."  # (required) Short story / blurb
+description: "Premium cotton graphic tee with example artwork."  # Longer PDP description
+
+# --- Classification (auto-linked to feeling & apparel categories) ---
+feeling: mood                 # (required) Top-level feeling slug (mood, zodiac, fiction, career, trends)
+subfeeling: i-care            # (required) Leaf-level subfeeling slug
+occasions:                    # Occasion slugs (created if missing)
+  - just-because
+apparelCategory: apparel/tops/t-shirts  # Resolved from existing category tree
+
+# --- Commerce ---
+priceEgp: 799                 # (required) Integer EGP (whole pounds)
+originalPriceEgp:             # Optional strikethrough price
+sizes: [S, M, L, XL, XXL]    # Defaults to [S, M, L, XL, XXL] if omitted
+garmentColor:                 # e.g. black, white, navy
+
+# --- PDP enrichment ---
+artist: nada-ibrahim          # Artist slug (created if missing with placeholder)
+decorationType: graphic       # plain | graphic | embroidered | mixed
+fitLabel: Regular fit
+trustBadges: [premium cotton, "Free exchange 14d", "COD available"]
+merchandisingBadge:           # e.g. "New Drop", "Limited Run"
+stockNote:                    # e.g. "Limited run — restock not guaranteed"
+sizeTableKey:                 # e.g. mens-regular-tee
+
+# --- Media (paths relative to this product.yaml) ---
+mainImage: main.jpg           # (required) Hero / PDP image
+gallery:                      # Optional gallery items with tags
+  - file: gallery/proof_fabric.jpg
+    tag: proof_fabric
+  - file: gallery/proof_print.jpg
+    tag: proof_print
+  - file: gallery/lifestyle.jpg
+    tag: lifestyle
+  - file: gallery/flat_lay.jpg
+    tag: flat_lay
+
+# --- Optional cross-sell / merchandising ---
+capsuleSlugs: []
+complementarySlugs: []
+frequentlyBoughtWithSlugs: []
+customersAlsoBoughtSlugs: []
+
+# --- Optional lifecycle ---
+launchAt:                     # ISO datetime, e.g. 2026-05-01T00:00:00Z
+sunsetAt:                     # ISO datetime

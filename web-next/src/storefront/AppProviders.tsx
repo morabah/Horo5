@@ -62,19 +62,15 @@ export function AppProviders({
 
   useEffect(() => {
     if (skipCatalogHydration) return;
-    if (
-      initialCatalog?.products?.length &&
-      initialCatalog?.feelings?.length &&
-      initialCatalog?.subfeelings?.length &&
-      initialCatalog?.artists?.length
-    ) {
-      return;
-    }
+    // Only refetch when SSR catalog is fully missing. If the server delivered
+    // *any* catalog data we trust it — a partial catalog is still usable and
+    // avoids a redundant client→Medusa round-trip on every page load.
+    if (initialCatalog) return;
     void hydrateRuntimeCatalog().then(() => {
       setCatalogVersion((value) => value + 1);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- skipCatalogHydration is constant per route
-  }, [initialCatalog?.products?.length]);
+  }, []);
 
   return (
     <RenderTimeProvider renderedAt={renderedAt}>

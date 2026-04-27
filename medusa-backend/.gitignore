@@ -27,3 +27,6 @@ build
 
 # Parity snapshots (local vs Railway); regenerate with npm run parity:snapshot:local / :remote
 .parity/
+
+# Drop importer stamp files
+drops/**/.imported

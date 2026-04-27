@@ -13,5 +13,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       ? filterStorefrontProductsByQuery(products, { category, decoration, occasion })
       : products
 
+  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300")
   res.status(200).json({ products: filtered })
 }

@@ -42,6 +42,10 @@ export function AnalyticsRoot() {
     if (!hasAnySemIds() || initRef.current) return;
     initRef.current = true;
 
+    // Web-vitals reporting is independent of GA4 — PostHog receives CWV
+    // even when no GA4 key is configured.
+    initWebVitalsReporting();
+
     const run = async () => {
       if (gaId) {
         await loadScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`);
@@ -50,7 +54,6 @@ export function AnalyticsRoot() {
           window.dataLayer!.push(args);
         };
         window.gtag('js', new Date());
-        initWebVitalsReporting();
       }
 
       if (pixelId) {

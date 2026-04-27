@@ -120,7 +120,8 @@ function homepageCacheMs() {
   if (raw === "0") return 0
   const parsed = Number(raw)
   if (Number.isFinite(parsed) && parsed >= 0) return parsed
-  return process.env.NODE_ENV === "production" ? 0 : 300_000
+  // Default TTL aligns with Next data-cache `revalidate: 300`. Operators override via env.
+  return 300_000
 }
 
 export async function getStorefrontHomepageWithServerCache(scope: MedusaContainer) {

@@ -1771,8 +1771,10 @@ let catalogServerInflight: Promise<StorefrontCatalogDTO> | null = null
 export async function getStorefrontCatalogWithServerCache(
   scope: MedusaContainer
 ): Promise<StorefrontCatalogDTO> {
-  const catalogFallbackMs = process.env.NODE_ENV === "production" ? 0 : DEFAULT_SERVER_CACHE_MS
-  const ttlMs = parsePositiveMsEnv("STOREFRONT_CATALOG_SERVER_CACHE_MS", catalogFallbackMs)
+  // Default TTL in production matches Next data-cache `revalidate: 60`. Operators can override via
+  // STOREFRONT_CATALOG_SERVER_CACHE_MS (set to "0" to disable). Coalesces concurrent rebuilds onto
+  // one in-flight promise (see catalogServerInflight below).
+  const ttlMs = parsePositiveMsEnv("STOREFRONT_CATALOG_SERVER_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
   if (ttlMs <= 0) {
     return buildStorefrontCatalog(scope)
   }

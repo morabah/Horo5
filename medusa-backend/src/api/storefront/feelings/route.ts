@@ -8,5 +8,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     listStorefrontSubfeelings(req.scope),
   ])
 
+  res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=900")
   res.status(200).json({ feelings, subfeelings })
 }

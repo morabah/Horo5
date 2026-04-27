@@ -10,5 +10,6 @@ export async function GET(req: MedusaRequest<{ handle: string }>, res: MedusaRes
     throw new MedusaError(MedusaError.Types.NOT_FOUND, `Storefront product "${req.params.handle}" was not found`)
   }
 
+  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300")
   res.status(200).json({ product })
 }

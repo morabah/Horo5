@@ -5,5 +5,6 @@ import { getStorefrontCatalogWithServerCache } from "../../../lib/storefront/cat
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const catalog = await getStorefrontCatalogWithServerCache(req.scope)
 
+  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300")
   res.status(200).json(catalog)
 }

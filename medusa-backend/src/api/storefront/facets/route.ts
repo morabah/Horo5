@@ -36,6 +36,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
   const facets = aggregateFeelingFacetsFromProducts(products)
 
+  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300")
   res.status(200).json({
     total: products.length,
     facets,
