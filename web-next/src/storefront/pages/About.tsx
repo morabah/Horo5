@@ -1,3 +1,5 @@
+'use client';
+
 import { Link } from 'react-router-dom';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { useScrollReveal } from '../hooks/useScrollReveal';
