@@ -91,6 +91,7 @@ export default async function seedIncentives({ container }: ExecArgs) {
             target_type: "shipping_methods",
             value: 100,
             currency_code: "egp",
+            allocation: "across",
           },
           rules: [
             {
