@@ -39,12 +39,14 @@ export function AnalyticsRoot() {
   }, []);
 
   useEffect(() => {
-    if (!hasAnySemIds() || initRef.current) return;
+    if (initRef.current) return;
     initRef.current = true;
 
     // Web-vitals reporting is independent of GA4 — PostHog receives CWV
     // even when no GA4 key is configured.
     initWebVitalsReporting();
+
+    if (!hasAnySemIds()) return;
 
     const run = async () => {
       if (gaId) {

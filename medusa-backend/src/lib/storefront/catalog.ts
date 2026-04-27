@@ -235,7 +235,7 @@ type MerchEventRecord = {
 }
 
 type ProductQueryFilters = {
-  handle?: string
+  handle?: string | { $in: string[] }
   status?: ProductStatus
 }
 
@@ -1524,13 +1524,15 @@ export async function retrieveStorefrontProductsByHandles(
   const artistList = await listStorefrontArtists(scope)
   const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
 
-  const results = await Promise.all(unique.map((handle) => queryStorefrontProducts(scope, { handle }, 1)))
+  const result = await queryStorefrontProducts(scope, { handle: { $in: unique } }, unique.length)
+  const sorted = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId)
+  const byHandle = new Map(sorted.map((p) => [p.slug, p]))
 
   const out: StorefrontProductDTO[] = []
-  for (const result of results) {
-    const sorted = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId)
-    if (sorted[0]) {
-      out.push(sorted[0])
+  for (const handle of unique) {
+    const product = byHandle.get(handle)
+    if (product) {
+      out.push(product)
     }
   }
   return out

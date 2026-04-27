@@ -104,7 +104,6 @@ const nextConfig: NextConfig = {
           }
         : {}),
       "react-router-dom": path.resolve(__dirname, "src/lib/react-router-dom-shim.tsx"),
-      "react-helmet-async": path.resolve(__dirname, "src/lib/react-helmet-async-shim.tsx"),
     };
     return config;
   },

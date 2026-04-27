@@ -11,9 +11,14 @@ import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent a
 import { AppIcon } from '../components/AppIcon';
 import { PageBreadcrumb, type PageBreadcrumbItem } from '../components/PageBreadcrumb';
 import { MerchProductCard } from '../components/MerchProductCard';
-import { ProductQuickView } from '../components/ProductQuickView';
 import { SearchSuggestionPanel } from '../components/SearchSuggestionPanel';
 import { TeeImageFrame } from '../components/TeeImage';
+import dynamic from 'next/dynamic';
+
+const ProductQuickView = dynamic(
+  () => import('../components/ProductQuickView').then((m) => m.ProductQuickView),
+  { ssr: false },
+);
 import { SkeletonGrid } from '../components/ui/Skeleton';
 import { useUiLocale } from '../i18n/ui-locale';
 import { SEARCH_SCHEMA } from '../data/domain-config';

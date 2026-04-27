@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense } from "react";
-import { HelmetProvider } from "react-helmet-async";
 import { AnalyticsRoot } from "@/storefront/analytics/AnalyticsRoot";
 import { AppProviders } from "@/storefront/AppProviders";
 import { RouteLoadingSpinner } from "@/storefront/components/RouteLoadingSpinner";
@@ -20,7 +19,7 @@ export function Providers({
   skipCatalogHydration?: boolean;
 }) {
   return (
-    <HelmetProvider>
+    <>
       <Suspense fallback={<RouteLoadingSpinner />}>
         <AnalyticsRoot />
       </Suspense>
@@ -31,6 +30,6 @@ export function Providers({
       >
         {children}
       </AppProviders>
-    </HelmetProvider>
+    </>
   );
 }

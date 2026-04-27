@@ -1,3 +1,5 @@
+"use client";
+
 import { About } from "@/storefront/pages/About";
 import { RouterContextProvider } from "@/lib/router-context";
 

@@ -38,7 +38,6 @@ import {
   imgUrl,
 } from '../data/images';
 import dynamic from 'next/dynamic';
-import { ProductJsonLd } from '../components/ProductJsonLd';
 import { Skeleton, SkeletonText } from '../components/ui/Skeleton';
 
 const CrossSellWidget = dynamic(
@@ -164,11 +163,6 @@ type ProductDetailProps = {
   deliveryRules?: PdpDeliveryRules;
   /** Size chart + model lines from RSC; when omitted, merged from built-in defaults + product.sizeTableKey. */
   sizeTableConfig?: PdpSizeTableConfig;
-  /**
-   * When false (default), omit Helmet JSON-LD — Next injects the same schema in the RSC page
-   * from `buildProductJsonLd` to avoid duplicate/conflicting Product schema.
-   */
-  renderJsonLd?: boolean;
 };
 
 export function ProductDetail({
@@ -178,7 +172,6 @@ export function ProductDetail({
   initialSlug,
   deliveryRules: deliveryRulesProp,
   sizeTableConfig: sizeTableConfigProp,
-  renderJsonLd = false,
 }: ProductDetailProps = {}) {
   const { slug: routeSlug = '' } = useParams();
   const slug = initialSlug ?? routeSlug;
@@ -1033,19 +1026,6 @@ export function ProductDetail({
 
   return (
     <div className="product-page pdp-page-content bg-papyrus text-obsidian">
-      {renderJsonLd ? (
-        <ProductJsonLd
-          product={product}
-          catalog={
-            catalogSnapshot
-              ? {
-                  feelings: catalogSnapshot.feelings ?? [],
-                  occasions: catalogSnapshot.occasions ?? [],
-                }
-              : undefined
-          }
-        />
-      ) : null}
       <span id="pdp-size-hint" className="sr-only">
         {copy.sizeRequiredPrompt}
       </span>

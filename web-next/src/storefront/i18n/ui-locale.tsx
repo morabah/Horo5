@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 
 export type UiLocale = 'en' | 'ar';
