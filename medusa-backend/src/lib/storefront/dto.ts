@@ -3,25 +3,22 @@ import { z } from "zod"
 /** Shared FE↔BE validation for storefront JSON (Medusa routes + Next `storefrontRequest`). */
 
 export const storefrontMediaSchema = z
-  .object({
+  .looseObject({
     card: z.string().nullable().optional(),
     gallery: z
       .array(
-        z
-          .object({
-            url: z.string(),
-            tag: z
-              .enum(["proof_fabric", "proof_print", "proof_wash", "lifestyle", "flat_lay"])
-              .optional(),
-          })
-          .passthrough()
+        z.looseObject({
+          url: z.string(),
+          tag: z
+            .enum(["proof_fabric", "proof_print", "proof_wash", "lifestyle", "flat_lay"])
+            .optional(),
+        })
       )
       .optional(),
     main: z.string().nullable().optional(),
     blurDataUrlMain: z.string().nullable().optional(),
     dominantColorMain: z.string().nullable().optional(),
   })
-  .passthrough()
   .optional()
 
 export const storefrontVariantSchema = z.object({
@@ -40,8 +37,7 @@ export const storefrontVariantSchema = z.object({
   media: storefrontMediaSchema,
 })
 
-export const storefrontProductSchema = z
-  .object({
+export const storefrontProductSchema = z.looseObject({
     slug: z.string(),
     name: z.string(),
     apparelCategoryPath: z.string().optional(),
@@ -100,20 +96,16 @@ export const storefrontProductSchema = z
     variantsBySize: z.record(z.string(), storefrontVariantSchema),
     wearerStories: z.array(z.record(z.string(), z.unknown())).optional(),
   })
-  .passthrough()
 
 const storefrontLocalizedTextSchema = z.union([
   z.string(),
-  z
-    .object({
+  z.looseObject({
       en: z.string().optional(),
       ar: z.string().optional(),
-    })
-    .passthrough(),
+    }),
 ])
 
-const storefrontNavItemSchema = z
-  .object({
+const storefrontNavItemSchema = z.looseObject({
     key: z.string(),
     label: storefrontLocalizedTextSchema,
     href: z.string(),
@@ -121,28 +113,22 @@ const storefrontNavItemSchema = z
     active: z.boolean(),
     sortOrder: z.number(),
   })
-  .passthrough()
 
-const storefrontGovernorateSchema = z
-  .object({
+const storefrontGovernorateSchema = z.looseObject({
     code: z.string(),
     name: storefrontLocalizedTextSchema,
     codEligible: z.boolean(),
     expressEligible: z.boolean(),
   })
-  .passthrough()
 
-const storefrontPriceBandSchema = z
-  .object({
+const storefrontPriceBandSchema = z.looseObject({
     key: z.string(),
     minEgp: z.number().nullable(),
     maxEgp: z.number().nullable(),
     label: storefrontLocalizedTextSchema,
   })
-  .passthrough()
 
-export const storefrontHomepageSectionSchema = z
-  .object({
+export const storefrontHomepageSectionSchema = z.looseObject({
     id: z.string(),
     key: z.string(),
     type: z.enum([
@@ -186,7 +172,6 @@ export const storefrontHomepageSectionSchema = z
     active: z.boolean(),
     payload: z.record(z.string(), z.unknown()).nullable(),
   })
-  .passthrough()
 
 export const storefrontHomepageResponseSchema = z.object({
   sections: z.array(storefrontHomepageSectionSchema),

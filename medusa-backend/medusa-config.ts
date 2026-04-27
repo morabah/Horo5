@@ -198,6 +198,12 @@ module.exports = defineConfig({
       resolve: "./src/modules/product-review",
     },
   ],
+  plugins: [
+    {
+      resolve: "@medusajs/draft-order",
+      options: {},
+    },
+  ],
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL,
   },

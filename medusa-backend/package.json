@@ -67,21 +67,22 @@
     "test:order-confirmation-email:cli": "npm run preview:order-confirmation-email"
   },
   "dependencies": {
-    "@medusajs/admin-sdk": "^2.13.6",
-    "@medusajs/caching-redis": "^2.13.6",
-    "@medusajs/cli": "^2.13.6",
-    "@medusajs/framework": "^2.13.6",
-    "@medusajs/js-sdk": "^2.13.6",
-    "@medusajs/locking-redis": "^2.13.6",
-    "@medusajs/medusa": "^2.13.6",
-    "@medusajs/types": "^2.13.6",
+    "@medusajs/admin-sdk": "^2.14.1",
+    "@medusajs/caching-redis": "^2.14.1",
+    "@medusajs/cli": "^2.14.1",
+    "@medusajs/draft-order": "^2.14.1",
+    "@medusajs/framework": "^2.14.1",
+    "@medusajs/js-sdk": "^2.14.1",
+    "@medusajs/locking-redis": "^2.14.1",
+    "@medusajs/medusa": "^2.14.1",
+    "@medusajs/types": "^2.14.1",
     "dotenv": "^17.4.1",
     "pg": "^8.20.0",
     "resend": "^4.8.0",
-    "zod": "^3.24.2"
+    "zod": "^4.2.0"
   },
   "devDependencies": {
-    "@medusajs/test-utils": "^2.13.6",
+    "@medusajs/test-utils": "^2.14.1",
     "@swc/core": "^1.7.28",
     "@swc/jest": "^0.2.36",
     "@tanstack/react-query": "5.64.2",
