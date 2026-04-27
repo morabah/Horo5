@@ -1,5 +1,3 @@
-"use client";
-
 import { RouterContextProvider } from "@/lib/router-context";
 import { FAQ } from "@/storefront/pages/FAQ";
 

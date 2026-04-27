@@ -1,5 +1,3 @@
-"use client";
-
 import { Exchange } from "@/storefront/pages/Exchange";
 import { RouterContextProvider } from "@/lib/router-context";
 
