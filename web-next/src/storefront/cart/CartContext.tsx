@@ -161,7 +161,7 @@ function getMedusaProductPriceEgp(product: Pick<MedusaProduct, 'variants'> | nul
   return typeof raw === 'number' ? medusaAmountToEgp(raw) : null;
 }
 
-const QTY_DEBOUNCE_MS = 300;
+const QTY_DEBOUNCE_MS = 50;
 const MAX_CART_LINE_QTY = 99;
 
 type PendingQtyUpdate = {
