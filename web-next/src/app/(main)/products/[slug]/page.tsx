@@ -5,6 +5,7 @@ import { ProductDetailPage } from "@/components/product-detail-page";
 import {
   buildProductJsonLd,
   buildProductMetadata,
+  fetchStorefrontCatalogServer,
   fetchStorefrontPdpServer,
   logStorefrontFetchError,
 } from "@/lib/storefront-server";
@@ -21,6 +22,18 @@ export const revalidate = 60;
 
 function jsonLdString(data: unknown) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
+export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
+  const catalog = await fetchStorefrontCatalogServer().catch((error) => {
+    logStorefrontFetchError("[storefront] Failed to fetch catalog for PDP static params", error);
+    return null;
+  });
+
+  return (catalog?.products ?? [])
+    .map((product) => product.slug)
+    .filter((slug): slug is string => Boolean(slug))
+    .map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {

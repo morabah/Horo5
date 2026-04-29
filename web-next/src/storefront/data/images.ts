@@ -536,7 +536,41 @@ export function useNextImageOptimizerForSrc(resolvedSrc: string): boolean {
   if (t.startsWith('/') && !t.startsWith('//')) {
     return true;
   }
-  return shouldAppendUnsplashStyleParams(t);
+  if (shouldAppendUnsplashStyleParams(t)) {
+    return true;
+  }
+
+  try {
+    const url = new URL(t);
+    const configuredHosts = new Set([
+      'horo5-production.up.railway.app',
+      'localhost:9000',
+      '127.0.0.1:9000',
+    ]);
+    const medusaBase =
+      typeof process !== 'undefined'
+        ? process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || ''
+        : '';
+    if (medusaBase) {
+      try {
+        configuredHosts.add(new URL(medusaBase).host);
+      } catch {
+        /* ignore invalid env */
+      }
+    }
+    const extraHosts =
+      typeof process !== 'undefined'
+        ? (process.env.NEXT_PUBLIC_IMAGE_REMOTE_HOSTS || '')
+            .split(',')
+            .map((part) => part.trim().replace(/^https?:\/\//, '').split('/')[0])
+            .filter(Boolean)
+        : [];
+    for (const host of extraHosts) configuredHosts.add(host);
+
+    return configuredHosts.has(url.host);
+  } catch {
+    return false;
+  }
 }
 
 export function getProductMedia(slug: string): ProductMedia {

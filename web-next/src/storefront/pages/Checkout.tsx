@@ -13,6 +13,7 @@ import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useCart } from '../cart/CartContext';
+import { updateMedusaCartLineQtyOptimistically } from '../cart/medusa-cart-optimistic';
 import { loadSavedShipping, saveSavedShipping } from '../cart/savedShipping';
 import { saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import { setPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
@@ -1175,6 +1176,19 @@ export function Checkout({
     return cart;
   }
 
+  const handleOptimisticSummaryLineQtyChange = useCallback((line: CartLineView, qty: number) => {
+    setCheckoutCart((current) =>
+      current
+        ? updateMedusaCartLineQtyOptimistically(current, {
+            productSlug: line.productSlug,
+            size: line.size,
+            variantId: line.variantId,
+            lineId: line.lineId,
+          }, qty)
+        : current,
+    );
+  }, []);
+
   async function preparePaymentSession(
     method: CheckoutPaymentMethod,
     activeCheckoutCart: MedusaCart | null = checkoutCart,
@@ -1810,6 +1824,7 @@ export function Checkout({
                       shipping={shippingCost}
                       cartId={cartId}
                       shippingPending={shippingSummaryPending}
+                      onOptimisticLineQtyChange={handleOptimisticSummaryLineQtyChange}
                       className="rounded-2xl border border-stone/35 bg-white p-4 shadow-sm"
                       onAfterLineChange={async (cartHint) => {
                         if (!cartId) return;
@@ -2234,6 +2249,7 @@ export function Checkout({
                 shipping={shippingCost}
                 cartId={cartId}
                 shippingPending={shippingSummaryPending}
+                onOptimisticLineQtyChange={handleOptimisticSummaryLineQtyChange}
                 onAfterLineChange={async (cartHint) => {
                   if (!cartId) return;
                   await refreshCartState(cartId, cartHint);
@@ -2287,6 +2303,7 @@ function OrderSummary({
   shipping,
   cartId,
   shippingPending,
+  onOptimisticLineQtyChange,
   onAfterLineChange,
   className,
 }: {
@@ -2294,6 +2311,7 @@ function OrderSummary({
   shipping: number;
   cartId: string | null;
   shippingPending?: boolean;
+  onOptimisticLineQtyChange?: (line: CartLineView, qty: number) => void;
   onAfterLineChange: (cartHint?: MedusaCart) => Promise<void>;
   className?: string;
 }) {
@@ -2328,17 +2346,22 @@ function OrderSummary({
 
   function handleDecrease(line: CartLineView) {
     if (line.qty <= 1 || busy) return;
-    void runWithRefresh(() => setLineQty(line.productSlug, line.size, line.qty - 1, line.variantId));
+    const nextQty = line.qty - 1;
+    onOptimisticLineQtyChange?.(line, nextQty);
+    void runWithRefresh(() => setLineQty(line.productSlug, line.size, nextQty, line.variantId, line.lineId));
   }
 
   function handleIncrease(line: CartLineView) {
     if (busy || line.qty >= 99) return;
-    void runWithRefresh(() => setLineQty(line.productSlug, line.size, line.qty + 1, line.variantId));
+    const nextQty = line.qty + 1;
+    onOptimisticLineQtyChange?.(line, nextQty);
+    void runWithRefresh(() => setLineQty(line.productSlug, line.size, nextQty, line.variantId, line.lineId));
   }
 
   function handleRemove(line: CartLineView) {
     if (busy) return;
-    void runWithRefresh(() => removeItem(line.productSlug, line.size, line.variantId));
+    onOptimisticLineQtyChange?.(line, 0);
+    void runWithRefresh(() => removeItem(line.productSlug, line.size, line.variantId, line.lineId));
   }
 
   return (

@@ -30,7 +30,19 @@ import {
 import type { MedusaCart, MedusaProduct } from '../lib/medusa/types';
 import { findProductVariantById } from '../utils/productVariants';
 import { persistCartIdCookie, readCartIdFromCookieString } from './cart-cookie';
-import { CART_STORAGE_KEY, MEDUSA_CART_ID_STORAGE_KEY, cartLineKey, type CartLine } from './types';
+import {
+  CART_STORAGE_KEY,
+  MEDUSA_CART_ID_STORAGE_KEY,
+  cartLineIdentityKey,
+  cartLineKey,
+  cartLineWithQty,
+  findCartLineIndex,
+  findMergeableCartLineIndex,
+  removeCartLine,
+  updateCartLineQty,
+  type CartLine,
+  type CartLineIdentity,
+} from './types';
 
 export type LastAddedItem = {
   productSlug: string;
@@ -48,8 +60,8 @@ type CartContextValue = {
   storageReady: boolean;
   items: CartLine[];
   addItem: (productSlug: string, size: ProductSizeKey, qty?: number, explicitVariantId?: string) => void;
-  removeItem: (productSlug: string, size: ProductSizeKey, variantId?: string) => void;
-  setLineQty: (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string) => void;
+  removeItem: (productSlug: string, size: ProductSizeKey, variantId?: string, lineId?: string) => void;
+  setLineQty: (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string, lineId?: string) => void;
   /** Waits for in-flight Medusa mutations (incl. debounced qty) and returns the latest cart snapshot if any. */
   awaitPendingCartSync: () => Promise<MedusaCart | null>;
   clearCart: () => void;
@@ -148,6 +160,24 @@ function getMedusaProductPriceEgp(product: Pick<MedusaProduct, 'variants'> | nul
 
 const QTY_DEBOUNCE_MS = 300;
 
+type PendingQtyUpdate = {
+  identity: CartLineIdentity;
+  lineId: string;
+  qty: number;
+};
+
+function applyPendingQtyToCartLines(lines: CartLine[], pendingUpdates: PendingQtyUpdate[]): CartLine[] {
+  if (pendingUpdates.length === 0) return lines;
+
+  return lines.map((line) => {
+    const pending = pendingUpdates.find((entry) => {
+      if (line.lineId) return entry.lineId === line.lineId;
+      return cartLineKey(line) === cartLineKey(entry.identity);
+    });
+    return pending ? cartLineWithQty(line, pending.qty) : line;
+  });
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
   const [giftWrapEgp, setGiftWrapEgpState] = useState(0);
@@ -165,7 +195,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   /** Latest cart returned from a successful mutation (for checkout refresh hints). */
   const lastServerCartRef = useRef<MedusaCart | null>(null);
   const pendingOpsRef = useRef(new Set<Promise<unknown>>());
-  const pendingQtyByKeyRef = useRef(new Map<string, { lineId: string; qty: number }>());
+  const pendingQtyByKeyRef = useRef(new Map<string, PendingQtyUpdate>());
   /** Store as `number` so tsc stays compatible when Node typings widen `setTimeout` return type. */
   const qtyFlushTimerRef = useRef<number | null>(null);
   const flushPendingQtyUpdatesInternalRef = useRef<() => Promise<void>>(async () => {});
@@ -174,7 +204,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (cartGenerationRef.current !== generationBefore) return;
     if (cart.completed_at) return;
     lastServerCartRef.current = cart;
-    setItems(toCartLines(cart));
+    setItems(applyPendingQtyToCartLines(toCartLines(cart), [...pendingQtyByKeyRef.current.values()]));
     const nextGiftWrapEgp = getCartGiftWrapEgp(cart);
     setGiftWrapEgpState(nextGiftWrapEgp);
     if (nextGiftWrapEgp > 0) {
@@ -185,6 +215,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         ? medusaAmountToEgp(cart.discount_total)
         : 0,
     );
+    medusaCartIdRef.current = cart.id;
     setMedusaCartId(cart.id);
   }, []);
 
@@ -327,6 +358,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const ensureMedusaCartId = useCallback(async () => {
     if (medusaCartId) return medusaCartId;
     const created = await createCart();
+    medusaCartIdRef.current = created.cart.id;
     setMedusaCartId(created.cart.id);
     setGiftWrapEgpState(getCartGiftWrapEgp(created.cart));
     return created.cart.id;
@@ -377,8 +409,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const variantId = variant?.id ?? explicitVariantId;
 
     setItems((prev) => {
-      const key = cartLineKey({ productSlug, size, variantId });
-      const idx = prev.findIndex((line) => cartLineKey(line) === key);
+      const idx = findMergeableCartLineIndex(prev, { productSlug, size, variantId: variantId ?? undefined });
       if (idx >= 0) {
         const next = [...prev];
         next[idx] = {
@@ -436,16 +467,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [applyCartFromResponse, clearStaleCartIf404, ensureMedusaCartId, resolveVariantId, trackOp]);
 
   const removeItem = useCallback(
-    (productSlug: string, size: ProductSizeKey, variantId?: string) => {
-      const key = cartLineKey({ productSlug, size, variantId });
-      pendingQtyByKeyRef.current.delete(key);
-      const line = items.find((item) => cartLineKey(item) === key);
-      setItems((prev) => prev.filter((item) => cartLineKey(item) !== key));
-      if (!line?.lineId || !medusaCartId) return;
+    (productSlug: string, size: ProductSizeKey, variantId?: string, lineId?: string) => {
+      const identity = { productSlug, size, variantId, lineId };
+      const line = items[findCartLineIndex(items, identity)];
+      const medusaLineId = line?.lineId ?? lineId;
+      pendingQtyByKeyRef.current.delete(cartLineIdentityKey({ ...identity, lineId: medusaLineId }));
+      setItems((prev) => removeCartLine(prev, identity));
+      const activeCartId = medusaCartIdRef.current ?? medusaCartId;
+      if (!medusaLineId || !activeCartId) return;
       const p = (async () => {
         const gen = cartGenerationRef.current;
         try {
-          const { cart } = await removeLineItem(medusaCartId, line.lineId!);
+          const { cart } = await removeLineItem(activeCartId, medusaLineId);
           if (cartGenerationRef.current !== gen) return;
           applyCartFromResponse(cart, gen);
         } catch (err: unknown) {
@@ -459,21 +492,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const setLineQty = useCallback(
-    (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string) => {
-      const key = cartLineKey({ productSlug, size, variantId });
-      const line = items.find((item) => cartLineKey(item) === key);
+    (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string, lineId?: string) => {
+      const identity = { productSlug, size, variantId, lineId };
+      const line = items[findCartLineIndex(items, identity)];
+      const medusaLineId = line?.lineId ?? lineId;
+      const pendingKey = cartLineIdentityKey({ ...identity, lineId: medusaLineId });
+      const activeCartId = medusaCartIdRef.current ?? medusaCartId;
       if (qty < 1) {
-        pendingQtyByKeyRef.current.delete(key);
+        pendingQtyByKeyRef.current.delete(pendingKey);
         if (qtyFlushTimerRef.current !== null) {
           window.clearTimeout(qtyFlushTimerRef.current);
           qtyFlushTimerRef.current = null;
+          if (pendingQtyByKeyRef.current.size > 0) {
+            scheduleQtyFlush();
+          } else {
+            setLineQtySaving(false);
+          }
         }
-        setItems((prev) => prev.filter((item) => cartLineKey(item) !== key));
-        if (line?.lineId && medusaCartId) {
+        setItems((prev) => removeCartLine(prev, identity));
+        if (medusaLineId && activeCartId) {
           const p = (async () => {
             const gen = cartGenerationRef.current;
             try {
-              const { cart } = await removeLineItem(medusaCartId, line.lineId!);
+              const { cart } = await removeLineItem(activeCartId, medusaLineId);
               if (cartGenerationRef.current !== gen) return;
               applyCartFromResponse(cart, gen);
             } catch (err: unknown) {
@@ -486,9 +527,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return;
       }
       const nextQty = Math.min(99, Math.floor(qty));
-      setItems((prev) => prev.map((item) => (cartLineKey(item) === key ? { ...item, qty: nextQty } : item)));
-      if (line?.lineId && medusaCartId) {
-        pendingQtyByKeyRef.current.set(key, { lineId: line.lineId, qty: nextQty });
+      setItems((prev) => updateCartLineQty(prev, identity, nextQty));
+      if (medusaLineId && activeCartId) {
+        pendingQtyByKeyRef.current.set(pendingKey, {
+          identity: { ...identity, lineId: medusaLineId },
+          lineId: medusaLineId,
+          qty: nextQty,
+        });
         scheduleQtyFlush();
       }
     },
@@ -581,6 +626,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     lastServerCartRef.current = null;
     setItems([]);
     setGiftWrapEgpState(0);
+    medusaCartIdRef.current = null;
     setMedusaCartId(null);
     setCartPromotionDiscountEgp(0);
     setLineQtySaving(false);
@@ -591,6 +637,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const replaceMedusaCartId = useCallback((cartId: string | null) => {
+    medusaCartIdRef.current = cartId;
     setMedusaCartId(cartId);
   }, []);
 

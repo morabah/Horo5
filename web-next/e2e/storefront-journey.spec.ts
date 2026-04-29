@@ -10,6 +10,75 @@ import { expectMainShell } from "./fixtures"
 
 let catalogJson = ""
 
+type CatalogProduct = {
+  slug?: string
+  name?: string
+  priceEgp?: number
+  thumbnail?: string | null
+  media?: { main?: string | null }
+  variantsBySize?: Record<string, { id?: string; priceEgp?: number; available?: boolean }>
+}
+
+type SeededCartLine = {
+  productSlug: string
+  size: string
+  qty: number
+  variantId: string
+  productName: string
+  imageSrc?: string
+  unitPriceEgp?: number
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
+function pickSeededCart() {
+  if (!catalogJson) return null
+
+  const parsed = JSON.parse(catalogJson) as { products?: CatalogProduct[] }
+  const products = (parsed.products || []).flatMap((product) => {
+    const variants = product.variantsBySize || {}
+    const size = (["M", "L", "S", "XL", "XS", "XXL"] as const).find((key) => {
+      const variant = variants[key]
+      return variant?.id && variant.available !== false
+    })
+    const variant = size ? variants[size] : null
+    if (!product.slug || !product.name || !size || !variant?.id) return []
+    return [{ product, size, variant }]
+  })
+
+  if (products.length < 2) return null
+
+  const selected = products.slice(0, 2).map(({ product, size, variant }, index): SeededCartLine => ({
+    productSlug: product.slug!,
+    size,
+    qty: index === 0 ? 1 : 3,
+    variantId: variant.id!,
+    productName: product.name!,
+    imageSrc: product.media?.main || product.thumbnail || undefined,
+    unitPriceEgp: variant.priceEgp ?? product.priceEgp,
+  }))
+
+  return {
+    first: selected[0],
+    second: selected[1],
+    lines: selected,
+  }
+}
+
+async function seedBrowserCart(page: import("@playwright/test").Page, lines: SeededCartLine[]) {
+  await page.addInitScript((seedLines) => {
+    try {
+      localStorage.setItem("horo-cart-v1", JSON.stringify(seedLines))
+      localStorage.removeItem("horo-medusa-cart-id-v1")
+      document.cookie = "horo_cart_id=; Max-Age=0; path=/"
+    } catch {
+      /* ignore */
+    }
+  }, lines)
+}
+
 test.beforeAll(async () => {
   const base = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").replace(/\/$/, "")
   const key = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
@@ -136,6 +205,65 @@ test.describe("storefront journey", () => {
       )
     }
     await expect(page.locator("#phone")).toBeVisible()
+  })
+
+  test("cart quantity stepper updates only the clicked line immediately", async ({ page }) => {
+    const seeded = pickSeededCart()
+    test.skip(!seeded, "Need at least two catalog products with live variants")
+
+    await seedBrowserCart(page, seeded!.lines)
+    await page.goto("/cart", { waitUntil: "domcontentloaded" })
+    await expect(page.getByRole("heading", { level: 1, name: /Your cart/i })).toBeVisible({ timeout: 30_000 })
+
+    const firstRow = page.locator("article.cart-item").filter({ hasText: seeded!.first.productName }).first()
+    const secondRow = page.locator("article.cart-item").filter({ hasText: seeded!.second.productName }).first()
+    await expect(firstRow).toBeVisible({ timeout: 30_000 })
+    await expect(secondRow).toBeVisible({ timeout: 30_000 })
+
+    const firstQty = firstRow.locator(".cart-stepper-value")
+    const secondQty = secondRow.locator(".cart-stepper-value")
+    await expect(firstQty).toHaveText("1")
+    await expect(secondQty).toHaveText("3")
+
+    await firstRow
+      .getByRole("button", { name: new RegExp(`Increase quantity for ${escapeRegExp(seeded!.first.productName)}`, "i") })
+      .click()
+
+    await expect(firstQty).toHaveText("2", { timeout: 1000 })
+    await expect(secondQty).toHaveText("3", { timeout: 1000 })
+  })
+
+  test("checkout summary quantity stepper is optimistic and isolated per line", async ({ page }) => {
+    const seeded = pickSeededCart()
+    test.skip(!seeded, "Set NEXT_PUBLIC_MEDUSA_BACKEND_URL + NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and run Medusa")
+    test.setTimeout(180_000)
+
+    await seedBrowserCart(page, seeded!.lines)
+    await page.goto("/checkout", { waitUntil: "domcontentloaded" })
+
+    const checkoutMain = page.locator("#main-content")
+    await expect(checkoutMain.getByText(/Loading checkout/i)).toBeHidden({ timeout: 120_000 })
+    await expect(page.locator("#email")).toBeVisible({ timeout: 30_000 })
+
+    const firstGroup = page
+      .getByRole("group", { name: new RegExp(`(?:Qty|Quantity).*${escapeRegExp(seeded!.first.productName)}`, "i") })
+      .first()
+    const secondGroup = page
+      .getByRole("group", { name: new RegExp(`(?:Qty|Quantity).*${escapeRegExp(seeded!.second.productName)}`, "i") })
+      .first()
+
+    await expect(firstGroup).toBeVisible({ timeout: 30_000 })
+    await expect(secondGroup).toBeVisible({ timeout: 30_000 })
+
+    const firstQty = firstGroup.locator(".cart-stepper-value")
+    const secondQty = secondGroup.locator(".cart-stepper-value")
+    await expect(firstQty).toHaveText("1")
+    await expect(secondQty).toHaveText("3")
+
+    await firstGroup.getByRole("button", { name: /Increase quantity/i }).click()
+
+    await expect(firstQty).toHaveText("2", { timeout: 1000 })
+    await expect(secondQty).toHaveText("3", { timeout: 1000 })
   })
 
   test("Arabic locale query keeps shell (uiLocale=ar)", async ({ page }) => {

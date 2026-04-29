@@ -58,10 +58,11 @@ describe('resolveProductImageSrcForDisplay', () => {
 });
 
 describe('useNextImageOptimizerForSrc', () => {
-  it('uses next/image for same-origin paths and Unsplash only', () => {
+  it('uses next/image for configured storefront image hosts', () => {
     expect(useNextImageOptimizerForSrc('/images/tees/x.png')).toBe(true);
     expect(useNextImageOptimizerForSrc('https://images.unsplash.com/p')).toBe(true);
+    expect(useNextImageOptimizerForSrc('https://horo5-production.up.railway.app/store-media/a.png')).toBe(true);
+    expect(useNextImageOptimizerForSrc('http://localhost:9000/store-media/a.png')).toBe(true);
     expect(useNextImageOptimizerForSrc('https://r2.example.com/obj')).toBe(false);
-    expect(useNextImageOptimizerForSrc('http://localhost:9000/static/a.jpg')).toBe(false);
   });
 });

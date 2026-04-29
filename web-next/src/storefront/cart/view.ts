@@ -1,5 +1,5 @@
 import type { CartLine } from './types';
-import { cartLineKey } from './types';
+import { cartLineViewKey } from './types';
 import { getProductMedia, heroVectorizedV2 } from '../data/images';
 import { getArtist, getProduct } from '../data/site';
 
@@ -50,7 +50,7 @@ export function getCartLineView(
 
   return {
     ...line,
-    key: cartLineKey(line),
+    key: cartLineViewKey(line),
     productName,
     productUrl,
     artistName: artist?.name,

@@ -45,6 +45,17 @@ export async function ensurePostHogInitialized() {
     capture_pageview: false,
     capture_pageleave: false,
     autocapture: false,
+    rageclick: false,
+    capture_dead_clicks: false,
+    capture_heatmaps: false,
+    capture_performance: false,
+    disable_session_recording: true,
+    disable_surveys: true,
+    disable_surveys_automatic_display: true,
+    disable_product_tours: true,
+    disable_web_experiments: true,
+    disable_scroll_properties: true,
+    disable_external_dependency_loading: true,
   });
 
   postHogInitialized = true;

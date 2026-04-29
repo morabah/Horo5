@@ -9,12 +9,6 @@ function buildImageRemotePatterns(): NonNullable<NonNullable<NextConfig["images"
     { protocol: "https", hostname: "horo5-production.up.railway.app", pathname: "/**" },
   ];
 
-  const baseUrl =
-    typeof window !== "undefined" &&
-    (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").includes("railway.app")
-      ? ""
-      : (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "");
-
   const medusa = (
     process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
     process.env.MEDUSA_BACKEND_URL ||
