@@ -16,10 +16,18 @@ import { useCart } from '../cart/CartContext';
 import { loadSavedShipping, saveSavedShipping } from '../cart/savedShipping';
 import { saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import { setPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
+import { persistCartIdCookie } from '../cart/cart-cookie';
 import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import { MEDUSA_CART_ID_STORAGE_KEY } from '../cart/types';
-import { CART_SCHEMA, CHECKOUT_SCHEMA, EGYPT_CITY_OPTIONS, PDP_SCHEMA } from '../data/domain-config';
+import {
+  CART_SCHEMA,
+  CHECKOUT_SCHEMA,
+  EGYPT_CITY_OPTIONS,
+  HORO_SUPPORT_CHANNELS,
+  isConfiguredExternalUrl,
+  PDP_SCHEMA,
+} from '../data/domain-config';
 import { getProduct } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import {
@@ -106,6 +114,13 @@ type CheckoutSettings = {
   governorates: CheckoutGovernorateSettings[];
   paymentMethodOrder: string[];
 } | null;
+type CheckoutInitialState = 'unknown' | 'empty' | 'cart';
+type CheckoutProps = {
+  checkoutSettings?: CheckoutSettings;
+  initialCart?: MedusaCart | null;
+  initialCartId?: string | null;
+  initialState?: CheckoutInitialState;
+};
 type ParsedGoogleAddress = {
   city: string;
   line1: string;
@@ -197,6 +212,7 @@ function getStoredCartId() {
 
 function setStoredCartId(cartId: string | null) {
   if (typeof window === 'undefined') return;
+  persistCartIdCookie(cartId);
   try {
     if (!cartId) {
       window.localStorage.removeItem(MEDUSA_CART_ID_STORAGE_KEY);
@@ -206,6 +222,13 @@ function setStoredCartId(cartId: string | null) {
   } catch {
     /* ignore */
   }
+}
+
+function composeCartFullName(cart: MedusaCart | null) {
+  return [cart?.shipping_address?.first_name, cart?.shipping_address?.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
 }
 
 function splitFullName(fullName: string) {
@@ -507,22 +530,29 @@ function buildOrderSnapshot(args: {
   };
 }
 
-export function Checkout({ checkoutSettings = null }: { checkoutSettings?: CheckoutSettings } = {}) {
+export function Checkout({
+  checkoutSettings = null,
+  initialCart = null,
+  initialCartId = null,
+  initialState = 'unknown',
+}: CheckoutProps = {}) {
   const navigate = useNavigate();
   const { items, subtotalEgp, giftWrapEgp, clearCart, replaceMedusaCartId, awaitPendingCartSync } = useCart();
   const { locale, copy } = useUiLocale();
   const now = useStableNow();
   const isArabic = locale === 'ar';
+  const initialCheckoutCart = initialCart && !initialCart.completed_at ? initialCart : null;
+  const initialFullName = composeCartFullName(initialCheckoutCart);
   const [mounted, setMounted] = useState(false);
-  const [checkoutCart, setCheckoutCart] = useState<MedusaCart | null>(null);
-  const [cartId, setCartId] = useState<string | null>(null);
+  const [checkoutCart, setCheckoutCart] = useState<MedusaCart | null>(initialCheckoutCart);
+  const [cartId, setCartId] = useState<string | null>(initialCheckoutCart?.id ?? initialCartId);
   const [paymentProviders, setPaymentProviders] = useState<MedusaPaymentProvider[]>([]);
   const paymentProvidersRef = useRef<MedusaPaymentProvider[]>([]);
   paymentProvidersRef.current = paymentProviders;
   const [shippingOption, setShippingOption] = useState<MedusaShippingOption | null>(null);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [savingInfo, setSavingInfo] = useState(false);
-  const [loadingCheckout, setLoadingCheckout] = useState(true);
+  const [loadingCheckout, setLoadingCheckout] = useState(initialState === 'unknown');
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -537,16 +567,18 @@ export function Checkout({ checkoutSettings = null }: { checkoutSettings?: Check
   const addressInputRef = useRef<HTMLInputElement | null>(null);
   const governorateSelectRef = useRef<HTMLSelectElement | null>(null);
 
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [line1, setLine1] = useState('');
-  const [line2, setLine2] = useState('');
-  const [city, setCity] = useState('');
-  const [province, setProvince] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [whatsappOptIn, setWhatsappOptIn] = useState(true);
-  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string | null>(null);
+  const [email, setEmail] = useState(initialCheckoutCart?.email || '');
+  const [phone, setPhone] = useState(initialCheckoutCart?.shipping_address?.phone || '');
+  const [fullName, setFullName] = useState(initialFullName);
+  const [line1, setLine1] = useState(initialCheckoutCart?.shipping_address?.address_1 || '');
+  const [line2, setLine2] = useState(initialCheckoutCart?.shipping_address?.address_2 || '');
+  const [city, setCity] = useState(initialCheckoutCart?.shipping_address?.city || '');
+  const [province, setProvince] = useState(initialCheckoutCart?.shipping_address?.province || '');
+  const [postalCode, setPostalCode] = useState(initialCheckoutCart?.shipping_address?.postal_code || '');
+  const [whatsappOptIn, setWhatsappOptIn] = useState(initialCheckoutCart?.metadata?.whatsapp_opt_in === false ? false : true);
+  const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string | null>(
+    initialCheckoutCart?.payment_collection?.payment_sessions?.[0]?.provider_id || null,
+  );
   const [errors, setErrors] = useState<FieldErrors>({});
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
   const [showAddressExtras, setShowAddressExtras] = useState(false);
@@ -737,7 +769,14 @@ export function Checkout({ checkoutSettings = null }: { checkoutSettings?: Check
     const isPaymobReturn = params.get('payment_provider') === 'paymob' || params.get('resume') === '1' || params.get('success') === 'true';
 
     const loadCheckout = async () => {
-      setLoadingCheckout(true);
+      if (initialState !== 'unknown') {
+        if (!incomingCartId && items.length === 0) {
+          setLoadingCheckout(false);
+          return;
+        }
+      } else {
+        setLoadingCheckout(true);
+      }
       setCheckoutError(null);
       setPaymentError(null);
       setPaymobPendingNeedsAction(false);
@@ -881,7 +920,7 @@ export function Checkout({ checkoutSettings = null }: { checkoutSettings?: Check
     return () => {
       cancelled = true;
     };
-  }, [cartId, clearCart, hydrateCheckoutFromCart, isArabic, items.length, mounted, navigate]);
+  }, [cartId, clearCart, hydrateCheckoutFromCart, initialState, isArabic, items.length, mounted, navigate]);
 
   const paymentMethods = useMemo(
     () => buildCheckoutPaymentMethods(paymentProviders, isArabic, checkoutSettings?.paymentMethodOrder ?? []),
@@ -1563,7 +1602,7 @@ export function Checkout({ checkoutSettings = null }: { checkoutSettings?: Check
     [copy.checkout.breadcrumbTitle, copy.shell.home],
   );
 
-  if (!mounted || loadingCheckout) {
+  if (loadingCheckout) {
     const showBagSummaryWhileLoading = loadingCheckout && !paymentVerifying && items.length > 0;
     return (
       <div className="min-h-[60vh] bg-papyrus py-8 pb-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:py-10 md:pb-16">
@@ -1674,6 +1713,7 @@ export function Checkout({ checkoutSettings = null }: { checkoutSettings?: Check
     : `${checkoutLines.length} ${checkoutLines.length === 1 ? 'item' : 'items'}`;
   const hasSavedShipping = Boolean(checkoutCart?.shipping_methods?.length);
   const noPaymentProvidersAfterShipping = hasSavedShipping && paymentMethods.length === 0;
+  const hasConfiguredWhatsappSupport = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl);
   const dependencyAddressSaved = Boolean(checkoutCart?.shipping_address?.address_1?.trim() && checkoutCart?.shipping_address?.city?.trim());
   const dependencyShippingAttached = hasSavedShipping;
   const dependencyProvidersLoaded = paymentMethods.length > 0;
@@ -2109,8 +2149,12 @@ export function Checkout({ checkoutSettings = null }: { checkoutSettings?: Check
                   <div className="mt-4 text-sm text-ember">
                     {hasSavedShipping
                       ? isArabic
-                        ? 'الدفع غير متاح حالياً لمنطقة التوصيل هذه. تواصل معنا عبر واتساب أو جرّب عنواناً آخر.'
-                        : 'Payment is not available for this delivery area yet. Please contact us on WhatsApp or try another address.'
+                        ? hasConfiguredWhatsappSupport
+                          ? 'الدفع غير متاح حالياً لمنطقة التوصيل هذه. تواصل معنا عبر واتساب أو جرّب عنواناً آخر.'
+                          : 'الدفع غير متاح حالياً لمنطقة التوصيل هذه. جرّب عنواناً آخر.'
+                        : hasConfiguredWhatsappSupport
+                          ? 'Payment is not available for this delivery area yet. Please contact us on WhatsApp or try another address.'
+                          : 'Payment is not available for this delivery area yet. Try another address.'
                       : copy.checkout.paymentOptionsLoadingNote}
                   </div>
                 ) : null}

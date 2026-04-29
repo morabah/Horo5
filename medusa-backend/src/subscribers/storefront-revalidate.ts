@@ -19,6 +19,7 @@ async function resolveRevalidateTags(
   data: EventPayload
 ): Promise<string[]> {
   const coarse = ["catalog", "taxonomy"] as string[]
+  const commerceCatalog = ["catalog", "storefront", "product"] as string[]
 
   if (eventName.startsWith("store.")) {
     return [...coarse, "settings", "homepage"]
@@ -26,6 +27,18 @@ async function resolveRevalidateTags(
 
   if (eventName.startsWith("product.product-category")) {
     return [...coarse, "taxonomy:feelings"]
+  }
+
+  if (eventName.startsWith("pricing.")) {
+    return [...commerceCatalog, "incentives"]
+  }
+
+  if (eventName.startsWith("inventory.")) {
+    return commerceCatalog
+  }
+
+  if (eventName.startsWith("promotion.")) {
+    return ["storefront", "incentives", "catalog"]
   }
 
   if (eventName.startsWith("product.")) {
@@ -153,6 +166,56 @@ export const config: SubscriberConfig = {
     "product.created",
     "product.updated",
     "product.deleted",
+    "product.product-variant.created",
+    "product.product-variant.updated",
+    "product.product-variant.deleted",
+    "product.product-variant.restored",
+    "product.product-variant.attached",
+    "product.product-variant.detached",
+    "inventory.inventory-level.created",
+    "inventory.inventory-level.updated",
+    "inventory.inventory-level.deleted",
+    "inventory.inventory-level.restored",
+    "inventory.inventory-level.attached",
+    "inventory.inventory-level.detached",
+    "pricing.price-list-rule.created",
+    "pricing.price-list.created",
+    "pricing.price-rule.created",
+    "pricing.price-set.created",
+    "pricing.price.created",
+    "pricing.price-list-rule.updated",
+    "pricing.price-list.updated",
+    "pricing.price-rule.updated",
+    "pricing.price-set.updated",
+    "pricing.price.updated",
+    "pricing.price-list-rule.deleted",
+    "pricing.price-list.deleted",
+    "pricing.price-rule.deleted",
+    "pricing.price-set.deleted",
+    "pricing.price.deleted",
+    "pricing.price-list-rule.restored",
+    "pricing.price-list.restored",
+    "pricing.price-rule.restored",
+    "pricing.price-set.restored",
+    "pricing.price.restored",
+    "pricing.price-list-rule.attached",
+    "pricing.price-list.attached",
+    "pricing.price-rule.attached",
+    "pricing.price-set.attached",
+    "pricing.price.attached",
+    "pricing.price-list-rule.detached",
+    "pricing.price-list.detached",
+    "pricing.price-rule.detached",
+    "pricing.price-set.detached",
+    "pricing.price.detached",
+    "promotion.created",
+    "promotion.updated",
+    "promotion.deleted",
+    "promotion.restored",
+    "promotion.promotion.created",
+    "promotion.promotion.updated",
+    "promotion.promotion.deleted",
+    "promotion.promotion.restored",
     "occasion.occasion.created",
     "occasion.occasion.updated",
     "occasion.occasion.deleted",

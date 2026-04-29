@@ -21,6 +21,7 @@ import {
   getProduct,
   productHasRealImage,
   productsByFeeling,
+  setRuntimeCatalog,
   type Artist,
   type Feeling,
   type Occasion,
@@ -173,6 +174,17 @@ export function ProductDetail({
   deliveryRules: deliveryRulesProp,
   sizeTableConfig: sizeTableConfigProp,
 }: ProductDetailProps = {}) {
+  if (initialProduct || catalogSnapshot || catalogProducts?.length) {
+    const productsForRuntime = [
+      ...(initialProduct ? [initialProduct] : []),
+      ...(catalogProducts ?? catalogSnapshot?.products ?? []),
+    ];
+    setRuntimeCatalog({
+      ...catalogSnapshot,
+      products: productsForRuntime,
+    });
+  }
+
   const { slug: routeSlug = '' } = useParams();
   const slug = initialSlug ?? routeSlug;
   const { copy: shellCopy, locale } = useUiLocale();

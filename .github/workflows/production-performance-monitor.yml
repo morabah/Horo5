@@ -1,0 +1,27 @@
+name: Production Performance Monitor
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    if: ${{ vars.PERF_FRONTEND_BASE_URL != '' || vars.PERF_MEDUSA_BASE_URL != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check production performance budgets
+        env:
+          PERF_FRONTEND_BASE_URL: ${{ vars.PERF_FRONTEND_BASE_URL }}
+          PERF_MEDUSA_BASE_URL: ${{ vars.PERF_MEDUSA_BASE_URL }}
+          PERF_PRODUCT_SLUG: ${{ vars.PERF_PRODUCT_SLUG }}
+          PERF_PUBLIC_TTFB_MS: ${{ vars.PERF_PUBLIC_TTFB_MS }}
+          PERF_API_TTFB_MS: ${{ vars.PERF_API_TTFB_MS }}
+          PERF_TOTAL_MS: ${{ vars.PERF_TOTAL_MS }}
+        run: node scripts/production-performance-smoke.mjs

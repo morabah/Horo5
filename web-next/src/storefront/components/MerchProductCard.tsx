@@ -26,6 +26,7 @@ type MerchProductCardProps = {
   compareAtPriceEgp?: number;
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
+  eager?: boolean;
   /** Compact home layout: lighter surface and quieter proof line. */
   variant?: 'default' | 'minimal';
   className?: string;
@@ -60,6 +61,7 @@ export function MerchProductCard({
   compareAtPriceEgp,
   onQuickView,
   onProductClick,
+  eager = false,
   variant = 'default',
   className,
   'data-reveal': dataReveal,
@@ -162,6 +164,7 @@ export function MerchProductCard({
               w={560}
               aspectRatio="4/5"
               borderRadius="0.375rem"
+              eager={eager}
               objectPosition="center 24%"
               frameStyle={{ marginBottom: 0 }}
             />

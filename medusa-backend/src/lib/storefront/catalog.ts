@@ -1538,15 +1538,23 @@ export async function retrieveStorefrontProductsByHandles(
   return out
 }
 
-export async function retrieveStorefrontPdpPayload(
-  scope: MedusaContainer,
-  handle: string
-): Promise<{
+type StorefrontPdpPayload = {
   product: StorefrontProductDTO
   settings: StorefrontSettingsDTO
   crossSellProducts: StorefrontProductDTO[]
-} | null> {
-  const product = await retrieveStorefrontProduct(scope, handle)
+}
+
+let pdpServerCache = new Map<string, { expiresAt: number; value: StorefrontPdpPayload }>()
+let pdpServerInflight = new Map<string, Promise<StorefrontPdpPayload | null>>()
+
+async function buildStorefrontPdpPayload(
+  scope: MedusaContainer,
+  handle: string
+): Promise<StorefrontPdpPayload | null> {
+  const [product, settings] = await Promise.all([
+    retrieveStorefrontProduct(scope, handle),
+    retrieveStorefrontSettingsPayload(scope),
+  ])
   if (!product) {
     return null
   }
@@ -1557,9 +1565,48 @@ export async function retrieveStorefrontPdpPayload(
     ...(product.customersAlsoBoughtSlugs ?? []),
   ]
   const crossSellProducts = await retrieveStorefrontProductsByHandles(scope, crossSellSlugs)
-  const settings = await retrieveStorefrontSettingsPayload(scope)
 
   return { product, settings, crossSellProducts }
+}
+
+export async function retrieveStorefrontPdpPayload(
+  scope: MedusaContainer,
+  handle: string
+): Promise<StorefrontPdpPayload | null> {
+  const normalizedHandle = handle.trim()
+  if (!normalizedHandle) {
+    return null
+  }
+
+  const ttlMs = parsePositiveMsEnv("STOREFRONT_PDP_SERVER_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
+  if (ttlMs <= 0) {
+    return buildStorefrontPdpPayload(scope, normalizedHandle)
+  }
+
+  const now = Date.now()
+  const cached = pdpServerCache.get(normalizedHandle)
+  if (cached && cached.expiresAt > now) {
+    return cached.value
+  }
+
+  const inflight = pdpServerInflight.get(normalizedHandle)
+  if (inflight) {
+    return inflight
+  }
+
+  const promise = buildStorefrontPdpPayload(scope, normalizedHandle)
+    .then((value) => {
+      if (value) {
+        pdpServerCache.set(normalizedHandle, { expiresAt: Date.now() + ttlMs, value })
+      }
+      return value
+    })
+    .finally(() => {
+      pdpServerInflight.delete(normalizedHandle)
+    })
+
+  pdpServerInflight.set(normalizedHandle, promise)
+  return promise
 }
 
 export async function listStorefrontArtists(scope: MedusaContainer) {

@@ -109,6 +109,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
                     w={640}
                     aspectRatio="4/5"
                     borderRadius="0.375rem"
+                    eager={index < 4}
                     objectPosition="center 24%"
                     frameStyle={{ marginBottom: 0 }}
                   />

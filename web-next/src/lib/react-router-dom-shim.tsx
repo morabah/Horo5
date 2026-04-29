@@ -1,8 +1,8 @@
 "use client";
 
 import NextLink from "next/link";
-import { useParams as useNextParams, usePathname, useRouter, useSearchParams as useNextSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useParams as useNextParams, usePathname, useRouter } from "next/navigation";
+import { useCallback, useSyncExternalStore } from "react";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { useRouterContext } from "./router-context";
 
@@ -83,10 +83,28 @@ type SetSearchParamsNavigateOpts = {
   state?: unknown;
 };
 
+const SEARCH_PARAMS_CHANGE_EVENT = "horo-searchparams-change";
+
+function getSearchSnapshot() {
+  if (typeof window === "undefined") return "";
+  return window.location.search;
+}
+
 export function useSearchParams() {
-  const nextParams = useNextSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const search = useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("popstate", onStoreChange);
+      window.addEventListener(SEARCH_PARAMS_CHANGE_EVENT, onStoreChange);
+      return () => {
+        window.removeEventListener("popstate", onStoreChange);
+        window.removeEventListener(SEARCH_PARAMS_CHANGE_EVENT, onStoreChange);
+      };
+    },
+    getSearchSnapshot,
+    () => "",
+  );
 
   const setSearchParams = useCallback(
     (
@@ -97,7 +115,7 @@ export function useSearchParams() {
         | ((prev: URLSearchParams) => URLSearchParams | string | Record<string, string>),
       navigateOpts?: SetSearchParamsNavigateOpts,
     ) => {
-      const resolved = typeof next === "function" ? next(new URLSearchParams(nextParams.toString())) : next;
+      const resolved = typeof next === "function" ? next(new URLSearchParams(search)) : next;
       const params =
         resolved instanceof URLSearchParams
           ? resolved
@@ -111,19 +129,30 @@ export function useSearchParams() {
       } else {
         router.push(url);
       }
+      window.setTimeout(() => {
+        window.dispatchEvent(new Event(SEARCH_PARAMS_CHANGE_EVENT));
+      }, 0);
     },
-    [nextParams, pathname, router],
+    [pathname, router, search],
   );
 
-  return [new URLSearchParams(nextParams.toString()), setSearchParams] as const;
+  return [new URLSearchParams(search), setSearchParams] as const;
 }
 
 export function useLocation() {
   const pathname = usePathname();
-  const searchParams = useNextSearchParams();
+  const search = useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("popstate", onStoreChange);
+      return () => window.removeEventListener("popstate", onStoreChange);
+    },
+    () => window.location.search,
+    () => "",
+  );
+
   return {
     pathname,
-    search: searchParams.toString() ? `?${searchParams.toString()}` : "",
+    search,
     hash: "",
   };
 }

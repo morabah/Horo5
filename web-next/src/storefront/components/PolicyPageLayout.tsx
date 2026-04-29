@@ -74,9 +74,9 @@ export function PolicyPageLayout({
           </div>
         </section>
 
-        <section className="mt-8 rounded-[1.5rem] border border-stone/50 bg-white/70 px-5 py-6 shadow-[0_18px_44px_-28px_rgba(26,26,26,0.2)] md:px-8">
-          <p className="font-label text-[10px] font-medium uppercase tracking-[0.24em] text-label">Contact HORO</p>
-          {hasSupportLink ? (
+        {hasSupportLink ? (
+          <section className="mt-8 rounded-[1.5rem] border border-stone/50 bg-white/70 px-5 py-6 shadow-[0_18px_44px_-28px_rgba(26,26,26,0.2)] md:px-8">
+            <p className="font-label text-[10px] font-medium uppercase tracking-[0.24em] text-label">Contact HORO</p>
             <div className="mt-4 flex flex-wrap gap-3">
               {whatsappSupportUrl ? (
                 <a
@@ -99,12 +99,8 @@ export function PolicyPageLayout({
                 </a>
               ) : null}
             </div>
-          ) : (
-            <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal">
-              Live support links appear here as soon as they are activated for this build.
-            </p>
-          )}
-        </section>
+          </section>
+        ) : null}
       </div>
     </div>
   );

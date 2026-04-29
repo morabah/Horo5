@@ -1,0 +1,40 @@
+name: Performance CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Preview or production storefront URL, e.g. https://horo.example.com"
+        required: true
+        type: string
+      product_slug:
+        description: "Product slug to audit"
+        required: false
+        default: "quiet-revolt"
+        type: string
+
+defaults:
+  run:
+    working-directory: web-next
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web-next/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lighthouse CI against deployed URL
+        env:
+          LHCI_BASE_URL: ${{ inputs.url }}
+          LHCI_PRODUCT_SLUG: ${{ inputs.product_slug }}
+          LHCI_UPLOAD_TARGET: temporary-public-storage
+        run: npm run lhci

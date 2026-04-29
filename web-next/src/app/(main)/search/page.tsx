@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 
 import { SearchPage } from "@/components/search-page";
+import { fetchStorefrontCatalogServer, logStorefrontFetchError } from "@/lib/storefront-server";
 
 const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ?? "";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   searchParams,
@@ -32,6 +35,11 @@ export async function generateMetadata({
   };
 }
 
-export default function Page() {
-  return <SearchPage />;
+export default async function Page() {
+  const catalog = await fetchStorefrontCatalogServer().catch((error) => {
+    logStorefrontFetchError("[storefront] Failed to fetch search catalog", error);
+    return null;
+  });
+
+  return <SearchPage initialCatalog={catalog} />;
 }

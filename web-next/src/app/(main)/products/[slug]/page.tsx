@@ -17,6 +17,8 @@ type ProductPageProps = {
   }>;
 };
 
+export const revalidate = 60;
+
 function jsonLdString(data: unknown) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }

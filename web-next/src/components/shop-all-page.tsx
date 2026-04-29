@@ -2,12 +2,19 @@
 
 import { RouterContextProvider } from "@/lib/router-context";
 import type { StorefrontPriceBand } from "@/lib/storefront-server";
+import type { RuntimeCatalog } from "@/storefront/data/site";
 import { ShopAll } from "@/storefront/pages/ShopAll";
 
-export function ShopAllPage({ priceBands = null }: { priceBands?: StorefrontPriceBand[] | null }) {
+export function ShopAllPage({
+  initialCatalog = null,
+  priceBands = null,
+}: {
+  initialCatalog?: Partial<RuntimeCatalog> | null;
+  priceBands?: StorefrontPriceBand[] | null;
+}) {
   return (
     <RouterContextProvider>
-      <ShopAll priceBands={priceBands} />
+      <ShopAll initialCatalog={initialCatalog} priceBands={priceBands} />
     </RouterContextProvider>
   );
 }

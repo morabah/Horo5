@@ -57,6 +57,8 @@
     "parity:snapshot:remote": "sh -c 'mkdir -p .parity && export PARITY_OUTPUT_FILE=.parity/railway.json && sh scripts/medusa-exec-public-db.sh ./src/scripts/parity-snapshot.ts'",
     "parity:check": "node scripts/compare-parity-json.mjs .parity/local.json .parity/railway.json",
     "parity:check:ignore-media": "node scripts/compare-parity-json.mjs .parity/local.json .parity/railway.json --ignore-media",
+    "apply:indexes": "node scripts/apply-performance-indexes.mjs",
+    "verify:indexes": "node scripts/verify-performance-indexes.mjs",
     "import:drops": "medusa exec ./src/scripts/import-product-drops.ts --",
     "import:drops:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/import-product-drops.ts",
     "sync:local-to-railway": "bash ./scripts/sync-local-to-railway.sh",

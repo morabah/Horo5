@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 
 import { ShopAllPage } from "@/components/shop-all-page";
-import { fetchStorefrontSettingsServer, logStorefrontFetchError } from "@/lib/storefront-server";
+import {
+  fetchStorefrontCatalogServer,
+  fetchStorefrontSettingsServer,
+  logStorefrontFetchError,
+} from "@/lib/storefront-server";
 
 const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ?? "";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Shop All | HORO Egypt",
@@ -18,10 +24,16 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const settings = await fetchStorefrontSettingsServer().catch((error) => {
-    logStorefrontFetchError("[storefront] Failed to fetch shop settings", error);
-    return null;
-  });
+  const [catalog, settings] = await Promise.all([
+    fetchStorefrontCatalogServer().catch((error) => {
+      logStorefrontFetchError("[storefront] Failed to fetch shop catalog", error);
+      return null;
+    }),
+    fetchStorefrontSettingsServer().catch((error) => {
+      logStorefrontFetchError("[storefront] Failed to fetch shop settings", error);
+      return null;
+    }),
+  ]);
 
-  return <ShopAllPage priceBands={settings?.search?.priceBands ?? null} />;
+  return <ShopAllPage initialCatalog={catalog} priceBands={settings?.search?.priceBands ?? null} />;
 }

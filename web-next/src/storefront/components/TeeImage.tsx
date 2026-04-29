@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 
 import {
+  heroVectorizedV2,
   imgUrl,
   resolveProductImageSrcForDisplay,
   useNextImageOptimizerForSrc,
@@ -57,10 +58,18 @@ export function TeeImage({
         <div
           role="img"
           aria-label={alt}
-          className="absolute inset-0 flex items-center justify-center bg-stone/40 text-obsidian/70"
+          className="absolute inset-0 flex items-center justify-center overflow-hidden bg-linen text-obsidian/70"
         >
-          <span className="font-headline text-sm font-semibold tracking-[0.24em] uppercase">
-            HORO
+          <img
+            src={heroVectorizedV2}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover opacity-45"
+            loading={eager ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+          <span className="font-label relative rounded-full border border-obsidian/15 bg-papyrus/85 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em]">
+            Image coming soon
           </span>
         </div>
       ) : useNextOptimizer ? (

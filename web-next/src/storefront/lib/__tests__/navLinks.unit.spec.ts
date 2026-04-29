@@ -4,7 +4,12 @@ describe("navLinks", () => {
   it("exposes stable primary shop paths", () => {
     expect(NAV_ROUTE.products.path).toBe("/products")
     expect(NAV_ROUTE.collection.path).toBe("/feelings")
+    expect(NAV_ROUTE.gifts.path).toBe("/gifts")
     expect(NAV_ROUTE.cart.path).toBe("/cart")
+  })
+
+  it("keeps the primary navigation label model aligned with the audited IA", () => {
+    expect([...NAV_PRIMARY_ROUTE_KEYS]).toEqual(["products", "collection", "gifts", "about"])
   })
 
   it("keeps drawer keys as a superset of primary nav keys", () => {

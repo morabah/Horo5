@@ -1,14 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { AppErrorBoundary } from "./app-error-boundary";
 import { FunnelNavigationTracker } from "@/storefront/components/FunnelNavigationTracker";
 import { Nav } from "@/storefront/components/Nav";
 import { Footer } from "@/storefront/components/Footer";
-import { RouteLoadingSpinner } from "@/storefront/components/RouteLoadingSpinner";
-import { PageSkeleton } from "@/storefront/components/ui/Skeleton";
 import type { StorefrontSettingsPayload } from "@/lib/storefront-server";
 
 /** App shell for main storefront pages: skip link, nav, footer, analytics wrapper. */
@@ -30,14 +27,10 @@ export function StorefrontChrome({
       >
         Skip to main content
       </a>
-      <Suspense fallback={<RouteLoadingSpinner />}>
-        <FunnelNavigationTracker />
-        <Nav navigation={navigation} />
-      </Suspense>
+      <FunnelNavigationTracker />
+      <Nav navigation={navigation} />
       <main id="main-content" className={isHome ? "" : "pt-32 md:pt-24"}>
-        <AppErrorBoundary key={pathname}>
-          <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
-        </AppErrorBoundary>
+        <AppErrorBoundary key={pathname}>{children}</AppErrorBoundary>
       </main>
       <Footer />
     </>

@@ -28,7 +28,7 @@ import {
   heroVectorizedV2,
   imgUrl,
 } from '../data/images';
-import { getFeeling, getOccasion, type Product } from '../data/site';
+import { getFeeling, getOccasion, setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
 import { trackSearchZeroResults } from '../analytics/events';
 import { trackSearchView } from '../analytics/funnel';
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -133,10 +133,12 @@ function SearchProductCard({
   product,
   onQuickView,
   onProductClick,
+  eager = false,
 }: {
   product: SearchDesignCard;
   onQuickView: (slug: string) => void;
   onProductClick?: () => void;
+  eager?: boolean;
 }) {
   return (
     <MerchProductCard
@@ -150,6 +152,7 @@ function SearchProductCard({
       artistCredit={product.artistCredit}
       onQuickView={onQuickView}
       onProductClick={onProductClick}
+      eager={eager}
     />
   );
 }
@@ -206,7 +209,13 @@ function SearchOccasionResultCard({ occasion }: { occasion: SearchOccasionCard }
   );
 }
 
-export function Search() {
+export function Search({ initialCatalog = null }: { initialCatalog?: Partial<RuntimeCatalog> | null } = {}) {
+  if (initialCatalog) {
+    setRuntimeCatalog(initialCatalog);
+  }
+
+  const initialSearchProducts = initialCatalog?.products ?? [];
+  const hasInitialSearchProducts = initialSearchProducts.length > 0;
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -223,8 +232,10 @@ export function Search() {
   const [q, setQ] = useState(urlQuery);
   const [debouncedQ, setDebouncedQ] = useState(urlQuery);
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
-  const [medusaSearchPool, setMedusaSearchPool] = useState<Product[]>([]);
-  const [medusaSearchStatus, setMedusaSearchStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
+  const [medusaSearchPool, setMedusaSearchPool] = useState<Product[]>(initialSearchProducts);
+  const [medusaSearchStatus, setMedusaSearchStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>(
+    hasInitialSearchProducts ? 'ok' : 'idle',
+  );
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [desktopAdvancedFiltersOpen, setDesktopAdvancedFiltersOpen] = useState(false);
   const [showRelatedSections, setShowRelatedSections] = useState(false);
@@ -290,6 +301,9 @@ export function Search() {
       setMedusaSearchStatus('idle');
       return;
     }
+    if (hasInitialSearchProducts) {
+      return;
+    }
     let cancelled = false;
     setMedusaSearchStatus('loading');
     void fetchStorefrontSearch({
@@ -311,7 +325,7 @@ export function Search() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQ, scopeFeeling?.slug, scopeOccasion?.slug]);
+  }, [debouncedQ, hasInitialSearchProducts, scopeFeeling?.slug, scopeOccasion?.slug]);
 
   useEffect(() => {
     if (params.get('focus') !== '1') return;
@@ -1206,11 +1220,12 @@ export function Search() {
                 </div>
 
                 <div className="vibe-product-grid">
-                  {designMatches.map((product) => (
+                  {designMatches.map((product, index) => (
                     <SearchProductCard
                       key={product.slug}
                       product={product}
                       onQuickView={setQuickViewSlug}
+                      eager={index < 6}
                     />
                   ))}
                 </div>

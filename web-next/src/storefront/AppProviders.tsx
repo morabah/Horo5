@@ -1,8 +1,9 @@
-import type { PropsWithChildren } from 'react';
+import { Suspense, type PropsWithChildren } from 'react';
 import { useEffect, useState } from 'react';
 import { setRuntimeCatalog, type RuntimeCatalog } from './data/site';
 import { CartProvider } from './cart/CartContext';
 import { MiniCartDrawer } from './components/MiniCartDrawer';
+import { WhatsAppFloatingButton } from './components/WhatsAppFloatingButton';
 import { UiLocaleProvider } from './i18n/ui-locale';
 import { hydrateRuntimeCatalog } from './lib/medusa/catalog';
 import { RenderTimeProvider } from './runtime/render-time';
@@ -78,6 +79,9 @@ export function AppProviders({
         <CartProvider>
           {children}
           <MiniCartDrawer />
+          <Suspense fallback={null}>
+            <WhatsAppFloatingButton />
+          </Suspense>
         </CartProvider>
       </UiLocaleProvider>
     </RenderTimeProvider>

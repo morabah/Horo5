@@ -6,6 +6,8 @@ import {
   logStorefrontFetchError,
 } from "@/lib/storefront-server";
 
+export const revalidate = 60;
+
 export default async function Page() {
   const [catalog, settings, homepage] = await Promise.all([
     fetchStorefrontCatalogServer().catch((error) => {

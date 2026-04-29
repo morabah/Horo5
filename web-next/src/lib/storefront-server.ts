@@ -17,6 +17,7 @@ import {
   normalizeStorefrontProductApi,
   type StorefrontProductApi,
 } from "@/storefront/lib/medusa/normalize-storefront-product";
+import type { MedusaCart } from "@/storefront/lib/medusa/types";
 import { buildProductJsonLdSchema, type ProductJsonLdShippingHint } from "@/storefront/seo/product-jsonld-schema";
 
 function feelingFromCatalog(slug: string, catalog: Pick<RuntimeCatalog, "feelings"> | null | undefined): Feeling | undefined {
@@ -78,6 +79,28 @@ function catalogFetchOptions(extraTags: string[] = []): NextFetchOptions {
 }
 
 const CATALOG_FETCH_OPTIONS: NextFetchOptions = catalogFetchOptions();
+const STORE_CART_CHECKOUT_FIELDS = [
+  "id",
+  "email",
+  "region_id",
+  "currency_code",
+  "completed_at",
+  "metadata",
+  "subtotal",
+  "total",
+  "discount_total",
+  "shipping_total",
+  "tax_total",
+  "*billing_address",
+  "*shipping_address",
+  "*items",
+  "*items.variant",
+  "*items.variant.product",
+  "*payment_collection",
+  "*payment_collection.payment_sessions",
+  "*shipping_methods",
+  "*region",
+].join(",");
 
 async function storefrontRequest<T>(path: string, init: NextFetchOptions = {}): Promise<T> {
   if (!publishableApiKey) {
@@ -161,6 +184,26 @@ function toAbsoluteUrl(src: string | null | undefined): string | undefined {
   if (/^https?:\/\//i.test(src)) return src;
   if (!siteOrigin) return src;
   return src.startsWith("/") ? `${siteOrigin}${src}` : `${siteOrigin}/${src}`;
+}
+
+export async function fetchStorefrontCartServer(cartId: string | null | undefined): Promise<MedusaCart | null> {
+  const normalizedCartId = typeof cartId === "string" ? cartId.trim() : "";
+  if (!normalizedCartId) return null;
+
+  const params = new URLSearchParams({ fields: STORE_CART_CHECKOUT_FIELDS });
+  try {
+    const data = await storefrontRequest<{ cart?: MedusaCart }>(
+      `/store/carts/${encodeURIComponent(normalizedCartId)}?${params.toString()}`,
+      { cache: "no-store" }
+    );
+    const cart = data.cart ?? null;
+    return cart && !cart.completed_at ? cart : null;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("(404)")) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 async function fetchStorefrontCatalogServerImpl(): Promise<RuntimeCatalog> {

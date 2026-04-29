@@ -29,6 +29,7 @@ import {
 } from '../lib/medusa/adapters';
 import type { MedusaCart, MedusaProduct } from '../lib/medusa/types';
 import { findProductVariantById } from '../utils/productVariants';
+import { persistCartIdCookie, readCartIdFromCookieString } from './cart-cookie';
 import { CART_STORAGE_KEY, MEDUSA_CART_ID_STORAGE_KEY, cartLineKey, type CartLine } from './types';
 
 export type LastAddedItem = {
@@ -43,6 +44,8 @@ export type LastAddedItem = {
 type CartContextValue = {
   /** Medusa store cart id when synced; read-only for pages that prefetch shipping (e.g. cart). */
   medusaCartId: string | null;
+  /** True after browser cart storage/cookie has been read. */
+  storageReady: boolean;
   items: CartLine[];
   addItem: (productSlug: string, size: ProductSizeKey, qty?: number, explicitVariantId?: string) => void;
   removeItem: (productSlug: string, size: ProductSizeKey, variantId?: string) => void;
@@ -108,14 +111,17 @@ function persistItems(items: CartLine[]) {
 function loadMedusaCartId(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    return localStorage.getItem(MEDUSA_CART_ID_STORAGE_KEY);
+    const localCartId = localStorage.getItem(MEDUSA_CART_ID_STORAGE_KEY);
+    if (localCartId) return localCartId;
   } catch {
-    return null;
+    /* fall through to cookie */
   }
+  return readCartIdFromCookieString(document.cookie);
 }
 
 function persistMedusaCartId(cartId: string | null) {
   if (typeof window === 'undefined') return;
+  persistCartIdCookie(cartId);
   try {
     if (!cartId) {
       localStorage.removeItem(MEDUSA_CART_ID_STORAGE_KEY);
@@ -604,6 +610,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       medusaCartId,
+      storageReady,
       items,
       addItem,
       removeItem,
@@ -625,6 +632,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }),
     [
       medusaCartId,
+      storageReady,
       items,
       addItem,
       removeItem,

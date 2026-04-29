@@ -1,36 +1,41 @@
-import posthog from "posthog-js";
-
-export const posthogClient = posthog;
-
 let postHogInitialized = false;
+let postHogClientPromise: Promise<PostHogClient> | null = null;
 
-type BrowserPostHog = typeof posthog & {
+type PostHogClient = typeof import("posthog-js").default;
+type BrowserPostHog = PostHogClient & {
   __loaded?: boolean;
 };
 
-function getBrowserPostHog() {
-  if (typeof window === "undefined") return posthog;
-  return ((window as typeof window & { posthog?: BrowserPostHog }).posthog ?? posthog) as BrowserPostHog;
+async function getBrowserPostHog(): Promise<BrowserPostHog | null> {
+  if (typeof window === "undefined") return null;
+
+  const existing = (window as typeof window & { posthog?: BrowserPostHog }).posthog;
+  if (existing) return existing;
+
+  postHogClientPromise ??= import("posthog-js").then((module) => module.default);
+  return postHogClientPromise as Promise<BrowserPostHog>;
 }
 
 export function isPostHogConfigured() {
   return Boolean(process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim());
 }
 
-export function ensurePostHogInitialized() {
+export async function ensurePostHogInitialized() {
   if (postHogInitialized) return true;
   if (typeof window === "undefined") return false;
 
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY?.trim();
   if (!key) return false;
 
-  const client = getBrowserPostHog();
+  const client = await getBrowserPostHog();
+  if (!client) return false;
+
   if (client.__loaded) {
     postHogInitialized = true;
     return true;
   }
 
-  posthog.init(key, {
+  client.init(key, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
     defaults: "2026-01-30",
     person_profiles: "identified_only",
@@ -47,11 +52,13 @@ export function ensurePostHogInitialized() {
 }
 
 export function capturePostHogEvent(eventName: string, properties: Record<string, unknown> = {}) {
-  if (!ensurePostHogInitialized()) return;
-
-  try {
-    getBrowserPostHog().capture(eventName, properties);
-  } catch {
-    /* Analytics must never block storefront interactions. */
-  }
+  void ensurePostHogInitialized()
+    .then(async (ready) => {
+      if (!ready) return;
+      const client = await getBrowserPostHog();
+      client?.capture(eventName, properties);
+    })
+    .catch(() => {
+      /* Analytics must never block storefront interactions. */
+    });
 }

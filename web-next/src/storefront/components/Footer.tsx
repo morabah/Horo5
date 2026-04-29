@@ -10,7 +10,7 @@ import { HomeTrustRibbon } from './HomeTrustRibbon';
 export function Footer() {
   const renderTime = useRenderTime();
   const year = renderTime.getFullYear();
-  const { copy } = useUiLocale();
+  const { copy, locale } = useUiLocale();
   const instagramUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.instagramUrl)
     ? HORO_SUPPORT_CHANNELS.instagramUrl
     : null;
@@ -62,9 +62,9 @@ export function Footer() {
             <li>
               <Link
                 className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                to={NAV_ROUTE.occasions.path}
+                to={NAV_ROUTE.gifts.path}
               >
-                {copy.shell.shopByMoment}
+                {locale === 'ar' ? 'هدايا' : 'Gifts'}
               </Link>
             </li>
           </ul>
@@ -103,17 +103,13 @@ export function Footer() {
                 {copy.shell.about}
               </Link>
             </li>
-            <li>
-              {whatsappSupportUrl ? (
+            {whatsappSupportUrl ? (
+              <li>
                 <a className="font-body text-sm text-stone transition-colors hover:text-papyrus" href={whatsappSupportUrl} target="_blank" rel="noreferrer">
                   {copy.shell.contactWhatsapp}
                 </a>
-              ) : (
-                <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" to="/faq">
-                  {copy.shell.contactWhatsapp}
-                </Link>
-              )}
-            </li>
+              </li>
+            ) : null}
             {instagramUrl ? (
               <li>
                 <a className="font-body text-sm text-stone transition-colors hover:text-papyrus" href={instagramUrl} target="_blank" rel="noreferrer">

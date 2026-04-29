@@ -4,6 +4,7 @@ import {
   type LocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
+import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 import { HOME_TRUST_BADGES } from '../data/homeContent';
 import { useUiLocale } from '../i18n/ui-locale';
 
@@ -38,13 +39,18 @@ function trustItemsFromSection(section: StorefrontHomepageSection | undefined): 
   });
 }
 
+function canShowTrustItem(item: { key: string }): boolean {
+  if (item.key !== 'whatsappSupport') return true;
+  return isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl);
+}
+
 export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSection }) {
   const { copy, locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const sectionItems = trustItemsFromSection(section);
   const items =
     sectionItems.length > 0
-      ? sectionItems.map((item) => {
+      ? sectionItems.filter(canShowTrustItem).map((item) => {
           const localizedLabel =
             pickLocalizedStorefrontText(item.label, locale as 'en' | 'ar') ||
             pickLocalizedStorefrontText({ en: item.label_en, ar: item.label_ar }, locale as 'en' | 'ar');
@@ -54,11 +60,13 @@ export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSecti
             label: localizedLabel || copy.home.trustBadges[item.key as keyof typeof copy.home.trustBadges],
           };
         })
-      : HOME_TRUST_BADGES.map((badge) => ({
+      : HOME_TRUST_BADGES.filter(canShowTrustItem).map((badge) => ({
           key: badge.key,
           icon: badge.key,
           label: copy.home.trustBadges[badge.key],
         }));
+
+  if (items.length === 0) return null;
 
   return (
     <div

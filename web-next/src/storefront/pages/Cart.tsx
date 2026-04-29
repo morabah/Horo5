@@ -38,6 +38,14 @@ type CartShippingFetchState =
   | { kind: 'ok'; cart: MedusaCart; options: MedusaShippingOption[] }
   | { kind: 'error' };
 
+type CartInitialState = 'unknown' | 'empty' | 'cart';
+
+type CartProps = {
+  initialLines?: CartLine[];
+  initialGiftWrapEgp?: number;
+  initialState?: CartInitialState;
+};
+
 function formatMessage(template: string, name: string) {
   return template.replace('{name}', name);
 }
@@ -432,9 +440,29 @@ function CartPairWithStrip({
   );
 }
 
-export function Cart() {
+function subtotalFromCartLines(lines: CartLine[]): number {
+  return lines.reduce((sum, line) => {
+    if (typeof line.medusaLineTotalEgp === 'number') {
+      return sum + line.medusaLineTotalEgp;
+    }
+    const product = getProduct(line.productSlug);
+    const linePrice =
+      line.unitPriceEgp ??
+      product?.variantsBySize?.[line.size]?.priceEgp ??
+      product?.priceEgp ??
+      0;
+    return sum + linePrice * line.qty;
+  }, 0);
+}
+
+export function Cart({
+  initialLines = [],
+  initialGiftWrapEgp = 0,
+  initialState = 'unknown',
+}: CartProps = {}) {
   const {
     medusaCartId,
+    storageReady,
     items,
     removeItem,
     setLineQty,
@@ -452,17 +480,24 @@ export function Cart() {
   const [statusMessage, setStatusMessage] = useState('');
   const [giftUpsellDismissed, setGiftUpsellDismissed] = useState(false);
   const [undoLine, setUndoLine] = useState<CartLine | null>(null);
-  const [clientReady, setClientReady] = useState(false);
   const trackedCartViewRef = useRef(false);
 
-  const lineViews = useMemo(() => getCartLineViews(items), [items]);
+  const useInitialSnapshot = !storageReady && initialState !== 'unknown';
+  const displayItems = useInitialSnapshot ? initialLines : items;
+  const displayGiftWrapEgp = useInitialSnapshot ? initialGiftWrapEgp : giftWrapEgp;
+  const displaySubtotalEgp = useMemo(
+    () => (useInitialSnapshot ? subtotalFromCartLines(displayItems) : subtotalEgp),
+    [displayItems, subtotalEgp, useInitialSnapshot],
+  );
+
+  const lineViews = useMemo(() => getCartLineViews(displayItems), [displayItems]);
   const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
   const pairWithProducts = useMemo(() => {
-    const inCart = new Set(items.map((item) => item.productSlug));
+    const inCart = new Set(displayItems.map((item) => item.productSlug));
     return getProducts()
       .filter((product) => !inCart.has(product.slug) && productHasRealImage(product))
       .slice(0, 2);
-  }, [items]);
+  }, [displayItems]);
   const [shippingFetch, setShippingFetch] = useState<CartShippingFetchState>({ kind: 'inactive' });
   const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
 
@@ -479,7 +514,11 @@ export function Cart() {
   }, []);
 
   useEffect(() => {
-    if (lineViews.length === 0) {
+    if (!storageReady) {
+      setShippingFetch(lineViews.length > 0 ? { kind: 'pending_cart_id' } : { kind: 'inactive' });
+      return;
+    }
+    if (items.length === 0) {
       setShippingFetch({ kind: 'inactive' });
       return;
     }
@@ -506,15 +545,15 @@ export function Cart() {
     return () => {
       cancelled = true;
     };
-  }, [lineViews.length, medusaCartId, itemCount, giftWrapEgp, subtotalEgp]);
+  }, [storageReady, items.length, lineViews.length, medusaCartId, itemCount, giftWrapEgp, subtotalEgp]);
 
   const freeShippingUnlocked =
     !!incentives?.freeShipping &&
     incentives.freeShipping.thresholdEgp > 0 &&
-    subtotalEgp >= incentives.freeShipping.thresholdEgp;
+    displaySubtotalEgp >= incentives.freeShipping.thresholdEgp;
 
   const { shippingRow, estimatedOrderTotal } = useMemo(() => {
-    const base = subtotalEgp + giftWrapEgp;
+    const base = displaySubtotalEgp + displayGiftWrapEgp;
     /* Audit S8: when an operator-configured free-shipping promo is unlocked, the
        preview must agree with what Medusa will compute at checkout. */
     if (freeShippingUnlocked) {
@@ -556,19 +595,15 @@ export function Cart() {
       shippingRow: { mode: 'amount' as const, egp: quoteEgp },
       estimatedOrderTotal: base + quoteEgp,
     };
-  }, [shippingFetch, subtotalEgp, giftWrapEgp, freeShippingUnlocked]);
+  }, [shippingFetch, displaySubtotalEgp, displayGiftWrapEgp, freeShippingUnlocked]);
 
-  const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && giftWrapEgp === 0);
-
-  useEffect(() => {
-    setClientReady(true);
-  }, []);
+  const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && displayGiftWrapEgp === 0);
 
   useEffect(() => {
     if (trackedCartViewRef.current || lineViews.length === 0) return;
     trackedCartViewRef.current = true;
-    trackCartViewed(items, subtotalEgp, giftWrapEgp);
-  }, [giftWrapEgp, items, lineViews.length, subtotalEgp]);
+    trackCartViewed(displayItems, displaySubtotalEgp, displayGiftWrapEgp);
+  }, [displayGiftWrapEgp, displayItems, displaySubtotalEgp, lineViews.length]);
 
   useEffect(() => {
     if (!statusMessage) return undefined;
@@ -577,10 +612,10 @@ export function Cart() {
   }, [statusMessage]);
 
   useEffect(() => {
-    if (itemCount !== 1 || giftWrapEgp > 0) {
+    if (itemCount !== 1 || displayGiftWrapEgp > 0) {
       setGiftUpsellDismissed(false);
     }
-  }, [giftWrapEgp, itemCount]);
+  }, [displayGiftWrapEgp, itemCount]);
 
   useEffect(() => {
     if (!undoLine) return undefined;
@@ -657,7 +692,7 @@ export function Cart() {
 
   const handleRemoveGiftWrap = () => {
     removeGiftWrap();
-    if (giftWrapEgp > 0) {
+    if (displayGiftWrapEgp > 0) {
       setStatusMessage(copy.giftWrapRemoved);
     }
   };
@@ -668,7 +703,7 @@ export function Cart() {
     setStatusMessage(locale === 'ar' ? 'تمت إضافة القطعة للسلة.' : 'Added to your bag.');
   };
 
-  if (!clientReady) {
+  if (!storageReady && initialState === 'unknown') {
     return (
       <div className="cart-page pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
         <div className="container cart-page-shell">
@@ -835,7 +870,7 @@ export function Cart() {
             <div className="order-2 md:col-start-1 md:row-start-2 md:self-start">
               <CartUpsell
                 totalQty={itemCount}
-                giftWrapSelected={giftWrapEgp > 0}
+                giftWrapSelected={displayGiftWrapEgp > 0}
                 giftWrapPriceEgp={giftWrapCatalogPriceEgp}
                 bundle={incentives?.bundle ?? null}
                 locale={locale}
@@ -848,8 +883,8 @@ export function Cart() {
 
           <CartSummary
             itemCount={itemCount}
-            subtotalEgp={subtotalEgp}
-            giftWrapEgp={giftWrapEgp}
+            subtotalEgp={displaySubtotalEgp}
+            giftWrapEgp={displayGiftWrapEgp}
             estimatedOrderTotal={estimatedOrderTotal}
             shippingRow={shippingRow}
             now={now}

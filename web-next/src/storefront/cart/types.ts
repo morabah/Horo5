@@ -15,6 +15,7 @@ export type CartLine = {
 
 export const CART_STORAGE_KEY = 'horo-cart-v1';
 export const MEDUSA_CART_ID_STORAGE_KEY = 'horo-medusa-cart-id-v1';
+export const MEDUSA_CART_ID_COOKIE = 'horo_cart_id';
 
 export function cartLineKey(line: Pick<CartLine, 'productSlug' | 'size' | 'variantId'>): string {
   if (line.variantId) {

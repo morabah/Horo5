@@ -31,7 +31,7 @@ import {
   type SearchSortKey,
 } from '../search/view';
 import { defaultCatalogSizeKeys } from '../utils/productSizes';
-import type { Product } from '../data/site';
+import { setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
 import { trackShopAllView } from '../analytics/funnel';
 
 const FOCUSABLE_SELECTOR =
@@ -88,9 +88,11 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
 function ShopAllProductCard({
   product,
   onQuickView,
+  eager = false,
 }: {
   product: SearchDesignCard;
   onQuickView: (slug: string) => void;
+  eager?: boolean;
 }) {
   return (
     <MerchProductCard
@@ -103,6 +105,7 @@ function ShopAllProductCard({
       eyebrow={product.feelingName}
       artistCredit={product.artistCredit}
       onQuickView={onQuickView}
+      eager={eager}
     />
   );
 }
@@ -123,7 +126,19 @@ function pickLocalizedText(value: LocalizedText, locale: 'en' | 'ar') {
   return (preferred || fallback || '').trim();
 }
 
-export function ShopAll({ priceBands = null }: { priceBands?: ShopAllPriceBand[] | null } = {}) {
+export function ShopAll({
+  initialCatalog = null,
+  priceBands = null,
+}: {
+  initialCatalog?: Partial<RuntimeCatalog> | null;
+  priceBands?: ShopAllPriceBand[] | null;
+} = {}) {
+  if (initialCatalog) {
+    setRuntimeCatalog(initialCatalog);
+  }
+
+  const initialBrowseProducts = initialCatalog?.products ?? [];
+  const hasInitialBrowseProducts = initialBrowseProducts.length > 0;
   const [params, setParams] = useSearchParams();
   const { copy, locale } = useUiLocale();
   const isArabic = locale === 'ar';
@@ -131,8 +146,10 @@ export function ShopAll({ priceBands = null }: { priceBands?: ShopAllPriceBand[]
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
   const [desktopFiltersOpen, setDesktopFiltersOpen] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [medusaBrowsePool, setMedusaBrowsePool] = useState<Product[]>([]);
-  const [medusaBrowseStatus, setMedusaBrowseStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
+  const [medusaBrowsePool, setMedusaBrowsePool] = useState<Product[]>(initialBrowseProducts);
+  const [medusaBrowseStatus, setMedusaBrowseStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>(
+    hasInitialBrowseProducts ? 'ok' : 'idle',
+  );
 
   const mobileFilterSheetRef = useRef<HTMLDivElement>(null);
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
@@ -170,6 +187,9 @@ export function ShopAll({ priceBands = null }: { priceBands?: ShopAllPriceBand[]
       setMedusaBrowseStatus('idle');
       return;
     }
+    if (hasInitialBrowseProducts) {
+      return;
+    }
 
     let cancelled = false;
     setMedusaBrowseStatus('loading');
@@ -187,7 +207,7 @@ export function ShopAll({ priceBands = null }: { priceBands?: ShopAllPriceBand[]
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [hasInitialBrowseProducts]);
 
   useEffect(() => {
     if (!isMobile) {
@@ -650,11 +670,12 @@ export function ShopAll({ priceBands = null }: { priceBands?: ShopAllPriceBand[]
             <SkeletonGrid count={6} />
           ) : results.designMatches.length > 0 ? (
             <div className="vibe-product-grid">
-              {results.designMatches.map((product) => (
+              {results.designMatches.map((product, index) => (
                 <ShopAllProductCard
                   key={product.slug}
                   product={product}
                   onQuickView={setQuickViewSlug}
+                  eager={index < 6}
                 />
               ))}
             </div>

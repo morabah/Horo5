@@ -27,7 +27,9 @@ export class AppErrorBoundary extends Component<Props, State> {
         <div className="mx-auto max-w-lg px-4 py-16 text-center md:py-24">
           <h1 className="font-headline text-2xl font-semibold text-obsidian md:text-3xl">Something went wrong</h1>
           <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal">
-            This page hit an unexpected error. Try reloading, go home, or reach us on WhatsApp if it keeps happening.
+            {whatsappUrl
+              ? "This page hit an unexpected error. Try reloading, go home, or reach us on WhatsApp if it keeps happening."
+              : "This page hit an unexpected error. Try reloading or go home."}
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <button
