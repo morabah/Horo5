@@ -22,8 +22,45 @@ function medusaLineMatchesIdentity(item: MedusaCartLineItem, identity: CartLineI
   return (item.product_handle || item.variant_id) === identity.productSlug;
 }
 
+function medusaLineMatchesPreviousItem(item: MedusaCartLineItem, previous: MedusaCartLineItem): boolean {
+  if (item.id && previous.id) return item.id === previous.id;
+  if (item.variant_id && previous.variant_id) return item.variant_id === previous.variant_id;
+  return (item.product_handle || item.variant_id) === (previous.product_handle || previous.variant_id);
+}
+
 function adjustAmount(value: number | undefined, delta: number): number | undefined {
   return typeof value === 'number' ? Math.max(0, value + delta) : value;
+}
+
+/** Preserve visible checkout row order when Medusa returns cart items in a different order. */
+export function orderMedusaCartItemsByPreviousOrder(
+  cart: MedusaCart,
+  previousCart: MedusaCart | null | undefined,
+): MedusaCart {
+  if (!previousCart || cart.items.length < 2 || previousCart.items.length === 0) return cart;
+
+  const usedIndexes = new Set<number>();
+  const ordered: MedusaCartLineItem[] = [];
+
+  for (const previous of previousCart.items) {
+    const nextIndex = cart.items.findIndex((item, index) => {
+      return !usedIndexes.has(index) && medusaLineMatchesPreviousItem(item, previous);
+    });
+    if (nextIndex < 0) continue;
+    usedIndexes.add(nextIndex);
+    ordered.push(cart.items[nextIndex]);
+  }
+
+  cart.items.forEach((item, index) => {
+    if (!usedIndexes.has(index)) {
+      ordered.push(item);
+    }
+  });
+
+  return {
+    ...cart,
+    items: ordered,
+  };
 }
 
 export function updateMedusaCartLineQtyOptimistically(

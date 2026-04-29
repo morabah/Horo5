@@ -1,5 +1,6 @@
 import { PDP_SCHEMA } from '../data/domain-config';
 import type { Product, ProductSizeKey } from '../data/site';
+import { productVariantCanBeSelected } from './productStock';
 
 export function defaultCatalogSizeKeys(): ProductSizeKey[] {
   return PDP_SCHEMA.sizes
@@ -16,7 +17,7 @@ export function productAvailableSizes(product: Product): ProductSizeKey[] {
   if (variantEntries.length > 0) {
     const available = new Set(
       variantEntries
-        .filter(([, variant]) => Boolean(variant?.available))
+        .filter(([, variant]) => productVariantCanBeSelected(variant))
         .map(([size]) => size),
     );
     return base.filter((key) => available.has(key));

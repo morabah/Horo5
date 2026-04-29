@@ -46,6 +46,32 @@ describe("productAvailableSizes", () => {
     expect(avail).not.toContain("S")
   })
 
+  it("excludes managed variants with no available stock", () => {
+    const p = baseProduct({
+      variantsBySize: {
+        M: variant({
+          id: "m",
+          size: "M",
+          priceEgp: 100,
+          allowBackorder: false,
+          inventoryQuantity: 0,
+          manageInventory: true,
+        }),
+        L: variant({
+          id: "l",
+          size: "L",
+          priceEgp: 100,
+          allowBackorder: false,
+          inventoryQuantity: 2,
+          manageInventory: true,
+        }),
+      },
+    })
+    const avail = productAvailableSizes(p)
+    expect(avail).toContain("L")
+    expect(avail).not.toContain("M")
+  })
+
   it("uses availableSizes whitelist when no variants", () => {
     const base = defaultCatalogSizeKeys()
     const p = baseProduct({

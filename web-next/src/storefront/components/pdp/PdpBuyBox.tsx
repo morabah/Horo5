@@ -66,6 +66,7 @@ type PdpBuyBoxProps = {
   // CTA
   mainCtaRef: RefObject<HTMLDivElement | null>;
   addedFeedback: boolean;
+  stockMessage?: string;
   onPrimaryAction: () => void;
   // Notify
   notifyFormRef: RefObject<HTMLDivElement | null>;
@@ -110,6 +111,7 @@ export function PdpBuyBox({
   onOpenSizeGuide,
   mainCtaRef,
   addedFeedback,
+  stockMessage,
   onPrimaryAction,
   notifyFormRef,
   notifyInputRef,
@@ -279,6 +281,11 @@ export function PdpBuyBox({
               <><IconCart /><span>{primaryCtaLabel()}</span></>
             )}
           </button>
+          {stockMessage ? (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-body text-sm text-obsidian" role="status" aria-live="polite">
+              {stockMessage}
+            </p>
+          ) : null}
 
           {/* Task 1.3: Trust badges below Add to Bag */}
           <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-warm-charcoal">

@@ -15,6 +15,7 @@ type StickyAddToCartProps = {
   selectSizePrompt: string;
   notifyMeCta: string;
   selectSizeHint?: string;
+  statusMessage?: string;
 };
 
 export function StickyAddToCart({
@@ -30,6 +31,7 @@ export function StickyAddToCart({
   selectSizePrompt,
   notifyMeCta,
   selectSizeHint = 'Select a size',
+  statusMessage,
 }: StickyAddToCartProps) {
   const ctaLabel = oosSelected
     ? notifyMeCta
@@ -76,6 +78,11 @@ export function StickyAddToCart({
           <p className="sticky-atc-trust font-body mt-1 text-center text-[9px] tracking-wide text-warm-charcoal/70">
             {PDP_SCHEMA.trustStripItems.slice(0, 3).join(' · ')}
           </p>
+          {statusMessage ? (
+            <p className="font-body mt-1 text-center text-[10px] text-ember" role="status" aria-live="polite">
+              {statusMessage}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

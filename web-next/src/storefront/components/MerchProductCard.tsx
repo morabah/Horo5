@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCountdown } from '../hooks/useCountdown';
 import { Link } from 'react-router-dom';
 import { useCart } from '../cart/CartContext';
+import { formatCartStockMessage } from '../cart/stock';
 import { trackSizeSelected } from '../analytics/events';
 import { PDP_SCHEMA } from '../data/domain-config';
 import { getProduct, type ProductSizeKey } from '../data/site';
@@ -83,6 +84,7 @@ export function MerchProductCard({
   const recommendedSize = useMemo(() => getPreferredQuickAddSize(slug), [slug]);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState(false);
+  const [quickAddMessage, setQuickAddMessage] = useState('');
   const addedTimeoutRef = useRef<number | null>(null);
   const quickAddAvailable = availableSizes.length > 0;
   const quickAddLabel = locale === 'ar' ? 'إضافة سريعة' : 'Quick add';
@@ -92,6 +94,7 @@ export function MerchProductCard({
   useEffect(() => {
     setQuickAddOpen(false);
     setAddedFeedback(false);
+    setQuickAddMessage('');
   }, [slug]);
 
   useEffect(() => {
@@ -105,6 +108,7 @@ export function MerchProductCard({
   /** Open size UI, or add immediately when there is nothing to choose. */
   function handleQuickAddPrimaryClick() {
     if (addedFeedback) return;
+    setQuickAddMessage('');
     if (availableSizes.length === 1) {
       handleQuickAdd(availableSizes[0]);
       return;
@@ -116,9 +120,16 @@ export function MerchProductCard({
     if (product) {
       trackSizeSelected(product, size, 'product_card_quick_add');
     }
-    addItem(slug, size, 1);
+    const result = addItem(slug, size, 1);
+    if (!result.ok) {
+      setAddedFeedback(false);
+      setQuickAddOpen(true);
+      setQuickAddMessage(formatCartStockMessage(result, product?.name ?? name, locale === 'ar'));
+      return;
+    }
     setMiniCartOpen(true);
     setQuickAddOpen(false);
+    setQuickAddMessage('');
     setAddedFeedback(true);
 
     if (addedTimeoutRef.current) {
@@ -198,6 +209,11 @@ export function MerchProductCard({
                   </button>
                 ))}
               </div>
+              {quickAddMessage ? (
+                <p className="font-label mt-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ember" role="status" aria-live="polite">
+                  {quickAddMessage}
+                </p>
+              ) : null}
             </div>
           ) : null}
           <div className="pointer-events-auto flex w-full min-w-0 items-end justify-between gap-2 rounded-b-md bg-linear-to-t from-black/35 via-black/15 to-transparent pt-8">

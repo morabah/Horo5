@@ -4,6 +4,7 @@ import { buildProductPdpGallery, galleryItemsToSrcList, getProductMedia, imgUrl 
 import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
 import { trackSizeSelected } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
+import { formatCartStockMessage } from '../cart/stock';
 import {
   fillPdpCopyTemplate,
   mergePdpSizeTableConfig,
@@ -16,6 +17,7 @@ import { formatEgp } from '../utils/formatPrice';
 import { formatPdpFitModelLine } from '../utils/pdpFitModels';
 import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
+import { useUiLocale } from '../i18n/ui-locale';
 import { AppIcon } from './AppIcon';
 
 type ProductQuickViewProps = {
@@ -38,12 +40,14 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
   const openerRef = useRef<Element | null>(null);
   const navigate = useNavigate();
   const { addItem, setMiniCartOpen } = useCart();
+  const { locale } = useUiLocale();
   const titleId = useId();
   const descId = useId();
   const sizeChartId = useId();
   const [selectedSize, setSelectedSize] = useState<ProductSizeKey | null>(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [addedToBag, setAddedToBag] = useState(false);
+  const [stockMessage, setStockMessage] = useState('');
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
 
   const product = productSlug ? getProduct(productSlug) : undefined;
@@ -155,12 +159,14 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     setSelectedSize(null);
     setPhotoIndex(0);
     setAddedToBag(false);
+    setStockMessage('');
     setSizeChartOpen(false);
   }, [productSlug]);
 
   useEffect(() => {
     if (!open) {
       setAddedToBag(false);
+      setStockMessage('');
       setSizeChartOpen(false);
     }
   }, [open]);
@@ -195,7 +201,13 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
 
   const handleAddToBag = () => {
     if (!product || !selectedSize || oosSelected) return;
-    addItem(product.slug, selectedSize, 1);
+    const result = addItem(product.slug, selectedSize, 1);
+    if (!result.ok) {
+      setAddedToBag(false);
+      setStockMessage(formatCartStockMessage(result, product.name, locale === 'ar'));
+      return;
+    }
+    setStockMessage('');
     setAddedToBag(true);
     // Close the dialog and open the mini-cart drawer for a consistent experience
     onClose();
@@ -206,6 +218,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     const nextSize = isSelected ? null : size;
     setSelectedSize(nextSize);
     setAddedToBag(false);
+    setStockMessage('');
     if (product && nextSize) {
       trackSizeSelected(product, nextSize, 'quick_view');
     }
@@ -388,6 +401,11 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                 {oosSelected ? (
                   <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-white/72">
                     {pdpCopy.pdpOutOfStockForSize}
+                  </p>
+                ) : null}
+                {stockMessage ? (
+                  <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-primary" role="status" aria-live="polite">
+                    {stockMessage}
                   </p>
                 ) : null}
 

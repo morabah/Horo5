@@ -21,6 +21,7 @@ import {
 } from '../lib/medusa/client';
 import { readProductFromLastCatalogStorage } from '../lib/medusa/catalog';
 import { prefetchCheckoutAuxForCart } from '../lib/medusa/checkout-aux-cache';
+import { getProductSizeStockLimit } from '../utils/productStock';
 import {
   GIFT_WRAP_PRODUCT_HANDLE,
   getCartGiftWrapEgp,
@@ -30,6 +31,7 @@ import {
 import type { MedusaCart, MedusaProduct } from '../lib/medusa/types';
 import { findProductVariantById } from '../utils/productVariants';
 import { persistCartIdCookie, readCartIdFromCookieString } from './cart-cookie';
+import type { CartMutationResult } from './stock';
 import {
   CART_STORAGE_KEY,
   MEDUSA_CART_ID_STORAGE_KEY,
@@ -60,9 +62,9 @@ type CartContextValue = {
   /** True after browser cart storage/cookie has been read. */
   storageReady: boolean;
   items: CartLine[];
-  addItem: (productSlug: string, size: ProductSizeKey, qty?: number, explicitVariantId?: string) => void;
+  addItem: (productSlug: string, size: ProductSizeKey, qty?: number, explicitVariantId?: string) => CartMutationResult;
   removeItem: (productSlug: string, size: ProductSizeKey, variantId?: string, lineId?: string) => void;
-  setLineQty: (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string, lineId?: string) => void;
+  setLineQty: (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string, lineId?: string) => CartMutationResult;
   /** Waits for in-flight Medusa mutations (incl. debounced qty) and returns the latest cart snapshot if any. */
   awaitPendingCartSync: () => Promise<MedusaCart | null>;
   clearCart: () => void;
@@ -160,6 +162,7 @@ function getMedusaProductPriceEgp(product: Pick<MedusaProduct, 'variants'> | nul
 }
 
 const QTY_DEBOUNCE_MS = 300;
+const MAX_CART_LINE_QTY = 99;
 
 type PendingQtyUpdate = {
   identity: CartLineIdentity;
@@ -177,6 +180,25 @@ function applyPendingQtyToCartLines(lines: CartLine[], pendingUpdates: PendingQt
     });
     return pending ? cartLineWithQty(line, pending.qty) : line;
   });
+}
+
+function normalizedPositiveQty(qty: number): number {
+  if (!Number.isFinite(qty)) return 1;
+  return Math.max(1, Math.floor(qty));
+}
+
+function okCartMutation(qty: number, limit: number | null): CartMutationResult {
+  return { ok: true, qty, limit };
+}
+
+function blockedCartMutation(limit: number | null, currentQty: number, requestedQty: number): CartMutationResult {
+  return {
+    ok: false,
+    reason: limit === 0 ? 'out_of_stock' : limit === null ? 'unavailable' : 'stock_limit',
+    limit,
+    currentQty,
+    requestedQty,
+  };
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -426,26 +448,50 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, [resolveGiftWrapOffer]);
 
-  const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1, explicitVariantId?: string) => {
+  const addItem = useCallback((productSlug: string, size: ProductSizeKey, qty = 1, explicitVariantId?: string): CartMutationResult => {
     const product = getProduct(productSlug) ?? readProductFromLastCatalogStorage(productSlug);
-    if (!product || qty < 1) return;
-    const add = Math.min(qty, 99);
+    if (!product || qty < 1) {
+      return blockedCartMutation(null, 0, qty < 1 ? 0 : normalizedPositiveQty(qty));
+    }
+
+    const requestedAdd = normalizedPositiveQty(qty);
     const variant = explicitVariantId
       ? findProductVariantById(product, explicitVariantId)
       : product.variantsBySize?.[size];
-    if (explicitVariantId && !variant) return;
+    if (explicitVariantId && !variant) {
+      return blockedCartMutation(null, 0, requestedAdd);
+    }
     const unitPriceEgp = variant?.priceEgp ?? product.priceEgp;
     const variantId = variant?.id ?? explicitVariantId;
+    const stockLimit = getProductSizeStockLimit(product, size, variantId);
+    const currentItems = itemsRef.current;
+    const currentIndex = findMergeableCartLineIndex(currentItems, { productSlug, size, variantId: variantId ?? undefined });
+    const currentQty = currentIndex >= 0 ? currentItems[currentIndex].qty : 0;
+    const requestedQty = currentQty + requestedAdd;
+
+    if (stockLimit !== null && Math.min(MAX_CART_LINE_QTY, requestedQty) > stockLimit) {
+      return blockedCartMutation(stockLimit, currentQty, requestedQty);
+    }
+
+    if (currentQty >= MAX_CART_LINE_QTY) {
+      return blockedCartMutation(MAX_CART_LINE_QTY, currentQty, requestedQty);
+    }
+
+    const add = Math.min(requestedAdd, MAX_CART_LINE_QTY - currentQty);
 
     setItems((prev) => {
       const idx = findMergeableCartLineIndex(prev, { productSlug, size, variantId: variantId ?? undefined });
       if (idx >= 0) {
         const next = [...prev];
+        const nextQty = Math.min(
+          MAX_CART_LINE_QTY,
+          stockLimit === null ? next[idx].qty + add : Math.min(stockLimit, next[idx].qty + add),
+        );
         next[idx] = {
           ...next[idx],
           imageSrc: next[idx].imageSrc ?? product.media?.main ?? product.thumbnail ?? undefined,
           productName: next[idx].productName ?? product.name,
-          qty: Math.min(99, next[idx].qty + add),
+          qty: nextQty,
           unitPriceEgp: next[idx].unitPriceEgp ?? unitPriceEgp,
           variantId: next[idx].variantId ?? variantId ?? undefined,
         };
@@ -458,7 +504,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           imageSrc: product.media?.main ?? product.thumbnail ?? undefined,
           productName: product.name,
           productSlug,
-          qty: add,
+          qty: stockLimit === null ? add : Math.min(stockLimit, add),
           size,
           unitPriceEgp,
           variantId: variantId ?? undefined,
@@ -480,20 +526,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const p = (async () => {
       const gen = cartGenerationRef.current;
+      let cartId: string | null = null;
       try {
-        const cartId = await ensureMedusaCartId();
+        cartId = await ensureMedusaCartId();
         const resolvedVariantId = explicitVariantId ?? resolveVariantId(productSlug, size);
         if (!resolvedVariantId) return;
         const { cart } = await addLineItem(cartId, resolvedVariantId, add);
         if (cartGenerationRef.current !== gen) return;
         applyCartFromResponse(cart, gen);
       } catch (err: unknown) {
-        // Keep optimistic cart updates when Medusa call fails.
         clearStaleCartIf404(err, gen);
+        if (cartId) {
+          await syncFromMedusaCart(cartId);
+        }
       }
     })();
     trackOp(p);
-  }, [applyCartFromResponse, clearStaleCartIf404, ensureMedusaCartId, resolveVariantId, trackOp]);
+    return okCartMutation(currentQty + add, stockLimit);
+  }, [applyCartFromResponse, clearStaleCartIf404, ensureMedusaCartId, resolveVariantId, syncFromMedusaCart, trackOp]);
 
   const removeItem = useCallback(
     (productSlug: string, size: ProductSizeKey, variantId?: string, lineId?: string) => {
@@ -523,7 +573,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const setLineQty = useCallback(
-    (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string, lineId?: string) => {
+    (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string, lineId?: string): CartMutationResult => {
       const identity = { productSlug, size, variantId, lineId };
       const currentItems = itemsRef.current;
       const line = currentItems[findCartLineIndex(currentItems, identity)];
@@ -557,9 +607,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
           })();
           trackOp(p);
         }
-        return;
+        return okCartMutation(0, null);
       }
-      const nextQty = Math.min(99, Math.floor(qty));
+
+      if (!line) {
+        return blockedCartMutation(null, 0, normalizedPositiveQty(qty));
+      }
+
+      const product = getProduct(productSlug) ?? readProductFromLastCatalogStorage(productSlug);
+      const stockLimit = getProductSizeStockLimit(product, size, variantId ?? line.variantId);
+      let nextQty = Math.min(MAX_CART_LINE_QTY, normalizedPositiveQty(qty));
+
+      if (stockLimit !== null && nextQty > stockLimit) {
+        if (line.qty > stockLimit && nextQty < line.qty) {
+          nextQty = stockLimit;
+        } else {
+          return blockedCartMutation(stockLimit, line.qty, nextQty);
+        }
+      }
+
+      if (nextQty < 1) {
+        pendingQtyByKeyRef.current.delete(pendingKey);
+        refreshQtySavingState();
+        setItems((prev) => removeCartLine(prev, identity));
+        if (medusaLineId && activeCartId) {
+          const p = (async () => {
+            const gen = cartGenerationRef.current;
+            try {
+              const { cart } = await removeLineItem(activeCartId, medusaLineId);
+              if (cartGenerationRef.current !== gen) return;
+              applyCartFromResponse(cart, gen);
+            } catch (err: unknown) {
+              clearStaleCartIf404(err, gen);
+            }
+          })();
+          trackOp(p);
+        }
+        return okCartMutation(0, stockLimit);
+      }
+
       setItems((prev) => updateCartLineQty(prev, identity, nextQty));
       if (medusaLineId && activeCartId) {
         pendingQtyByKeyRef.current.set(pendingKey, {
@@ -569,6 +655,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
         scheduleQtyFlush();
       }
+      return okCartMutation(nextQty, stockLimit);
     },
     [applyCartFromResponse, clearStaleCartIf404, refreshQtySavingState, scheduleQtyFlush, trackOp],
   );

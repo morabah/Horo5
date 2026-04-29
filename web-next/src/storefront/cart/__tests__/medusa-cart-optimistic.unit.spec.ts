@@ -1,4 +1,7 @@
-import { updateMedusaCartLineQtyOptimistically } from '../medusa-cart-optimistic';
+import {
+  orderMedusaCartItemsByPreviousOrder,
+  updateMedusaCartLineQtyOptimistically,
+} from '../medusa-cart-optimistic';
 import type { MedusaCart } from '../../lib/medusa/types';
 
 function makeCart(): MedusaCart {
@@ -223,5 +226,46 @@ describe('updateMedusaCartLineQtyOptimistically', () => {
     expect(next.items).toHaveLength(0);
     expect(next.subtotal).toBe(0);
     expect(next.total).toBe(50);
+  });
+});
+
+describe('orderMedusaCartItemsByPreviousOrder', () => {
+  it('keeps checkout rows in the previous visible order after a server refresh', () => {
+    const previous = makeCart();
+    const serverCart: MedusaCart = {
+      ...previous,
+      items: [
+        { ...previous.items[1], quantity: 3, total: 330 },
+        { ...previous.items[0], quantity: 2, total: 200 },
+      ],
+    };
+
+    const ordered = orderMedusaCartItemsByPreviousOrder(serverCart, previous);
+
+    expect(ordered.items.map((item) => item.id)).toEqual(['line_a', 'line_b']);
+    expect(ordered.items[0]).toMatchObject({ id: 'line_a', quantity: 2, total: 200 });
+    expect(ordered.items[1]).toMatchObject({ id: 'line_b', quantity: 3, total: 330 });
+  });
+
+  it('appends newly returned server rows after known rows', () => {
+    const previous = makeCart();
+    const newLine = {
+      id: 'line_c',
+      product_handle: 'new-prod',
+      product_title: 'New',
+      quantity: 1,
+      total: 90,
+      unit_price: 90,
+      variant_id: 'var_c',
+      variant_title: 'S',
+    };
+    const serverCart: MedusaCart = {
+      ...previous,
+      items: [newLine, previous.items[1], previous.items[0]],
+    };
+
+    const ordered = orderMedusaCartItemsByPreviousOrder(serverCart, previous);
+
+    expect(ordered.items.map((item) => item.id)).toEqual(['line_a', 'line_b', 'line_c']);
   });
 });

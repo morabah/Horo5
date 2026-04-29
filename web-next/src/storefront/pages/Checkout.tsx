@@ -8,19 +8,27 @@ import {
   trackPaymentMethodSelected,
   trackPurchase,
 } from '../analytics/events';
-import type { CartLine } from '../cart/types';
+import { MEDUSA_CART_ID_STORAGE_KEY, cartLineIdentityKey, type CartLine } from '../cart/types';
+import { formatCartStockMessage } from '../cart/stock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useCart } from '../cart/CartContext';
-import { updateMedusaCartLineQtyOptimistically } from '../cart/medusa-cart-optimistic';
+import {
+  orderMedusaCartItemsByPreviousOrder,
+  updateMedusaCartLineQtyOptimistically,
+} from '../cart/medusa-cart-optimistic';
 import { loadSavedShipping, saveSavedShipping } from '../cart/savedShipping';
 import { saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import { setPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
 import { persistCartIdCookie } from '../cart/cart-cookie';
 import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
 import { getCartLineViews, type CartLineView } from '../cart/view';
-import { MEDUSA_CART_ID_STORAGE_KEY } from '../cart/types';
+import {
+  fetchStorefrontIncentivesClient,
+  pickLocalizedText,
+  type StorefrontIncentivesClient,
+} from '../lib/storefront/incentives-client';
 import {
   CART_SCHEMA,
   CHECKOUT_SCHEMA,
@@ -90,6 +98,7 @@ import { getInstapayPublicPayoutLines } from '../lib/instapay-public';
 import { pollPaymobCheckoutStatus } from '../lib/paymob-checkout-status';
 
 const CHECKOUT_FIELD_ORDER = ['phone', 'name', 'line1', 'city', 'email'] as const;
+const CHECKOUT_QTY_REFRESH_DEBOUNCE_MS = 450;
 
 type FieldErrors = Record<string, string>;
 type PaymentChoice = StorefrontPaymentChoice;
@@ -547,6 +556,8 @@ export function Checkout({
   const [mounted, setMounted] = useState(false);
   const [checkoutCart, setCheckoutCart] = useState<MedusaCart | null>(initialCheckoutCart);
   const [cartId, setCartId] = useState<string | null>(initialCheckoutCart?.id ?? initialCartId);
+  const cartIdRef = useRef<string | null>(initialCheckoutCart?.id ?? initialCartId);
+  const checkoutQtyRefreshTimerRef = useRef<number | null>(null);
   const [paymentProviders, setPaymentProviders] = useState<MedusaPaymentProvider[]>([]);
   const paymentProvidersRef = useRef<MedusaPaymentProvider[]>([]);
   paymentProvidersRef.current = paymentProviders;
@@ -591,6 +602,7 @@ export function Checkout({
   const [paymentStepComplete, setPaymentStepComplete] = useState(false);
   const [paymobLongWait, setPaymobLongWait] = useState(false);
   const [instapayPayoutOpen, setInstapayPayoutOpen] = useState(true);
+  const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
   const governorateOptions = useMemo(() => {
     const fromSettings = checkoutSettings?.governorates
       ?.filter((row) => row.code.trim() && localizedGovernorateName(row, isArabic ? 'ar' : 'en'))
@@ -620,7 +632,7 @@ export function Checkout({
 
     const saved = loadSavedShipping();
 
-    setCheckoutCart(cart);
+    setCheckoutCart((current) => orderMedusaCartItemsByPreviousOrder(cart, current));
     setEmail(cart.email || saved?.email || '');
     setPhone(cart.shipping_address?.phone || saved?.phone || '');
     setFullName(composedName || saved?.fullName || '');
@@ -736,9 +748,15 @@ export function Checkout({
     [checkoutCart, items],
   );
   const giftWrapLineEgp = checkoutCart ? getCartGiftWrapEgp(checkoutCart) : giftWrapEgp;
+  const freeShippingThresholdEgp = incentives?.freeShipping?.thresholdEgp ?? null;
+  const freeShippingUnlocked = Boolean(
+    freeShippingThresholdEgp && freeShippingThresholdEgp > 0 && merchandiseSubtotalEgp >= freeShippingThresholdEgp,
+  );
+  const displayShippingCost = freeShippingUnlocked ? 0 : shippingCost;
+  const freeShippingLabel = pickLocalizedText(incentives?.freeShipping?.label, isArabic ? 'ar' : 'en');
   const orderTotal = useMemo(() => {
-    return merchandiseSubtotalEgp + giftWrapLineEgp + shippingCost;
-  }, [giftWrapLineEgp, merchandiseSubtotalEgp, shippingCost]);
+    return merchandiseSubtotalEgp + giftWrapLineEgp + displayShippingCost;
+  }, [displayShippingCost, giftWrapLineEgp, merchandiseSubtotalEgp]);
 
   const estimatedDeliveryRange = useMemo(
     () => formatDeliveryWindow(3, 5, now),
@@ -759,6 +777,31 @@ export function Checkout({
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    cartIdRef.current = cartId;
+  }, [cartId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchStorefrontIncentivesClient().then((data) => {
+      if (!cancelled) {
+        setIncentives(data);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (checkoutQtyRefreshTimerRef.current !== null) {
+        window.clearTimeout(checkoutQtyRefreshTimerRef.current);
+        checkoutQtyRefreshTimerRef.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -1125,10 +1168,17 @@ export function Checkout({
     };
   }, []);
 
-  async function refreshCartState(activeCartId: string, cartHint?: MedusaCart) {
+  async function refreshCartState(
+    activeCartId: string,
+    cartHint?: MedusaCart,
+    options: { refreshAux?: boolean } = {},
+  ) {
     const cart =
       cartHint && cartHint.id === activeCartId ? cartHint : (await getCart(activeCartId)).cart;
-    setCheckoutCart(cart);
+    setCheckoutCart((current) => orderMedusaCartItemsByPreviousOrder(cart, current));
+    if (options.refreshAux === false) {
+      return cart;
+    }
     const selectedShippingMethod = cart.shipping_methods?.[0];
 
     const cachedShip = getFreshShippingOptions(activeCartId, CHECKOUT_AUX_CACHE_MAX_AGE_MS);
@@ -1188,6 +1238,26 @@ export function Checkout({
         : current,
     );
   }, []);
+
+  function scheduleCheckoutLineRefresh() {
+    if (checkoutQtyRefreshTimerRef.current !== null) {
+      window.clearTimeout(checkoutQtyRefreshTimerRef.current);
+    }
+
+    checkoutQtyRefreshTimerRef.current = window.setTimeout(() => {
+      checkoutQtyRefreshTimerRef.current = null;
+      const activeCartId = cartIdRef.current;
+      if (!activeCartId) return;
+
+      void (async () => {
+        const cartHint = await awaitPendingCartSync();
+        if (cartIdRef.current !== activeCartId) return;
+        await refreshCartState(activeCartId, cartHint ?? undefined, { refreshAux: false });
+      })().catch(() => {
+        /* CartContext keeps the optimistic cart stable and handles stale cart IDs. */
+      });
+    }, CHECKOUT_QTY_REFRESH_DEBOUNCE_MS) as unknown as number;
+  }
 
   async function preparePaymentSession(
     method: CheckoutPaymentMethod,
@@ -1296,7 +1366,7 @@ export function Checkout({
       }
 
       const refreshedCart = completion.cart || (await refreshCartState(activeCartId));
-      setCheckoutCart(refreshedCart);
+      setCheckoutCart((current) => orderMedusaCartItemsByPreviousOrder(refreshedCart, current));
 
       const refreshedSession = getSelectedPaymentSession(refreshedCart, selectedPaymentMethod?.id);
       if (refreshedSession?.status === 'error' || refreshedSession?.status === 'canceled') {
@@ -1459,7 +1529,7 @@ export function Checkout({
         refreshedCart = attached.cart;
       }
 
-      setCheckoutCart(refreshedCart);
+      setCheckoutCart((current) => orderMedusaCartItemsByPreviousOrder(refreshedCart, current));
       setShippingOption(preferredShippingOption);
 
       const liveProviders = await providersPromise;
@@ -1491,7 +1561,7 @@ export function Checkout({
       setStoredCartId(recoveredCartId);
       replaceMedusaCartId(recoveredCartId);
       setCartId(recoveredCartId);
-      setCheckoutCart(recovered.cart);
+      setCheckoutCart((current) => orderMedusaCartItemsByPreviousOrder(recovered.cart, current));
 
       const persistedCart = await persistWithCartId(recoveredCartId);
       return { ...persistedCart, cartId: recoveredCartId };
@@ -1535,7 +1605,7 @@ export function Checkout({
       subtotalEgp: merchandiseSubtotalEgp,
       giftWrapEgp: giftWrapLineEgp,
       paymentMethodKind: selectedPaymentMethod?.kind,
-      shippingEgp: shippingCost,
+      shippingEgp: displayShippingCost,
     });
 
     setSavingInfo(true);
@@ -1647,8 +1717,11 @@ export function Checkout({
                 cartId={null}
                 shipping={0}
                 shippingPending
+                freeShippingUnlocked={false}
+                freeShippingThresholdEgp={null}
+                freeShippingLabel={null}
                 className="rounded-xl border border-stone bg-papyrus/90 p-5 shadow-sm lg:sticky lg:top-28"
-                onAfterLineChange={async () => {}}
+                onLineChangeQueued={() => {}}
               />
             </div>
           ) : (
@@ -1735,7 +1808,8 @@ export function Checkout({
   const dependencyShippingAttached = hasSavedShipping;
   const dependencyProvidersLoaded = paymentMethods.length > 0;
   const shippingSummaryPending = Boolean(
-    cartId &&
+    !freeShippingUnlocked &&
+      cartId &&
       checkoutCart &&
       !checkoutCart.shipping_methods?.length &&
       shippingCost === 0 &&
@@ -1824,15 +1898,15 @@ export function Checkout({
                   <div className="mt-3">
                     <OrderSummary
                       cart={checkoutCart}
-                      shipping={shippingCost}
+                      shipping={displayShippingCost}
                       cartId={cartId}
                       shippingPending={shippingSummaryPending}
+                      freeShippingUnlocked={freeShippingUnlocked}
+                      freeShippingThresholdEgp={freeShippingThresholdEgp}
+                      freeShippingLabel={freeShippingLabel}
                       onOptimisticLineQtyChange={handleOptimisticSummaryLineQtyChange}
                       className="rounded-2xl border border-stone/35 bg-white p-4 shadow-sm"
-                      onAfterLineChange={async (cartHint) => {
-                        if (!cartId) return;
-                        await refreshCartState(cartId, cartHint);
-                      }}
+                      onLineChangeQueued={scheduleCheckoutLineRefresh}
                     />
                   </div>
                 ) : null}
@@ -2249,14 +2323,14 @@ export function Checkout({
             <div className="hidden lg:block">
               <OrderSummary
                 cart={checkoutCart}
-                shipping={shippingCost}
+                shipping={displayShippingCost}
                 cartId={cartId}
                 shippingPending={shippingSummaryPending}
+                freeShippingUnlocked={freeShippingUnlocked}
+                freeShippingThresholdEgp={freeShippingThresholdEgp}
+                freeShippingLabel={freeShippingLabel}
                 onOptimisticLineQtyChange={handleOptimisticSummaryLineQtyChange}
-                onAfterLineChange={async (cartHint) => {
-                  if (!cartId) return;
-                  await refreshCartState(cartId, cartHint);
-                }}
+                onLineChangeQueued={scheduleCheckoutLineRefresh}
               />
             </div>
           </div>
@@ -2306,22 +2380,28 @@ function OrderSummary({
   shipping,
   cartId,
   shippingPending,
+  freeShippingUnlocked,
+  freeShippingThresholdEgp,
+  freeShippingLabel,
   onOptimisticLineQtyChange,
-  onAfterLineChange,
+  onLineChangeQueued,
   className,
 }: {
   cart: MedusaCart | null;
   shipping: number;
   cartId: string | null;
   shippingPending?: boolean;
+  freeShippingUnlocked: boolean;
+  freeShippingThresholdEgp: number | null;
+  freeShippingLabel: string | null;
   onOptimisticLineQtyChange?: (line: CartLineView, qty: number) => void;
-  onAfterLineChange: (cartHint?: MedusaCart) => Promise<void>;
+  onLineChangeQueued: () => void;
   className?: string;
 }) {
   const { locale, copy } = useUiLocale();
   const isArabic = locale === 'ar';
-  const { items, giftWrapEgp, setLineQty, removeItem, awaitPendingCartSync } = useCart();
-  const [busy, setBusy] = useState(false);
+  const { items, giftWrapEgp, setLineQty, removeItem, lineQtySavingKeys } = useCart();
+  const [lineStatusMessage, setLineStatusMessage] = useState('');
   const lineViews = useMemo(
     () => getCartLineViews(cart ? toCartLines(cart) : items),
     [cart, items],
@@ -2334,37 +2414,40 @@ function OrderSummary({
   const giftWrapLineEgp = cart ? getCartGiftWrapEgp(cart) : giftWrapEgp;
   const total = merchandiseSubtotalEgp + giftWrapLineEgp + shipping;
 
-  async function runWithRefresh(mutate: () => void) {
-    setBusy(true);
-    try {
-      mutate();
-      if (cartId) {
-        const cartHint = await awaitPendingCartSync();
-        await onAfterLineChange(cartHint ?? undefined);
-      }
-    } finally {
-      setBusy(false);
-    }
-  }
+  useEffect(() => {
+    if (!lineStatusMessage) return undefined;
+    const timer = window.setTimeout(() => setLineStatusMessage(''), 2800);
+    return () => window.clearTimeout(timer);
+  }, [lineStatusMessage]);
 
   function handleDecrease(line: CartLineView) {
-    if (line.qty <= 1 || busy) return;
+    if (line.qty <= 1) return;
     const nextQty = line.qty - 1;
-    onOptimisticLineQtyChange?.(line, nextQty);
-    void runWithRefresh(() => setLineQty(line.productSlug, line.size, nextQty, line.variantId, line.lineId));
+    const result = setLineQty(line.productSlug, line.size, nextQty, line.variantId, line.lineId);
+    if (!result.ok) {
+      setLineStatusMessage(formatCartStockMessage(result, line.productName, isArabic));
+      return;
+    }
+    onOptimisticLineQtyChange?.(line, result.qty);
+    if (cartId) onLineChangeQueued();
   }
 
   function handleIncrease(line: CartLineView) {
-    if (busy || line.qty >= 99) return;
+    if (line.qty >= 99) return;
     const nextQty = line.qty + 1;
-    onOptimisticLineQtyChange?.(line, nextQty);
-    void runWithRefresh(() => setLineQty(line.productSlug, line.size, nextQty, line.variantId, line.lineId));
+    const result = setLineQty(line.productSlug, line.size, nextQty, line.variantId, line.lineId);
+    if (!result.ok) {
+      setLineStatusMessage(formatCartStockMessage(result, line.productName, isArabic));
+      return;
+    }
+    onOptimisticLineQtyChange?.(line, result.qty);
+    if (cartId) onLineChangeQueued();
   }
 
   function handleRemove(line: CartLineView) {
-    if (busy) return;
     onOptimisticLineQtyChange?.(line, 0);
-    void runWithRefresh(() => removeItem(line.productSlug, line.size, line.variantId, line.lineId));
+    removeItem(line.productSlug, line.size, line.variantId, line.lineId);
+    if (cartId) onLineChangeQueued();
   }
 
   return (
@@ -2378,66 +2461,106 @@ function OrderSummary({
           {isArabic ? 'تعديل' : 'Edit'}
         </Link>
       </div>
-      {lineViews.map((line) => (
-        <div key={line.key} className="mb-4 border-b border-stone/60 pb-4 last:mb-0 last:border-b-0 last:pb-0">
-          <div className="flex gap-3">
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-stone">
-              <TeeImage src={line.imageSrc} alt={line.imageAlt} w={128} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-obsidian">{line.productName}</p>
-              <p className="mt-1 text-sm text-clay">
-                {isArabic ? `المقاس ${line.size}` : `Size ${line.size}`}
-                {` · ${formatEgp(line.linePriceEgp)}`}
-              </p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="font-label text-[10px] font-medium uppercase tracking-[0.14em] text-clay">
-                  {CART_SCHEMA.copy.quantityLabel}
-                </span>
-                <div className="cart-stepper" role="group" aria-label={`${CART_SCHEMA.copy.quantityLabel} · ${line.productName}`}>
-                  <button
-                    type="button"
-                    className="cart-stepper-button"
-                    aria-label={isArabic ? 'تقليل الكمية' : 'Decrease quantity'}
-                    disabled={busy || line.qty <= 1}
-                    onClick={() => handleDecrease(line)}
-                  >
-                    −
-                  </button>
-                  <span className="cart-stepper-value" aria-live="polite" aria-atomic="true">
-                    {line.qty}
+      {lineStatusMessage ? (
+        <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 font-body text-xs text-obsidian" role="status" aria-live="polite">
+          {lineStatusMessage}
+        </p>
+      ) : null}
+      {lineViews.map((line) => {
+        const lineQtySaving = lineQtySavingKeys.includes(cartLineIdentityKey(line));
+        return (
+          <div key={line.key} className="mb-4 border-b border-stone/60 pb-4 last:mb-0 last:border-b-0 last:pb-0">
+            <div className="flex gap-3">
+              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-stone">
+                <TeeImage src={line.imageSrc} alt={line.imageAlt} w={128} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-obsidian">{line.productName}</p>
+                <p className="mt-1 text-sm text-clay">
+                  {isArabic ? `المقاس ${line.size}` : `Size ${line.size}`}
+                  {` · ${formatEgp(line.linePriceEgp)}`}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="font-label text-[10px] font-medium uppercase tracking-[0.14em] text-clay">
+                    {CART_SCHEMA.copy.quantityLabel}
                   </span>
+                  <div className="cart-stepper" role="group" aria-label={`${CART_SCHEMA.copy.quantityLabel} · ${line.productName}`}>
+                    <button
+                      type="button"
+                      className="cart-stepper-button"
+                      aria-label={isArabic ? 'تقليل الكمية' : 'Decrease quantity'}
+                      disabled={line.qty <= 1}
+                      onClick={() => handleDecrease(line)}
+                    >
+                      −
+                    </button>
+                    <span className="cart-stepper-value" aria-live="polite" aria-atomic="true">
+                      {line.qty}
+                    </span>
+                    {lineQtySaving ? (
+                      <span
+                        className="inline-block h-2 w-2 shrink-0 animate-pulse rounded-full bg-deep-teal"
+                        aria-label={isArabic ? 'جاري حفظ الكمية' : 'Saving quantity'}
+                        title={isArabic ? 'جاري الحفظ…' : 'Saving…'}
+                      />
+                    ) : null}
+                    <button
+                      type="button"
+                      className="cart-stepper-button"
+                      aria-label={isArabic ? 'زيادة الكمية' : 'Increase quantity'}
+                      disabled={line.qty >= 99}
+                      onClick={() => handleIncrease(line)}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                  <Link
+                    to="/cart"
+                    className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-deep-teal underline-offset-2 hover:underline"
+                  >
+                    {copy.checkout.changeSizeInBag}
+                  </Link>
                   <button
                     type="button"
-                    className="cart-stepper-button"
-                    aria-label={isArabic ? 'زيادة الكمية' : 'Increase quantity'}
-                    disabled={busy || line.qty >= 99}
-                    onClick={() => handleIncrease(line)}
+                    className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.16em] text-ember hover:underline disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    onClick={() => handleRemove(line)}
                   >
-                    +
+                    {CART_SCHEMA.copy.removeLabel}
                   </button>
                 </div>
               </div>
-              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-                <Link
-                  to="/cart"
-                  className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-deep-teal underline-offset-2 hover:underline"
-                >
-                  {copy.checkout.changeSizeInBag}
-                </Link>
-                <button
-                  type="button"
-                  className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.16em] text-ember hover:underline disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  disabled={busy}
-                  onClick={() => handleRemove(line)}
-                >
-                  {CART_SCHEMA.copy.removeLabel}
-                </button>
-              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
+      {freeShippingThresholdEgp && freeShippingThresholdEgp > 0 ? (() => {
+        const remaining = Math.max(0, freeShippingThresholdEgp - merchandiseSubtotalEgp);
+        const pct = Math.min(100, Math.max(0, Math.round((merchandiseSubtotalEgp / freeShippingThresholdEgp) * 100)));
+        const headline = freeShippingUnlocked
+          ? isArabic
+            ? 'مبروك! تم تفعيل الشحن المجاني'
+            : 'Free shipping unlocked'
+          : isArabic
+            ? `أضف ${formatEgp(remaining)} للحصول على شحن مجاني`
+            : `Add ${formatEgp(remaining)} for free shipping`;
+        return (
+          <div className="mini-cart-freeship mb-4" role="status" aria-live="polite">
+            <p className="mini-cart-freeship-headline">{headline}</p>
+            <div
+              className="mini-cart-freeship-track"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={pct}
+            >
+              <span className="mini-cart-freeship-fill" style={{ width: `${pct}%` }} />
+            </div>
+            {freeShippingLabel ? <p className="mini-cart-freeship-label">{freeShippingLabel}</p> : null}
+          </div>
+        );
+      })() : null}
       <p className="flex justify-between font-body text-sm text-obsidian">
         <span>{isArabic ? 'الإجمالي الفرعي' : 'Subtotal'}</span>
         <span>{formatEgp(merchandiseSubtotalEgp)}</span>
@@ -2458,6 +2581,8 @@ function OrderSummary({
             />
           ) : shipping > 0 ? (
             formatEgp(shipping)
+          ) : freeShippingUnlocked || cart?.shipping_methods?.length ? (
+            formatEgp(0)
           ) : (
             '—'
           )}

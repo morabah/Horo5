@@ -72,6 +72,15 @@ describe("resolveCheckoutShippingEgp", () => {
     expect(resolveCheckoutShippingEgp({ ...cart, shipping_total: 0 }, option)).toBe(999)
     expect(resolveCheckoutShippingEgp(undefined, option)).toBe(999)
   })
+
+  it("keeps an attached zero shipping_total instead of falling back to the option amount", () => {
+    expect(
+      resolveCheckoutShippingEgp(
+        { ...cart, shipping_total: 0, shipping_methods: [{ shipping_option_id: "so_x", amount: 0 }] },
+        option,
+      ),
+    ).toBe(0)
+  })
 })
 
 describe("resolveShippingQuoteFromCartAndOptions", () => {

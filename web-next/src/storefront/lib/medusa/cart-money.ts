@@ -26,6 +26,7 @@ export function resolveCheckoutShippingEgp(
 ): number {
   if (cart != null) {
     const st = medusaAmountToEgpUnknown(cart.shipping_total)
+    if ((cart.shipping_methods?.length ?? 0) > 0) return st
     if (st > 0) return st
   }
   return shippingOptionAmountEgp(resolvedShippingOption ?? undefined)

@@ -31,6 +31,7 @@ import {
 } from '../data/site';
 import { trackSizeSelected, trackViewItem } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
+import { formatCartStockMessage } from '../cart/stock';
 import { StickyAddToCart } from '../components/StickyAddToCart';
 import {
   buildProductPdpGallery,
@@ -268,6 +269,7 @@ export function ProductDetail({
   const [galleryLiveText, setGalleryLiveText] = useState('');
   const [stickyCtaVisible, setStickyCtaVisible] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState(false);
+  const [stockMessage, setStockMessage] = useState('');
   const mainCtaRef = useRef<HTMLDivElement | null>(null);
 
   const sizeGuideTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -295,6 +297,7 @@ export function ProductDetail({
     setLightboxOpen(false);
     setRelatedQuickViewSlug(null);
     setAddedFeedback(false);
+    setStockMessage('');
     setStickyCtaVisible(false);
   }, [preferredDefaultSize, defaultColorSelection, slug]);
 
@@ -898,6 +901,7 @@ export function ProductDetail({
   function handleSizeSelect(size: ProductSizeKey, isSelected: boolean) {
     const nextSize = isSelected ? null : size;
     setSelectedSize(nextSize);
+    setStockMessage('');
     if (product && nextSize) {
       trackSizeSelected(product, nextSize, 'pdp');
     }
@@ -919,7 +923,13 @@ export function ProductDetail({
 
     if (!selectedSize) return;
     const vId = scopeProduct?.variantsBySize?.[selectedSize as ProductSizeKey]?.id;
-    addItem(product.slug, selectedSize as ProductSizeKey, 1, vId);
+    const result = addItem(product.slug, selectedSize as ProductSizeKey, 1, vId);
+    if (!result.ok) {
+      setAddedFeedback(false);
+      setStockMessage(formatCartStockMessage(result, product.name, isArabic));
+      return;
+    }
+    setStockMessage('');
     setAddedFeedback(true);
     setMiniCartOpen(true);
     window.setTimeout(() => setAddedFeedback(false), 2200);
@@ -938,12 +948,24 @@ export function ProductDetail({
     }
     const sz = selectedSize as ProductSizeKey;
     const vId = scopeProduct?.variantsBySize?.[sz]?.id;
-    addItem(product.slug, sz, 1, vId);
+    const mainResult = addItem(product.slug, sz, 1, vId);
+    if (!mainResult.ok) {
+      setAddedFeedback(false);
+      setStockMessage(formatCartStockMessage(mainResult, product.name, isArabic));
+      return;
+    }
+    let blockedMessage = '';
     for (const p of companions) {
       const avail = productAvailableSizes(p);
       const u = avail.includes(sz) ? sz : avail[0];
-      if (u) addItem(p.slug, u, 1);
+      if (u) {
+        const companionResult = addItem(p.slug, u, 1);
+        if (!companionResult.ok && !blockedMessage) {
+          blockedMessage = formatCartStockMessage(companionResult, p.name, isArabic);
+        }
+      }
     }
+    setStockMessage(blockedMessage);
     setAddedFeedback(true);
     setMiniCartOpen(true);
     window.setTimeout(() => setAddedFeedback(false), 2200);
@@ -1098,7 +1120,10 @@ export function ProductDetail({
           trustItems={trustItems}
           selectedColor={selectedColor}
           colorOptions={colorOptions}
-          onColorSelect={setSelectedColor}
+          onColorSelect={(color) => {
+            setSelectedColor(color);
+            setStockMessage('');
+          }}
           sizeButtons={sizeButtons}
           selectedSize={selectedSize}
           oosSelected={oosSelected}
@@ -1114,6 +1139,7 @@ export function ProductDetail({
           onOpenSizeGuide={() => setSizeGuideOpen(true)}
           mainCtaRef={mainCtaRef}
           addedFeedback={addedFeedback}
+          stockMessage={stockMessage}
           onPrimaryAction={handlePrimaryAction}
           notifyFormRef={notifyFormRef}
           notifyInputRef={notifyInputRef}
@@ -1221,6 +1247,7 @@ export function ProductDetail({
           selectSizePrompt={copy.selectSizePrompt}
           notifyMeCta={copy.notifyMeCTA}
           selectSizeHint={copy.pdpStickySelectSizeHint}
+          statusMessage={stockMessage}
         />
       ) : null}
 
