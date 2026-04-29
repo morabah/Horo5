@@ -54,7 +54,6 @@ type VariantRow = {
   id: string
   title?: string | null
   manage_inventory?: boolean | null
-  calculated_price?: { calculated_amount?: number | null } | null
   prices?: Array<{ amount?: number | null; currency_code?: string | null }>
   inventory_items?: Array<{
     inventory?: {
@@ -98,7 +97,6 @@ const PRODUCT_FIELDS = [
   "variants.manage_inventory",
   "variants.prices.amount",
   "variants.prices.currency_code",
-  "variants.calculated_price.*",
   "variants.inventory_items.inventory.location_levels.stocked_quantity",
   "variants.inventory_items.inventory.location_levels.reserved_quantity",
 ]
@@ -131,8 +129,6 @@ function priceFromProduct(product: QueryProduct): number | undefined {
   if (metaPrice !== undefined) return metaPrice
 
   for (const variant of product.variants ?? []) {
-    const calculated = asNumber(variant.calculated_price?.calculated_amount)
-    if (calculated !== undefined) return calculated
     const egpPrice = variant.prices?.find((price) => price.currency_code === "egp")?.amount
     if (egpPrice !== undefined && egpPrice !== null) return Number(egpPrice)
   }

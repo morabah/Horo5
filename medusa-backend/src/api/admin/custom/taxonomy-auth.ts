@@ -16,9 +16,19 @@ type RequestWithAuthContext = MedusaRequest & {
  * is explicitly configured; Admin UI users do not need to send the header.
  */
 export function assertTaxonomyAdminWrite(req: MedusaRequest, res: MedusaResponse): boolean {
+  // Authenticated Medusa admin sessions always pass — the route is already mounted under
+  // `/admin/*` which Medusa gates with admin auth, so `auth_context.actor_id` being present
+  // means a real operator is calling from the admin UI.
+  const actorId = (req as RequestWithAuthContext).auth_context?.actor_id
+  if (typeof actorId === "string" && actorId.length > 0) {
+    return true
+  }
+
   const secret = process.env.HORO_TAXONOMY_ADMIN_SECRET?.trim()
   const isProd = process.env.NODE_ENV === "production"
 
+  // Unauthenticated callers (scripts / tooling) must present the shared secret.
+  // In production we require the secret to be configured so unauthenticated access is never silently allowed.
   if (isProd && !secret) {
     res.status(503).json({ message: "Taxonomy admin API is not configured (missing HORO_TAXONOMY_ADMIN_SECRET)." })
     return false
@@ -32,11 +42,6 @@ export function assertTaxonomyAdminWrite(req: MedusaRequest, res: MedusaResponse
   const value = Array.isArray(sent) ? sent[0] : sent
 
   if (value === secret) {
-    return true
-  }
-
-  const actorId = (req as RequestWithAuthContext).auth_context?.actor_id
-  if (typeof actorId === "string" && actorId.length > 0) {
     return true
   }
 
