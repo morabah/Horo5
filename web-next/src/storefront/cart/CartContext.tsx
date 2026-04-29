@@ -194,6 +194,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const medusaCartIdRef = useRef<string | null>(null);
   /** Stable ref to the latest items state — used inside callbacks to avoid stale closures. */
   const itemsRef = useRef<CartLine[]>(items);
+  itemsRef.current = items;
   /** Latest cart returned from a successful mutation (for checkout refresh hints). */
   const lastServerCartRef = useRef<MedusaCart | null>(null);
   const pendingOpsRef = useRef(new Set<Promise<unknown>>());
@@ -351,10 +352,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     medusaCartIdRef.current = medusaCartId;
   }, [medusaCartId]);
-
-  useEffect(() => {
-    itemsRef.current = items;
-  }, [items]);
 
   useEffect(() => {
     if (!miniCartOpen || !medusaCartId) return;
@@ -601,16 +598,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const p = (async () => {
       const gen = cartGenerationRef.current;
+      const activeCartId = medusaCartIdRef.current;
       try {
-        if (!medusaCartId) {
+        if (!activeCartId) {
           return;
         }
 
-        const { cart } = await getCart(medusaCartId);
+        const { cart } = await getCart(activeCartId);
         const existingGiftWrapLine = getGiftWrapLineItem(cart);
 
         if (existingGiftWrapLine?.id) {
-          const { cart: next } = await removeLineItem(medusaCartId, existingGiftWrapLine.id);
+          const { cart: next } = await removeLineItem(activeCartId, existingGiftWrapLine.id);
           if (cartGenerationRef.current === gen) applyCartFromResponse(next, gen);
         } else if (cartGenerationRef.current === gen) {
           applyCartFromResponse(cart, gen);
@@ -621,7 +619,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     })();
     trackOp(p);
-  }, [applyCartFromResponse, clearStaleCartIf404, giftWrapEgp, medusaCartId, trackOp]);
+  }, [applyCartFromResponse, clearStaleCartIf404, giftWrapEgp, trackOp]);
 
   const clearCart = useCallback(() => {
     // Bump generation so any in-flight syncFromMedusaCart discards its result.

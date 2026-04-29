@@ -545,7 +545,10 @@ export function Cart({
     return () => {
       cancelled = true;
     };
-  }, [storageReady, items.length, lineViews.length, medusaCartId, itemCount, giftWrapEgp, subtotalEgp]);
+    /* lineViews derives from items; items.length captures add/remove. Including lineViews.length
+       would re-fetch shipping on every qty change, causing the order-summary flicker we fixed. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storageReady, items.length, medusaCartId, giftWrapEgp]);
 
   const freeShippingUnlocked =
     !!incentives?.freeShipping &&
