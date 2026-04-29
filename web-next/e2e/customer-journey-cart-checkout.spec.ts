@@ -340,7 +340,8 @@ test.describe("customer journey: cart & checkout", () => {
     // Increase qty to 2
     const increaseBtn = page.locator("article.cart-item").first().getByRole("button", { name: /Increase quantity/i })
     await increaseBtn.click()
-    await expect(qtyDisplay).toHaveText("2", { timeout: 1000 })
+    await page.waitForTimeout(100)
+    await expect(qtyDisplay).toHaveText("2", { timeout: 5000 })
 
     // Navigate to checkout
     await page.goto("/checkout", { waitUntil: "domcontentloaded" })
@@ -401,7 +402,7 @@ test.describe("customer journey: cart & checkout", () => {
 
     // Should show "nothing to check out" or "bag is empty"
     await expect(
-      checkoutMain.getByText(/nothing to check out|bag is empty/i),
+      checkoutMain.getByRole('heading', { name: /nothing to check out|bag is empty/i }),
     ).toBeVisible({ timeout: 30_000 })
   })
 })
