@@ -5,6 +5,7 @@ import {
   cartLineWithQty,
   findCartLineIndex,
   findMergeableCartLineIndex,
+  orderCartLinesByPreviousOrder,
   removeCartLine,
   updateCartLineQty,
   type CartLine,
@@ -207,6 +208,58 @@ describe("findMergeableCartLineIndex", () => {
     ]
     // Without a variantId in the search, findMergeableCartLineIndex should only try exact match
     expect(findMergeableCartLineIndex(lines, { productSlug: "signal-line", size: "L" })).toBe(-1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// orderCartLinesByPreviousOrder
+// ---------------------------------------------------------------------------
+describe("orderCartLinesByPreviousOrder", () => {
+  it("keeps the visible cart row order when Medusa returns changed lines in a different order", () => {
+    const previousLines: CartLine[] = [
+      { productSlug: "quiet-revolt", size: "S", qty: 2, lineId: "line_quiet", variantId: "var_quiet" },
+      { productSlug: "silent-scream", size: "M", qty: 4, lineId: "line_silent", variantId: "var_silent" },
+    ]
+    const serverLines: CartLine[] = [
+      { productSlug: "silent-scream", size: "M", qty: 5, lineId: "line_silent", variantId: "var_silent" },
+      { productSlug: "quiet-revolt", size: "S", qty: 3, lineId: "line_quiet", variantId: "var_quiet" },
+    ]
+
+    expect(orderCartLinesByPreviousOrder(serverLines, previousLines)).toEqual([
+      serverLines[1],
+      serverLines[0],
+    ])
+  })
+
+  it("matches a local optimistic row to the server line once Medusa assigns a line id", () => {
+    const previousLines: CartLine[] = [
+      { productSlug: "quiet-revolt", size: "S", qty: 1, variantId: "var_quiet" },
+      { productSlug: "silent-scream", size: "M", qty: 2, lineId: "line_silent", variantId: "var_silent" },
+    ]
+    const serverLines: CartLine[] = [
+      { productSlug: "silent-scream", size: "M", qty: 2, lineId: "line_silent", variantId: "var_silent" },
+      { productSlug: "quiet-revolt", size: "S", qty: 1, lineId: "line_quiet", variantId: "var_quiet" },
+    ]
+
+    expect(orderCartLinesByPreviousOrder(serverLines, previousLines)).toEqual([
+      serverLines[1],
+      serverLines[0],
+    ])
+  })
+
+  it("appends genuinely new server lines after the known cart rows", () => {
+    const previousLines: CartLine[] = [
+      { productSlug: "quiet-revolt", size: "S", qty: 1, lineId: "line_quiet", variantId: "var_quiet" },
+    ]
+    const serverLines: CartLine[] = [
+      { productSlug: "silent-scream", size: "M", qty: 1, lineId: "line_silent", variantId: "var_silent" },
+      { productSlug: "quiet-revolt", size: "S", qty: 1, lineId: "line_quiet", variantId: "var_quiet" },
+    ]
+
+    expect(orderCartLinesByPreviousOrder(serverLines, previousLines)).toEqual([
+      serverLines[1],
+      serverLines[0],
+    ])
   })
 })
 

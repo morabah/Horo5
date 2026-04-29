@@ -59,6 +59,39 @@ export function findMergeableCartLineIndex(lines: CartLine[], identity: CartLine
   );
 }
 
+function cartLineMatchesPreviousIdentity(line: CartLine, previous: CartLineIdentity): boolean {
+  if (line.lineId && previous.lineId) {
+    return line.lineId === previous.lineId;
+  }
+
+  return cartLineKey(line) === cartLineKey(previous);
+}
+
+/** Preserve visible row order when Medusa returns the same cart lines in a different order. */
+export function orderCartLinesByPreviousOrder(lines: CartLine[], previousLines: CartLine[]): CartLine[] {
+  if (lines.length < 2 || previousLines.length === 0) return lines;
+
+  const usedIndexes = new Set<number>();
+  const ordered: CartLine[] = [];
+
+  for (const previous of previousLines) {
+    const nextIndex = lines.findIndex((line, index) => {
+      return !usedIndexes.has(index) && cartLineMatchesPreviousIdentity(line, previous);
+    });
+    if (nextIndex < 0) continue;
+    usedIndexes.add(nextIndex);
+    ordered.push(lines[nextIndex]);
+  }
+
+  lines.forEach((line, index) => {
+    if (!usedIndexes.has(index)) {
+      ordered.push(line);
+    }
+  });
+
+  return ordered;
+}
+
 export function cartLineWithQty(line: CartLine, qty: number): CartLine {
   const next: CartLine = { ...line, qty };
   if (typeof line.unitPriceEgp === 'number') {

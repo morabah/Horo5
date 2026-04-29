@@ -6,10 +6,10 @@ import { trackCartViewed } from '../analytics/events';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { getCartLineViews, type CartLineView } from '../cart/view';
+import { cartLineIdentityKey, type CartLine } from '../cart/types';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { Skeleton } from '../components/ui/Skeleton';
-import type { CartLine } from '../cart/types';
 import { CART_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, PDP_SCHEMA } from '../data/domain-config';
 import { getProductCardImageSrc, giftWrapPreview, heroVectorizedV2 } from '../data/images';
 import { useUiLocale, type UiLocale } from '../i18n/ui-locale';
@@ -472,7 +472,7 @@ export function Cart({
     addGiftWrap,
     removeGiftWrap,
     addItem,
-    lineQtySaving,
+    lineQtySavingKeys,
   } = useCart();
   const { copy: shellCopy, locale } = useUiLocale();
   const now = useStableNow();
@@ -851,7 +851,7 @@ export function Cart({
                 key={line.key}
                 line={line}
                 eager={index === 0}
-                lineQtySaving={lineQtySaving}
+                lineQtySaving={lineQtySavingKeys.includes(cartLineIdentityKey(line))}
                 onDecrease={handleDecrease}
                 onIncrease={handleIncrease}
                 onRemove={handleRemove}
