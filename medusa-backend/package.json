@@ -23,6 +23,8 @@
     "link:shipping-profile:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/link-products-to-shipping-profile.ts",
     "enable:stock-tracking": "medusa exec ./src/scripts/enable-variant-stock-tracking.ts",
     "enable:stock-tracking:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/enable-variant-stock-tracking.ts",
+    "backfill:inventory": "medusa exec ./src/scripts/backfill-inventory-levels.ts",
+    "backfill:inventory:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/backfill-inventory-levels.ts",
     "ensure:egypt-payment-providers": "medusa exec ./src/scripts/ensure-egypt-payment-providers.ts",
     "ensure:egypt-payment-providers:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/ensure-egypt-payment-providers.ts",
     "inspect:egypt-payment-providers": "medusa exec ./src/scripts/inspect-egypt-region-payment-providers.ts",

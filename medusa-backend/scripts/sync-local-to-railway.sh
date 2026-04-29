@@ -25,6 +25,9 @@ npx @railway/cli run npm run link:shipping-profile:public
 echo "==> Step 4/11: enable variant stock tracking on Railway"
 npx @railway/cli run npm run enable:stock-tracking:public
 
+echo "==> Step 4b/11: backfill inventory items + levels on Railway"
+npx @railway/cli run npm run backfill:inventory:public
+
 echo "==> Step 5/11: ensure HORO taxonomy on Railway"
 npx @railway/cli run npm run seed:horo-taxonomy:public
 
