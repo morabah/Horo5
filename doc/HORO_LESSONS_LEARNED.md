@@ -6,6 +6,32 @@
 
 ---
 
+## Catalog Sync Should Generate the Existing Drop Contract - April 2026
+
+**Category**: Medusa Catalog Tooling / Import Safety • **Impact**: Medium
+
+### Issue
+
+Per-product YAML edits and one-off scripts made catalog updates too manual for monthly mixed designer/developer handoff. The risky part was not Medusa import logic; it was keeping sheet data, image filenames, stock quantities, and `drops/<handle>/product.yaml` in sync without drift.
+
+### Solution
+
+Added `medusa-backend/src/scripts/sync-catalog-from-sheet.ts` as a deterministic orchestrator:
+
+- Pulls a CSV-exported `products` sheet.
+- Validates rows with pure TypeScript parsers and row-numbered errors.
+- Maps `inbox/<handle>/` image filenames into the existing drop YAML media contract.
+- Writes `.synced` hashes and invalidates `.imported` only when the row or images changed.
+- Reuses the existing drop importer and stock/inventory scripts through their exported functions.
+
+### Prevention Standards
+
+- Keep Medusa writes behind the proven drop importer whenever possible.
+- Treat staging inboxes as ignored local handoff folders; generated drops are the durable import artifact.
+- Use hash stamps to make re-runs cheap, but invalidate downstream stamps when upstream source-of-truth data changes.
+
+---
+
 ## 1. Server-Rendered Cart Must Seed the Client Context — Not Be Discarded
 
 **Category**: React / SSR / Cart State • **Impact**: High (eliminates 1–2 round-trips per cold `/cart` load)

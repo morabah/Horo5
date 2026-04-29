@@ -30,3 +30,10 @@ build
 
 # Drop importer stamp files
 drops/**/.imported
+drops/**/.synced
+
+# Catalog sync inbox is a desktop-sync staging area; generated drop images are tracked under drops/.
+inbox/**
+!inbox/
+!inbox/.gitkeep
+!inbox/**/

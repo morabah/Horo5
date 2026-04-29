@@ -4,6 +4,9 @@ import {
   type MedusaRequest,
   type MedusaResponse,
 } from "@medusajs/framework/http"
+import multer from "multer"
+
+const dropsUpload = multer({ storage: multer.memoryStorage() })
 
 /**
  * Logs request duration to help trace slow Railway responses.
@@ -81,6 +84,11 @@ export default defineMiddlewares({
     {
       matcher: /^\/(store|admin|storefront|store-media|integrations)(\/|$)/,
       middlewares: [httpRequestTiming],
+    },
+    {
+      method: ["POST"],
+      matcher: "/admin/custom/drops/upload",
+      middlewares: [dropsUpload.array("files")],
     },
   ],
 })

@@ -1453,7 +1453,12 @@ async function loadActivePriceListEndsAtByVariantId(scope: MedusaContainer): Pro
   }
 }
 
-async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQueryFilters = {}, take = 200) {
+async function queryStorefrontProducts(
+  scope: MedusaContainer,
+  filters: ProductQueryFilters = {},
+  take = 200,
+  options: { includeDrafts?: boolean } = {}
+) {
   const profileCatalog = String(process.env.STOREFRONT_PROFILE_CATALOG || "").trim() === "1"
   const query = scope.resolve(ContainerRegistrationKeys.QUERY)
   const pricingContext = await resolveEgyptPricingContext(scope)
@@ -1471,7 +1476,10 @@ async function queryStorefrontProducts(scope: MedusaContainer, filters: ProductQ
       {
         entity: "product",
         fields: PRODUCT_QUERY_FIELDS,
-        filters: { status: ProductStatus.PUBLISHED, ...filters },
+        filters: {
+          ...(options.includeDrafts ? {} : { status: ProductStatus.PUBLISHED }),
+          ...filters,
+        },
         pagination: {
           order: {
             created_at: "ASC",
@@ -1502,10 +1510,14 @@ export async function listStorefrontProducts(scope: MedusaContainer, artists?: S
   return sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId)
 }
 
-export async function retrieveStorefrontProduct(scope: MedusaContainer, handle: string) {
+export async function retrieveStorefrontProduct(
+  scope: MedusaContainer,
+  handle: string,
+  options: { includeDrafts?: boolean } = {}
+) {
   const [artistList, result] = await Promise.all([
     listStorefrontArtists(scope),
-    queryStorefrontProducts(scope, { handle }, 1),
+    queryStorefrontProducts(scope, { handle }, 1, options),
   ])
   const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
   const products = sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId)
@@ -1549,10 +1561,11 @@ let pdpServerInflight = new Map<string, Promise<StorefrontPdpPayload | null>>()
 
 async function buildStorefrontPdpPayload(
   scope: MedusaContainer,
-  handle: string
+  handle: string,
+  options: { includeDrafts?: boolean } = {}
 ): Promise<StorefrontPdpPayload | null> {
   const [product, settings] = await Promise.all([
-    retrieveStorefrontProduct(scope, handle),
+    retrieveStorefrontProduct(scope, handle, options),
     retrieveStorefrontSettingsPayload(scope),
   ])
   if (!product) {
@@ -1571,41 +1584,43 @@ async function buildStorefrontPdpPayload(
 
 export async function retrieveStorefrontPdpPayload(
   scope: MedusaContainer,
-  handle: string
+  handle: string,
+  options: { includeDrafts?: boolean } = {}
 ): Promise<StorefrontPdpPayload | null> {
   const normalizedHandle = handle.trim()
   if (!normalizedHandle) {
     return null
   }
 
-  const ttlMs = parsePositiveMsEnv("STOREFRONT_PDP_SERVER_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
+  const ttlMs = options.includeDrafts ? 0 : parsePositiveMsEnv("STOREFRONT_PDP_SERVER_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
   if (ttlMs <= 0) {
-    return buildStorefrontPdpPayload(scope, normalizedHandle)
+    return buildStorefrontPdpPayload(scope, normalizedHandle, options)
   }
 
   const now = Date.now()
-  const cached = pdpServerCache.get(normalizedHandle)
+  const cacheKey = options.includeDrafts ? `${normalizedHandle}:preview` : normalizedHandle
+  const cached = pdpServerCache.get(cacheKey)
   if (cached && cached.expiresAt > now) {
     return cached.value
   }
 
-  const inflight = pdpServerInflight.get(normalizedHandle)
+  const inflight = pdpServerInflight.get(cacheKey)
   if (inflight) {
     return inflight
   }
 
-  const promise = buildStorefrontPdpPayload(scope, normalizedHandle)
+  const promise = buildStorefrontPdpPayload(scope, normalizedHandle, options)
     .then((value) => {
       if (value) {
-        pdpServerCache.set(normalizedHandle, { expiresAt: Date.now() + ttlMs, value })
+        pdpServerCache.set(cacheKey, { expiresAt: Date.now() + ttlMs, value })
       }
       return value
     })
     .finally(() => {
-      pdpServerInflight.delete(normalizedHandle)
+      pdpServerInflight.delete(cacheKey)
     })
 
-  pdpServerInflight.set(normalizedHandle, promise)
+  pdpServerInflight.set(cacheKey, promise)
   return promise
 }
 

@@ -67,6 +67,8 @@
     "verify:indexes": "node scripts/verify-performance-indexes.mjs",
     "import:drops": "medusa exec ./src/scripts/import-product-drops.ts --",
     "import:drops:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/import-product-drops.ts",
+    "catalog:sync": "medusa exec ./src/scripts/sync-catalog-from-sheet.ts --",
+    "catalog:sync:dry": "medusa exec ./src/scripts/sync-catalog-from-sheet.ts -- --dry-run --report=catalog-sync-report.md",
     "sync:local-to-railway": "bash ./scripts/sync-local-to-railway.sh",
     "start": "medusa start",
     "dev": "medusa develop",

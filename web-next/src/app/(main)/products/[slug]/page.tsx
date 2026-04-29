@@ -16,6 +16,9 @@ type ProductPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    preview?: string;
+  }>;
 };
 
 export const revalidate = 60;
@@ -36,9 +39,14 @@ export async function generateStaticParams(): Promise<Array<{ slug: string }>> {
     .map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+function isPreviewValue(value: string | undefined) {
+  return value === "1" || value === "true";
+}
+
+export async function generateMetadata({ params, searchParams }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const pdp = await fetchStorefrontPdpServer(slug).catch((error) => {
+  const preview = isPreviewValue((await searchParams)?.preview);
+  const pdp = await fetchStorefrontPdpServer(slug, preview).catch((error) => {
     logStorefrontFetchError("[storefront] Failed to fetch PDP for product metadata", error, { slug });
     return null;
   });
@@ -57,9 +65,10 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   return buildProductMetadata(product, undefined);
 }
 
-export default async function Page({ params }: ProductPageProps) {
+export default async function Page({ params, searchParams }: ProductPageProps) {
   const { slug } = await params;
-  const pdp = await fetchStorefrontPdpServer(slug).catch((error) => {
+  const preview = isPreviewValue((await searchParams)?.preview);
+  const pdp = await fetchStorefrontPdpServer(slug, preview).catch((error) => {
     logStorefrontFetchError("[storefront] Failed to fetch PDP for product page", error, { slug });
     return null;
   });

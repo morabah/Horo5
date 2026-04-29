@@ -5,7 +5,10 @@ import { retrieveStorefrontPdpPayload } from "../../../../lib/storefront/catalog
 import { storefrontPdpResponseSchema } from "../../../../lib/storefront/dto"
 
 export async function GET(req: MedusaRequest<{ handle: string }>, res: MedusaResponse) {
-  const payload = await retrieveStorefrontPdpPayload(req.scope, req.params.handle)
+  const previewRequested = req.query.preview === "1" || req.query.preview === "true"
+  const previewEnabled = String(process.env.HORO_STOREFRONT_DRAFT_PREVIEW || "").trim() === "1"
+  const includeDrafts = Boolean(previewRequested && previewEnabled)
+  const payload = await retrieveStorefrontPdpPayload(req.scope, req.params.handle, { includeDrafts })
 
   if (!payload) {
     throw new MedusaError(MedusaError.Types.NOT_FOUND, `Storefront PDP "${req.params.handle}" was not found`)
@@ -25,6 +28,6 @@ export async function GET(req: MedusaRequest<{ handle: string }>, res: MedusaRes
     }
   }
 
-  res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300")
+  res.setHeader("Cache-Control", includeDrafts ? "no-store" : "public, s-maxage=60, stale-while-revalidate=300")
   res.status(200).json(body)
 }

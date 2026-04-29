@@ -1,31 +1,17 @@
 /**
  * Backfill inventory items + levels for variants that have manage_inventory:true
- * but are missing the variant→inventory_item link and/or inventory level.
+ * but are missing the variant->inventory_item link and/or inventory level.
  *
- * WHY THIS EXISTS
- * ---------------
- * `enable-variant-stock-tracking.ts` flips `manage_inventory: true` on variants.
- * In Medusa V2, `updateProductVariantsWorkflow` is *supposed* to auto-create
- * the backing `inventory_item` + `product_variant_inventory_item` link, but on
- * some environments (e.g. Railway with in-memory event bus) the link creation
- * can silently fail, leaving variants in a broken state: tracked but no
- * inventory items or levels.
- *
- * This script detects that state and creates the missing pieces:
- *   1. An `inventory_item` per variant (with the variant's SKU)
- *   2. A `product_variant_inventory_item` link row
- *   3. An `inventory_level` at the default stock location
- *
- * It is idempotent — safe to run repeatedly.
- *
- * USAGE
- * -----
+ * The legacy CLI behavior remains:
  *   npx medusa exec ./src/scripts/backfill-inventory-levels.ts 50
  *   npx medusa exec ./src/scripts/backfill-inventory-levels.ts 50 dryrun
- *   # Railway:
- *   DATABASE_PUBLIC_URL=... npm run backfill:inventory:public 50
+ *
+ * Catalog sync can also import this file and pass a per-product stock map so
+ * backfilled levels use the same per-size quantities as the sheet.
  */
 
+import fs from "node:fs/promises"
+import path from "node:path"
 import type { ExecArgs } from "@medusajs/framework/types"
 import {
   ContainerRegistrationKeys,
@@ -37,14 +23,24 @@ import {
 } from "@medusajs/medusa/core-flows"
 
 const GIFT_WRAP_HANDLE = "gift-wrap"
+const SIZE_SET = new Set(["S", "M", "L", "XL", "XXL"])
+
+export type StockMap = Record<string, Partial<Record<string, number>>>
+
+export type BackfillInventoryOptions = {
+  defaultQty?: number
+  dryRun?: boolean
+  stockMap?: StockMap
+}
 
 type StockLocationRow = { id: string; name?: string }
 
 type VariantRow = {
   id: string
+  title: string | null
   sku: string | null
   manage_inventory: boolean | null
-  product?: { id: string; handle: string | null } | null
+  product?: { id?: string; handle: string | null } | null
   inventory_items?: Array<{
     inventory?: { id: string } | null
     inventory_item_id?: string | null
@@ -58,38 +54,123 @@ type InventoryLevelRow = {
   stocked_quantity: number | null
 }
 
-function parseDefaultQty(args: unknown): number {
-  const arr = Array.isArray(args) ? args : []
-  const positional = arr.find(
-    (a) => typeof a === "string" && a !== "dryrun" && !a.startsWith("-"),
-  )
-  if (!positional) return 50
-  const n = Number(positional)
-  if (!Number.isFinite(n) || n < 0) {
-    throw new Error(`Invalid default quantity: ${positional}. Pass a non-negative integer.`)
-  }
-  return Math.floor(n)
+function normalizeArgs(args: unknown): string[] {
+  return (Array.isArray(args) ? args : [])
+    .filter((arg): arg is string => typeof arg === "string")
+    .filter((arg) => arg !== "--")
 }
 
-export default async function backfillInventoryLevels({ container, args }: ExecArgs) {
+function readOption(args: string[], name: string): string | undefined {
+  const prefix = `${name}=`
+  const inline = args.find((arg) => arg.startsWith(prefix))
+  if (inline) return inline.slice(prefix.length)
+
+  const index = args.indexOf(name)
+  if (index >= 0) return args[index + 1]
+  return undefined
+}
+
+function parseDefaultQty(args: unknown): number {
+  const arr = normalizeArgs(args)
+  const positional = arr.find((arg, index) => {
+    const previous = arr[index - 1]
+    return arg !== "dryrun" && arg !== "--dry-run" && previous !== "--stock-map" && !arg.startsWith("-")
+  })
+  if (!positional) return 50
+  const n = Number(positional)
+  if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)) {
+    throw new Error(`Invalid default quantity: ${positional}. Pass a non-negative integer.`)
+  }
+  return n
+}
+
+function validateStockMap(raw: unknown): StockMap {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("--stock-map must point to a JSON object keyed by product handle.")
+  }
+
+  const result: StockMap = {}
+  for (const [handle, bySize] of Object.entries(raw as Record<string, unknown>)) {
+    if (!bySize || typeof bySize !== "object" || Array.isArray(bySize)) {
+      throw new Error(`stockMap.${handle} must be an object keyed by size.`)
+    }
+
+    result[handle] = {}
+    for (const [size, qty] of Object.entries(bySize as Record<string, unknown>)) {
+      if (!SIZE_SET.has(size)) {
+        throw new Error(`stockMap.${handle}.${size} is not a supported size.`)
+      }
+      if (!Number.isInteger(qty) || (qty as number) < 0) {
+        throw new Error(`stockMap.${handle}.${size} must be a non-negative integer.`)
+      }
+      result[handle][size] = qty as number
+    }
+  }
+
+  return result
+}
+
+async function parseStockMap(args: unknown): Promise<StockMap | undefined> {
+  const stockMapPath = readOption(normalizeArgs(args), "--stock-map")
+  if (!stockMapPath) return undefined
+
+  const absolutePath = path.isAbsolute(stockMapPath) ? stockMapPath : path.resolve(process.cwd(), stockMapPath)
+  return validateStockMap(JSON.parse(await fs.readFile(absolutePath, "utf-8")))
+}
+
+function variantSize(variant: VariantRow): string | undefined {
+  const title = variant.title?.toUpperCase()
+  if (title && SIZE_SET.has(title)) return title
+
+  const skuSuffix = variant.sku?.split("-").pop()?.toUpperCase()
+  if (skuSuffix && SIZE_SET.has(skuSuffix)) return skuSuffix
+
+  return undefined
+}
+
+function stockQtyForVariant(
+  variant: VariantRow,
+  defaultQty: number,
+  stockMap: StockMap | undefined,
+): number | undefined {
+  const handle = variant.product?.handle ?? ""
+  if (!stockMap) return defaultQty
+  const bySize = stockMap[handle]
+  if (!bySize) return undefined
+
+  const size = variantSize(variant)
+  if (!size) return defaultQty
+
+  return bySize[size] ?? defaultQty
+}
+
+export async function runBackfillInventoryLevels(
+  container: ExecArgs["container"],
+  options: BackfillInventoryOptions = {},
+) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
   const inventoryModule = container.resolve<{
     createInventoryItems: (input: Array<{ sku?: string }>) => Promise<Array<{ id: string; sku?: string | null }>>
-    listInventoryItems: (filter: Record<string, unknown>, config?: Record<string, unknown>) => Promise<Array<{ id: string; sku?: string | null }>>
+    listInventoryItems: (
+      filter: Record<string, unknown>,
+      config?: Record<string, unknown>,
+    ) => Promise<Array<{ id: string; sku?: string | null }>>
   }>(Modules.INVENTORY)
   const link = container.resolve<{
     create: (input: Record<string, unknown>) => Promise<unknown>
-    dismiss: (input: Record<string, unknown>) => Promise<unknown>
   }>(ContainerRegistrationKeys.LINK)
   const stockLocationModule = container.resolve(Modules.STOCK_LOCATION)
 
-  const dryRun = Array.isArray(args) && args.includes("dryrun")
-  const defaultQty = parseDefaultQty(args)
+  const dryRun = Boolean(options.dryRun)
+  const defaultQty = options.defaultQty ?? 50
+  const stockMap = options.stockMap
+  const scopedHandles = stockMap ? new Set(Object.keys(stockMap)) : undefined
 
-  logger.info(`backfill-inventory-levels: defaultQty=${defaultQty}${dryRun ? " (DRY RUN)" : ""}`)
+  logger.info(
+    `backfill-inventory-levels: defaultQty=${defaultQty}${scopedHandles?.size ? `, stockMapHandles=${scopedHandles.size}` : ""}${dryRun ? " (DRY RUN)" : ""}`,
+  )
 
-  // 1) Resolve the default stock location.
   const stockLocations = (await stockLocationModule.listStockLocations({})) as StockLocationRow[]
   if (!stockLocations.length) {
     throw new Error("No stock locations exist. Run the seed first.")
@@ -97,11 +178,11 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
   const stockLocation = stockLocations[0]
   logger.info(`Using stock location: ${stockLocation.name ?? "(unnamed)"} (${stockLocation.id})`)
 
-  // 2) List every variant with its inventory item links.
   const { data: variants } = (await query.graph({
     entity: "variant",
     fields: [
       "id",
+      "title",
       "sku",
       "manage_inventory",
       "product.id",
@@ -111,13 +192,13 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
     ],
   })) as { data: VariantRow[] }
 
-  // 3) Find tracked variants missing an inventory item link.
   const missingInventoryItem: VariantRow[] = []
   const hasInventoryItem: VariantRow[] = []
 
   for (const variant of variants) {
     const handle = variant.product?.handle ?? ""
     if (!variant.product || handle === GIFT_WRAP_HANDLE) continue
+    if (scopedHandles?.size && !scopedHandles.has(handle)) continue
     if (!variant.manage_inventory) continue
 
     const hasLink = variant.inventory_items?.some(
@@ -134,17 +215,14 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
     `Tracked variants: with-inventory-item=${hasInventoryItem.length}, missing-inventory-item=${missingInventoryItem.length}`,
   )
 
-  // 4) Create inventory items for variants that lack them.
   const newItemIdByVariantId = new Map<string, string>()
 
   if (missingInventoryItem.length > 0) {
     if (dryRun) {
       logger.info(
-        `DRY RUN — would backfill ${missingInventoryItem.length} variant(s) missing inventory items.`,
+        `DRY RUN - would backfill ${missingInventoryItem.length} variant(s) missing inventory items.`,
       )
     } else {
-      // Some variants may already have inventory items with matching SKUs that
-      // just aren't linked. Find them first to avoid duplicate-SKU errors.
       const skus = missingInventoryItem.map((v) => v.sku).filter(Boolean) as string[]
       const existingBySku = new Map<string, string>()
       if (skus.length) {
@@ -168,7 +246,6 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
         }
       }
 
-      // Create inventory items for variants that have no matching SKU.
       if (toCreate.length > 0) {
         logger.info(`Creating ${toCreate.length} new inventory item(s)...`)
         const BATCH = 50
@@ -184,8 +261,7 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
         logger.info(`Created ${toCreate.length} new inventory item(s).`)
       }
 
-      // Link all variant ↔ inventory_item (existing + new).
-      logger.info(`Creating ${newItemIdByVariantId.size} variant↔inventory_item link(s)...`)
+      logger.info(`Creating ${newItemIdByVariantId.size} variant->inventory_item link(s)...`)
       let linked = 0
       for (const [variantId, itemId] of newItemIdByVariantId.entries()) {
         try {
@@ -209,11 +285,11 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
     return
   }
 
-  // 5) Re-query to get all inventory item IDs (including newly created).
   const { data: refreshedVariants } = (await query.graph({
     entity: "variant",
     fields: [
       "id",
+      "title",
       "sku",
       "manage_inventory",
       "product.handle",
@@ -223,22 +299,28 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
   })) as { data: VariantRow[] }
 
   const allInventoryItemIds: string[] = []
+  const quantityByInventoryItemId = new Map<string, number>()
   for (const variant of refreshedVariants) {
     const handle = variant.product?.handle ?? ""
     if (!variant.product || handle === GIFT_WRAP_HANDLE) continue
+    if (scopedHandles?.size && !scopedHandles.has(handle)) continue
     if (!variant.manage_inventory) continue
+    const stockedQuantity = stockQtyForVariant(variant, defaultQty, stockMap)
+    if (stockedQuantity === undefined) continue
+
     for (const li of variant.inventory_items ?? []) {
       const itemId = li.inventory?.id ?? li.inventory_item_id
-      if (itemId) allInventoryItemIds.push(itemId)
+      if (!itemId) continue
+      allInventoryItemIds.push(itemId)
+      quantityByInventoryItemId.set(itemId, stockedQuantity)
     }
   }
 
   if (!allInventoryItemIds.length) {
-    logger.warn("No inventory items found for tracked variants — nothing to do for levels.")
+    logger.warn("No inventory items found for tracked variants - nothing to do for levels.")
     return
   }
 
-  // 6) Check existing inventory levels at the stock location.
   const { data: existingLevels } = (await query.graph({
     entity: "inventory_level",
     fields: ["id", "inventory_item_id", "location_id", "stocked_quantity"],
@@ -257,19 +339,20 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
   const toUpdate: { id: string; inventory_item_id: string; location_id: string; stocked_quantity: number }[] = []
 
   for (const itemId of allInventoryItemIds) {
+    const stockedQuantity = quantityByInventoryItemId.get(itemId) ?? defaultQty
     const existing = existingByItemId.get(itemId)
     if (!existing) {
       toCreate.push({
         inventory_item_id: itemId,
         location_id: stockLocation.id,
-        stocked_quantity: defaultQty,
+        stocked_quantity: stockedQuantity,
       })
-    } else if ((existing.stocked_quantity ?? 0) !== defaultQty) {
+    } else if ((existing.stocked_quantity ?? 0) !== stockedQuantity) {
       toUpdate.push({
         id: existing.id,
         inventory_item_id: existing.inventory_item_id,
         location_id: existing.location_id,
-        stocked_quantity: defaultQty,
+        stocked_quantity: stockedQuantity,
       })
     }
   }
@@ -279,7 +362,7 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
   )
 
   if (dryRun) {
-    logger.info("Dry run complete — no writes performed.")
+    logger.info("Dry run complete - no writes performed.")
     return
   }
 
@@ -298,4 +381,13 @@ export default async function backfillInventoryLevels({ container, args }: ExecA
   }
 
   logger.info("Done. All tracked variants now have inventory items + levels.")
+}
+
+export default async function backfillInventoryLevels({ container, args }: ExecArgs) {
+  const arr = normalizeArgs(args)
+  await runBackfillInventoryLevels(container, {
+    defaultQty: parseDefaultQty(arr),
+    dryRun: arr.includes("dryrun") || arr.includes("--dry-run"),
+    stockMap: await parseStockMap(arr),
+  })
 }

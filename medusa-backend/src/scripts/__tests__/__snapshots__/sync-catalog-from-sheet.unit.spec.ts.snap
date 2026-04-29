@@ -1,0 +1,62 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`catalog sync dry-run scaffold generates the expected drops tree from a fixture sheet and inbox 1`] = `
+{
+  "files": [
+    "gallery/detail.jpg",
+    "gallery/flat_lay.png",
+    "gallery/lifestyle-2.webp",
+    "gallery/lifestyle.jpg",
+    "gallery/proof_fabric.jpg",
+    "main.jpg",
+    "product.yaml",
+  ],
+  "productYaml": "handle: quiet-revolt
+title: Quiet Revolt Tee
+story: A clear signal.
+description: Premium cotton graphic tee with quiet artwork.
+feeling: mood
+subfeeling: i-care
+occasions:
+  - just-because
+  - birthday
+apparelCategory: apparel/tops/t-shirts
+priceEgp: 899
+originalPriceEgp: 999
+sizes:
+  - S
+  - M
+  - L
+garmentColor: black
+artist: nada-ibrahim
+decorationType: graphic
+fitLabel: Regular fit
+trustBadges:
+  - premium cotton
+  - COD available
+merchandisingBadge: New Drop
+stockNote: Limited run
+sizeTableKey: mens-regular-tee
+mainImage: main.jpg
+gallery:
+  - file: gallery/detail.jpg
+  - file: gallery/flat_lay.png
+    tag: flat_lay
+  - file: gallery/lifestyle.jpg
+    tag: lifestyle
+  - file: gallery/lifestyle-2.webp
+    tag: lifestyle
+  - file: gallery/proof_fabric.jpg
+    tag: proof_fabric
+capsuleSlugs:
+  - capsule-one
+complementarySlugs:
+  - quiet-basic
+frequentlyBoughtWithSlugs:
+  - sticker-pack
+customersAlsoBoughtSlugs:
+  - quiet-cap
+launchAt: "2026-05-01T00:00:00Z"
+",
+}
+`;

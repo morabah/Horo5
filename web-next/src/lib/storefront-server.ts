@@ -300,15 +300,17 @@ function normalizeStorefrontSettings(data: StorefrontSettingsResponse | null | u
 
 async function fetchStorefrontPdpServerImpl(
   slug: string,
-  init: NextFetchOptions = {}
+  init: NextFetchOptions = {},
+  options: { preview?: boolean } = {}
 ): Promise<{
   product: Product;
   settings: StorefrontSettingsPayload;
   crossSellProducts: Product[];
 } | null> {
   try {
+    const params = options.preview ? "?preview=1" : "";
     const data = await storefrontRequest<StorefrontPdpApiResponse>(
-      `/storefront/pdp/${encodeURIComponent(slug)}`,
+      `/storefront/pdp/${encodeURIComponent(slug)}${params}`,
       init
     );
     if (!data.product) {
@@ -331,19 +333,25 @@ async function fetchStorefrontPdpServerImpl(
 /**
  * Single PDP payload: product + store settings + cross-sell products (replaces separate catalog + product + settings calls).
  */
-export const fetchStorefrontPdpServer = cache((slug: string) =>
-  fetchStorefrontPdpServerImpl(slug, {
-    next: {
-      revalidate: 60,
-      tags: [
-        "catalog",
-        "storefront",
-        "settings",
-        "product",
-        `product:${encodeURIComponent(slug)}`,
-      ],
-    },
-  })
+export const fetchStorefrontPdpServer = cache((slug: string, preview = false) =>
+  fetchStorefrontPdpServerImpl(
+    slug,
+    preview
+      ? { cache: "no-store" }
+      : {
+          next: {
+            revalidate: 60,
+            tags: [
+              "catalog",
+              "storefront",
+              "settings",
+              "product",
+              `product:${encodeURIComponent(slug)}`,
+            ],
+          },
+        },
+    { preview },
+  )
 );
 
 async function fetchStorefrontOccasionServerImpl(
