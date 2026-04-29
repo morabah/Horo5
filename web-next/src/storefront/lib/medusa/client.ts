@@ -29,12 +29,15 @@ export function isStaleMedusaCartCustomerError(error: unknown): boolean {
   return error instanceof Error && staleCartCustomerPattern.test(error.message)
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+type RequestOptions = RequestInit & { idempotencyKey?: string }
+
+async function request<T>(path: string, init: RequestOptions = {}): Promise<T> {
   if (!publishableApiKey) {
     throw new Error(missingPublishableKeyMessage)
   }
 
-  const headers = new Headers(init.headers || {})
+  const { idempotencyKey, headers: rawHeaders, ...rest } = init
+  const headers = new Headers(rawHeaders || {})
 
   headers.set("Content-Type", "application/json")
 
@@ -42,8 +45,15 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers.set("x-publishable-api-key", publishableApiKey)
   }
 
+  if (idempotencyKey) {
+    // Forward to Medusa under both the canonical RFC name and the lowercase variant some
+    // gateways normalize to. Routes that don't recognize the header simply ignore it, so
+    // there is no risk in sending it on every mutating request.
+    headers.set("Idempotency-Key", idempotencyKey)
+  }
+
   const response = await fetch(`${baseUrl}${path}`, {
-    ...init,
+    ...rest,
     credentials: "include",
     headers,
   })
@@ -69,17 +79,33 @@ function withQuery(path: string, query?: Record<string, string | undefined>) {
   return search ? `${path}?${search}` : path
 }
 
+/**
+ * In-flight de-duplication for `POST /store/payment-collections`. If two checkout
+ * actions race (e.g. an effect prefetch + a provider click), they would otherwise
+ * both create a payment collection for the same cart and Medusa would then have
+ * orphaned collections to reconcile on `complete`.
+ */
+const inflightPaymentCollections = new Map<string, Promise<string>>()
+
 async function ensurePaymentCollection(cart: MedusaCart) {
   if (cart.payment_collection?.id) {
     return cart.payment_collection.id
   }
 
-  const created = await request<MedusaPaymentCollectionResponse>("/store/payment-collections", {
+  const cached = inflightPaymentCollections.get(cart.id)
+  if (cached) return cached
+
+  const promise = request<MedusaPaymentCollectionResponse>("/store/payment-collections", {
     method: "POST",
     body: JSON.stringify({ cart_id: cart.id }),
   })
+    .then((created) => created.payment_collection.id)
+    .finally(() => {
+      inflightPaymentCollections.delete(cart.id)
+    })
 
-  return created.payment_collection.id
+  inflightPaymentCollections.set(cart.id, promise)
+  return promise
 }
 
 export async function listProducts(): Promise<MedusaStoreProductsResponse> {
@@ -136,17 +162,29 @@ export async function getCart(cartId: string): Promise<MedusaCartResponse> {
   )
 }
 
-export async function addLineItem(cartId: string, variantId: string, quantity: number): Promise<MedusaCartResponse> {
+export async function addLineItem(
+  cartId: string,
+  variantId: string,
+  quantity: number,
+  options: { idempotencyKey?: string } = {},
+): Promise<MedusaCartResponse> {
   return request<MedusaCartResponse>(`/store/carts/${cartId}/line-items`, {
     method: "POST",
     body: JSON.stringify({ quantity, variant_id: variantId }),
+    idempotencyKey: options.idempotencyKey,
   })
 }
 
-export async function updateLineItem(cartId: string, lineId: string, quantity: number): Promise<MedusaCartResponse> {
+export async function updateLineItem(
+  cartId: string,
+  lineId: string,
+  quantity: number,
+  options: { idempotencyKey?: string } = {},
+): Promise<MedusaCartResponse> {
   return request<MedusaCartResponse>(`/store/carts/${cartId}/line-items/${lineId}`, {
     method: "POST",
     body: JSON.stringify({ quantity }),
+    idempotencyKey: options.idempotencyKey,
   })
 }
 
@@ -158,11 +196,13 @@ export async function removeLineItem(cartId: string, lineId: string): Promise<Me
 
 export async function updateCart(
   cartId: string,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  options: { idempotencyKey?: string } = {},
 ): Promise<MedusaCartResponse> {
   return request<MedusaCartResponse>(`/store/carts/${cartId}`, {
     method: "POST",
     body: JSON.stringify(payload),
+    idempotencyKey: options.idempotencyKey,
   })
 }
 
@@ -175,7 +215,9 @@ export async function recreateGuestCartFromCart(
     nextCartResponse = await addLineItem(
       nextCartResponse.cart.id,
       item.variant_id,
-      item.quantity
+      item.quantity,
+      // Deterministic per (recovered cart, variant) so a network-retry can't double-add.
+      { idempotencyKey: `recreate_${nextCartResponse.cart.id}_${item.variant_id}` },
     )
   }
 
@@ -188,10 +230,15 @@ export async function listShippingOptions(cartId: string): Promise<MedusaShippin
   )
 }
 
-export async function addShippingMethod(cartId: string, optionId: string): Promise<MedusaCartResponse> {
+export async function addShippingMethod(
+  cartId: string,
+  optionId: string,
+  options: { idempotencyKey?: string } = {},
+): Promise<MedusaCartResponse> {
   return request<MedusaCartResponse>(`/store/carts/${cartId}/shipping-methods`, {
     method: "POST",
     body: JSON.stringify({ option_id: optionId }),
+    idempotencyKey: options.idempotencyKey,
   })
 }
 
@@ -226,7 +273,7 @@ export async function completeCart(
 ): Promise<MedusaCompleteCartResponse> {
   return request<MedusaCompleteCartResponse>(`/store/carts/${cartId}/complete`, {
     method: "POST",
-    ...(idempotencyKey ? { headers: { "Idempotency-Key": idempotencyKey } } : {}),
+    idempotencyKey,
   })
 }
 

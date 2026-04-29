@@ -21,6 +21,7 @@ export default async function Page() {
   return (
     <RouterContextProvider>
       <Cart
+        initialCart={cart}
         initialLines={cart ? toCartLines(cart) : []}
         initialGiftWrapEgp={cart ? getCartGiftWrapEgp(cart) : 0}
         initialState={initialState}

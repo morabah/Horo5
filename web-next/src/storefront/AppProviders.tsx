@@ -2,6 +2,7 @@ import { Suspense, type PropsWithChildren } from 'react';
 import { useEffect, useState } from 'react';
 import { setRuntimeCatalog, type RuntimeCatalog } from './data/site';
 import { CartProvider } from './cart/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import { MiniCartDrawer } from './components/MiniCartDrawer';
 import { WhatsAppFloatingButton } from './components/WhatsAppFloatingButton';
 import { UiLocaleProvider } from './i18n/ui-locale';
@@ -76,13 +77,15 @@ export function AppProviders({
   return (
     <RenderTimeProvider renderedAt={renderedAt}>
       <UiLocaleProvider>
-        <CartProvider>
-          {children}
-          <MiniCartDrawer />
-          <Suspense fallback={null}>
-            <WhatsAppFloatingButton />
-          </Suspense>
-        </CartProvider>
+        <WishlistProvider>
+          <CartProvider>
+            {children}
+            <MiniCartDrawer />
+            <Suspense fallback={null}>
+              <WhatsAppFloatingButton />
+            </Suspense>
+          </CartProvider>
+        </WishlistProvider>
       </UiLocaleProvider>
     </RenderTimeProvider>
   );

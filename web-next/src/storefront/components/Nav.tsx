@@ -2,6 +2,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { FormEvent, TransitionEvent, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
+import { useWishlist } from '../hooks/useWishlist';
 import { clearPlacedOrderMedusaIdHint, readPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
 import { useUiLocale } from '../i18n/ui-locale';
 import { NAV_DRAWER_ROUTE_KEYS, NAV_PRIMARY_ROUTE_KEYS, NAV_ROUTE, type NavRouteKey } from '../lib/navLinks';
@@ -152,6 +153,7 @@ function LocaleToggle({
 
 export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const { totalQty, setMiniCartOpen } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const { locale, copy, setLocale } = useUiLocale();
   const [q, setQ] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
@@ -534,6 +536,19 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
             <button
               type="button"
               className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
+              aria-label={wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
+              onClick={() => navigate('/wishlist')}
+            >
+              <AppIcon name="favorite" className="h-6 w-6" />
+              {wishlistCount > 0 ? (
+                <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
+                  {wishlistCount > 99 ? '99+' : wishlistCount}
+                </span>
+              ) : null}
+            </button>
+            <button
+              type="button"
+              className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
               aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
               onClick={handleCartNavigation}
             >
@@ -658,6 +673,19 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
               label={copy.shell.language}
             />
           </div>
+          <button
+            type="button"
+            className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
+            aria-label={wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
+            onClick={() => navigate('/wishlist')}
+          >
+            <AppIcon name="favorite" className="h-6 w-6" />
+            {wishlistCount > 0 ? (
+              <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
+                {wishlistCount > 99 ? '99+' : wishlistCount}
+              </span>
+            ) : null}
+          </button>
           <button
             type="button"
             className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"

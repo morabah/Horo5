@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCountdown } from '../hooks/useCountdown';
+import { useWishlist } from '../hooks/useWishlist';
 import { Link } from 'react-router-dom';
 import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
-import { trackSizeSelected } from '../analytics/events';
+import { trackSizeSelected, trackWishlistAdd, trackWishlistRemove } from '../analytics/events';
 import { PDP_SCHEMA } from '../data/domain-config';
 import { getProduct, type ProductSizeKey } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -69,6 +70,8 @@ export function MerchProductCard({
 }: MerchProductCardProps) {
   const { locale, copy } = useUiLocale();
   const { addItem, setMiniCartOpen } = useCart();
+  const { has: isWishlisted, toggle: toggleWishlist } = useWishlist();
+  const wishlisted = isWishlisted(slug);
   const minimal = variant === 'minimal';
   const product = useMemo(() => getProduct(slug), [slug]);
   const promoLabel = promoLabelProp ?? product?.promoLabel;
@@ -186,6 +189,37 @@ export function MerchProductCard({
             </span>
           ) : null}
         </Link>
+        {/* Wishlist heart — always visible, top-right corner */}
+        <button
+          type="button"
+          aria-label={wishlisted ? `Remove ${name} from wishlist` : `Save ${name} to wishlist`}
+          aria-pressed={wishlisted}
+          className="absolute right-2 top-2 z-10 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:right-2.5 md:top-2.5"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const p = product;
+            if (p) {
+              if (wishlisted) trackWishlistRemove(p);
+              else trackWishlistAdd(p);
+            }
+            toggleWishlist(slug);
+          }}
+        >
+          <svg
+            className="h-5 w-5 transition-colors"
+            viewBox="0 0 24 24"
+            fill={wishlisted ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth={1.75}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+            style={{ color: wishlisted ? '#c0392b' : 'var(--obsidian, #1a1a1a)' }}
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+          </svg>
+        </button>
         {/* Desktop: single bottom action strip — hidden until hover/focus */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden flex-col gap-2 p-3 invisible opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 md:flex">
           {quickAddAvailable && quickAddOpen ? (

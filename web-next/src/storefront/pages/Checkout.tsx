@@ -8,7 +8,8 @@ import {
   trackPaymentMethodSelected,
   trackPurchase,
 } from '../analytics/events';
-import { MEDUSA_CART_ID_STORAGE_KEY, cartLineIdentityKey, type CartLine } from '../cart/types';
+import { cartLineIdentityKey, type CartLine } from '../cart/types';
+import { loadMedusaCartId, persistMedusaCartId } from '../cart/cart-storage';
 import { formatCartStockMessage } from '../cart/stock';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
@@ -21,7 +22,6 @@ import {
 import { loadSavedShipping, saveSavedShipping } from '../cart/savedShipping';
 import { saveLastOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import { setPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
-import { persistCartIdCookie } from '../cart/cart-cookie';
 import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import {
@@ -59,6 +59,7 @@ import {
   getFreshPaymentProviders,
   getFreshShippingOptions,
   normalizePaymentProviders,
+  setCachedRegionIdForCart,
   setPaymentProvidersCache,
   setShippingOptionsCache,
 } from '../lib/medusa/checkout-aux-cache';
@@ -211,28 +212,9 @@ function getReadableCheckoutError(
   return isArabic ? fallback.ar : fallback.en;
 }
 
-function getStoredCartId() {
-  if (typeof window === 'undefined') return null;
-  try {
-    return window.localStorage.getItem(MEDUSA_CART_ID_STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function setStoredCartId(cartId: string | null) {
-  if (typeof window === 'undefined') return;
-  persistCartIdCookie(cartId);
-  try {
-    if (!cartId) {
-      window.localStorage.removeItem(MEDUSA_CART_ID_STORAGE_KEY);
-      return;
-    }
-    window.localStorage.setItem(MEDUSA_CART_ID_STORAGE_KEY, cartId);
-  } catch {
-    /* ignore */
-  }
-}
+/** Aliases preserved so call-sites read naturally; both delegate to the shared cart-storage helpers. */
+const getStoredCartId = loadMedusaCartId;
+const setStoredCartId = persistMedusaCartId;
 
 function composeCartFullName(cart: MedusaCart | null) {
   return [cart?.shipping_address?.first_name, cart?.shipping_address?.last_name]
@@ -547,7 +529,7 @@ export function Checkout({
   initialState = 'unknown',
 }: CheckoutProps = {}) {
   const navigate = useNavigate();
-  const { items, subtotalEgp, giftWrapEgp, clearCart, replaceMedusaCartId, awaitPendingCartSync } = useCart();
+  const { items, subtotalEgp, giftWrapEgp, clearCart, replaceMedusaCartId, awaitPendingCartSync, seedFromServerCart } = useCart();
   const { locale, copy } = useUiLocale();
   const now = useStableNow();
   const isArabic = locale === 'ar';
@@ -650,8 +632,25 @@ export function Checkout({
     }
   }, []);
 
-  const ensureCheckoutCartAvailable = useCallback(async () => {
+  const ensureCheckoutCartAvailable = useCallback(async (
+    options: { cachedCart?: MedusaCart | null } = {},
+  ) => {
     const knownCartId = cartId || getStoredCartId();
+
+    // Allow callers to supply a pre-fetched cart (e.g. RSC `initialCart` on the first boot)
+    // so we don't pay a redundant `GET /store/carts/:id` round-trip.
+    if (
+      options.cachedCart &&
+      !options.cachedCart.completed_at &&
+      (!knownCartId || options.cachedCart.id === knownCartId)
+    ) {
+      const cart = options.cachedCart;
+      setStoredCartId(cart.id);
+      replaceMedusaCartId(cart.id);
+      setCartId(cart.id);
+      hydrateCheckoutFromCart(cart);
+      return { cart, cartId: cart.id };
+    }
 
     if (knownCartId) {
       try {
@@ -779,6 +778,20 @@ export function Checkout({
     setMounted(true);
   }, []);
 
+  // Seed CartContext from RSC cart so the first paint matches the server and the provider
+  // skips its automatic `getCart` round-trip. Runs once per initialCart identity.
+  useEffect(() => {
+    if (initialCheckoutCart) seedFromServerCart(initialCheckoutCart);
+  }, [initialCheckoutCart, seedFromServerCart]);
+
+  /**
+   * One-shot reference to the RSC cart so the first invocation of `ensureCheckoutCartAvailable`
+   * inside the boot effect can reuse it instead of refetching. Subsequent calls (after the user
+   * mutates the bag, or after a Paymob redirect that needs fresh state) fall through to a real
+   * `GET /store/carts/:id`.
+   */
+  const initialCartHintRef = useRef<MedusaCart | null>(initialCheckoutCart);
+
   useEffect(() => {
     cartIdRef.current = cartId;
   }, [cartId]);
@@ -827,10 +840,20 @@ export function Checkout({
       setPaymentVerifying(false);
 
       try {
+        // Consume the RSC cart hint at most once — only when it matches the cookie /
+        // current cart id we'd otherwise be about to refetch. After that the ref is
+        // wiped so any future refresh path always hits a live `GET /store/carts/:id`.
+        const cartHint =
+          initialCartHintRef.current &&
+          (!incomingCartId || initialCartHintRef.current.id === incomingCartId)
+            ? initialCartHintRef.current
+            : null;
+        initialCartHintRef.current = null;
+
         const resolvedCheckout = incomingCartId
-          ? await ensureCheckoutCartAvailableRef.current()
+          ? await ensureCheckoutCartAvailableRef.current({ cachedCart: cartHint })
           : items.length > 0
-            ? await ensureCheckoutCartAvailableRef.current()
+            ? await ensureCheckoutCartAvailableRef.current({ cachedCart: cartHint })
             : null;
         if (cancelled) return;
 
@@ -844,10 +867,10 @@ export function Checkout({
         setStoredCartId(activeCartId);
         setCartId(activeCartId);
 
-        const [status, { cart }] = await Promise.all([
-          getCheckoutStatus(activeCartId).catch(() => null),
-          getCart(activeCartId),
-        ]);
+        // `ensureCheckoutCartAvailable` already fetched (or just created) the cart for
+        // `activeCartId`; reuse it instead of paying a second round-trip here.
+        const cart = resolvedCheckout.cart;
+        const status = await getCheckoutStatus(activeCartId).catch(() => null);
 
         if (!cancelled && status?.status === 'completed' && status.order_id) {
           setPaymentStepComplete(true);
@@ -902,6 +925,7 @@ export function Checkout({
 
         setShippingOptionsCache(activeCartId, liveShippingOptions);
         if (cart.region_id) {
+          setCachedRegionIdForCart(activeCartId, cart.region_id);
           setPaymentProvidersCache(cart.region_id, liveProviders);
         }
 
@@ -1220,6 +1244,7 @@ export function Checkout({
 
     setShippingOptionsCache(activeCartId, liveShippingOptions);
     if (cart.region_id) {
+      setCachedRegionIdForCart(activeCartId, cart.region_id);
       setPaymentProvidersCache(cart.region_id, liveProviders);
     }
 
@@ -1537,6 +1562,7 @@ export function Checkout({
 
       setShippingOptionsCache(activeCartId, liveShippingOptions);
       if (refreshedCart.region_id) {
+        setCachedRegionIdForCart(activeCartId, refreshedCart.region_id);
         setPaymentProvidersCache(refreshedCart.region_id, liveProviders);
       }
 

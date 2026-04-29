@@ -30,11 +30,10 @@ import {
 } from '../lib/medusa/adapters';
 import type { MedusaCart, MedusaProduct } from '../lib/medusa/types';
 import { findProductVariantById } from '../utils/productVariants';
-import { persistCartIdCookie, readCartIdFromCookieString } from './cart-cookie';
+import { loadMedusaCartId, persistMedusaCartId } from './cart-storage';
 import type { CartMutationResult } from './stock';
 import {
   CART_STORAGE_KEY,
-  MEDUSA_CART_ID_STORAGE_KEY,
   cartLineIdentityKey,
   cartLineKey,
   cartLineWithQty,
@@ -61,6 +60,12 @@ type CartContextValue = {
   medusaCartId: string | null;
   /** True after browser cart storage/cookie has been read. */
   storageReady: boolean;
+  /**
+   * Seed the cart from a server-rendered Medusa cart so the first paint matches RSC data.
+   * Skips the on-mount localStorage load and the auto-sync `getCart` round-trip.
+   * Pages should call this once from `useEffect` when they have an `initialCart`.
+   */
+  seedFromServerCart: (cart: MedusaCart | null | undefined) => void;
   items: CartLine[];
   addItem: (productSlug: string, size: ProductSizeKey, qty?: number, explicitVariantId?: string) => CartMutationResult;
   removeItem: (productSlug: string, size: ProductSizeKey, variantId?: string, lineId?: string) => void;
@@ -118,31 +123,6 @@ function loadItems(): CartLine[] {
 function persistItems(items: CartLine[]) {
   try {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-  } catch {
-    /* ignore */
-  }
-}
-
-function loadMedusaCartId(): string | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    const localCartId = localStorage.getItem(MEDUSA_CART_ID_STORAGE_KEY);
-    if (localCartId) return localCartId;
-  } catch {
-    /* fall through to cookie */
-  }
-  return readCartIdFromCookieString(document.cookie);
-}
-
-function persistMedusaCartId(cartId: string | null) {
-  if (typeof window === 'undefined') return;
-  persistCartIdCookie(cartId);
-  try {
-    if (!cartId) {
-      localStorage.removeItem(MEDUSA_CART_ID_STORAGE_KEY);
-      return;
-    }
-    localStorage.setItem(MEDUSA_CART_ID_STORAGE_KEY, cartId);
   } catch {
     /* ignore */
   }
@@ -214,6 +194,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const giftWrapOfferPromiseRef = useRef<Promise<GiftWrapOffer> | null>(null);
   /** Monotonic counter incremented on clearCart to invalidate in-flight syncs. */
   const cartGenerationRef = useRef(0);
+  /** True once a server-rendered cart has seeded the provider. Skips the next storage load + auto-sync. */
+  const seededRef = useRef(false);
+  /** Skip exactly one auto-sync after seedFromServerCart sets the medusaCartId. */
+  const skipNextAutoSyncRef = useRef(false);
   const medusaCartIdRef = useRef<string | null>(null);
   /** Stable ref to the latest items state — used inside callbacks to avoid stale closures. */
   const itemsRef = useRef<CartLine[]>(items);
@@ -261,6 +245,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setMedusaCartId(cart.id);
   }, []);
 
+  const seedFromServerCart = useCallback((cart: MedusaCart | null | undefined) => {
+    if (!cart || cart.completed_at) return;
+    if (seededRef.current) return;
+    seededRef.current = true;
+    skipNextAutoSyncRef.current = true;
+    applyCartFromResponse(cart, cartGenerationRef.current);
+    persistMedusaCartId(cart.id);
+    setStorageReady(true);
+  }, [applyCartFromResponse]);
+
   const trackOp = useCallback((p: Promise<unknown>) => {
     pendingOpsRef.current.add(p);
     void p.finally(() => {
@@ -272,6 +266,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearStaleCartIf404 = useCallback((err: unknown, generation: number) => {
     const msg = err instanceof Error ? err.message : '';
     if (msg.includes('(404)') && cartGenerationRef.current === generation) {
+      // Synchronously wipe storage + cookie so a sibling tab / next mount can't rehydrate
+      // the dead cart id before our React state update commits.
+      medusaCartIdRef.current = null;
+      persistMedusaCartId(null);
       setMedusaCartId(null);
     }
   }, []);
@@ -377,6 +375,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // Child page useEffects (e.g. Cart / Checkout `seedFromServerCart`) run before this
+    // parent effect, so a seeded provider already has authoritative state and we skip
+    // the localStorage round-trip entirely.
+    if (seededRef.current) {
+      setStorageReady(true);
+      return;
+    }
     setItems(loadItems());
     setMedusaCartId(loadMedusaCartId());
     setStorageReady(true);
@@ -384,6 +389,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!medusaCartId) return;
+    if (skipNextAutoSyncRef.current) {
+      skipNextAutoSyncRef.current = false;
+      return;
+    }
     void syncFromMedusaCart(medusaCartId);
   }, [medusaCartId, syncFromMedusaCart]);
 
@@ -780,6 +789,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => ({
       medusaCartId,
       storageReady,
+      seedFromServerCart,
       items,
       addItem,
       removeItem,
@@ -802,6 +812,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [
       medusaCartId,
       storageReady,
+      seedFromServerCart,
       items,
       addItem,
       removeItem,

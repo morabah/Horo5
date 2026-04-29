@@ -22,6 +22,7 @@ import { getCart, listShippingOptions } from '../lib/medusa/client';
 import { productAvailableSizes } from '../utils/productSizes';
 import { getFreshShippingOptions } from '../lib/medusa/checkout-aux-cache';
 import {
+  merchandiseSubtotalFromCartLines,
   readCheckoutDisplayShippingFallbackEgpFromEnv,
   resolveShippingQuoteFromCartAndOptions,
 } from '../lib/medusa/cart-money';
@@ -42,6 +43,8 @@ type CartShippingFetchState =
 type CartInitialState = 'unknown' | 'empty' | 'cart';
 
 type CartProps = {
+  /** Raw Medusa cart from RSC; when present, seeds CartContext to skip the auto-sync round-trip. */
+  initialCart?: MedusaCart | null;
   initialLines?: CartLine[];
   initialGiftWrapEgp?: number;
   initialState?: CartInitialState;
@@ -441,22 +444,8 @@ function CartPairWithStrip({
   );
 }
 
-function subtotalFromCartLines(lines: CartLine[]): number {
-  return lines.reduce((sum, line) => {
-    if (typeof line.medusaLineTotalEgp === 'number') {
-      return sum + line.medusaLineTotalEgp;
-    }
-    const product = getProduct(line.productSlug);
-    const linePrice =
-      line.unitPriceEgp ??
-      product?.variantsBySize?.[line.size]?.priceEgp ??
-      product?.priceEgp ??
-      0;
-    return sum + linePrice * line.qty;
-  }, 0);
-}
-
 export function Cart({
+  initialCart = null,
   initialLines = [],
   initialGiftWrapEgp = 0,
   initialState = 'unknown',
@@ -464,6 +453,7 @@ export function Cart({
   const {
     medusaCartId,
     storageReady,
+    seedFromServerCart,
     items,
     removeItem,
     setLineQty,
@@ -475,6 +465,13 @@ export function Cart({
     addItem,
     lineQtySavingKeys,
   } = useCart();
+
+  // Seed CartContext from the server-rendered cart so the first paint matches RSC and we
+  // skip the auto `getCart` round-trip on cold loads. Child useEffect runs before the
+  // CartProvider parent effect, so the storage-load path is bypassed cleanly.
+  useEffect(() => {
+    if (initialCart) seedFromServerCart(initialCart);
+  }, [initialCart, seedFromServerCart]);
   const { copy: shellCopy, locale } = useUiLocale();
   const now = useStableNow();
   const copy = CART_SCHEMA.copy;
@@ -487,7 +484,7 @@ export function Cart({
   const displayItems = useInitialSnapshot ? initialLines : items;
   const displayGiftWrapEgp = useInitialSnapshot ? initialGiftWrapEgp : giftWrapEgp;
   const displaySubtotalEgp = useMemo(
-    () => (useInitialSnapshot ? subtotalFromCartLines(displayItems) : subtotalEgp),
+    () => (useInitialSnapshot ? merchandiseSubtotalFromCartLines(displayItems) : subtotalEgp),
     [displayItems, subtotalEgp, useInitialSnapshot],
   );
 

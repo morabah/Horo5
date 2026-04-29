@@ -1,9 +1,11 @@
 import {
   CHECKOUT_AUX_CACHE_MAX_AGE_MS,
+  getCachedRegionIdForCart,
   getFreshPaymentProviders,
   getFreshShippingOptions,
   invalidateCheckoutAuxCacheForCart,
   normalizePaymentProviders,
+  setCachedRegionIdForCart,
   setPaymentProvidersCache,
   setShippingOptionsCache,
 } from "../checkout-aux-cache"
@@ -54,5 +56,28 @@ describe("shipping + payment cache freshness", () => {
     expect(getFreshPaymentProviders("reg_eg")).toEqual(providers)
     jest.advanceTimersByTime(CHECKOUT_AUX_CACHE_MAX_AGE_MS + 1)
     expect(getFreshPaymentProviders("reg_eg")).toBeNull()
+  })
+
+  it("caches region id by cart id and expires with the same window", () => {
+    setCachedRegionIdForCart("cart_a", "reg_eg")
+    expect(getCachedRegionIdForCart("cart_a")).toBe("reg_eg")
+    jest.advanceTimersByTime(CHECKOUT_AUX_CACHE_MAX_AGE_MS + 1)
+    expect(getCachedRegionIdForCart("cart_a")).toBeNull()
+  })
+
+  it("ignores blank region ids so the cache cannot poison subsequent lookups", () => {
+    setCachedRegionIdForCart("cart_a", "")
+    setCachedRegionIdForCart("cart_a", "   ")
+    setCachedRegionIdForCart("cart_a", null)
+    setCachedRegionIdForCart("cart_a", undefined)
+    expect(getCachedRegionIdForCart("cart_a")).toBeNull()
+  })
+
+  it("invalidateCheckoutAuxCacheForCart drops both shipping and region caches", () => {
+    setShippingOptionsCache("cart_a", [{ id: "so1", name: "Std", provider_id: "p", amount: 60 }])
+    setCachedRegionIdForCart("cart_a", "reg_eg")
+    invalidateCheckoutAuxCacheForCart("cart_a")
+    expect(getFreshShippingOptions("cart_a")).toBeNull()
+    expect(getCachedRegionIdForCart("cart_a")).toBeNull()
   })
 })

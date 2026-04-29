@@ -15,7 +15,8 @@ export type AppIconName =
   | 'local_shipping'
   | 'link'
   | 'share'
-  | 'content_copy';
+  | 'content_copy'
+  | 'favorite';
 
 type AppIconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & {
   name: AppIconName;
@@ -142,6 +143,10 @@ function iconPaths(name: AppIconName) {
           <rect x="8" y="8" width="12" height="12" rx="2" />
           <path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2" />
         </>
+      );
+    case 'favorite':
+      return (
+        <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
       );
     default:
       return <circle cx="12" cy="12" r="8" />;

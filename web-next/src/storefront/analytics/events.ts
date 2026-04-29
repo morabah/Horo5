@@ -20,7 +20,9 @@ type PostHogCommerceEventName =
   | 'commerce_checkout_started'
   | 'commerce_checkout_submitted'
   | 'commerce_payment_method_selected'
-  | 'commerce_order_completed';
+  | 'commerce_order_completed'
+  | 'commerce_wishlist_add'
+  | 'commerce_wishlist_remove';
 
 function buildEventKey(name: string, key: string) {
   return `${name}:${key}`;
@@ -331,6 +333,46 @@ export function trackPurchase(payload: {
       value: payload.value,
       currency: payload.currency,
       content_ids: payload.lines.map((l) => l.productSlug),
+    });
+  }
+}
+
+export function trackWishlistAdd(product: Product) {
+  if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  capturePostHogCommerceEvent('commerce_wishlist_add', {
+    currency: 'EGP',
+    value: product.priceEgp,
+    product_slug: product.slug,
+    product_name: product.name,
+    items: [buildAnalyticsItem(product, 1)],
+  });
+  if (window.gtag && gaId) {
+    window.gtag('event', 'add_to_wishlist', {
+      currency: 'EGP',
+      value: product.priceEgp,
+      items: [buildAnalyticsItem(product, 1)],
+      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    });
+  }
+}
+
+export function trackWishlistRemove(product: Product) {
+  if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  capturePostHogCommerceEvent('commerce_wishlist_remove', {
+    currency: 'EGP',
+    value: product.priceEgp,
+    product_slug: product.slug,
+    product_name: product.name,
+    items: [buildAnalyticsItem(product, 1)],
+  });
+  if (window.gtag && gaId) {
+    window.gtag('event', 'remove_from_wishlist', {
+      currency: 'EGP',
+      value: product.priceEgp,
+      items: [buildAnalyticsItem(product, 1)],
+      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
     });
   }
 }

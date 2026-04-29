@@ -29,7 +29,7 @@ import {
   type ProductSizeKey,
   type RuntimeCatalog,
 } from '../data/site';
-import { trackSizeSelected, trackViewItem } from '../analytics/events';
+import { trackSizeSelected, trackViewItem, trackWishlistAdd, trackWishlistRemove } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
 import { StickyAddToCart } from '../components/StickyAddToCart';
@@ -77,6 +77,7 @@ import {
   type PdpSizeTableConfig,
 } from '../data/domain-config';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+import { useWishlist } from '../hooks/useWishlist';
 import { useCountdown } from '../hooks/useCountdown';
 import { useStableNow } from '../runtime/render-time';
 import type { PdpDeliveryRules } from '../utils/deliveryEstimate';
@@ -194,6 +195,7 @@ export function ProductDetail({
   const [searchParams] = useSearchParams();
   const { addItem, setMiniCartOpen } = useCart();
   const { recordView } = useRecentlyViewed();
+  const { has: isWishlisted, toggle: toggleWishlist } = useWishlist();
   const preferBackendCatalog = Boolean(initialProduct || catalogSnapshot);
   const catalogProductsSnapshot = useMemo(
     () => catalogProducts ?? catalogSnapshot?.products ?? EMPTY_PRODUCT_LIST,
@@ -1150,6 +1152,13 @@ export function ProductDetail({
           onNotifyEmailChange={(email: string) => { setNotifyEmail(email); setNotifyError(false); }}
           onNotifySubmit={handleNotifySubmit}
           whatsappSupportUrl={whatsappSupportUrl}
+          wishlisted={isWishlisted(product.slug)}
+          onWishlistToggle={() => {
+            const currently = isWishlisted(product.slug);
+            if (currently) trackWishlistRemove(product);
+            else trackWishlistAdd(product);
+            toggleWishlist(product.slug);
+          }}
         />
       </section>
 

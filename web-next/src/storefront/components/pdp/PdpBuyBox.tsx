@@ -79,6 +79,9 @@ type PdpBuyBoxProps = {
   onNotifySubmit: (e: FormEvent) => void;
   // WhatsApp
   whatsappSupportUrl: string | null;
+  // Wishlist
+  wishlisted: boolean;
+  onWishlistToggle: () => void;
 };
 
 export function PdpBuyBox({
@@ -122,6 +125,8 @@ export function PdpBuyBox({
   onNotifyEmailChange,
   onNotifySubmit,
   whatsappSupportUrl,
+  wishlisted,
+  onWishlistToggle,
 }: PdpBuyBoxProps) {
   function primaryCtaLabel() {
     if (oosSelected) return copy.notifyMeCTA;
@@ -266,21 +271,44 @@ export function PdpBuyBox({
 
         {/* Primary CTA */}
         <div ref={mainCtaRef} className="space-y-3">
-          <button
-            type="button"
-            onClick={onPrimaryAction}
-            className={`${ctaClass}${addedFeedback ? ' pdp-cta-added' : ''}`}
-            aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
-          >
-            {addedFeedback ? (
-              <>
-                <span className="pdp-cta-check" aria-hidden>✓</span>
-                <span>{copy.pdpPrimaryCtaAddedLabel}</span>
-              </>
-            ) : (
-              <><IconCart /><span>{primaryCtaLabel()}</span></>
-            )}
-          </button>
+          <div className="flex items-stretch gap-3">
+            <button
+              type="button"
+              onClick={onPrimaryAction}
+              className={`${ctaClass} flex-1${addedFeedback ? ' pdp-cta-added' : ''}`}
+              aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
+            >
+              {addedFeedback ? (
+                <>
+                  <span className="pdp-cta-check" aria-hidden>✓</span>
+                  <span>{copy.pdpPrimaryCtaAddedLabel}</span>
+                </>
+              ) : (
+                <><IconCart /><span>{primaryCtaLabel()}</span></>
+              )}
+            </button>
+            <button
+              type="button"
+              aria-label={wishlisted ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
+              aria-pressed={wishlisted}
+              onClick={onWishlistToggle}
+              className="flex min-h-14 min-w-[3.25rem] items-center justify-center border border-obsidian/30 bg-white transition-colors hover:border-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+            >
+              <svg
+                className="h-5 w-5 transition-colors"
+                viewBox="0 0 24 24"
+                fill={wishlisted ? 'currentColor' : 'none'}
+                stroke="currentColor"
+                strokeWidth={1.75}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+                style={{ color: wishlisted ? '#c0392b' : 'var(--obsidian, #1a1a1a)' }}
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+              </svg>
+            </button>
+          </div>
           {stockMessage ? (
             <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 font-body text-sm text-obsidian" role="status" aria-live="polite">
               {stockMessage}
