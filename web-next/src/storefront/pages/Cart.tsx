@@ -552,6 +552,8 @@ export function Cart({
     incentives.freeShipping.thresholdEgp > 0 &&
     displaySubtotalEgp >= incentives.freeShipping.thresholdEgp;
 
+  const lastKnownShippingEgpRef = useRef<number | null>(null);
+
   const { shippingRow, estimatedOrderTotal } = useMemo(() => {
     const base = displaySubtotalEgp + displayGiftWrapEgp;
     /* Audit S8: when an operator-configured free-shipping promo is unlocked, the
@@ -569,8 +571,9 @@ export function Cart({
       };
     }
     if (shippingFetch.kind === 'loading') {
-      const fb = readCheckoutDisplayShippingFallbackEgpFromEnv();
-      if (fb != null && fb > 0) {
+      // Prioritize the last known quote to prevent flickering during debounced qty updates
+      const fb = lastKnownShippingEgpRef.current ?? readCheckoutDisplayShippingFallbackEgpFromEnv();
+      if (fb != null && fb >= 0) {
         return {
           shippingRow: { mode: 'amount' as const, egp: fb },
           estimatedOrderTotal: base + fb,
@@ -591,6 +594,7 @@ export function Cart({
       shippingFetch.cart,
       shippingFetch.options,
     );
+    lastKnownShippingEgpRef.current = quoteEgp;
     return {
       shippingRow: { mode: 'amount' as const, egp: quoteEgp },
       estimatedOrderTotal: base + quoteEgp,
