@@ -1,3 +1,71 @@
+/**
+ * CartContext — concurrency & stock model
+ * ---------------------------------------
+ *
+ * One source of truth: Medusa.
+ * Cart and Checkout are rendered from the same `CartProvider`, which holds
+ * exactly one Medusa cart id at a time. Both pages call `useCart().setLineQty`
+ * / `removeItem`, so EVERY +/- click goes through the same single-flight
+ * serial-write runner in `qty-flush.ts` — the cart-page fix automatically
+ * applies to the checkout-page summary stepper (`Checkout.tsx`'s
+ * `OrderSummaryWithSteppers`). Regression-tested at unit level in
+ * `__tests__/qty-flush.unit.spec.ts` and at E2E level in
+ * `e2e/customer-journey-cart-checkout.spec.ts` (one test per route).
+ *
+ * 1) Different users (different sessions / devices)
+ *    Each browser session creates its own anonymous Medusa cart (`POST /store/carts`)
+ *    and persists the id in `localStorage` + `horo_cart_id` cookie. Different users
+ *    therefore have **completely separate carts** — there is no cross-user race
+ *    at the cart layer no matter how many users click +/- simultaneously.
+ *
+ *    Stock contention between distinct users is enforced (when enabled — see §4)
+ *    by Medusa's reservation workflow at order completion. `completeCartWorkflow`
+ *    invokes `reserveInventoryStep`, which atomically decrements `stocked_quantity`
+ *    via a reservation; if two users try to buy the last unit at the same time
+ *    exactly one `complete` succeeds and the other surfaces an inventory error
+ *    in `Checkout.tsx`. The local `getProductSizeStockLimit` check is a UX guard
+ *    only — it is NOT a substitute for server-side stock.
+ *
+ * 2) Same user, same tab — rapid +/- clicks
+ *    Optimistic state updates synchronously; Medusa writes are debounced (50ms)
+ *    and run through the **single-flight serial-write** runner in `qty-flush.ts`.
+ *    No two `updateLineItem` POSTs are ever in flight against the same cart at
+ *    once, and the LAST successful response is the authoritative cart (no extra
+ *    `getCart` round-trip needed).
+ *
+ * 3) Same user, multiple tabs
+ *    Tabs share the cart id via cookie + storage, so independent flushes from
+ *    different tabs would otherwise race in Medusa. We mitigate via a
+ *    `BroadcastChannel` (`cart-broadcast.ts`): every tab broadcasts its
+ *    post-mutation cart snapshot (and `clearCart` events) and sibling tabs apply
+ *    them. This keeps tabs visually consistent and makes stale-state writes
+ *    much rarer. A truly simultaneous click in two tabs (within the same 50ms
+ *    debounce window, before either snapshot has propagated) can still "lose"
+ *    one click because Medusa's `updateLineItem` is set-absolute, not delta —
+ *    documented limitation; would require switching to `addLineItem`-style
+ *    deltas for the +1 path to fully eliminate.
+ *
+ * 4) Stock tracking — current configuration
+ *    HORO is currently seeded with `manage_inventory: false, allow_backorder: true`
+ *    (see `medusa-backend/src/scripts/seed-egypt-catalog.ts`). In that mode
+ *    Medusa does NOT reserve or decrement stock at order completion, and returns
+ *    do not restore anything (there is nothing to restore). The storefront's
+ *    `getProductSizeStockLimit` returns `null` (no limit) and the catalog
+ *    reports `inventory_quantity: null`.
+ *
+ *    To switch HORO into real stock-tracked mode (so checkout decrements and
+ *    returns restore automatically through Medusa's built-in workflows), run:
+ *      cd medusa-backend
+ *      npx medusa exec ./src/scripts/enable-variant-stock-tracking.ts <qty>
+ *    The script flips `manage_inventory: true, allow_backorder: false` on every
+ *    variant and seeds an inventory level at the default stock location. After
+ *    that, `completeCartWorkflow` calls `reserveInventoryStep` and
+ *    `confirmReturnRequestWorkflow` calls `adjustInventoryLevelsWorkflow` —
+ *    both are Medusa V2 core flows, no custom code needed. The storefront's
+ *    `lib/storefront/catalog.ts` already reads
+ *    `stocked_quantity − reserved_quantity`, so the next PDP / catalog refresh
+ *    reflects the new availability with no client changes.
+ */
 import {
   createContext,
   useCallback,
@@ -31,6 +99,8 @@ import {
 import type { MedusaCart, MedusaProduct } from '../lib/medusa/types';
 import { findProductVariantById } from '../utils/productVariants';
 import { loadMedusaCartId, persistMedusaCartId } from './cart-storage';
+import { createCartBroadcast, type CartBroadcast } from './cart-broadcast';
+import { createQtyFlushRunner, type QtyFlushRunner } from './qty-flush';
 import type { CartMutationResult } from './stock';
 import {
   CART_STORAGE_KEY,
@@ -209,7 +279,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const flushingQtyKeysRef = useRef(new Set<string>());
   /** Store as `number` so tsc stays compatible when Node typings widen `setTimeout` return type. */
   const qtyFlushTimerRef = useRef<number | null>(null);
-  const flushPendingQtyUpdatesInternalRef = useRef<() => Promise<void>>(async () => {});
+  /**
+   * Single-flight + serial-write flush runner. See `qty-flush.ts` for the full
+   * invariants. Created once per provider; closed-over refs are mutated above so
+   * the runner always reads the latest cart id / generation / pending map without
+   * requiring the runner to be re-created.
+   */
+  const qtyFlushRunnerRef = useRef<QtyFlushRunner | null>(null);
+  /**
+   * Cross-tab cart sync. When the same user has multiple tabs open they share
+   * the same Medusa cart id, so each tab broadcasts its post-mutation cart
+   * snapshot and other tabs apply it. Different users have entirely separate
+   * carts, so this channel does not leak between sessions. See
+   * `cart-broadcast.ts` for the full rationale.
+   */
+  const cartBroadcastRef = useRef<CartBroadcast | null>(null);
+  /** Set while applying a snapshot from another tab; suppresses re-broadcasting (would be redundant). */
+  const inRemoteApplyRef = useRef(false);
 
   const refreshQtySavingState = useCallback(() => {
     const keys = new Set<string>([
@@ -243,6 +329,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
     medusaCartIdRef.current = cart.id;
     setMedusaCartId(cart.id);
+    // Broadcast to sibling tabs unless we are *applying* an inbound broadcast
+    // (would be a redundant round-trip; BroadcastChannel doesn't echo to the
+    // origin so there is no infinite-loop risk, but we still avoid the work).
+    if (!inRemoteApplyRef.current) {
+      cartBroadcastRef.current?.broadcastSnapshot(cart);
+    }
   }, []);
 
   const seedFromServerCart = useCallback((cart: MedusaCart | null | undefined) => {
@@ -289,63 +381,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [applyCartFromResponse, clearStaleCartIf404]);
 
-  const flushPendingQtyUpdatesInternal = useCallback(async () => {
-    try {
-      for (;;) {
-        const pending = new Map(pendingQtyByKeyRef.current);
+  // Lazily build the flush runner once. Closed-over refs (above) are mutated as
+  // state changes, so the runner always reads the latest cart id / generation /
+  // pending map without requiring the runner to be re-created.
+  if (!qtyFlushRunnerRef.current) {
+    qtyFlushRunnerRef.current = createQtyFlushRunner({
+      drainPending: () => {
+        const captured = new Map(pendingQtyByKeyRef.current);
         pendingQtyByKeyRef.current.clear();
-        if (pending.size === 0) break;
+        return captured;
+      },
+      hasPending: () => pendingQtyByKeyRef.current.size > 0,
+      getCartId: () => medusaCartIdRef.current,
+      getGeneration: () => cartGenerationRef.current,
+      updateLineItem: (cartId, lineId, qty) => updateLineItem(cartId, lineId, qty),
+      syncCart: (cartId) => syncFromMedusaCart(cartId),
+      applyCart: (cart, generation) => applyCartFromResponse(cart, generation),
+      flushingKeys: flushingQtyKeysRef.current,
+      refreshSavingState: () => refreshQtySavingState(),
+      on404: (err, generation) => clearStaleCartIf404(err, generation),
+    });
+  }
 
-        const cartId = medusaCartIdRef.current;
-        if (!cartId) break;
-
-        const gen = cartGenerationRef.current;
-        const pendingKeys = [...pending.keys()];
-        pendingKeys.forEach((key) => flushingQtyKeysRef.current.add(key));
-        refreshQtySavingState();
-        const byLineId = new Map<string, number>();
-        for (const { lineId, qty } of pending.values()) {
-          byLineId.set(lineId, qty);
-        }
-
-        let hadError = false;
-        try {
-          await Promise.all(
-            [...byLineId.entries()].map(async ([lineId, qty]) => {
-              try {
-                await updateLineItem(cartId, lineId, qty);
-              } catch {
-                hadError = true;
-              }
-            }),
-          );
-
-          if (hadError) {
-            await syncFromMedusaCart(cartId);
-            break;
-          }
-
-          try {
-            const { cart } = await getCart(cartId);
-            if (cartGenerationRef.current === gen) {
-              applyCartFromResponse(cart, gen);
-            }
-          } catch {
-            await syncFromMedusaCart(cartId);
-          }
-        } finally {
-          pendingKeys.forEach((key) => flushingQtyKeysRef.current.delete(key));
-          refreshQtySavingState();
-        }
-
-        if (pendingQtyByKeyRef.current.size === 0) break;
-      }
-    } finally {
-      refreshQtySavingState();
-    }
-  }, [applyCartFromResponse, refreshQtySavingState, syncFromMedusaCart]);
-
-  flushPendingQtyUpdatesInternalRef.current = flushPendingQtyUpdatesInternal;
+  const flushPendingQtyUpdates = useCallback(async () => {
+    await qtyFlushRunnerRef.current!.run();
+  }, []);
 
   const scheduleQtyFlush = useCallback(() => {
     if (qtyFlushTimerRef.current !== null) {
@@ -355,24 +415,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
     qtyFlushTimerRef.current = window.setTimeout(() => {
       qtyFlushTimerRef.current = null;
       refreshQtySavingState();
-      void flushPendingQtyUpdatesInternalRef.current();
+      void flushPendingQtyUpdates();
     }, QTY_DEBOUNCE_MS) as unknown as number;
-  }, [refreshQtySavingState]);
+  }, [flushPendingQtyUpdates, refreshQtySavingState]);
 
   const awaitPendingCartSync = useCallback(async (): Promise<MedusaCart | null> => {
     if (qtyFlushTimerRef.current !== null) {
       window.clearTimeout(qtyFlushTimerRef.current);
       qtyFlushTimerRef.current = null;
-      await flushPendingQtyUpdatesInternalRef.current();
-    } else {
-      await flushPendingQtyUpdatesInternalRef.current();
     }
+    await flushPendingQtyUpdates();
     const ops = [...pendingOpsRef.current];
     if (ops.length > 0) {
       await Promise.all(ops);
     }
     return lastServerCartRef.current;
-  }, []);
+  }, [flushPendingQtyUpdates]);
 
   useEffect(() => {
     // Child page useEffects (e.g. Cart / Checkout `seedFromServerCart`) run before this
@@ -765,7 +823,48 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // re-loaded on a subsequent page mount (React effects are async).
     persistItems([]);
     persistMedusaCartId(null);
+    // Mirror the clear to sibling tabs (skip when we're applying an inbound clear).
+    if (!inRemoteApplyRef.current) {
+      cartBroadcastRef.current?.broadcastClear();
+    }
   }, []);
+
+  // Subscribe to sibling-tab cart updates. Runs once on mount; the closed-over
+  // refs read above are mutated as state changes, so the handlers always see the
+  // latest cart id / generation without re-subscribing.
+  useEffect(() => {
+    const broadcast = createCartBroadcast({
+      onSnapshot: (cart) => {
+        // Adopt the sibling's snapshot only when it matches our cart id, or when
+        // we don't have one yet (sibling just created a Medusa cart). Otherwise
+        // ignore — diverging cart ids across tabs are abnormal and we'd rather
+        // surface that via a manual reload than overwrite local state.
+        const ours = medusaCartIdRef.current;
+        if (ours && cart.id !== ours) return;
+        inRemoteApplyRef.current = true;
+        try {
+          applyCartFromResponse(cart, cartGenerationRef.current);
+        } finally {
+          inRemoteApplyRef.current = false;
+        }
+      },
+      onClear: () => {
+        inRemoteApplyRef.current = true;
+        try {
+          // Use the public clearCart so all the local wipe steps run, but the
+          // re-broadcast is suppressed by the inRemoteApplyRef guard above.
+          clearCart();
+        } finally {
+          inRemoteApplyRef.current = false;
+        }
+      },
+    });
+    cartBroadcastRef.current = broadcast;
+    return () => {
+      broadcast.close();
+      cartBroadcastRef.current = null;
+    };
+  }, [applyCartFromResponse, clearCart]);
 
   const replaceMedusaCartId = useCallback((cartId: string | null) => {
     medusaCartIdRef.current = cartId;

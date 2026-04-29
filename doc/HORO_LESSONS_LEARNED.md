@@ -177,6 +177,93 @@ Also removed the private `subtotalFromCartLines` from `Cart.tsx` and switched to
 
 ---
 
+## 7. Skip `getCart` in Mini-Cart Prefetch When Ancillary Caches Are Warm
+
+**Category**: Medusa API / Performance • **Impact**: Low (eliminates 1 `getCart` round-trip per mini-cart reopen inside the 45 s window)
+
+### Issue
+
+`prefetchCheckoutAuxForCart` always called `getCart` to learn `region_id` before deciding whether to fetch shipping options and payment providers. If both the shipping-options cache and the payment-providers cache were still fresh, the `getCart` was entirely wasted — its only purpose was to feed `region_id` into `listShippingOptions` / `listPaymentProviders`.
+
+### Root Cause
+
+No secondary cache tracked `region_id` per `cartId`. The prefetch helper could not short-circuit because it did not know whether the `region_id` it needed was already available from a prior boot or refresh.
+
+### Solution
+
+Added a `regionIdByCartId` cache alongside the existing shipping-options and payment-providers caches in `checkout-aux-cache.ts`:
+
+- `getCachedRegionIdForCart(cartId)` / `setCachedRegionIdForCart(cartId, regionId)`
+- `prefetchCheckoutAuxForCart` now early-returns when **both** ancillary caches are fresh **and** we already know the region for the cart.
+- The cache is populated organically by every existing `setShippingOptionsCache(cartId, ...)` call in `Checkout.tsx` (boot, `refreshCartState`, `persistInformationAndShipping`).
+- `invalidateCheckoutAuxCacheForCart` now drops both shipping and region entries together, keeping invalidation atomic.
+- Three new unit tests cover freshness gating, blank-id rejection, and invalidation (`checkout-aux-cache.unit.spec.ts`).
+
+**Files**: `checkout-aux-cache.ts`, `checkout-aux-cache.unit.spec.ts`, `Checkout.tsx`
+
+### Prevention Standards
+
+- ✅ Any prefetch that needs a stable foreign key (`region_id`, `customer_id`) to query aux data should cache that key per resource id so the prefetch can short-circuit when the dependent caches are warm.
+- ✅ Invalidate caches atomically: if two caches are derived from the same cart state, they should be cleared by a single helper.
+
+---
+
+## 8. Propagate `Idempotency-Key` to All Cart Mutations
+
+**Category**: Medusa API / Correctness • **Impact**: Low–Medium (prevents duplicate line items on transient network blips during checkout-cart rebuild)
+
+### Issue
+
+The retry safety net (`completeCart`) already used an `Idempotency-Key`, but `addLineItem`, `updateLineItem`, `updateCart`, `addShippingMethod`, and `completeCart` did not. A transient network glitch during the serialized `addLineItem` rebuild could produce duplicates if the request reached Medusa but the response was lost.
+
+### Root Cause
+
+`request()` in `client.ts` did not accept or forward an `idempotencyKey`. Only the checkout completion path had ad-hoc idempotency logic.
+
+### Solution
+
+- Extended `request()` in `client.ts` to accept `idempotencyKey?: string` and forward it as the `Idempotency-Key` header. Medusa routes that do not recognize the header ignore it safely.
+- Updated `addLineItem`, `updateLineItem`, `updateCart`, `addShippingMethod`, and `completeCart` to accept an optional `{ idempotencyKey }` option and pass it through.
+- Added `checkoutCartRebuildLineIdempotencyKey` helper (`checkout-cart-rebuild.ts`) that generates a deterministic key per `(cartId, variantId, lineIndex)` so a transient blip during the rebuild → resume path cannot double-add the same line.
+- `recreateGuestCartFromCart` and the checkout cart rebuild now pass these deterministic keys.
+- Unit test asserts each rebuild POST carries the expected key (`checkout-cart-rebuild.unit.spec.ts`).
+
+**Files**: `client.ts`, `checkout-cart-rebuild.ts`, `checkout-cart-rebuild.unit.spec.ts`
+
+### Prevention Standards
+
+- ✅ Wire `Idempotency-Key` through the entire mutation surface, not just the highest-risk endpoint; a network blip can hit any POST.
+- ✅ Use deterministic keys (resource id + position / index) rather than random UUIDs so retries and replays resolve to the same idempotency scope.
+
+---
+
+## 9. Reuse RSC `initialCart` on First Checkout Boot
+
+**Category**: React / SSR / Performance • **Impact**: Medium (eliminates one more `getCart` round-trip on checkout cold load)
+
+### Issue
+
+Even after #1 (CartContext seed) and #3 (dedup `getCart` in boot), `ensureCheckoutCartAvailable` still unconditionally fetched the cart from Medusa to verify it existed before entering the shipping / providers fan-out. When the server had already supplied a valid cart via `initialCheckoutCart`, this was a wasted round-trip.
+
+### Root Cause
+
+`ensureCheckoutCartAvailable` only accepted a cart id; it had no path to accept an already-resolved cart snapshot from the RSC page wrapper.
+
+### Solution
+
+- `ensureCheckoutCartAvailable` now accepts an optional `{ cachedCart }` argument. When the cart id from storage matches `cachedCart.id`, the helper uses the cached cart directly and skips the `GET /store/carts/:id` round-trip (`Checkout.tsx`).
+- A one-shot `initialCartHintRef` feeds `initialCheckoutCart` into the boot effect's first call, then nulls itself out so any later refresh path always hits a live fetch.
+- Combined with #1 (`CartContext` seed) and #3 (single `getCart` in boot), a cold checkout load with valid RSC data now performs **zero redundant cart fetches** before the parallel shipping / providers fan-out: only `getCheckoutStatus` + `listShippingOptions` + `listPaymentProviders`.
+
+**Files**: `Checkout.tsx`
+
+### Prevention Standards
+
+- ✅ Boot helpers that resolve a resource should accept an optional cached snapshot; a simple identity match (same id) is enough to skip the verification GET.
+- ✅ Use a one-shot ref (`initialCartHintRef`) rather than state to pass the hint into an effect — this avoids re-triggering the boot path if React re-renders before the effect fires.
+
+---
+
 ## Remaining Observations (Not Yet Implemented)
 
 The following were identified during the same review but deferred to future work:
@@ -185,8 +272,6 @@ The following were identified during the same review but deferred to future work
 |---|-------------|----------|-----------------|
 | 4 | `Checkout.tsx` is 2,600 lines — split into focused modules (address parsing, payment methods, order snapshot) | Medium | Large refactor; bundle impact is acceptable until more payment providers are added |
 | 5 | `useEffect` dep list includes `items.length` — re-fetches checkout aux data on every add/remove | Medium | Requires careful restructuring of the boot vs. refresh paths; `awaitPendingCartSync` already handles explicit refreshes |
-| 8 | Mini-cart prefetch fires `getCart` even when shipping-options + payment-providers caches are fresh | Low | Would need a secondary `region_id`-by-`cartId` cache; gain is one small `getCart` round-trip |
-| 9 | `Idempotency-Key` not propagated to `addLineItem` / `updateCart` / `addShippingMethod` | Low | User-driven actions; risk is highest only for the now-serialized checkout-cart rebuild |
 | 10 | `OrderSummary` skeleton briefly shown even when `initialCart` was server-supplied | Cosmetic | Logic already correct — skeleton only shows when `initialState === 'unknown'`, which means the cookie pointed to an unfetchable cart |
 
 ---

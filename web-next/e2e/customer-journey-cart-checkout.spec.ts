@@ -81,6 +81,86 @@ async function seedBrowserCart(page: import("@playwright/test").Page, lines: See
   }, lines)
 }
 
+/**
+ * Create a REAL Medusa cart with real `lineId`s via the Store API and seed both
+ * the localStorage cart and the cart-id cookie/storage so the storefront treats
+ * the next stepper +/- as a Medusa `updateLineItem` call (the path that actually
+ * hits the qty-flush race). The plain `seedBrowserCart` helper writes only to
+ * localStorage and DOES NOT create a Medusa cart, which is why the original
+ * "rapid increase" test passed even with the race condition present — the
+ * storefront's `setLineQty` early-returns before ever calling Medusa.
+ */
+async function seedMedusaCart(
+  page: import("@playwright/test").Page,
+  lines: SeededCartLine[],
+): Promise<{ cartId: string; lineIdByVariantId: Record<string, string> }> {
+  const base = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").replace(/\/$/, "")
+  const key = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
+  if (!base || !key) {
+    throw new Error("Need NEXT_PUBLIC_MEDUSA_BACKEND_URL + NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY for seedMedusaCart()")
+  }
+
+  const headers = { "content-type": "application/json", "x-publishable-api-key": key }
+  const createRes = await fetch(`${base}/store/carts`, { method: "POST", headers, body: "{}" })
+  if (!createRes.ok) throw new Error(`createCart failed: ${createRes.status} ${await createRes.text()}`)
+  const created = (await createRes.json()) as { cart: { id: string } }
+  const cartId = created.cart.id
+
+  type CartItem = { id: string; variant_id: string }
+  type AddLineItemResponse = { cart: { items?: CartItem[] } }
+  const lineIdByVariantId: Record<string, string> = {}
+  let lastItems: CartItem[] = []
+  for (const line of lines) {
+    const res = await fetch(`${base}/store/carts/${cartId}/line-items`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ variant_id: line.variantId, quantity: line.qty }),
+    })
+    if (!res.ok) throw new Error(`addLineItem failed: ${res.status} ${await res.text()}`)
+    const data = (await res.json()) as AddLineItemResponse
+    lastItems = data.cart.items ?? []
+  }
+  for (const item of lastItems) {
+    lineIdByVariantId[item.variant_id] = item.id
+  }
+
+  // Seed localStorage cart with REAL lineIds + the cart-id cookie/storage so the
+  // CartProvider rehydrates with the cart already synced to Medusa.
+  const seedLines = lines.map((l) => ({ ...l, lineId: lineIdByVariantId[l.variantId] }))
+  await page.addInitScript(
+    ({ cart, id }: { cart: SeededCartLine[]; id: string }) => {
+      try {
+        localStorage.setItem("horo-cart-v1", JSON.stringify(cart))
+        localStorage.setItem("horo-medusa-cart-id-v1", id)
+        document.cookie = `horo_cart_id=${id}; path=/`
+      } catch {
+        /* ignore */
+      }
+    },
+    { cart: seedLines, id: cartId },
+  )
+
+  return { cartId, lineIdByVariantId }
+}
+
+/**
+ * Read the authoritative server-side qty for a Medusa cart line.
+ * Used after rapid stepper clicks to detect the qty-flush race that the original
+ * E2E test missed (it only asserted the optimistic UI, never the server state).
+ */
+async function readMedusaCartLineQty(cartId: string, lineId: string): Promise<number | null> {
+  const base = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").replace(/\/$/, "")
+  const key = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
+  if (!base || !key) return null
+  const res = await fetch(`${base}/store/carts/${cartId}`, {
+    headers: { "x-publishable-api-key": key },
+  })
+  if (!res.ok) return null
+  const data = (await res.json()) as { cart: { items: Array<{ id: string; quantity: number }> } }
+  const line = data.cart.items.find((i) => i.id === lineId)
+  return line?.quantity ?? null
+}
+
 test.beforeAll(async () => {
   const base = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").replace(/\/$/, "")
   const key = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
@@ -186,6 +266,9 @@ test.describe("customer journey: cart & checkout", () => {
   })
 
   // ─── Bug #1 fix validation: rapid multi-click responsiveness ───
+  // NOTE: Optimistic-UI assertion only (mirrors the original test). The companion
+  // test "rapid +/- against a real Medusa cart converges to the latest qty"
+  // below is the one that actually exercises the qty-flush race path.
   test("cart: rapid increase clicks respond immediately without delay", async ({ page }) => {
     const seeded = pickSeededCart()
     test.skip(!seeded, "Need at least two catalog products with live variants")
@@ -216,6 +299,155 @@ test.describe("customer journey: cart & checkout", () => {
     const secondRow = page.locator("article.cart-item").filter({ hasText: seeded!.second.productName }).first()
     const secondQty = secondRow.locator(".cart-stepper-value")
     await expect(secondQty).toHaveText("1", { timeout: 1000 })
+  })
+
+  // ─── Bug #1+#3 fix validation: REAL Medusa cart race-condition test ───
+  //
+  // Why this test exists: the "rapid increase clicks" test above seeds only
+  // localStorage and never creates a Medusa cart, so `setLineQty` early-returns
+  // before ever hitting the network — the qty-flush race could not be detected.
+  //
+  // This test:
+  //   1. Creates a REAL Medusa cart (with real `lineId`s) via the Store API.
+  //   2. Throttles `POST /store/carts/:id/line-items/:lineId` by ~250ms via
+  //      `page.route` so multiple rapid clicks land while the first PUT is in
+  //      flight — exactly the timing window where the previous code would issue
+  //      concurrent updateLineItem POSTs and snap the qty back.
+  //   3. Reloads the page after the burst, forcing a fresh `getCart` from Medusa.
+  //   4. Asserts BOTH the displayed qty AND the authoritative server-side qty
+  //      match the expected value (4) — the optimistic UI alone could be right
+  //      while the server is wrong, so we verify both.
+  test("cart: rapid +/- against a real Medusa cart converges to the latest qty (server-side)", async ({ page }) => {
+    test.skip(!catalogJson, "Need NEXT_PUBLIC_MEDUSA_BACKEND_URL + NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and a reachable Medusa")
+    const seeded = pickSeededCart()
+    test.skip(!seeded, "Need at least one catalog product with a live variant")
+
+    const startQty = 1
+    const clicks = 3 // 1 + 3 = 4 expected
+    const lines = [{ ...seeded!.first, qty: startQty }]
+    const { cartId, lineIdByVariantId } = await seedMedusaCart(page, lines)
+    const lineId = lineIdByVariantId[seeded!.first.variantId]
+    expect(lineId, "seedMedusaCart should return the new lineId").toBeTruthy()
+
+    // Throttle the qty-update endpoint to widen the race window.
+    // Pattern matches `POST /store/carts/{cartId}/line-items/{lineId}` (Medusa V2 update-line-item).
+    await page.route(/\/store\/carts\/[^/]+\/line-items\/[^/?]+(?:\?|$)/, async (route) => {
+      if (route.request().method() === "POST") {
+        await new Promise((r) => setTimeout(r, 250))
+      }
+      await route.continue()
+    })
+
+    await page.goto("/cart", { waitUntil: "domcontentloaded" })
+    await expect(page.getByRole("heading", { level: 1, name: /Your cart/i })).toBeVisible({ timeout: 30_000 })
+
+    const row = page.locator("article.cart-item").filter({ hasText: seeded!.first.productName }).first()
+    await expect(row).toBeVisible({ timeout: 30_000 })
+    const qtyDisplay = row.locator(".cart-stepper-value")
+    await expect(qtyDisplay).toHaveText(String(startQty))
+
+    const increaseBtn = row.getByRole("button", {
+      name: new RegExp(`Increase quantity for ${escapeRegExp(seeded!.first.productName)}`, "i"),
+    })
+
+    // Burst the clicks WITHOUT waiting for each network round-trip — this is the
+    // pattern the user reported (rapid +/-). Each click yields the event loop
+    // briefly so the optimistic state lands before the next click.
+    for (let i = 0; i < clicks; i += 1) {
+      await increaseBtn.click()
+    }
+
+    const expectedQty = startQty + clicks
+
+    // 1) Optimistic UI converges to the expected value almost instantly.
+    await expect(qtyDisplay).toHaveText(String(expectedQty), { timeout: 2000 })
+
+    // 2) Wait for all in-flight Medusa writes to settle (saving indicator clears).
+    await expect(row.locator('[aria-label="Saving quantity"]')).toHaveCount(0, { timeout: 30_000 })
+    // Belt-and-braces: also wait for network idle so any tail GET /store/carts settles.
+    await page.waitForLoadState("networkidle").catch(() => {})
+
+    // 3) The authoritative server-side qty MUST match the displayed value.
+    //    Before the single-flight fix, concurrent updateLineItem POSTs could
+    //    commit out-of-order and leave the server at qty=2 or qty=3 even though
+    //    the optimistic UI shows qty=4.
+    const serverQty = await readMedusaCartLineQty(cartId, lineId)
+    expect(serverQty, `Medusa cart line should be qty=${expectedQty}`).toBe(expectedQty)
+
+    // 4) Reload forces a fresh `getCart` and re-renders from server state.
+    //    With the bug, the UI would now snap back to the stale server qty.
+    await page.reload({ waitUntil: "domcontentloaded" })
+    const reloadedRow = page.locator("article.cart-item").filter({ hasText: seeded!.first.productName }).first()
+    const reloadedQty = reloadedRow.locator(".cart-stepper-value")
+    await expect(reloadedQty).toHaveText(String(expectedQty), { timeout: 30_000 })
+  })
+
+  // ─── Same race test, but on the CHECKOUT page summary stepper ───
+  //
+  // The checkout summary qty stepper (`Checkout.tsx`'s `OrderSummaryWithSteppers`)
+  // calls the SAME `useCart().setLineQty` as the cart page, so it goes through
+  // the same single-flight + serial-write flush runner in `qty-flush.ts`. This
+  // test exercises that path on the checkout route to prove the fix is in
+  // effect there too — the storefront only has ONE `CartProvider`, so cart and
+  // checkout share one runner, but a dedicated test guards against future
+  // refactors that might give checkout its own bypass path.
+  test("checkout: rapid +/- against a real Medusa cart converges to the latest qty (server-side)", async ({ page }) => {
+    test.skip(!catalogJson, "Need NEXT_PUBLIC_MEDUSA_BACKEND_URL + NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and a reachable Medusa")
+    const seeded = pickSeededCart()
+    test.skip(!seeded, "Need at least one catalog product with a live variant")
+    test.setTimeout(180_000)
+
+    const startQty = 1
+    const clicks = 3
+    const lines = [{ ...seeded!.first, qty: startQty }]
+    const { cartId, lineIdByVariantId } = await seedMedusaCart(page, lines)
+    const lineId = lineIdByVariantId[seeded!.first.variantId]
+    expect(lineId).toBeTruthy()
+
+    await page.route(/\/store\/carts\/[^/]+\/line-items\/[^/?]+(?:\?|$)/, async (route) => {
+      if (route.request().method() === "POST") {
+        await new Promise((r) => setTimeout(r, 250))
+      }
+      await route.continue()
+    })
+
+    await page.goto("/checkout", { waitUntil: "domcontentloaded" })
+    const checkoutMain = page.locator("#main-content")
+    await expect(checkoutMain.getByText(/Loading checkout/i)).toBeHidden({ timeout: 120_000 })
+    await expect(page.locator("#email")).toBeVisible({ timeout: 30_000 })
+
+    const group = page
+      .getByRole("group", { name: new RegExp(`(?:Qty|Quantity).*${escapeRegExp(seeded!.first.productName)}`, "i") })
+      .first()
+    await expect(group).toBeVisible({ timeout: 30_000 })
+
+    const qtyDisplay = group.locator(".cart-stepper-value")
+    await expect(qtyDisplay).toHaveText(String(startQty))
+
+    const increaseBtn = group.getByRole("button", { name: /Increase quantity/i })
+    for (let i = 0; i < clicks; i += 1) {
+      await increaseBtn.click()
+    }
+
+    const expectedQty = startQty + clicks
+
+    // Optimistic UI converges immediately.
+    await expect(qtyDisplay).toHaveText(String(expectedQty), { timeout: 2000 })
+
+    // Wait for in-flight Medusa writes to settle.
+    await page.waitForLoadState("networkidle").catch(() => {})
+
+    // Authoritative server-side qty must match.
+    const serverQty = await readMedusaCartLineQty(cartId, lineId)
+    expect(serverQty, `Medusa cart line should be qty=${expectedQty}`).toBe(expectedQty)
+
+    // Reload to verify the server-truth re-renders without snap-back.
+    await page.reload({ waitUntil: "domcontentloaded" })
+    await expect(checkoutMain.getByText(/Loading checkout/i)).toBeHidden({ timeout: 120_000 })
+    const reloadedGroup = page
+      .getByRole("group", { name: new RegExp(`(?:Qty|Quantity).*${escapeRegExp(seeded!.first.productName)}`, "i") })
+      .first()
+    await expect(reloadedGroup.locator(".cart-stepper-value")).toHaveText(String(expectedQty), { timeout: 30_000 })
   })
 
   // ─── Cart: decrease to 0 removes the item ───

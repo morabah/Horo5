@@ -1038,6 +1038,11 @@ async function ensureEgyptCheckoutInfrastructure(args: {
       add: [salesChannelId],
     },
   })
+
+  return {
+    shippingProfileId: shippingProfile.id as string,
+    stockLocationId: stockLocation.id as string,
+  }
 }
 
 export default async function seedEgyptCatalog({ container }: ExecArgs) {
@@ -1087,7 +1092,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
 
   const region = await ensureEgyptRegion({ container, query })
 
-  await ensureEgyptCheckoutInfrastructure({
+  const { shippingProfileId } = await ensureEgyptCheckoutInfrastructure({
     container,
     query,
     regionId: region.id,
@@ -1226,6 +1231,22 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
       images: allImages,
       thumbnail: uploadedMedia.main,
       options: [{ title: "Size", values: [...sizeValues] }],
+      // REQUIRED — Medusa V2's `completeCartWorkflow` validates that every
+      // line item's product has a shipping profile that is also covered by a
+      // shipping method on the cart. Without this link, /store/carts/:id/complete
+      // returns 400 "shipping profiles that are not satisfied". The Egypt
+      // shipping option created in `ensureEgyptCheckoutInfrastructure` is bound
+      // to the same Default Shipping Profile so the storefront's checkout
+      // (which auto-attaches that option) satisfies the validation.
+      shipping_profile_id: shippingProfileId,
+      // Default seeding: stock is NOT tracked at the cart layer here
+      // (manage_inventory=false + allow_backorder=true). Run
+      // `npx medusa exec ./src/scripts/enable-variant-stock-tracking.ts <qty>`
+      // AFTER this seed to flip these variants into real stock-tracked mode —
+      // that script also creates inventory levels at the default location, at
+      // which point Medusa's `completeCart` will reserve units and
+      // `confirmReturnRequest` will restore them automatically (the storefront
+      // catalog already reads stocked_quantity − reserved_quantity).
       variants: sizeValues.map((size) => ({
         title: size,
         sku: `${product.slug.toUpperCase()}-${size}`,
@@ -1261,6 +1282,10 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     images: [],
     thumbnail: "",
     options: [{ title: "Default", values: ["Default"] }],
+    // See note above on regular products — Medusa V2 requires every product
+    // in the cart to be linked to a shipping profile, otherwise completeCart
+    // fails with "shipping profiles that are not satisfied".
+    shipping_profile_id: shippingProfileId,
     variants: [{
       title: "Default",
       sku: "GIFT-WRAP",
@@ -1307,6 +1332,49 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
             },
       },
     })
+  }
+
+  // Self-heal product ↔ shipping_profile links.
+  //
+  // `createProductsWorkflow` honors `shipping_profile_id` on the product input
+  // and creates the link, but `updateProductsWorkflow` (above) intentionally
+  // updates ONLY the fields we list — it does NOT touch the shipping profile
+  // link. That means products that existed in the DB before this fix landed
+  // (or that were created on an older seed) keep their broken state across
+  // re-seeds and break /store/carts/:id/complete with
+  // "shipping profiles that are not satisfied".
+  //
+  // To make the seed self-healing for every catalog product, we query the
+  // current state and create the missing link via the link service (the same
+  // service `ensureLinkExists` uses for stock-location ↔ fulfillment links).
+  const seededHandles = productsInput.map((p: { handle: string }) => p.handle)
+  if (seededHandles.length) {
+    const link = container.resolve<{
+      create: (input: Record<string, unknown>) => Promise<unknown>
+    }>(ContainerRegistrationKeys.LINK)
+    const { data: seededProducts } = await query.graph({
+      entity: "product",
+      fields: ["id", "handle", "shipping_profile.id"],
+      filters: { handle: seededHandles },
+      pagination: { take: seededHandles.length },
+    })
+    const missingLink = ((seededProducts || []) as Array<{
+      id: string
+      handle: string | null
+      shipping_profile?: { id: string } | null
+    }>).filter((p) => !p.shipping_profile?.id)
+
+    if (missingLink.length) {
+      logger.info(
+        `Healing ${missingLink.length} product(s) missing a shipping profile link.`
+      )
+      for (const p of missingLink) {
+        await ensureLinkExists(link, {
+          [Modules.PRODUCT]: { product_id: p.id },
+          [Modules.FULFILLMENT]: { shipping_profile_id: shippingProfileId },
+        })
+      }
+    }
   }
 
   await linkLegacyProductsToApparelCategory({
