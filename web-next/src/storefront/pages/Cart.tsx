@@ -530,14 +530,17 @@ export function Cart({
     setShippingFetch({ kind: 'loading' });
     void (async () => {
       try {
-        const { cart } = await getCart(medusaCartId);
-        let options = getFreshShippingOptions(medusaCartId) ?? [];
-        if (options.length === 0) {
-          const { shipping_options } = await listShippingOptions(medusaCartId);
-          options = shipping_options ?? [];
-        }
+        const [cartResponse, options] = await Promise.all([
+          getCart(medusaCartId),
+          (async () => {
+            const cached = getFreshShippingOptions(medusaCartId);
+            if (cached && cached.length > 0) return cached;
+            const { shipping_options } = await listShippingOptions(medusaCartId);
+            return shipping_options ?? [];
+          })(),
+        ]);
         if (cancelled) return;
-        setShippingFetch({ kind: 'ok', cart, options });
+        setShippingFetch({ kind: 'ok', cart: cartResponse.cart, options });
       } catch {
         if (!cancelled) setShippingFetch({ kind: 'error' });
       }

@@ -1436,7 +1436,14 @@ export function Checkout({
       });
 
       let refreshedCart = updated.cart;
-      let liveProviders: MedusaPaymentProvider[] = [];
+      
+      // Fire listPaymentProviders in parallel with shipping operations (Agent.md §1.2)
+      const providersPromise = refreshedCart.region_id
+        ? listPaymentProviders(refreshedCart.region_id)
+            .then((response) => normalizePaymentProviders(response.payment_providers))
+            .catch(() => [])
+        : Promise.resolve([]);
+
       const liveShippingOptions = await listShippingOptions(activeCartId).then((response) => response.shipping_options).catch(() => []);
 
       if (liveShippingOptions.length === 0) {
@@ -1455,12 +1462,8 @@ export function Checkout({
       setCheckoutCart(refreshedCart);
       setShippingOption(preferredShippingOption);
 
-      if (refreshedCart.region_id) {
-        liveProviders = await listPaymentProviders(refreshedCart.region_id)
-          .then((response) => normalizePaymentProviders(response.payment_providers))
-          .catch(() => []);
-        setPaymentProviders(liveProviders);
-      }
+      const liveProviders = await providersPromise;
+      setPaymentProviders(liveProviders);
 
       setShippingOptionsCache(activeCartId, liveShippingOptions);
       if (refreshedCart.region_id) {
