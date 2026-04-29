@@ -192,6 +192,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   /** Monotonic counter incremented on clearCart to invalidate in-flight syncs. */
   const cartGenerationRef = useRef(0);
   const medusaCartIdRef = useRef<string | null>(null);
+  /** Stable ref to the latest items state — used inside callbacks to avoid stale closures. */
+  const itemsRef = useRef<CartLine[]>(items);
   /** Latest cart returned from a successful mutation (for checkout refresh hints). */
   const lastServerCartRef = useRef<MedusaCart | null>(null);
   const pendingOpsRef = useRef(new Set<Promise<unknown>>());
@@ -351,6 +353,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [medusaCartId]);
 
   useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
+  useEffect(() => {
     if (!miniCartOpen || !medusaCartId) return;
     prefetchCheckoutAuxForCart(medusaCartId);
   }, [miniCartOpen, medusaCartId]);
@@ -469,11 +475,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeItem = useCallback(
     (productSlug: string, size: ProductSizeKey, variantId?: string, lineId?: string) => {
       const identity = { productSlug, size, variantId, lineId };
-      const line = items[findCartLineIndex(items, identity)];
+      const currentItems = itemsRef.current;
+      const line = currentItems[findCartLineIndex(currentItems, identity)];
       const medusaLineId = line?.lineId ?? lineId;
       pendingQtyByKeyRef.current.delete(cartLineIdentityKey({ ...identity, lineId: medusaLineId }));
       setItems((prev) => removeCartLine(prev, identity));
-      const activeCartId = medusaCartIdRef.current ?? medusaCartId;
+      const activeCartId = medusaCartIdRef.current;
       if (!medusaLineId || !activeCartId) return;
       const p = (async () => {
         const gen = cartGenerationRef.current;
@@ -488,16 +495,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       })();
       trackOp(p);
     },
-    [applyCartFromResponse, clearStaleCartIf404, items, medusaCartId, trackOp],
+    [applyCartFromResponse, clearStaleCartIf404, trackOp],
   );
 
   const setLineQty = useCallback(
     (productSlug: string, size: ProductSizeKey, qty: number, variantId?: string, lineId?: string) => {
       const identity = { productSlug, size, variantId, lineId };
-      const line = items[findCartLineIndex(items, identity)];
+      const currentItems = itemsRef.current;
+      const line = currentItems[findCartLineIndex(currentItems, identity)];
       const medusaLineId = line?.lineId ?? lineId;
       const pendingKey = cartLineIdentityKey({ ...identity, lineId: medusaLineId });
-      const activeCartId = medusaCartIdRef.current ?? medusaCartId;
+      const activeCartId = medusaCartIdRef.current;
       if (qty < 1) {
         pendingQtyByKeyRef.current.delete(pendingKey);
         if (qtyFlushTimerRef.current !== null) {
@@ -537,7 +545,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         scheduleQtyFlush();
       }
     },
-    [applyCartFromResponse, clearStaleCartIf404, items, medusaCartId, scheduleQtyFlush, trackOp],
+    [applyCartFromResponse, clearStaleCartIf404, scheduleQtyFlush, trackOp],
   );
 
   const addGiftWrap = useCallback(async () => {
