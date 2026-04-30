@@ -67,6 +67,21 @@ export type StockTrackingOptions = {
   stockMap?: StockMap;
 };
 
+export type StockTrackingResult = {
+  summary: string;
+  details: {
+    dryRun: boolean;
+    defaultQty: number;
+    totalVariants: number;
+    needsFlagFlip: number;
+    alreadyTracked: number;
+    skipped: number;
+    inventoryItemsTargeted: number;
+    levelsToCreate: number;
+    levelsToUpdate: number;
+  };
+};
+
 type StockLocationRow = { id: string; name?: string };
 
 type VariantRow = {
@@ -182,7 +197,7 @@ function stockQtyForVariant(
 export async function runEnableVariantStockTracking(
   container: ExecArgs["container"],
   options: StockTrackingOptions = {},
-) {
+): Promise<StockTrackingResult> {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
   const stockLocationModule = container.resolve(Modules.STOCK_LOCATION);
@@ -297,7 +312,20 @@ export async function runEnableVariantStockTracking(
     logger.warn(
       "No inventory_items found for tracked variants. Did the flag flip succeed? (Re-run without --dry-run.)",
     );
-    return;
+    return {
+      summary: "No inventory items found for tracked variants.",
+      details: {
+        dryRun,
+        defaultQty,
+        totalVariants: variants.length,
+        needsFlagFlip: needsFlagFlip.length,
+        alreadyTracked: alreadyTracked.length,
+        skipped: skipped.length,
+        inventoryItemsTargeted: 0,
+        levelsToCreate: 0,
+        levelsToUpdate: 0,
+      },
+    };
   }
 
   // 5) Read existing inventory levels at the chosen location so we can split
@@ -349,7 +377,20 @@ export async function runEnableVariantStockTracking(
 
   if (dryRun) {
     logger.info("Dry run complete — no writes performed.");
-    return;
+    return {
+      summary: `Dry run: would flip ${needsFlagFlip.length} variant(s), create ${toCreate.length} level(s), and update ${toUpdate.length} level(s).`,
+      details: {
+        dryRun,
+        defaultQty,
+        totalVariants: variants.length,
+        needsFlagFlip: needsFlagFlip.length,
+        alreadyTracked: alreadyTracked.length,
+        skipped: skipped.length,
+        inventoryItemsTargeted: targetInventoryItemIds.length,
+        levelsToCreate: toCreate.length,
+        levelsToUpdate: toUpdate.length,
+      },
+    };
   }
 
   if (toCreate.length > 0) {
@@ -369,6 +410,20 @@ export async function runEnableVariantStockTracking(
   logger.info(
     "Done. From now on `completeCart` will reserve inventory for these variants and `confirmReturnRequest` will restore it. The storefront's `storefront/catalog.ts` already reads stocked_quantity - reserved_quantity, so PDPs and cart will reflect real availability on the next request.",
   );
+  return {
+    summary: `Enabled stock tracking for ${needsFlagFlip.length} variant(s); created ${toCreate.length} level(s), updated ${toUpdate.length} level(s).`,
+    details: {
+      dryRun,
+      defaultQty,
+      totalVariants: variants.length,
+      needsFlagFlip: needsFlagFlip.length,
+      alreadyTracked: alreadyTracked.length,
+      skipped: skipped.length,
+      inventoryItemsTargeted: targetInventoryItemIds.length,
+      levelsToCreate: toCreate.length,
+      levelsToUpdate: toUpdate.length,
+    },
+  };
 }
 
 export default async function enableVariantStockTracking({

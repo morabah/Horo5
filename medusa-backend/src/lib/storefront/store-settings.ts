@@ -1,6 +1,8 @@
 import { Modules } from "@medusajs/framework/utils"
 import type { MedusaContainer } from "@medusajs/types"
 
+import { HOMEPAGE_SECTION_TYPES } from "../homepage-sections/types"
+
 /**
  * Admin often stores metadata values as JSON strings — normalize to a plain object for the storefront.
  */
@@ -118,14 +120,14 @@ export type StorefrontSearchSettingsDTO = {
   priceBands: StorefrontPriceBandDTO[]
 }
 
-/** Lightweight homepage layout knobs — full CMS-style sections live in the future homepage_section module. */
+/** Legacy lightweight homepage layout knobs; full CMS-style sections live in the homepage_section module. */
 export type StorefrontHomepageSettingsDTO = {
   /**
    * Ordered list of section keys to render on the home page. Storefront falls back to its
    * built-in 5-section list when this is null, ensuring forward compatibility.
    * Allowed keys: hero, trust_ribbon, primary_routes, founding_drop, featured_piece,
    * behind_the_piece, feeling_grid, occasion_grid, why_horo, gift_block, first_drop_circle,
-   * artist_spotlight, seen_on_you.
+   * proof_strip, artist_spotlight, seen_on_you.
    */
   sectionsEnabled: string[] | null
 }
@@ -258,21 +260,7 @@ function parseSearch(raw: unknown): StorefrontSearchSettingsDTO | null {
 }
 
 /** Recognized homepage section keys — kept in sync with storefront component map. */
-const HOMEPAGE_SECTION_KEYS = new Set<string>([
-  "hero",
-  "trust_ribbon",
-  "primary_routes",
-  "founding_drop",
-  "featured_piece",
-  "behind_the_piece",
-  "feeling_grid",
-  "occasion_grid",
-  "why_horo",
-  "gift_block",
-  "first_drop_circle",
-  "artist_spotlight",
-  "seen_on_you",
-])
+const HOMEPAGE_SECTION_KEYS = new Set<string>([...HOMEPAGE_SECTION_TYPES, "behind_the_piece"])
 
 function parseHomepage(raw: unknown): StorefrontHomepageSettingsDTO | null {
   const obj = parseObjectBlob(raw)

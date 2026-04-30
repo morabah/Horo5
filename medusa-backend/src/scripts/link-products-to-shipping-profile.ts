@@ -62,6 +62,26 @@ type ProductRow = {
   shipping_profile?: { id: string; name?: string | null } | null;
 };
 
+export type LinkProductsToShippingProfileOptions = {
+  dryRun?: boolean;
+};
+
+export type LinkProductsToShippingProfileResult = {
+  summary: string;
+  details: {
+    dryRun: boolean;
+    targetProfileId: string;
+    targetProfileName: string;
+    totalProducts: number;
+    alreadyLinked: number;
+    wrongProfile: number;
+    missing: number;
+    linked: number;
+    sampleMissing: string[];
+    sampleWrongProfile: string[];
+  };
+};
+
 async function ensureLinkExists(
   link: { create: (input: Record<string, unknown>) => Promise<unknown> },
   input: Record<string, unknown>,
@@ -76,10 +96,10 @@ async function ensureLinkExists(
   }
 }
 
-export default async function linkProductsToShippingProfile({
-  container,
-  args,
-}: ExecArgs) {
+export async function runLinkProductsToShippingProfile(
+  container: ExecArgs["container"],
+  options: LinkProductsToShippingProfileOptions = {},
+): Promise<LinkProductsToShippingProfileResult> {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
   const query = container.resolve(ContainerRegistrationKeys.QUERY);
   const link = container.resolve<{
@@ -89,7 +109,7 @@ export default async function linkProductsToShippingProfile({
     listShippingProfiles: (filter?: Record<string, unknown>) => Promise<ShippingProfileRow[]>;
   }>(Modules.FULFILLMENT);
 
-  const dryRun = Array.isArray(args) && args.includes("dryrun");
+  const dryRun = Boolean(options.dryRun);
 
   // 1) Resolve the target shipping profile.
   // Prefer type:"default", then a profile whose name contains "default",
@@ -126,7 +146,21 @@ export default async function linkProductsToShippingProfile({
 
   if (!products.length) {
     logger.info("No products in the catalog — nothing to do.");
-    return;
+    return {
+      summary: "No products in the catalog.",
+      details: {
+        dryRun,
+        targetProfileId: profile.id,
+        targetProfileName: profile.name,
+        totalProducts: 0,
+        alreadyLinked: 0,
+        wrongProfile: 0,
+        missing: 0,
+        linked: 0,
+        sampleMissing: [],
+        sampleWrongProfile: [],
+      },
+    };
   }
 
   const linkedCorrectly: ProductRow[] = [];
@@ -165,7 +199,21 @@ export default async function linkProductsToShippingProfile({
     logger.info(
       "Nothing to backfill — every product already has a shipping profile link.",
     );
-    return;
+    return {
+      summary: "Every product already has a shipping profile link.",
+      details: {
+        dryRun,
+        targetProfileId: profile.id,
+        targetProfileName: profile.name,
+        totalProducts: products.length,
+        alreadyLinked: linkedCorrectly.length,
+        wrongProfile: linkedToWrongProfile.length,
+        missing: 0,
+        linked: 0,
+        sampleMissing: [],
+        sampleWrongProfile: linkedToWrongProfile.slice(0, 10).map((p) => p.handle ?? p.id),
+      },
+    };
   }
 
   if (dryRun) {
@@ -177,16 +225,32 @@ export default async function linkProductsToShippingProfile({
       `DRY RUN — would create ${missing.length} product↔shipping_profile link(s). ` +
         `Sample: ${preview}${missing.length > 10 ? " ..." : ""}`,
     );
-    return;
+    return {
+      summary: `Dry run: would link ${missing.length} product(s) to "${profile.name}".`,
+      details: {
+        dryRun,
+        targetProfileId: profile.id,
+        targetProfileName: profile.name,
+        totalProducts: products.length,
+        alreadyLinked: linkedCorrectly.length,
+        wrongProfile: linkedToWrongProfile.length,
+        missing: missing.length,
+        linked: 0,
+        sampleMissing: missing.slice(0, 10).map((p) => p.handle ?? p.id),
+        sampleWrongProfile: linkedToWrongProfile.slice(0, 10).map((p) => p.handle ?? p.id),
+      },
+    };
   }
 
   // 3) Create the missing links. Use ensureLinkExists so this is safe to
   //    re-run if the script is interrupted partway through.
+  let linked = 0;
   for (const p of missing) {
     await ensureLinkExists(link, {
       [Modules.PRODUCT]: { product_id: p.id },
       [Modules.FULFILLMENT]: { shipping_profile_id: profile.id },
     });
+    linked++;
   }
 
   logger.info(
@@ -197,4 +261,28 @@ export default async function linkProductsToShippingProfile({
       "validation for these products, provided the cart has a shipping method " +
       "for the same profile (the storefront's checkout already attaches one).",
   );
+  return {
+    summary: `Linked ${linked} product(s) to shipping profile "${profile.name}".`,
+    details: {
+      dryRun,
+      targetProfileId: profile.id,
+      targetProfileName: profile.name,
+      totalProducts: products.length,
+      alreadyLinked: linkedCorrectly.length,
+      wrongProfile: linkedToWrongProfile.length,
+      missing: missing.length,
+      linked,
+      sampleMissing: missing.slice(0, 10).map((p) => p.handle ?? p.id),
+      sampleWrongProfile: linkedToWrongProfile.slice(0, 10).map((p) => p.handle ?? p.id),
+    },
+  };
+}
+
+export default async function linkProductsToShippingProfile({
+  container,
+  args,
+}: ExecArgs) {
+  await runLinkProductsToShippingProfile(container, {
+    dryRun: Array.isArray(args) && args.includes("dryrun"),
+  });
 }

@@ -19,6 +19,84 @@ import { createPromotionsWorkflow } from "@medusajs/medusa/core-flows"
 const DEFAULT_THRESHOLD_EGP = 1500
 const FREE_SHIPPING_CODE_PREFIX = "HORO_FREE_SHIPPING"
 
+export async function runUpdateIncentiveThreshold(
+  container: ExecArgs["container"],
+  options: { thresholdEgp?: number; dryRun?: boolean } = {},
+): Promise<{ summary: string; details: { code: string; threshold: number; created: boolean } }> {
+  const threshold = options.thresholdEgp ?? DEFAULT_THRESHOLD_EGP
+  if (!Number.isFinite(threshold) || threshold <= 0) {
+    return { summary: `Invalid threshold: ${threshold}`, details: { code: "", threshold, created: false } }
+  }
+
+  const code = `${FREE_SHIPPING_CODE_PREFIX}_${threshold}`
+  const promotionModule = container.resolve(Modules.PROMOTION)
+
+  const existing = await promotionModule.listPromotions(
+    { code },
+    { take: 1, relations: ["rules", "rules.values"] },
+  )
+  const existingRow = existing[0] as
+    | { id: string; rules?: Array<{ attribute?: string; operator?: string }> }
+    | undefined
+
+  if (existingRow) {
+    const hasSubtotalRule = (existingRow.rules ?? []).some((r) => {
+      const a = (r.attribute ?? "").toLowerCase()
+      const o = (r.operator ?? "").toLowerCase()
+      return (a === "subtotal" || a === "cart.subtotal") && (o === "gte" || o === "gt")
+    })
+
+    if (!hasSubtotalRule && !options.dryRun) {
+      await promotionModule.addPromotionRules(existingRow.id, [
+        { attribute: "subtotal", operator: "gte", values: [String(threshold)] },
+      ])
+    }
+
+    return {
+      summary: options.dryRun
+        ? `[dry-run] Promotion "${code}" already exists (id=${existingRow.id}).`
+        : `Promotion "${code}" already exists (id=${existingRow.id}). Subtotal rule ${hasSubtotalRule ? "present" : "added"}.`,
+      details: { code, threshold, created: false },
+    }
+  }
+
+  if (options.dryRun) {
+    return {
+      summary: `[dry-run] Would create promotion "${code}" with threshold ${threshold} EGP.`,
+      details: { code, threshold, created: true },
+    }
+  }
+
+  const { result } = await createPromotionsWorkflow(container).run({
+    input: {
+      promotionsData: [
+        {
+          code,
+          type: "standard",
+          is_automatic: true,
+          status: "active",
+          application_method: {
+            type: "percentage",
+            target_type: "shipping_methods",
+            value: 100,
+            currency_code: "egp",
+            allocation: "across",
+          },
+          rules: [
+            { attribute: "subtotal", operator: "gte", values: [String(threshold)] },
+          ],
+        },
+      ],
+    },
+  })
+
+  const created = result?.[0] as { id?: string } | undefined
+  return {
+    summary: `Created promotion id=${created?.id} code=${code} threshold=${threshold} EGP`,
+    details: { code, threshold, created: true },
+  }
+}
+
 export default async function seedIncentives({ container }: ExecArgs) {
   const threshold = Number(process.env.FREE_SHIPPING_THRESHOLD_EGP ?? DEFAULT_THRESHOLD_EGP)
   if (!Number.isFinite(threshold) || threshold <= 0) {

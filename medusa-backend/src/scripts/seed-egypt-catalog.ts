@@ -31,6 +31,7 @@ import {
   derivePrimarySubfeelingSlugFromLegacyProduct,
   normalizeLegacyWebFeelingSlug,
 } from "../lib/storefront/legacy-compat"
+import { DEFAULT_HOMEPAGE_SECTIONS, type HomepageSectionSeed } from "../lib/homepage-sections/defaults"
 import { FEELINGS_ROOT_HANDLE } from "../lib/storefront/feeling-category-metadata"
 import { ARTIST_MODULE } from "../modules/artist"
 import type ArtistModuleService from "../modules/artist/service"
@@ -46,9 +47,16 @@ import { EGYPT_REGION_NAME, getEgyptRegionPaymentProviders } from "./lib/egypt-c
 import { merchEvents } from "./data/merch-events"
 import { MERCH_EVENT_MODULE } from "../modules/merch-event"
 import type MerchEventModuleService from "../modules/merch-event/service"
+import { HOMEPAGE_SECTION_MODULE } from "../modules/homepage-section"
+import type HomepageSectionModuleService from "../modules/homepage-section/service"
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
 type ProductSizeKey = "S" | "M" | "L" | "XL" | "XXL"
+
+type HomepageSectionWriteService = HomepageSectionModuleService & {
+  createHomepageSections(input: HomepageSectionSeed | HomepageSectionSeed[]): Promise<unknown>
+  updateHomepageSections(input: { selector: { id: string }; data: HomepageSectionSeed }): Promise<unknown>
+}
 
 type ProductMedia = {
   gallery: string[]
@@ -1053,6 +1061,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
   const artistModuleService = container.resolve<ArtistModuleService>(ARTIST_MODULE)
   const occasionModuleService = container.resolve<OccasionModuleService>(OCCASION_MODULE)
   const merchEventModuleService = container.resolve<MerchEventModuleService>(MERCH_EVENT_MODULE)
+  const homepageSectionModuleService = container.resolve<HomepageSectionWriteService>(HOMEPAGE_SECTION_MODULE)
   const { legacyOccasions, legacyProducts } = await loadLegacyCatalogPayload()
   const seedCatalogProducts: LegacyProduct[] = [...legacyProducts, ...buildEgyptHeroLegacyProducts()]
 
@@ -1493,6 +1502,24 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
       })
     } else {
       await merchEventModuleService.createMerchEvents(payload)
+    }
+  }
+
+  const existingHomepageSections = new Map(
+    (await homepageSectionModuleService.listHomepageSections({
+      key: DEFAULT_HOMEPAGE_SECTIONS.map((section) => section.key),
+    }) as Array<{ id: string; key: string }>).map((section) => [section.key, section]),
+  )
+
+  for (const section of DEFAULT_HOMEPAGE_SECTIONS) {
+    const existingSection = existingHomepageSections.get(section.key)
+    if (existingSection) {
+      await homepageSectionModuleService.updateHomepageSections({
+        selector: { id: existingSection.id },
+        data: section,
+      })
+    } else {
+      await homepageSectionModuleService.createHomepageSections(section)
     }
   }
 

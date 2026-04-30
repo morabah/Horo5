@@ -33,6 +33,19 @@ export type BackfillInventoryOptions = {
   stockMap?: StockMap
 }
 
+export type BackfillInventoryResult = {
+  summary: string
+  details: {
+    dryRun: boolean
+    defaultQty: number
+    variantsWithInventoryItem: number
+    variantsMissingInventoryItem: number
+    inventoryItemsTargeted: number
+    levelsToCreate: number
+    levelsToUpdate: number
+  }
+}
+
 type StockLocationRow = { id: string; name?: string }
 
 type VariantRow = {
@@ -147,7 +160,7 @@ function stockQtyForVariant(
 export async function runBackfillInventoryLevels(
   container: ExecArgs["container"],
   options: BackfillInventoryOptions = {},
-) {
+): Promise<BackfillInventoryResult> {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
   const inventoryModule = container.resolve<{
@@ -282,7 +295,18 @@ export async function runBackfillInventoryLevels(
   }
 
   if (dryRun && missingInventoryItem.length > 0) {
-    return
+    return {
+      summary: `Dry run: would backfill ${missingInventoryItem.length} variant(s) missing inventory items.`,
+      details: {
+        dryRun,
+        defaultQty,
+        variantsWithInventoryItem: hasInventoryItem.length,
+        variantsMissingInventoryItem: missingInventoryItem.length,
+        inventoryItemsTargeted: 0,
+        levelsToCreate: 0,
+        levelsToUpdate: 0,
+      },
+    }
   }
 
   const { data: refreshedVariants } = (await query.graph({
@@ -318,7 +342,18 @@ export async function runBackfillInventoryLevels(
 
   if (!allInventoryItemIds.length) {
     logger.warn("No inventory items found for tracked variants - nothing to do for levels.")
-    return
+    return {
+      summary: "No inventory items found for tracked variants.",
+      details: {
+        dryRun,
+        defaultQty,
+        variantsWithInventoryItem: hasInventoryItem.length,
+        variantsMissingInventoryItem: missingInventoryItem.length,
+        inventoryItemsTargeted: 0,
+        levelsToCreate: 0,
+        levelsToUpdate: 0,
+      },
+    }
   }
 
   const { data: existingLevels } = (await query.graph({
@@ -363,7 +398,18 @@ export async function runBackfillInventoryLevels(
 
   if (dryRun) {
     logger.info("Dry run complete - no writes performed.")
-    return
+    return {
+      summary: `Dry run: would create ${toCreate.length} inventory level(s) and update ${toUpdate.length} level(s).`,
+      details: {
+        dryRun,
+        defaultQty,
+        variantsWithInventoryItem: hasInventoryItem.length,
+        variantsMissingInventoryItem: missingInventoryItem.length,
+        inventoryItemsTargeted: allInventoryItemIds.length,
+        levelsToCreate: toCreate.length,
+        levelsToUpdate: toUpdate.length,
+      },
+    }
   }
 
   if (toCreate.length > 0) {
@@ -381,6 +427,18 @@ export async function runBackfillInventoryLevels(
   }
 
   logger.info("Done. All tracked variants now have inventory items + levels.")
+  return {
+    summary: `Backfilled inventory: created ${toCreate.length} level(s), updated ${toUpdate.length} level(s).`,
+    details: {
+      dryRun,
+      defaultQty,
+      variantsWithInventoryItem: hasInventoryItem.length,
+      variantsMissingInventoryItem: missingInventoryItem.length,
+      inventoryItemsTargeted: allInventoryItemIds.length,
+      levelsToCreate: toCreate.length,
+      levelsToUpdate: toUpdate.length,
+    },
+  }
 }
 
 export default async function backfillInventoryLevels({ container, args }: ExecArgs) {

@@ -7,6 +7,24 @@ import { validateTaxonomySlug } from "../../../../lib/storefront/taxonomy-slug"
 import { assertTaxonomyAdminWrite } from "../taxonomy-auth"
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
+  const includeIds = req.query.includeIds === "true"
+  if (includeIds) {
+    const service = req.scope.resolve<OccasionModuleService>(OCCASION_MODULE)
+    const rows = await service.listOccasions({})
+    const occasions = (rows as Array<Record<string, unknown>>)
+      .map((row) => ({
+        id: row.id,
+        slug: row.slug,
+        name: row.name,
+        blurb: row.blurb ?? "",
+        active: row.active !== false,
+        sortOrder: Number(row.sort_order || 0),
+      }))
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+    res.status(200).json({ occasions })
+    return
+  }
+
   const occasions = await listStorefrontOccasions(req.scope)
   res.status(200).json({ occasions })
 }

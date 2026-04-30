@@ -1,6 +1,23 @@
 import type { ExecArgs } from "@medusajs/framework/types"
 import { Client } from "pg"
 
+export type ApplyEgpWholePoundPricesOptions = {
+  dryRun?: boolean
+}
+
+export type ApplyEgpWholePoundPricesResult = {
+  summary: string
+  details: {
+    dryRun: boolean
+    egpDecimalDigitsBefore: number | null
+    egpDecimalDigitsAfter: number | null
+    priceRowsStillGe10kBefore: string
+    priceRowsStillGe10kAfter: string
+    rowCountFirstPass: number | null
+    rowCountSecondPass: number | null
+  }
+}
+
 /**
  * Medusa v2 `medusa db:migrate` runs **module** migrations only; SQL in `src/migrations/`
  * (e.g. EGP whole-pound updates) is not executed automatically. This script applies the same
@@ -8,11 +25,14 @@ import { Client } from "pg"
  *
  * Run: `npm run migrate:egp-prices` from `medusa-backend/` (uses DATABASE_URL from `.env`).
  */
-export default async function applyEgpWholePoundPrices(_args: ExecArgs) {
+export async function runApplyEgpWholePoundPrices(
+  options: ApplyEgpWholePoundPricesOptions = {},
+): Promise<ApplyEgpWholePoundPricesResult> {
   const url = process.env.DATABASE_URL?.trim()
   if (!url) {
     throw new Error("DATABASE_URL is required")
   }
+  const dryRun = Boolean(options.dryRun)
 
   const client = new Client({ connectionString: url })
   await client.connect()
@@ -58,27 +78,34 @@ export default async function applyEgpWholePoundPrices(_args: ExecArgs) {
       `SELECT COUNT(*)::text AS c FROM price WHERE deleted_at IS NULL AND lower(currency_code) = 'egp' AND amount >= 10000`
     )
 
-    await client.query("COMMIT")
+    if (dryRun) {
+      await client.query("ROLLBACK")
+    } else {
+      await client.query("COMMIT")
+    }
 
-    console.log(
-      JSON.stringify(
-        {
-          message: "apply-egp-whole-pound-prices complete",
-          egpDecimalDigitsBefore: digits ?? null,
-          egpDecimalDigitsAfter: afterCurrency.rows[0]?.decimal_digits ?? null,
-          priceRowsStillGe10kBefore: beforeLarge,
-          priceRowsStillGe10kAfter: afterPrices.rows[0]?.c ?? "?",
-          rowCountFirstPass: r1.rowCount,
-          rowCountSecondPass: r2.rowCount,
-        },
-        null,
-        2
-      )
-    )
+    const details = {
+      dryRun,
+      egpDecimalDigitsBefore: digits ?? null,
+      egpDecimalDigitsAfter: afterCurrency.rows[0]?.decimal_digits ?? null,
+      priceRowsStillGe10kBefore: beforeLarge,
+      priceRowsStillGe10kAfter: afterPrices.rows[0]?.c ?? "?",
+      rowCountFirstPass: r1.rowCount,
+      rowCountSecondPass: r2.rowCount,
+    }
+    return {
+      summary: `${dryRun ? "Dry run: would update" : "Updated"} ${(r1.rowCount ?? 0) + (r2.rowCount ?? 0)} EGP price row(s); EGP decimal_digits ${digits ?? "unknown"} -> ${details.egpDecimalDigitsAfter ?? "unknown"}.`,
+      details,
+    }
   } catch (e) {
     await client.query("ROLLBACK").catch(() => {})
     throw e
   } finally {
     await client.end()
   }
+}
+
+export default async function applyEgpWholePoundPrices(_args: ExecArgs) {
+  const result = await runApplyEgpWholePoundPrices()
+  console.log(JSON.stringify({ message: "apply-egp-whole-pound-prices complete", ...result.details }, null, 2))
 }

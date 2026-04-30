@@ -2,21 +2,9 @@ import type { MedusaContainer } from "@medusajs/types"
 
 import { HOMEPAGE_SECTION_MODULE } from "../../modules/homepage-section"
 import type HomepageSectionModuleService from "../../modules/homepage-section/service"
+import type { HomepageSectionType } from "../homepage-sections/types"
 
-export type StorefrontHomepageSectionType =
-  | "hero"
-  | "trust_ribbon"
-  | "primary_routes"
-  | "founding_drop"
-  | "featured_piece"
-  | "feeling_grid"
-  | "occasion_grid"
-  | "gift_block"
-  | "why_horo"
-  | "first_drop_circle"
-  | "proof_strip"
-  | "seen_on_you"
-  | "artist_spotlight"
+export type StorefrontHomepageSectionType = HomepageSectionType
 
 export type StorefrontHomepageSectionDTO = {
   id: string
@@ -149,4 +137,9 @@ export async function getStorefrontHomepageWithServerCache(scope: MedusaContaine
     })
 
   return homepageServerInflight
+}
+
+export function clearStorefrontHomepageCache() {
+  homepageServerCache = null
+  homepageServerInflight = null
 }

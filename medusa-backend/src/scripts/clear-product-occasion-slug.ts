@@ -8,6 +8,69 @@ import { updateProductsWorkflow } from "@medusajs/medusa/core-flows"
  * Run (from medusa-backend):
  *   PRODUCT_HANDLE=emotions-raw-nerve OCCASION_SLUG=just-because npm run clear:product-occasion-slug
  */
+export async function runClearProductOccasionSlugs(
+  container: ExecArgs["container"],
+  options: { occasionSlug: string; dryRun?: boolean } = { occasionSlug: "" },
+): Promise<{ summary: string; details: { cleared: number; skipped: number } }> {
+  const removeSlug = options.occasionSlug.trim().toLowerCase()
+  if (!removeSlug) {
+    return { summary: "No occasion slug specified.", details: { cleared: 0, skipped: 0 } }
+  }
+
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+  const { data } = await query.graph({
+    entity: "product",
+    fields: ["id", "handle", "metadata"],
+  })
+
+  const rows = (data as Array<{ id: string; handle?: string; metadata?: Record<string, unknown> }>) ?? []
+  let cleared = 0
+  let skipped = 0
+
+  for (const row of rows) {
+    const meta: Record<string, unknown> = { ...(row.metadata || {}) }
+    const raw = meta.occasionSlugs
+    const slugs = Array.isArray(raw) ? raw.map((s) => String(s).trim()).filter(Boolean) : []
+    const nextSlugs = slugs.filter((s) => s.toLowerCase() !== removeSlug)
+
+    if (nextSlugs.length === slugs.length) {
+      skipped++
+      continue
+    }
+
+    if (nextSlugs.length) {
+      meta.occasionSlugs = nextSlugs
+    } else {
+      delete meta.occasionSlugs
+    }
+
+    const primary = String(meta.primaryOccasionSlug || "").trim()
+    if (primary.toLowerCase() === removeSlug) {
+      meta.primaryOccasionSlug = nextSlugs[0] ?? undefined
+      if (meta.primaryOccasionSlug === undefined) {
+        delete meta.primaryOccasionSlug
+      }
+    }
+
+    if (!options.dryRun) {
+      await updateProductsWorkflow(container).run({
+        input: {
+          selector: { id: row.id },
+          update: { metadata: meta },
+        },
+      })
+    }
+    cleared++
+  }
+
+  return {
+    summary: options.dryRun
+      ? `[dry-run] Would clear "${removeSlug}" from ${cleared} product(s), ${skipped} skipped.`
+      : `Cleared "${removeSlug}" from ${cleared} product(s), ${skipped} skipped.`,
+    details: { cleared, skipped },
+  }
+}
+
 export default async function clearProductOccasionSlug({ container }: ExecArgs) {
   const handle = (process.env.PRODUCT_HANDLE || "").trim()
   const removeSlug = (process.env.OCCASION_SLUG || "").trim().toLowerCase()
