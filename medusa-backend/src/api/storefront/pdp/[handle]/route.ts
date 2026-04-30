@@ -7,8 +7,10 @@ import { storefrontPdpResponseSchema } from "../../../../lib/storefront/dto"
 export async function GET(req: MedusaRequest<{ handle: string }>, res: MedusaResponse) {
   const previewRequested = req.query.preview === "1" || req.query.preview === "true"
   const previewEnabled = String(process.env.HORO_STOREFRONT_DRAFT_PREVIEW || "").trim() === "1"
-  const includeDrafts = Boolean(previewRequested && previewEnabled)
-  const payload = await retrieveStorefrontPdpPayload(req.scope, req.params.handle, { includeDrafts })
+  // In non-production, always allow drafts when preview is requested.
+  // In production, require HORO_STOREFRONT_DRAFT_PREVIEW=1 to enable.
+  const includeDrafts = previewRequested && (previewEnabled || process.env.NODE_ENV !== "production")
+  const payload = await retrieveStorefrontPdpPayload(req.scope, req.params.handle, { includeDrafts, bypassCache: previewRequested })
 
   if (!payload) {
     throw new MedusaError(MedusaError.Types.NOT_FOUND, `Storefront PDP "${req.params.handle}" was not found`)
@@ -28,6 +30,6 @@ export async function GET(req: MedusaRequest<{ handle: string }>, res: MedusaRes
     }
   }
 
-  res.setHeader("Cache-Control", includeDrafts ? "no-store" : "public, s-maxage=60, stale-while-revalidate=300")
+  res.setHeader("Cache-Control", previewRequested ? "no-store" : "public, s-maxage=60, stale-while-revalidate=300")
   res.status(200).json(body)
 }

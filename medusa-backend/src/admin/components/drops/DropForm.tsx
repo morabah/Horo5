@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from "@medusajs/ui"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import { Link, unstable_usePrompt, useNavigate } from "react-router-dom"
 
 import { createArtist, createOccasion, fetchDropLookups, saveDrop } from "./api"
@@ -205,7 +205,36 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
     update({ sizes, stockPerSize: stock })
   }
 
-  const previewHref = `${import.meta.env.VITE_STOREFRONT_URL || ""}/products/${drop.handle}${drop.status === "published" ? "" : "?preview=1"}`
+  const storefrontUrl = lookups?.storefrontUrl || import.meta.env.VITE_STOREFRONT_URL || ""
+  const previewHref = storefrontUrl
+    ? `${storefrontUrl}/products/${drop.handle}${drop.status === "published" ? "" : "?preview=1"}`
+    : undefined
+
+  const previewButton = (label: string, icon: ReactNode) => (
+    <Tooltip
+      content={
+        previewHref
+          ? "Open product in storefront"
+          : "Storefront URL not configured. Set VITE_STOREFRONT_URL in .env or STORE_URL on the backend."
+      }
+    >
+      <span>
+        <Button asChild size="small" variant="secondary" disabled={!previewHref}>
+          {previewHref ? (
+            <a href={previewHref} target="_blank" rel="noreferrer">
+              {icon}
+              {label}
+            </a>
+          ) : (
+            <span className="flex items-center gap-2">
+              {icon}
+              {label}
+            </span>
+          )}
+        </Button>
+      </span>
+    </Tooltip>
+  )
 
   return (
     <Container className="mx-auto max-w-6xl p-0">
@@ -227,14 +256,7 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {drop.handle ? (
-            <Button asChild size="small" variant="secondary">
-              <a href={previewHref} target="_blank" rel="noreferrer">
-                <Eye />
-                Preview
-              </a>
-            </Button>
-          ) : null}
+          {drop.handle ? previewButton("Preview", <Eye />) : null}
           <Button size="small" variant="secondary" type="button" disabled={mutation.isPending} onClick={() => mutation.mutate("draft")}>
             Save draft
           </Button>
@@ -626,14 +648,7 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
                   New Drop
                 </Link>
               </Button>
-              {drop.handle ? (
-                <Button asChild size="small" variant="secondary">
-                  <a href={previewHref} target="_blank" rel="noreferrer">
-                    <ArrowUpRightMini />
-                    PDP preview
-                  </a>
-                </Button>
-              ) : null}
+              {drop.handle ? previewButton("PDP preview", <ArrowUpRightMini />) : null}
             </div>
           </div>
         </aside>

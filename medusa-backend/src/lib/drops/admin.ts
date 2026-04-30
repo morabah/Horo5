@@ -417,5 +417,6 @@ export async function getAdminDropLookups(container: MedusaContainer) {
     decorationTypes: [...DROP_DECORATION_TYPES],
     fitLabels: [...fitLabels],
     sizes: [...DEFAULT_DROP_SIZES],
+    storefrontUrl: asString(process.env.STORE_URL) || asString(storeMetadata.storefrontUrl) || null,
   }
 }

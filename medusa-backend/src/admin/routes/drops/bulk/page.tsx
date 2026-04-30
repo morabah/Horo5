@@ -38,7 +38,16 @@ function titleFromPrefix(prefix: string) {
     .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-function groupsFromFiles(files: File[]): BulkGroup[] {
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+async function groupsFromFiles(files: File[]): Promise<BulkGroup[]> {
   const buckets = new Map<string, File[]>()
   for (const file of files) {
     if (!file.type.startsWith("image/")) continue
@@ -46,20 +55,23 @@ function groupsFromFiles(files: File[]): BulkGroup[] {
     buckets.set(key, [...(buckets.get(key) ?? []), file])
   }
 
-  return [...buckets.entries()].map(([prefix, bucket]) => {
+  const groups: BulkGroup[] = []
+  for (const [prefix, bucket] of buckets.entries()) {
     const title = titleFromPrefix(prefix)
     const sizes: ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
-    return {
+    const previews = await Promise.all(bucket.map(fileToDataUrl))
+    groups.push({
       id: `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
       title,
       handle: slugifyDropTitle(title),
       files: bucket,
-      previews: bucket.map((file) => URL.createObjectURL(file)),
+      previews,
       sizes,
       stockPerSize: { S: 0, M: 0, L: 0, XL: 0, XXL: 0 },
       status: "idle",
-    }
-  })
+    })
+  }
+  return groups
 }
 
 function validateGroup(group: BulkGroup) {
@@ -121,6 +133,8 @@ export default function BulkDropsPage() {
   const [defaultFeeling, setDefaultFeeling] = useState<string | undefined>()
   const [defaultSubfeeling, setDefaultSubfeeling] = useState<string | undefined>()
   const [publishing, setPublishing] = useState(false)
+  const [defaultSizes, setDefaultSizes] = useState<ProductSizeKey[]>(["S", "M", "L", "XL", "XXL"])
+  const [defaultStockPerSize, setDefaultStockPerSize] = useState<Partial<Record<ProductSizeKey, number>>>({ S: 0, M: 0, L: 0, XL: 0, XXL: 0 })
 
   const { data: lookups } = useQuery({
     queryKey: ["horo", "drops", "lookups"],
@@ -136,8 +150,8 @@ export default function BulkDropsPage() {
     setGroups((prev) => prev.map((group) => (group.id === id ? { ...group, ...patch, status: "idle", message: undefined } : group)))
   }
 
-  const addFiles = (files: File[]) => {
-    const next = groupsFromFiles(files)
+  const addFiles = async (files: File[]) => {
+    const next = await groupsFromFiles(files)
     setGroups((prev) => [...prev, ...next])
   }
 
@@ -275,7 +289,7 @@ export default function BulkDropsPage() {
         <Heading level="h2" className="mb-3">
           Defaults
         </Heading>
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-5">
           <Input
             size="small"
             type="number"
@@ -299,6 +313,23 @@ export default function BulkDropsPage() {
             onChange={setDefaultSubfeeling}
             options={defaultSubfeelings.map((item) => ({ value: item.slug, label: item.name }))}
           />
+          <div className="flex flex-wrap gap-2">
+            {sizeOptions.map((size) => (
+              <Button
+                key={size}
+                type="button"
+                size="small"
+                variant={defaultSizes.includes(size) ? "primary" : "secondary"}
+                onClick={() => {
+                  setDefaultSizes((prev) =>
+                    prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+                  )
+                }}
+              >
+                {size}
+              </Button>
+            ))}
+          </div>
           <Button
             type="button"
             size="small"
@@ -309,11 +340,41 @@ export default function BulkDropsPage() {
                 priceEgp: defaultPrice ?? group.priceEgp,
                 feeling: defaultFeeling ?? group.feeling,
                 subfeeling: defaultSubfeeling ?? group.subfeeling,
+                sizes: defaultSizes.length ? defaultSizes : group.sizes,
+                stockPerSize: defaultSizes.length
+                  ? Object.fromEntries(
+                      defaultSizes.map((size) => [
+                        size,
+                        defaultStockPerSize[size] ?? group.stockPerSize[size] ?? 0,
+                      ])
+                    ) as Record<ProductSizeKey, number>
+                  : group.stockPerSize,
               })))
             }}
           >
             Apply to all
           </Button>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {sizeOptions.map((size) => (
+            <div key={size} className="flex items-center gap-1">
+              <Text size="xsmall" className="text-ui-fg-muted w-6">
+                {size}
+              </Text>
+              <Input
+                size="small"
+                type="number"
+                min={0}
+                className="w-20"
+                value={defaultStockPerSize[size] ?? 0}
+                disabled={!defaultSizes.includes(size)}
+                onChange={(event) => {
+                  const qty = Math.max(0, Math.floor(Number(event.target.value || 0)))
+                  setDefaultStockPerSize((prev) => ({ ...prev, [size]: qty }))
+                }}
+              />
+            </div>
+          ))}
         </div>
       </div>
 

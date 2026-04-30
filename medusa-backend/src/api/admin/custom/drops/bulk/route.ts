@@ -1,5 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
+import { revalidateStorefrontForDrop } from "../../../../../lib/drops/revalidate-storefront"
 import { upsertDrop } from "../../../../../lib/drops/upsert-drop"
 import type { UpsertDropPayload } from "../../../../../lib/drops/types"
 import { DropValidationError } from "../../../../../lib/drops/validate"
@@ -52,6 +53,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       }
     }
   })
+
+  for (const r of results) {
+    if (r.ok) {
+      revalidateStorefrontForDrop(r.handle)
+    }
+  }
 
   res.status(207).json({ results })
 }

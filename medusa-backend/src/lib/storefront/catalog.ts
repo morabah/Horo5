@@ -1585,20 +1585,22 @@ async function buildStorefrontPdpPayload(
 export async function retrieveStorefrontPdpPayload(
   scope: MedusaContainer,
   handle: string,
-  options: { includeDrafts?: boolean } = {}
+  options: { includeDrafts?: boolean; bypassCache?: boolean } = {}
 ): Promise<StorefrontPdpPayload | null> {
   const normalizedHandle = handle.trim()
   if (!normalizedHandle) {
     return null
   }
 
-  const ttlMs = options.includeDrafts ? 0 : parsePositiveMsEnv("STOREFRONT_PDP_SERVER_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
+  const ttlMs = options.bypassCache || options.includeDrafts
+    ? 0
+    : parsePositiveMsEnv("STOREFRONT_PDP_SERVER_CACHE_MS", DEFAULT_SERVER_CACHE_MS)
   if (ttlMs <= 0) {
     return buildStorefrontPdpPayload(scope, normalizedHandle, options)
   }
 
   const now = Date.now()
-  const cacheKey = options.includeDrafts ? `${normalizedHandle}:preview` : normalizedHandle
+  const cacheKey = options.includeDrafts || options.bypassCache ? `${normalizedHandle}:preview` : normalizedHandle
   const cached = pdpServerCache.get(cacheKey)
   if (cached && cached.expiresAt > now) {
     return cached.value

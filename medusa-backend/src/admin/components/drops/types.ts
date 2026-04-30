@@ -67,6 +67,7 @@ export type DropLookups = {
   decorationTypes: Array<"plain" | "graphic" | "embroidered" | "mixed">
   fitLabels: string[]
   sizes: ProductSizeKey[]
+  storefrontUrl?: string | null
 }
 
 export type ValidationIssue = {

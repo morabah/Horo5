@@ -1,5 +1,6 @@
 import { buildDropMetadata } from "../upsert-drop"
 import { normalizeDropImages } from "../validate"
+import type { ProductSizeKey } from "../types"
 
 describe("drop upsert metadata", () => {
   it("keeps the HORO product metadata shape stable", () => {
@@ -14,7 +15,7 @@ describe("drop upsert metadata", () => {
       apparelCategory: "apparel/tops/t-shirts",
       priceEgp: 850,
       originalPriceEgp: 950,
-      sizes: ["S", "M", "L"] as const,
+      sizes: ["S", "M", "L"] as ProductSizeKey[],
       garmentColor: "Black",
       artist: "nada-ibrahim",
       decorationType: "graphic" as const,

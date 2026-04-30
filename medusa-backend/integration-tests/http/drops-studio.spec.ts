@@ -114,6 +114,83 @@ medusaIntegrationTestRunner({
         const categoryHandles = ((data?.[0]?.categories ?? []) as Array<{ handle: string }>).map((category) => category.handle)
         expect(categoryHandles).toEqual(expect.arrayContaining(["statement", "t-shirts"]))
       })
+
+      it("updates a drop via PUT and reflects changes on fetch", async () => {
+        const createPayload = {
+          handle: "update-test",
+          title: "Update Test",
+          status: "published",
+          story: "Original story.",
+          feeling: "streetwear",
+          subfeeling: "statement",
+          priceEgp: 500,
+          sizes: ["S"],
+          images: [{ url: "https://cdn.test/main.jpg", tag: "main" }],
+        }
+
+        await api.post("/admin/custom/drops", createPayload)
+
+        const updatePayload = {
+          ...createPayload,
+          title: "Updated Title",
+          priceEgp: 750,
+          sizes: ["S", "M"],
+          stockPerSize: { S: 5, M: 10 },
+        }
+
+        const putResponse = await api.put(`/admin/custom/drops/${createPayload.handle}`, updatePayload)
+        expect(putResponse.status).toBe(200)
+        expect(putResponse.data.drop).toMatchObject({
+          handle: createPayload.handle,
+          status: "published",
+          created: false,
+        })
+
+        const detailResponse = await api.get(`/admin/custom/drops/${createPayload.handle}`)
+        expect(detailResponse.data.drop).toMatchObject({
+          title: "Updated Title",
+          priceEgp: 750,
+          stockPerSize: { S: 5, M: 10 },
+        })
+      })
+
+      it("creates multiple drops via the bulk endpoint", async () => {
+        const drops = [
+          {
+            handle: "bulk-a",
+            title: "Bulk A",
+            status: "published",
+            story: "Bulk story A.",
+            feeling: "streetwear",
+            subfeeling: "statement",
+            priceEgp: 600,
+            sizes: ["S"],
+            images: [{ url: "https://cdn.test/a.jpg", tag: "main" }],
+          },
+          {
+            handle: "bulk-b",
+            title: "Bulk B",
+            status: "published",
+            story: "Bulk story B.",
+            feeling: "streetwear",
+            subfeeling: "statement",
+            priceEgp: 700,
+            sizes: ["M"],
+            images: [{ url: "https://cdn.test/b.jpg", tag: "main" }],
+          },
+        ]
+
+        const bulkResponse = await api.post("/admin/custom/drops/bulk", { drops, concurrency: 2 })
+        expect(bulkResponse.status).toBe(207)
+        expect(bulkResponse.data.results).toHaveLength(2)
+        expect(bulkResponse.data.results.every((result: any) => result.ok)).toBe(true)
+
+        for (const drop of drops) {
+          const detailResponse = await api.get(`/admin/custom/drops/${drop.handle}`)
+          expect(detailResponse.status).toBe(200)
+          expect(detailResponse.data.drop.title).toBe(drop.title)
+        }
+      })
     })
   },
 })

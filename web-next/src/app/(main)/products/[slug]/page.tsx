@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore } from "next/cache";
 import { notFound } from "next/navigation";
 
 import { ProductDetailPage } from "@/components/product-detail-page";
@@ -46,6 +47,9 @@ function isPreviewValue(value: string | undefined) {
 export async function generateMetadata({ params, searchParams }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
   const preview = isPreviewValue((await searchParams)?.preview);
+  if (preview) {
+    unstable_noStore();
+  }
   const pdp = await fetchStorefrontPdpServer(slug, preview).catch((error) => {
     logStorefrontFetchError("[storefront] Failed to fetch PDP for product metadata", error, { slug });
     return null;
@@ -68,6 +72,9 @@ export async function generateMetadata({ params, searchParams }: ProductPageProp
 export default async function Page({ params, searchParams }: ProductPageProps) {
   const { slug } = await params;
   const preview = isPreviewValue((await searchParams)?.preview);
+  if (preview) {
+    unstable_noStore();
+  }
   const pdp = await fetchStorefrontPdpServer(slug, preview).catch((error) => {
     logStorefrontFetchError("[storefront] Failed to fetch PDP for product page", error, { slug });
     return null;
