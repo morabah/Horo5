@@ -66,7 +66,11 @@ export async function generateMetadata({ params, searchParams }: ProductPageProp
     };
   }
 
-  return buildProductMetadata(product, undefined);
+  const baseMetadata = buildProductMetadata(product, undefined);
+  if (preview) {
+    baseMetadata.robots = { index: false, follow: true };
+  }
+  return baseMetadata;
 }
 
 export default async function Page({ params, searchParams }: ProductPageProps) {

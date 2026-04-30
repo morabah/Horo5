@@ -6,10 +6,9 @@ import { storefrontPdpResponseSchema } from "../../../../lib/storefront/dto"
 
 export async function GET(req: MedusaRequest<{ handle: string }>, res: MedusaResponse) {
   const previewRequested = req.query.preview === "1" || req.query.preview === "true"
-  const previewEnabled = String(process.env.HORO_STOREFRONT_DRAFT_PREVIEW || "").trim() === "1"
-  // In non-production, always allow drafts when preview is requested.
-  // In production, require HORO_STOREFRONT_DRAFT_PREVIEW=1 to enable.
-  const includeDrafts = previewRequested && (previewEnabled || process.env.NODE_ENV !== "production")
+  // Preview mode always includes drafts — that's its primary purpose (viewing drafts before publish).
+  // HORO_STOREFRONT_DRAFT_PREVIEW is only needed for showing drafts in the regular (non-preview) catalog.
+  const includeDrafts = previewRequested
   const payload = await retrieveStorefrontPdpPayload(req.scope, req.params.handle, { includeDrafts, bypassCache: previewRequested })
 
   if (!payload) {

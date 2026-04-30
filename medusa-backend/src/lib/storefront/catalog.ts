@@ -1071,9 +1071,13 @@ function buildProduct(
   const defaultVariant = mappedVariants.find((variant) => variant.available) || mappedVariants[0]
   const { variantsBySize, variantsByColor } = groupVariantsByColorForStorefront(mappedVariants, defaultVariant)
   const physicalAttributes = buildPhysicalAttributes(product, defaultVariant?.id)
+  // Prefer metadata.media.gallery (drop-defined order) over product.images (may be unordered).
+  // Fall back to product.images when metadata has no gallery (e.g. pre-drop products).
+  const metadataGallery = galleryFromLegacyMedia(legacyMedia)
   const gallery = orderedUniqueGalleryItems([
-    ...(product.images || []).map((image) => image.url ? { url: image.url } : undefined),
-    ...galleryFromLegacyMedia(legacyMedia),
+    ...(metadataGallery.length > 0
+      ? metadataGallery
+      : (product.images || []).map((image) => image.url ? { url: image.url } : undefined)),
     product.thumbnail ? { url: product.thumbnail } : undefined,
   ])
   const mainImage = galleryItemUrl(gallery[0]) || product.thumbnail || legacyMedia?.main || null
