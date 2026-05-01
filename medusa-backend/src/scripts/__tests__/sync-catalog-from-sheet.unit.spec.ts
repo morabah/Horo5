@@ -1,6 +1,7 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 
+import { PRODUCT_SIZE_KEYS } from "../../lib/shared/constants"
 import {
   buildMarkdownReport,
   galleryTagForFilename,
@@ -33,7 +34,7 @@ describe("catalog sheet parsers", () => {
   it("parses comma lists and sizes", () => {
     expect(parseCommaList(" mood, fiction ,, career ")).toEqual(["mood", "fiction", "career"])
     expect(parseSizes("s, M, xl")).toEqual(["S", "M", "XL"])
-    expect(parseSizes("")).toEqual(["S", "M", "L", "XL", "XXL"])
+    expect(parseSizes("")).toEqual([...PRODUCT_SIZE_KEYS])
   })
 
   it("parses stockPerSize in uniform and mapped forms", () => {

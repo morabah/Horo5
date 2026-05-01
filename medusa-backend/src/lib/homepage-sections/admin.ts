@@ -1,6 +1,7 @@
 import type { MedusaContainer } from "@medusajs/framework/types"
 
 import { HOMEPAGE_SECTION_MODULE } from "../../modules/homepage-section"
+import { asString } from "../shared/type-guards"
 import type HomepageSectionModuleService from "../../modules/homepage-section/service"
 import type {
   AdminHomepageSection,
@@ -37,10 +38,6 @@ type HomepageSectionRecord = {
   payload?: unknown
   created_at?: Date | string | null
   updated_at?: Date | string | null
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined
 }
 
 function nullableString(value: unknown): string | null {

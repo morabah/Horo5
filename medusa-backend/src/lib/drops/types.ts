@@ -1,13 +1,15 @@
-export const DROP_SIZE_KEYS = ["S", "M", "L", "XL", "XXL"] as const
-export type ProductSizeKey = (typeof DROP_SIZE_KEYS)[number]
+import {
+  PRODUCT_SIZE_KEYS,
+  type ProductSizeKey,
+  DEFAULT_TRUST_BADGES,
+} from "../shared/constants"
 
-export const DEFAULT_DROP_SIZES: readonly ProductSizeKey[] = DROP_SIZE_KEYS
+export const DROP_SIZE_KEYS = PRODUCT_SIZE_KEYS
+export type { ProductSizeKey }
 
-export const DEFAULT_DROP_TRUST_BADGES = [
-  "premium cotton",
-  "Free exchange 14d",
-  "COD available",
-] as const
+export const DEFAULT_DROP_SIZES: readonly ProductSizeKey[] = PRODUCT_SIZE_KEYS
+
+export const DEFAULT_DROP_TRUST_BADGES = DEFAULT_TRUST_BADGES
 
 export const DROP_IMAGE_TAGS = [
   "main",

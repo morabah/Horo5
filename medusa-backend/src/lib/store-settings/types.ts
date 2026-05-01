@@ -34,6 +34,12 @@ export type StoreSettings = {
   sizeTables: Record<string, SizeTable>
   defaultSizeTableKey: string
   storefrontUrl: string | null
+  /** Free-shipping threshold in EGP. Controls incentives seed and storefront cart progress bar. */
+  freeShippingThresholdEgp: number | null
+  /** Default trust-badge strings injected when a product has no explicit metadata.trustBadges. */
+  defaultTrustBadges: string[]
+  /** Default per-variant stock quantity used by inventory backfill / stock-tracking scripts. */
+  defaultStockQty: number | null
 }
 
 export type StoreSettingsValidationIssue = {

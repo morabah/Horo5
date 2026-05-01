@@ -26,6 +26,7 @@ import {
 import { createWorkflow, transform, WorkflowResponse } from "@medusajs/framework/workflows-sdk"
 import { uploadFilesWorkflow } from "@medusajs/core-flows"
 
+import { DEFAULT_APPAREL_CATEGORY_PATH, DEFAULT_TRUST_BADGES, GIFT_WRAP_HANDLE, PRODUCT_SIZE_KEYS, type ProductSizeKey } from "../lib/shared/constants"
 import type { ApiKey } from "../../.medusa/types/query-entry-points"
 import {
   derivePrimarySubfeelingSlugFromLegacyProduct,
@@ -51,7 +52,6 @@ import { HOMEPAGE_SECTION_MODULE } from "../modules/homepage-section"
 import type HomepageSectionModuleService from "../modules/homepage-section/service"
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
-type ProductSizeKey = "S" | "M" | "L" | "XL" | "XXL"
 
 type HomepageSectionWriteService = HomepageSectionModuleService & {
   createHomepageSections(input: HomepageSectionSeed | HomepageSectionSeed[]): Promise<unknown>
@@ -99,11 +99,7 @@ type LegacyProduct = {
   wearerStories?: unknown[]
 }
 
-const DEFAULT_PRODUCT_TRUST_BADGES = [
-  "premium cotton",
-  "Free exchange 14d",
-  "COD available",
-] as const
+const DEFAULT_PRODUCT_TRUST_BADGES = [...DEFAULT_TRUST_BADGES] as const
 
 /** Canonical feeling slugs for Egypt hero tees (aligned with migrate-feelings hero fallbacks). */
 const EGYPT_HERO_FEELING_BY_HANDLE: Record<string, string> = {
@@ -258,7 +254,7 @@ async function uploadImage(container: ExecArgs["container"], imagePath: string) 
   return result[0]?.url
 }
 
-const DEFAULT_SIZES = ["S", "M", "L", "XL", "XXL"] as const satisfies readonly ProductSizeKey[]
+const DEFAULT_SIZES = [...PRODUCT_SIZE_KEYS] as const satisfies readonly ProductSizeKey[]
 
 function resolveStorefrontPublicAsset(src: string) {
   if (!src.startsWith("/")) {
@@ -482,7 +478,7 @@ function metadataFromProduct(
   const artistMeta = artistMetadataForSeedProduct(product, artistAvatarBySlug)
 
   return {
-    apparelCategoryPath: "apparel/tops/t-shirts",
+    apparelCategoryPath: DEFAULT_APPAREL_CATEGORY_PATH,
     artistSlug: product.artistSlug,
     ...(artistMeta ? { artist: artistMeta } : {}),
     artworkSlug: product.slug,
@@ -809,7 +805,6 @@ const EGYPT_STOCK_LOCATION_NAME = "Egypt Warehouse"
 const EGYPT_FULFILLMENT_SET_NAME = "Egypt Delivery"
 const EGYPT_SHIPPING_OPTION_NAME = "Standard"
 const EGYPT_SHIPPING_OPTION_CODE = "standard"
-const GIFT_WRAP_HANDLE = "gift-wrap"
 const GIFT_WRAP_PRICE_AMOUNT = 200
 
 async function ensureLinkExists(
@@ -1410,6 +1405,7 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
     (await occasionModuleService.listOccasions({ slug: legacyOccasions.map((occasion) => occasion.slug) }) as Array<{
       id: string
       slug: string
+      accent?: string | null
       card_image_src?: string | null
       hero_image_src?: string | null
     }>).map((occasion) => [occasion.slug, occasion])
@@ -1426,8 +1422,9 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
         ? existingOccasion.hero_image_src
         : await uploadStorefrontAsset(occasion.heroImageSrc)
 
+    const accent = existingOccasion?.accent ?? OCCASION_ACCENT_BY_SLUG[occasion.slug]
     const payload = {
-      accent: OCCASION_ACCENT_BY_SLUG[occasion.slug],
+      accent,
       active: true,
       blurb: occasion.blurb,
       card_image_alt: occasion.cardImageAlt,

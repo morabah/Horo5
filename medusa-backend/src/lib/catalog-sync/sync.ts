@@ -6,8 +6,11 @@ import path from "node:path"
 import type { ExecArgs } from "@medusajs/framework/types"
 import yaml from "js-yaml"
 
+import { PRODUCT_SIZE_KEYS, PRODUCT_SIZE_SET, type ProductSizeKey } from "../shared/constants"
+import { normalizeArgs, readOption } from "../shared/cli-args"
+
 export type ProductStatus = "draft" | "ready" | "archived"
-export type ProductSizeKey = "S" | "M" | "L" | "XL" | "XXL"
+export { ProductSizeKey }
 export type GalleryTag = "proof_fabric" | "proof_print" | "proof_wash" | "lifestyle" | "flat_lay"
 export type DecorationType = "plain" | "graphic" | "embroidered" | "mixed"
 
@@ -119,8 +122,7 @@ export type CatalogSyncReport = {
   stageErrors: string[]
 }
 
-const DEFAULT_SIZES: readonly ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
-const SIZE_SET = new Set<string>(DEFAULT_SIZES)
+const DEFAULT_SIZES: readonly ProductSizeKey[] = PRODUCT_SIZE_KEYS
 const STATUS_SET = new Set<ProductStatus>(["draft", "ready", "archived"])
 const DECORATION_SET = new Set<DecorationType>(["plain", "graphic", "embroidered", "mixed"])
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"])
@@ -161,24 +163,8 @@ function isHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value)
 }
 
-function normalizeArgList(args: unknown): string[] {
-  return (Array.isArray(args) ? args : [])
-    .filter((arg): arg is string => typeof arg === "string")
-    .filter((arg) => arg !== "--")
-}
-
-function readOption(args: string[], name: string): string | undefined {
-  const prefix = `${name}=`
-  const inline = args.find((arg) => arg.startsWith(prefix))
-  if (inline) return inline.slice(prefix.length)
-
-  const index = args.indexOf(name)
-  if (index >= 0) return args[index + 1]
-  return undefined
-}
-
 export function parseCatalogSyncArgs(args: unknown, env: NodeJS.ProcessEnv = process.env): CatalogSyncOptions {
-  const arr = normalizeArgList(args)
+  const arr = normalizeArgs(args)
   const only = readOption(arr, "--only")
   const reportPath = readOption(arr, "--report")
   const csvSource = readOption(arr, "--csv") ?? env.CATALOG_SHEET_CSV_URL
@@ -302,7 +288,7 @@ export function parseStockPerSize(
     }
     const size = rawSize.trim().toUpperCase()
     const qtyText = rawQty.trim()
-    if (!SIZE_SET.has(size)) {
+    if (!PRODUCT_SIZE_SET.has(size)) {
       throw new Error(`Invalid stockPerSize size "${rawSize}". Use S, M, L, XL, or XXL.`)
     }
     if (!/^\d+$/.test(qtyText)) {
@@ -387,7 +373,7 @@ export function normalizeSheetRow(rawRow: RawSheetRow): { row?: CatalogRow; issu
   try {
     sizes = parseSizes(getCell(rawRow, "sizes"))
     for (const size of sizes) {
-      if (!SIZE_SET.has(size)) {
+      if (!PRODUCT_SIZE_SET.has(size)) {
         issues.push(createIssue(rawRow, "sizes", `Invalid size "${size}". Use S, M, L, XL, or XXL.`))
       }
     }

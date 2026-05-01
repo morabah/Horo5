@@ -1,5 +1,6 @@
 import type { MedusaContainer } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, Modules, ProductStatus } from "@medusajs/framework/utils"
+import { DEFAULT_APPAREL_CATEGORY_PATH, GIFT_WRAP_HANDLE } from "../shared/constants"
 import {
   batchLinkProductsToCategoryWorkflow,
   createInventoryLevelsWorkflow,
@@ -32,6 +33,7 @@ import {
   normalizeDropSizes,
   normalizeDropStatus,
 } from "./validate"
+import { variantSize, type VariantRow } from "../inventory/stock-helpers"
 
 type Query = {
   graph: (query: Record<string, unknown>) => Promise<{ data?: unknown }>
@@ -48,26 +50,14 @@ type ProductCategoryRow = CategoryRow & {
 }
 type ProductRow = { id: string; handle: string; metadata?: Record<string, unknown> | null }
 type StockLocationRow = { id: string; name?: string }
-type VariantRow = {
-  id: string
-  title: string | null
-  sku: string | null
-  manage_inventory: boolean | null
-  allow_backorder?: boolean | null
-  product?: { id?: string; handle: string | null } | null
-  inventory_items?: Array<{
-    inventory?: { id: string } | null
-    inventory_item_id?: string | null
-  }>
-}
+
+
 type InventoryLevelRow = {
   id: string
   inventory_item_id: string
   location_id: string
   stocked_quantity: number | null
 }
-
-const GIFT_WRAP_HANDLE = "gift-wrap"
 
 function titleFromSlug(slug: string): string {
   return slug
@@ -247,7 +237,7 @@ export function buildDropMetadata(
     .map((image) => ({ url: image.url, tag: image.tag }))
 
   return {
-    apparelCategoryPath: payload.apparelCategory ?? "apparel/tops/t-shirts",
+    apparelCategoryPath: payload.apparelCategory ?? DEFAULT_APPAREL_CATEGORY_PATH,
     artistSlug: payload.artist ?? "",
     ...(artistMeta ? { artist: artistMeta } : {}),
     artworkSlug: payload.handle,
@@ -293,15 +283,7 @@ function skuForSize(handle: string, size: ProductSizeKey) {
   return `${handle.toUpperCase()}-${size}`
 }
 
-function variantSize(variant: VariantRow): ProductSizeKey | undefined {
-  const title = variant.title?.toUpperCase()
-  if (DEFAULT_DROP_SIZES.includes(title as ProductSizeKey)) return title as ProductSizeKey
 
-  const skuSuffix = variant.sku?.split("-").pop()?.toUpperCase()
-  if (DEFAULT_DROP_SIZES.includes(skuSuffix as ProductSizeKey)) return skuSuffix as ProductSizeKey
-
-  return undefined
-}
 
 async function listVariantsForDrop(
   container: MedusaContainer,
@@ -331,7 +313,7 @@ async function syncVariantsForDrop(
   const idsToDelete: string[] = []
 
   for (const variant of variants) {
-    const size = variantSize(variant)
+    const size = variantSize(variant) as ProductSizeKey | undefined
     if (!size) continue
 
     if (!selectedSizes.has(size)) {
@@ -507,7 +489,7 @@ async function ensureStockForDrop(
   const inventoryItemIds: string[] = []
 
   for (const variant of variants) {
-    const size = variantSize(variant)
+    const size = variantSize(variant) as ProductSizeKey | undefined
     if (!size) continue
     const qty = stockPerSize[size]
     if (qty === undefined) continue

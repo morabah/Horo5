@@ -4,6 +4,7 @@ import { updateOrderWorkflow } from "@medusajs/medusa/core-flows"
 
 import { assertOpsBackendAccess } from "../../../../../../lib/horo-ops-backend-auth"
 import { ORDER_OPS_GRAPH_FIELDS } from "../../../../../../lib/horo-ops-order-query-fields"
+import { asRecord } from "../../../../../../lib/shared/type-guards"
 
 /** Native Medusa `order.status` enum (Postgres `order_status_enum`). */
 const MEDUSA_ORDER_STATUSES = new Set([
@@ -36,11 +37,6 @@ function resolveHoroOpsActorUserId(req: MedusaRequest): string {
   const actor = (req as RequestWithAuthContext).auth_context?.actor_id
   if (typeof actor === "string" && actor.trim().length > 0) return actor.trim()
   return "horo_ops_ui"
-}
-
-function asRecord(v: unknown): Record<string, unknown> {
-  if (v && typeof v === "object" && !Array.isArray(v)) return { ...(v as Record<string, unknown>) }
-  return {}
 }
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {

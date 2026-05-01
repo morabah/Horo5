@@ -1,5 +1,11 @@
 import { Modules } from "@medusajs/framework/utils"
 import type { MedusaContainer } from "@medusajs/types"
+import {
+  BUNDLE_CODE_PREFIX,
+  FREE_SHIPPING_CODE_PREFIX,
+  GIFT_WRAP_HANDLE,
+} from "../shared/constants"
+import { asNumber } from "../shared/type-guards"
 import type { LocalizedText } from "./store-settings"
 
 /**
@@ -54,15 +60,6 @@ const EMPTY_INCENTIVES: StorefrontIncentivesDTO = {
   giftWrapLabel: null,
 }
 
-/** Stable "operator key" Medusa Promotion code prefixes the storefront recognizes. */
-const FREE_SHIPPING_CODE_PREFIX = "HORO_FREE_SHIPPING"
-const BUNDLE_CODE_PREFIX = "HORO_BUNDLE"
-
-function asNumber(value: unknown): number | null {
-  const n = typeof value === "number" ? value : typeof value === "string" ? Number(value) : Number.NaN
-  return Number.isFinite(n) ? n : null
-}
-
 function localizedFromMetadata(meta: Record<string, unknown> | undefined, key: string): LocalizedText | null {
   if (!meta) return null
   const raw = meta[key]
@@ -95,10 +92,10 @@ function readFreeShippingThresholdEgp(promotion: {
   if (rule) {
     const first = rule.values?.[0]?.value
     const n = asNumber(first)
-    if (n !== null && n >= 0) return Math.round(n)
+    if (n !== undefined && n >= 0) return Math.round(n)
   }
   const fallback = asNumber((promotion.metadata as Record<string, unknown> | null | undefined)?.thresholdEgp)
-  if (fallback !== null && fallback >= 0) return Math.round(fallback)
+  if (fallback !== undefined && fallback >= 0) return Math.round(fallback)
   return null
 }
 
@@ -122,7 +119,7 @@ async function findGiftWrapDetails(
       >
     }
     const products = await productModule.listProducts(
-      { handle: "gift-wrap" },
+      { handle: GIFT_WRAP_HANDLE },
       { take: 1, relations: ["variants"] },
     )
     const product = products[0]

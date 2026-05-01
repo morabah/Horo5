@@ -52,6 +52,9 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       sizeTables: sizeTableDefaults.tables,
       defaultSizeTableKey: sizeTableDefaults.defaultSizeTableKey,
       storefrontUrl: asString(store.metadata?.storefrontUrl),
+      freeShippingThresholdEgp: null,
+      defaultTrustBadges: [],
+      defaultStockQty: null,
       issues: result.issues,
     })
     return
@@ -87,6 +90,24 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
     metadata.storefrontUrl = result.settings.storefrontUrl
   } else {
     delete metadata.storefrontUrl
+  }
+
+  if (result.settings.freeShippingThresholdEgp != null) {
+    metadata.freeShippingThresholdEgp = result.settings.freeShippingThresholdEgp
+  } else {
+    delete metadata.freeShippingThresholdEgp
+  }
+
+  if (result.settings.defaultTrustBadges.length > 0) {
+    metadata.defaultTrustBadges = result.settings.defaultTrustBadges
+  } else {
+    delete metadata.defaultTrustBadges
+  }
+
+  if (result.settings.defaultStockQty != null) {
+    metadata.defaultStockQty = result.settings.defaultStockQty
+  } else {
+    delete metadata.defaultStockQty
   }
 
   await updateStoresWorkflow(req.scope).run({

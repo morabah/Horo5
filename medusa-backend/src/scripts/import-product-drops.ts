@@ -19,6 +19,7 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { uploadDropFiles, dropMimeType } from "../lib/drops/upload"
 import { upsertDrop } from "../lib/drops/upsert-drop"
 import type { DropImageTag, ProductSizeKey, UpsertDropPayload } from "../lib/drops/types"
+import { normalizeArgs, readOption } from "../lib/shared/cli-args"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -80,30 +81,17 @@ async function uploadImage(container: ExecArgs["container"], imagePath: string) 
   return result[0]?.url
 }
 
-function normalizeArgs(args?: unknown): string[] {
-  return [
-    ...(Array.isArray(args) ? args : []),
-    ...process.argv,
-  ].filter((arg): arg is string => typeof arg === "string" && arg !== "--")
-}
-
-function readOption(args: string[], name: string): string | undefined {
-  const prefix = `${name}=`
-  const inline = args.find((arg) => arg.startsWith(prefix))
-  if (inline) return inline.slice(prefix.length)
-
-  const index = args.indexOf(name)
-  if (index >= 0) return args[index + 1]
-  return undefined
+function getCliArgs(args?: unknown): string[] {
+  return normalizeArgs([...(Array.isArray(args) ? args : []), ...process.argv])
 }
 
 function isForceMode(args?: unknown): boolean {
-  const arr = normalizeArgs(args)
+  const arr = getCliArgs(args)
   return (arr.includes("--force") || process.env.DROP_FORCE === "1")
 }
 
 function parseOnlyHandles(args?: unknown): Set<string> | undefined {
-  const only = readOption(normalizeArgs(args), "--only")
+  const only = readOption(getCliArgs(args), "--only")
   if (!only) return undefined
 
   const handles = only

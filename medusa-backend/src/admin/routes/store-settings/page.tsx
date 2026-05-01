@@ -55,6 +55,9 @@ export default function StoreSettingsPage() {
         sizeTables: data.sizeTables,
         defaultSizeTableKey: data.defaultSizeTableKey,
         storefrontUrl: data.storefrontUrl,
+        freeShippingThresholdEgp: data.freeShippingThresholdEgp ?? null,
+        defaultTrustBadges: data.defaultTrustBadges ?? [],
+        defaultStockQty: data.defaultStockQty ?? null,
       })
       if (data.issues?.length) {
         setStatusMsg(data.issues.map((issue) => `${issue.field}: ${issue.message}`).join("\n"))
@@ -100,7 +103,7 @@ export default function StoreSettingsPage() {
             </Badge>
           </div>
           <Text size="small" className="mt-1 max-w-3xl text-ui-fg-subtle">
-            Edit storefront delivery, size-guide presets, the default preset, and the storefront preview URL.
+            Edit storefront delivery, size-guide presets, the default preset, storefront preview URL, free-shipping threshold, default trust badges, and default stock quantity.
           </Text>
         </div>
         <Button
@@ -196,6 +199,73 @@ export default function StoreSettingsPage() {
               })
             }}
           />
+
+          <section className="rounded-md border border-ui-border-base p-5">
+            <Heading level="h2" className="mb-4">
+              Store Defaults
+            </Heading>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="free-shipping-threshold" className="text-xs">
+                  Free-Shipping Threshold (EGP)
+                </Label>
+                <Input
+                  id="free-shipping-threshold"
+                  size="small"
+                  type="number"
+                  min={0}
+                  value={settings.freeShippingThresholdEgp ?? ""}
+                  disabled={mutation.isPending}
+                  placeholder="1500"
+                  onChange={(event) => {
+                    const raw = event.target.value
+                    const freeShippingThresholdEgp = raw === "" ? null : Math.max(0, Math.trunc(Number(raw)))
+                    setSettings((prev) => prev ? { ...prev, freeShippingThresholdEgp } : prev)
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="default-stock-qty" className="text-xs">
+                  Default Stock Qty
+                </Label>
+                <Input
+                  id="default-stock-qty"
+                  size="small"
+                  type="number"
+                  min={0}
+                  value={settings.defaultStockQty ?? ""}
+                  disabled={mutation.isPending}
+                  placeholder="50"
+                  onChange={(event) => {
+                    const raw = event.target.value
+                    const defaultStockQty = raw === "" ? null : Math.max(0, Math.trunc(Number(raw)))
+                    setSettings((prev) => prev ? { ...prev, defaultStockQty } : prev)
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1 md:col-span-1">
+                <Label htmlFor="default-trust-badges" className="text-xs">
+                  Default Trust Badges
+                </Label>
+                <Input
+                  id="default-trust-badges"
+                  size="small"
+                  type="text"
+                  value={settings.defaultTrustBadges.join(", ")}
+                  disabled={mutation.isPending}
+                  placeholder="premium cotton, Free exchange 14d, COD available"
+                  onChange={(event) => {
+                    const raw = event.target.value
+                    const defaultTrustBadges = raw
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter((s) => s.length > 0)
+                    setSettings((prev) => prev ? { ...prev, defaultTrustBadges } : prev)
+                  }}
+                />
+              </div>
+            </div>
+          </section>
 
           <div className="flex justify-end">
             <Button

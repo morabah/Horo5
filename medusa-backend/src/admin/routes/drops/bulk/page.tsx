@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { fetchDropLookups, saveDrop, uploadDropFiles } from "../../../components/drops/api"
-import type { DropImage, DropPayload, ProductSizeKey } from "../../../components/drops/types"
+import { DROP_SIZE_KEYS, type DropImage, type DropPayload, type ProductSizeKey } from "../../../components/drops/types"
 import { tagForFilename, slugifyDropTitle } from "../../../components/drops/utils"
 
 type BulkGroup = {
@@ -24,7 +24,7 @@ type BulkGroup = {
 }
 
 const none = "__none__"
-const sizeOptions: ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
+const sizeOptions: ProductSizeKey[] = [...DROP_SIZE_KEYS]
 
 function prefixForFile(file: File) {
   const name = file.name.replace(/\.[^.]+$/, "")
@@ -58,7 +58,7 @@ async function groupsFromFiles(files: File[]): Promise<BulkGroup[]> {
   const groups: BulkGroup[] = []
   for (const [prefix, bucket] of buckets.entries()) {
     const title = titleFromPrefix(prefix)
-    const sizes: ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
+    const sizes: ProductSizeKey[] = [...DROP_SIZE_KEYS]
     const previews = await Promise.all(bucket.map(fileToDataUrl))
     groups.push({
       id: `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
@@ -133,7 +133,7 @@ export default function BulkDropsPage() {
   const [defaultFeeling, setDefaultFeeling] = useState<string | undefined>()
   const [defaultSubfeeling, setDefaultSubfeeling] = useState<string | undefined>()
   const [publishing, setPublishing] = useState(false)
-  const [defaultSizes, setDefaultSizes] = useState<ProductSizeKey[]>(["S", "M", "L", "XL", "XXL"])
+  const [defaultSizes, setDefaultSizes] = useState<ProductSizeKey[]>([...DROP_SIZE_KEYS])
   const [defaultStockPerSize, setDefaultStockPerSize] = useState<Partial<Record<ProductSizeKey, number>>>({ S: 0, M: 0, L: 0, XL: 0, XXL: 0 })
 
   const { data: lookups } = useQuery({

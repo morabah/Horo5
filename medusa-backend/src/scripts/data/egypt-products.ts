@@ -1,3 +1,5 @@
+import { PRODUCT_SIZE_KEYS } from "../../lib/shared/constants"
+
 export type EgyptProductSeed = {
   handle: string
   titleEn: string
@@ -7,7 +9,7 @@ export type EgyptProductSeed = {
 
 /** Integer EGP (whole pounds). Medusa stores this directly when `currency.decimal_digits = 0` for EGP. */
 export const EGYPT_PRODUCT_PRICE_EGP = 799
-export const EGYPT_PRODUCT_SIZES = ["S", "M", "L", "XL", "XXL"] as const
+export const EGYPT_PRODUCT_SIZES = [...PRODUCT_SIZE_KEYS] as const
 
 export const egyptProducts: EgyptProductSeed[] = [
   {

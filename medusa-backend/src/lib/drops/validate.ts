@@ -13,10 +13,10 @@ import {
   type ProductSizeKey,
   type UpsertDropPayload,
 } from "./types"
+import { PRODUCT_SIZE_SET } from "../shared/constants"
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const PATH_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/
-const SIZE_SET = new Set<string>(DROP_SIZE_KEYS)
 const STATUS_SET = new Set<string>(DROP_STATUSES)
 const DECORATION_SET = new Set<string>(DROP_DECORATION_TYPES)
 const IMAGE_TAG_SET = new Set<string>(DROP_IMAGE_TAGS)
@@ -193,13 +193,13 @@ export function validateDropPayload(payload: UpsertDropPayload): DropValidationI
 
   const sizes = normalizeDropSizes(payload.sizes)
   for (const size of sizes) {
-    if (!SIZE_SET.has(size)) {
+    if (!PRODUCT_SIZE_SET.has(size)) {
       pushIssue(issues, "sizes", `Invalid size "${size}". Use S, M, L, XL, or XXL.`)
     }
   }
 
   for (const [size, qty] of Object.entries(payload.stockPerSize ?? {})) {
-    if (!SIZE_SET.has(size)) {
+    if (!PRODUCT_SIZE_SET.has(size)) {
       pushIssue(issues, `stockPerSize.${size}`, `Invalid size "${size}".`)
       continue
     }

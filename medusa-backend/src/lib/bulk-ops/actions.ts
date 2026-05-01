@@ -1,4 +1,5 @@
 import { revalidateStorefrontForDrop } from "../drops/revalidate-storefront"
+import { resolveStoreDefaultStockQty } from "../inventory/stock-helpers"
 import { runApplyEgpWholePoundPrices } from "../../scripts/apply-egp-whole-pound-prices"
 import { runBackfillInventoryLevels } from "../../scripts/backfill-inventory-levels"
 import { runBackfillProductArtistMetadata } from "../../scripts/backfill-product-artist-metadata"
@@ -14,11 +15,11 @@ const BULK_OP_RUNNERS: Record<BulkOpActionId, BulkOpAction["run"]> = {
   "round-egp-prices": async (_container, options) => runApplyEgpWholePoundPrices(options),
   "link-shipping-profile": runLinkProductsToShippingProfile,
   "enable-stock-tracking": async (container, options) => runEnableVariantStockTracking(container, {
-    defaultQty: 50,
+    defaultQty: (await resolveStoreDefaultStockQty(container)) ?? 50,
     dryRun: options.dryRun,
   }),
   "backfill-inventory": async (container, options) => runBackfillInventoryLevels(container, {
-    defaultQty: 50,
+    defaultQty: (await resolveStoreDefaultStockQty(container)) ?? 50,
     dryRun: options.dryRun,
   }),
   "backfill-artist-metadata": runBackfillProductArtistMetadata,

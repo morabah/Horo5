@@ -4,6 +4,7 @@ import type { MedusaContainer } from "@medusajs/types"
 import { FEELINGS_ROOT_HANDLE } from "./feeling-category-metadata"
 import type { CategoryNode } from "./feeling-category-tree"
 import { categoryAncestorHandlesFromLeaf } from "./feeling-category-tree"
+import { asRecord, asString, asStringArrayOrEmpty } from "../shared/type-guards"
 
 const TAXONOMY_LINK_PRODUCT_FIELDS = [
   "id",
@@ -19,22 +20,6 @@ type ProductTaxonomyRow = {
   handle?: string | null
   id: string
   metadata?: Record<string, unknown> | null
-}
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {}
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined
-}
-
-function asStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-
-  return value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
 }
 
 function legacyTaxonomyMetadataFallbackEnabled(): boolean {
@@ -91,9 +76,8 @@ export function productReferencesFeelingSlug(row: ProductTaxonomyRow, slug: stri
   }
 
   const metadata = asRecord(row.metadata)
-  const primary = asString(metadata.primaryFeelingSlug)
-  const legacy = asString(metadata.feelingSlug)
-  return primary === slug || legacy === slug
+  const feelingSlugs = asStringArrayOrEmpty(metadata.primaryFeelingSlugs ?? metadata.feelingSlugs)
+  return feelingSlugs.includes(slug)
 }
 
 export function productReferencesSubfeelingSlug(row: ProductTaxonomyRow, slug: string): boolean {
@@ -120,7 +104,8 @@ export function productReferencesOccasionSlug(row: ProductTaxonomyRow, slug: str
     return true
   }
 
-  return asStringArray(metadata.occasionSlugs).includes(slug)
+  const occasionSlugs = asStringArrayOrEmpty(metadata.primaryOccasionSlugs ?? metadata.occasionSlugs)
+  return occasionSlugs.includes(slug)
 }
 
 export async function countProductsLinkedToFeelingSlug(scope: MedusaContainer, slug: string): Promise<number> {

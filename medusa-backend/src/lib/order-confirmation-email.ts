@@ -1,5 +1,6 @@
 import { Resend } from "resend"
 
+import { GIFT_WRAP_HANDLE } from "./shared/constants"
 import { coerceMoneyAmount, medusaAmountToEgp } from "./egp-amount"
 
 /** Thousands + up to 2 fractional digits when Medusa ever returns non-integer minor amounts. */
@@ -9,8 +10,8 @@ const EGP_MONEY = new Intl.NumberFormat("en-US", {
   useGrouping: true,
 })
 
-/** Matches storefront `GIFT_WRAP_PRODUCT_HANDLE` — line excluded from apparel list in confirmation. */
-export const GIFT_WRAP_PRODUCT_HANDLE = "gift-wrap"
+/** Matches storefront `GIFT_WRAP_HANDLE` — line excluded from apparel list in confirmation. */
+export const GIFT_WRAP_PRODUCT_HANDLE = GIFT_WRAP_HANDLE
 
 export function isGiftWrapLineItem(item: { product_handle?: string | null }): boolean {
   return (item.product_handle || "").toLowerCase() === GIFT_WRAP_PRODUCT_HANDLE

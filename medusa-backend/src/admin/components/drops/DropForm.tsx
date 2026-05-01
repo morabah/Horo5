@@ -22,7 +22,7 @@ import { ImageCard } from "./ImageCard"
 import { ArtistPicker, OccasionPicker } from "./LookupCreateFields"
 import { ProductHandlePicker } from "./ProductHandlePicker"
 import { StockBySizeTable } from "./StockBySizeTable"
-import type { DropImage, DropPayload, ProductSizeKey, ValidationIssue } from "./types"
+import { DROP_SIZE_KEYS, type DropImage, type DropPayload, type ProductSizeKey, type ValidationIssue } from "./types"
 import {
   emptyDrop,
   formatDateTimeLocal,
@@ -38,7 +38,7 @@ type DropFormProps = {
 }
 
 const none = "__none__"
-const sizeOptions: ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
+const sizeOptions: ProductSizeKey[] = [...DROP_SIZE_KEYS]
 const colorOptions = ["Black", "White", "Off-white", "Grey", "Navy", "Olive", "Burgundy"]
 
 function toNumber(value: string): number | undefined {

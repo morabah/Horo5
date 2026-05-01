@@ -8,6 +8,7 @@ import {
 
 import { FEELINGS_ROOT_HANDLE } from "../lib/storefront/feeling-category-metadata"
 import { FEELING_TAXONOMY, SUBFEELING_TAXONOMY } from "./data/feelings-taxonomy-data"
+import { asRecord, asString } from "../lib/shared/type-guards"
 
 type CategoryRow = { handle: string; id: string }
 
@@ -18,14 +19,6 @@ const HERO_PRODUCT_FEELING_FALLBACK: Record<string, { feeling: string; sub: stri
   "horo-fiction-vibe": { feeling: "fiction", sub: "sci-fi" },
   "horo-career-vibe": { feeling: "career", sub: "ambition" },
   "horo-signature-hero": { feeling: "mood", sub: "i-care" },
-}
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {}
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined
 }
 
 /**

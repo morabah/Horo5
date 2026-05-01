@@ -10,22 +10,7 @@ import {
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
 import { listProductsForTaxonomyLinkScan } from "../lib/storefront/taxonomy-product-links"
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {}
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined
-}
-
-function asStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-
-  return value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
-}
+import { asRecord, asStringArrayOrEmpty } from "../lib/shared/type-guards"
 
 /**
  * Lists products (up to 500) and prints TSV: handle, derived feeling/sub, category_ok, occasionSlugs, invalid_occasions
@@ -44,7 +29,7 @@ export default async function auditProductTaxonomy({ container }: ExecArgs) {
 
   for (const row of rows) {
     const metadata = asRecord(row.metadata)
-    const occasionSlugs = asStringArray(metadata.occasionSlugs)
+    const occasionSlugs = asStringArrayOrEmpty(metadata.occasionSlugs)
     const invalidOccasions: string[] = []
 
     const { data: productRow } = await query.graph({

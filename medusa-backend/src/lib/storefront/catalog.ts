@@ -27,6 +27,13 @@ import {
   LEGACY_SUBFEELING_TO_TAXONOMY,
 } from "./legacy-compat"
 import { medusaAmountToEgp } from "../egp-amount"
+import { asNumber, asRecord, asString, asStringArrayOrEmpty } from "../shared/type-guards"
+import { variantSize as sharedVariantSize } from "../inventory/stock-helpers"
+import {
+  DEFAULT_APPAREL_CATEGORY_PATH,
+  DEFAULT_TRUST_BADGES,
+  PRODUCT_SIZE_KEYS,
+} from "../shared/constants"
 import type {
   StorefrontMediaGalleryItemDTO,
   StorefrontMediaGalleryTag,
@@ -290,13 +297,7 @@ const PRODUCT_QUERY_FIELDS = [
   "variants.metadata",
 ]
 
-const DEFAULT_APPAREL_CATEGORY_PATH = "apparel/tops/t-shirts"
-const DEFAULT_SIZE_ORDER = ["S", "M", "L", "XL", "XXL"] as const
-const LEGACY_STOREFRONT_TRUST_BADGES = [
-  "premium cotton",
-  "Free exchange 14d",
-  "COD available",
-] as const
+// ... (rest of the code remains the same)
 
 function categoryToFeelingRecord(category: CategoryNode): FeelingRecord {
   const meta = asRecord(category.metadata)
@@ -386,23 +387,6 @@ export async function fetchChildCategoriesOfParent(
   return rows.sort((left, right) => Number(left.rank ?? 0) - Number(right.rank ?? 0))
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {}
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined
-}
-
-function asStringArray(value: unknown): string[] | undefined {
-  if (!Array.isArray(value)) {
-    return undefined
-  }
-
-  const items = value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
-  return items.length > 0 ? items : undefined
-}
-
 /** Accept arrays or comma-separated strings; normalize to string[]. */
 function asStringArrayOrCSV(value: unknown): string[] | undefined {
   if (Array.isArray(value)) {
@@ -414,10 +398,6 @@ function asStringArrayOrCSV(value: unknown): string[] | undefined {
     return items.length > 0 ? items : undefined
   }
   return undefined
-}
-
-function asNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined
 }
 
 function asObjectArray<T extends Record<string, unknown>>(value: unknown): T[] | undefined {
@@ -571,14 +551,7 @@ function galleryFromLegacyMedia(media: StorefrontMediaDTO | undefined): Storefro
 }
 
 function variantSize(variant: QueryVariant): string {
-  const optionSize = variant.options?.find((option) => {
-    return (option.option?.title || "").toLowerCase() === "size"
-  })?.value
-
-  const raw = optionSize || variant.title
-  const normalized = String(raw || "").toUpperCase()
-
-  return normalized || "M"
+  return sharedVariantSize(variant as any) || "M"
 }
 
 function variantColor(variant: QueryVariant): string | undefined {
@@ -608,10 +581,10 @@ function inventoryQuantity(variant: QueryVariant): number | null {
 
 function sortVariantList(variants: StorefrontVariantDTO[]): StorefrontVariantDTO[] {
   return [...variants].sort((left, right) => {
-    const leftIndex = DEFAULT_SIZE_ORDER.indexOf(left.size as (typeof DEFAULT_SIZE_ORDER)[number])
-    const rightIndex = DEFAULT_SIZE_ORDER.indexOf(right.size as (typeof DEFAULT_SIZE_ORDER)[number])
-    const normalizedLeft = leftIndex === -1 ? DEFAULT_SIZE_ORDER.length : leftIndex
-    const normalizedRight = rightIndex === -1 ? DEFAULT_SIZE_ORDER.length : rightIndex
+    const leftIndex = PRODUCT_SIZE_KEYS.indexOf(left.size as (typeof PRODUCT_SIZE_KEYS)[number])
+    const rightIndex = PRODUCT_SIZE_KEYS.indexOf(right.size as (typeof PRODUCT_SIZE_KEYS)[number])
+    const normalizedLeft = leftIndex === -1 ? PRODUCT_SIZE_KEYS.length : leftIndex
+    const normalizedRight = rightIndex === -1 ? PRODUCT_SIZE_KEYS.length : rightIndex
 
     if (normalizedLeft !== normalizedRight) {
       return normalizedLeft - normalizedRight
@@ -1061,12 +1034,13 @@ function buildProduct(
   product: QueryProduct,
   categoriesById?: Map<string, FlatCategoryRow>,
   artistsBySlug?: Map<string, StorefrontArtistDTO>,
-  priceListEndsAtByVariantId?: Map<string, string>
+  priceListEndsAtByVariantId?: Map<string, string>,
+  defaultTrustBadges?: string[] | null,
 ): StorefrontProductDTO {
   const metadata = asRecord(product.metadata)
   const legacyMedia = asMedia(metadata.media)
   const legacyPrice = typeof metadata.priceEgp === "number" ? metadata.priceEgp : undefined
-  const trustBadges = asStringArray(metadata.trustBadges) || []
+  const trustBadges = asStringArrayOrEmpty(metadata.trustBadges)
   const mappedVariants = sortVariantList((product.variants || []).map((variant) => mapVariant(variant, legacyPrice)))
   const defaultVariant = mappedVariants.find((variant) => variant.available) || mappedVariants[0]
   const { variantsBySize, variantsByColor } = groupVariantsByColorForStorefront(mappedVariants, defaultVariant)
@@ -1164,10 +1138,10 @@ function buildProduct(
     artistDisplay: resolveArtistDisplay(metadata, artistsBySlug),
     artistSlug: asString(metadata.artistSlug) || "nada-ibrahim",
     artworkSlug: asString(metadata.artworkSlug),
-    availableSizes: mappedVariants.length > 0 ? mappedVariants.map((variant) => variant.size) : asStringArray(metadata.availableSizes),
-    capsuleSlugs: asStringArray(metadata.capsuleSlugs),
-    complementarySlugs: asStringArray(metadata.complementarySlugs),
-    customersAlsoBoughtSlugs: asStringArray(metadata.customersAlsoBoughtSlugs),
+    availableSizes: mappedVariants.length > 0 ? mappedVariants.map((variant) => variant.size) : asStringArrayOrEmpty(metadata.availableSizes),
+    capsuleSlugs: asStringArrayOrEmpty(metadata.capsuleSlugs),
+    complementarySlugs: asStringArrayOrEmpty(metadata.complementarySlugs),
+    customersAlsoBoughtSlugs: asStringArrayOrEmpty(metadata.customersAlsoBoughtSlugs),
     decorationType,
     defaultPriceSize: defaultVariant?.size,
     feelingBrowseEligible,
@@ -1177,8 +1151,8 @@ function buildProduct(
     feelsLike: asStringArrayOrCSV(metadata.feelsLike),
     fitLabel: asString(metadata.fitLabel),
     sizeTableKey: asString(metadata.sizeTableKey)?.trim() || undefined,
-    frequentlyBoughtWithSlugs: asStringArray(metadata.frequentlyBoughtWithSlugs),
-    garmentColors: asStringArray(metadata.garmentColors),
+    frequentlyBoughtWithSlugs: asStringArrayOrEmpty(metadata.frequentlyBoughtWithSlugs),
+    garmentColors: asStringArrayOrEmpty(metadata.garmentColors),
     inventoryHintBySize: Object.keys(inventoryHints).length > 0 ? inventoryHints : undefined,
     stockStatusBySize,
     fitBySize: fitBySize ?? undefined,
@@ -1198,7 +1172,7 @@ function buildProduct(
     merchandisingBadge: asString(metadata.merchandisingBadge),
     name: product.title,
     pdpTagLabels: buildPdpTagLabels(product),
-    occasionSlugs: asStringArray(metadata.occasionSlugs) || [],
+    occasionSlugs: asStringArrayOrEmpty(metadata.occasionSlugs),
     originalPriceEgp: defaultVariant?.original_price_egp ?? null,
     pdpFitModels: asObjectArray(metadata.pdpFitModels),
     physicalAttributes,
@@ -1214,7 +1188,7 @@ function buildProduct(
     storyDescription: asString(metadata.storyDescription) || undefined,
     thumbnail: mainImage,
     ...(product.updated_at ? { updatedAt: product.updated_at } : {}),
-    trustBadges: trustBadges.length > 0 ? trustBadges : [...LEGACY_STOREFRONT_TRUST_BADGES],
+    trustBadges: trustBadges.length > 0 ? trustBadges : (defaultTrustBadges && defaultTrustBadges.length > 0 ? [...defaultTrustBadges] : [...DEFAULT_TRUST_BADGES]),
     worksFor: asStringArrayOrCSV(metadata.worksFor),
     useCase: asString(metadata.useCase),
     variantsBySize,
@@ -1347,7 +1321,8 @@ function sortStorefrontProducts(
   products: QueryProduct[],
   categoriesById?: Map<string, FlatCategoryRow>,
   artistsBySlug?: Map<string, StorefrontArtistDTO>,
-  priceListEndsAtByVariantId?: Map<string, string>
+  priceListEndsAtByVariantId?: Map<string, string>,
+  defaultTrustBadges?: string[] | null,
 ) {
   const now = new Date()
   return products
@@ -1356,7 +1331,7 @@ function sortStorefrontProducts(
       const metadata = asRecord(product.metadata)
       return {
         order: asNumber(metadata.catalogOrder) ?? Number.MAX_SAFE_INTEGER,
-        product: buildProduct(product, categoriesById, artistsBySlug, priceListEndsAtByVariantId),
+        product: buildProduct(product, categoriesById, artistsBySlug, priceListEndsAtByVariantId, defaultTrustBadges),
       }
     })
     .sort((left, right) => left.order - right.order)
@@ -1507,11 +1482,15 @@ async function queryStorefrontProducts(
   }
 }
 
-export async function listStorefrontProducts(scope: MedusaContainer, artists?: StorefrontArtistDTO[]) {
+export async function listStorefrontProducts(
+  scope: MedusaContainer,
+  artists?: StorefrontArtistDTO[],
+  defaultTrustBadges?: string[] | null,
+) {
   const artistList = artists ?? (await listStorefrontArtists(scope))
   const artistsBySlug = new Map(artistList.map((artist) => [artist.slug, artist]))
   const result = await queryStorefrontProducts(scope)
-  return sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId)
+  return sortStorefrontProducts(result.products, result.categoriesById, artistsBySlug, result.priceListEndsAtByVariantId, defaultTrustBadges)
 }
 
 export async function retrieveStorefrontProduct(
@@ -1809,13 +1788,14 @@ export async function retrieveStorefrontMerchEvent(scope: MedusaContainer, slug:
 export async function buildStorefrontCatalog(scope: MedusaContainer): Promise<StorefrontCatalogDTO> {
   const artists = await listStorefrontArtists(scope)
   const artistsBySlug = new Map(artists.map((artist) => [artist.slug, artist]))
-  const [pq, feelingsBundle, occasions, events] = await Promise.all([
+  const [pq, feelingsBundle, occasions, events, settings] = await Promise.all([
     queryStorefrontProducts(scope),
     loadFeelingsAndSubfeelingsForCatalog(scope),
     listStorefrontOccasions(scope),
     listStorefrontMerchEvents(scope),
+    retrieveStorefrontSettingsPayload(scope),
   ])
-  const products = sortStorefrontProducts(pq.products, pq.categoriesById, artistsBySlug, pq.priceListEndsAtByVariantId)
+  const products = sortStorefrontProducts(pq.products, pq.categoriesById, artistsBySlug, pq.priceListEndsAtByVariantId, settings.defaultTrustBadges)
 
   const { feelings, subfeelings } = feelingsBundle
 

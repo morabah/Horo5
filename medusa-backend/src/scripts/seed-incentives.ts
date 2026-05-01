@@ -2,6 +2,33 @@ import type { ExecArgs } from "@medusajs/framework/types"
 import { Modules } from "@medusajs/framework/utils"
 import { createPromotionsWorkflow } from "@medusajs/medusa/core-flows"
 
+import {
+  DEFAULT_FREE_SHIPPING_THRESHOLD_EGP,
+  FREE_SHIPPING_CODE_PREFIX,
+} from "../lib/shared/constants"
+
+/** Read the free-shipping threshold from store metadata, env, or shared constant. */
+async function resolveThresholdEgp(container: ExecArgs["container"]): Promise<number> {
+  const storeModule = container.resolve(Modules.STORE) as {
+    listStores: () => Promise<Array<{ metadata?: Record<string, unknown> | null }>>
+  }
+  const stores = await storeModule.listStores()
+  const meta = stores[0]?.metadata ?? {}
+  const fromMeta = typeof meta.freeShippingThresholdEgp === "number"
+    ? meta.freeShippingThresholdEgp
+    : typeof meta.freeShippingThresholdEgp === "string"
+      ? Number(meta.freeShippingThresholdEgp)
+      : null
+  if (fromMeta !== null && Number.isFinite(fromMeta) && fromMeta > 0) {
+    return Math.round(fromMeta)
+  }
+  const fromEnv = Number(process.env.FREE_SHIPPING_THRESHOLD_EGP ?? "")
+  if (Number.isFinite(fromEnv) && fromEnv > 0) {
+    return Math.round(fromEnv)
+  }
+  return DEFAULT_FREE_SHIPPING_THRESHOLD_EGP
+}
+
 /**
  * Seeds the storefront incentives: an automatic free-shipping Promotion that
  * the storefront's `/storefront/incentives` endpoint projects into the mini-cart
@@ -16,14 +43,12 @@ import { createPromotionsWorkflow } from "@medusajs/medusa/core-flows"
  * Override the threshold via env:
  *   FREE_SHIPPING_THRESHOLD_EGP=1200 npm run seed:incentives
  */
-const DEFAULT_THRESHOLD_EGP = 1500
-const FREE_SHIPPING_CODE_PREFIX = "HORO_FREE_SHIPPING"
 
 export async function runUpdateIncentiveThreshold(
   container: ExecArgs["container"],
   options: { thresholdEgp?: number; dryRun?: boolean } = {},
 ): Promise<{ summary: string; details: { code: string; threshold: number; created: boolean } }> {
-  const threshold = options.thresholdEgp ?? DEFAULT_THRESHOLD_EGP
+  const threshold = options.thresholdEgp ?? DEFAULT_FREE_SHIPPING_THRESHOLD_EGP
   if (!Number.isFinite(threshold) || threshold <= 0) {
     return { summary: `Invalid threshold: ${threshold}`, details: { code: "", threshold, created: false } }
   }
@@ -91,105 +116,13 @@ export async function runUpdateIncentiveThreshold(
   })
 
   const created = result?.[0] as { id?: string } | undefined
-  return {
-    summary: `Created promotion id=${created?.id} code=${code} threshold=${threshold} EGP`,
-    details: { code, threshold, created: true },
-  }
-}
-
-export default async function seedIncentives({ container }: ExecArgs) {
-  const threshold = Number(process.env.FREE_SHIPPING_THRESHOLD_EGP ?? DEFAULT_THRESHOLD_EGP)
-  if (!Number.isFinite(threshold) || threshold <= 0) {
-    // eslint-disable-next-line no-console
-    console.error(`[seed-incentives] Invalid FREE_SHIPPING_THRESHOLD_EGP: ${threshold}`)
-    process.exitCode = 1
-    return
-  }
-  const code = `${FREE_SHIPPING_CODE_PREFIX}_${threshold}`
-
-  const promotionModule = container.resolve(Modules.PROMOTION)
-
-  const existing = await promotionModule.listPromotions(
-    { code },
-    { take: 1, relations: ["rules", "rules.values"] },
-  )
-  const existingRow = existing[0] as
-    | { id: string; rules?: Array<{ attribute?: string; operator?: string }> }
-    | undefined
-  if (existingRow) {
-    const hasSubtotalRule = (existingRow.rules ?? []).some((r) => {
-      const a = (r.attribute ?? "").toLowerCase()
-      const o = (r.operator ?? "").toLowerCase()
-      return (a === "subtotal" || a === "cart.subtotal") && (o === "gte" || o === "gt")
-    })
-    if (hasSubtotalRule) {
-      // eslint-disable-next-line no-console
-      console.info(
-        `[seed-incentives] Promotion "${code}" already exists with a subtotal rule (id=${existingRow.id}). Nothing to do.`,
-      )
-      return
-    }
-    // Existing row was created without a working rule — patch it in-place.
-    // eslint-disable-next-line no-console
-    console.info(
-      `[seed-incentives] Promotion "${code}" exists (id=${existingRow.id}) but has no subtotal rule. Adding rule.`,
-    )
-    await promotionModule.addPromotionRules(existingRow.id, [
-      {
-        attribute: "subtotal",
-        operator: "gte",
-        values: [String(threshold)],
-      },
-    ])
-    // eslint-disable-next-line no-console
-    console.info(
-      `[seed-incentives] Added rule subtotal>=${threshold} to promotion id=${existingRow.id}`,
-    )
-    return
-  }
-
-  /*
-   * Atomic create: pass `rules` inline so the promotion is born WITH the
-   * `subtotal gte ${threshold}` rule. A previous two-step variant (create →
-   * addPromotionRules) left the promotion rule-less when the second call was
-   * skipped, which is what blanked /storefront/incentives.freeShipping.
-   * `CreatePromotionDTO` accepts `rules?: CreatePromotionRuleDTO[]` natively
-   * (see @medusajs/types/dist/promotion/common/promotion.d.ts).
-   */
-  const { result } = await createPromotionsWorkflow(container).run({
-    input: {
-      promotionsData: [
-        {
-          code,
-          type: "standard",
-          is_automatic: true,
-          status: "active",
-          application_method: {
-            type: "percentage",
-            target_type: "shipping_methods",
-            value: 100,
-            currency_code: "egp",
-            allocation: "across",
-          },
-          rules: [
-            {
-              attribute: "subtotal",
-              operator: "gte",
-              values: [String(threshold)],
-            },
-          ],
-        },
-      ],
-    },
-  })
-
-  const created = result?.[0] as { id?: string } | undefined
   if (!created?.id) {
-    // eslint-disable-next-line no-console
-    console.error(`[seed-incentives] createPromotionsWorkflow did not return an id.`)
-    process.exitCode = 1
-    return
+    return {
+      summary: `createPromotionsWorkflow did not return an id for code=${code}`,
+      details: { code, threshold, created: false },
+    }
   }
+
   /*
    * Defensive verification: re-fetch the promotion and confirm the rule is
    * present. If older Medusa versions ever drop inline `rules`, fall back to
@@ -213,13 +146,31 @@ export default async function seedIncentives({ container }: ExecArgs) {
         values: [String(threshold)],
       },
     ])
-    // eslint-disable-next-line no-console
-    console.info(
-      `[seed-incentives] Inline rule was not persisted by core-flows; recovered via addPromotionRules on id=${created.id}.`,
-    )
+    return {
+      summary: `Created promotion id=${created.id} code=${code} threshold=${threshold} EGP (rule recovered via addPromotionRules).`,
+      details: { code, threshold, created: true },
+    }
   }
+
+  return {
+    summary: `Created promotion id=${created.id} code=${code} threshold=${threshold} EGP`,
+    details: { code, threshold, created: true },
+  }
+}
+
+export default async function seedIncentives({ container }: ExecArgs) {
+  const threshold = await resolveThresholdEgp(container)
+  if (!Number.isFinite(threshold) || threshold <= 0) {
+    // eslint-disable-next-line no-console
+    console.error(`[seed-incentives] Invalid free-shipping threshold: ${threshold}`)
+    process.exitCode = 1
+    return
+  }
+
+  const result = await runUpdateIncentiveThreshold(container, { thresholdEgp: threshold })
   // eslint-disable-next-line no-console
-  console.info(
-    `[seed-incentives] Created promotion id=${created.id} code=${code} threshold=${threshold} EGP`,
-  )
+  console.info(`[seed-incentives] ${result.summary}`)
+  if (!result.details.created && result.details.code === "") {
+    process.exitCode = 1
+  }
 }

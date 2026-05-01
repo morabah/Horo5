@@ -9,6 +9,7 @@ import {
   validateProductFeelingCategoryAssignmentsFlat,
 } from "../storefront/feeling-category-tree"
 import { listProductsForTaxonomyLinkScan } from "../storefront/taxonomy-product-links"
+import { asRecord, asStringArrayOrEmpty } from "../shared/type-guards"
 import { OCCASION_MODULE } from "../../modules/occasion"
 import type OccasionModuleService from "../../modules/occasion/service"
 
@@ -56,16 +57,6 @@ export type TaxonomyAuditReport = {
     bySubfeeling: Record<string, number>
     byOccasion: Record<string, number>
   }
-}
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {}
-}
-
-function asStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.map((entry) => String(entry || "").trim()).filter(Boolean)
-    : []
 }
 
 function increment(map: Record<string, number>, key: string | null | undefined) {
@@ -172,7 +163,7 @@ export async function runProductTaxonomyAudit(
       })
     }
 
-    const productOccasionSlugs = asStringArray(metadata.occasionSlugs)
+    const productOccasionSlugs = asStringArrayOrEmpty(metadata.occasionSlugs)
     for (const slug of productOccasionSlugs) {
       increment(counts.byOccasion, slug)
       if (!occasionSlugs.has(slug)) {

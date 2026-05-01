@@ -35,13 +35,7 @@ export type InstapayProviderConfig = {
   payoutBankLabel?: string
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {}
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined
-}
+import { asRecord, asString } from "../../lib/shared/type-guards"
 
 function payoutPayloadFromConfig(config: InstapayProviderConfig): Record<string, unknown> {
   const out: Record<string, unknown> = { kind: "instapay_deferred" }

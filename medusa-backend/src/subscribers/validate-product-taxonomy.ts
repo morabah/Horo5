@@ -12,24 +12,9 @@ import {
 } from "../lib/storefront/feeling-category-tree"
 import { OCCASION_MODULE } from "../modules/occasion"
 import type OccasionModuleService from "../modules/occasion/service"
+import { asRecord, asString, asStringArrayOrEmpty } from "../lib/shared/type-guards"
 
 type ProductPayload = { id: string }
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : {}
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined
-}
-
-function asStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-
-  return value.filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
-}
 
 function enforceTaxonomy(): boolean {
   return String(process.env.HORO_TAXONOMY_ENFORCE || "").trim().toLowerCase() === "true"
@@ -58,7 +43,8 @@ export default async function validateProductTaxonomySubscriber({
 
     const product = await productModule.retrieveProduct(productId, {})
     const metadata = asRecord(product?.metadata)
-    const occasionSlugs = asStringArray(metadata.occasionSlugs)
+    const feelingSlugs = asStringArrayOrEmpty(metadata?.primaryFeelingSlugs ?? metadata?.feelingSlugs)
+    const occasionSlugs = asStringArrayOrEmpty(metadata?.primaryOccasionSlugs ?? metadata?.occasionSlugs)
     const primaryOccasionSlug = asString(metadata.primaryOccasionSlug)
     const decorationType = asString(metadata.decorationType)
     const artworkSlug = asString(metadata.artworkSlug)

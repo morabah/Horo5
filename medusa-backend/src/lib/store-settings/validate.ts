@@ -7,6 +7,7 @@ import type {
   StoreSettingsResult,
   StoreSettingsValidationIssue,
 } from "./types"
+import { asNumber, asRecordOrNull, asStringArrayOrEmpty, asStringOrEmpty, parseInteger } from "../shared/type-guards"
 
 const TABLE_KEY_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/
 
@@ -26,33 +27,12 @@ const DELIVERY_INT_RULES: IntRule[] = [
   { key: "standardMaxBusinessDays", min: 1, max: 30 },
 ]
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? value as Record<string, unknown>
-    : null
-}
-
-function trimmedString(value: unknown): string {
-  return typeof value === "string" ? value.trim() : ""
-}
-
-function parseInteger(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return Math.trunc(value)
-  }
-  if (typeof value === "string" && value.trim()) {
-    const parsed = Number(value)
-    return Number.isFinite(parsed) ? Math.trunc(parsed) : null
-  }
-  return null
-}
-
 function addIssue(issues: StoreSettingsValidationIssue[], field: string, message: string) {
   issues.push({ field, message })
 }
 
 function normalizeDelivery(raw: unknown, issues: StoreSettingsValidationIssue[]): DeliveryConfig | null {
-  const record = asRecord(raw)
+  const record = asRecordOrNull(raw)
   if (!record) {
     addIssue(issues, "delivery", "Delivery config must be an object.")
     return null
@@ -92,18 +72,18 @@ function normalizeDelivery(raw: unknown, issues: StoreSettingsValidationIssue[])
 }
 
 function normalizeMeasurement(raw: unknown, field: string, issues: StoreSettingsValidationIssue[]): SizeTableMeasurement | null {
-  const record = asRecord(raw)
+  const record = asRecordOrNull(raw)
   if (!record) {
     addIssue(issues, field, "Measurement row must be an object.")
     return null
   }
 
   const row: SizeTableMeasurement = {
-    size: trimmedString(record.size),
-    chest: trimmedString(record.chest),
-    shoulder: trimmedString(record.shoulder),
-    length: trimmedString(record.length),
-    sleeve: trimmedString(record.sleeve),
+    size: asStringOrEmpty(record.size),
+    chest: asStringOrEmpty(record.chest),
+    shoulder: asStringOrEmpty(record.shoulder),
+    length: asStringOrEmpty(record.length),
+    sleeve: asStringOrEmpty(record.sleeve),
   }
 
   for (const [key, value] of Object.entries(row)) {
@@ -116,7 +96,7 @@ function normalizeMeasurement(raw: unknown, field: string, issues: StoreSettings
 }
 
 function normalizeFitModel(raw: unknown, field: string, issues: StoreSettingsValidationIssue[]): SizeTableFitModel | null {
-  const record = asRecord(raw)
+  const record = asRecordOrNull(raw)
   if (!record) {
     addIssue(issues, field, "Fit model must be an object.")
     return null
@@ -129,10 +109,10 @@ function normalizeFitModel(raw: unknown, field: string, issues: StoreSettingsVal
 
   const model: SizeTableFitModel = {
     heightCm: heightCm ?? 0,
-    heightImperial: trimmedString(record.heightImperial),
-    sizeWorn: trimmedString(record.sizeWorn),
+    heightImperial: asStringOrEmpty(record.heightImperial),
+    sizeWorn: asStringOrEmpty(record.sizeWorn),
   }
-  const fitNote = trimmedString(record.fitNote)
+  const fitNote = asStringOrEmpty(record.fitNote)
   if (fitNote) {
     model.fitNote = fitNote
   }
@@ -148,8 +128,8 @@ function normalizeFitModel(raw: unknown, field: string, issues: StoreSettingsVal
 }
 
 function normalizeSizeTables(raw: unknown, issues: StoreSettingsValidationIssue[]): Record<string, SizeTable> {
-  const wrapper = asRecord(raw)
-  const record = asRecord(wrapper?.tables) ?? wrapper
+  const wrapper = asRecordOrNull(raw)
+  const record = asRecordOrNull(wrapper?.tables) ?? wrapper
   if (!record) {
     addIssue(issues, "sizeTables", "Size tables must be an object keyed by preset key.")
     return {}
@@ -172,7 +152,7 @@ function normalizeSizeTables(raw: unknown, issues: StoreSettingsValidationIssue[
       continue
     }
 
-    const tableRecord = asRecord(rawTable)
+    const tableRecord = asRecordOrNull(rawTable)
     if (!tableRecord) {
       addIssue(issues, field, "Size table must be an object.")
       continue
@@ -209,7 +189,7 @@ function normalizeSizeTables(raw: unknown, issues: StoreSettingsValidationIssue[
 }
 
 function normalizeStorefrontUrl(raw: unknown, issues: StoreSettingsValidationIssue[]): string | null {
-  const value = trimmedString(raw)
+  const value = asStringOrEmpty(raw)
   if (!value) return null
 
   try {
@@ -227,7 +207,7 @@ function normalizeStorefrontUrl(raw: unknown, issues: StoreSettingsValidationIss
 
 export function normalizeStoreSettingsInput(raw: unknown): StoreSettingsResult {
   const issues: StoreSettingsValidationIssue[] = []
-  const record = asRecord(raw)
+  const record = asRecordOrNull(raw)
   if (!record) {
     return {
       ok: false,
@@ -237,7 +217,7 @@ export function normalizeStoreSettingsInput(raw: unknown): StoreSettingsResult {
 
   const delivery = normalizeDelivery(record.delivery, issues)
   const sizeTables = normalizeSizeTables(record.sizeTables, issues)
-  const defaultSizeTableKey = trimmedString(record.defaultSizeTableKey)
+  const defaultSizeTableKey = asStringOrEmpty(record.defaultSizeTableKey)
   if (!defaultSizeTableKey) {
     addIssue(issues, "defaultSizeTableKey", "Default size table key is required.")
   } else if (!sizeTables[defaultSizeTableKey]) {
@@ -245,6 +225,31 @@ export function normalizeStoreSettingsInput(raw: unknown): StoreSettingsResult {
   }
 
   const storefrontUrl = normalizeStorefrontUrl(record.storefrontUrl, issues)
+
+  /** Free-shipping threshold (EGP) — optional positive integer. */
+  let freeShippingThresholdEgp: number | null = null
+  if (record.freeShippingThresholdEgp !== undefined && record.freeShippingThresholdEgp !== null) {
+    const parsed = asNumber(record.freeShippingThresholdEgp)
+    if (parsed === undefined || parsed < 0 || !Number.isInteger(parsed)) {
+      addIssue(issues, "freeShippingThresholdEgp", "freeShippingThresholdEgp must be a non-negative integer.")
+    } else {
+      freeShippingThresholdEgp = parsed
+    }
+  }
+
+  /** Default trust badges — optional string array. */
+  const defaultTrustBadges = asStringArrayOrEmpty(record.defaultTrustBadges)
+
+  /** Default stock quantity — optional non-negative integer. */
+  let defaultStockQty: number | null = null
+  if (record.defaultStockQty !== undefined && record.defaultStockQty !== null) {
+    const parsed = asNumber(record.defaultStockQty)
+    if (parsed === undefined || parsed < 0 || !Number.isInteger(parsed)) {
+      addIssue(issues, "defaultStockQty", "defaultStockQty must be a non-negative integer.")
+    } else {
+      defaultStockQty = parsed
+    }
+  }
 
   if (issues.length > 0 || !delivery) {
     return { ok: false, issues }
@@ -257,6 +262,9 @@ export function normalizeStoreSettingsInput(raw: unknown): StoreSettingsResult {
       sizeTables,
       defaultSizeTableKey,
       storefrontUrl,
+      freeShippingThresholdEgp,
+      defaultTrustBadges,
+      defaultStockQty,
     },
   }
 }

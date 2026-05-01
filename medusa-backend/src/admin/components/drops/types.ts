@@ -1,5 +1,9 @@
+import { DEFAULT_TRUST_BADGES } from "../../../lib/shared/constants"
+
 export type DropStatus = "draft" | "published" | "archived"
 export type ProductSizeKey = "S" | "M" | "L" | "XL" | "XXL"
+export const DROP_SIZE_KEYS: readonly ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
+export const DEFAULT_DROP_TRUST_BADGES = DEFAULT_TRUST_BADGES
 export type DropImageTag = "main" | "lifestyle" | "flat_lay" | "proof_fabric" | "proof_print" | "proof_wash"
 
 export type DropImage = {

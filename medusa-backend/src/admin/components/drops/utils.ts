@@ -1,4 +1,4 @@
-import type { DropImageTag, DropPayload, ProductSizeKey, ValidationIssue } from "./types"
+import { DEFAULT_DROP_TRUST_BADGES, DROP_SIZE_KEYS, type DropImageTag, type DropPayload, type ProductSizeKey, type ValidationIssue } from "./types"
 
 const tagPrefixes: Array<{ prefix: string; tag: DropImageTag }> = [
   { prefix: "main", tag: "main" },
@@ -43,10 +43,10 @@ export function emptyDrop(): DropPayload {
     story: "",
     description: "",
     occasions: [],
-    sizes: ["S", "M", "L", "XL", "XXL"],
+    sizes: [...DROP_SIZE_KEYS],
     stockPerSize: { S: 0, M: 0, L: 0, XL: 0, XXL: 0 },
     decorationType: "graphic",
-    trustBadges: ["premium cotton", "Free exchange 14d", "COD available"],
+    trustBadges: [...DEFAULT_DROP_TRUST_BADGES],
     images: [],
     capsuleSlugs: [],
     complementarySlugs: [],
@@ -91,6 +91,6 @@ export function parseDateTimeLocal(value: string) {
 }
 
 export function orderedSizes(sizes: ProductSizeKey[]) {
-  const order: ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
+  const order: ProductSizeKey[] = [...DROP_SIZE_KEYS]
   return order.filter((size) => sizes.includes(size))
 }

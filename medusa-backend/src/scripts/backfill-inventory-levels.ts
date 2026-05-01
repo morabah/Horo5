@@ -10,8 +10,6 @@
  * backfilled levels use the same per-size quantities as the sheet.
  */
 
-import fs from "node:fs/promises"
-import path from "node:path"
 import type { ExecArgs } from "@medusajs/framework/types"
 import {
   ContainerRegistrationKeys,
@@ -22,10 +20,18 @@ import {
   updateInventoryLevelsWorkflow,
 } from "@medusajs/medusa/core-flows"
 
-const GIFT_WRAP_HANDLE = "gift-wrap"
-const SIZE_SET = new Set(["S", "M", "L", "XL", "XXL"])
-
-export type StockMap = Record<string, Partial<Record<string, number>>>
+import { GIFT_WRAP_HANDLE } from "../lib/shared/constants"
+import { normalizeArgs, readOption } from "../lib/shared/cli-args"
+import {
+  type StockMap,
+  type StockLocationRow,
+  type VariantRow,
+  type InventoryLevelRow,
+  parseDefaultQty,
+  parseStockMap,
+  resolveStoreDefaultStockQty,
+  stockQtyForVariant,
+} from "../lib/inventory/stock-helpers"
 
 export type BackfillInventoryOptions = {
   defaultQty?: number
@@ -44,117 +50,6 @@ export type BackfillInventoryResult = {
     levelsToCreate: number
     levelsToUpdate: number
   }
-}
-
-type StockLocationRow = { id: string; name?: string }
-
-type VariantRow = {
-  id: string
-  title: string | null
-  sku: string | null
-  manage_inventory: boolean | null
-  product?: { id?: string; handle: string | null } | null
-  inventory_items?: Array<{
-    inventory?: { id: string } | null
-    inventory_item_id?: string | null
-  }>
-}
-
-type InventoryLevelRow = {
-  id: string
-  inventory_item_id: string
-  location_id: string
-  stocked_quantity: number | null
-}
-
-function normalizeArgs(args: unknown): string[] {
-  return (Array.isArray(args) ? args : [])
-    .filter((arg): arg is string => typeof arg === "string")
-    .filter((arg) => arg !== "--")
-}
-
-function readOption(args: string[], name: string): string | undefined {
-  const prefix = `${name}=`
-  const inline = args.find((arg) => arg.startsWith(prefix))
-  if (inline) return inline.slice(prefix.length)
-
-  const index = args.indexOf(name)
-  if (index >= 0) return args[index + 1]
-  return undefined
-}
-
-function parseDefaultQty(args: unknown): number {
-  const arr = normalizeArgs(args)
-  const positional = arr.find((arg, index) => {
-    const previous = arr[index - 1]
-    return arg !== "dryrun" && arg !== "--dry-run" && previous !== "--stock-map" && !arg.startsWith("-")
-  })
-  if (!positional) return 50
-  const n = Number(positional)
-  if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)) {
-    throw new Error(`Invalid default quantity: ${positional}. Pass a non-negative integer.`)
-  }
-  return n
-}
-
-function validateStockMap(raw: unknown): StockMap {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-    throw new Error("--stock-map must point to a JSON object keyed by product handle.")
-  }
-
-  const result: StockMap = {}
-  for (const [handle, bySize] of Object.entries(raw as Record<string, unknown>)) {
-    if (!bySize || typeof bySize !== "object" || Array.isArray(bySize)) {
-      throw new Error(`stockMap.${handle} must be an object keyed by size.`)
-    }
-
-    result[handle] = {}
-    for (const [size, qty] of Object.entries(bySize as Record<string, unknown>)) {
-      if (!SIZE_SET.has(size)) {
-        throw new Error(`stockMap.${handle}.${size} is not a supported size.`)
-      }
-      if (!Number.isInteger(qty) || (qty as number) < 0) {
-        throw new Error(`stockMap.${handle}.${size} must be a non-negative integer.`)
-      }
-      result[handle][size] = qty as number
-    }
-  }
-
-  return result
-}
-
-async function parseStockMap(args: unknown): Promise<StockMap | undefined> {
-  const stockMapPath = readOption(normalizeArgs(args), "--stock-map")
-  if (!stockMapPath) return undefined
-
-  const absolutePath = path.isAbsolute(stockMapPath) ? stockMapPath : path.resolve(process.cwd(), stockMapPath)
-  return validateStockMap(JSON.parse(await fs.readFile(absolutePath, "utf-8")))
-}
-
-function variantSize(variant: VariantRow): string | undefined {
-  const title = variant.title?.toUpperCase()
-  if (title && SIZE_SET.has(title)) return title
-
-  const skuSuffix = variant.sku?.split("-").pop()?.toUpperCase()
-  if (skuSuffix && SIZE_SET.has(skuSuffix)) return skuSuffix
-
-  return undefined
-}
-
-function stockQtyForVariant(
-  variant: VariantRow,
-  defaultQty: number,
-  stockMap: StockMap | undefined,
-): number | undefined {
-  const handle = variant.product?.handle ?? ""
-  if (!stockMap) return defaultQty
-  const bySize = stockMap[handle]
-  if (!bySize) return undefined
-
-  const size = variantSize(variant)
-  if (!size) return defaultQty
-
-  return bySize[size] ?? defaultQty
 }
 
 export async function runBackfillInventoryLevels(
@@ -443,8 +338,9 @@ export async function runBackfillInventoryLevels(
 
 export default async function backfillInventoryLevels({ container, args }: ExecArgs) {
   const arr = normalizeArgs(args)
+  const storeDefaultQty = await resolveStoreDefaultStockQty(container)
   await runBackfillInventoryLevels(container, {
-    defaultQty: parseDefaultQty(arr),
+    defaultQty: parseDefaultQty(arr, storeDefaultQty),
     dryRun: arr.includes("dryrun") || arr.includes("--dry-run"),
     stockMap: await parseStockMap(arr),
   })

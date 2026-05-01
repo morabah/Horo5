@@ -6,6 +6,7 @@ import {
   PaymentActions,
   PaymentSessionStatus,
 } from "@medusajs/framework/utils"
+import { asString } from "../../lib/shared/type-guards"
 import type {
   AuthorizePaymentInput,
   AuthorizePaymentOutput,
@@ -84,10 +85,6 @@ const FALLBACK_EMAIL = "checkout@horo.local"
 const FALLBACK_PHONE = "+201000000000"
 const CHECKOUT_RETURN_QUERY = "payment=paymob"
 
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined
-}
-
 function asNumber(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value
@@ -114,11 +111,7 @@ function asBoolean(value: unknown): boolean | undefined {
   return undefined
 }
 
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {}
-}
+import { asRecord } from "../../lib/shared/type-guards"
 
 function normalizeAmount(amount: unknown): number {
   const normalized = asNumber(amount)

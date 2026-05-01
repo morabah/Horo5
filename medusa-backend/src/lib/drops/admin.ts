@@ -13,6 +13,7 @@ import {
   type ProductSizeKey,
   type UpsertDropPayload,
 } from "./types"
+import { asRecord, asString, asNumber, asStringArrayOrEmpty } from "../shared/type-guards"
 
 type Query = {
   graph: (query: Record<string, unknown>) => Promise<{ data?: unknown; metadata?: { count?: number } }>
@@ -100,24 +101,6 @@ const PRODUCT_FIELDS = [
   "variants.inventory_items.inventory.location_levels.stocked_quantity",
   "variants.inventory_items.inventory.location_levels.reserved_quantity",
 ]
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {}
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined
-}
-
-function asNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined
-}
-
-function asStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.map((item) => String(item || "").trim()).filter(Boolean)
-    : []
-}
 
 function statusFromProduct(product: QueryProduct): DropStatus {
   if (product.metadata?.archived === true) return "archived"
@@ -222,8 +205,8 @@ function mediaImages(product: QueryProduct): DropImageInput[] {
 
 function productToPayload(product: QueryProduct): UpsertDropPayload & { id: string; updatedAt?: string | null } {
   const metadata = product.metadata ?? {}
-  const garmentColors = asStringArray(metadata.garmentColors)
-  const sizes = asStringArray(metadata.availableSizes).filter((size): size is ProductSizeKey => {
+  const garmentColors = asStringArrayOrEmpty(metadata.garmentColors)
+  const sizes = asStringArrayOrEmpty(metadata.availableSizes).filter((size): size is ProductSizeKey => {
     return DEFAULT_DROP_SIZES.includes(size as ProductSizeKey)
   })
 
@@ -236,7 +219,7 @@ function productToPayload(product: QueryProduct): UpsertDropPayload & { id: stri
     description: product.description ?? "",
     feeling: asString(metadata.feelingSlug),
     subfeeling: subfeelingFromCategories(product),
-    occasions: asStringArray(metadata.occasionSlugs),
+    occasions: asStringArrayOrEmpty(metadata.occasionSlugs),
     apparelCategory: asString(metadata.apparelCategoryPath),
     priceEgp: priceFromProduct(product),
     originalPriceEgp: asNumber(metadata.originalPriceEgp) ?? null,
@@ -246,15 +229,15 @@ function productToPayload(product: QueryProduct): UpsertDropPayload & { id: stri
     artist: asString(metadata.artistSlug),
     decorationType: asString(metadata.decorationType) as UpsertDropPayload["decorationType"],
     fitLabel: asString(metadata.fitLabel),
-    trustBadges: asStringArray(metadata.trustBadges),
+    trustBadges: asStringArrayOrEmpty(metadata.trustBadges),
     merchandisingBadge: asString(metadata.merchandisingBadge),
     stockNote: asString(metadata.stockNote),
     sizeTableKey: asString(metadata.sizeTableKey),
     images: mediaImages(product),
-    capsuleSlugs: asStringArray(metadata.capsuleSlugs),
-    complementarySlugs: asStringArray(metadata.complementarySlugs),
-    frequentlyBoughtWithSlugs: asStringArray(metadata.frequentlyBoughtWithSlugs),
-    customersAlsoBoughtSlugs: asStringArray(metadata.customersAlsoBoughtSlugs),
+    capsuleSlugs: asStringArrayOrEmpty(metadata.capsuleSlugs),
+    complementarySlugs: asStringArrayOrEmpty(metadata.complementarySlugs),
+    frequentlyBoughtWithSlugs: asStringArrayOrEmpty(metadata.frequentlyBoughtWithSlugs),
+    customersAlsoBoughtSlugs: asStringArrayOrEmpty(metadata.customersAlsoBoughtSlugs),
     launchAt: asString(metadata.launchAt),
     sunsetAt: asString(metadata.sunsetAt),
     updatedAt: product.updated_at ? new Date(product.updated_at).toISOString() : null,
@@ -269,7 +252,7 @@ function productToSummary(product: QueryProduct) {
     status: statusFromProduct(product),
     thumbnail: product.thumbnail ?? mediaImages(product)[0]?.url ?? null,
     feeling: asString(product.metadata?.feelingSlug) ?? "",
-    occasionSlugs: asStringArray(product.metadata?.occasionSlugs),
+    occasionSlugs: asStringArrayOrEmpty(product.metadata?.occasionSlugs),
     priceEgp: priceFromProduct(product) ?? null,
     updatedAt: product.updated_at ? new Date(product.updated_at).toISOString() : null,
     variantCount: product.variants?.length ?? 0,

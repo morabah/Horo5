@@ -2,6 +2,7 @@ import type { MedusaContainer } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { updateStoresWorkflow } from "@medusajs/medusa/core-flows"
 
+import { asString } from "../shared/type-guards"
 import type { CatalogSyncOptions, CatalogSyncReport } from "./types"
 
 type Query = {
@@ -30,10 +31,6 @@ export type CatalogSyncStatus = {
 
 function asBoolean(value: unknown): boolean {
   return value === true || value === "true" || value === "1" || value === 1
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined
 }
 
 function parseOnlyHandles(value: unknown): Set<string> | undefined {

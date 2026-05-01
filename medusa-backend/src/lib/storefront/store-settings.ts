@@ -1,6 +1,7 @@
 import { Modules } from "@medusajs/framework/utils"
 import type { MedusaContainer } from "@medusajs/types"
 
+import { asNumber, asString, asStringArrayOrEmpty } from "../shared/type-guards"
 import { HOMEPAGE_SECTION_TYPES } from "../homepage-sections/types"
 
 /**
@@ -146,10 +147,12 @@ export type StorefrontSettingsDTO = {
   search: StorefrontSearchSettingsDTO | null
   homepage: StorefrontHomepageSettingsDTO | null
   loyalty: StorefrontLoyaltySettingsDTO | null
-}
-
-function asString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim() ? value.trim() : undefined
+  /** Trust-badge fallback list when a product has no explicit `metadata.trustBadges`. */
+  defaultTrustBadges: string[] | null
+  /** Free-shipping threshold in EGP used by incentives/seed scripts. */
+  freeShippingThresholdEgp: number | null
+  /** Default per-variant stock quantity used by inventory backfill scripts. */
+  defaultStockQty: number | null
 }
 
 function asLocalizedText(value: unknown): LocalizedText | undefined {
@@ -311,5 +314,42 @@ export async function retrieveStorefrontSettingsPayload(scope: MedusaContainer):
   const homepage = parseHomepage(meta.homepage)
   const loyalty = parseLoyalty(meta.loyalty)
 
-  return { delivery, sizeTables, defaultSizeTableKey, navigation, checkout, search, homepage, loyalty }
+  /** Store-level override for default product trust badges. */
+  const defaultTrustBadges = asStringArrayOrEmpty(meta.defaultTrustBadges)
+
+  /** Store-level override for free-shipping threshold. */
+  const freeShippingThresholdEgp =
+    typeof meta.freeShippingThresholdEgp === "number"
+      ? meta.freeShippingThresholdEgp
+      : typeof meta.freeShippingThresholdEgp === "string"
+        ? Number(meta.freeShippingThresholdEgp)
+        : null
+
+  /** Store-level override for default per-variant stock quantity. */
+  const defaultStockQty =
+    typeof meta.defaultStockQty === "number"
+      ? meta.defaultStockQty
+      : typeof meta.defaultStockQty === "string"
+        ? Number(meta.defaultStockQty)
+        : null
+
+  return {
+    delivery,
+    sizeTables,
+    defaultSizeTableKey,
+    navigation,
+    checkout,
+    search,
+    homepage,
+    loyalty,
+    defaultTrustBadges: defaultTrustBadges.length > 0 ? defaultTrustBadges : null,
+    freeShippingThresholdEgp:
+      freeShippingThresholdEgp !== null && Number.isFinite(freeShippingThresholdEgp) && freeShippingThresholdEgp >= 0
+        ? Math.round(freeShippingThresholdEgp)
+        : null,
+    defaultStockQty:
+      defaultStockQty !== null && Number.isFinite(defaultStockQty) && defaultStockQty >= 0 && Number.isInteger(defaultStockQty)
+        ? defaultStockQty
+        : null,
+  }
 }
