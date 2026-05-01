@@ -29,6 +29,9 @@ function currentSettingsFromMetadata(metadata: Record<string, unknown>) {
     sizeTables,
     defaultSizeTableKey,
     storefrontUrl,
+    freeShippingThresholdEgp: metadata.freeShippingThresholdEgp ?? metadata.free_shipping_threshold_egp,
+    defaultTrustBadges: metadata.defaultTrustBadges ?? metadata.default_trust_badges,
+    defaultStockQty: metadata.defaultStockQty ?? metadata.default_stock_qty,
   })
 }
 
