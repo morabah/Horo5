@@ -1897,6 +1897,31 @@ export function Checkout({
               <h1 className="font-headline text-2xl font-semibold text-obsidian">{copy.checkout.breadcrumbTitle}</h1>
               <p className="mt-3 text-[0.9375rem] font-semibold text-obsidian">{copy.checkout.guestCheckout}</p>
               <p className="mt-4 max-w-xl text-sm text-warm-charcoal">{copy.checkout.secureData}</p>
+
+              {/* Free-shipping progress banner in checkout main column (visible on mobile where sidebar is hidden). */}
+              {freeShippingThresholdEgp && freeShippingThresholdEgp > 0 ? (() => {
+                const remaining = Math.max(0, freeShippingThresholdEgp - merchandiseSubtotalEgp);
+                const pct = Math.min(100, Math.max(0, Math.round((merchandiseSubtotalEgp / freeShippingThresholdEgp) * 100)));
+                const headline = freeShippingUnlocked
+                  ? (isArabic ? 'مبروك! تم تفعيل الشحن المجاني' : 'Free shipping unlocked')
+                  : isArabic
+                    ? `أضف ${formatEgp(remaining)} للحصول على شحن مجاني`
+                    : `Add ${formatEgp(remaining)} for free shipping`;
+                return (
+                  <div className="mini-cart-freeship mt-4 lg:hidden" role="status" aria-live="polite">
+                    <p className="mini-cart-freeship-headline">{headline}</p>
+                    <div
+                      className="mini-cart-freeship-track"
+                      role="progressbar"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={pct}
+                    >
+                      <span className="mini-cart-freeship-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })() : null}
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
                 {PDP_SCHEMA.trustStripItems.slice(0, 3).map((chip) => (
                   <span key={chip} className="font-body text-[10px] tracking-wide text-warm-charcoal/70">{chip}</span>
@@ -1915,6 +1940,15 @@ export function Checkout({
                     <p className="mt-1 text-sm text-clay">
                       {mobileLineCountLabel} · {formatEgp(orderTotal)}
                     </p>
+                    {freeShippingThresholdEgp && freeShippingThresholdEgp > 0 ? (
+                      <p className="mt-0.5 text-xs text-deep-teal">
+                        {freeShippingUnlocked
+                          ? (isArabic ? 'الشحن المجاني مفعل ✓' : 'Free shipping unlocked ✓')
+                          : isArabic
+                            ? `أضف ${formatEgp(Math.max(0, freeShippingThresholdEgp - merchandiseSubtotalEgp))} للشحن المجاني`
+                            : `Add ${formatEgp(Math.max(0, freeShippingThresholdEgp - merchandiseSubtotalEgp))} for free shipping`}
+                      </p>
+                    ) : null}
                   </div>
                   <span className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-deep-teal">
                     {mobileSummaryOpen ? (isArabic ? 'إخفاء' : 'Hide') : (isArabic ? 'عرض' : 'View')}

@@ -121,13 +121,17 @@ function CartUpsell({
 
   if (totalQty >= 2 && bundle && totalQty < bundle.requireQuantity) {
     const bundleHeading = pickLocalizedText(bundle.label, locale === 'ar' ? 'ar' : 'en') ?? copy.bundleUpsellHeading;
+    const remainingItems = bundle.requireQuantity - totalQty;
+    const bundleBody = locale === 'ar'
+      ? `أضف ${remainingItems} تصميم${remainingItems > 1 ? 'ات' : ''} آخر${remainingItems > 1 ? '' : ''} من فنان مختلف ووفّر ${bundle.applicationValue} ج.م.`
+      : `Add ${remainingItems} more design${remainingItems > 1 ? 's' : ''} by a different artist and save ${bundle.applicationValue} EGP.`;
     return (
       <section className="cart-upsell card-glass" aria-labelledby="cart-upsell-title">
         <div className="cart-upsell-content cart-upsell-content--compact">
           <h2 id="cart-upsell-title" className="cart-upsell-title">
             {bundleHeading}
           </h2>
-          <p className="cart-upsell-body">{copy.bundleUpsellBody}</p>
+          <p className="cart-upsell-body">{bundleBody}</p>
           <div className="cart-upsell-actions">
             <Link className="btn btn-ghost" to="/feelings">
               {copy.bundleUpsellCta}
@@ -858,6 +862,37 @@ export function Cart({
             {statusMessage || ' '}
           </p>
         </header>
+
+        {/* Prominent free-shipping progress banner at top of cart (visible on mobile before scrolling). */}
+        {incentives?.freeShipping && incentives.freeShipping.thresholdEgp > 0 ? (() => {
+          const threshold = incentives.freeShipping.thresholdEgp;
+          const remaining = Math.max(0, threshold - displaySubtotalEgp);
+          const pct = Math.min(100, Math.max(0, Math.round((displaySubtotalEgp / threshold) * 100)));
+          const unlocked = displaySubtotalEgp >= threshold;
+          const labelFromOps = pickLocalizedText(incentives.freeShipping.label, locale === 'ar' ? 'ar' : 'en');
+          const headline = unlocked
+            ? locale === 'ar'
+              ? 'مبروك! تم تفعيل الشحن المجاني'
+              : 'Free shipping unlocked'
+            : locale === 'ar'
+              ? `أضف ${formatEgp(remaining)} للحصول على شحن مجاني`
+              : `Add ${formatEgp(remaining)} for free shipping`;
+          return (
+            <div className="mini-cart-freeship mb-4" role="status" aria-live="polite">
+              <p className="mini-cart-freeship-headline">{headline}</p>
+              <div
+                className="mini-cart-freeship-track"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={pct}
+              >
+                <span className="mini-cart-freeship-fill" style={{ width: `${pct}%` }} />
+              </div>
+              {labelFromOps ? <p className="mini-cart-freeship-label">{labelFromOps}</p> : null}
+            </div>
+          );
+        })() : null}
 
         <div className="cart-grid">
           <div className="order-1 md:col-start-1 md:row-start-1">
