@@ -244,7 +244,17 @@ function CartSummary({
             {shippingRow.mode === 'loading' ? (
               <Skeleton className="inline-block h-4 w-16 align-middle" />
             ) : null}
-            {shippingRow.mode === 'amount' ? formatEgp(shippingRow.egp) : null}
+            {shippingRow.mode === 'amount' ? (() => {
+              const threshold = incentives?.freeShipping?.thresholdEgp ?? 0;
+              const unlocked = threshold > 0 && subtotalEgp >= threshold;
+              return unlocked ? (
+                <span className="font-body text-sm text-deep-teal">
+                  {locale === 'ar' ? 'مجاني' : 'Free'}
+                </span>
+              ) : (
+                formatEgp(shippingRow.egp)
+              );
+            })() : null}
             {shippingRow.mode === 'copy' ? (
               <span className="font-body text-sm text-warm-charcoal">{copy.shippingConfirmedAtCheckout}</span>
             ) : null}

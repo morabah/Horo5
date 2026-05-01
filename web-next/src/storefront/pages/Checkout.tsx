@@ -2639,9 +2639,13 @@ function OrderSummary({
               className="inline-block h-4 w-16 animate-pulse rounded bg-stone/70 align-middle"
               aria-label={isArabic ? 'جاري تحميل الشحن' : 'Loading shipping'}
             />
+          ) : freeShippingUnlocked ? (
+            <span className="font-body text-sm text-deep-teal">
+              {isArabic ? 'مجاني' : 'Free'}
+            </span>
           ) : shipping > 0 ? (
             formatEgp(shipping)
-          ) : freeShippingUnlocked || cart?.shipping_methods?.length ? (
+          ) : cart?.shipping_methods?.length ? (
             formatEgp(0)
           ) : (
             '—'
