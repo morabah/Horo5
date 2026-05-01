@@ -49,13 +49,25 @@ async function requestIncentives(): Promise<StorefrontIncentivesClient | null> {
   try {
     const headers = new Headers();
     headers.set("x-publishable-api-key", publishableApiKey);
-    const response = await fetch(`${baseUrl}/storefront/incentives`, {
+    // Cache-buster to ensure we never get a stale HTTP-cached response while debugging.
+    const url = `${baseUrl}/storefront/incentives?_t=${Date.now()}`;
+    const response = await fetch(url, {
       credentials: "include",
       headers,
+      cache: "no-store",
     });
-    if (!response.ok) return null;
-    return (await response.json()) as StorefrontIncentivesClient;
-  } catch {
+    if (!response.ok) {
+      // eslint-disable-next-line no-console
+      console.warn("[incentives] HTTP error", response.status, url);
+      return null;
+    }
+    const data = (await response.json()) as StorefrontIncentivesClient;
+    // eslint-disable-next-line no-console
+    console.info("[incentives] received", data);
+    return data;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[incentives] fetch failed", err);
     return null;
   }
 }
