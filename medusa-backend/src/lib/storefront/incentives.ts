@@ -140,6 +140,25 @@ async function findGiftWrapDetails(
   }
 }
 
+/** Read free-shipping threshold from store metadata when no active promotion exists. */
+async function findStoreFreeShippingThresholdEgp(
+  scope: MedusaContainer,
+): Promise<number | null> {
+  try {
+    const storeModule = scope.resolve(Modules.STORE) as {
+      listStores: () => Promise<Array<{ metadata?: Record<string, unknown> | null }>>
+    }
+    const stores = await storeModule.listStores()
+    const meta = stores[0]?.metadata ?? {}
+    const raw = meta.freeShippingThresholdEgp ?? meta.free_shipping_threshold_egp
+    const parsed = asNumber(raw)
+    if (parsed !== undefined && parsed >= 0) return Math.round(parsed)
+    return null
+  } catch {
+    return null
+  }
+}
+
 /**
  * Read every active automatic Promotion and project the first matching free-shipping and bundle promo.
  * The storefront treats `null` as "feature disabled" and renders nothing — never invents fallbacks.
@@ -233,6 +252,19 @@ export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer
         applicationValue,
         applicationKind,
         label,
+      }
+    }
+  }
+
+  // Fallback to store metadata when no active free-shipping promotion exists.
+  if (!freeShipping) {
+    const storeThreshold = await findStoreFreeShippingThresholdEgp(scope)
+    if (storeThreshold !== null && storeThreshold > 0) {
+      freeShipping = {
+        promotionId: "store-settings",
+        thresholdEgp: storeThreshold,
+        currency: "egp",
+        label: { en: `Free shipping over ${storeThreshold} EGP`, ar: `شحن مجاني عند الطلب فوق ${storeThreshold} ج.م` },
       }
     }
   }
