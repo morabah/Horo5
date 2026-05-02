@@ -295,20 +295,32 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
         res.status(400).json({ message: "Free-shipping threshold must be a positive EGP amount." })
         return
       }
-      const result = await runUpdateIncentiveThreshold(req.scope, { thresholdEgp: threshold })
-      await deactivateSiblingPromotions(req, FREE_SHIPPING_CODE_PREFIX, result.details.code)
-      await updateStoreMetadata(req, {
-        freeShippingThresholdEgp: threshold,
-        freeShippingLabel: cleanLabel(freeShipping.label) ?? undefined,
-      })
+      try {
+        const result = await runUpdateIncentiveThreshold(req.scope, { thresholdEgp: threshold })
+        await deactivateSiblingPromotions(req, FREE_SHIPPING_CODE_PREFIX, result.details.code)
+        await updateStoreMetadata(req, {
+          freeShippingThresholdEgp: threshold,
+          freeShippingLabel: cleanLabel(freeShipping.label) ?? undefined,
+        })
+      } catch (err) {
+        throw new Error(`Failed to update free shipping: ${err instanceof Error ? err.message : String(err)}`)
+      }
     }
 
     if (bundle) {
-      await upsertBundlePromotion(req, bundle)
+      try {
+        await upsertBundlePromotion(req, bundle)
+      } catch (err) {
+        throw new Error(`Failed to update bundle: ${err instanceof Error ? err.message : String(err)}`)
+      }
     }
 
     if (giftWrap) {
-      await updateGiftWrap(req, giftWrap)
+      try {
+        await updateGiftWrap(req, giftWrap)
+      } catch (err) {
+        throw new Error(`Failed to update gift wrap: ${err instanceof Error ? err.message : String(err)}`)
+      }
     }
 
     res.status(200).json(await retrieveCartIncentivesState(req))
