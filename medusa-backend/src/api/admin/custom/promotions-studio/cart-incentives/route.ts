@@ -1,6 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { Modules } from "@medusajs/framework/utils"
-import { createPromotionsWorkflow, updateProductsWorkflow, updatePromotionsWorkflow, updateStoresWorkflow } from "@medusajs/medusa/core-flows"
+import { createPromotionsWorkflow, deletePromotionsWorkflow, updateProductsWorkflow, updatePromotionsWorkflow, updateStoresWorkflow } from "@medusajs/medusa/core-flows"
 
 import { BUNDLE_CODE_PREFIX, FREE_SHIPPING_CODE_PREFIX, GIFT_WRAP_HANDLE } from "../../../../../lib/shared/constants"
 import { retrieveStorefrontIncentivesPayload } from "../../../../../lib/storefront/incentives"
@@ -103,13 +103,23 @@ async function upsertBundlePromotion(req: MedusaRequest, body: Record<string, un
   const enabled = body.enabled !== false
   const existing = await listHoroPromotions(req, BUNDLE_CODE_PREFIX)
   if (!enabled) {
-    const active = existing.filter((promotion) => promotion.status !== "inactive")
-    if (active.length > 0) {
-      await updatePromotionsWorkflow(req.scope).run({
-        input: {
-          promotionsData: active.map((promotion) => ({ id: promotion.id, status: "inactive" })),
-        },
-      })
+    // Disable all existing bundle promotions
+    if (existing.length > 0) {
+      try {
+        await deletePromotionsWorkflow(req.scope).run({
+          input: { ids: existing.map((promotion) => promotion.id) },
+        })
+      } catch (err) {
+        // Fall back to deactivation if delete fails
+        const active = existing.filter((promotion) => promotion.status !== "inactive")
+        if (active.length > 0) {
+          await updatePromotionsWorkflow(req.scope).run({
+            input: {
+              promotionsData: active.map((promotion) => ({ id: promotion.id, status: "inactive" })),
+            },
+          })
+        }
+      }
     }
     await updateStoreMetadata(req, { bundleLabel: undefined })
     return
@@ -130,60 +140,78 @@ async function upsertBundlePromotion(req: MedusaRequest, body: Record<string, un
     apply_to_quantity: applyToQuantity,
   } as const
 
-  const current = existing.find((promotion) => promotion.code === code) ?? existing[0]
-  if (current) {
-    await updatePromotionsWorkflow(req.scope).run({
-      input: {
-        promotionsData: [
-          {
-            id: current.id,
-            code,
-            type: "buyget",
-            is_automatic: true,
-            status: "active",
-            application_method: applicationMethod,
-          },
-        ],
-      },
-    })
-  } else {
-    await createPromotionsWorkflow(req.scope).run({
-      input: {
-        promotionsData: [
-          {
-            code,
-            type: "buyget",
-            is_automatic: true,
-            status: "active",
-            application_method: applicationMethod,
-          },
-        ],
-      },
-    })
+  // Check if an exact match already exists and is active — skip recreation
+  const exactMatch = existing.find((promotion) => promotion.code === code && promotion.status === "active")
+  if (exactMatch) {
+    // Nothing to change on the promotion itself; just ensure siblings are cleaned up
+    await deactivateSiblingPromotions(req, BUNDLE_CODE_PREFIX, code)
+    const label = cleanLabel(body.label)
+    await updateStoreMetadata(req, { bundleLabel: label ?? undefined })
+    return
   }
-  await deactivateSiblingPromotions(req, BUNDLE_CODE_PREFIX, code)
+
+  // Delete all existing bundle promotions, then create fresh.
+  // Medusa v2 does not allow updating immutable fields (type, application_method) on promotions.
+  if (existing.length > 0) {
+    try {
+      await deletePromotionsWorkflow(req.scope).run({
+        input: { ids: existing.map((promotion) => promotion.id) },
+      })
+    } catch (err) {
+      // Fall back to deactivation if delete workflow is unavailable
+      const active = existing.filter((promotion) => promotion.status !== "inactive")
+      if (active.length > 0) {
+        await updatePromotionsWorkflow(req.scope).run({
+          input: {
+            promotionsData: active.map((promotion) => ({ id: promotion.id, status: "inactive" })),
+          },
+        })
+      }
+    }
+  }
+
+  await createPromotionsWorkflow(req.scope).run({
+    input: {
+      promotionsData: [
+        {
+          code,
+          type: "buyget",
+          is_automatic: true,
+          status: "active",
+          application_method: applicationMethod,
+        },
+      ],
+    },
+  })
   const label = cleanLabel(body.label)
   await updateStoreMetadata(req, { bundleLabel: label ?? undefined })
 }
 
 async function findGiftWrapProduct(req: MedusaRequest, handleOrId: string | null): Promise<ProductRow | null> {
-  const productModule = req.scope.resolve(Modules.PRODUCT) as {
-    listProducts: (filters: Record<string, unknown>, config?: Record<string, unknown>) => Promise<ProductRow[]>
+  try {
+    const productModule = req.scope.resolve(Modules.PRODUCT) as {
+      listProducts: (filters: Record<string, unknown>, config?: Record<string, unknown>) => Promise<ProductRow[]>
+    }
+    const byHandle = handleOrId && !handleOrId.startsWith("prod_")
+      ? handleOrId
+      : GIFT_WRAP_HANDLE
+    const products = await productModule.listProducts(
+      handleOrId?.startsWith("prod_") ? { id: [handleOrId] } : { handle: byHandle },
+      { take: 1 },
+    )
+    return products[0] ?? null
+  } catch (err) {
+    console.warn("[promotions-studio] findGiftWrapProduct failed:", err)
+    return null
   }
-  const byHandle = handleOrId && !handleOrId.startsWith("prod_")
-    ? handleOrId
-    : GIFT_WRAP_HANDLE
-  const products = await productModule.listProducts(
-    handleOrId?.startsWith("prod_") ? { id: [handleOrId] } : { handle: byHandle },
-    { take: 1 },
-  )
-  return products[0] ?? null
 }
 
 async function updateGiftWrap(req: MedusaRequest, body: Record<string, unknown>) {
   const product = await findGiftWrapProduct(req, typeof body.productId === "string" ? body.productId : typeof body.handle === "string" ? body.handle : null)
   if (!product) {
-    throw new Error("Gift-wrap product not found.")
+    // Gift-wrap product not found — skip silently so the rest of the save succeeds
+    console.warn("[promotions-studio] Gift-wrap product not found, skipping gift-wrap update.")
+    return
   }
   const metadata = { ...(product.metadata ?? {}) }
   const label = cleanLabel(body.label)
@@ -201,9 +229,22 @@ async function updateGiftWrap(req: MedusaRequest, body: Record<string, unknown>)
 }
 
 async function retrieveCartIncentivesState(req: MedusaRequest) {
+  // Run each leg independently so a single failure doesn't crash the whole response
   const [store, incentives, giftWrapProduct] = await Promise.all([
-    retrieveStore(req),
-    retrieveStorefrontIncentivesPayload(req.scope),
+    retrieveStore(req).catch((err) => {
+      console.warn("[promotions-studio] retrieveStore failed:", err)
+      return null
+    }),
+    retrieveStorefrontIncentivesPayload(req.scope).catch((err) => {
+      console.warn("[promotions-studio] retrieveStorefrontIncentivesPayload failed:", err)
+      return {
+        freeShipping: null,
+        bundle: null,
+        giftWrapProductHandle: null,
+        giftWrapPriceEgp: null,
+        giftWrapLabel: null,
+      }
+    }),
     findGiftWrapProduct(req, null),
   ])
   const metadata = store?.metadata ?? {}
@@ -226,6 +267,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {
     res.status(200).json(await retrieveCartIncentivesState(req))
   } catch (error) {
+    console.error("[promotions-studio] GET cart-incentives failed:", error)
     res.status(500).json({ message: error instanceof Error ? error.message : String(error) })
   }
 }
@@ -271,6 +313,7 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
 
     res.status(200).json(await retrieveCartIncentivesState(req))
   } catch (error) {
+    console.error("[promotions-studio] PUT cart-incentives failed:", error)
     res.status(500).json({ message: error instanceof Error ? error.message : String(error) })
   }
 }

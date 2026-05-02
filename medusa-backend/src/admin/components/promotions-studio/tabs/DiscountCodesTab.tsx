@@ -88,7 +88,7 @@ export function DiscountCodesTab() {
             Refresh
           </Button>
           <Button size="small" asChild>
-            <a href="/app/promotions/new">
+            <a href="/app/promotions">
               Create code <ArrowUpRightMini />
             </a>
           </Button>
