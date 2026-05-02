@@ -6,8 +6,25 @@ import { useCallback, useSyncExternalStore } from "react";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { useRouterContext } from "./router-context";
 
-/** Used by `@/storefront/seo/routeMeta.ts` via `react-router-dom` import map. */
-export { matchPath } from "react-router";
+export function matchPath(pattern: { path: string; end?: boolean }, pathname: string) {
+  const paramNames: string[] = [];
+  let regexStr = pattern.path.replace(/:([^\/]+)/g, (_, paramName) => {
+    paramNames.push(paramName);
+    return '([^/]+)';
+  });
+  if (pattern.end) {
+    regexStr = `^${regexStr}$`;
+  } else {
+    regexStr = `^${regexStr}`;
+  }
+  const match = pathname.match(new RegExp(regexStr));
+  if (!match) return null;
+  const params: Record<string, string> = {};
+  paramNames.forEach((name, i) => {
+    params[name] = match[i + 1];
+  });
+  return { params };
+}
 
 function pathIsActive(linkTo: string, pathname: string, end: boolean): boolean {
   const p = pathname.split("?")[0] || "/";
