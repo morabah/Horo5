@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { useUiLocale } from '../i18n/ui-locale';
 import { NAV_ROUTE } from '../lib/navLinks';
@@ -20,13 +21,13 @@ export function NotFound() {
           marginTop: '1.5rem',
         }}
       >
-        <Link className="btn btn-primary" to="/">
+        <Link className="btn btn-primary" href="/">
           Back home
         </Link>
-        <Link className="btn btn-secondary text-sm" to="/search">
+        <Link className="btn btn-secondary text-sm" href="/search">
           {copy.shell.search}
         </Link>
-        <Link className="btn btn-secondary text-sm" to={NAV_ROUTE.collection.path}>
+        <Link className="btn btn-secondary text-sm" href={NAV_ROUTE.collection.path}>
           {copy.shell.shopByFeeling}
         </Link>
       </div>

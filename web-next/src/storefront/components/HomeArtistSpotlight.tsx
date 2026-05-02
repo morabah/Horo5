@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { HOME_FEATURED_ARTIST } from '../data/homeContent';
 import { getProductComparisonImageSrc, heroVectorizedV2, imgUrl } from '../data/images';
 import { getArtist, getArtists, getProducts, productHasRealImage } from '../data/site';
@@ -105,7 +106,7 @@ export function HomeArtistSpotlight() {
           </p>
           <div className="mt-6">
             <Link
-              to="/artists"
+              href="/artists"
               className="font-body inline-flex min-h-11 items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
             >
               {copy.home.artistSpotlightCta}

@@ -1,5 +1,6 @@
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+
 
 /**
  * Scrolls the window to top on every route change.
@@ -9,7 +10,7 @@ import { useLocation } from 'react-router-dom';
  * excluded — those anchors manage their own scrollIntoView.
  */
 export function ScrollToTop() {
-  const { pathname } = useLocation();
+  const pathname = usePathname();
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });

@@ -1,7 +1,8 @@
+import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useCountdown } from '../hooks/useCountdown';
 import { useWishlist } from '../hooks/useWishlist';
-import { Link } from 'react-router-dom';
+
 import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
 import { trackSizeSelected, trackWishlistAdd, trackWishlistRemove } from '../analytics/events';
@@ -172,7 +173,7 @@ export function MerchProductCard({
     >
       <div className="relative mb-4 w-full">
         <Link
-          to={`/products/${slug}`}
+          href={`/products/${slug}`}
           className="block overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           aria-label={`View ${name}`}
           onClick={onProductClick}
@@ -287,7 +288,7 @@ export function MerchProductCard({
       {/* Mobile: single compact CTA */}
       <div className="mb-3 md:hidden">
         <Link
-          to={`/products/${slug}`}
+          href={`/products/${slug}`}
           className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
           onClick={onProductClick}
         >
@@ -297,7 +298,7 @@ export function MerchProductCard({
 
       <div className="flex min-h-0 flex-1 flex-col text-left">
         <Link
-          to={`/products/${slug}`}
+          href={`/products/${slug}`}
           className={`font-headline block font-semibold leading-snug tracking-[0.01em] text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
             minimal ? 'mt-3 text-[0.92rem] md:text-[1rem]' : 'mt-2 text-[1rem] md:text-[1.08rem]'
           }`}

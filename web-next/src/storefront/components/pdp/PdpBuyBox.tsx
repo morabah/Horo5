@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { type FormEvent, type RefObject } from 'react';
-import { Link } from 'react-router-dom';
+
 import type { Product, ProductSizeKey, Feeling } from '../../data/catalog-types';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
@@ -166,7 +167,7 @@ export function PdpBuyBox({
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             {feeling ? (
               <Link
-                to={`/feelings/${feeling.slug}`}
+                href={`/feelings/${feeling.slug}`}
                 className="font-label inline-flex min-h-11 items-center rounded-full border border-dusk-violet/35 bg-dusk-violet/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet transition-colors hover:border-dusk-violet/60 hover:bg-dusk-violet/14"
               >
                 {feeling.name}

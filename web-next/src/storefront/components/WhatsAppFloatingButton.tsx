@@ -1,5 +1,6 @@
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 
 function buildWhatsAppUrl(baseUrl: string, message: string): string {
@@ -38,7 +39,7 @@ function WhatsAppIcon() {
 }
 
 export function WhatsAppFloatingButton() {
-  const { pathname } = useLocation();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

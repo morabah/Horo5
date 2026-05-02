@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import type { ReactNode } from 'react';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 
@@ -32,7 +33,7 @@ export function PolicyPageLayout({
     <div className="bg-papyrus pb-16 pt-8 md:pb-20 md:pt-10">
       <div className="mx-auto max-w-5xl px-4 md:px-8">
         <nav className="font-body mb-6 text-sm text-clay" aria-label="Breadcrumb">
-          <Link to="/" className="transition-colors hover:text-obsidian">
+          <Link href="/" className="transition-colors hover:text-obsidian">
             Home
           </Link>
           <span className="px-2 text-clay/50" aria-hidden>

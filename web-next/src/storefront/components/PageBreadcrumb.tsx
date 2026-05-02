@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { useUiLocale } from '../i18n/ui-locale';
 
 export type PageBreadcrumbItem = {
@@ -35,7 +36,7 @@ export function PageBreadcrumb({ items, className = '' }: PageBreadcrumbProps) {
               ) : null}
               {item.to && !isLast ? (
                 <Link
-                  to={item.to}
+                  href={item.to}
                   className="inline-flex items-center rounded-sm px-0.5 transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
                   {item.label}

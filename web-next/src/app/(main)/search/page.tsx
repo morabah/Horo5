@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { SearchPage } from "@/components/search-page";
 import { fetchStorefrontCatalogServer, logStorefrontFetchError } from "@/lib/storefront-server";
@@ -41,5 +42,9 @@ export default async function Page() {
     return null;
   });
 
-  return <SearchPage initialCatalog={catalog} />;
+  return (
+    <Suspense fallback={null}>
+      <SearchPage initialCatalog={catalog} />
+    </Suspense>
+  );
 }

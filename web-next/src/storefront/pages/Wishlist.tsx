@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { MerchProductCard } from '../components/MerchProductCard';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { ProductQuickView } from '../components/ProductQuickView';
@@ -135,13 +136,13 @@ function EmptyWishlist({ isArabic }: { isArabic: boolean }) {
 
       <div className="flex flex-wrap justify-center gap-3">
         <Link
-          to="/feelings"
+          href="/feelings"
           className="font-label inline-flex min-h-12 items-center rounded-full border border-obsidian bg-obsidian px-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-obsidian/85"
         >
           {isArabic ? 'تصفح حسب الإحساس' : 'Browse by feeling'}
         </Link>
         <Link
-          to="/products"
+          href="/products"
           className="font-label inline-flex min-h-12 items-center rounded-full border border-obsidian/70 px-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:bg-obsidian/5"
         >
           {isArabic ? 'كل القطع' : 'All pieces'}

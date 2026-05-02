@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
@@ -36,7 +37,7 @@ type ShopByOccasionProps = {
 function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }: Occasion) {
   return (
     <Link
-      to={`/occasions/${slug}`}
+      href={`/occasions/${slug}`}
       className="group overflow-hidden rounded-[18px] border border-stone/70 bg-white/75 text-inherit no-underline shadow-[0_18px_44px_-28px_rgba(26,26,26,0.24)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
     >
       <div className="overflow-hidden">
@@ -90,7 +91,7 @@ export function ShopByOccasion({ initialOccasions, mode = 'occasions' }: ShopByO
             ]}
           />
           <p className="font-body text-warm-charcoal">Moment collections are not available yet. Try again shortly.</p>
-          <Link className="btn btn-primary mt-6 inline-flex" to="/">
+          <Link className="btn btn-primary mt-6 inline-flex" href="/">
             {copy.shell.home}
           </Link>
         </div>
@@ -153,7 +154,7 @@ export function ShopByOccasion({ initialOccasions, mode = 'occasions' }: ShopByO
           <div className="absolute left-4 top-4 sm:left-6 sm:top-6 md:left-8 md:top-8">
             {PAGE_HEROES.occasions.primaryCta?.href && PAGE_HEROES.occasions.primaryCta.label[locale as 'en' | 'ar'] ? (
               <Link
-                to={PAGE_HEROES.occasions.primaryCta.href}
+                href={PAGE_HEROES.occasions.primaryCta.href}
                 className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
               >
                 {PAGE_HEROES.occasions.primaryCta.label[locale as 'en' | 'ar']}
@@ -161,7 +162,7 @@ export function ShopByOccasion({ initialOccasions, mode = 'occasions' }: ShopByO
               </Link>
             ) : (
               <Link
-                to="/products"
+                href="/products"
                 className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
               >
                 {copy.shell.shopAll}
@@ -185,7 +186,7 @@ export function ShopByOccasion({ initialOccasions, mode = 'occasions' }: ShopByO
                 </h2>
               </div>
               <Link
-                to="/feelings"
+                href="/feelings"
                 className="font-label inline-flex min-h-11 items-center text-[11px] font-semibold uppercase tracking-[0.18em] text-deep-teal transition-colors hover:text-obsidian"
               >
                 {copy.shell.shopByFeeling}

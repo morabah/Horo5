@@ -1,5 +1,6 @@
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+
 import { getGaMeasurementId, getMetaPixelId, hasAnySemIds } from './config';
 import { initWebVitalsReporting } from './webVitals';
 
@@ -27,7 +28,7 @@ y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
 }
 
 export function AnalyticsRoot() {
-  const location = useLocation();
+  const pathname = usePathname();
   const gaId = getGaMeasurementId();
   const pixelId = getMetaPixelId();
   const [ready, setReady] = useState(false);
@@ -84,14 +85,14 @@ fbq('init', ${JSON.stringify(pixelId)});
 
   useEffect(() => {
     if (!ready) return;
-    const path = location.pathname + location.search;
+    const path = pathname + (typeof window !== "undefined" ? window.location.search : "");
     if (window.gtag && gaId) {
       window.gtag('config', gaId, { page_path: path });
     }
     if (window.fbq && pixelId) {
       window.fbq('track', 'PageView');
     }
-  }, [location.pathname, location.search, ready, gaId, pixelId]);
+  }, [pathname, (typeof window !== "undefined" ? window.location.search : ""), ready, gaId, pixelId]);
 
   return null;
 }

@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { VIBES_SCHEMA } from '../data/domain-config';
 import type { Feeling } from '../data/site';
 import {
@@ -57,7 +58,7 @@ export function VibeCommerceCard({
 
   return (
     <Link
-      to={`/feelings/${feeling.slug}`}
+      href={`/feelings/${feeling.slug}`}
       aria-label={ariaLabel}
       className={[linkBaseClass, linkClassName, className].filter(Boolean).join(' ')}
       id={id}

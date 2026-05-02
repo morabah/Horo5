@@ -1,6 +1,7 @@
 'use client';
 
-import { Link, useSearchParams } from 'react-router-dom';
+import Link from 'next/link';
+import { useAppSearchParams } from '@/storefront/hooks/useAppSearchParams';
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppIcon } from '../components/AppIcon';
@@ -142,7 +143,7 @@ export function ShopAll({
 
   const initialBrowseProducts = initialCatalog?.products ?? [];
   const hasInitialBrowseProducts = initialBrowseProducts.length > 0;
-  const [params, setParams] = useSearchParams();
+  const [params, setParams] = useAppSearchParams();
   const { copy, locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -401,7 +402,7 @@ export function ShopAll({
                 {resultCountCopy}
               </p>
               <Link
-                to={searchUtilityLink}
+                href={searchUtilityLink}
                 className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal transition-colors hover:text-obsidian"
               >
                 {isArabic ? 'هل تبحث بكلمة محددة؟' : 'Need keyword search?'}
@@ -696,10 +697,10 @@ export function ShopAll({
                 <button type="button" className="btn btn-primary" onClick={resetFilters}>
                   {SEARCH_SCHEMA.copy.resetFiltersCta}
                 </button>
-                <Link className="btn btn-secondary text-sm" to="/feelings">
+                <Link className="btn btn-secondary text-sm" href="/feelings">
                   {isArabic ? 'تصفّح المشاعر' : 'Browse feelings'}
                 </Link>
-                <Link className="btn btn-ghost" to="/occasions">
+                <Link className="btn btn-ghost" href="/occasions">
                   {isArabic ? 'تصفّح المناسبات' : 'Browse occasions'}
                 </Link>
               </div>

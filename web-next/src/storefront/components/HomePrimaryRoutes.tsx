@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { HOME_PRIMARY_ROUTES } from '../data/homeContent';
 import {
   getFeelingCollectionVisual,
@@ -79,7 +80,7 @@ export function HomePrimaryRoutes() {
             return (
               <Link
                 key={route.key}
-                to={href}
+                href={href}
                 className={`home-route-card group relative isolate flex min-h-[132px] overflow-hidden rounded-[18px] border border-stone/55 p-5 shadow-[0_18px_44px_-30px_rgba(26,26,26,0.2)] transition-transform duration-300 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:min-h-[190px] md:p-6 ${
                   imageSrc ? 'bg-obsidian text-white' : 'bg-white/82 text-obsidian'
                 }`}
@@ -122,7 +123,7 @@ export function HomePrimaryRoutes() {
         </div>
         <div className="mt-5 text-center">
           <Link
-            to="/products"
+            href="/products"
             className="font-body inline-flex min-h-11 items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
             {copy.home.routesBrowseAll}

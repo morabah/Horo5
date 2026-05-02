@@ -1,4 +1,6 @@
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+
 import { FormEvent, TransitionEvent, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
@@ -167,9 +169,10 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const menuTriggerFocusRef = useRef<HTMLElement | null>(null);
   const drawerPanelRef = useRef<HTMLDivElement>(null);
   const drawerCloseBtnRef = useRef<HTMLButtonElement>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { pathname, search } = location;
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams?.toString() ? `?${searchParams.toString()}` : "";
   const prefersReducedMotion = usePrefersReducedMotion();
   const [placedOrderMedusaId, setPlacedOrderMedusaId] = useState<string | null>(null);
 
@@ -382,13 +385,13 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   }
 
   function submitSearch(rawQuery: string) {
-    navigate(buildSearchDestination(rawQuery));
+    router.push(buildSearchDestination(rawQuery));
     setSearchFocused(false);
     setActiveSuggestionIndex(-1);
   }
 
   function handleSuggestionSelect(suggestion: SearchSuggestion) {
-    navigate(suggestion.href);
+    router.push(suggestion.href);
     setSearchFocused(false);
     setActiveSuggestionIndex(-1);
   }
@@ -397,7 +400,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
     setQ('');
     setActiveSuggestionIndex(-1);
     if (pathname === '/search') {
-      navigate(buildSearchDestination(''));
+      router.push(buildSearchDestination(''));
     }
   }
 
@@ -472,8 +475,14 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const logoVariant = 'dark';
   const handleCartNavigation = useCallback(() => {
     setMiniCartOpen(false);
-    navigate('/cart');
-  }, [navigate, setMiniCartOpen]);
+    router.push('/cart');
+  }, [router, setMiniCartOpen]);
+
+  function isPathActive(href: string, end?: boolean) {
+    if (href === '/') return pathname === '/';
+    if (end) return pathname === href;
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   return (
     <header
@@ -490,7 +499,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
             <p className="min-w-0 flex-1 leading-snug">{copy.shell.orderPlacedHint}</p>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               <Link
-                to={`/checkout/success?order_id=${encodeURIComponent(placedOrderMedusaId)}`}
+                href={`/checkout/success?order_id=${encodeURIComponent(placedOrderMedusaId)}`}
                 className="font-label inline-flex min-h-10 items-center rounded-sm border border-obsidian/25 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-obsidian hover:bg-white/80"
               >
                 {copy.shell.orderPlacedViewReceipt}
@@ -521,7 +530,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
           >
             <AppIcon name={menuVisible && menuPanelOpen ? 'close' : 'menu'} className="h-6 w-6" />
           </button>
-          <Link to="/" className="flex min-w-0 flex-1 justify-center" aria-label={copy.shell.home}>
+          <Link href="/" className="flex min-w-0 flex-1 justify-center" aria-label={copy.shell.home}>
             <BrandLogo variant={logoVariant} />
           </Link>
           <div className="flex shrink-0 items-center gap-1">
@@ -529,7 +538,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
               type="button"
               className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/85"
               aria-label={copy.nav.searchOpen}
-              onClick={() => navigate('/search?focus=1')}
+              onClick={() => router.push('/search?focus=1')}
             >
               <AppIcon name="search" className="h-6 w-6" />
             </button>
@@ -537,7 +546,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
               type="button"
               className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
               aria-label={wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
-              onClick={() => navigate('/wishlist')}
+              onClick={() => router.push('/wishlist')}
             >
               <AppIcon name="favorite" className="h-6 w-6" />
               {wishlistCount > 0 ? (
@@ -565,24 +574,21 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
 
       <div className="mx-auto hidden max-w-[1920px] items-center gap-6 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:flex md:gap-8 md:py-4 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
         <div className="flex shrink-0 items-center gap-4">
-          <Link to="/" className="flex shrink-0 items-center" aria-label={copy.shell.home}>
+          <Link href="/" className="flex shrink-0 items-center" aria-label={copy.shell.home}>
             <BrandLogo variant={logoVariant} />
           </Link>
         </div>
 
         <nav className="hidden shrink-0 items-center gap-1 md:flex" aria-label="Primary shortcuts">
           {primaryNavItems.map((item) => (
-            <NavLink
+            <Link
               key={item.key}
-              to={item.href}
-              end={item.end}
-              className={({ isActive }) =>
-                `nav-link-underline font-body px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
-                  isActive
+              href={item.href}
+              className={`nav-link-underline font-body px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
+                  isPathActive(item.href, item.end)
                     ? 'nav-link-underline--active rounded-full bg-obsidian text-white shadow-sm'
                     : 'rounded-sm text-obsidian/90 hover:text-obsidian'
-                }`
-              }
+                }`}
             >
               {item.label}
               {item.badge ? (
@@ -590,7 +596,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                   {item.badge}
                 </span>
               ) : null}
-            </NavLink>
+            </Link>
           ))}
         </nav>
 
@@ -677,7 +683,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
             type="button"
             className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
             aria-label={wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
-            onClick={() => navigate('/wishlist')}
+            onClick={() => router.push('/wishlist')}
           >
             <AppIcon name="favorite" className="h-6 w-6" />
             {wishlistCount > 0 ? (
@@ -727,7 +733,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                 {copy.shell.menu}
               </h2>
               <div className="relative z-20 flex shrink-0 items-center justify-between border-b border-stone/25 bg-papyrus px-4 py-3 shadow-[0_1px_0_rgba(26,26,26,0.06)]">
-                <Link to="/" className="flex items-center" onClick={closeMenu} aria-label={copy.shell.home}>
+                <Link href="/" className="flex items-center" onClick={closeMenu} aria-label={copy.shell.home}>
                   <BrandLogo variant="dark" />
                 </Link>
                 <button
@@ -749,11 +755,10 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                   <LocaleToggle locale={locale} setLocale={setLocale} tone="dark" label={copy.shell.language} />
                 </div>
                 {drawerNavItems.map((item) => (
-                  <NavLink
+                  <Link
                     key={item.key}
-                    to={item.href}
-                    end={item.end}
-                    className={({ isActive }) => drawerNavLinkClass(isActive)}
+                    href={item.href}
+                    className={drawerNavLinkClass(isPathActive(item.href, item.end))}
                     onClick={closeMenu}
                   >
                     <span className="min-w-0 flex-1">{item.label}</span>
@@ -762,11 +767,11 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                         {item.badge}
                       </span>
                     ) : null}
-                  </NavLink>
+                  </Link>
                 ))}
-                <NavLink
-                  to="/cart"
-                  className={({ isActive }) => drawerNavLinkClass(isActive)}
+                <Link
+                  href="/cart"
+                  className={drawerNavLinkClass(pathname === '/cart')}
                   onClick={() => {
                     setMiniCartOpen(false);
                     closeMenu();
@@ -775,7 +780,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                 >
                   {copy.shell.cart}
                   {totalQty > 0 ? ` (${totalQty})` : ''}
-                </NavLink>
+                </Link>
               </nav>
             </div>
           </div>,

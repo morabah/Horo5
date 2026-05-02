@@ -1,6 +1,6 @@
 'use client';
 
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ABOUT_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
@@ -75,7 +75,7 @@ export function About() {
                 <div className="mt-7 flex flex-col gap-5">
                   {config.primaryCta?.href && t(config.primaryCta.label) ? (
                     <Link
-                      to={config.primaryCta.href}
+                      href={config.primaryCta.href}
                       className="font-body inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
                     >
                       {t(config.primaryCta.label)}
@@ -118,7 +118,7 @@ export function About() {
             />
             <div className="relative z-10 flex min-h-[20rem] items-end justify-center p-5 sm:min-h-[24rem] sm:p-8">
               <Link
-                to="/feelings"
+                href="/feelings"
                 data-reveal="stagger-1"
                 className="font-body inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
               >

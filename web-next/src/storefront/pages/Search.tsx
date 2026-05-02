@@ -1,11 +1,15 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { useAppSearchParams } from '@/storefront/hooks/useAppSearchParams';
+
 /**
  * Result ranking and suggestions use synonym expansion plus Levenshtein-bounded fuzzy
  * token matching in `search/view.ts` (`expandQueryVariants`, `fuzzyTokenScore`), merged
  * with `SEARCH_SYNONYMS_SCHEMA` from `domain-config.ts` and `searchSynonyms.ts`.
  */
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+
 import { createPortal } from 'react-dom';
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { AppIcon } from '../components/AppIcon';
@@ -163,7 +167,7 @@ function SearchProductCard({
 function SearchVibeResultCard({ vibe }: { vibe: SearchVibeCard }) {
   return (
     <Link
-      to={`/feelings/${vibe.slug}`}
+      href={`/feelings/${vibe.slug}`}
       className="group block overflow-hidden rounded-[18px] border border-stone/70 bg-white/72 text-inherit no-underline shadow-[0_18px_44px_-28px_rgba(26,26,26,0.24)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
     >
       <div className="overflow-hidden">
@@ -186,7 +190,7 @@ function SearchVibeResultCard({ vibe }: { vibe: SearchVibeCard }) {
 function SearchOccasionResultCard({ occasion }: { occasion: SearchOccasionCard }) {
   return (
     <Link
-      to={`/occasions/${occasion.slug}`}
+      href={`/occasions/${occasion.slug}`}
       className="group block overflow-hidden rounded-[18px] border border-stone/70 bg-white/72 text-inherit no-underline shadow-[0_18px_44px_-28px_rgba(26,26,26,0.24)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
     >
       <div className="overflow-hidden">
@@ -219,10 +223,10 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
 
   const initialSearchProducts = initialCatalog?.products ?? [];
   const hasInitialSearchProducts = initialSearchProducts.length > 0;
-  const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isBrowsePage = location.pathname === '/products';
+  const [params, setParams] = useAppSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const isBrowsePage = pathname === '/products';
   const isMobile = useMediaQuery('(max-width: 767px)');
   const { copy } = useUiLocale();
   const searchRootRef = useRef<HTMLDivElement>(null);
@@ -684,7 +688,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
   }, [copy.shell.home, copy.shell.search, copy.shell.shopAll, isBrowsePage, scopeOccasion, scopeFeeling]);
 
   function handleSuggestionSelect(suggestion: SearchSuggestion) {
-    navigate(suggestion.href);
+    router.push(suggestion.href);
     setSearchFocused(false);
     setActiveSuggestionIndex(-1);
   }
@@ -742,7 +746,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                     </span>
                   ))}
                   <Link
-                    to={clearScopeTo}
+                    href={clearScopeTo}
                     className="font-label inline-flex min-h-12 items-center text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal"
                   >
                     {SEARCH_SCHEMA.copy.searchAllLabel}
@@ -848,7 +852,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 </h1>
               </div>
               <Link
-                to="/search?focus=1"
+                href="/search?focus=1"
                 className="font-label inline-flex min-h-11 items-center rounded-full border border-stone/70 bg-white px-4 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
               >
                 Advanced search
@@ -1184,13 +1188,13 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 </button>
               ) : null}
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
-                <Link className="btn btn-primary" to="/feelings">
+                <Link className="btn btn-primary" href="/feelings">
                   {SEARCH_SCHEMA.copy.shopByVibeCta}
                 </Link>
-                <Link className="btn btn-secondary text-sm" to="/occasions">
+                <Link className="btn btn-secondary text-sm" href="/occasions">
                   {SEARCH_SCHEMA.copy.shopByOccasionCta}
                 </Link>
-                <Link className="btn btn-ghost" to="/products">
+                <Link className="btn btn-ghost" href="/products">
                   {SEARCH_SCHEMA.copy.browseAllDesignsCta}
                 </Link>
               </div>
@@ -1201,7 +1205,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {popularSearches.map((term) => (
                   <Link
                     key={term}
-                    to={buildSearchWithQuery(term)}
+                    href={buildSearchWithQuery(term)}
                     className="font-body inline-flex min-h-11 items-center rounded-full border border-stone/80 bg-white/90 px-4 py-2 text-sm text-obsidian transition-colors hover:border-deep-teal hover:text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   >
                     {term}

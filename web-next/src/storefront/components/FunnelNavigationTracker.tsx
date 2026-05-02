@@ -1,5 +1,6 @@
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+
 import { trackHoroFunnelStep } from '../analytics/funnel';
 
 function pathSegment(pathname: string): { type: 'pdp'; slug: string } | { type: 'feelings' } | { type: 'other' } {
@@ -16,22 +17,22 @@ function pathSegment(pathname: string): { type: 'pdp'; slug: string } | { type: 
  * Detects navigation away from `/` to feelings (or legacy /vibes) or PDP for baseline funnel metrics.
  */
 export function FunnelNavigationTracker() {
-  const location = useLocation();
+  const pathname = usePathname();
   const prevPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     const prev = prevPathRef.current;
-    prevPathRef.current = location.pathname;
+    prevPathRef.current = pathname;
 
     if (prev !== '/') return;
 
-    const next = pathSegment(location.pathname);
+    const next = pathSegment(pathname);
     if (next.type === 'feelings') {
       trackHoroFunnelStep({ step: 'home_to_feelings' });
     } else if (next.type === 'pdp') {
       trackHoroFunnelStep({ step: 'home_to_pdp', target: next.slug });
     }
-  }, [location.pathname]);
+  }, [pathname]);
 
   return null;
 }

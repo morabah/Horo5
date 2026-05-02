@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { getOccasionCollectionVisual, heroVectorizedV2, imgUrl } from '../data/images';
 import { getOccasions } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -38,7 +39,7 @@ export function HomeOccasionCards() {
             {copy.home.occasionsTitle}
           </h2>
           <Link
-            to="/occasions"
+            href="/occasions"
             className="font-body hidden min-h-11 items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:inline-flex"
           >
             {copy.home.occasionsCta}
@@ -51,7 +52,7 @@ export function HomeOccasionCards() {
             return (
               <Link
                 key={card.slug}
-                to={card.href}
+                href={card.href}
                 data-reveal={reveal}
                 className="group relative isolate flex min-h-16 items-center overflow-hidden rounded-[18px] border border-stone/55 bg-white/82 p-5 text-obsidian shadow-[0_18px_44px_-30px_rgba(26,26,26,0.2)] transition-transform duration-300 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:min-h-24 md:p-6"
               >
@@ -80,7 +81,7 @@ export function HomeOccasionCards() {
 
         <div className="mt-6 sm:hidden">
           <Link
-            to="/occasions"
+            href="/occasions"
             className="font-body inline-flex min-h-11 items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
             {copy.home.occasionsCta}

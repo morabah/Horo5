@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
@@ -77,7 +78,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
             </h2>
           </div>
           <Link
-            to={section?.primaryCta?.href ?? '/products'}
+            href={section?.primaryCta?.href ?? '/products'}
             className="font-body inline-flex min-h-11 w-fit items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
             {sectionCta ?? copy.shell.shopAll}
@@ -99,7 +100,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
                 data-reveal={reveal}
               >
                 <Link
-                  to={`/products/${product.slug}`}
+                  href={`/products/${product.slug}`}
                   className="block overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   aria-label={`View ${product.name}`}
                 >
@@ -122,7 +123,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
                     </span>
                   ) : null}
                   <Link
-                    to={`/products/${product.slug}`}
+                    href={`/products/${product.slug}`}
                     className="font-headline text-[16px] font-semibold leading-snug tracking-tight text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:text-[18px]"
                   >
                     {product.name}
@@ -142,7 +143,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
                   ) : null}
                   <div className="mt-auto pt-4">
                     <Link
-                      to={`/products/${product.slug}`}
+                      href={`/products/${product.slug}`}
                       className="font-body inline-flex min-h-11 w-full items-center justify-center rounded-md border border-obsidian/80 bg-white px-4 py-2.5 text-sm font-semibold text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
                       {copy.home.startHereCta}

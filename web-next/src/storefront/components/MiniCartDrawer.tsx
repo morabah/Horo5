@@ -1,5 +1,6 @@
+import { useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, usePathname } from 'react-router-dom';
+
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
 import { getProduct } from '../data/site';
@@ -41,7 +42,7 @@ export function MiniCartDrawer() {
     useCart();
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
-  const navigate = useNavigate();
+  const router = useRouter();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -129,13 +130,13 @@ export function MiniCartDrawer() {
 
   const handleViewBag = useCallback(() => {
     close();
-    requestAnimationFrame(() => navigate('/cart'));
-  }, [close, navigate]);
+    requestAnimationFrame(() => router.push('/cart'));
+  }, [close, router]);
 
   const handleCheckout = useCallback(() => {
     close();
-    requestAnimationFrame(() => navigate('/checkout'));
-  }, [close, navigate]);
+    requestAnimationFrame(() => router.push('/checkout'));
+  }, [close, router]);
 
   const productPromoSavingsEgp = useMemo(() => {
     return items.reduce((sum, line) => {

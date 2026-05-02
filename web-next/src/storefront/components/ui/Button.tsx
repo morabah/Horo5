@@ -1,5 +1,6 @@
+import Link from 'next/link';
 import type { ButtonHTMLAttributes, AnchorHTMLAttributes, ReactNode } from "react";
-import { Link } from "react-router-dom";
+
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "chip";
 type ButtonSize = "sm" | "md" | "lg";
@@ -87,7 +88,7 @@ export function ButtonLink({
 
   return (
     <Link
-      to={to}
+      href={to}
       className={`${variantBase} ${variantClasses[variant]} ${variant === "chip" ? chipClass : sizeClasses[size]} ${className}`}
       {...props}
     >

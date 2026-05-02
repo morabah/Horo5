@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { LoyaltyCreditBanner } from '../components/LoyaltyCreditBanner';
 import { TeeImage } from '../components/TeeImage';
@@ -141,11 +142,11 @@ export function OrderConfirmation() {
   const [copiedInstapayRef, setCopiedInstapayRef] = useState(false);
   const [copiedInstapayRecipient, setCopiedInstapayRecipient] = useState(false);
   // Read the order_id only after mount so SSR and the first client paint match
-  // (avoids hydration mismatch from `window.location.search` during render).
+  // (avoids hydration mismatch from `window.(typeof window !== "undefined" ? window.location.search : "")` during render).
   const [urlOrderId, setUrlOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
     setUrlOrderId(params.get('order_id'));
   }, []);
 
@@ -356,7 +357,7 @@ export function OrderConfirmation() {
                     <span className="min-w-0 text-left">{copy.confirmation.whatsappOrderHelp}</span>
                   </a>
                 ) : (
-                  <Link to="/exchange" className="btn btn-primary inline-flex min-h-12 items-center justify-center px-6">
+                  <Link href="/exchange" className="btn btn-primary inline-flex min-h-12 items-center justify-center px-6">
                     {copy.confirmation.exchangeCta}
                   </Link>
                 )}
@@ -667,10 +668,10 @@ export function OrderConfirmation() {
 
         <div className="text-center">
           <div className="flex flex-wrap justify-center gap-3">
-            <Link className="btn btn-ghost" to="/products">
+            <Link className="btn btn-ghost" href="/products">
               {copy.shell.shopAll}
             </Link>
-            <Link className="btn btn-ghost" to="/">
+            <Link className="btn btn-ghost" href="/">
               {copy.confirmation.continueShopping}
             </Link>
           </div>

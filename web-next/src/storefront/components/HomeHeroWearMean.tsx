@@ -1,5 +1,6 @@
+import Link from 'next/link';
 import Image from 'next/image';
-import { Link } from 'react-router-dom';
+
 import { PAGE_HEROES } from '../content/page-heroes';
 import {
   pickLocalizedStorefrontText,
@@ -99,13 +100,13 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
-              to={primaryHref}
+              href={primaryHref}
               className="font-body inline-flex min-h-14 items-center justify-center rounded-md bg-[#f5f0e6] px-7 py-3 text-[14px] font-semibold text-[#2a2d26] transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {primaryCtaLabel}
             </Link>
             <Link
-              to={secondaryHref}
+              href={secondaryHref}
               className="font-body inline-flex min-h-11 items-center text-[14px] font-medium text-[#f5f0e6]/85 underline decoration-[#f5f0e6]/40 underline-offset-4 transition-colors duration-200 hover:text-[#f5f0e6] hover:decoration-[#f5f0e6]/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {secondaryCtaLabel}

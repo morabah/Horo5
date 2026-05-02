@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { imgUrl, STOREFRONT_IMAGE_SLOTS } from '../data/images';
 
 export function HomeHeroExplosive() {
@@ -36,7 +37,7 @@ export function HomeHeroExplosive() {
 
           <div className="hero-bleed-actions">
             <Link
-              to="/feelings"
+              href="/feelings"
               className="font-label inline-flex min-h-11 items-center justify-center border border-white/40 bg-white/5 px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-river"
             >
               Explore the Collection

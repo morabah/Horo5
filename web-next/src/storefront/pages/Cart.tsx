@@ -1,7 +1,10 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+
 import { trackCartViewed } from '../analytics/events';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
@@ -133,7 +136,7 @@ function CartUpsell({
           </h2>
           <p className="cart-upsell-body">{bundleBody}</p>
           <div className="cart-upsell-actions">
-            <Link className="btn btn-ghost" to="/feelings">
+            <Link className="btn btn-ghost" href="/feelings">
               {copy.bundleUpsellCta}
             </Link>
           </div>
@@ -173,7 +176,7 @@ function CartSummary({
   incentives: StorefrontIncentivesClient | null;
 }) {
   const copy = CART_SCHEMA.copy;
-  const navigate = useNavigate();
+  const router = useRouter();
   const shippingNote =
     locale === 'ar' && cartService.shippingExplainerArabic.trim()
       ? cartService.shippingExplainerArabic
@@ -292,7 +295,7 @@ function CartSummary({
           type="button"
           className="btn btn-primary"
           style={{ width: '100%' }}
-          onClick={() => navigate('/checkout')}
+          onClick={() => router.push('/checkout')}
         >
           {copy.primaryCta}
         </button>
@@ -300,7 +303,7 @@ function CartSummary({
           type="button"
           className="btn btn-ghost"
           style={{ width: '100%' }}
-          onClick={() => navigate('/feelings')}
+          onClick={() => router.push('/feelings')}
         >
           {locale === 'ar' ? 'متابعة التسوق' : 'Continue shopping'}
         </button>
@@ -345,7 +348,7 @@ function CartLineItem({
 
   return (
     <article className="cart-item">
-      <Link className="cart-item-media" to={line.productUrl} aria-label={`Open ${line.productName}`}>
+      <Link className="cart-item-media" href={line.productUrl} aria-label={`Open ${line.productName}`}>
         <TeeImageFrame
           src={line.imageSrc}
           alt={line.imageAlt}
@@ -360,7 +363,7 @@ function CartLineItem({
       <div className="cart-item-content">
         <div className="cart-item-header">
           <div>
-            <Link className="cart-item-name" to={line.productUrl}>
+            <Link className="cart-item-name" href={line.productUrl}>
               {line.productName}
             </Link>
             {line.artistName ? <p className="cart-item-artist">Illustrated by {line.artistName}</p> : null}
@@ -435,14 +438,14 @@ function CartPairWithStrip({
           </p>
           {bundleLabel ? <p className="mt-1 font-body text-xs text-warm-charcoal">{bundleLabel}</p> : null}
         </div>
-        <Link to="/products" className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-deep-teal">
+        <Link href="/products" className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-deep-teal">
           {locale === 'ar' ? 'كل التصاميم' : 'All designs'}
         </Link>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {products.map((product) => (
           <article key={product.slug} className="flex gap-3 rounded-xl border border-stone/35 bg-papyrus/70 p-2">
-            <Link to={`/products/${product.slug}`} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-stone/30">
+            <Link href={`/products/${product.slug}`} className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-stone/30">
               <TeeImageFrame
                 src={getProductCardImageSrc(product)}
                 alt={`HORO ${product.name}`}
@@ -453,7 +456,7 @@ function CartPairWithStrip({
               />
             </Link>
             <div className="min-w-0 flex-1">
-              <Link to={`/products/${product.slug}`} className="font-body line-clamp-2 text-sm font-medium text-obsidian">
+              <Link href={`/products/${product.slug}`} className="font-body line-clamp-2 text-sm font-medium text-obsidian">
                 {product.name}
               </Link>
               <p className="mt-1 font-label text-[10px] font-semibold uppercase tracking-[0.14em] text-clay">
@@ -826,7 +829,7 @@ export function Cart({
               </h1>
               <p className="cart-page-count">{formatItemCount(0)}</p>
               <p className="cart-empty-copy">{copy.emptyBody}</p>
-              <Link className="btn btn-primary" to="/feelings">
+              <Link className="btn btn-primary" href="/feelings">
                 {copy.emptyCta}
               </Link>
             </div>
@@ -859,7 +862,7 @@ export function Cart({
               <button type="button" className="btn btn-primary min-h-12 px-6" onClick={handleUndoRemove}>
                 {copy.undoRemoveCta}
               </button>
-              <Link className="btn btn-ghost min-h-12 inline-flex items-center px-6" to="/feelings">
+              <Link className="btn btn-ghost min-h-12 inline-flex items-center px-6" href="/feelings">
                 {copy.secondaryCta}
               </Link>
             </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import { Link, useParams } from 'react-router-dom';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AppIcon } from '../components/AppIcon';
@@ -134,7 +135,8 @@ type OccasionCollectionProps = {
 };
 
 export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCollectionProps = {}) {
-  const { slug: routeSlug = '' } = useParams();
+  const params = useParams();
+  const routeSlug = typeof params?.slug === 'string' ? params.slug : (Array.isArray(params?.slug) ? params.slug[0] : '');
   const slug = initialSlug ?? routeSlug;
   const { copy } = useUiLocale();
   const { giftWrapCatalogPriceEgp } = useCart();
@@ -264,7 +266,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
     return (
       <div className="container py-12">
         <p className="font-body text-warm-charcoal">{OCCASION_SCHEMA.copy.notFoundTitle}</p>
-        <Link to="/occasions" className="font-label mt-4 inline-block text-deep-teal underline">
+        <Link href="/occasions" className="font-label mt-4 inline-block text-deep-teal underline">
           {copy.shell.shopByMoment}
         </Link>
       </div>
@@ -302,14 +304,14 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
             <div className="mx-auto max-w-7xl px-6 pb-8 md:px-10 md:pb-12">
               <div className="max-w-2xl rounded-2xl border border-white/12 bg-obsidian/82 px-5 py-5 shadow-[0_24px_56px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md md:px-7 md:py-7">
                 <nav className="font-body mb-4 text-[13px] text-white/90 md:text-sm" aria-label={OCCASION_SCHEMA.copy.breadcrumbLabel}>
-                  <Link to="/" className="transition-colors hover:text-white">
+                  <Link href="/" className="transition-colors hover:text-white">
                     {copy.shell.home}
                   </Link>
                   <span className="text-white/60" aria-hidden>
                     {' '}
                     /{' '}
                   </span>
-                  <Link to="/occasions" className="transition-colors hover:text-white">
+                  <Link href="/occasions" className="transition-colors hover:text-white">
                     {copy.shell.shopByMoment}
                   </Link>
                   <span className="text-white/60" aria-hidden>
@@ -338,7 +340,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                     Shop the designs
                   </a>
                   <Link
-                    to={scopeSearchTo}
+                    href={scopeSearchTo}
                     className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/92 hover:text-white"
                   >
                     {OCCASION_SCHEMA.copy.searchThisOccasionCta}
@@ -427,7 +429,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
               {OCCASION_SCHEMA.copy.filterAndSortCta}
             </button>
             <Link
-              to={scopeSearchTo}
+              href={scopeSearchTo}
               className="link-underline-reveal font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
             >
               {OCCASION_SCHEMA.copy.searchThisOccasionCta}
@@ -518,7 +520,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
               </div>
 
               <Link
-                to={scopeSearchTo}
+                href={scopeSearchTo}
                 className="link-underline-reveal font-label inline-flex min-h-12 shrink-0 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
               >
                 {OCCASION_SCHEMA.copy.searchThisOccasionCta}
@@ -567,7 +569,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
             {siblingOccasions.map((entry) => (
               <Link
                 key={entry.slug}
-                to={`/occasions/${entry.slug}`}
+                href={`/occasions/${entry.slug}`}
                 className="group block min-w-[14rem] snap-start overflow-hidden rounded-[18px] border border-stone/70 bg-white/70 text-inherit no-underline shadow-[0_18px_44px_-28px_rgba(26,26,26,0.24)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:min-w-0"
               >
                 <TeeImageFrame src={entry.cardImageSrc} alt={entry.cardImageAlt} w={640} aspectRatio="4/5" borderRadius="0" />

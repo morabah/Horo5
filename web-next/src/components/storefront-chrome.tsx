@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { AppErrorBoundary } from "./app-error-boundary";
 import { FunnelNavigationTracker } from "@/storefront/components/FunnelNavigationTracker";
@@ -28,7 +29,9 @@ export function StorefrontChrome({
         Skip to main content
       </a>
       <FunnelNavigationTracker />
-      <Nav navigation={navigation} />
+      <Suspense fallback={null}>
+        <Nav navigation={navigation} />
+      </Suspense>
       <main id="main-content" className={isHome ? "" : "pt-32 md:pt-24"}>
         <AppErrorBoundary key={pathname}>{children}</AppErrorBoundary>
       </main>

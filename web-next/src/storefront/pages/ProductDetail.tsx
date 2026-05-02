@@ -1,10 +1,9 @@
 'use client';
 
-import {
-  Link,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useAppSearchParams } from '@/storefront/hooks/useAppSearchParams';
+
 import {
   useEffect,
   useId,
@@ -187,12 +186,13 @@ export function ProductDetail({
     });
   }
 
-  const { slug: routeSlug = '' } = useParams();
+  const params = useParams();
+  const routeSlug = typeof params?.slug === 'string' ? params.slug : (Array.isArray(params?.slug) ? params.slug[0] : '');
   const slug = initialSlug ?? routeSlug;
   const { copy: shellCopy, locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const now = useStableNow();
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useAppSearchParams();
   const { addItem, setMiniCartOpen } = useCart();
   const { recordView } = useRecentlyViewed();
   const { has: isWishlisted, toggle: toggleWishlist } = useWishlist();
@@ -1046,7 +1046,7 @@ export function ProductDetail({
     return (
       <div className="bg-papyrus px-4 py-16 text-center">
         <p className="font-body text-warm-charcoal">{copy.pdpProductNotFound}</p>
-        <Link to="/feelings" className="font-label mt-4 inline-block text-deep-teal underline">
+        <Link href="/feelings" className="font-label mt-4 inline-block text-deep-teal underline">
           {shellCopy.shell.shopByFeeling}
         </Link>
       </div>
@@ -1081,7 +1081,7 @@ export function ProductDetail({
       >
         <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-2 gap-y-1">
           <Link
-            to="/"
+            href="/"
             className="inline-flex min-h-11 items-center rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
           >
             {shellCopy.shell.home}
@@ -1090,7 +1090,7 @@ export function ProductDetail({
           {feeling ? (
             <>
               <Link
-                to={`/feelings/${feeling.slug}`}
+                href={`/feelings/${feeling.slug}`}
                 className="inline-flex min-h-11 max-w-[12rem] items-center truncate rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
               >
                 {feeling.name}

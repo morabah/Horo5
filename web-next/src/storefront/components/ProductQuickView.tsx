@@ -1,5 +1,7 @@
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useId, useMemo, useRef, useState, type SyntheticEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+
 import { buildProductPdpGallery, galleryItemsToSrcList, getProductMedia, imgUrl } from '../data/images';
 import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
 import { trackSizeSelected } from '../analytics/events';
@@ -38,7 +40,7 @@ const pdpCopy = PDP_SCHEMA.copy;
 export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }: ProductQuickViewProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
   const { addItem, setMiniCartOpen } = useCart();
   const { locale } = useUiLocale();
   const titleId = useId();
@@ -228,7 +230,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     if (!product) return;
     if (oosSelected && selectedSize) {
       onClose();
-      navigate(`/products/${product.slug}`);
+      router.push(`/products/${product.slug}`);
       return;
     }
     handleAddToBag();
@@ -505,7 +507,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
               </ul>
 
               <Link
-                to={`/products/${product.slug}`}
+                href={`/products/${product.slug}`}
                 className="font-label mt-4 inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/92 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 onClick={() => {
                   onClose();

@@ -1,5 +1,6 @@
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { MerchProductCard } from './MerchProductCard';
 import { ProductQuickView } from './ProductQuickView';
 import { getProductCardImageSrc } from '../data/images';
@@ -49,7 +50,7 @@ export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyVie
               </h2>
             </div>
             <Link
-              to="/search"
+              href="/search"
               className="font-body inline-flex min-h-11 items-center text-sm font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
             >
               {copy.home.recentCta}

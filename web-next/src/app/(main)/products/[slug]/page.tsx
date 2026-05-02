@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { unstable_noStore } from "next/cache";
 import { notFound } from "next/navigation";
 
@@ -101,14 +102,16 @@ export default async function Page({ params, searchParams }: ProductPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdString(jsonLd) }}
       />
-      <ProductDetailPage
-        slug={slug}
-        product={product}
-        catalog={null}
-        catalogProducts={crossSellProducts}
-        deliveryRules={deliveryRules}
-        sizeTableConfig={sizeTableConfig}
-      />
+      <Suspense fallback={null}>
+        <ProductDetailPage
+          slug={slug}
+          product={product}
+          catalog={null}
+          catalogProducts={crossSellProducts}
+          deliveryRules={deliveryRules}
+          sizeTableConfig={sizeTableConfig}
+        />
+      </Suspense>
     </>
   );
 }

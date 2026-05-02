@@ -1,7 +1,9 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+import { useAppSearchParams } from '@/storefront/hooks/useAppSearchParams';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+
 import { trackHomeScrollMilestone, trackHomeView } from '../analytics/funnel';
 import { HomeArtistSpotlight } from '../components/HomeArtistSpotlight';
 import { HomeBehindThePiece } from '../components/HomeBehindThePiece';
@@ -85,8 +87,8 @@ export function Home({
   }
 
   useScrollReveal();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const pathname = usePathname();
+  const [searchParams, setSearchParams] = useAppSearchParams();
   const [compactHome, setCompactHome] = useState(false);
 
   useEffect(() => {
@@ -119,14 +121,14 @@ export function Home({
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
-    if (location.pathname !== '/') return;
+    if (pathname !== '/') return;
     if (sessionStorage.getItem(HOME_VIEW_SESSION_KEY)) return;
     sessionStorage.setItem(HOME_VIEW_SESSION_KEY, '1');
     trackHomeView({ compact_home: compactHome });
-  }, [location.pathname, compactHome]);
+  }, [pathname, compactHome]);
 
   useEffect(() => {
-    if (location.pathname !== '/') return;
+    if (pathname !== '/') return;
     function onScroll() {
       const el = document.documentElement;
       const max = el.scrollHeight - el.clientHeight;
@@ -139,7 +141,7 @@ export function Home({
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
-  }, [location.pathname, compactHome]);
+  }, [pathname, compactHome]);
 
   const orderedSections = useMemo(() => {
     const fromHomepage = (homepageSections ?? [])

@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import {
   getFeelingCollectionVisual,
   imgUrl,
@@ -50,7 +51,7 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
             </h2>
           </div>
           <Link
-            to={section?.primaryCta?.href ?? '/feelings'}
+            href={section?.primaryCta?.href ?? '/feelings'}
             className="font-body hidden min-h-11 items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:inline-flex"
           >
             {sectionCta ?? copy.home.feelingsCta}
@@ -68,7 +69,7 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
           <Link
             key={feeling.slug}
             id={`feeling-${feeling.slug}`}
-            to={`/feelings/${feeling.slug}`}
+            href={`/feelings/${feeling.slug}`}
             data-reveal={reveal}
             className="feeling-tile group relative isolate flex aspect-[1/1.1] min-h-[160px] overflow-hidden rounded-[18px] bg-obsidian p-4 text-white shadow-sm transition-transform duration-300 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:min-h-[260px] md:p-6"
           >
@@ -100,7 +101,7 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
 
         <div className="mt-6 sm:hidden">
           <Link
-            to={section?.primaryCta?.href ?? '/feelings'}
+            href={section?.primaryCta?.href ?? '/feelings'}
             className="font-body inline-flex min-h-11 items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
             {sectionCta ?? copy.home.feelingsCta}

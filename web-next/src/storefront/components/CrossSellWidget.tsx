@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { productHasRealImage, type Product, type ProductSizeKey } from '../data/site';
 import { TeeImageFrame } from './TeeImage';
 import { QuickViewTrigger } from './QuickViewTrigger';
@@ -52,7 +53,7 @@ function MiniCards({
           className="group relative overflow-hidden rounded-[14px] bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md"
         >
           <Link
-            to={`/products/${item.slug}`}
+            href={`/products/${item.slug}`}
             className="absolute inset-0 z-[1] rounded-[14px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
           >
             <span className="sr-only">

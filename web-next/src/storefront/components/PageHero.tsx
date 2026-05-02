@@ -1,7 +1,8 @@
 "use client";
 
+import Link from 'next/link';
 import Image from "next/image";
-import { Link } from "react-router-dom";
+
 
 import type { PageHeroConfig } from "../content/page-heroes";
 
@@ -156,7 +157,7 @@ export function PageHero({
             <div className="mt-6 flex flex-wrap items-center gap-3">
               {hasPrimary ? (
                 <Link
-                  to={primaryHref!}
+                  href={primaryHref!}
                   className={`font-body inline-flex min-h-12 items-center justify-center rounded-md px-7 py-3 text-[14px] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${THEME_CTA_PRIMARY[theme]}`}
                 >
                   {primaryLabel}
@@ -164,7 +165,7 @@ export function PageHero({
               ) : null}
               {hasSecondary ? (
                 <Link
-                  to={secondaryHref!}
+                  href={secondaryHref!}
                   className={`font-body inline-flex min-h-12 items-center justify-center rounded-md px-7 py-3 text-[14px] font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${THEME_CTA_SECONDARY[theme]}`}
                 >
                   {secondaryLabel}

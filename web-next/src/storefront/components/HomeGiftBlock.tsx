@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
@@ -56,7 +57,7 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
             </h2>
             <div className="mt-6">
               <Link
-                to={giftHref}
+                href={giftHref}
                 className="cta-clay font-body inline-flex min-h-12 items-center justify-center rounded-md border border-obsidian/80 bg-white px-7 py-3 text-sm font-semibold text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 {sectionCta ?? copy.home.giftCta}

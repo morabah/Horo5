@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import { FeelingCollectionPage } from "@/components/feeling-collection-page";
@@ -46,10 +47,12 @@ export default async function Page({ params }: PageProps) {
   }
 
   return (
-    <FeelingCollectionPage
-      initialCatalog={catalog}
-      initialSlug={resolvedSlug}
-      enableLineRedirect
-    />
+    <Suspense fallback={null}>
+      <FeelingCollectionPage
+        initialCatalog={catalog}
+        initialSlug={resolvedSlug}
+        enableLineRedirect
+      />
+    </Suspense>
   );
 }

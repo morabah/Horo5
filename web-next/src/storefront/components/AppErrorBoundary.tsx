@@ -1,5 +1,6 @@
+import Link from 'next/link';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 
 type Props = { children: ReactNode };
@@ -39,7 +40,7 @@ export class AppErrorBoundary extends Component<Props, State> {
               Reload page
             </button>
             <Link
-              to="/"
+              href="/"
               className="font-label inline-flex min-h-12 min-w-[10rem] items-center justify-center rounded-xl border border-stone bg-white px-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
             >
               Home

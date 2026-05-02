@@ -1,6 +1,6 @@
 'use client';
 
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import type { Product, Feeling } from '../../data/catalog-types';
 import { PDP_SCHEMA, fillPdpCopyTemplate } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
@@ -43,7 +43,7 @@ export function PdpRelatedProducts({
           </div>
           {feeling ? (
             <Link
-              to={`/feelings/${feeling.slug}`}
+              href={`/feelings/${feeling.slug}`}
               className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
             >
               {shopByFeelingLabel}
@@ -58,7 +58,7 @@ export function PdpRelatedProducts({
               className="group relative overflow-hidden rounded-[18px] bg-white shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md"
             >
               <Link
-                to={`/products/${item.slug}`}
+                href={`/products/${item.slug}`}
                 className="absolute inset-0 z-[1] rounded-[18px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 <span className="sr-only">

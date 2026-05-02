@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { BRAND_COPY } from '../data/brand';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -33,7 +34,7 @@ export function Footer() {
       </div>
       <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] font-body sm:gap-20 sm:px-8 md:grid-cols-4 md:px-12">
         <div className="space-y-8">
-          <Link to="/" className="inline-flex items-center" aria-label={copy.shell.home}>
+          <Link href="/" className="inline-flex items-center" aria-label={copy.shell.home}>
             <BrandLogo variant="light" />
           </Link>
           <p className="max-w-xs text-sm leading-relaxed text-stone">
@@ -46,7 +47,7 @@ export function Footer() {
             <li>
               <Link
                 className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                to={NAV_ROUTE.products.path}
+                href={NAV_ROUTE.products.path}
               >
                 {copy.shell.shopAll}
               </Link>
@@ -54,7 +55,7 @@ export function Footer() {
             <li>
               <Link
                 className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                to={NAV_ROUTE.collection.path}
+                href={NAV_ROUTE.collection.path}
               >
                 {copy.shell.shopByFeeling}
               </Link>
@@ -62,7 +63,7 @@ export function Footer() {
             <li>
               <Link
                 className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                to={NAV_ROUTE.gifts.path}
+                href={NAV_ROUTE.gifts.path}
               >
                 {locale === 'ar' ? 'هدايا' : 'Gifts'}
               </Link>
@@ -75,18 +76,18 @@ export function Footer() {
             <li>
               <Link
                 className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                to="/exchange"
+                href="/exchange"
               >
                 {copy.shell.deliveryReturns}
               </Link>
             </li>
             <li>
-              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" to="/size-guide">
+              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" href="/size-guide">
                 {copy.shell.sizeGuide}
               </Link>
             </li>
             <li>
-              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" to="/faq">
+              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" href="/faq">
                 {copy.shell.faq}
               </Link>
             </li>
@@ -98,7 +99,7 @@ export function Footer() {
             <li>
               <Link
                 className="font-body text-sm text-[#f5f0e8] underline decoration-primary underline-offset-8 transition-colors"
-                to={NAV_ROUTE.about.path}
+                href={NAV_ROUTE.about.path}
               >
                 {copy.shell.about}
               </Link>
@@ -118,7 +119,7 @@ export function Footer() {
               </li>
             ) : null}
             <li>
-              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" to="/search">
+              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" href="/search">
                 {copy.shell.search}
               </Link>
             </li>
@@ -128,10 +129,10 @@ export function Footer() {
       <div className="mx-auto mt-12 flex max-w-[1400px] flex-col items-center justify-between gap-4 border-t border-stone/25 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-10 font-body text-sm text-stone sm:mt-24 sm:px-8 md:mt-40 md:flex-row md:px-12 md:pt-12">
         <div>{`© ${year} HORO Egypt. ${BRAND_COPY.footerSignoff}`}</div>
         <div className="flex flex-wrap justify-center gap-x-12 gap-y-2">
-          <Link className="text-sm text-stone transition-colors hover:text-papyrus" to="/privacy">
+          <Link className="text-sm text-stone transition-colors hover:text-papyrus" href="/privacy">
             {copy.shell.privacyPolicy}
           </Link>
-          <Link className="text-sm text-stone transition-colors hover:text-papyrus" to="/terms">
+          <Link className="text-sm text-stone transition-colors hover:text-papyrus" href="/terms">
             {copy.shell.termsOfService}
           </Link>
         </div>

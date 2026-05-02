@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
+
 import { getProductComparisonImageSrc } from '../data/images';
 import { getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
@@ -67,13 +68,13 @@ export function HomeFeaturedPiece() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                to={`/products/${featuredProduct.slug}`}
+                href={`/products/${featuredProduct.slug}`}
                 className="cta-clay font-body inline-flex min-h-12 items-center justify-center rounded-md border border-obsidian/80 bg-obsidian px-7 py-3 text-sm font-semibold text-white transition-colors hover:bg-obsidian/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 {copy.home.featuredPieceCta}
               </Link>
               <Link
-                to="/products"
+                href="/products"
                 className="font-body inline-flex min-h-12 items-center justify-center rounded-md border border-stone/60 bg-white px-7 py-3 text-sm font-semibold text-obsidian transition-colors hover:border-obsidian hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
                 {copy.home.featuredPieceBrowseAll}

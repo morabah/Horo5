@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { HomePage } from "@/components/home-page";
 import {
   fetchStorefrontCatalogServer,
@@ -25,10 +26,12 @@ export default async function Page() {
   ]);
 
   return (
-    <HomePage
-      initialCatalog={catalog ?? undefined}
-      homepageSections={homepage?.sections ?? null}
-      sectionsEnabled={settings?.homepage?.sectionsEnabled ?? null}
-    />
+    <Suspense fallback={null}>
+      <HomePage
+        initialCatalog={catalog ?? undefined}
+        homepageSections={homepage?.sections ?? null}
+        sectionsEnabled={settings?.homepage?.sectionsEnabled ?? null}
+      />
+    </Suspense>
   );
 }

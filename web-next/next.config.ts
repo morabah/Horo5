@@ -96,8 +96,8 @@ const nextConfig: NextConfig = {
             react: reactRoot,
             "react-dom": reactDomRoot,
           }
-        : {}),
-      "react-router-dom": path.resolve(__dirname, "src/lib/react-router-dom-shim.tsx"),
+        : {})
+      // react-router-dom alias removed
     };
     return config;
   },

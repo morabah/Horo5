@@ -1,4 +1,5 @@
-import { matchPath } from 'react-router-dom';
+
+import { matchPath } from '../../lib/match-path';
 import { getFeeling, getOccasion, getProduct } from '../data/site';
 import { DEFAULT_SITE_DESCRIPTION, DEFAULT_SITE_TITLE } from './constants';
 import { stripLocalePrefix } from './locale';

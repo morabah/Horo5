@@ -1,6 +1,6 @@
 'use client';
 
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useEffect } from 'react';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
@@ -58,7 +58,7 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
             ]}
           />
           <p className="font-body text-warm-charcoal">Feeling collections are not available yet. Try again shortly.</p>
-          <Link className="btn btn-primary mt-6 inline-flex" to="/">
+          <Link className="btn btn-primary mt-6 inline-flex" href="/">
             {copy.shell.home}
           </Link>
         </div>
@@ -112,7 +112,7 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
           <div className="absolute left-4 top-4 sm:left-6 sm:top-6 md:left-8 md:top-8">
             {PAGE_HEROES.feelings.primaryCta?.href && PAGE_HEROES.feelings.primaryCta.label[locale as 'en' | 'ar'] ? (
               <Link
-                to={PAGE_HEROES.feelings.primaryCta.href}
+                href={PAGE_HEROES.feelings.primaryCta.href}
                 className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
               >
                 {PAGE_HEROES.feelings.primaryCta.label[locale as 'en' | 'ar']}
@@ -120,7 +120,7 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
               </Link>
             ) : (
               <Link
-                to="/products"
+                href="/products"
                 className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
               >
                 {copy.shell.shopAll}
@@ -143,7 +143,7 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
                 </h2>
               </div>
               <Link
-                to="/products"
+                href="/products"
                 className="font-label inline-flex min-h-11 items-center text-[11px] font-semibold uppercase tracking-[0.18em] text-deep-teal transition-colors hover:text-obsidian"
               >
                 {copy.shell.shopAll}

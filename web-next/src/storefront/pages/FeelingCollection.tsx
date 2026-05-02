@@ -1,6 +1,9 @@
 'use client';
 
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useAppSearchParams } from '@/storefront/hooks/useAppSearchParams';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MerchProductCard } from '../components/MerchProductCard';
@@ -161,7 +164,7 @@ export function FeelingCollection({
   const params = useParams<{ slug?: string; subfeelingSlug?: string }>();
   const slug = initialSlug || params.slug || '';
   const subfeelingSlug = initialSubfeelingSlug || params.subfeelingSlug || '';
-  const [searchParams] = useSearchParams();
+  const [searchParams] = useAppSearchParams();
   const lineFromQuery = searchParams.get('line')?.trim() || '';
   const lineParam = subfeelingSlug || lineFromQuery;
   const { copy } = useUiLocale();
@@ -276,7 +279,7 @@ export function FeelingCollection({
     return (
       <div className="container py-12">
         <p className="font-body text-warm-charcoal">Feeling not found.</p>
-        <Link to="/feelings" className="font-label mt-4 inline-block text-deep-teal underline">
+        <Link href="/feelings" className="font-label mt-4 inline-block text-deep-teal underline">
           {copy.shell.shopByFeeling}
         </Link>
       </div>
@@ -346,7 +349,7 @@ export function FeelingCollection({
           </div>
           <div className="absolute left-4 top-4 sm:left-6 sm:top-6 md:left-8 md:top-8">
             <Link
-              to="/products"
+              href="/products"
               className="feelings-hub-glass-pill font-label inline-flex min-h-9 items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-white transition-all hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:text-[10px]"
             >
               {copy.shell.shopAll}
@@ -362,7 +365,7 @@ export function FeelingCollection({
             <span className="font-semibold">{activeLine.name}</span>
             <span className="text-warm-charcoal"> — {activeLine.blurb} </span>
             <Link
-              to={baseFeelingPath}
+              href={baseFeelingPath}
               className="font-medium text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
             >
               Show all in {feeling.name}
@@ -376,7 +379,7 @@ export function FeelingCollection({
           {subfeelings.length > 0 ? (
             <div className="mb-6 flex flex-wrap gap-2 border-b border-stone/20 pb-5">
               <Link
-                to={baseFeelingPath}
+                href={baseFeelingPath}
                 className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
                   !lineParam
                     ? 'border-obsidian bg-obsidian text-white'
@@ -388,7 +391,7 @@ export function FeelingCollection({
               {subfeelings.map((line) => (
                 <Link
                   key={line.slug}
-                  to={`${baseFeelingPath}/${encodeURIComponent(line.slug)}`}
+                  href={`${baseFeelingPath}/${encodeURIComponent(line.slug)}`}
                   className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] transition-colors ${
                     line.slug === lineParam
                       ? 'border-obsidian bg-obsidian text-white'
@@ -410,7 +413,7 @@ export function FeelingCollection({
               Filter &amp; sort
             </button>
             <Link
-              to={`/search?feeling=${encodeURIComponent(slug)}&focus=1`}
+              href={`/search?feeling=${encodeURIComponent(slug)}&focus=1`}
               className="link-underline-reveal font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
             >
               Search this feeling
@@ -472,7 +475,7 @@ export function FeelingCollection({
               </div>
 
               <Link
-                to={`/search?feeling=${encodeURIComponent(slug)}&focus=1`}
+                href={`/search?feeling=${encodeURIComponent(slug)}&focus=1`}
                 className="link-underline-reveal font-label inline-flex min-h-12 shrink-0 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
               >
                 Search this feeling
@@ -590,7 +593,7 @@ export function FeelingCollection({
               return (
                 <Link
                   key={v.slug}
-                  to={`/feelings/${v.slug}`}
+                  href={`/feelings/${v.slug}`}
                   className="group overflow-hidden rounded-sm border border-stone/70 bg-white text-inherit no-underline shadow-sm transition-transform hover:-translate-y-1 hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
                   <div className="overflow-hidden">

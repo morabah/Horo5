@@ -1,6 +1,8 @@
 'use client';
 
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import {
   trackBeginCheckout,
@@ -528,7 +530,7 @@ export function Checkout({
   initialCartId = null,
   initialState = 'unknown',
 }: CheckoutProps = {}) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { items, subtotalEgp, giftWrapEgp, clearCart, replaceMedusaCartId, awaitPendingCartSync, seedFromServerCart } = useCart();
   const { locale, copy } = useUiLocale();
   const now = useStableNow();
@@ -822,7 +824,7 @@ export function Checkout({
     if (!mounted) return;
 
     let cancelled = false;
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
     const incomingCartId = params.get('cart_id') || cartId || getStoredCartId();
     const isPaymobReturn = params.get('payment_provider') === 'paymob' || params.get('resume') === '1' || params.get('success') === 'true';
 
@@ -880,7 +882,7 @@ export function Checkout({
           setCartId(null);
           setCheckoutCart(null);
           setPlacedOrderMedusaIdHint(status.order_id);
-          navigate(`/checkout/success?order_id=${status.order_id}`);
+          router.push(`/checkout/success?order_id=${status.order_id}`);
           return;
         }
 
@@ -949,7 +951,7 @@ export function Checkout({
             setCartId(null);
             setCheckoutCart(null);
             setPlacedOrderMedusaIdHint(paymobStatus.order_id);
-            navigate(`/checkout/success?order_id=${paymobStatus.order_id}`);
+            router.push(`/checkout/success?order_id=${paymobStatus.order_id}`);
             return;
           }
 
@@ -989,7 +991,7 @@ export function Checkout({
     return () => {
       cancelled = true;
     };
-  }, [cartId, clearCart, hydrateCheckoutFromCart, initialState, isArabic, items.length, mounted, navigate]);
+  }, [cartId, clearCart, hydrateCheckoutFromCart, initialState, isArabic, items.length, mounted, router]);
 
   const paymentMethods = useMemo(
     () => buildCheckoutPaymentMethods(paymentProviders, isArabic, checkoutSettings?.paymentMethodOrder ?? []),
@@ -1387,7 +1389,7 @@ export function Checkout({
         clearCart();
         setCartId(null);
         setCheckoutCart(null);
-        navigate(`/checkout/success?order_id=${completion.order.id}`);
+        router.push(`/checkout/success?order_id=${completion.order.id}`);
         return;
       }
 
@@ -1428,7 +1430,7 @@ export function Checkout({
           setCartId(null);
           setCheckoutCart(null);
           setPlacedOrderMedusaIdHint(st.order_id);
-          navigate(`/checkout/success?order_id=${st.order_id}`);
+          router.push(`/checkout/success?order_id=${st.order_id}`);
           return;
         }
       }
@@ -1469,7 +1471,7 @@ export function Checkout({
         setCartId(null);
         setCheckoutCart(null);
         setPlacedOrderMedusaIdHint(resolved.order_id);
-        navigate(`/checkout/success?order_id=${resolved.order_id}`);
+        router.push(`/checkout/success?order_id=${resolved.order_id}`);
         return;
       }
 
@@ -1809,7 +1811,7 @@ export function Checkout({
               ? 'سلتك فارغة. أضف تصميماً من المتجر ثم عد هنا لإتمام طلبك.'
               : 'Your bag is empty. Add a design from the shop, then return here to complete your order.'}
           </p>
-          <Link className="btn btn-primary mt-6 inline-flex min-h-12 items-center" to="/feelings">
+          <Link className="btn btn-primary mt-6 inline-flex min-h-12 items-center" href="/feelings">
             {copy.shell.shopByFeeling}
           </Link>
         </div>
@@ -1851,7 +1853,7 @@ export function Checkout({
         <PageBreadcrumb className="mb-4" items={checkoutBreadcrumbItems} />
 
         <Link
-          to="/cart"
+          href="/cart"
           className="font-body mb-6 inline-flex min-h-12 items-center text-sm text-deep-teal transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
         >
           {copy.checkout.backToCart}
@@ -2527,7 +2529,7 @@ function OrderSummary({
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-headline text-base font-semibold text-obsidian">{copy.checkout.orderSummaryHeading}</h2>
         <Link
-          to="/cart"
+          href="/cart"
           className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal transition-colors hover:text-obsidian"
         >
           {isArabic ? 'تعديل' : 'Edit'}
@@ -2589,7 +2591,7 @@ function OrderSummary({
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                   <Link
-                    to="/cart"
+                    href="/cart"
                     className="font-label text-[10px] font-medium uppercase tracking-[0.16em] text-deep-teal underline-offset-2 hover:underline"
                   >
                     {copy.checkout.changeSizeInBag}

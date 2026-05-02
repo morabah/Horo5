@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { ShopAllPage } from "@/components/shop-all-page";
 import {
@@ -35,5 +36,9 @@ export default async function Page() {
     }),
   ]);
 
-  return <ShopAllPage initialCatalog={catalog} priceBands={settings?.search?.priceBands ?? null} />;
+  return (
+    <Suspense fallback={null}>
+      <ShopAllPage initialCatalog={catalog} priceBands={settings?.search?.priceBands ?? null} />
+    </Suspense>
+  );
 }
