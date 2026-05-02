@@ -6,12 +6,13 @@ import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
 import { trackSizeSelected, trackWishlistAdd, trackWishlistRemove } from '../analytics/events';
 import { PDP_SCHEMA } from '../data/domain-config';
-import { getProduct, type ProductSizeKey } from '../data/site';
+import { getProduct, type Product, type ProductSizeKey } from '../data/site';
 import { useUiLocale } from '../i18n/ui-locale';
 import { productAvailableSizes } from '../utils/productSizes';
 import { QuickViewTrigger } from './QuickViewTrigger';
 import { TeeImageFrame } from './TeeImage';
 import { formatEgp } from '../utils/formatPrice';
+import { pickLocalizedText } from '../lib/storefront/incentives-client';
 
 type MerchProductCardProps = {
   slug: string;
@@ -20,9 +21,11 @@ type MerchProductCardProps = {
   imageSrc: string;
   imageAlt: string;
   /** Overrides catalog `product.promoLabel` when the card is driven by a server list (e.g. search). */
-  promoLabel?: string;
+  promoLabel?: Product['promoLabel'];
   /** ISO-8601 promo deadline — drives countdown below the price. Overrides catalog value. */
   promoEndsAt?: string;
+  /** False hides the countdown chip while keeping the label and strike-through price. */
+  promoShowCountdown?: boolean;
   eyebrow?: string;
   artistCredit?: string;
   compareAtPriceEgp?: number;
@@ -58,6 +61,7 @@ export function MerchProductCard({
   imageAlt,
   promoLabel: promoLabelProp,
   promoEndsAt: promoEndsAtProp,
+  promoShowCountdown: promoShowCountdownProp,
   eyebrow,
   artistCredit,
   compareAtPriceEgp,
@@ -74,9 +78,17 @@ export function MerchProductCard({
   const wishlisted = isWishlisted(slug);
   const minimal = variant === 'minimal';
   const product = useMemo(() => getProduct(slug), [slug]);
-  const promoLabel = promoLabelProp ?? product?.promoLabel;
+  const promoLabelValue = promoLabelProp ?? product?.promoLabel;
+  const promoLabel = pickLocalizedText(promoLabelValue, locale === 'ar' ? 'ar' : 'en');
   const promoEndsAt = promoEndsAtProp ?? product?.promoEndsAt;
-  const countdown = useCountdown(compareAtPriceEgp ? promoEndsAt : null);
+  const promoShowCountdown = promoShowCountdownProp ?? product?.promoShowCountdown ?? true;
+  const countdown = useCountdown(compareAtPriceEgp && promoShowCountdown ? promoEndsAt : null);
+  const savingsEgp = typeof compareAtPriceEgp === 'number' && compareAtPriceEgp > priceEgp
+    ? compareAtPriceEgp - priceEgp
+    : 0;
+  const savingsPct = savingsEgp > 0 && compareAtPriceEgp
+    ? Math.round((savingsEgp / compareAtPriceEgp) * 100)
+    : 0;
   const showFitBadge = Boolean(product?.fitLabel?.trim());
   const availableSizes = useMemo(() => {
     if (!product) return [] as ProductSizeKey[];
@@ -331,6 +343,13 @@ export function MerchProductCard({
               </span>
             ) : null}
           </div>
+          {savingsEgp > 0 ? (
+            <p className="font-label mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
+              {locale === 'ar'
+                ? `وفر ${formatEgp(savingsEgp)}${savingsPct ? ` (${savingsPct}%)` : ''}`
+                : `Save ${formatEgp(savingsEgp)}${savingsPct ? ` (${savingsPct}%)` : ''}`}
+            </p>
+          ) : null}
         </div>
       </div>
     </article>

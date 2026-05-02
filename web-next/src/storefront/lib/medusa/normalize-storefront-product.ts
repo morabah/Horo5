@@ -26,10 +26,14 @@ export type StorefrontProductApi = {
   updatedAt?: string;
   media?: Product['media'];
   merchandisingBadge?: string;
-  /** Campaign chip; backend omits when `promo_ends_at` passed. */
-  promoLabel?: string;
+  /** Campaign chip; backend omits when not live. */
+  promoLabel?: Product['promoLabel'];
+  /** ISO-8601 promo start for admin previews / scheduled promos. */
+  promoStartsAt?: string;
   /** ISO-8601 promo deadline for countdown. */
   promoEndsAt?: string;
+  /** Defaults to true. False hides countdown chips. */
+  promoShowCountdown?: boolean;
   name: string;
   pdpTagLabels?: string[];
   occasionSlugs: string[];
@@ -137,7 +141,9 @@ export function normalizeStorefrontProductApi(product: StorefrontProductApi): Pr
     media: product.media,
     merchandisingBadge: product.merchandisingBadge,
     promoLabel: product.promoLabel,
+    promoStartsAt: product.promoStartsAt,
     promoEndsAt: product.promoEndsAt,
+    promoShowCountdown: product.promoShowCountdown,
     name: product.name,
     pdpTagLabels: product.pdpTagLabels,
     occasionSlugs: product.occasionSlugs,

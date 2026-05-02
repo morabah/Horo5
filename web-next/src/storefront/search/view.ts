@@ -46,7 +46,9 @@ export type SearchDesignCard = {
   imageSrc: string;
   imageAlt: string;
   merchandisingBadge?: string;
-  promoLabel?: string;
+  promoLabel?: Product['promoLabel'];
+  promoEndsAt?: string;
+  promoShowCountdown?: boolean;
   proofChip?: string;
 };
 
@@ -567,6 +569,8 @@ function mapDesignCard(product: Product): SearchDesignCard {
     imageAlt: `HORO “${product.name}” graphic tee${feeling ? ` — ${feeling.name}` : ''}.`,
     merchandisingBadge: product.merchandisingBadge,
     promoLabel: product.promoLabel,
+    promoEndsAt: product.promoEndsAt,
+    promoShowCountdown: product.promoShowCountdown,
     proofChip,
   };
 }

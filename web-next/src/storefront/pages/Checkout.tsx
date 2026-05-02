@@ -752,6 +752,7 @@ export function Checkout({
     freeShippingThresholdEgp && freeShippingThresholdEgp > 0 && merchandiseSubtotalEgp >= freeShippingThresholdEgp,
   );
   const displayShippingCost = freeShippingUnlocked ? 0 : shippingCost;
+  const originalShippingEgp = freeShippingUnlocked ? shippingCost : 0;
   const freeShippingLabel = pickLocalizedText(incentives?.freeShipping?.label, isArabic ? 'ar' : 'en');
   const orderTotal = useMemo(() => {
     return merchandiseSubtotalEgp + giftWrapLineEgp + displayShippingCost;
@@ -1742,6 +1743,7 @@ export function Checkout({
                 cart={null}
                 cartId={null}
                 shipping={0}
+                originalShippingEgp={0}
                 shippingPending
                 freeShippingUnlocked={false}
                 freeShippingThresholdEgp={null}
@@ -1959,6 +1961,7 @@ export function Checkout({
                     <OrderSummary
                       cart={checkoutCart}
                       shipping={displayShippingCost}
+                      originalShippingEgp={originalShippingEgp}
                       cartId={cartId}
                       shippingPending={shippingSummaryPending}
                       freeShippingUnlocked={freeShippingUnlocked}
@@ -2169,7 +2172,12 @@ export function Checkout({
                   <span className="font-body text-sm text-obsidian">
                     <strong>{shippingLabel}</strong>
                     <br />
-                    {shippingCost > 0 ? (
+                    {freeShippingUnlocked && originalShippingEgp > 0 ? (
+                      <>
+                        <span className="text-clay line-through">{formatEgp(originalShippingEgp)}</span>
+                        <span className="ml-1.5 text-deep-teal">{isArabic ? 'مجاني' : 'Free'}</span>
+                      </>
+                    ) : shippingCost > 0 ? (
                       <>
                         {formatEgp(shippingCost)}
                         {shippingUsedDisplayFallback ? (
@@ -2384,6 +2392,7 @@ export function Checkout({
               <OrderSummary
                 cart={checkoutCart}
                 shipping={displayShippingCost}
+                originalShippingEgp={originalShippingEgp}
                 cartId={cartId}
                 shippingPending={shippingSummaryPending}
                 freeShippingUnlocked={freeShippingUnlocked}
@@ -2438,6 +2447,7 @@ export function Checkout({
 function OrderSummary({
   cart,
   shipping,
+  originalShippingEgp,
   cartId,
   shippingPending,
   freeShippingUnlocked,
@@ -2449,6 +2459,8 @@ function OrderSummary({
 }: {
   cart: MedusaCart | null;
   shipping: number;
+  /** Original shipping cost before free-shipping deduction (for strikethrough display). */
+  originalShippingEgp: number;
   cartId: string | null;
   shippingPending?: boolean;
   freeShippingUnlocked: boolean;
@@ -2640,8 +2652,13 @@ function OrderSummary({
               aria-label={isArabic ? 'جاري تحميل الشحن' : 'Loading shipping'}
             />
           ) : freeShippingUnlocked ? (
-            <span className="font-body text-sm text-deep-teal">
-              {isArabic ? 'مجاني' : 'Free'}
+            <span className="inline-flex items-baseline gap-1.5">
+              {originalShippingEgp > 0 ? (
+                <span className="font-body text-sm text-clay line-through">{formatEgp(originalShippingEgp)}</span>
+              ) : null}
+              <span className="font-body text-sm text-deep-teal">
+                {isArabic ? 'مجاني' : 'Free'}
+              </span>
             </span>
           ) : shipping > 0 ? (
             formatEgp(shipping)

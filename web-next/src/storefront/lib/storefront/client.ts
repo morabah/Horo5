@@ -54,8 +54,10 @@ type StorefrontProductResponse = {
   inventoryHintBySize?: Record<string, string>;
   media?: Product["media"];
   merchandisingBadge?: string;
-  promoLabel?: string;
+  promoLabel?: Product["promoLabel"];
+  promoStartsAt?: string;
   promoEndsAt?: string;
+  promoShowCountdown?: boolean;
   name: string;
   pdpTagLabels?: string[];
   occasionSlugs: string[];
@@ -175,7 +177,9 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     media: product.media,
     merchandisingBadge: product.merchandisingBadge,
     promoLabel: product.promoLabel,
+    promoStartsAt: product.promoStartsAt,
     promoEndsAt: product.promoEndsAt,
+    promoShowCountdown: product.promoShowCountdown,
     name: product.name,
     pdpTagLabels: product.pdpTagLabels,
     occasionSlugs: product.occasionSlugs,

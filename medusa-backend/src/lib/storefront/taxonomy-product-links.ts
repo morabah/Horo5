@@ -76,6 +76,10 @@ export function productReferencesFeelingSlug(row: ProductTaxonomyRow, slug: stri
   }
 
   const metadata = asRecord(row.metadata)
+  if (asString(metadata.primaryFeelingSlug) === slug || asString(metadata.feelingSlug) === slug) {
+    return true
+  }
+
   const feelingSlugs = asStringArrayOrEmpty(metadata.primaryFeelingSlugs ?? metadata.feelingSlugs)
   return feelingSlugs.includes(slug)
 }

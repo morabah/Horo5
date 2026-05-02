@@ -32,4 +32,26 @@ describe("storefront DTO schemas", () => {
       tag: "proof_fabric",
     })
   })
+
+  it("allows localized product promo metadata", () => {
+    const parsed = storefrontProductSchema.parse({
+      ...baseProduct,
+      promoLabel: { en: "Eid Sale", ar: "خصم العيد" },
+      promoStartsAt: "2026-05-03T10:00:00.000Z",
+      promoEndsAt: "2026-05-05T10:00:00.000Z",
+      promoShowCountdown: false,
+    })
+
+    expect(parsed.promoLabel).toEqual({ en: "Eid Sale", ar: "خصم العيد" })
+    expect(parsed.promoShowCountdown).toBe(false)
+  })
+
+  it("keeps legacy string promo labels valid", () => {
+    const parsed = storefrontProductSchema.parse({
+      ...baseProduct,
+      promoLabel: "Eid Sale",
+    })
+
+    expect(parsed.promoLabel).toBe("Eid Sale")
+  })
 })

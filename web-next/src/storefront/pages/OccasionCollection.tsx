@@ -116,6 +116,9 @@ function OccasionProductCard({
       priceEgp={product.priceEgp}
       imageSrc={imageSrc}
       imageAlt={`HORO “${product.name}” graphic tee for ${feeling?.name ?? 'the collection'}.`}
+      promoLabel={product.promoLabel}
+      promoEndsAt={product.promoEndsAt}
+      promoShowCountdown={product.promoShowCountdown}
       eyebrow={categoryEyebrow}
       artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
       onQuickView={onQuickView}

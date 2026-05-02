@@ -472,7 +472,8 @@ export function ProductDetail({
     ? compareAtPrice(displayPriceSelection.variant.priceEgp, displayPriceSelection.variant.originalPriceEgp)
     : compareAtPrice(scopeProduct?.priceEgp ?? 0, scopeProduct?.originalPriceEgp);
   const promoEndsAt = displayOriginalPriceEgp ? (scopeProduct?.promoEndsAt ?? null) : null;
-  const promoCountdown = useCountdown(promoEndsAt);
+  const promoShowCountdown = scopeProduct?.promoShowCountdown ?? true;
+  const promoCountdown = useCountdown(promoShowCountdown ? promoEndsAt : null);
   const pricingVariesBySize = scopeProduct ? productHasVariablePricing(scopeProduct) : false;
   const priceSizeLabel = useMemo(() => {
     if (!displayPriceSelection.size) return null;
@@ -539,10 +540,16 @@ export function ProductDetail({
   const sizeDef = selectedSize ? sizeButtons.find((s) => s.key === selectedSize) : undefined;
   const oosSelected = Boolean(sizeDef?.disabled);
   const sizeReady = Boolean(selectedSize && sizeDef && !sizeDef.disabled);
+  const selectedVariant = selectedSize
+    ? displayPriceSelection.variant ?? product?.variantsBySize?.[selectedSize as ProductSizeKey] ?? null
+    : null;
+  const selectedStockStatus = selectedSize ? product?.stockStatusBySize?.[selectedSize as ProductSizeKey] : undefined;
   const inventoryHint =
-    selectedSize && product?.inventoryHintBySize
-      ? product.inventoryHintBySize[selectedSize as ProductSizeKey]
-      : undefined;
+    selectedStockStatus === 'low_stock' && typeof selectedVariant?.inventoryQuantity === 'number'
+      ? `Only ${selectedVariant.inventoryQuantity} left`
+      : selectedSize && product?.inventoryHintBySize
+        ? product.inventoryHintBySize[selectedSize as ProductSizeKey]
+        : undefined;
 
   const trustItems = product?.trustBadges?.filter(Boolean) ?? [];
 
@@ -1116,6 +1123,8 @@ export function ProductDetail({
           displayPriceEgp={displayPriceEgp}
           displayOriginalPriceEgp={displayOriginalPriceEgp}
           promoCountdown={promoCountdown}
+          promoLabel={scopeProduct?.promoLabel ?? null}
+          promoShowCountdown={promoShowCountdown}
           priceSizeLabel={priceSizeLabel}
           compactProductDescription={compactProductDescription}
           heroCategoryTagItems={heroCategoryTagItems}

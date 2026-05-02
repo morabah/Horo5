@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, usePathname } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
@@ -28,6 +28,7 @@ export function MiniCartDrawer() {
   const {
     miniCartOpen,
     setMiniCartOpen,
+    items,
     lastAddedItem,
     subtotalEgp,
     totalQty,
@@ -136,6 +137,18 @@ export function MiniCartDrawer() {
     requestAnimationFrame(() => navigate('/checkout'));
   }, [close, navigate]);
 
+  const productPromoSavingsEgp = useMemo(() => {
+    return items.reduce((sum, line) => {
+      const product = getProduct(line.productSlug);
+      const variant = product?.variantsBySize?.[line.size];
+      const salePrice = line.unitPriceEgp ?? variant?.priceEgp ?? product?.priceEgp ?? 0;
+      const originalPrice = variant?.originalPriceEgp ?? product?.originalPriceEgp ?? null;
+      if (typeof originalPrice !== 'number' || originalPrice <= salePrice) return sum;
+      return sum + (originalPrice - salePrice) * line.qty;
+    }, 0);
+  }, [items]);
+  const giftWrapDisplayPriceEgp = incentives?.giftWrapPriceEgp ?? giftWrapCatalogPriceEgp;
+
   if (!miniCartOpen || !lastAddedItem) return null;
 
   const addedProduct = getProduct(lastAddedItem.productSlug);
@@ -209,6 +222,12 @@ export function MiniCartDrawer() {
 
         {/* Summary */}
         <div className="mini-cart-summary">
+          {productPromoSavingsEgp > 0 ? (
+            <p className="mini-cart-summary-line text-deep-teal">
+              <span>{isArabic ? 'وفرت' : 'You saved'}</span>
+              <span className="mini-cart-summary-value">{formatEgp(productPromoSavingsEgp)}</span>
+            </p>
+          ) : null}
           <p className="mini-cart-summary-line">
             <span>{t('subtotalLabel', isArabic)} ({totalQty} {itemCountLabel})</span>
             <span className="mini-cart-summary-value">{formatEgp(subtotalEgp)}</span>
@@ -262,7 +281,7 @@ export function MiniCartDrawer() {
           );
         })() : null}
 
-        {(incentives?.giftWrapProductHandle || giftWrapCatalogPriceEgp) ? (
+        {(incentives?.giftWrapProductHandle || giftWrapDisplayPriceEgp) ? (
           <div className="rounded-xl border border-stone/45 bg-white/75 p-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
@@ -270,8 +289,8 @@ export function MiniCartDrawer() {
                   {pickLocalizedText(incentives?.giftWrapLabel, isArabic ? 'ar' : 'en') ?? (isArabic ? 'تغليف هدية' : 'Gift wrap')}
                 </p>
                 <p className="font-body mt-1 text-xs text-warm-charcoal">
-                  {giftWrapCatalogPriceEgp
-                    ? `${isArabic ? 'أضفها للطلب' : 'Add it to this order'} (+${formatEgp(giftWrapCatalogPriceEgp)})`
+                  {giftWrapDisplayPriceEgp
+                    ? `${isArabic ? 'أضفها للطلب' : 'Add it to this order'} (+${formatEgp(giftWrapDisplayPriceEgp)})`
                     : isArabic ? 'جاهزة كإضافة في السلة' : 'Available as a cart add-on'}
                 </p>
               </div>

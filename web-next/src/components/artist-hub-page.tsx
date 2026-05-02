@@ -53,6 +53,9 @@ function ArtistHub({ artist, products }: { artist: Artist; products: Product[] }
                   priceEgp={product.priceEgp}
                   imageSrc={getProductCardImageSrc(product)}
                   imageAlt={`HORO ${product.name} graphic tee by ${artist.name}.`}
+                  promoLabel={product.promoLabel}
+                  promoEndsAt={product.promoEndsAt}
+                  promoShowCountdown={product.promoShowCountdown}
                   eyebrow={product.fitLabel}
                   artistCredit={`Illustrated by ${artist.name}`}
                   onQuickView={setQuickViewSlug}

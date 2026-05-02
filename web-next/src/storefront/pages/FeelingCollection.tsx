@@ -492,6 +492,9 @@ export function FeelingCollection({
                   priceEgp={p.priceEgp}
                   imageSrc={main}
                   imageAlt={`HORO “${p.name}” graphic tee`}
+                  promoLabel={p.promoLabel}
+                  promoEndsAt={p.promoEndsAt}
+                  promoShowCountdown={p.promoShowCountdown}
                   eyebrow={categoryEyebrowForFeelingProduct(feeling.name, slug, activeLine, p)}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                   onQuickView={setQuickViewSlug}

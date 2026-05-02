@@ -25,7 +25,9 @@ type ActionUiState = {
 
 const STORAGE_KEY = "horo.bulkOps.lastRuns.v1"
 
-const ACTIONS: BulkOpUiAction[] = BULK_OP_ACTION_DEFINITIONS
+const ACTIONS: BulkOpUiAction[] = BULK_OP_ACTION_DEFINITIONS.filter(
+  (action) => action.id !== "update-incentive-threshold",
+)
 
 function defaultState(): Record<BulkOpActionId, ActionUiState> {
   return Object.fromEntries(
@@ -73,7 +75,6 @@ export default function BulkOpsPage() {
   const [state, setState] = useState<Record<BulkOpActionId, ActionUiState>>(() => defaultState())
   const [selectedResult, setSelectedResult] = useState<BulkOpResult | null>(null)
   const [occasionSlug, setOccasionSlug] = useState("")
-  const [thresholdEgp, setThresholdEgp] = useState("1500")
 
   useEffect(() => {
     const lastRuns = readLastRuns()
@@ -148,14 +149,6 @@ export default function BulkOpsPage() {
       }
       body = { occasionSlug: occasionSlug.trim() }
     }
-    if (action.id === "update-incentive-threshold") {
-      const threshold = Number(thresholdEgp)
-      if (!Number.isFinite(threshold) || threshold <= 0) {
-        toast.error("Valid threshold EGP is required.")
-        return
-      }
-      body = { thresholdEgp: threshold }
-    }
     const confirmed = window.confirm(
       dryRun
         ? `Run a dry run for "${action.name}"? No writes will be performed.`
@@ -200,17 +193,6 @@ export default function BulkOpsPage() {
                     value={occasionSlug}
                     placeholder="e.g. just-because"
                     onChange={(e) => setOccasionSlug(e.target.value)}
-                  />
-                </div>
-              ) : action.id === "update-incentive-threshold" ? (
-                <div className="flex flex-col gap-1">
-                  <Label htmlFor="threshold-input" className="text-xs">Threshold EGP</Label>
-                  <Input
-                    id="threshold-input"
-                    type="number"
-                    size="small"
-                    value={thresholdEgp}
-                    onChange={(e) => setThresholdEgp(e.target.value)}
                   />
                 </div>
               ) : undefined

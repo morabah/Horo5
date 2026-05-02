@@ -148,6 +148,9 @@ function SearchProductCard({
       priceEgp={product.priceEgp}
       imageSrc={product.imageSrc}
       imageAlt={product.imageAlt}
+      promoLabel={product.promoLabel}
+      promoEndsAt={product.promoEndsAt}
+      promoShowCountdown={product.promoShowCountdown}
       eyebrow={product.feelingName}
       artistCredit={product.artistCredit}
       onQuickView={onQuickView}

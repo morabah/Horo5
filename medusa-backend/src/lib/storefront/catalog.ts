@@ -50,7 +50,7 @@ import type {
   StorefrontSubfeelingDTO,
   StorefrontVariantDTO,
 } from "./types"
-import { retrieveStorefrontSettingsPayload, type StorefrontSettingsDTO } from "./store-settings"
+import { retrieveStorefrontSettingsPayload, type LocalizedText, type StorefrontSettingsDTO } from "./store-settings"
 
 export function filterStorefrontProductsByQuery(
   products: StorefrontProductDTO[],
@@ -407,6 +407,21 @@ function asObjectArray<T extends Record<string, unknown>>(value: unknown): T[] |
 
   const items = value.filter((entry): entry is T => Boolean(entry) && typeof entry === "object")
   return items.length > 0 ? items : undefined
+}
+
+function asLocalizedTextValue(value: unknown): LocalizedText | undefined {
+  if (typeof value === "string") {
+    const trimmed = value.trim()
+    return trimmed ? { en: trimmed, ar: trimmed } : undefined
+  }
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const raw = value as Record<string, unknown>
+    const en = typeof raw.en === "string" && raw.en.trim() ? raw.en.trim() : undefined
+    const ar = typeof raw.ar === "string" && raw.ar.trim() ? raw.ar.trim() : undefined
+    if (!en && !ar) return undefined
+    return { ...(en ? { en } : {}), ...(ar ? { ar } : {}) }
+  }
+  return undefined
 }
 
 const STOREFRONT_MEDIA_GALLERY_TAGS = new Set<StorefrontMediaGalleryTag>([
@@ -1117,18 +1132,30 @@ function buildProduct(
   const launchAt = asString(metadata.launch_at)?.trim()
   const sunsetAt = asString(metadata.sunset_at)?.trim()
 
-  const promoLabelRaw = asString(metadata.promoLabel)?.trim()
-  let promoLabel: string | undefined
+  const promoLabelRaw = asLocalizedTextValue(metadata.promoLabel)
+  let promoLabel: LocalizedText | undefined
+  const promoStartsAt = asString(metadata.promo_starts_at)?.trim()
   let promoEndsAt: string | undefined
+  const promoShowCountdown = metadata.promoShowCountdown === false ? false : true
   // Resolve promoEndsAt from active Price Lists (single source of truth — no metadata needed).
   const variantIds = (product.variants ?? []).map((v) => v.id).filter(Boolean)
   for (const vid of variantIds) {
     const endsAt = priceListEndsAtByVariantId?.get(vid)
     if (endsAt) { promoEndsAt = endsAt; break }
   }
+  // Fallback to metadata when price-list query misses newly-created lists
+  if (!promoEndsAt) {
+    const metaEndsAt = asString(metadata.promo_ends_at)?.trim()
+    if (metaEndsAt) promoEndsAt = metaEndsAt
+  }
   if (promoLabelRaw) {
-    // Show label only when promo is still running (or has no deadline)
-    if (!promoEndsAt || Date.parse(promoEndsAt) > Date.now()) {
+    const now = Date.now()
+    const startsMs = promoStartsAt ? Date.parse(promoStartsAt) : NaN
+    const endsMs = promoEndsAt ? Date.parse(promoEndsAt) : NaN
+    const hasStarted = !Number.isFinite(startsMs) || startsMs <= now
+    const hasNotExpired = !Number.isFinite(endsMs) || endsMs > now
+    // Show label only when promo is live. Scheduled promos still ship starts_at for previews.
+    if (hasStarted && hasNotExpired) {
       promoLabel = promoLabelRaw
     }
   }
@@ -1180,7 +1207,9 @@ function buildProduct(
     primaryOccasionSlug: asString(metadata.primaryOccasionSlug),
     primarySubfeelingSlug,
     ...(promoLabel ? { promoLabel } : {}),
+    ...(promoStartsAt ? { promoStartsAt } : {}),
     ...(promoEndsAt ? { promoEndsAt } : {}),
+    ...(promoShowCountdown === false ? { promoShowCountdown } : {}),
     priceEgp: defaultVariant?.price_egp ?? legacyPrice ?? 0,
     slug: product.handle,
     stockNote: asString(metadata.stockNote),

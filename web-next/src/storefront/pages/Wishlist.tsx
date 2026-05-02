@@ -80,6 +80,9 @@ export function Wishlist({ initialCatalog }: WishlistProps) {
                     priceEgp={p.priceEgp}
                     imageSrc={main}
                     imageAlt={`HORO "${p.name}" graphic tee`}
+                    promoLabel={p.promoLabel}
+                    promoEndsAt={p.promoEndsAt}
+                    promoShowCountdown={p.promoShowCountdown}
                     eyebrow={eyebrow}
                     artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                     onQuickView={setQuickViewSlug}

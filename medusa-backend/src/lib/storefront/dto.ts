@@ -21,6 +21,14 @@ export const storefrontMediaSchema = z
   })
   .optional()
 
+const storefrontLocalizedTextSchema = z.union([
+  z.string(),
+  z.looseObject({
+      en: z.string().optional(),
+      ar: z.string().optional(),
+    }),
+])
+
 export const storefrontVariantSchema = z.object({
   allow_backorder: z.boolean(),
   available: z.boolean(),
@@ -83,7 +91,10 @@ export const storefrontProductSchema = z.looseObject({
     primaryFeelingSlug: z.string(),
     primaryOccasionSlug: z.string().optional(),
     primarySubfeelingSlug: z.string(),
+    promoLabel: storefrontLocalizedTextSchema.optional(),
+    promoStartsAt: z.string().optional(),
     promoEndsAt: z.string().optional(),
+    promoShowCountdown: z.boolean().optional(),
     priceEgp: z.number(),
     sizeTableKey: z.string().optional(),
     stockNote: z.string().optional(),
@@ -96,14 +107,6 @@ export const storefrontProductSchema = z.looseObject({
     variantsBySize: z.record(z.string(), storefrontVariantSchema),
     wearerStories: z.array(z.record(z.string(), z.unknown())).optional(),
   })
-
-const storefrontLocalizedTextSchema = z.union([
-  z.string(),
-  z.looseObject({
-      en: z.string().optional(),
-      ar: z.string().optional(),
-    }),
-])
 
 const storefrontNavItemSchema = z.looseObject({
     key: z.string(),

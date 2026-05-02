@@ -229,9 +229,13 @@ export type Product = {
   /** Card + quick view merchandising label, e.g. "Bestseller" */
   merchandisingBadge?: string;
   /** Time-boxed campaign chip from Medusa `metadata.promoLabel` / `promo_ends_at`. */
-  promoLabel?: string;
+  promoLabel?: Exclude<LocalizedStorefrontText, null>;
+  /** ISO datetime when the promo becomes visible. */
+  promoStartsAt?: string;
   /** ISO-8601 deadline for the active promo; used to render a live countdown on cards. */
   promoEndsAt?: string;
+  /** Defaults to true. False hides countdown chips while keeping label and strike-through price. */
+  promoShowCountdown?: boolean;
   /** Emotion/mood cues from Medusa metadata.feelsLike — e.g. ["quiet confidence"]. */
   feelsLike?: string[];
   /** Shown as "FEELING / FIT" in quick view */

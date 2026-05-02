@@ -1,3 +1,5 @@
+import type { LocalizedText } from "./store-settings"
+
 export type StorefrontMediaGalleryTag =
   | "proof_fabric"
   | "proof_print"
@@ -129,10 +131,14 @@ export type StorefrontProductDTO = {
   primaryFeelingSlug: string
   primaryOccasionSlug?: string
   primarySubfeelingSlug: string
-  /** Campaign line from `metadata.promoLabel` (hidden when `metadata.promo_ends_at` is past). */
-  promoLabel?: string
+  /** Campaign line from `metadata.promoLabel` (hidden before starts_at / after ends_at). */
+  promoLabel?: LocalizedText
+  /** ISO-8601 start for the promo; admin previews may show scheduled promos before live. */
+  promoStartsAt?: string
   /** ISO-8601 deadline for the promo; storefront uses this to render a live countdown. */
   promoEndsAt?: string
+  /** Defaults to true when omitted. False means label and strike-through only. */
+  promoShowCountdown?: boolean
   priceEgp: number
   slug: string
   stockNote?: string

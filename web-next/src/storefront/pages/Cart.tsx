@@ -148,9 +148,11 @@ function CartUpsell({
 function CartSummary({
   itemCount,
   subtotalEgp,
+  productPromoSavingsEgp,
   giftWrapEgp,
   estimatedOrderTotal,
   shippingRow,
+  originalShippingEgp,
   now,
   locale,
   cartService,
@@ -158,9 +160,12 @@ function CartSummary({
 }: {
   itemCount: number;
   subtotalEgp: number;
+  productPromoSavingsEgp: number;
   giftWrapEgp: number;
   estimatedOrderTotal: number | null;
   shippingRow: { mode: 'loading' } | { mode: 'amount'; egp: number } | { mode: 'copy' };
+  /** Original shipping cost before free-shipping deduction (for strikethrough display). */
+  originalShippingEgp: number;
   now: Date;
   locale: UiLocale;
   cartService: { shippingExplainerArabic: string; estimatedDeliveryCheckoutNoteArabic: string };
@@ -226,6 +231,12 @@ function CartSummary({
       })() : null}
 
       <div className="cart-summary-rows">
+        {productPromoSavingsEgp > 0 ? (
+          <p className="cart-summary-row cart-summary-row--meta text-deep-teal">
+            <span>{locale === 'ar' ? 'وفرت' : 'You saved'}</span>
+            <span>{formatEgp(productPromoSavingsEgp)}</span>
+          </p>
+        ) : null}
         <p className="cart-summary-row">
           <span>
             {copy.subtotalLabel} ({formatItemCount(itemCount)})
@@ -248,8 +259,13 @@ function CartSummary({
               const threshold = incentives?.freeShipping?.thresholdEgp ?? 0;
               const unlocked = threshold > 0 && subtotalEgp >= threshold;
               return unlocked ? (
-                <span className="font-body text-sm text-deep-teal">
-                  {locale === 'ar' ? 'مجاني' : 'Free'}
+                <span className="inline-flex items-baseline gap-1.5">
+                  {originalShippingEgp > 0 ? (
+                    <span className="font-body text-sm text-clay line-through">{formatEgp(originalShippingEgp)}</span>
+                  ) : null}
+                  <span className="font-body text-sm text-deep-teal">
+                    {locale === 'ar' ? 'مجاني' : 'Free'}
+                  </span>
                 </span>
               ) : (
                 formatEgp(shippingRow.egp)
@@ -504,6 +520,15 @@ export function Cart({
 
   const lineViews = useMemo(() => getCartLineViews(displayItems), [displayItems]);
   const itemCount = useMemo(() => lineViews.reduce((count, line) => count + line.qty, 0), [lineViews]);
+  const productPromoSavingsEgp = useMemo(() => {
+    return lineViews.reduce((sum, line) => {
+      const product = getProduct(line.productSlug);
+      const variant = product?.variantsBySize?.[line.size];
+      const originalPrice = variant?.originalPriceEgp ?? product?.originalPriceEgp ?? null;
+      if (typeof originalPrice !== 'number' || originalPrice <= line.unitPriceEgp) return sum;
+      return sum + (originalPrice - line.unitPriceEgp) * line.qty;
+    }, 0);
+  }, [lineViews]);
   const pairWithProducts = useMemo(() => {
     const inCart = new Set(displayItems.map((item) => item.productSlug));
     return getProducts()
@@ -569,23 +594,28 @@ export function Cart({
     !!incentives?.freeShipping &&
     incentives.freeShipping.thresholdEgp > 0 &&
     displaySubtotalEgp >= incentives.freeShipping.thresholdEgp;
+  const giftWrapDisplayPriceEgp = incentives?.giftWrapPriceEgp ?? giftWrapCatalogPriceEgp;
 
   const lastKnownShippingEgpRef = useRef<number | null>(null);
 
-  const { shippingRow, estimatedOrderTotal } = useMemo(() => {
+  const { shippingRow, estimatedOrderTotal, originalShippingEgp } = useMemo(() => {
     const base = displaySubtotalEgp + displayGiftWrapEgp;
     /* Audit S8: when an operator-configured free-shipping promo is unlocked, the
        preview must agree with what Medusa will compute at checkout. */
     if (freeShippingUnlocked) {
+      // Preserve the last known shipping quote so the UI can show a strikethrough.
+      const original = lastKnownShippingEgpRef.current ?? readCheckoutDisplayShippingFallbackEgpFromEnv() ?? 0;
       return {
         shippingRow: { mode: 'amount' as const, egp: 0 },
         estimatedOrderTotal: base,
+        originalShippingEgp: original,
       };
     }
     if (shippingFetch.kind === 'inactive' || shippingFetch.kind === 'pending_cart_id') {
       return {
         shippingRow: { mode: 'loading' as const },
         estimatedOrderTotal: null as number | null,
+        originalShippingEgp: 0,
       };
     }
     if (shippingFetch.kind === 'loading') {
@@ -595,17 +625,20 @@ export function Cart({
         return {
           shippingRow: { mode: 'amount' as const, egp: fb },
           estimatedOrderTotal: base + fb,
+          originalShippingEgp: 0,
         };
       }
       return {
         shippingRow: { mode: 'loading' as const },
         estimatedOrderTotal: null as number | null,
+        originalShippingEgp: 0,
       };
     }
     if (shippingFetch.kind === 'error') {
       return {
         shippingRow: { mode: 'copy' as const },
         estimatedOrderTotal: base,
+        originalShippingEgp: 0,
       };
     }
     const quoteEgp = resolveShippingQuoteFromCartAndOptions(
@@ -616,6 +649,7 @@ export function Cart({
     return {
       shippingRow: { mode: 'amount' as const, egp: quoteEgp },
       estimatedOrderTotal: base + quoteEgp,
+      originalShippingEgp: 0,
     };
   }, [shippingFetch, displaySubtotalEgp, displayGiftWrapEgp, freeShippingUnlocked]);
 
@@ -941,7 +975,7 @@ export function Cart({
               <CartUpsell
                 totalQty={itemCount}
                 giftWrapSelected={displayGiftWrapEgp > 0}
-                giftWrapPriceEgp={giftWrapCatalogPriceEgp}
+                giftWrapPriceEgp={giftWrapDisplayPriceEgp}
                 bundle={incentives?.bundle ?? null}
                 locale={locale}
                 onAddGiftWrap={handleAddGiftWrap}
@@ -954,9 +988,11 @@ export function Cart({
           <CartSummary
             itemCount={itemCount}
             subtotalEgp={displaySubtotalEgp}
+            productPromoSavingsEgp={productPromoSavingsEgp}
             giftWrapEgp={displayGiftWrapEgp}
             estimatedOrderTotal={estimatedOrderTotal}
             shippingRow={shippingRow}
+            originalShippingEgp={originalShippingEgp}
             now={now}
             locale={locale}
             cartService={shellCopy.cartService}

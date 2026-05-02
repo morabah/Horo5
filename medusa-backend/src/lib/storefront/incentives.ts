@@ -5,7 +5,7 @@ import {
   FREE_SHIPPING_CODE_PREFIX,
   GIFT_WRAP_HANDLE,
 } from "../shared/constants"
-import { asNumber } from "../shared/type-guards"
+import { asNumber, parseInteger } from "../shared/type-guards"
 import type { LocalizedText } from "./store-settings"
 
 /**
@@ -91,11 +91,11 @@ function readFreeShippingThresholdEgp(promotion: {
   })
   if (rule) {
     const first = rule.values?.[0]?.value
-    const n = asNumber(first)
-    if (n !== undefined && n >= 0) return Math.round(n)
+    const n = parseInteger(first)
+    if (n !== null && n >= 0) return Math.round(n)
   }
-  const fallback = asNumber((promotion.metadata as Record<string, unknown> | null | undefined)?.thresholdEgp)
-  if (fallback !== undefined && fallback >= 0) return Math.round(fallback)
+  const fallback = parseInteger((promotion.metadata as Record<string, unknown> | null | undefined)?.thresholdEgp)
+  if (fallback !== null && fallback >= 0) return Math.round(fallback)
   return null
 }
 
@@ -159,11 +159,26 @@ async function findStoreFreeShippingThresholdEgp(
   }
 }
 
+async function findStoreIncentiveMetadata(
+  scope: MedusaContainer,
+): Promise<Record<string, unknown>> {
+  try {
+    const storeModule = scope.resolve(Modules.STORE) as {
+      listStores: () => Promise<Array<{ metadata?: Record<string, unknown> | null }>>
+    }
+    const stores = await storeModule.listStores()
+    return stores[0]?.metadata ?? {}
+  } catch {
+    return {}
+  }
+}
+
 /**
  * Read every active automatic Promotion and project the first matching free-shipping and bundle promo.
  * The storefront treats `null` as "feature disabled" and renders nothing — never invents fallbacks.
  */
 export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer): Promise<StorefrontIncentivesDTO> {
+  const storeIncentiveMetadata = await findStoreIncentiveMetadata(scope)
   let promotions: Array<{
     id: string
     code?: string
@@ -212,6 +227,7 @@ export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer
       if (threshold !== null) {
         const label =
           localizedFromMetadata(meta, "label") ??
+          localizedFromMetadata(storeIncentiveMetadata, "freeShippingLabel") ??
           { en: `Free shipping over ${threshold} EGP`, ar: `شحن مجاني عند الطلب فوق ${threshold} ج.م` }
         freeShipping = {
           promotionId: promotion.id,
@@ -235,6 +251,7 @@ export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer
       const applicationKind = promotion.application_method.type === "percentage" ? "percentage" : "fixed"
       const label =
         localizedFromMetadata(meta, "label") ??
+        localizedFromMetadata(storeIncentiveMetadata, "bundleLabel") ??
         (applicationKind === "fixed"
           ? {
               en: `Buy ${requireQuantity} — save ${applicationValue} EGP`,
@@ -264,7 +281,9 @@ export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer
         promotionId: "store-settings",
         thresholdEgp: storeThreshold,
         currency: "egp",
-        label: { en: `Free shipping over ${storeThreshold} EGP`, ar: `شحن مجاني عند الطلب فوق ${storeThreshold} ج.م` },
+        label:
+          localizedFromMetadata(storeIncentiveMetadata, "freeShippingLabel") ??
+          { en: `Free shipping over ${storeThreshold} EGP`, ar: `شحن مجاني عند الطلب فوق ${storeThreshold} ج.م` },
       }
     }
   }

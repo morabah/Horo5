@@ -103,7 +103,7 @@ export default function StoreSettingsPage() {
             </Badge>
           </div>
           <Text size="small" className="mt-1 max-w-3xl text-ui-fg-subtle">
-            Edit storefront delivery, size-guide presets, the default preset, storefront preview URL, free-shipping threshold, default trust badges, and default stock quantity.
+            Edit storefront delivery, size-guide presets, the default preset, storefront preview URL, default trust badges, and default stock quantity. Promotions Studio owns free-shipping incentives.
           </Text>
         </div>
         <Button
@@ -204,26 +204,7 @@ export default function StoreSettingsPage() {
             <Heading level="h2" className="mb-4">
               Store Defaults
             </Heading>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="free-shipping-threshold" className="text-xs">
-                  Free-Shipping Threshold (EGP)
-                </Label>
-                <Input
-                  id="free-shipping-threshold"
-                  size="small"
-                  type="number"
-                  min={0}
-                  value={settings.freeShippingThresholdEgp ?? ""}
-                  disabled={mutation.isPending}
-                  placeholder="1500"
-                  onChange={(event) => {
-                    const raw = event.target.value
-                    const freeShippingThresholdEgp = raw === "" ? null : Math.max(0, Math.trunc(Number(raw)))
-                    setSettings((prev) => prev ? { ...prev, freeShippingThresholdEgp } : prev)
-                  }}
-                />
-              </div>
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="default-stock-qty" className="text-xs">
                   Default Stock Qty
@@ -243,7 +224,7 @@ export default function StoreSettingsPage() {
                   }}
                 />
               </div>
-              <div className="flex flex-col gap-1 md:col-span-1">
+              <div className="flex flex-col gap-1">
                 <Label htmlFor="default-trust-badges" className="text-xs">
                   Default Trust Badges
                 </Label>

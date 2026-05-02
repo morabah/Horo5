@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import type { Product, ProductSizeKey, Feeling } from '../../data/catalog-types';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
+import { pickLocalizedText } from '../../lib/storefront/incentives-client';
 import { PdpSizeSelector } from './PdpSizeSelector';
 
 const { copy } = PDP_SCHEMA;
@@ -39,6 +40,8 @@ type PdpBuyBoxProps = {
   displayPriceEgp: number;
   displayOriginalPriceEgp: number | null;
   promoCountdown: { days: number; hours: number; minutes: number; seconds: number; expired: boolean } | null;
+  promoLabel: Product['promoLabel'] | null;
+  promoShowCountdown: boolean;
   priceSizeLabel: string | null;
   // Description
   compactProductDescription: string;
@@ -92,6 +95,8 @@ export function PdpBuyBox({
   displayPriceEgp,
   displayOriginalPriceEgp,
   promoCountdown,
+  promoLabel,
+  promoShowCountdown,
   priceSizeLabel,
   compactProductDescription,
   heroCategoryTagItems,
@@ -139,6 +144,19 @@ export function PdpBuyBox({
       ? 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90 opacity-90'
       : 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90'
   }`;
+  const localizedPromoLabel = pickLocalizedText(promoLabel, isArabic ? 'ar' : 'en');
+  const savingsEgp = displayOriginalPriceEgp && displayOriginalPriceEgp > displayPriceEgp
+    ? displayOriginalPriceEgp - displayPriceEgp
+    : 0;
+  const savingsPct = savingsEgp > 0 && displayOriginalPriceEgp
+    ? Math.round((savingsEgp / displayOriginalPriceEgp) * 100)
+    : 0;
+  const lowStockCount = inventoryHint?.match(/only\s+(\d+)\s+left/i)?.[1] ?? null;
+  const promoStockUrgency = selectedSize && savingsEgp > 0 && lowStockCount
+    ? isArabic
+      ? `باقي ${lowStockCount} فقط بهذا السعر`
+      : `Only ${lowStockCount} left at this price`
+    : null;
 
   return (
     <aside className="md:sticky md:top-24 md:self-start">
@@ -185,6 +203,13 @@ export function PdpBuyBox({
             </p>
           ) : null}
 
+          {/* Promo label */}
+          {localizedPromoLabel?.trim() ? (
+            <p className="font-label text-[11px] font-medium uppercase tracking-[0.16em] text-amber-700">
+              {localizedPromoLabel.trim()}
+            </p>
+          ) : null}
+
           {/* Price */}
           <div className="space-y-2">
             <div className="flex flex-wrap items-baseline gap-3">
@@ -196,7 +221,7 @@ export function PdpBuyBox({
               <p className={`font-headline text-[1.8rem] font-semibold leading-none md:text-[2rem] ${displayOriginalPriceEgp ? 'text-red-600' : 'text-obsidian'}`}>
                 {formatEgp(displayPriceEgp)}
               </p>
-              {promoCountdown && !promoCountdown.expired ? (
+              {promoShowCountdown && promoCountdown && !promoCountdown.expired ? (
                 <span className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 ring-1 ring-red-200">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-red-500" aria-hidden>
                     <circle cx="12" cy="12" r="10" />
@@ -210,6 +235,18 @@ export function PdpBuyBox({
                 </span>
               ) : null}
             </div>
+            {savingsEgp > 0 ? (
+              <p className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-deep-teal">
+                {isArabic
+                  ? `وفرت ${formatEgp(savingsEgp)}${savingsPct ? ` (${savingsPct}%)` : ''}`
+                  : `You saved ${formatEgp(savingsEgp)}${savingsPct ? ` (${savingsPct}%)` : ''}`}
+              </p>
+            ) : null}
+            {promoStockUrgency ? (
+              <p className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+                {promoStockUrgency}
+              </p>
+            ) : null}
             {priceSizeLabel ? (
               <p className="font-label text-[11px] font-medium uppercase tracking-[0.18em] text-label">
                 {priceSizeLabel}
