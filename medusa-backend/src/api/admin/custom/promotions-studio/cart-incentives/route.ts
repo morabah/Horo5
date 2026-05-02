@@ -69,7 +69,8 @@ async function updateStoreMetadata(req: MedusaRequest, patch: Record<string, unk
   }
   await updateStoresWorkflow(req.scope).run({
     input: {
-      stores: [{ id: store.id, metadata }],
+      selector: { id: store.id },
+      update: { metadata },
     },
   })
 }
@@ -221,7 +222,8 @@ async function updateGiftWrap(req: MedusaRequest, body: Record<string, unknown>)
   else delete metadata.priceEgp
   await updateProductsWorkflow(req.scope).run({
     input: {
-      products: [{ id: product.id, metadata }],
+      selector: { id: product.id },
+      update: { metadata },
     },
   })
 }
