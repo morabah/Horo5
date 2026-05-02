@@ -31,11 +31,7 @@ export type StorefrontIncentivesClient = {
   giftWrapLabel: StorefrontLocalizedTextClient | null;
 };
 
-const baseUrl =
-  typeof window !== "undefined" &&
-  (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "").includes("railway.app")
-    ? ""
-    : (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "");
+const baseUrl = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000").replace(/\/+$/, "");
 
 const publishableApiKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "";
 
@@ -49,25 +45,13 @@ async function requestIncentives(): Promise<StorefrontIncentivesClient | null> {
   try {
     const headers = new Headers();
     headers.set("x-publishable-api-key", publishableApiKey);
-    // Cache-buster to ensure we never get a stale HTTP-cached response while debugging.
-    const url = `${baseUrl}/storefront/incentives?_t=${Date.now()}`;
-    const response = await fetch(url, {
+    const response = await fetch(`${baseUrl}/storefront/incentives`, {
       credentials: "include",
       headers,
-      cache: "no-store",
     });
-    if (!response.ok) {
-      // eslint-disable-next-line no-console
-      console.warn("[incentives] HTTP error", response.status, url);
-      return null;
-    }
-    const data = (await response.json()) as StorefrontIncentivesClient;
-    // eslint-disable-next-line no-console
-    console.info("[incentives] received", data);
-    return data;
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error("[incentives] fetch failed", err);
+    if (!response.ok) return null;
+    return (await response.json()) as StorefrontIncentivesClient;
+  } catch {
     return null;
   }
 }
