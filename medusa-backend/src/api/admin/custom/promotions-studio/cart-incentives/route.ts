@@ -131,16 +131,16 @@ async function upsertBundlePromotion(req: MedusaRequest, body: Record<string, un
   const applicationValue = positiveInteger(body.applicationValue) ?? (applicationKind === "fixed" ? 100 : 100)
   const code = `${BUNDLE_CODE_PREFIX}_${requireQuantity}_${applyToQuantity}_${applicationKind.toUpperCase()}_${applicationValue}`
   const applicationMethod = {
-    type: applicationKind,
-    target_type: "items",
-    allocation: "each",
+    type: applicationKind as "fixed" | "percentage",
+    target_type: "items" as const,
+    allocation: "each" as const,
     value: applicationValue,
     currency_code: "egp",
     buy_rules_min_quantity: requireQuantity,
     apply_to_quantity: applyToQuantity,
-    buy_rules: [],
-    target_rules: [],
-  } as const
+    buy_rules: [] as any[],
+    target_rules: [] as any[],
+  }
 
   // Check if an exact match already exists and is active — skip recreation
   const exactMatch = existing.find((promotion) => promotion.code === code && promotion.status === "active")
