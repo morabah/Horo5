@@ -9,6 +9,30 @@ import multer from "multer"
 const dropsUpload = multer({ storage: multer.memoryStorage() })
 
 /**
+ * Medusa's built-in CORS covers /store/* but not custom /storefront/* routes.
+ * Apply store CORS origins to /storefront/* so browser fetch() from the storefront works.
+ */
+function storefrontCors(req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) {
+  const origin = req.headers.origin || ""
+  const storeCors = String(process.env.STORE_CORS || "").split(",").map((s) => s.trim()).filter(Boolean)
+  const allowed = storeCors.length > 0 ? storeCors : ["*"]
+  const isAllowed = allowed.includes(origin) || allowed.includes("*")
+
+  if (isAllowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*")
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-publishable-api-key, Authorization")
+  res.setHeader("Access-Control-Allow-Credentials", "true")
+
+  if (req.method === "OPTIONS") {
+    res.status(204).end()
+    return
+  }
+  next()
+}
+
+/**
  * Logs request duration to help trace slow Railway responses.
  *
  * - Default: log only when duration ≥ HORO_LOG_SLOW_MS (default 500).
@@ -82,7 +106,11 @@ function httpRequestTiming(req: MedusaRequest, res: MedusaResponse, next: Medusa
 export default defineMiddlewares({
   routes: [
     {
-      matcher: /^\/(store|admin|storefront|store-media|integrations)(\/|$)/,
+      matcher: /^\/storefront(\/|$)/,
+      middlewares: [storefrontCors, httpRequestTiming],
+    },
+    {
+      matcher: /^\/(store|admin|store-media|integrations)(\/|$)/,
       middlewares: [httpRequestTiming],
     },
     {
