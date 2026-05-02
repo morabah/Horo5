@@ -138,6 +138,8 @@ async function upsertBundlePromotion(req: MedusaRequest, body: Record<string, un
     currency_code: "egp",
     buy_rules_min_quantity: requireQuantity,
     apply_to_quantity: applyToQuantity,
+    buy_rules: [],
+    target_rules: [],
   } as const
 
   // Check if an exact match already exists and is active — skip recreation
