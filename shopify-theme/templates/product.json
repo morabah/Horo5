@@ -134,6 +134,37 @@
         "padding_bottom": 36
       }
     },
+    "product_delivery_payment": {
+      "type": "product-delivery-payment",
+      "settings": {
+        "heading": "Delivery & payment",
+        "heading_size": "h1",
+        "columns_desktop": 3,
+        "color_scheme": "scheme-1",
+        "show_card_1": true,
+        "card_1_icon": "cash",
+        "card_1_title": "Cash on Delivery",
+        "card_1_body": "Available at checkout",
+        "show_card_2": true,
+        "card_2_icon": "bank",
+        "card_2_title": "Bank Transfer / Instapay",
+        "card_2_body": "Manual confirmation may be required",
+        "show_card_3": true,
+        "card_3_icon": "exchange",
+        "card_3_title": "14-Day Exchange",
+        "card_3_body": "See policy for details",
+        "show_card_4": true,
+        "card_4_icon": "delivery",
+        "card_4_title": "Delivery",
+        "card_4_body": "Delivery window depends on your area",
+        "show_card_5": false,
+        "card_5_icon": "support",
+        "card_5_title": "WhatsApp Support",
+        "card_5_body": "Contact us for questions",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
     "image-with-text": {
       "type": "image-with-text",
       "blocks": {
@@ -233,6 +264,7 @@
     "main",
     "product_story",
     "product_artist_card",
+    "product_delivery_payment",
     "image-with-text",
     "multicolumn",
     "related-products"

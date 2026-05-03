@@ -1,0 +1,86 @@
+/* ===== HORO: Product Delivery & Payment ===== */
+
+.delivery-payment {
+  text-align: start;
+}
+
+.delivery-payment__heading {
+  text-align: center;
+  margin: 0 0 2.4rem;
+}
+
+.delivery-payment__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--delivery-payment-columns, 3), 1fr);
+  gap: 1.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.delivery-payment__card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  padding: 1.6rem;
+  border: 1px solid rgba(var(--color-foreground), 0.1);
+  border-radius: var(--border-radius);
+  background: rgb(var(--color-background));
+}
+
+.delivery-payment__icon {
+  flex-shrink: 0;
+  inline-size: 2.4rem;
+  block-size: 2.4rem;
+  color: rgb(var(--color-foreground));
+  opacity: 0.65;
+  margin-block-start: 0.2rem;
+}
+
+.delivery-payment__icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.delivery-payment__content {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.delivery-payment__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.delivery-payment__body {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  opacity: 0.75;
+}
+
+/* Placeholder (editor only) */
+.delivery-payment__placeholder {
+  text-align: center;
+  padding-block: 3rem;
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+/* Mobile: stacked */
+@media screen and (max-width: 749px) {
+  .delivery-payment__grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+
+  .delivery-payment__heading {
+    margin-block-end: 1.6rem;
+  }
+
+  .delivery-payment__card {
+    padding: 1.2rem;
+  }
+}
