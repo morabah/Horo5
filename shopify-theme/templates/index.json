@@ -8,7 +8,7 @@
         "heading_size": "h0",
         "subheading": "Original digital artwork, turned into identity-led t-shirts",
         "button_label": "Shop by Feeling",
-        "button_link": "",
+        "button_link": "/pages/feelings",
         "button_style_secondary": false,
         "desktop_content_position": "center-center",
         "mobile_content_alignment": "center",
@@ -34,7 +34,7 @@
           "settings": {
             "label": "Shop by Feeling",
             "short_text": "Find the mood you wear",
-            "link": ""
+            "link": "/pages/feelings"
           }
         },
         "route_2": {
@@ -42,7 +42,7 @@
           "settings": {
             "label": "Shop by Occasion",
             "short_text": "Dress for the moment",
-            "link": ""
+            "link": "/pages/occasions"
           }
         },
         "route_3": {
@@ -50,7 +50,7 @@
           "settings": {
             "label": "Gift by Meaning",
             "short_text": "Say it without saying it",
-            "link": ""
+            "link": "/pages/gifts"
           }
         }
       },
