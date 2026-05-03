@@ -49,7 +49,10 @@
           {%- endif -%}
 
           {%- if story_description != blank and story_description != empty -%}
-            <details class="product-story__details{% if section.settings.story_description_open %} product-story__details--open{% endif %}">
+            <details
+              class="product-story__details{% if section.settings.story_description_open %} product-story__details--open{% endif %}"
+              {% if section.settings.story_description_open %}open{% endif %}
+            >
               <summary class="product-story__summary">
                 <span class="product-story__summary-label">
                   {%- if section.settings.description_label != blank -%}
