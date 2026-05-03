@@ -1,0 +1,70 @@
+/* ===== HORO: Product Trust Strip ===== */
+
+.trust-strip {
+  text-align: start;
+}
+
+.trust-strip__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.8rem 1.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.trust-strip__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+}
+
+.trust-strip__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.8rem;
+  block-size: 1.8rem;
+  color: rgb(var(--color-foreground));
+  opacity: 0.6;
+}
+
+.trust-strip__icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.trust-strip__label {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  color: rgb(var(--color-foreground));
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+/* Placeholder (editor only) */
+.trust-strip__placeholder {
+  text-align: center;
+  padding-block: 2rem;
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+/* Mobile: more compact */
+@media screen and (max-width: 749px) {
+  .trust-strip__list {
+    gap: 0.4rem 1.2rem;
+  }
+
+  .trust-strip__item {
+    padding: 0.2rem 0;
+  }
+
+  .trust-strip__label {
+    font-size: 1.1rem;
+  }
+}

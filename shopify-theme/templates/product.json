@@ -184,6 +184,29 @@
         "padding_bottom": 36
       }
     },
+    "product_trust_strip": {
+      "type": "product-trust-strip",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "show_badge_1": true,
+        "badge_1_icon": "cotton",
+        "badge_1_label": "Premium cotton",
+        "show_badge_2": true,
+        "badge_2_icon": "print",
+        "badge_2_label": "Printed in Egypt",
+        "show_badge_3": true,
+        "badge_3_icon": "cash",
+        "badge_3_label": "Cash on Delivery available at checkout",
+        "show_badge_4": true,
+        "badge_4_icon": "exchange",
+        "badge_4_label": "14-day exchange — see policy",
+        "show_badge_5": true,
+        "badge_5_icon": "chat",
+        "badge_5_label": "WhatsApp support",
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
+    },
     "image-with-text": {
       "type": "image-with-text",
       "blocks": {
@@ -286,6 +309,7 @@
     "product_delivery_payment",
     "product_size_guide",
     "product_gift_wrap_upsell",
+    "product_trust_strip",
     "image-with-text",
     "multicolumn",
     "related-products"
