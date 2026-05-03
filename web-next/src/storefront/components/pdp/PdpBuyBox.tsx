@@ -10,7 +10,6 @@ import { formatEgp } from '../../utils/formatPrice';
 import { pickLocalizedText } from '../../lib/storefront/incentives-client';
 import { PdpSizeSelector } from './PdpSizeSelector';
 
-const { pdp: copy } = useDictionary();
 
 function IconCart() {
   return (
@@ -135,6 +134,7 @@ export function PdpBuyBox({
   wishlisted,
   onWishlistToggle,
 }: PdpBuyBoxProps) {
+  const { pdp: copy } = useDictionary();
   function primaryCtaLabel() {
     if (oosSelected) return copy.notifyMeCTA;
     if (sizeReady && product) return `${copy.addBtnCTA} — ${formatEgp(displayPriceEgp)}`;

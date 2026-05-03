@@ -6,7 +6,6 @@ import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import {  useUiLocale, useDictionary  } from '../../i18n/ui-locale';
 import { PdpSizeFlatDiagram } from '../PdpSizeFlatDiagram';
 
-const { pdp: copy } = useDictionary();
 
 function localizedSizeTableLabel(config: PdpSizeTableConfig, locale: 'en' | 'ar') {
   const label = config.displayLabel;
@@ -46,6 +45,7 @@ export function PdpSizeSelector({
   onSizeSelect,
   onOpenSizeGuide,
 }: PdpSizeSelectorProps) {
+  const { pdp: copy } = useDictionary();
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const [diagramOpen, setDiagramOpen] = React.useState(false);

@@ -15,6 +15,7 @@ type PdpQualityProofCardProps = {
 };
 
 export function PdpQualityProofCard({ physicalLines }: PdpQualityProofCardProps) {
+  const { pdp: copy } = useDictionary();
   return (
     <div className="rounded-2xl border border-stone/30 bg-white/60 p-6 md:p-8">
       <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
@@ -50,7 +51,7 @@ export function PdpQualityProofCard({ physicalLines }: PdpQualityProofCardProps)
       ) : null}
 
       <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal/80">
-        {(useDictionary().pdp).designStoryAccordionBody}
+        {copy.designStoryAccordionBody}
       </p>
     </div>
   );

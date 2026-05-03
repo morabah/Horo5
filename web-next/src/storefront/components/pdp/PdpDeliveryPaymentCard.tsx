@@ -8,7 +8,6 @@ import {
 } from '../../utils/deliveryEstimate';
 import { PDP_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../../data/domain-config';
 
-const { pdp: copy } = useDictionary();
 
 type PdpDeliveryPaymentCardProps = {
   deliveryRules: PdpDeliveryRules;
@@ -26,6 +25,7 @@ export function PdpDeliveryPaymentCard({
   expressDeliveryWindow,
   trustItems,
 }: PdpDeliveryPaymentCardProps) {
+  const { pdp: copy } = useDictionary();
   const deliveryStandardBadgeLabel = formatPdpStandardBadgeLabel(deliveryRules);
   const deliveryExpressBadgeLabel = formatPdpExpressBadgeLabel(deliveryRules);
   const hasWhatsapp = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl);

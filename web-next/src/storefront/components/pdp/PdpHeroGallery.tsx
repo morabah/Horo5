@@ -5,7 +5,6 @@ import { TeeImage } from '../TeeImage';
 import type { Product } from '../../data/catalog-types';
 import { fillPdpCopyTemplate, PDP_SCHEMA } from '../../data/domain-config';
 
-const { pdp: copy } = useDictionary();
 
 type GalleryItem = {
   key: string;
@@ -55,6 +54,7 @@ export function PdpHeroGallery({
   onOpenLightbox,
   onBlurForMain,
 }: PdpHeroGalleryProps) {
+  const { pdp: copy } = useDictionary();
   function handleGalleryKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (gallery.length < 2) return;
     if (event.key === 'ArrowLeft') {

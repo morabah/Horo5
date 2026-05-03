@@ -35,6 +35,7 @@ type ShopByOccasionProps = {
 };
 
 function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }: Occasion) {
+  const copy = useDictionary();
   return (
     <Link
       href={`/occasions/${slug}`}
@@ -49,7 +50,7 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
         <h2 className="font-headline text-[1.18rem] font-semibold leading-snug text-obsidian">{name}</h2>
         <p className="font-body text-[0.96rem] leading-relaxed text-warm-charcoal">{blurb}</p>
         <span className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors group-hover:text-deep-teal">
-          {(useDictionary().occasion).secondaryCta}
+          {copy.occasion.secondaryCta}
         </span>
       </div>
     </Link>
@@ -64,16 +65,16 @@ export function ShopByOccasion({ initialOccasions, mode = 'occasions' }: ShopByO
   const hubLabel = isGiftsHub ? (isArabic ? 'هدايا' : 'Gifts') : copy.shell.shopByMoment;
   const hubTitle = isGiftsHub
     ? (isArabic ? 'هدية بتقول حاجة حقيقية' : 'Gift something real')
-    : (PAGE_HEROES.occasions.title[locale as 'en' | 'ar'] ?? (useDictionary().occasion).hubTitle);
+    : (PAGE_HEROES.occasions.title[locale as 'en' | 'ar'] ?? copy.occasion.hubTitle);
   const hubEyebrow = isGiftsHub
     ? (isArabic ? 'اختيارات جاهزة للهدايا' : 'Gift-ready routes')
-    : (PAGE_HEROES.occasions.eyebrow?.[locale as 'en' | 'ar'] ?? (useDictionary().occasion).hubEyebrow);
+    : (PAGE_HEROES.occasions.eyebrow?.[locale as 'en' | 'ar'] ?? copy.occasion.hubEyebrow);
   const gridEyebrow = isGiftsHub
     ? (isArabic ? 'اختر حسب الشخص' : 'Choose by person')
-    : (isArabic ? (useDictionary().occasion).hubGridEyebrow : (useDictionary().occasion).hubGridEyebrow);
+    : copy.occasion.hubGridEyebrow;
   const gridTitle = isGiftsHub
     ? (isArabic ? 'أربع طرق للهدايا' : 'Four gift archetypes')
-    : (isArabic ? (useDictionary().occasion).hubGridTitle : (useDictionary().occasion).hubGridTitle);
+    : copy.occasion.hubGridTitle;
   const occasions = initialOccasions !== undefined ? initialOccasions : getOccasions();
 
   useEffect(() => {

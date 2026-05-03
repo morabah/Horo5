@@ -10,7 +10,6 @@ import { TeeImageFrame } from '../TeeImage';
 import { getProductMedia } from '../../data/images';
 import { QuickViewTrigger } from '../QuickViewTrigger';
 
-const { pdp: copy } = useDictionary();
 
 type PdpRelatedProductsProps = {
   products: Product[];
@@ -25,6 +24,7 @@ export function PdpRelatedProducts({
   shopByFeelingLabel,
   onQuickView,
 }: PdpRelatedProductsProps) {
+  const { pdp: copy } = useDictionary();
   if (products.length < 3) return null;
 
   return (

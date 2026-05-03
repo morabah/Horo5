@@ -104,7 +104,6 @@ import {
   PdpRelatedProducts,
 } from '../components/pdp';
 
-const { pdp: copy } = useDictionary();
 
 const EMPTY_PRODUCT_LIST: Product[] = [];
 const EMPTY_FEELING_LIST: Feeling[] = [];
@@ -191,6 +190,7 @@ export function ProductDetail({
   const slug = initialSlug ?? routeSlug;
   const { locale } = useUiLocale();
   const shellCopy = useDictionary();
+  const { pdp: copy } = shellCopy;
   const isArabic = locale === 'ar';
   const now = useStableNow();
   const [searchParams] = useAppSearchParams();

@@ -5,7 +5,6 @@ import { TeeImage } from '../TeeImage';
 import type { Artist } from '../../data/catalog-types';
 import { PDP_SCHEMA } from '../../data/domain-config';
 
-const { pdp: copy } = useDictionary();
 
 type PdpArtistCardProps = {
   /** Resolved artist display info (from product.artistDisplay or catalog). */
@@ -16,6 +15,7 @@ type PdpArtistCardProps = {
 };
 
 export function PdpArtistCard({ artistDisplay, catalogArtist, isArabic = false }: PdpArtistCardProps) {
+  const { pdp: copy } = useDictionary();
   if (!artistDisplay) return null;
 
   const style = catalogArtist?.style;

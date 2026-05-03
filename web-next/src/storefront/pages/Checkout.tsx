@@ -1713,7 +1713,7 @@ export function Checkout({
   const checkoutBreadcrumbItems = useMemo(
     () => [
       { label: copy.shell.home, to: '/' as const },
-      { label: (useDictionary().cart).heading, to: '/cart' as const },
+      { label: copy.cart.heading, to: "/cart" as const },
       { label: copy.checkout.breadcrumbTitle },
     ],
     [copy.checkout.breadcrumbTitle, copy.shell.home],
@@ -2558,9 +2558,9 @@ function OrderSummary({
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="font-label text-[10px] font-medium uppercase tracking-[0.14em] text-clay">
-                    {(useDictionary().cart).quantityLabel}
+                    {copy.cart.quantityLabel}
                   </span>
-                  <div className="cart-stepper" role="group" aria-label={`${(useDictionary().cart).quantityLabel} · ${line.productName}`}>
+                  <div className="cart-stepper" role="group" aria-label={`${copy.cart.quantityLabel} · ${line.productName}`}>
                     <button
                       type="button"
                       className="cart-stepper-button"
@@ -2603,7 +2603,7 @@ function OrderSummary({
                     className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.16em] text-ember hover:underline disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     onClick={() => handleRemove(line)}
                   >
-                    {(useDictionary().cart).removeLabel}
+                    {copy.cart.removeLabel}
                   </button>
                 </div>
               </div>
@@ -2643,7 +2643,7 @@ function OrderSummary({
       </p>
       {giftWrapLineEgp > 0 ? (
         <p className="mt-2 flex justify-between text-sm text-clay">
-          <span>{(useDictionary().cart).giftWrapLabel}</span>
+          <span>{copy.cart.giftWrapLabel}</span>
           <span>{formatEgp(giftWrapLineEgp)}</span>
         </p>
       ) : null}
