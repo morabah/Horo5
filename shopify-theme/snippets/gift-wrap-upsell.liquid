@@ -1,0 +1,52 @@
+{%- liquid
+  assign _product = gift_wrap_product
+  assign _variant = gift_wrap_variant
+  assign _in_cart = in_cart | default: false
+  assign _label = label | default: 'Add gift wrap'
+  assign _price_hint = price_hint | default: ''
+  assign _section_id = section_id
+  assign _context = context | default: 'product'
+-%}
+
+{%- if _product != blank and _variant != blank -%}
+  <div class="gift-wrap__card">
+    <div class="gift-wrap__icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+    </div>
+    <div class="gift-wrap__content">
+      <p class="gift-wrap__title">{{ _label | escape }}</p>
+      {%- if _price_hint != blank -%}
+        <p class="gift-wrap__hint">{{ _price_hint | escape }}</p>
+      {%- endif -%}
+    </div>
+    <div class="gift-wrap__actions">
+      {%- if _in_cart -%}
+        <div class="gift-wrap__done">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          Gift wrap is already added
+        </div>
+      {%- else -%}
+        <button
+          type="button"
+          class="gift-wrap__btn"
+          data-gift-wrap-add
+          data-variant-id="{{ _variant.id }}"
+          data-section-id="{{ _section_id }}"
+          aria-label="{{ _label | escape }}"
+        >
+          {{ _label | escape }}
+        </button>
+        <p
+          class="gift-wrap__status"
+          data-gift-wrap-status="{{ _section_id }}"
+          aria-live="polite"
+          aria-atomic="true"
+        ></p>
+      {%- endif -%}
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="gift-wrap__placeholder">
+    <p>Select a gift wrap product in theme settings to enable this upsell.</p>
+  </div>
+{%- endif -%}

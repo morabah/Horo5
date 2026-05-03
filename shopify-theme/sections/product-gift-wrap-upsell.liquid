@@ -1,0 +1,118 @@
+{{ 'component-gift-wrap.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'gift-wrap.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign gift_wrap_product = settings.horo_gift_wrap_product
+  if gift_wrap_product == blank
+    assign gift_wrap_product = nil
+  endif
+
+  assign gift_wrap_variant = nil
+  if gift_wrap_product != blank and gift_wrap_product.variants.size > 0
+    assign gift_wrap_variant = gift_wrap_product.variants | where: 'available', true | first
+  endif
+
+  assign gift_wrap_in_cart = false
+  if gift_wrap_product != blank
+    for item in cart.items
+      if item.product.handle == gift_wrap_product.handle
+        assign gift_wrap_in_cart = true
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- if gift_wrap_product != blank and gift_wrap_variant != blank or request.design_mode -%}
+  {%- style -%}
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    id="GiftWrapUpsell-{{ section.id }}"
+    class="horo-section gift-wrap color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    <div class="page-width">
+      <div class="gift-wrap__wrapper">
+        {%- if gift_wrap_product != blank and gift_wrap_variant != blank -%}
+          {%- liquid
+            assign _label = settings.horo_gift_wrap_label | default: 'Add gift wrap'
+            assign _price = settings.horo_gift_wrap_price_hint | default: ''
+          -%}
+          {%- render 'gift-wrap-upsell',
+            gift_wrap_product: gift_wrap_product,
+            gift_wrap_variant: gift_wrap_variant,
+            in_cart: gift_wrap_in_cart,
+            label: _label,
+            price_hint: _price,
+            section_id: section.id,
+            context: 'product'
+          -%}
+        {%- elsif request.design_mode -%}
+          <div class="gift-wrap__placeholder">
+            <p>Select a gift wrap product in theme settings to enable this upsell.</p>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Gift Wrap Upsell",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "This section adds a gift-wrap upsell below the product form. The gift wrap product is selected in Theme Settings > HORO. Duplicate prevention is automatic."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Gift Wrap Upsell"
+    }
+  ]
+}
+{% endschema %}
