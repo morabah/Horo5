@@ -1,0 +1,110 @@
+{{ 'component-collection-hero.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign feeling = collection.metafields.custom.feeling.value
+  if feeling == blank
+    assign feeling = nil
+  endif
+-%}
+
+{%- if feeling != blank -%}
+  {%- liquid
+    if feeling.hero_image != blank
+      assign hero_image = feeling.hero_image
+    elsif feeling.card_image != blank
+      assign hero_image = feeling.card_image
+    else
+      assign hero_image = nil
+    endif
+    assign accent_color = feeling.accent_color | default: false
+  -%}
+
+  {%- style -%}
+    {%- if accent_color -%}
+      .CollectionHero-{{ section.id }} {
+        --collection-hero-accent: {{ accent_color }};
+      }
+    {%- endif -%}
+  {%- endstyle -%}
+
+  <div
+    id="CollectionHero-{{ section.id }}"
+    class="horo-section collection-hero CollectionHero-{{ section.id }}{% if hero_image != blank %} collection-hero--has-image{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+  >
+    {%- if hero_image != blank -%}
+      <div class="collection-hero__media">
+        {{
+          hero_image
+          | image_url: width: 3840
+          | image_tag:
+            loading: 'eager',
+            fetchpriority: 'high',
+            widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840',
+            sizes: '100vw',
+            class: 'collection-hero__image'
+        }}
+      </div>
+      <div class="collection-hero__overlay"></div>
+    {%- endif -%}
+
+    <div class="page-width collection-hero__content">
+      <div class="collection-hero__text">
+        <h1 class="collection-hero__title h0">
+          {{ feeling.name | escape }}
+        </h1>
+        {%- if feeling.blurb != blank -%}
+          <p class="collection-hero__blurb">
+            {{ feeling.blurb | escape }}
+          </p>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- if accent_color -%}
+      <div class="collection-hero__accent-bar" aria-hidden="true"></div>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Feeling Hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "This section reads the collection's custom.feeling metaobject reference and renders a hero. If the collection has no feeling reference, this section is hidden."
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Collection Feeling Hero"
+    }
+  ]
+}
+{% endschema %}

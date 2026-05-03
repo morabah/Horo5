@@ -8,6 +8,13 @@
         "color_scheme": "scheme-1"
       }
     },
+    "feeling_hero": {
+      "type": "collection-feeling-hero",
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
     "product-grid": {
       "type": "main-collection-product-grid",
       "settings": {
@@ -27,6 +34,7 @@
   },
   "order": [
     "banner",
+    "feeling_hero",
     "product-grid"
   ]
 }
