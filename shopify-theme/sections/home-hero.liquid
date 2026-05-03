@@ -1,0 +1,194 @@
+{{ 'component-home-hero.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign fetch_priority = 'auto'
+  if section.index == 0
+    assign fetch_priority = 'high'
+  endif
+  assign full_width = '100vw'
+  assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+-%}
+
+{%- style -%}
+  #HomeHero-{{ section.id }}::after {
+    opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+  }
+{%- endstyle -%}
+
+<div
+  id="HomeHero-{{ section.id }}"
+  class="horo-section home-hero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+  data-position="{{ section.settings.desktop_content_position }}"
+>
+  {%- if section.settings.image != blank -%}
+    <div class="home-hero__media">
+      {%- liquid
+        assign image_height = section.settings.image.width | divided_by: section.settings.image.aspect_ratio
+      -%}
+      {{
+        section.settings.image
+        | image_url: width: 3840
+        | image_tag:
+          width: section.settings.image.width,
+          height: image_height,
+          sizes: full_width,
+          widths: widths,
+          fetchpriority: fetch_priority,
+          class: 'home-hero__image',
+          loading: 'eager'
+      }}
+    </div>
+  {%- else -%}
+    <div class="home-hero__media home-hero__media--placeholder">
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    </div>
+  {%- endif -%}
+
+  <div class="home-hero__content page-width">
+    <div class="home-hero__text-wrapper">
+      {%- if section.settings.heading != blank -%}
+        <h1 class="home-hero__heading {{ section.settings.heading_size }}">
+          {{ section.settings.heading }}
+        </h1>
+      {%- endif -%}
+
+      {%- if section.settings.subheading != blank -%}
+        <p class="home-hero__subheading">
+          {{ section.settings.subheading }}
+        </p>
+      {%- endif -%}
+
+      {%- if section.settings.button_label != blank -%}
+        <a
+          {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
+          class="home-hero__cta button{% if section.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+          {% if section.settings.button_link == blank %}aria-disabled="true"{% endif %}
+        >
+          {{ section.settings.button_label | escape }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HORO Home Hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Hero image"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 30
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Wear What You Mean"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h1", "label": "Small" },
+        { "value": "h0", "label": "Medium" },
+        { "value": "h-xl", "label": "Large" }
+      ],
+      "default": "h0",
+      "label": "Heading size"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Original digital artwork, turned into identity-led t-shirts"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Shop by Feeling"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_style_secondary",
+      "label": "Use secondary button style",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "desktop_content_position",
+      "options": [
+        { "value": "center-center", "label": "Center" },
+        { "value": "bottom-center", "label": "Bottom center" },
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-right", "label": "Bottom right" }
+      ],
+      "default": "center-center",
+      "label": "Desktop content position"
+    },
+    {
+      "type": "select",
+      "id": "mobile_content_alignment",
+      "options": [
+        { "value": "center", "label": "Center" },
+        { "value": "start", "label": "Left" }
+      ],
+      "default": "center",
+      "label": "Mobile content alignment"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Home Hero"
+    }
+  ]
+}
+{% endschema %}
