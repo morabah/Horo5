@@ -1451,5 +1451,183 @@
         "default": "scheme-1"
       }
     ]
+  },
+  {
+    "name": "HORO Brand",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "HORO brand colors and typography. These settings are used by custom HORO sections."
+      },
+      {
+        "type": "color",
+        "id": "horo_color_papyrus",
+        "label": "Background (Papyrus)",
+        "default": "#F5F0E8"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_obsidian",
+        "label": "Headlines / Dark (Obsidian)",
+        "default": "#1A1A1A"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_warm_charcoal",
+        "label": "Body text (Warm Charcoal)",
+        "default": "#2C2A26"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_ember",
+        "label": "CTA / Accent (Ember)",
+        "default": "#E8593C"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_desert_sand",
+        "label": "Borders / Hover (Desert Sand)",
+        "default": "#C4956A"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_kohl_gold",
+        "label": "Badges / Quality (Kohl Gold)",
+        "default": "#D4A24E"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_stone",
+        "label": "Dividers / Disabled (Stone)",
+        "default": "#D4CFC5"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_clay_earth",
+        "label": "Caption text (Clay Earth)",
+        "default": "#6B5E4F"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_dusk_violet",
+        "label": "Feeling accent: Emotions (Dusk Violet)",
+        "default": "#6B4C8A"
+      },
+      {
+        "type": "color",
+        "id": "horo_color_kohl_gold_bright",
+        "label": "Feeling accent: Zodiac (Kohl Gold Bright)",
+        "default": "#D4A24E"
+      },
+      {
+        "type": "select",
+        "id": "horo_heading_font",
+        "label": "Heading font stack",
+        "options": [
+          { "value": "Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif", "label": "Avenir Next (brand spec)" },
+          { "value": "Segoe UI, Helvetica Neue, Arial, sans-serif", "label": "Segoe UI (system fallback)" }
+        ],
+        "default": "Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif"
+      },
+      {
+        "type": "select",
+        "id": "horo_body_font",
+        "label": "Body font stack",
+        "options": [
+          { "value": "Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif", "label": "Avenir Next (brand spec)" },
+          { "value": "Segoe UI, Helvetica Neue, Arial, sans-serif", "label": "Segoe UI (system fallback)" }
+        ],
+        "default": "Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif"
+      }
+    ]
+  },
+  {
+    "name": "HORO Trust & Delivery",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Trust badge labels and delivery rules shown on PDP and homepage."
+      },
+      {
+        "type": "text",
+        "id": "horo_trust_badge_1",
+        "label": "Trust badge 1",
+        "default": "Artist-made design"
+      },
+      {
+        "type": "text",
+        "id": "horo_trust_badge_2",
+        "label": "Trust badge 2",
+        "default": "Printed in Egypt"
+      },
+      {
+        "type": "text",
+        "id": "horo_trust_badge_3",
+        "label": "Trust badge 3",
+        "default": "COD available"
+      },
+      {
+        "type": "text",
+        "id": "horo_trust_badge_4",
+        "label": "Trust badge 4",
+        "default": "14-day exchange"
+      },
+      {
+        "type": "text",
+        "id": "horo_trust_badge_5",
+        "label": "Trust badge 5",
+        "default": "WhatsApp support"
+      },
+      {
+        "type": "textarea",
+        "id": "horo_delivery_cairo",
+        "label": "Delivery: Cairo",
+        "default": "1–2 business days"
+      },
+      {
+        "type": "textarea",
+        "id": "horo_delivery_alex",
+        "label": "Delivery: Alexandria",
+        "default": "2–3 business days"
+      },
+      {
+        "type": "textarea",
+        "id": "horo_delivery_other",
+        "label": "Delivery: Other cities",
+        "default": "3–5 business days"
+      },
+      {
+        "type": "textarea",
+        "id": "horo_instapay_instructions",
+        "label": "Instapay transfer instructions",
+        "default": "Transfer the order total via Instapay to 01XXXXXXXX. Use your order number as the reference."
+      }
+    ]
+  },
+  {
+    "name": "HORO Gift Wrap",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Gift wrap product reference. Create a 'Gift Wrap' product in Admin, then select it here."
+      },
+      {
+        "type": "product",
+        "id": "horo_gift_wrap_product",
+        "label": "Gift wrap product"
+      },
+      {
+        "type": "text",
+        "id": "horo_gift_wrap_label",
+        "label": "Upsell label",
+        "default": "Add gift wrap"
+      },
+      {
+        "type": "text",
+        "id": "horo_gift_wrap_price_hint",
+        "label": "Price hint text",
+        "default": "+ EGP 50"
+      }
+    ]
   }
 ]
