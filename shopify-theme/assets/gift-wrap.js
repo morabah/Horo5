@@ -10,7 +10,12 @@
     var buttons = document.querySelectorAll('[data-gift-wrap-add]');
     if (!buttons.length) return;
 
+    var cartAddUrl = window.routes && window.routes.cart_add_url ? window.routes.cart_add_url : '/cart/add.js';
+
     buttons.forEach(function (btn) {
+      if (btn.dataset.giftWrapBound === 'true') return;
+      btn.dataset.giftWrapBound = 'true';
+
       btn.addEventListener('click', function (e) {
         e.preventDefault();
         var variantId = btn.getAttribute('data-variant-id');
@@ -19,7 +24,7 @@
 
         btn.disabled = true;
 
-        fetch('/cart/add.js', {
+        fetch(cartAddUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
