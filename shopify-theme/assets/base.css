@@ -3595,3 +3595,33 @@ details-disclosure > details {
     transform: translateX(100%) scaleX(0);
   }
 }
+
+/* ===== HORO: Arabic font + RTL adjustments ===== */
+/* Only appended — no Dawn rules modified above this line */
+
+:lang(ar) {
+  --font-body-family: 'Cairo', var(--font-body-family);
+  --font-heading-family: 'Cairo', var(--font-heading-family);
+}
+
+/* HORO custom sections RTL adjustments using logical properties */
+:lang(ar) .horo-section {
+  text-align: start;
+}
+
+:lang(ar) .horo-hero__content {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+}
+
+:lang(ar) .horo-card-grid {
+  direction: rtl;
+}
+
+:lang(ar) .horo-trust-ribbon {
+  direction: rtl;
+}
+
+:lang(ar) .horo-primary-routes {
+  direction: rtl;
+}
