@@ -15,6 +15,13 @@
         "padding_bottom": 0
       }
     },
+    "occasion_hero": {
+      "type": "collection-occasion-hero",
+      "settings": {
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
     "product-grid": {
       "type": "main-collection-product-grid",
       "settings": {
@@ -35,6 +42,7 @@
   "order": [
     "banner",
     "feeling_hero",
+    "occasion_hero",
     "product-grid"
   ]
 }

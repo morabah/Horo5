@@ -50,6 +50,15 @@
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.6rem;
   line-height: 1.5;
+  margin: 0 0 0.8rem;
+  text-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.2);
+}
+
+.collection-hero__price-hint {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.5;
   margin: 0;
   text-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.2);
 }
@@ -71,5 +80,9 @@
 
   .collection-hero__blurb {
     font-size: 1.4rem;
+  }
+
+  .collection-hero__price-hint {
+    font-size: 1.3rem;
   }
 }
