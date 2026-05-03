@@ -1,0 +1,138 @@
+/* ===== HORO: Product Artist Card ===== */
+
+.artist-card {
+  text-align: start;
+}
+
+.artist-card__wrapper {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+.artist-card__heading {
+  text-align: center;
+  margin: 0 0 2.4rem;
+}
+
+.artist-card__card {
+  display: flex;
+  align-items: center;
+  gap: 2.4rem;
+}
+
+/* Avatar / Media */
+.artist-card__media {
+  flex-shrink: 0;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(var(--color-foreground), 0.06);
+}
+
+.artist-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.artist-card__fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(var(--color-foreground), 0.08);
+  color: rgb(var(--color-foreground));
+  font-size: 4rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-radius: 50%;
+  text-transform: uppercase;
+}
+
+.artist-card__fallback span {
+  line-height: 1;
+}
+
+/* Content */
+.artist-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.artist-card__name {
+  margin: 0 0 0.4rem;
+}
+
+.artist-card__style {
+  margin: 0 0 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08rem;
+  opacity: 0.65;
+}
+
+.artist-card__bio {
+  margin: 0 0 1.2rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  opacity: 0.8;
+}
+
+.artist-card__link {
+  font-size: 1.4rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: rgb(var(--color-link));
+  transition: opacity 0.2s ease;
+}
+
+.artist-card__link:hover {
+  opacity: 0.7;
+}
+
+/* Placeholder (editor only) */
+.artist-card__placeholder {
+  text-align: center;
+  padding-block: 3rem;
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+.artist-card__placeholder code {
+  background: rgba(var(--color-foreground), 0.08);
+  padding-block: 0.2rem;
+  padding-inline: 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 1.2rem;
+}
+
+/* Mobile: stacked */
+@media screen and (max-width: 749px) {
+  .artist-card__card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.6rem;
+  }
+
+  .artist-card__media {
+    width: 160px;
+    height: 160px;
+  }
+
+  .artist-card__fallback {
+    font-size: 3rem;
+  }
+
+  .artist-card__heading {
+    margin-block-end: 1.6rem;
+  }
+
+  .artist-card__bio {
+    font-size: 1.4rem;
+  }
+}
