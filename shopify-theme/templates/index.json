@@ -293,10 +293,6 @@
     "featured_collection",
     "feeling_grid",
     "occasion_grid",
-    "gift_block",
-    "rich_text",
-    "collage",
-    "video",
-    "multicolumn"
+    "gift_block"
   ]
 }
