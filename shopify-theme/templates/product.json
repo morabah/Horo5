@@ -112,6 +112,18 @@
         "padding_bottom": 12
       }
     },
+    "product_story": {
+      "type": "product-story",
+      "settings": {
+        "heading": "The story behind this piece",
+        "heading_size": "h1",
+        "description_label": "Full story",
+        "story_description_open": false,
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
     "image-with-text": {
       "type": "image-with-text",
       "blocks": {
@@ -209,6 +221,7 @@
   },
   "order": [
     "main",
+    "product_story",
     "image-with-text",
     "multicolumn",
     "related-products"

@@ -1,0 +1,111 @@
+/* ===== HORO: Product Story Block ===== */
+
+.product-story {
+  text-align: start;
+}
+
+.product-story__wrapper {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+.product-story__heading {
+  text-align: center;
+  margin: 0 0 2rem;
+}
+
+.product-story__body {
+  font-size: 1.6rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.85);
+}
+
+.product-story__body p:first-child {
+  margin-block-start: 0;
+}
+
+.product-story__body p:last-child {
+  margin-block-end: 0;
+}
+
+/* Details / summary toggle for longer story */
+.product-story__details {
+  margin-block-start: 2.4rem;
+  border-block-start: 1px solid rgba(var(--color-foreground), 0.1);
+}
+
+.product-story__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding-block: 1.6rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: rgb(var(--color-foreground));
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove default disclosure triangle in WebKit */
+.product-story__summary::-webkit-details-marker {
+  display: none;
+}
+
+.product-story__summary svg {
+  inline-size: 1.2rem;
+  block-size: 1.2rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.product-story__details[open] .product-story__summary svg {
+  transform: rotate(180deg);
+}
+
+.product-story__description {
+  padding-block-end: 2rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.8);
+}
+
+.product-story__description p:first-child {
+  margin-block-start: 0;
+}
+
+.product-story__description p:last-child {
+  margin-block-end: 0;
+}
+
+/* Placeholder (editor only) */
+.product-story__placeholder {
+  text-align: center;
+  padding-block: 3rem;
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+.product-story__placeholder code {
+  background: rgba(var(--color-foreground), 0.08);
+  padding-block: 0.2rem;
+  padding-inline: 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 1.2rem;
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .product-story__body {
+    font-size: 1.5rem;
+  }
+
+  .product-story__description {
+    font-size: 1.4rem;
+  }
+
+  .product-story__heading {
+    margin-block-end: 1.6rem;
+  }
+}
