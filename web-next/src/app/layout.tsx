@@ -29,7 +29,7 @@ export default function RootLayout({
   const medusaOrigin = getMedusaPreconnectOrigin();
 
   return (
-    <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth">
+    <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {medusaOrigin ? (
           <>
@@ -38,7 +38,7 @@ export default function RootLayout({
           </>
         ) : null}
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <RootProviders>{children}</RootProviders>
       </body>
     </html>
