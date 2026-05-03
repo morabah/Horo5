@@ -1,0 +1,65 @@
+/* ===== HORO: Subfeeling Filter Nav ===== */
+
+.subfeeling-nav {
+  padding-block: 1.6rem;
+  padding-inline: var(--page-width-margin);
+}
+
+.subfeeling-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.subfeeling-nav__item {
+  margin: 0;
+}
+
+.subfeeling-nav__pill {
+  display: inline-block;
+  padding-block: 0.6rem;
+  padding-inline: 1.2rem;
+  border: 1px solid rgba(var(--color-foreground), 0.2);
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: rgb(var(--color-foreground));
+  background: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.subfeeling-nav__pill:hover {
+  background: rgba(var(--color-foreground), 0.08);
+}
+
+.subfeeling-nav__pill--inactive {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.subfeeling-nav__placeholder {
+  padding-block: 2rem;
+  padding-inline: var(--page-width-margin);
+  opacity: 0.5;
+  font-size: 1.3rem;
+}
+
+/* Mobile: horizontal scroll */
+@media screen and (max-width: 749px) {
+  .subfeeling-nav__list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-block-end: 0.4rem;
+  }
+
+  .subfeeling-nav__list::-webkit-scrollbar {
+    display: none;
+  }
+}

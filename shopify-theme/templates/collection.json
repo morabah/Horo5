@@ -22,6 +22,14 @@
         "padding_bottom": 0
       }
     },
+    "subfeeling_nav": {
+      "type": "collection-subfeeling-nav",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
     "product-grid": {
       "type": "main-collection-product-grid",
       "settings": {
@@ -43,6 +51,7 @@
     "banner",
     "feeling_hero",
     "occasion_hero",
+    "subfeeling_nav",
     "product-grid"
   ]
 }
