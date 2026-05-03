@@ -1,0 +1,20 @@
+{
+  "sections": {
+    "gifts_hub": {
+      "type": "gifts-hub",
+      "settings": {
+        "heading": "",
+        "heading_size": "h0",
+        "subheading": "Say it without saying it",
+        "columns_desktop": 3,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "gifts_hub"
+  ]
+}
