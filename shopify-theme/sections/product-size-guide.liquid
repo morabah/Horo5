@@ -17,6 +17,10 @@
   if section.settings.fallback_table != blank and section.settings.fallback_table != empty
     assign has_content = true
   endif
+
+  if section.settings.fallback_fit_note != blank and section.settings.fallback_fit_note != empty
+    assign has_content = true
+  endif
 -%}
 
 {%- if has_content or request.design_mode -%}
