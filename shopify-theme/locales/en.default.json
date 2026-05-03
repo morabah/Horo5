@@ -527,5 +527,122 @@
       "send_on": "YYYY-MM-DD",
       "send_on_label": "Send on (optional)"
     }
+  },
+  "horo": {
+    "brand": {
+      "mantra": "Wear What You Mean",
+      "tagline": "Wearable illustration for identity-led expression"
+    },
+    "nav": {
+      "feelings": "Feelings",
+      "occasions": "Occasions",
+      "gifts": "Gifts",
+      "shop_all": "Shop All",
+      "about": "About",
+      "size_guide": "Size Guide",
+      "faq": "FAQ",
+      "exchange": "Exchange Policy"
+    },
+    "home_hero": {
+      "title": "Wear What You Mean",
+      "subtitle": "Original digital artwork, turned into identity-led t-shirts",
+      "cta": "Shop by Feeling"
+    },
+    "trust_ribbon": {
+      "artist_made": "Artist-made design",
+      "printed_in_egypt": "Printed in Egypt",
+      "cod": "COD available",
+      "exchange": "14-day exchange",
+      "whatsapp": "WhatsApp support"
+    },
+    "primary_routes": {
+      "feelings_title": "Shop by Feeling",
+      "feelings_subtitle": "Find the mood you wear",
+      "occasions_title": "Shop by Occasion",
+      "occasions_subtitle": "Dress for the moment",
+      "gifts_title": "Gift by Meaning",
+      "gifts_subtitle": "Say it without saying it"
+    },
+    "feeling_grid": {
+      "heading": "Shop by Feeling",
+      "subheading": "Every design starts with a feeling"
+    },
+    "occasion_grid": {
+      "heading": "Shop by Occasion",
+      "subheading": "Dress for the moment that matters"
+    },
+    "gift_block": {
+      "heading": "Gift by Meaning",
+      "body": "Say it without saying it. HORO gift-ready pieces for the people who mean something.",
+      "cta": "Shop Gifts"
+    },
+    "product_story": {
+      "heading": "The Story",
+      "read_more": "Read the full story",
+      "read_less": "Read less"
+    },
+    "product_artist": {
+      "heading": "The Artist",
+      "designs": "{{ count }} designs",
+      "view_artist": "View artist"
+    },
+    "product_delivery": {
+      "heading": "Delivery & Payment",
+      "cairo": "Cairo",
+      "alexandria": "Alexandria",
+      "other_cities": "Other cities",
+      "business_days": "business days",
+      "payment_methods": "Payment methods",
+      "cod": "Cash on Delivery",
+      "card": "Card (Visa / Mastercard)",
+      "instapay": "Instapay bank transfer"
+    },
+    "product_size_guide": {
+      "heading": "Size Guide",
+      "open": "Size guide",
+      "close": "Close",
+      "size": "Size",
+      "chest": "Chest (cm)",
+      "length": "Length (cm)",
+      "shoulder": "Shoulder (cm)",
+      "oversized": "Oversized fit — we recommend sizing down",
+      "regular": "Regular fit — true to size"
+    },
+    "gift_wrap": {
+      "add": "Add gift wrap",
+      "added": "Gift wrap added",
+      "already_added": "Gift wrap already in cart",
+      "remove": "Remove gift wrap",
+      "price_hint": "+ EGP 50"
+    },
+    "feelings_hub": {
+      "heading": "Shop by Feeling",
+      "subheading": "Every design starts with a feeling. Find yours."
+    },
+    "occasions_hub": {
+      "heading": "Shop by Occasion",
+      "subheading": "Dress for the moment that matters."
+    },
+    "gifts_hub": {
+      "heading": "Gift by Meaning",
+      "subheading": "Say it without saying it."
+    },
+    "size_guide_page": {
+      "heading": "Size Guide",
+      "subheading": "Find your perfect fit",
+      "oversized_heading": "Oversized Fit",
+      "regular_heading": "Regular Fit",
+      "note": "All measurements in centimeters. Between sizes? Size down for oversized, up for regular."
+    },
+    "collection": {
+      "filter_by_line": "Filter by line",
+      "all": "All",
+      "sort_by": "Sort by",
+      "products_count": "{{ count }} products"
+    },
+    "accessibility": {
+      "skip_to_content": "Skip to content",
+      "close": "Close"
+    }
   }
 }

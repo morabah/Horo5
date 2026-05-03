@@ -1,0 +1,119 @@
+{
+  "horo": {
+    "brand": {
+      "mantra": "البس اللي بيمثلك",
+      "tagline": "رسومات رقمية أصلية، تيشيرتات بتعبر عن هويتك"
+    },
+    "nav": {
+      "feelings": "مشاعر",
+      "occasions": "مناسبات",
+      "gifts": "هدايا",
+      "shop_all": "تسوق الكل",
+      "about": "عن هورو",
+      "size_guide": "دليل المقاسات",
+      "faq": "أسئلة شائعة",
+      "exchange": "سياسة الاستبدال"
+    },
+    "home_hero": {
+      "title": "البس اللي بيمثلك",
+      "subtitle": "رسومات رقمية أصلية، اتحولت لتيشيرتات بتعبر عن شخصيتك",
+      "cta": "تسوق بالمشاعر"
+    },
+    "trust_ribbon": {
+      "artist_made": "تصميم فنان",
+      "printed_in_egypt": "مطبوع في مصر",
+      "cod": "الدفع عند الاستلام",
+      "exchange": "استبدال خلال ١٤ يوم",
+      "whatsapp": "دعم واتساب"
+    },
+    "primary_routes": {
+      "feelings_title": "تسوق بالمشاعر",
+      "feelings_subtitle": "لقّي المزاج اللي بترتديه",
+      "occasions_title": "تسوق بالمناسبات",
+      "occasions_subtitle": "البس لللحظة اللي بتهم",
+      "gifts_title": "اهدي بالمعنى",
+      "gifts_subtitle": "قوله من غير ما تقوله"
+    },
+    "feeling_grid": {
+      "heading": "تسوق بالمشاعر",
+      "subheading": "كل تصميم بيبدأ بمشاعر"
+    },
+    "occasion_grid": {
+      "heading": "تسوق بالمناسبات",
+      "subheading": "البس لللحظة اللي بتهم"
+    },
+    "gift_block": {
+      "heading": "اهدي بالمعنى",
+      "body": "قوله من غير ما تقوله. قطع من هورو جاهزة كهدية للناس اللي بتعني حاجة.",
+      "cta": "تسوق الهدايا"
+    },
+    "product_story": {
+      "heading": "القصة",
+      "read_more": "اقرأ القصة كاملة",
+      "read_less": "اقرأ أقل"
+    },
+    "product_artist": {
+      "heading": "الفنان",
+      "designs": "{{ count }} تصميم",
+      "view_artist": "شوف الفنان"
+    },
+    "product_delivery": {
+      "heading": "التوصيل والدفع",
+      "cairo": "القاهرة",
+      "alexandria": "الإسكندرية",
+      "other_cities": "محافظات تانية",
+      "business_days": "أيام عمل",
+      "payment_methods": "طرق الدفع",
+      "cod": "الدفع عند الاستلام",
+      "card": "فيزا / ماستركارد",
+      "instapay": "تحويل بنكي إنستاباي"
+    },
+    "product_size_guide": {
+      "heading": "دليل المقاسات",
+      "open": "دليل المقاسات",
+      "close": "إغلاق",
+      "size": "المقاس",
+      "chest": "الصدر (سم)",
+      "length": "الطول (سم)",
+      "shoulder": "الكتف (سم)",
+      "oversized": "مقاس أوفرسايز — ننصح بنزول مقاس",
+      "regular": "مقاس عادي — زي المقاس بالظبط"
+    },
+    "gift_wrap": {
+      "add": "أضف تغليف هدية",
+      "added": "اتضاف تغليف الهدية",
+      "already_added": "تغليف الهدية موجود بالفعل في السلة",
+      "remove": "شيل تغليف الهدية",
+      "price_hint": "+ ٥٠ ج.م"
+    },
+    "feelings_hub": {
+      "heading": "تسوق بالمشاعر",
+      "subheading": "كل تصميم بيبدأ بمشاعر. لقّي مشاعرك."
+    },
+    "occasions_hub": {
+      "heading": "تسوق بالمناسبات",
+      "subheading": "البس لللحظة اللي بتهم."
+    },
+    "gifts_hub": {
+      "heading": "اهدي بالمعنى",
+      "subheading": "قوله من غير ما تقوله."
+    },
+    "size_guide_page": {
+      "heading": "دليل المقاسات",
+      "subheading": "لقّي مقاسك المظبوط",
+      "oversized_heading": "مقاس أوفرسايز",
+      "regular_heading": "مقاس عادي",
+      "note": "كل المقاسات بالسنتيمتر. لو بين مقاسين؟ انزل مقاس للأوفرسايز، واطلع مقاس للعادي."
+    },
+    "collection": {
+      "filter_by_line": "فلتر بالخط",
+      "all": "الكل",
+      "sort_by": "ترتيب حسب",
+      "products_count": "{{ count }} منتج"
+    },
+    "accessibility": {
+      "skip_to_content": "تخطى للمحتوى",
+      "close": "إغلاق"
+    }
+  }
+}
