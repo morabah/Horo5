@@ -1,0 +1,197 @@
+{{ 'component-horo-pages.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign visible_count = 0
+  for block in section.blocks
+    if block.settings.show == true and block.settings.title != blank
+      assign visible_count = visible_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width page-width--narrow section-{{ section.id }}-padding">
+    <h1 class="main-page-title page-title {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+      {{ section.settings.heading | escape }}
+    </h1>
+
+    {%- if visible_count > 0 -%}
+      <ul class="horo-policy__list" role="list">
+        {%- for block in section.blocks -%}
+          {%- if block.settings.show == true and block.settings.title != blank -%}
+            <li class="horo-policy__item" role="listitem" {{ block.shopify_attributes }}>
+              <h2 class="horo-policy__title">{{ block.settings.title | escape }}</h2>
+              <div class="horo-policy__body rte">
+                {{ block.settings.body }}
+              </div>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- elsif request.design_mode -%}
+      <div class="horo-page__placeholder">
+        <p>Enable at least one policy block to display the exchange policy section.</p>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HORO Exchange Policy Page",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Exchange policy",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h0",
+      "label": "Heading size"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "policy_item",
+      "name": "Policy item",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show",
+          "default": true,
+          "label": "Show item"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "default": "Exchange window",
+          "label": "Title"
+        },
+        {
+          "type": "richtext",
+          "id": "body",
+          "default": "<p>You may request an exchange within 14 days of receiving your order.</p>",
+          "label": "Body"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Exchange Policy Page",
+      "blocks": {
+        "policy-0": {
+          "type": "policy_item",
+          "settings": {
+            "show": true,
+            "title": "Exchange window",
+            "body": "<p>You may request an exchange within 14 days of receiving your order. The request must be made before the 14-day window closes.</p>"
+          }
+        },
+        "policy-1": {
+          "type": "policy_item",
+          "settings": {
+            "show": true,
+            "title": "Product condition",
+            "body": "<p>Items must be unworn, unwashed, and in original packaging with all tags attached. We reserve the right to refuse exchanges for items that do not meet these conditions.</p>"
+          }
+        },
+        "policy-2": {
+          "type": "policy_item",
+          "settings": {
+            "show": true,
+            "title": "Size exchange",
+            "body": "<p>If the size does not fit, you may exchange for a different size of the same product, subject to availability. If the requested size is out of stock, we will offer store credit or a replacement of equal value.</p>"
+          }
+        },
+        "policy-3": {
+          "type": "policy_item",
+          "settings": {
+            "show": true,
+            "title": "Defective item",
+            "body": "<p>If you receive a defective or damaged item, contact us within 48 hours of delivery with photos. We will arrange a replacement or exchange at no additional cost.</p>"
+          }
+        },
+        "policy-4": {
+          "type": "policy_item",
+          "settings": {
+            "show": true,
+            "title": "How to request an exchange",
+            "body": "<p>Contact us via WhatsApp or email with your order number and the reason for the exchange. We will guide you through the return process and confirm availability of the replacement item before proceeding.</p>"
+          }
+        },
+        "policy-5": {
+          "type": "policy_item",
+          "settings": {
+            "show": true,
+            "title": "Important notes",
+            "body": "<p>This policy is a draft. Please review and adjust it to match your actual operation and local regulations before launch. Shipping costs for exchanges may be the responsibility of the customer unless the item is defective.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "policy-0",
+        "policy-1",
+        "policy-2",
+        "policy-3",
+        "policy-4",
+        "policy-5"
+      ]
+    }
+  ]
+}
+{% endschema %}

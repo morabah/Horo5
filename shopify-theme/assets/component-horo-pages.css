@@ -1,0 +1,146 @@
+/* ===== HORO: Page Sections (About, FAQ, Exchange) ===== */
+
+.horo-page__content {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+.horo-page__block + .horo-page__block {
+  margin-block-start: 2.4rem;
+}
+
+.horo-page__block-title {
+  margin-block: 0 1.2rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* FAQ accordion using native details/summary */
+.horo-faq__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.horo-faq__item {
+  border-block-end: 1px solid rgba(var(--color-foreground), 0.08);
+}
+
+.horo-faq__item:first-child {
+  border-block-start: 1px solid rgba(var(--color-foreground), 0.08);
+}
+
+.horo-faq__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.6rem;
+  padding-block: 1.6rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.horo-faq__summary::-webkit-details-marker {
+  display: none;
+}
+
+.horo-faq__question {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.horo-faq__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.6rem;
+  block-size: 1.6rem;
+  color: rgb(var(--color-foreground));
+  opacity: 0.5;
+  transition: transform 0.2s ease;
+}
+
+.horo-faq__item[open] .horo-faq__icon {
+  transform: rotate(180deg);
+}
+
+.horo-faq__icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.horo-faq__answer {
+  padding-block: 0 1.6rem;
+  padding-inline: 0;
+}
+
+.horo-faq__answer .rte {
+  margin: 0;
+}
+
+.horo-faq__answer .rte > *:first-child {
+  margin-block-start: 0;
+}
+
+.horo-faq__answer .rte > *:last-child {
+  margin-block-end: 0;
+}
+
+/* Policy blocks */
+.horo-policy__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.horo-policy__item + .horo-policy__item {
+  margin-block-start: 2.4rem;
+}
+
+.horo-policy__title {
+  margin-block: 0 0.8rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.horo-policy__body {
+  font-size: 1.4rem;
+  line-height: 1.6;
+}
+
+.horo-policy__body .rte {
+  margin: 0;
+}
+
+/* Placeholder for editor */
+.horo-page__placeholder {
+  text-align: center;
+  padding-block: 3rem;
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .horo-faq__summary {
+    padding-block: 1.4rem;
+  }
+
+  .horo-faq__question {
+    font-size: 1.3rem;
+  }
+
+  .horo-faq__answer {
+    padding-block-end: 1.4rem;
+  }
+
+  .horo-policy__title {
+    font-size: 1.5rem;
+  }
+}
