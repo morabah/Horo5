@@ -26,6 +26,48 @@
         "padding_bottom": 12
       }
     },
+    "primary_routes": {
+      "type": "home-primary-routes",
+      "blocks": {
+        "route_1": {
+          "type": "route",
+          "settings": {
+            "label": "Shop by Feeling",
+            "short_text": "Find the mood you wear",
+            "link": ""
+          }
+        },
+        "route_2": {
+          "type": "route",
+          "settings": {
+            "label": "Shop by Occasion",
+            "short_text": "Dress for the moment",
+            "link": ""
+          }
+        },
+        "route_3": {
+          "type": "route",
+          "settings": {
+            "label": "Gift by Meaning",
+            "short_text": "Say it without saying it",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "route_1",
+        "route_2",
+        "route_3"
+      ],
+      "settings": {
+        "heading": "Shop by",
+        "heading_size": "h1",
+        "subheading": "",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
     "rich_text": {
       "type": "rich-text",
       "blocks": {
@@ -182,6 +224,7 @@
   "order": [
     "home_hero",
     "trust_ribbon",
+    "primary_routes",
     "rich_text",
     "featured_collection",
     "collage",

@@ -1,0 +1,202 @@
+{{ 'component-home-primary-routes.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign card_count = section.blocks.size
+  if card_count == 0
+    assign card_count = 3
+  endif
+-%}
+
+<div
+  id="PrimaryRoutes-{{ section.id }}"
+  class="horo-section home-primary-routes color-{{ section.settings.color_scheme }} gradient{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+>
+  <div class="page-width section-{{ section.id }}-padding">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="home-primary-routes__heading {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <p class="home-primary-routes__subheading">
+        {{ section.settings.subheading }}
+      </p>
+    {%- endif -%}
+
+    <ul class="home-primary-routes__grid" role="list">
+      {%- for block in section.blocks -%}
+        <li
+          class="home-primary-routes__card{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+          {{ block.shopify_attributes }}
+        >
+          <a href="{{ block.settings.link | default: '#' }}" class="home-primary-routes__link">
+            <div class="home-primary-routes__media media media--transparent">
+              {%- if block.settings.image != blank -%}
+                {{
+                  block.settings.image
+                  | image_url: width: 1100
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '275, 550, 750, 1100',
+                    sizes: '(min-width: 990px) calc((100vw - 10rem) / 3), (min-width: 750px) calc((100vw - 10rem) / 2), calc(100vw - 3rem)',
+                    class: 'home-primary-routes__image'
+                }}
+              {%- else -%}
+                {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+            </div>
+            <div class="home-primary-routes__content">
+              <h3 class="home-primary-routes__label h4">
+                {{ block.settings.label }}
+              </h3>
+              {%- if block.settings.short_text != blank -%}
+                <p class="home-primary-routes__text">
+                  {{ block.settings.short_text }}
+                </p>
+              {%- endif -%}
+            </div>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</div>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "HORO Primary Routes",
+  "tag": "section",
+  "class": "section",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Shop by"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "route",
+      "name": "Route card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Card image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Shop by Feeling"
+        },
+        {
+          "type": "text",
+          "id": "short_text",
+          "label": "Short text",
+          "default": "Find the mood you wear"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Primary Routes",
+      "blocks": [
+        {
+          "type": "route",
+          "settings": {
+            "label": "Shop by Feeling",
+            "short_text": "Find the mood you wear",
+            "link": ""
+          }
+        },
+        {
+          "type": "route",
+          "settings": {
+            "label": "Shop by Occasion",
+            "short_text": "Dress for the moment",
+            "link": ""
+          }
+        },
+        {
+          "type": "route",
+          "settings": {
+            "label": "Gift by Meaning",
+            "short_text": "Say it without saying it",
+            "link": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

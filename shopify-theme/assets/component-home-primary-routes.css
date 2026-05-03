@@ -1,0 +1,96 @@
+/* ===== HORO: Primary Routes (3-card navigation) ===== */
+
+.home-primary-routes {
+  text-align: start;
+}
+
+.home-primary-routes__heading {
+  text-align: center;
+  margin: 0 0 0.8rem;
+}
+
+.home-primary-routes__subheading {
+  text-align: center;
+  margin: 0 0 2.4rem;
+  font-size: 1.4rem;
+  opacity: 0.7;
+}
+
+.home-primary-routes__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.home-primary-routes__card {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-primary-routes__card:hover {
+  transform: translateY(-0.4rem);
+  box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.1);
+}
+
+.home-primary-routes__link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.home-primary-routes__media {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.home-primary-routes__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.home-primary-routes__card:hover .home-primary-routes__image {
+  transform: scale(1.04);
+}
+
+.home-primary-routes__content {
+  padding-block: 1.2rem;
+  padding-inline: 0.4rem;
+}
+
+.home-primary-routes__label {
+  margin: 0 0 0.4rem;
+}
+
+.home-primary-routes__text {
+  margin: 0;
+  font-size: 1.4rem;
+  opacity: 0.65;
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .home-primary-routes__grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .home-primary-routes__heading {
+    margin-bottom: 0.6rem;
+  }
+
+  .home-primary-routes__subheading {
+    margin-bottom: 1.6rem;
+  }
+
+  .home-primary-routes__media {
+    aspect-ratio: 16 / 9;
+  }
+}
