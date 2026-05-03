@@ -1,0 +1,126 @@
+/* ===== HORO: Occasion Grid (metaobject-driven) ===== */
+
+.home-occasion-grid {
+  text-align: start;
+}
+
+.home-occasion-grid__heading {
+  text-align: center;
+  margin: 0 0 0.8rem;
+}
+
+.home-occasion-grid__subheading {
+  text-align: center;
+  margin: 0 0 2.4rem;
+  font-size: 1.4rem;
+  opacity: 0.7;
+}
+
+.home-occasion-grid__list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Desktop column modifiers */
+.home-occasion-grid__list--2-col-desktop {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.home-occasion-grid__list--4-col-desktop {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .home-occasion-grid__list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+  }
+
+  .home-occasion-grid__list--1-col-mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card */
+.home-occasion-grid__item {
+  margin: 0;
+}
+
+.home-occasion-grid__card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-occasion-grid__card:hover {
+  transform: translateY(-0.3rem);
+  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+/* Media */
+.home-occasion-grid__media {
+  aspect-ratio: 4 / 5;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background: var(--gradient-background);
+}
+
+.home-occasion-grid__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.home-occasion-grid__card:hover .home-occasion-grid__image {
+  transform: scale(1.04);
+}
+
+/* Content */
+.home-occasion-grid__content {
+  padding-block: 1rem;
+  padding-inline: 0.2rem;
+}
+
+.home-occasion-grid__name {
+  margin: 0 0 0.4rem;
+  text-align: start;
+}
+
+.home-occasion-grid__blurb {
+  margin: 0 0 0.4rem;
+  font-size: 1.3rem;
+  opacity: 0.65;
+  text-align: start;
+}
+
+.home-occasion-grid__price-hint {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  opacity: 0.8;
+  text-align: start;
+}
+
+/* Placeholder (editor only) */
+.home-occasion-grid__placeholder {
+  text-align: center;
+  padding-block: 3rem;
+  opacity: 0.5;
+  border: 1px dashed currentColor;
+  border-radius: var(--border-radius);
+}
+
+.home-occasion-grid__placeholder p {
+  margin: 0;
+  font-size: 1.4rem;
+}
