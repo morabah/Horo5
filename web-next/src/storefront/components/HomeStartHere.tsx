@@ -10,7 +10,7 @@ import {
   productHasRealImage,
   type Product,
 } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { TeeImageFrame } from './TeeImage';
 
@@ -48,7 +48,8 @@ function resolveHomeProducts(inputProducts?: Product[]) {
 }
 
 export function HomeStartHere({ products, section }: { products?: Product[]; section?: StorefrontHomepageSection }) {
-  const { copy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
   const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
   const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');

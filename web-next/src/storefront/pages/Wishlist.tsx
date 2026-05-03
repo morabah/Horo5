@@ -9,7 +9,7 @@ import { ProductQuickView } from '../components/ProductQuickView';
 import { useWishlist } from '../hooks/useWishlist';
 import { getArtist, getFeeling, getProduct, productHasRealImage, setRuntimeCatalog, type RuntimeCatalog } from '../data/site';
 import { getProductCardImageSrc } from '../data/images';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 type WishlistProps = {
   initialCatalog?: Partial<RuntimeCatalog> | null;
@@ -21,7 +21,8 @@ export function Wishlist({ initialCatalog }: WishlistProps) {
   }
 
   const { slugs } = useWishlist();
-  const { locale, copy } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const isArabic = locale === 'ar';
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
 

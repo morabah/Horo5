@@ -8,7 +8,7 @@ import {
   imgUrl,
 } from '../data/images';
 import { getFeelings, getOccasions } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 function byHomepageOrder<T extends { active?: boolean; sortOrder?: number }>(items: T[]) {
   return items
@@ -57,7 +57,7 @@ function getGiftHref(): string {
 }
 
 export function HomePrimaryRoutes() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
 
   return (
     <section

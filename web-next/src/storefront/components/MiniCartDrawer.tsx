@@ -7,7 +7,7 @@ import { getProduct } from '../data/site';
 import { MINI_CART_SCHEMA } from '../data/domain-config';
 import { imgUrl } from '../data/images';
 import { formatEgp } from '../utils/formatPrice';
-import { useUiLocale } from '../i18n/ui-locale';
+import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import {
   fetchStorefrontIncentivesClient,
   pickLocalizedText,
@@ -17,13 +17,6 @@ import { AppIcon } from './AppIcon';
 
 const AUTO_DISMISS_MS = 5000;
 
-/** Pick English or Arabic copy from MINI_CART_SCHEMA */
-function t(key: keyof typeof MINI_CART_SCHEMA.copy, isArabic: boolean): string {
-  const arKey = `${key}Ar` as keyof typeof MINI_CART_SCHEMA.copy;
-  return isArabic && arKey in MINI_CART_SCHEMA.copy
-    ? MINI_CART_SCHEMA.copy[arKey]
-    : MINI_CART_SCHEMA.copy[key];
-}
 
 export function MiniCartDrawer() {
   const {
@@ -41,6 +34,8 @@ export function MiniCartDrawer() {
   } =
     useCart();
   const { locale } = useUiLocale();
+  const cartCopy = useDictionary().cart;
+  const copy = useDictionary().miniCart;
   const isArabic = locale === 'ar';
   const router = useRouter();
   const pathname = usePathname();
@@ -156,7 +151,7 @@ export function MiniCartDrawer() {
   const addedName = lastAddedItem.productName ?? addedProduct?.name ?? 'Item';
   const addedImage = lastAddedItem.imageSrc ?? addedProduct?.media?.main ?? addedProduct?.thumbnail;
   const addedPrice = lastAddedItem.unitPriceEgp ?? addedProduct?.priceEgp ?? 0;
-  const itemCountLabel = totalQty === 1 ? t('itemSingular', isArabic) : t('itemPlural', isArabic);
+  const itemCountLabel = totalQty === 1 ? copy.itemSingular : copy.itemPlural;
   const trustItems = isArabic ? MINI_CART_SCHEMA.trustItemsAr : MINI_CART_SCHEMA.trustItems;
 
   return createPortal(
@@ -166,7 +161,7 @@ export function MiniCartDrawer() {
         type="button"
         tabIndex={-1}
         className="mini-cart-scrim"
-        aria-label={t('scrimLabel', isArabic)}
+        aria-label={copy.scrimLabel}
         onClick={close}
       />
 
@@ -175,7 +170,7 @@ export function MiniCartDrawer() {
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label={t('dialogLabel', isArabic)}
+        aria-label={copy.dialogLabel}
         className="mini-cart-panel"
         dir={isArabic ? 'rtl' : undefined}
         onPointerEnter={pauseTimer}
@@ -187,13 +182,13 @@ export function MiniCartDrawer() {
         <div className="mini-cart-header">
           <div className="mini-cart-header-title">
             <span className="mini-cart-check" aria-hidden>✓</span>
-            <span className="mini-cart-added-label">{t('addedLabel', isArabic)}</span>
+            <span className="mini-cart-added-label">{copy.addedLabel}</span>
           </div>
           <button
             ref={closeRef}
             type="button"
             className="mini-cart-close"
-            aria-label={t('closeLabel', isArabic)}
+            aria-label={copy.closeLabel}
             onClick={close}
           >
             <AppIcon name="close" className="h-5 w-5" />
@@ -215,7 +210,7 @@ export function MiniCartDrawer() {
           <div className="mini-cart-item-info">
             <p className="mini-cart-item-name">{addedName}</p>
             <p className="mini-cart-item-meta">
-              {t('sizeLabel', isArabic)}: {lastAddedItem.size} · {t('qtyLabel', isArabic)}: {lastAddedItem.qty}
+              {copy.sizeLabel}: {lastAddedItem.size} · {copy.qtyLabel}: {lastAddedItem.qty}
             </p>
             <p className="mini-cart-item-price">{formatEgp(addedPrice)}</p>
           </div>
@@ -230,17 +225,17 @@ export function MiniCartDrawer() {
             </p>
           ) : null}
           <p className="mini-cart-summary-line">
-            <span>{t('subtotalLabel', isArabic)} ({totalQty} {itemCountLabel})</span>
+            <span>{copy.subtotalLabel} ({totalQty} {itemCountLabel})</span>
             <span className="mini-cart-summary-value">{formatEgp(subtotalEgp)}</span>
           </p>
           {cartPromotionDiscountEgp > 0 ? (
             <p className="mini-cart-summary-line text-deep-teal">
-              <span>{t('promotionDiscountLabel', isArabic)}</span>
+              <span>{copy.promotionDiscountLabel}</span>
               <span className="mini-cart-summary-value">−{formatEgp(cartPromotionDiscountEgp)}</span>
             </p>
           ) : null}
           <p className="mini-cart-summary-note font-body text-xs text-warm-charcoal">
-            {t('shippingAtCheckoutNote', isArabic)}
+            {copy.shippingAtCheckoutNote}
           </p>
         </div>
 
@@ -319,21 +314,21 @@ export function MiniCartDrawer() {
             className="mini-cart-cta-primary"
             onClick={handleCheckout}
           >
-            {t('checkoutCta', isArabic)}
+            {copy.checkoutCta}
           </button>
           <button
             type="button"
             className="mini-cart-cta-secondary"
             onClick={handleViewBag}
           >
-            {t('viewBagCta', isArabic)} ({totalQty})
+            {copy.viewBagCta} ({totalQty})
           </button>
           <button
             type="button"
             className="mini-cart-cta-continue"
             onClick={close}
           >
-            {t('continueCta', isArabic)}
+            {copy.continueCta}
           </button>
         </div>
 

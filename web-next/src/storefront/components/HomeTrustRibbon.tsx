@@ -6,7 +6,7 @@ import {
 } from '../data/catalog-types';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 import { HOME_TRUST_BADGES } from '../data/homeContent';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 const TRUST_ICONS: Record<string, ReactNode> = {
   premiumCotton: (
@@ -45,7 +45,8 @@ function canShowTrustItem(item: { key: string }): boolean {
 }
 
 export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSection }) {
-  const { copy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const isArabic = locale === 'ar';
   const sectionItems = trustItemsFromSection(section);
   const items =

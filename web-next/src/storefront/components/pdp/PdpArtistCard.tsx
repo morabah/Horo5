@@ -1,10 +1,11 @@
 'use client';
+import { useDictionary } from '../../i18n/ui-locale';
 
 import { TeeImage } from '../TeeImage';
 import type { Artist } from '../../data/catalog-types';
 import { PDP_SCHEMA } from '../../data/domain-config';
 
-const { copy } = PDP_SCHEMA;
+const { pdp: copy } = useDictionary();
 
 type PdpArtistCardProps = {
   /** Resolved artist display info (from product.artistDisplay or catalog). */
@@ -56,7 +57,7 @@ export function PdpArtistCard({ artistDisplay, catalogArtist, isArabic = false }
             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
             </svg>
-            {isArabic ? copy.verifiedArtistLabelAr : copy.verifiedArtistLabel}
+            {isArabic ? copy.verifiedArtistLabel : copy.verifiedArtistLabel}
           </span>
         </div>
       </div>
@@ -77,7 +78,7 @@ export function PdpArtistCard({ artistDisplay, catalogArtist, isArabic = false }
       ) : null}
 
       <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal">
-        {isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}{' '}
+        {isArabic ? copy.illustratedByLabel : copy.illustratedByLabel}{' '}
         <span className="font-medium text-obsidian">{artistDisplay.name}</span>
       </p>
     </div>

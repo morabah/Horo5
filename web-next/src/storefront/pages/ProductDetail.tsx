@@ -61,7 +61,7 @@ const ProductQuickView = dynamic(
   () => import('../components/ProductQuickView').then((m) => m.ProductQuickView),
   { ssr: false },
 );
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { humanizeArtistSlugForDisplay } from '../utils/humanizeArtistSlug';
 import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
@@ -104,7 +104,7 @@ import {
   PdpRelatedProducts,
 } from '../components/pdp';
 
-const { copy } = PDP_SCHEMA;
+const { pdp: copy } = useDictionary();
 
 const EMPTY_PRODUCT_LIST: Product[] = [];
 const EMPTY_FEELING_LIST: Feeling[] = [];
@@ -189,7 +189,8 @@ export function ProductDetail({
   const params = useParams();
   const routeSlug = typeof params?.slug === 'string' ? params.slug : (Array.isArray(params?.slug) ? params.slug[0] : '');
   const slug = initialSlug ?? routeSlug;
-  const { copy: shellCopy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const shellCopy = useDictionary();
   const isArabic = locale === 'ar';
   const now = useStableNow();
   const [searchParams] = useAppSearchParams();

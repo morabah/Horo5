@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 
 const FIRST_DROP_STORAGE_KEY = 'horo-first-drop-v1';
@@ -31,7 +31,7 @@ function loadFirstDropEntries(): string[] {
  * localStorage is a temporary enhancement, not the real capture mechanism.
  */
 export function HomeFirstDropCircle() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const [inputValue, setInputValue] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [mounted, setMounted] = useState(false);

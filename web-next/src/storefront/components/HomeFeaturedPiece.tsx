@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { getProductComparisonImageSrc } from '../data/images';
 import { getProducts, productHasRealImage } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
 import { formatEgp } from '../utils/formatPrice';
 
@@ -11,7 +11,7 @@ import { formatEgp } from '../utils/formatPrice';
  * Returns null when no product with a real image exists.
  */
 export function HomeFeaturedPiece() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
 
   const featuredProduct = getProducts()
     .filter(productHasRealImage)

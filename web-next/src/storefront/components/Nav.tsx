@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { useCart } from '../cart/CartContext';
 import { useWishlist } from '../hooks/useWishlist';
 import { clearPlacedOrderMedusaIdHint, readPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
-import { useUiLocale } from '../i18n/ui-locale';
+import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { NAV_DRAWER_ROUTE_KEYS, NAV_PRIMARY_ROUTE_KEYS, NAV_ROUTE, type NavRouteKey } from '../lib/navLinks';
 import { getSearchSuggestions, type SearchSuggestion } from '../search/view';
 import { AppIcon } from './AppIcon';
@@ -156,7 +156,8 @@ function LocaleToggle({
 export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const { totalQty, setMiniCartOpen } = useCart();
   const { count: wishlistCount } = useWishlist();
-  const { locale, copy, setLocale } = useUiLocale();
+  const { locale, setLocale } = useUiLocale();
+  const copy = useDictionary();
   const [q, setQ] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPanelOpen, setMenuPanelOpen] = useState(false);

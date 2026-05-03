@@ -1,4 +1,5 @@
 'use client';
+import { DICTIONARY } from "@/storefront/i18n/dictionary";
 
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -7,7 +8,7 @@ import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
 import { VIBES_SCHEMA } from '../data/domain-config';
 import { PAGE_HEROES } from '../content/page-heroes';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import {
   getFeelings,
   setRuntimeCatalog,
@@ -38,7 +39,8 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
     setRuntimeCatalog(initialCatalog);
   }
 
-  const { copy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const isArabic = locale === 'ar';
   const feelings = sortActiveFeelings(getFeelings());
 
@@ -78,13 +80,13 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
         />
         <section
           className="relative isolate overflow-hidden"
-          aria-label={PAGE_HEROES.feelings.eyebrow?.[locale as 'en' | 'ar'] ?? VIBES_SCHEMA.copy.hubHeroAlt}
+          aria-label={PAGE_HEROES.feelings.eyebrow?.[locale as 'en' | 'ar'] ?? DICTIONARY.en.vibes.hubHeroAlt}
         >
           <div className="relative min-h-[26rem] w-full bg-obsidian sm:min-h-[30rem] lg:min-h-[34rem]">
             {PAGE_HEROES.feelings.desktopImage?.src && (
               <img
                 src={PAGE_HEROES.feelings.desktopImage.src}
-                alt={PAGE_HEROES.feelings.desktopImage.alt[locale as 'en' | 'ar'] ?? VIBES_SCHEMA.copy.hubHeroAlt}
+                alt={PAGE_HEROES.feelings.desktopImage.alt[locale as 'en' | 'ar'] ?? DICTIONARY.en.vibes.hubHeroAlt}
                 className="absolute inset-0 h-full w-full object-cover"
                 style={{ objectPosition: PAGE_HEROES.feelings.focalPoint || 'center' }}
                 width={1600}
@@ -103,7 +105,7 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
           <div className="absolute inset-x-0 bottom-0">
             <div className="feelings-hub-glass-bar flex items-center justify-center px-4 py-5 sm:py-6">
               <h1 className="text-center font-headline text-[clamp(1.5rem,5vw,2.5rem)] font-semibold leading-tight tracking-tight text-white">
-                {PAGE_HEROES.feelings.title[locale as 'en' | 'ar'] ?? VIBES_SCHEMA.copy.hubTitle}
+                {PAGE_HEROES.feelings.title[locale as 'en' | 'ar'] ?? DICTIONARY.en.vibes.hubTitle}
               </h1>
             </div>
           </div>
@@ -134,12 +136,12 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
           <div className="mx-auto max-w-7xl">
             <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{isArabic ? VIBES_SCHEMA.copy.hubGridEyebrowAr : VIBES_SCHEMA.copy.hubGridEyebrow}</p>
+                <p className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">{copy.vibes.hubGridEyebrow}</p>
                 <h2
                   id="feelings-grid-title"
                   className="font-headline mt-2 text-[1.35rem] font-semibold tracking-tight text-obsidian md:text-[1.6rem]"
                 >
-                  {isArabic ? VIBES_SCHEMA.copy.hubGridTitleAr : VIBES_SCHEMA.copy.hubGridTitle}
+                  {copy.vibes.hubGridTitle}
                 </h2>
               </div>
               <Link

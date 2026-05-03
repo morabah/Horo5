@@ -40,7 +40,7 @@ import {
   PDP_SCHEMA,
 } from '../data/domain-config';
 import { getProduct } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import {
   addLineItem,
   addShippingMethod,
@@ -532,7 +532,8 @@ export function Checkout({
 }: CheckoutProps = {}) {
   const router = useRouter();
   const { items, subtotalEgp, giftWrapEgp, clearCart, replaceMedusaCartId, awaitPendingCartSync, seedFromServerCart } = useCart();
-  const { locale, copy } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const now = useStableNow();
   const isArabic = locale === 'ar';
   const initialCheckoutCart = initialCart && !initialCart.completed_at ? initialCart : null;
@@ -1712,7 +1713,7 @@ export function Checkout({
   const checkoutBreadcrumbItems = useMemo(
     () => [
       { label: copy.shell.home, to: '/' as const },
-      { label: CART_SCHEMA.copy.heading, to: '/cart' as const },
+      { label: (useDictionary().cart).heading, to: '/cart' as const },
       { label: copy.checkout.breadcrumbTitle },
     ],
     [copy.checkout.breadcrumbTitle, copy.shell.home],
@@ -2472,7 +2473,8 @@ function OrderSummary({
   onLineChangeQueued: () => void;
   className?: string;
 }) {
-  const { locale, copy } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const isArabic = locale === 'ar';
   const { items, giftWrapEgp, setLineQty, removeItem, lineQtySavingKeys } = useCart();
   const [lineStatusMessage, setLineStatusMessage] = useState('');
@@ -2556,9 +2558,9 @@ function OrderSummary({
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="font-label text-[10px] font-medium uppercase tracking-[0.14em] text-clay">
-                    {CART_SCHEMA.copy.quantityLabel}
+                    {(useDictionary().cart).quantityLabel}
                   </span>
-                  <div className="cart-stepper" role="group" aria-label={`${CART_SCHEMA.copy.quantityLabel} · ${line.productName}`}>
+                  <div className="cart-stepper" role="group" aria-label={`${(useDictionary().cart).quantityLabel} · ${line.productName}`}>
                     <button
                       type="button"
                       className="cart-stepper-button"
@@ -2601,7 +2603,7 @@ function OrderSummary({
                     className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.16em] text-ember hover:underline disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     onClick={() => handleRemove(line)}
                   >
-                    {CART_SCHEMA.copy.removeLabel}
+                    {(useDictionary().cart).removeLabel}
                   </button>
                 </div>
               </div>
@@ -2641,7 +2643,7 @@ function OrderSummary({
       </p>
       {giftWrapLineEgp > 0 ? (
         <p className="mt-2 flex justify-between text-sm text-clay">
-          <span>{CART_SCHEMA.copy.giftWrapLabel}</span>
+          <span>{(useDictionary().cart).giftWrapLabel}</span>
           <span>{formatEgp(giftWrapLineEgp)}</span>
         </p>
       ) : null}

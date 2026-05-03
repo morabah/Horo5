@@ -1,5 +1,5 @@
 import type { SearchSuggestion, SearchSuggestionGroup } from '../search/view';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 type SearchSuggestionPanelProps = {
   groups: SearchSuggestionGroup[];
@@ -20,7 +20,7 @@ export function SearchSuggestionPanel({
   emptyLabel,
   className,
 }: SearchSuggestionPanelProps) {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const headingByKind = {
     designs: copy.search.designsHeading,
     vibes: copy.search.vibesHeading,

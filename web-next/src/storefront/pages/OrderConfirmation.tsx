@@ -11,7 +11,7 @@ import { getCartLineViews } from '../cart/view';
 import { loadLastOrder, saveLastOrder, sessionSnapshotBelongsToOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, withSupportMessage } from '../data/domain-config';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { getOrder } from '../lib/medusa/client';
 import { getOrderGiftWrapEgp, toOrderLines } from '../lib/medusa/adapters';
 import { medusaAmountToEgp } from '../lib/medusa/egp-amount';
@@ -134,7 +134,8 @@ function createSnapshotFromOrder(args: {
 }
 
 export function OrderConfirmation() {
-  const { locale, copy } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const now = useStableNow();
   const isArabic = locale === 'ar';
   const [order, setOrder] = useState<LastOrderSnapshot | null>(null);

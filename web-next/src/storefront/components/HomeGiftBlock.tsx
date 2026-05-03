@@ -6,11 +6,12 @@ import {
 } from '../data/catalog-types';
 import { getProductComparisonImageSrc, imgUrl } from '../data/images';
 import { getOccasions, getProducts, productHasRealImage } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
 
 export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection }) {
-  const { copy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
   const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
   const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');

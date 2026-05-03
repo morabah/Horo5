@@ -12,7 +12,7 @@ import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, getProductCardImageSrc, giftWrapPreview, imgUrl } from '../data/images';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import {
   getArtist,
   getFeeling,
@@ -42,12 +42,7 @@ const SORT_OPTIONS: { value: ProductSortKey; label: string }[] = [
 
 type PriceFilter = 'all' | 'under-800' | '800-899' | '900+';
 
-const PRICE_FILTERS: { value: PriceFilter; label: string }[] = [
-  { value: 'all', label: OCCASION_SCHEMA.copy.allPricesLabel },
-  { value: 'under-800', label: OCCASION_SCHEMA.copy.under800Label },
-  { value: '800-899', label: OCCASION_SCHEMA.copy.between800And899Label },
-  { value: '900+', label: OCCASION_SCHEMA.copy.over900Label },
-];
+
 
 function filterByPrice(list: Product[], filter: PriceFilter) {
   switch (filter) {
@@ -85,8 +80,8 @@ function getFocusableElements(container: HTMLElement): HTMLElement[] {
   });
 }
 
-function formatDesignCount(count: number) {
-  return `${count} ${count === 1 ? OCCASION_SCHEMA.copy.designSingular : OCCASION_SCHEMA.copy.designPlural}`;
+function formatDesignCount(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function OccasionProductCard({
@@ -138,11 +133,17 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
   const params = useParams();
   const routeSlug = typeof params?.slug === 'string' ? params.slug : (Array.isArray(params?.slug) ? params.slug[0] : '');
   const slug = initialSlug ?? routeSlug;
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const { giftWrapCatalogPriceEgp } = useCart();
   const occasion = initialOccasion !== undefined ? initialOccasion : getOccasion(slug);
   const isMobile = useMediaQuery('(max-width: 767px)');
 
+  const PRICE_FILTERS: { value: PriceFilter; label: string }[] = [
+    { value: 'all', label: copy.occasion.allPricesLabel },
+    { value: 'under-800', label: copy.occasion.under800Label },
+    { value: '800-899', label: copy.occasion.between800And899Label },
+    { value: '900+', label: copy.occasion.over900Label },
+  ];
   const [sortKey, setSortKey] = useState<ProductSortKey>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
   const [vibeFilter, setVibeFilter] = useState<string>('all');
@@ -192,11 +193,11 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
   const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || vibeFilter !== 'all';
   const giftWrapPriceLabel = giftWrapCatalogPriceEgp ? formatEgp(giftWrapCatalogPriceEgp) : null;
   const giftBannerBody = giftWrapPriceLabel
-    ? `${OCCASION_SCHEMA.copy.giftBannerBody} (${giftWrapPriceLabel}).`
-    : OCCASION_SCHEMA.copy.giftBannerBody;
+    ? `${copy.occasion.giftBannerBody} (${giftWrapPriceLabel}).`
+    : copy.occasion.giftBannerBody;
   const giftBannerChip = giftWrapPriceLabel
-    ? `${OCCASION_SCHEMA.copy.giftBannerChip} +${giftWrapPriceLabel}`
-    : OCCASION_SCHEMA.copy.giftBannerChip;
+    ? `${copy.occasion.giftBannerChip} +${giftWrapPriceLabel}`
+    : copy.occasion.giftBannerChip;
 
   const siblingOccasions = useMemo(() => {
     return getOccasions().filter((entry) => entry.slug !== slug);
@@ -265,7 +266,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
   if (!occasion) {
     return (
       <div className="container py-12">
-        <p className="font-body text-warm-charcoal">{OCCASION_SCHEMA.copy.notFoundTitle}</p>
+        <p className="font-body text-warm-charcoal">{copy.occasion.notFoundTitle}</p>
         <Link href="/occasions" className="font-label mt-4 inline-block text-deep-teal underline">
           {copy.shell.shopByMoment}
         </Link>
@@ -303,7 +304,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
           <div className="absolute inset-x-0 bottom-0">
             <div className="mx-auto max-w-7xl px-6 pb-8 md:px-10 md:pb-12">
               <div className="max-w-2xl rounded-2xl border border-white/12 bg-obsidian/82 px-5 py-5 shadow-[0_24px_56px_-28px_rgba(0,0,0,0.75)] backdrop-blur-md md:px-7 md:py-7">
-                <nav className="font-body mb-4 text-[13px] text-white/90 md:text-sm" aria-label={OCCASION_SCHEMA.copy.breadcrumbLabel}>
+                <nav className="font-body mb-4 text-[13px] text-white/90 md:text-sm" aria-label={copy.occasion.breadcrumbLabel}>
                   <Link href="/" className="transition-colors hover:text-white">
                     {copy.shell.home}
                   </Link>
@@ -330,7 +331,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                   {occasion.blurb}
                 </p>
                 <p className="font-label mt-5 text-[10px] font-medium uppercase tracking-[0.24em] text-stone md:text-[11px]">
-                  {formatDesignCount(baseList.length)}
+                  {formatDesignCount(baseList.length, copy.occasion.designSingular, copy.occasion.designPlural)}
                 </p>
                 <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                   <a
@@ -343,7 +344,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                     href={scopeSearchTo}
                     className="link-underline-reveal font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-white/92 hover:text-white"
                   >
-                    {OCCASION_SCHEMA.copy.searchThisOccasionCta}
+                    {copy.occasion.searchThisOccasionCta}
                   </Link>
                 </div>
               </div>
@@ -410,7 +411,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
               />
             </div>
             <div className="min-w-0">
-              <h2 className="font-headline text-xl font-semibold leading-tight text-obsidian">{OCCASION_SCHEMA.copy.giftBannerHeading}</h2>
+              <h2 className="font-headline text-xl font-semibold leading-tight text-obsidian">{copy.occasion.giftBannerHeading}</h2>
               <p className="mt-3 font-body text-[0.96rem] leading-relaxed text-warm-charcoal">{giftBannerBody}</p>
               <p className="font-label mt-4 inline-flex min-h-9 items-center rounded-full border border-stone bg-white px-3 py-2 text-[10px] font-medium uppercase tracking-[0.18em] text-clay-earth shadow-sm">
                 {giftBannerChip}
@@ -426,13 +427,13 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
               onClick={openMobileFilters}
               className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
             >
-              {OCCASION_SCHEMA.copy.filterAndSortCta}
+              {copy.occasion.filterAndSortCta}
             </button>
             <Link
               href={scopeSearchTo}
               className="link-underline-reveal font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
             >
-              {OCCASION_SCHEMA.copy.searchThisOccasionCta}
+              {copy.occasion.searchThisOccasionCta}
             </Link>
           </div>
           <div className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex">
@@ -447,7 +448,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
               {desktopFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="occasion-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {OCCASION_SCHEMA.copy.sortLabel}
+                    {copy.occasion.sortLabel}
                   </label>
                   <div className="relative inline-block min-w-0">
                     <select
@@ -470,7 +471,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 {desktopFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="occasion-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {OCCASION_SCHEMA.copy.priceLabel}
+                    {copy.occasion.priceLabel}
                   </label>
                   <div className="relative inline-block min-w-0">
                     <select
@@ -493,7 +494,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 {vibeOptions.length > 1 && desktopFiltersOpen ? (
                   <div className="flex min-w-[13rem] flex-col gap-2">
                     <label htmlFor="occasion-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {OCCASION_SCHEMA.copy.vibeLabel}
+                      {copy.occasion.vibeLabel}
                     </label>
                     <div className="relative inline-block min-w-0">
                       <select
@@ -502,7 +503,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                         onChange={(event) => setVibeFilter(event.target.value)}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{OCCASION_SCHEMA.copy.allVibesLabel}</option>
+                        <option value="all">{copy.occasion.allVibesLabel}</option>
                         {vibeOptions.map((feelingSlug) => {
                           const f = getFeeling(feelingSlug);
                           return (
@@ -523,7 +524,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 href={scopeSearchTo}
                 className="link-underline-reveal font-label inline-flex min-h-12 shrink-0 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal"
               >
-                {OCCASION_SCHEMA.copy.searchThisOccasionCta}
+                {copy.occasion.searchThisOccasionCta}
               </Link>
             </div>
 
@@ -539,7 +540,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
 
           {list.length === 0 && hasActiveFilters ? (
             <p className="mt-6 font-body text-clay">
-              {OCCASION_SCHEMA.copy.noFilteredResults}{' '}
+              {copy.occasion.noFilteredResults}{' '}
               <button
                 type="button"
                 onClick={() => {
@@ -549,20 +550,20 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 }}
                 className="border-0 bg-transparent font-medium text-deep-teal underline"
               >
-                {OCCASION_SCHEMA.copy.resetFiltersCta}
+                {copy.occasion.resetFiltersCta}
               </button>
             </p>
           ) : null}
 
           {list.length === 0 && !hasActiveFilters ? (
-            <p className="mt-6 font-body text-warm-charcoal">{OCCASION_SCHEMA.copy.noOccasionResults}</p>
+            <p className="mt-6 font-body text-warm-charcoal">{copy.occasion.noOccasionResults}</p>
           ) : null}
         </section>
 
         <section aria-labelledby="more-occasions-title" className="order-4">
           <div className="mb-5 flex items-end justify-between gap-4">
             <h2 id="more-occasions-title" className="font-headline text-[1.4rem] font-semibold tracking-tight text-obsidian">
-              {OCCASION_SCHEMA.copy.moreOccasionsHeading}
+              {copy.occasion.moreOccasionsHeading}
             </h2>
           </div>
           <div className="scroll-snap-carousel -mx-6 flex gap-4 overflow-x-auto px-6 pb-2 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
@@ -600,7 +601,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 <div>
                   <p className="font-label text-[10px] font-medium uppercase tracking-[0.24em] text-label">{occasion.name}</p>
                   <h2 id="mobile-occasion-filters-title" className="font-headline mt-2 text-2xl font-semibold tracking-tight text-obsidian">
-                    {OCCASION_SCHEMA.copy.filterAndSortCta}
+                    {copy.occasion.filterAndSortCta}
                   </h2>
                 </div>
                 <button
@@ -617,7 +618,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-occasion-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {OCCASION_SCHEMA.copy.sortLabel}
+                    {copy.occasion.sortLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -638,7 +639,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-occasion-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {OCCASION_SCHEMA.copy.priceLabel}
+                    {copy.occasion.priceLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -660,7 +661,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 {vibeOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-occasion-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {OCCASION_SCHEMA.copy.vibeLabel}
+                      {copy.occasion.vibeLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -669,7 +670,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                         onChange={(event) => setVibeFilter(event.target.value)}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{OCCASION_SCHEMA.copy.allVibesLabel}</option>
+                        <option value="all">{copy.occasion.allVibesLabel}</option>
                         {vibeOptions.map((feelingSlug) => {
                           const f = getFeeling(feelingSlug);
                           return (
@@ -692,9 +693,9 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                   onClick={closeMobileFilters}
                   className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-6 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
-                  {OCCASION_SCHEMA.copy.showCountCta
+                  {copy.occasion.showCountCta
                     .replace('{count}', String(list.length))
-                    .replace('{label}', list.length === 1 ? OCCASION_SCHEMA.copy.designSingular : OCCASION_SCHEMA.copy.designPlural)}
+                    .replace('{label}', list.length === 1 ? copy.occasion.designSingular : copy.occasion.designPlural)}
                 </button>
                 {hasActiveFilters ? (
                   <button
@@ -706,7 +707,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                     }}
                     className="font-label inline-flex min-h-11 items-center justify-center rounded-sm border border-stone bg-white px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   >
-                    {OCCASION_SCHEMA.copy.resetFiltersCta}
+                    {copy.occasion.resetFiltersCta}
                   </button>
                 ) : null}
               </div>

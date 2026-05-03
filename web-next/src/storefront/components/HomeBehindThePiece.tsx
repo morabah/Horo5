@@ -1,11 +1,11 @@
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 /**
  * "Behind the piece" — text-only proof cards about artwork direction,
  * printing, and fit/care. Always renders; no fake imagery.
  */
 export function HomeBehindThePiece() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
 
   const cards = copy.home.behindThePieceCards;
 
@@ -29,7 +29,7 @@ export function HomeBehindThePiece() {
           {copy.home.behindThePieceBody}
         </p>
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6">
-          {cards.map((card) => (
+          {cards.map((card: any) => (
             <div
               key={card.title}
               data-reveal="stagger-1"

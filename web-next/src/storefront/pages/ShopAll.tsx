@@ -13,7 +13,7 @@ import { ProductQuickView } from '../components/ProductQuickView';
 import { SkeletonGrid } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
 import { SEARCH_SCHEMA } from '../data/domain-config';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
   fetchStorefrontSearch,
@@ -51,17 +51,9 @@ const SORT_OPTIONS: { value: SearchSortKey; label: string }[] = [
   { value: 'price-desc', label: 'Price: High to Low' },
 ];
 
-const DEFAULT_PRICE_OPTIONS: { value: SearchPriceFilter; label: string }[] = [
-  { value: 'all', label: SEARCH_SCHEMA.copy.allPricesLabel },
-  { value: 'under-800', label: SEARCH_SCHEMA.copy.under800Label },
-  { value: '800-899', label: SEARCH_SCHEMA.copy.between800And899Label },
-  { value: '900+', label: SEARCH_SCHEMA.copy.over900Label },
-];
 
-const SIZE_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: SEARCH_SCHEMA.copy.allSizesLabel },
-  ...defaultCatalogSizeKeys().map((size) => ({ value: size, label: size })),
-];
+
+
 
 function ChevronIcon() {
   return (
@@ -144,7 +136,8 @@ export function ShopAll({
   const initialBrowseProducts = initialCatalog?.products ?? [];
   const hasInitialBrowseProducts = initialBrowseProducts.length > 0;
   const [params, setParams] = useAppSearchParams();
-  const { copy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const isArabic = locale === 'ar';
   const isMobile = useMediaQuery('(max-width: 767px)');
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
@@ -159,7 +152,17 @@ export function ShopAll({
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
   const mobileFilterTriggerRef = useRef<HTMLElement | null>(null);
 
-  const priceOptions = useMemo(() => {
+  const DEFAULT_PRICE_OPTIONS: { value: SearchPriceFilter; label: string }[] = [
+  { value: 'all', label: copy.search.allPricesLabel },
+  { value: 'under-800', label: copy.search.under800Label },
+  { value: '800-899', label: copy.search.between800And899Label },
+  { value: '900+', label: copy.search.over900Label },
+];
+const SIZE_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'all', label: copy.search.allSizesLabel },
+  ...defaultCatalogSizeKeys().map((size) => ({ value: size, label: size })),
+];
+const priceOptions = useMemo(() => {
     const configured =
       priceBands
         ?.filter((band) => band.key.trim() && pickLocalizedText(band.label, isArabic ? 'ar' : 'en'))
@@ -168,7 +171,7 @@ export function ShopAll({
           label: pickLocalizedText(band.label, isArabic ? 'ar' : 'en'),
         })) ?? [];
     return configured.length > 0
-      ? [{ value: 'all', label: SEARCH_SCHEMA.copy.allPricesLabel }, ...configured]
+      ? [{ value: 'all', label: copy.search.allPricesLabel }, ...configured]
       : DEFAULT_PRICE_OPTIONS;
   }, [isArabic, priceBands]);
 
@@ -257,8 +260,8 @@ export function ShopAll({
     if (totalCount > 0) trackShopAllView(totalCount);
   }, [totalCount]);
 
-  const designSingularLabel = isArabic ? 'تصميم' : SEARCH_SCHEMA.copy.designSingular;
-  const designPluralLabel = isArabic ? 'تصاميم' : SEARCH_SCHEMA.copy.designPlural;
+  const designSingularLabel = isArabic ? 'تصميم' : copy.search.designSingular;
+  const designPluralLabel = isArabic ? 'تصاميم' : copy.search.designPlural;
   const hasActiveFilters =
     sortKey !== 'featured' ||
     priceFilter !== 'all' ||
@@ -273,7 +276,7 @@ export function ShopAll({
       : `${visibleCount}/${totalCount} ${isArabic ? 'تصاميم' : 'designs'}`;
   const mobileShowCountLabel = isArabic
     ? `اعرض ${visibleCount} ${visibleCount === 1 ? 'تصميم' : 'تصاميم'}`
-    : SEARCH_SCHEMA.copy.showCountCta
+    : copy.search.showCountCta
       .replace('{count}', String(visibleCount))
       .replace('{label}', visibleCount === 1 ? designSingularLabel : designPluralLabel);
 
@@ -444,7 +447,7 @@ export function ShopAll({
                 updateParams({ price: priceFilter === firstBand ? null : firstBand });
               }}
             >
-              {priceOptions[1]?.label ?? SEARCH_SCHEMA.copy.under800Label}
+              {priceOptions[1]?.label ?? copy.search.under800Label}
             </Button>
           </div>
         </section>
@@ -459,7 +462,7 @@ export function ShopAll({
                 onClick={isMobile ? openMobileFilters : () => setDesktopFiltersOpen((open) => !open)}
                 className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
-                {SEARCH_SCHEMA.copy.filterAndSortCta}
+                {copy.search.filterAndSortCta}
               </button>
               <div className="hidden flex-wrap gap-2 md:flex">
                 <button
@@ -467,21 +470,21 @@ export function ShopAll({
                   onClick={() => setDesktopFiltersOpen(true)}
                   className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.16em] ${sizeFilter !== 'all' ? 'border-obsidian bg-obsidian text-white' : 'border-stone bg-white text-obsidian'}`}
                 >
-                  {SEARCH_SCHEMA.copy.sizeFilterLabel}
+                  {copy.search.sizeFilterLabel}
                 </button>
                 <button
                   type="button"
                   onClick={() => setDesktopFiltersOpen(true)}
                   className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.16em] ${priceFilter !== 'all' ? 'border-obsidian bg-obsidian text-white' : 'border-stone bg-white text-obsidian'}`}
                 >
-                  {SEARCH_SCHEMA.copy.priceLabel}
+                  {copy.search.priceLabel}
                 </button>
                 <button
                   type="button"
                   onClick={() => setDesktopFiltersOpen(true)}
                   className={`font-label inline-flex min-h-11 items-center rounded-full border px-4 text-[10px] font-semibold uppercase tracking-[0.16em] ${feelingFilter !== 'all' ? 'border-obsidian bg-obsidian text-white' : 'border-stone bg-white text-obsidian'}`}
                 >
-                  {SEARCH_SCHEMA.copy.vibeLabel}
+                  {copy.search.vibeLabel}
                 </button>
               </div>
               {hasActiveFilters ? (
@@ -490,7 +493,7 @@ export function ShopAll({
                   onClick={resetFilters}
                   className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
-                  {SEARCH_SCHEMA.copy.resetFiltersCta}
+                  {copy.search.resetFiltersCta}
                 </button>
               ) : null}
             </div>
@@ -511,7 +514,7 @@ export function ShopAll({
             <div className="mb-8 hidden flex-wrap items-end gap-4 rounded-[18px] border border-stone/35 bg-white/72 p-4 shadow-[0_18px_44px_-30px_rgba(26,26,26,0.18)] md:flex">
               <div className="flex min-w-[13rem] flex-col gap-2">
                 <label htmlFor="shop-all-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                  {SEARCH_SCHEMA.copy.sortLabel}
+                  {copy.search.sortLabel}
                 </label>
                 <div className="relative">
                   <select
@@ -532,7 +535,7 @@ export function ShopAll({
 
               <div className="flex min-w-[13rem] flex-col gap-2">
                 <label htmlFor="shop-all-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                  {SEARCH_SCHEMA.copy.priceLabel}
+                  {copy.search.priceLabel}
                 </label>
                 <div className="relative">
                   <select
@@ -553,7 +556,7 @@ export function ShopAll({
 
               <div className="flex min-w-[13rem] flex-col gap-2">
                 <label htmlFor="shop-all-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                  {SEARCH_SCHEMA.copy.sizeFilterLabel}
+                  {copy.search.sizeFilterLabel}
                 </label>
                 <div className="relative">
                   <select
@@ -575,7 +578,7 @@ export function ShopAll({
               {results.vibeOptions.length > 1 ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="shop-all-feeling" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.vibeLabel}
+                    {copy.search.vibeLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -584,7 +587,7 @@ export function ShopAll({
                       onChange={(event) => updateParams({ feelingFilter: event.target.value, vibeFilter: null })}
                       className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
-                      <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
+                      <option value="all">{copy.search.allVibesLabel}</option>
                       {results.vibeOptions.map((option) => (
                         <option key={option.slug} value={option.slug}>
                           {option.name}
@@ -599,7 +602,7 @@ export function ShopAll({
               {facetOptions.artistOptions.length > 1 ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="shop-all-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.artistLabel}
+                    {copy.search.artistLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -608,7 +611,7 @@ export function ShopAll({
                       onChange={(event) => updateParams({ fArtist: event.target.value })}
                       className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
-                      <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
+                      <option value="all">{copy.search.allArtistsLabel}</option>
                       {facetOptions.artistOptions.map((option) => (
                         <option key={option.slug} value={option.slug}>
                           {option.name}
@@ -623,7 +626,7 @@ export function ShopAll({
               {facetOptions.occasionOptions.length > 1 ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="shop-all-occasion" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.occasionFilterLabel}
+                    {copy.search.occasionFilterLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -632,7 +635,7 @@ export function ShopAll({
                       onChange={(event) => updateParams({ fOccasion: event.target.value })}
                       className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
-                      <option value="all">{SEARCH_SCHEMA.copy.allOccasionsFilterLabel}</option>
+                      <option value="all">{copy.search.allOccasionsFilterLabel}</option>
                       {facetOptions.occasionOptions.map((option) => (
                         <option key={option.slug} value={option.slug}>
                           {option.name}
@@ -647,7 +650,7 @@ export function ShopAll({
               {facetOptions.colorOptions.length > 1 ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="shop-all-color" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.colorLabel}
+                    {copy.search.colorLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -656,7 +659,7 @@ export function ShopAll({
                       onChange={(event) => updateParams({ fColor: event.target.value })}
                       className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
-                      <option value="all">{SEARCH_SCHEMA.copy.allColorsLabel}</option>
+                      <option value="all">{copy.search.allColorsLabel}</option>
                       {facetOptions.colorOptions.map((color) => (
                         <option key={color} value={color}>
                           {color}
@@ -695,7 +698,7 @@ export function ShopAll({
               </p>
               <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <button type="button" className="btn btn-primary" onClick={resetFilters}>
-                  {SEARCH_SCHEMA.copy.resetFiltersCta}
+                  {copy.search.resetFiltersCta}
                 </button>
                 <Link className="btn btn-secondary text-sm" href="/feelings">
                   {isArabic ? 'تصفّح المشاعر' : 'Browse feelings'}
@@ -724,7 +727,7 @@ export function ShopAll({
                 <div>
                   <p className="font-label text-[10px] font-medium uppercase tracking-[0.24em] text-label">{copy.shell.shopAll}</p>
                   <h2 id="mobile-shop-all-filters-title" className="font-headline mt-2 text-2xl font-semibold tracking-tight text-obsidian">
-                    {SEARCH_SCHEMA.copy.filterAndSortCta}
+                    {copy.search.filterAndSortCta}
                   </h2>
                 </div>
                 <button
@@ -741,7 +744,7 @@ export function ShopAll({
               <div className="grid gap-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-shop-all-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.sortLabel}
+                    {copy.search.sortLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -762,7 +765,7 @@ export function ShopAll({
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-shop-all-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.priceLabel}
+                    {copy.search.priceLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -783,7 +786,7 @@ export function ShopAll({
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-shop-all-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.sizeFilterLabel}
+                    {copy.search.sizeFilterLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -805,7 +808,7 @@ export function ShopAll({
                 {results.vibeOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-shop-all-feeling" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.vibeLabel}
+                      {copy.search.vibeLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -814,7 +817,7 @@ export function ShopAll({
                         onChange={(event) => updateParams({ feelingFilter: event.target.value, vibeFilter: null })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
+                        <option value="all">{copy.search.allVibesLabel}</option>
                         {results.vibeOptions.map((option) => (
                           <option key={option.slug} value={option.slug}>
                             {option.name}
@@ -829,7 +832,7 @@ export function ShopAll({
                 {facetOptions.artistOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-shop-all-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.artistLabel}
+                      {copy.search.artistLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -838,7 +841,7 @@ export function ShopAll({
                         onChange={(event) => updateParams({ fArtist: event.target.value })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
+                        <option value="all">{copy.search.allArtistsLabel}</option>
                         {facetOptions.artistOptions.map((option) => (
                           <option key={option.slug} value={option.slug}>
                             {option.name}
@@ -853,7 +856,7 @@ export function ShopAll({
                 {facetOptions.occasionOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-shop-all-occasion" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.occasionFilterLabel}
+                      {copy.search.occasionFilterLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -862,7 +865,7 @@ export function ShopAll({
                         onChange={(event) => updateParams({ fOccasion: event.target.value })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allOccasionsFilterLabel}</option>
+                        <option value="all">{copy.search.allOccasionsFilterLabel}</option>
                         {facetOptions.occasionOptions.map((option) => (
                           <option key={option.slug} value={option.slug}>
                             {option.name}
@@ -877,7 +880,7 @@ export function ShopAll({
                 {facetOptions.colorOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-shop-all-color" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.colorLabel}
+                      {copy.search.colorLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -886,7 +889,7 @@ export function ShopAll({
                         onChange={(event) => updateParams({ fColor: event.target.value })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allColorsLabel}</option>
+                        <option value="all">{copy.search.allColorsLabel}</option>
                         {facetOptions.colorOptions.map((color) => (
                           <option key={color} value={color}>
                             {color}
@@ -906,7 +909,7 @@ export function ShopAll({
                     onClick={resetFilters}
                     className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal"
                   >
-                    {SEARCH_SCHEMA.copy.resetFiltersCta}
+                    {copy.search.resetFiltersCta}
                   </button>
                 ) : <span />}
                 <button type="button" onClick={closeMobileFilters} className="btn btn-primary">

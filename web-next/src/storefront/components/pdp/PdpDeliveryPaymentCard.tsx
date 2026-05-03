@@ -1,4 +1,5 @@
 'use client';
+import { useDictionary } from '../../i18n/ui-locale';
 
 import type { PdpDeliveryRules } from '../../utils/deliveryEstimate';
 import {
@@ -7,7 +8,7 @@ import {
 } from '../../utils/deliveryEstimate';
 import { PDP_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../../data/domain-config';
 
-const { copy } = PDP_SCHEMA;
+const { pdp: copy } = useDictionary();
 
 type PdpDeliveryPaymentCardProps = {
   deliveryRules: PdpDeliveryRules;

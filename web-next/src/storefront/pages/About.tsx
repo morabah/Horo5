@@ -6,11 +6,12 @@ import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ABOUT_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
 import { PAGE_HEROES } from '../content/page-heroes';
 import { aboutBridgeAlt, aboutBridgeImage, imgUrl } from '../data/images';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 export function About() {
   useScrollReveal();
-  const { copy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const config = PAGE_HEROES.about;
   const t = (v: { en: string; ar: string } | undefined) =>
     v ? v[locale as 'en' | 'ar'] : undefined;
@@ -23,7 +24,7 @@ export function About() {
           items={[{ label: copy.shell.home, to: '/' }, { label: copy.shell.about }]}
         />
         <section
-          aria-label={ABOUT_SCHEMA.copy.heroRegionLabel}
+          aria-label={copy.about.heroRegionLabel}
           className="relative isolate overflow-hidden rounded-[1.75rem] border border-white/65 bg-obsidian shadow-[0_28px_68px_-36px_rgba(26,26,26,0.35)]"
         >
           <div className="grid min-h-[34rem] lg:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]">
@@ -100,7 +101,7 @@ export function About() {
 
 
         <section
-          aria-label={ABOUT_SCHEMA.copy.bridgeRegionLabel}
+          aria-label={copy.about.bridgeRegionLabel}
           className="relative isolate overflow-hidden rounded-[1.75rem] border border-stone/65 bg-obsidian shadow-[0_28px_68px_-36px_rgba(26,26,26,0.32)]"
         >
           <div className="relative min-h-[20rem] sm:min-h-[24rem]">
@@ -122,7 +123,7 @@ export function About() {
                 data-reveal="stagger-1"
                 className="font-body inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium text-obsidian shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
               >
-                {ABOUT_SCHEMA.copy.bridgeCta}
+                {copy.about.bridgeCta}
               </Link>
             </div>
           </div>

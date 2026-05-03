@@ -1,11 +1,11 @@
 import Link from 'next/link';
 
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { NAV_ROUTE } from '../lib/navLinks';
 
 export function NotFound() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
 
   return (
     <div className="container" style={{ padding: '4rem 0', textAlign: 'center' }}>

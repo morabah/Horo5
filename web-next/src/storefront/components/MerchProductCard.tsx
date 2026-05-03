@@ -8,7 +8,7 @@ import { formatCartStockMessage } from '../cart/stock';
 import { trackSizeSelected, trackWishlistAdd, trackWishlistRemove } from '../analytics/events';
 import { PDP_SCHEMA } from '../data/domain-config';
 import { getProduct, type Product, type ProductSizeKey } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { productAvailableSizes } from '../utils/productSizes';
 import { QuickViewTrigger } from './QuickViewTrigger';
 import { TeeImageFrame } from './TeeImage';
@@ -73,7 +73,8 @@ export function MerchProductCard({
   className,
   'data-reveal': dataReveal,
 }: MerchProductCardProps) {
-  const { locale, copy } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const { addItem, setMiniCartOpen } = useCart();
   const { has: isWishlisted, toggle: toggleWishlist } = useWishlist();
   const wishlisted = isWishlisted(slug);

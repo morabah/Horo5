@@ -19,7 +19,7 @@ import { formatEgp } from '../utils/formatPrice';
 import { formatPdpFitModelLine } from '../utils/pdpFitModels';
 import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { AppIcon } from './AppIcon';
 
 type ProductQuickViewProps = {
@@ -35,7 +35,8 @@ const QUICK_VIEW_BASE_SIZES = PDP_SCHEMA.sizes.map((size) => ({
   disabled: Boolean(size.disabled),
 }));
 
-const pdpCopy = PDP_SCHEMA.copy;
+import { DICTIONARY } from "@/storefront/i18n/dictionary";
+const pdpCopy = DICTIONARY.en.pdp;
 
 export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }: ProductQuickViewProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -150,7 +151,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
       : undefined;
 
   const primaryCtaLabel = addedToBag
-    ? QUICK_VIEW_SCHEMA.copy.viewBagCta
+    ? DICTIONARY.en.quickView.viewBagCta
     : oosSelected
       ? pdpCopy.notifyMeCTA
       : selectedSize
@@ -269,7 +270,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
           <button
             type="button"
             className="absolute right-3 top-3 z-30 inline-flex min-h-12 min-w-12 items-center justify-center rounded-full border border-white/15 bg-black/45 text-lg text-white backdrop-blur-md transition-colors hover:bg-black/65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            aria-label={QUICK_VIEW_SCHEMA.copy.closeLabel}
+            aria-label={DICTIONARY.en.quickView.closeLabel}
             onClick={onClose}
           >
             <AppIcon name="close" className="h-5 w-5" />
@@ -471,7 +472,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                       className="font-label inline-flex min-h-11 w-full items-center justify-center text-[11px] font-medium uppercase tracking-[0.18em] text-white/90 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                       onClick={onClose}
                     >
-                      {QUICK_VIEW_SCHEMA.copy.continueBrowsingCta}
+                      {DICTIONARY.en.quickView.continueBrowsingCta}
                     </button>
                   </>
                 ) : (
@@ -513,7 +514,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                   onClose();
                 }}
               >
-                {QUICK_VIEW_SCHEMA.copy.viewFullProductCta}
+                {DICTIONARY.en.quickView.viewFullProductCta}
               </Link>
             </div>
           </div>

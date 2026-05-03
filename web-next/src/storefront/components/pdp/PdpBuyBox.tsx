@@ -1,4 +1,5 @@
 'use client';
+import { useDictionary } from '../../i18n/ui-locale';
 
 import Link from 'next/link';
 import { type FormEvent, type RefObject } from 'react';
@@ -9,7 +10,7 @@ import { formatEgp } from '../../utils/formatPrice';
 import { pickLocalizedText } from '../../lib/storefront/incentives-client';
 import { PdpSizeSelector } from './PdpSizeSelector';
 
-const { copy } = PDP_SCHEMA;
+const { pdp: copy } = useDictionary();
 
 function IconCart() {
   return (
@@ -199,7 +200,7 @@ export function PdpBuyBox({
           {/* Artist attribution */}
           {pdpArtist ? (
             <p className="font-body text-sm leading-snug text-warm-charcoal">
-              <span className="text-clay">{isArabic ? copy.illustratedByLabelAr : copy.illustratedByLabel}</span>{' '}
+              <span className="text-clay">{isArabic ? copy.illustratedByLabel : copy.illustratedByLabel}</span>{' '}
               <span className="font-medium text-obsidian">{pdpArtist.name}</span>
             </p>
           ) : null}

@@ -7,7 +7,7 @@ import {
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
 import { getProducts, productHasRealImage } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 
 /** Tiny dark blur placeholder matching the hero's muted aesthetic. */
@@ -18,7 +18,8 @@ const HERO_NAV_OFFSET = 'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem)
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
 export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSection }) {
-  const { locale, copy } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const isArabic = locale === 'ar';
   const config = PAGE_HEROES.home;
   const t = (v: { en: string; ar: string } | undefined) =>

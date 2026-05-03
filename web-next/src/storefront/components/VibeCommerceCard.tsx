@@ -1,3 +1,4 @@
+import { DICTIONARY } from "@/storefront/i18n/dictionary";
 import Link from 'next/link';
 
 import { VIBES_SCHEMA } from '../data/domain-config';
@@ -37,8 +38,8 @@ export function VibeCommerceCard({
   const displayCoverSrc = resolveProductImageSrcForDisplay(coverSrc);
   const accentColor = feeling.accent?.trim() || '#53706c';
   const bodyCopy = feeling.blurb || feeling.tagline || '';
-  const ctaLabel = variant === 'see-vibe' ? VIBES_SCHEMA.copy.cardSeeVibeCta : VIBES_SCHEMA.copy.cardExploreCta;
-  const ariaLabel = VIBES_SCHEMA.copy.cardAriaTemplate
+  const ctaLabel = variant === 'see-vibe' ? DICTIONARY.en.vibes.cardSeeVibeCta : DICTIONARY.en.vibes.cardExploreCta;
+  const ariaLabel = DICTIONARY.en.vibes.cardAriaTemplate
     .replace('{cta}', ctaLabel.replace(/\s*→$/, '').trim())
     .replace('{name}', feeling.name);
 

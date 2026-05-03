@@ -1,3 +1,4 @@
+import { DICTIONARY } from "@/storefront/i18n/dictionary";
 import { QUICK_VIEW_SCHEMA } from '../data/domain-config';
 
 type QuickViewVisibilityMode = 'desktop-hover' | 'mobile-inline' | 'plp-bar';
@@ -61,9 +62,9 @@ export function QuickViewTrigger({
       type="button"
       className={triggerClassName}
       onClick={onClick}
-      aria-label={QUICK_VIEW_SCHEMA.copy.openAriaTemplate.replace('{name}', productName)}
+      aria-label={DICTIONARY.en.quickView.openAriaTemplate.replace('{name}', productName)}
     >
-      + {QUICK_VIEW_SCHEMA.copy.openCta}
+      + {DICTIONARY.en.quickView.openCta}
     </button>
   );
 }

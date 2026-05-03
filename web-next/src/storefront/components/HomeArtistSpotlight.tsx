@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { HOME_FEATURED_ARTIST } from '../data/homeContent';
 import { getProductComparisonImageSrc, heroVectorizedV2, imgUrl } from '../data/images';
 import { getArtist, getArtists, getProducts, productHasRealImage } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
 
 function isCuratedAsset(src: string | undefined) {
@@ -11,7 +11,7 @@ function isCuratedAsset(src: string | undefined) {
 }
 
 export function HomeCraftFallback() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const proofProduct = getProducts().find(productHasRealImage);
   const proofImageSrc = proofProduct ? getProductComparisonImageSrc(proofProduct) : '';
 
@@ -51,7 +51,7 @@ export function HomeCraftFallback() {
 }
 
 export function HomeArtistSpotlight() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
 
   const configuredArtist =
     HOME_FEATURED_ARTIST && isCuratedAsset(HOME_FEATURED_ARTIST.imageSrc)

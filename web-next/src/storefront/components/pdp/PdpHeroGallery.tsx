@@ -1,10 +1,11 @@
 'use client';
+import { useDictionary } from '../../i18n/ui-locale';
 
 import { TeeImage } from '../TeeImage';
 import type { Product } from '../../data/catalog-types';
 import { fillPdpCopyTemplate, PDP_SCHEMA } from '../../data/domain-config';
 
-const { copy } = PDP_SCHEMA;
+const { pdp: copy } = useDictionary();
 
 type GalleryItem = {
   key: string;

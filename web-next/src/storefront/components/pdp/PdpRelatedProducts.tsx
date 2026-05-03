@@ -1,4 +1,5 @@
 'use client';
+import { useDictionary } from '../../i18n/ui-locale';
 
 import Link from 'next/link';
 import type { Product, Feeling } from '../../data/catalog-types';
@@ -9,7 +10,7 @@ import { TeeImageFrame } from '../TeeImage';
 import { getProductMedia } from '../../data/images';
 import { QuickViewTrigger } from '../QuickViewTrigger';
 
-const { copy } = PDP_SCHEMA;
+const { pdp: copy } = useDictionary();
 
 type PdpRelatedProductsProps = {
   products: Product[];

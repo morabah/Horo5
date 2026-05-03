@@ -1,6 +1,6 @@
 'use client';
 
-import { CART_SCHEMA } from '../../data/domain-config';
+import { useDictionary } from "@/storefront/i18n/ui-locale";
 
 type PdpGiftReadyCardProps = {
   /** When true, show that gift wrap is available at cart. */
@@ -8,7 +8,7 @@ type PdpGiftReadyCardProps = {
 };
 
 export function PdpGiftReadyCard({ giftWrapAvailable = true }: PdpGiftReadyCardProps) {
-  const { copy: cartCopy } = CART_SCHEMA;
+  const cartCopy = useDictionary().cart;
 
   return (
     <div className="rounded-2xl border border-stone/30 bg-white/60 p-6 md:p-8">

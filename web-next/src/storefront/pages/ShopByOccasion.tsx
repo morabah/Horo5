@@ -9,7 +9,7 @@ import { TeeImageFrame } from '../components/TeeImage';
 import { PAGE_HEROES } from '../content/page-heroes';
 import { OCCASION_SCHEMA } from '../data/domain-config';
 import { getOccasionCollectionVisual, imgUrl } from '../data/images';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { getOccasions, type Occasion } from '../data/site';
 import { trackOccasionsHubView } from '../analytics/funnel';
 
@@ -49,7 +49,7 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
         <h2 className="font-headline text-[1.18rem] font-semibold leading-snug text-obsidian">{name}</h2>
         <p className="font-body text-[0.96rem] leading-relaxed text-warm-charcoal">{blurb}</p>
         <span className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian transition-colors group-hover:text-deep-teal">
-          {OCCASION_SCHEMA.copy.secondaryCta}
+          {(useDictionary().occasion).secondaryCta}
         </span>
       </div>
     </Link>
@@ -57,22 +57,23 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
 }
 
 export function ShopByOccasion({ initialOccasions, mode = 'occasions' }: ShopByOccasionProps = {}) {
-  const { copy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const isArabic = locale === 'ar';
   const isGiftsHub = mode === 'gifts';
   const hubLabel = isGiftsHub ? (isArabic ? 'هدايا' : 'Gifts') : copy.shell.shopByMoment;
   const hubTitle = isGiftsHub
     ? (isArabic ? 'هدية بتقول حاجة حقيقية' : 'Gift something real')
-    : (PAGE_HEROES.occasions.title[locale as 'en' | 'ar'] ?? OCCASION_SCHEMA.copy.hubTitle);
+    : (PAGE_HEROES.occasions.title[locale as 'en' | 'ar'] ?? (useDictionary().occasion).hubTitle);
   const hubEyebrow = isGiftsHub
     ? (isArabic ? 'اختيارات جاهزة للهدايا' : 'Gift-ready routes')
-    : (PAGE_HEROES.occasions.eyebrow?.[locale as 'en' | 'ar'] ?? OCCASION_SCHEMA.copy.hubEyebrow);
+    : (PAGE_HEROES.occasions.eyebrow?.[locale as 'en' | 'ar'] ?? (useDictionary().occasion).hubEyebrow);
   const gridEyebrow = isGiftsHub
     ? (isArabic ? 'اختر حسب الشخص' : 'Choose by person')
-    : (isArabic ? OCCASION_SCHEMA.copy.hubGridEyebrowAr : OCCASION_SCHEMA.copy.hubGridEyebrow);
+    : (isArabic ? (useDictionary().occasion).hubGridEyebrow : (useDictionary().occasion).hubGridEyebrow);
   const gridTitle = isGiftsHub
     ? (isArabic ? 'أربع طرق للهدايا' : 'Four gift archetypes')
-    : (isArabic ? OCCASION_SCHEMA.copy.hubGridTitleAr : OCCASION_SCHEMA.copy.hubGridTitle);
+    : (isArabic ? (useDictionary().occasion).hubGridTitle : (useDictionary().occasion).hubGridTitle);
   const occasions = initialOccasions !== undefined ? initialOccasions : getOccasions();
 
   useEffect(() => {

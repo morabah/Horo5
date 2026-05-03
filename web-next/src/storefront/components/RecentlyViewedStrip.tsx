@@ -6,7 +6,7 @@ import { ProductQuickView } from './ProductQuickView';
 import { getProductCardImageSrc } from '../data/images';
 import { getArtist, getFeeling, getProduct, getSubfeeling, productHasRealImage } from '../data/site';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 type RecentlyViewedStripProps = {
   /** Hide current PDP product from the strip */
@@ -16,7 +16,7 @@ type RecentlyViewedStripProps = {
 
 export function RecentlyViewedStrip({ excludeSlug, className = '' }: RecentlyViewedStripProps) {
   const { slugs } = useRecentlyViewed();
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
 
   const cards = useMemo(() => {

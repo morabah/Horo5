@@ -1,5 +1,5 @@
 import { HOME_WHY_HORO_BLOCKS } from '../data/homeContent';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 function WhyIcon({ name }: { name: string }) {
   switch (name) {
@@ -53,7 +53,7 @@ function WhyIcon({ name }: { name: string }) {
 }
 
 export function HomeWhyHoro() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
 
   return (
     <section

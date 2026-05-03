@@ -2,10 +2,10 @@
 
 import { PolicyPageLayout } from '../components/PolicyPageLayout';
 import { mergePdpSizeTableConfig, type PdpSizeTableConfig } from '../data/domain-config';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 export function SizeGuide({ sizeTableConfig }: { sizeTableConfig?: PdpSizeTableConfig }) {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const page = copy.pages.sizeGuide;
   const resolvedSizeTable = sizeTableConfig ?? mergePdpSizeTableConfig(undefined);
   const formatModelLine = (model: PdpSizeTableConfig['fitModels'][number]) =>
@@ -20,7 +20,7 @@ export function SizeGuide({ sizeTableConfig }: { sizeTableConfig?: PdpSizeTableC
       eyebrow={page.eyebrow}
       title={page.title}
       intro={page.intro}
-      sections={page.sections.map((section) => ({
+      sections={page.sections.map((section: any) => ({
         title: section.title,
         body: section.body,
       }))}

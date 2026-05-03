@@ -24,7 +24,7 @@ const ProductQuickView = dynamic(
   { ssr: false },
 );
 import { SkeletonGrid } from '../components/ui/Skeleton';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { SEARCH_SCHEMA } from '../data/domain-config';
 import {
   getFeelingCollectionVisual,
@@ -70,10 +70,7 @@ const FOCUSABLE_SELECTOR =
 const SORT_IDS: SearchSortKey[] = ['relevance', 'featured', 'newest', 'price-asc', 'price-desc'];
 const PRICE_IDS: SearchPriceFilter[] = ['all', 'under-800', '800-899', '900+'];
 
-const SIZE_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: SEARCH_SCHEMA.copy.allSizesLabel },
-  ...defaultCatalogSizeKeys().map((size) => ({ value: size, label: size })),
-];
+
 
 const SORT_OPTIONS: { value: SearchSortKey; label: string }[] = [
   { value: 'relevance', label: 'Relevance' },
@@ -83,12 +80,7 @@ const SORT_OPTIONS: { value: SearchSortKey; label: string }[] = [
   { value: 'price-desc', label: 'Price: High to Low' },
 ];
 
-const PRICE_OPTIONS: { value: SearchPriceFilter; label: string }[] = [
-  { value: 'all', label: SEARCH_SCHEMA.copy.allPricesLabel },
-  { value: 'under-800', label: SEARCH_SCHEMA.copy.under800Label },
-  { value: '800-899', label: SEARCH_SCHEMA.copy.between800And899Label },
-  { value: '900+', label: SEARCH_SCHEMA.copy.over900Label },
-];
+
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((element) => {
@@ -117,8 +109,8 @@ function ChevronIcon() {
   );
 }
 
-function formatDesignCount(count: number) {
-  return `${count} ${count === 1 ? SEARCH_SCHEMA.copy.designSingular : SEARCH_SCHEMA.copy.designPlural}`;
+function formatDesignCount(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function formatResultCount(count: number, singular: string, plural: string) {
@@ -165,6 +157,7 @@ function SearchProductCard({
 }
 
 function SearchVibeResultCard({ vibe }: { vibe: SearchVibeCard }) {
+  const copy = useDictionary();
   return (
     <Link
       href={`/feelings/${vibe.slug}`}
@@ -178,9 +171,9 @@ function SearchVibeResultCard({ vibe }: { vibe: SearchVibeCard }) {
           <span style={{ color: vibe.accent }}>●</span> {vibe.name}
         </p>
         <p className="font-body text-sm leading-relaxed text-warm-charcoal">{vibe.tagline}</p>
-        <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">{formatDesignCount(vibe.designCount)}</p>
+        <p className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-label">{formatDesignCount(vibe.designCount, copy.search.designSingular, copy.search.designPlural)}</p>
         <span className="font-label inline-flex min-h-11 items-center text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal">
-          {SEARCH_SCHEMA.copy.viewVibeCta}
+          {copy.search.viewVibeCta}
         </span>
       </div>
     </Link>
@@ -228,14 +221,26 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
   const pathname = usePathname();
   const isBrowsePage = pathname === '/products';
   const isMobile = useMediaQuery('(max-width: 767px)');
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const searchRootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mobileFilterSheetRef = useRef<HTMLDivElement>(null);
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
   const mobileFilterTriggerRef = useRef<HTMLElement | null>(null);
 
-  const urlQuery = params.get('q') ?? '';
+  const SIZE_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'all', label: copy.search.allSizesLabel },
+  ...defaultCatalogSizeKeys().map((size) => ({ value: size, label: size })),
+];
+
+const PRICE_OPTIONS: { value: SearchPriceFilter; label: string }[] = [
+  { value: 'all', label: copy.search.allPricesLabel },
+  { value: 'under-800', label: copy.search.under800Label },
+  { value: '800-899', label: copy.search.between800And899Label },
+  { value: '900+', label: copy.search.over900Label },
+];
+
+const urlQuery = params.get('q') ?? '';
   const [q, setQ] = useState(urlQuery);
   const [debouncedQ, setDebouncedQ] = useState(urlQuery);
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
@@ -594,12 +599,12 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
   }, [baseDesigns, designMatches, scopeOccasion, scopeFeeling]);
 
   const summaryText = hasDebouncedQuery
-    ? SEARCH_SCHEMA.copy.resultsForQuery.replace('{count}', String(totalResults)).replace('{query}', debouncedQ.trim())
+    ? copy.search.resultsForQuery.replace('{count}', String(totalResults)).replace('{query}', debouncedQ.trim())
     : scopeSummary
-      ? SEARCH_SCHEMA.copy.scopedResultsFallback.replace('{scope}', scopeSummary)
+      ? copy.search.scopedResultsFallback.replace('{scope}', scopeSummary)
       : isBrowsePage
         ? 'Browse all HORO designs. Use quick lanes first, then open filters only when needed.'
-        : SEARCH_SCHEMA.copy.resultsFallback;
+        : copy.search.resultsFallback;
 
   const popularSearches = useMemo(() => {
     const suggestions = [
@@ -735,7 +740,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
               {scopeSummary ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">
-                    {SEARCH_SCHEMA.copy.searchingInLabel}
+                    {copy.search.searchingInLabel}
                   </span>
                   {scopeLabels.map((label) => (
                     <span
@@ -749,14 +754,14 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                     href={clearScopeTo}
                     className="font-label inline-flex min-h-12 items-center text-[10px] font-medium uppercase tracking-[0.18em] text-deep-teal"
                   >
-                    {SEARCH_SCHEMA.copy.searchAllLabel}
+                    {copy.search.searchAllLabel}
                   </Link>
                 </div>
               ) : null}
 
               <div ref={searchRootRef} className="relative">
                 <label htmlFor="search-page-input" className="sr-only">
-                  {SEARCH_SCHEMA.copy.searchLabel}
+                  {copy.search.searchLabel}
                 </label>
                 <span className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-obsidian/62" aria-hidden>
                   <AppIcon name="search" className="h-5 w-5" />
@@ -811,7 +816,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
               {inputEmpty ? (
                 <div className="flex flex-wrap gap-2">
                   <span className="font-label basis-full text-[10px] font-medium uppercase tracking-[0.22em] text-label">
-                    {SEARCH_SCHEMA.copy.popularLabel}
+                    {copy.search.popularLabel}
                   </span>
                   {popularSearches.map((label) => (
                     <button
@@ -954,7 +959,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                       : 'border-stone bg-white text-obsidian'
                   }`}
                 >
-                  {value === 'all' ? SEARCH_SCHEMA.copy.allSizesLabel : value}
+                  {value === 'all' ? copy.search.allSizesLabel : value}
                 </button>
               ))}
             </div>
@@ -964,7 +969,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
               onClick={openMobileFilters}
               className="font-label inline-flex min-h-12 items-center justify-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
             >
-              {SEARCH_SCHEMA.copy.filterAndSortCta}
+              {copy.search.filterAndSortCta}
             </button>
             {hasActiveFilters ? (
               <button
@@ -972,7 +977,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 onClick={resetFilters}
                 className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
               >
-                {SEARCH_SCHEMA.copy.resetFiltersCta}
+                {copy.search.resetFiltersCta}
               </button>
             ) : null}
           </div>
@@ -982,7 +987,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {!isBrowsePage || desktopAdvancedFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.sortLabel}
+                    {copy.search.sortLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1005,7 +1010,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {!isBrowsePage || desktopAdvancedFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.priceLabel}
+                    {copy.search.priceLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1028,7 +1033,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {!isBrowsePage ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.sizeFilterLabel}
+                    {copy.search.sizeFilterLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1052,7 +1057,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                   !isBrowsePage || desktopAdvancedFiltersOpen ? (
                   <div className="flex min-w-[13rem] flex-col gap-2">
                     <label htmlFor="search-color" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.colorLabel}
+                      {copy.search.colorLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -1061,7 +1066,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                         onChange={(event) => updateParams({ fColor: event.target.value })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allColorsLabel}</option>
+                        <option value="all">{copy.search.allColorsLabel}</option>
                         {facetOptions.colorOptions.map((color) => (
                           <option key={color} value={color}>
                             {color}
@@ -1089,7 +1094,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                   onClick={resetFilters}
                   className="font-label inline-flex min-h-12 shrink-0 items-center text-[11px] font-medium uppercase tracking-[0.2em] text-deep-teal focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
-                  {SEARCH_SCHEMA.copy.resetFiltersCta}
+                  {copy.search.resetFiltersCta}
                 </button>
               ) : null}
             </div>
@@ -1099,7 +1104,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
               {vibeOptions.length > 1 ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.vibeLabel}
+                    {copy.search.vibeLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1108,7 +1113,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                       onChange={(event) => updateParams({ feelingFilter: event.target.value, vibeFilter: null })}
                       className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
-                      <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
+                      <option value="all">{copy.search.allVibesLabel}</option>
                       {vibeOptions.map((option) => (
                         <option key={option.slug} value={option.slug}>
                           {option.name}
@@ -1122,7 +1127,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
               {facetOptions.artistOptions.length > 1 ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.artistLabel}
+                    {copy.search.artistLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1131,7 +1136,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                       onChange={(event) => updateParams({ fArtist: event.target.value })}
                       className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
-                      <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
+                      <option value="all">{copy.search.allArtistsLabel}</option>
                       {facetOptions.artistOptions.map((option) => (
                         <option key={option.slug} value={option.slug}>
                           {option.name}
@@ -1145,7 +1150,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
               {facetOptions.occasionOptions.length > 1 ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="search-occasion-facet" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.occasionFilterLabel}
+                    {copy.search.occasionFilterLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1154,7 +1159,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                       onChange={(event) => updateParams({ fOccasion: event.target.value })}
                       className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                     >
-                      <option value="all">{SEARCH_SCHEMA.copy.allOccasionsFilterLabel}</option>
+                      <option value="all">{copy.search.allOccasionsFilterLabel}</option>
                       {facetOptions.occasionOptions.map((option) => (
                         <option key={option.slug} value={option.slug}>
                           {option.name}
@@ -1173,7 +1178,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
           ) : noResultsAcrossSections ? (
             <div className="card-glass mt-4 flex flex-col items-center border border-stone/70 px-6 py-10 text-center md:py-12">
               <h2 className="font-headline text-[1.45rem] font-semibold tracking-tight text-obsidian">
-                {SEARCH_SCHEMA.copy.noResultsForQuery.replace('{query}', debouncedQ.trim())}
+                {copy.search.noResultsForQuery.replace('{query}', debouncedQ.trim())}
               </h2>
               <p className="mt-3 max-w-xl font-body text-[0.98rem] leading-relaxed text-warm-charcoal">
                 Try a shorter phrase, clear filters, or browse by feeling and occasion.
@@ -1184,22 +1189,22 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                   onClick={resetFilters}
                   className="font-label mt-4 min-h-12 rounded-sm border border-obsidian px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
-                  {SEARCH_SCHEMA.copy.resetFiltersCta}
+                  {copy.search.resetFiltersCta}
                 </button>
               ) : null}
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
                 <Link className="btn btn-primary" href="/feelings">
-                  {SEARCH_SCHEMA.copy.shopByVibeCta}
+                  {copy.search.shopByVibeCta}
                 </Link>
                 <Link className="btn btn-secondary text-sm" href="/occasions">
-                  {SEARCH_SCHEMA.copy.shopByOccasionCta}
+                  {copy.search.shopByOccasionCta}
                 </Link>
                 <Link className="btn btn-ghost" href="/products">
-                  {SEARCH_SCHEMA.copy.browseAllDesignsCta}
+                  {copy.search.browseAllDesignsCta}
                 </Link>
               </div>
               <p className="mt-8 font-label text-[10px] font-medium uppercase tracking-[0.22em] text-label">
-                {SEARCH_SCHEMA.copy.zeroResultsSuggestionsHeading}
+                {copy.search.zeroResultsSuggestionsHeading}
               </p>
               <div className="mt-3 flex max-w-xl flex-wrap justify-center gap-2">
                 {popularSearches.map((term) => (
@@ -1223,7 +1228,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                       {copy.search.designsHeading}
                     </h2>
                   </div>
-                  <p className="font-body text-sm text-clay">{formatDesignCount(designMatches.length)}</p>
+                  <p className="font-body text-sm text-clay">{formatDesignCount(designMatches.length, copy.search.designSingular, copy.search.designPlural)}</p>
                 </div>
 
                 <div className="vibe-product-grid">
@@ -1240,10 +1245,10 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {designMatches.length === 0 ? (
                   <div className="mt-6">
                     <p className="font-body text-clay">
-                      {hasActiveFilters ? SEARCH_SCHEMA.copy.noFilteredResults : SEARCH_SCHEMA.copy.noDesignResults}{' '}
+                      {hasActiveFilters ? copy.search.noFilteredResults : copy.search.noDesignResults}{' '}
                       {hasActiveFilters ? (
                         <button type="button" onClick={resetFilters} className="border-0 bg-transparent font-medium text-deep-teal underline">
-                          {SEARCH_SCHEMA.copy.resetFiltersCta}
+                          {copy.search.resetFiltersCta}
                         </button>
                       ) : null}
                     </p>
@@ -1318,7 +1323,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 <div>
                   <p className="font-label text-[10px] font-medium uppercase tracking-[0.24em] text-label">{copy.search.designsHeading}</p>
                   <h2 id="mobile-search-filters-title" className="font-headline mt-2 text-2xl font-semibold tracking-tight text-obsidian">
-                    {SEARCH_SCHEMA.copy.filterAndSortCta}
+                    {copy.search.filterAndSortCta}
                   </h2>
                 </div>
                 <button
@@ -1335,7 +1340,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-search-sort" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.sortLabel}
+                    {copy.search.sortLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1356,7 +1361,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-search-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.priceLabel}
+                    {copy.search.priceLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1378,7 +1383,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {vibeOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-search-vibe" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.vibeLabel}
+                      {copy.search.vibeLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -1387,7 +1392,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                         onChange={(event) => updateParams({ feelingFilter: event.target.value, vibeFilter: null })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allVibesLabel}</option>
+                        <option value="all">{copy.search.allVibesLabel}</option>
                         {vibeOptions.map((option) => (
                           <option key={option.slug} value={option.slug}>
                             {option.name}
@@ -1401,7 +1406,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-search-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                    {SEARCH_SCHEMA.copy.sizeFilterLabel}
+                    {copy.search.sizeFilterLabel}
                   </label>
                   <div className="relative">
                     <select
@@ -1423,7 +1428,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {facetOptions.artistOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-search-artist" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.artistLabel}
+                      {copy.search.artistLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -1432,7 +1437,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                         onChange={(event) => updateParams({ fArtist: event.target.value })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allArtistsLabel}</option>
+                        <option value="all">{copy.search.allArtistsLabel}</option>
                         {facetOptions.artistOptions.map((option) => (
                           <option key={option.slug} value={option.slug}>
                             {option.name}
@@ -1447,7 +1452,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {facetOptions.occasionOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-search-occasion-facet" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.occasionFilterLabel}
+                      {copy.search.occasionFilterLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -1456,7 +1461,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                         onChange={(event) => updateParams({ fOccasion: event.target.value })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allOccasionsFilterLabel}</option>
+                        <option value="all">{copy.search.allOccasionsFilterLabel}</option>
                         {facetOptions.occasionOptions.map((option) => (
                           <option key={option.slug} value={option.slug}>
                             {option.name}
@@ -1471,7 +1476,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                 {facetOptions.colorOptions.length > 1 ? (
                   <div className="flex flex-col gap-2">
                     <label htmlFor="mobile-search-color" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
-                      {SEARCH_SCHEMA.copy.colorLabel}
+                      {copy.search.colorLabel}
                     </label>
                     <div className="relative">
                       <select
@@ -1480,7 +1485,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                         onChange={(event) => updateParams({ fColor: event.target.value })}
                         className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                       >
-                        <option value="all">{SEARCH_SCHEMA.copy.allColorsLabel}</option>
+                        <option value="all">{copy.search.allColorsLabel}</option>
                         {facetOptions.colorOptions.map((color) => (
                           <option key={color} value={color}>
                             {color}
@@ -1499,9 +1504,9 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                   onClick={closeMobileFilters}
                   className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-6 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
-                  {SEARCH_SCHEMA.copy.showCountCta
+                  {copy.search.showCountCta
                     .replace('{count}', String(designMatches.length))
-                    .replace('{label}', designMatches.length === 1 ? SEARCH_SCHEMA.copy.designSingular : SEARCH_SCHEMA.copy.designPlural)}
+                    .replace('{label}', designMatches.length === 1 ? copy.search.designSingular : copy.search.designPlural)}
                 </button>
                 {hasActiveFilters ? (
                   <button
@@ -1509,7 +1514,7 @@ export function Search({ initialCatalog = null }: { initialCatalog?: Partial<Run
                     onClick={resetFilters}
                     className="font-label inline-flex min-h-11 items-center justify-center rounded-sm border border-stone bg-white px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   >
-                    {SEARCH_SCHEMA.copy.resetFiltersCta}
+                    {copy.search.resetFiltersCta}
                   </button>
                 ) : null}
               </div>

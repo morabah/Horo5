@@ -6,11 +6,12 @@ import { PageBreadcrumb } from "@/storefront/components/PageBreadcrumb";
 import { ProductQuickView } from "@/storefront/components/ProductQuickView";
 import { getProductCardImageSrc } from "@/storefront/data/images";
 import type { Artist, Product } from "@/storefront/data/site";
-import { useUiLocale } from "@/storefront/i18n/ui-locale";
+import { useUiLocale, useDictionary } from "@/storefront/i18n/ui-locale";
 import { useState } from "react";
 
 function ArtistHub({ artist, products }: { artist: Artist; products: Product[] }) {
-  const { copy, locale } = useUiLocale();
+  const { locale } = useUiLocale();
+  const copy = useDictionary();
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);
   const isArabic = locale === "ar";
 

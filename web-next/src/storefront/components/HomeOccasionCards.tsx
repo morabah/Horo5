@@ -2,10 +2,10 @@ import Link from 'next/link';
 
 import { getOccasionCollectionVisual, heroVectorizedV2, imgUrl } from '../data/images';
 import { getOccasions } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 export function HomeOccasionCards() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const cards = getOccasions()
     .filter((occasion) => occasion.active !== false)
     .map((occasion, index) => ({ occasion, index }))

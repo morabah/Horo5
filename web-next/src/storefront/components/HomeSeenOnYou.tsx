@@ -1,7 +1,7 @@
 import { HOME_SEEN_ON_YOU } from '../data/homeContent';
 import { getProductComparisonImageSrc, heroVectorizedV2, imgUrl } from '../data/images';
 import { getProducts, productHasRealImage } from '../data/site';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
 
 function isCuratedAsset(src: string | undefined) {
@@ -9,7 +9,7 @@ function isCuratedAsset(src: string | undefined) {
 }
 
 export function HomeDetailFallback() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const proofProduct = getProducts().find(productHasRealImage);
   const proofImageSrc = proofProduct ? getProductComparisonImageSrc(proofProduct) : '';
 
@@ -49,7 +49,7 @@ export function HomeDetailFallback() {
 }
 
 export function HomeSeenOnYou() {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const entries = HOME_SEEN_ON_YOU.filter((entry) => isCuratedAsset(entry.imageSrc)).slice(0, 6);
 
   if (entries.length < 4) {

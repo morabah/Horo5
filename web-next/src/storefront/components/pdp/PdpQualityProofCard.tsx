@@ -1,4 +1,5 @@
 'use client';
+import { useDictionary } from '../../i18n/ui-locale';
 
 import { PDP_SCHEMA } from '../../data/domain-config';
 import { PDP_FEATURE_ICONS } from '../../data/pdpIconRegistry';
@@ -49,7 +50,7 @@ export function PdpQualityProofCard({ physicalLines }: PdpQualityProofCardProps)
       ) : null}
 
       <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal/80">
-        {PDP_SCHEMA.copy.designStoryAccordionBody}
+        {(useDictionary().pdp).designStoryAccordionBody}
       </p>
     </div>
   );

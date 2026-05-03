@@ -35,7 +35,7 @@ import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { useMediaQuery } from '../hooks/useMediaQuery';
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { trackFeelingCollectionView } from '../analytics/funnel';
 
 /** Show numeric design count in hero only when catalog feels substantial */
@@ -52,12 +52,7 @@ const SORT_OPTIONS: { value: ProductSortKey; label: string }[] = [
 
 type PriceFilter = 'all' | 'under-800' | '800-899' | '900+';
 
-const PRICE_FILTERS: { value: PriceFilter; label: string }[] = [
-  { value: 'all', label: 'All prices' },
-  { value: 'under-800', label: 'Under 800 EGP' },
-  { value: '800-899', label: '800–899 EGP' },
-  { value: '900+', label: '900+ EGP' },
-];
+
 
 type FeelingCollectionProps = {
   /** Server catalog from Medusa, matching the homepage first-paint data flow. */
@@ -167,7 +162,7 @@ export function FeelingCollection({
   const [searchParams] = useAppSearchParams();
   const lineFromQuery = searchParams.get('line')?.trim() || '';
   const lineParam = subfeelingSlug || lineFromQuery;
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   const feeling = getFeeling(slug);
   const subfeelings = useMemo(() => sortActiveSubfeelings(getSubfeelingsByFeeling(slug)), [slug]);
   const activeLine = lineParam ? subfeelings.find((line) => line.slug === lineParam) : undefined;
@@ -180,6 +175,14 @@ export function FeelingCollection({
     }
     return list;
   }, [slug, lineParam]);
+
+  const PRICE_FILTERS: { value: PriceFilter; label: string }[] = [
+    { value: 'all', label: copy.search.allPricesLabel },
+    { value: 'under-800', label: copy.search.under800Label },
+    { value: '800-899', label: copy.search.between800And899Label },
+    { value: '900+', label: copy.search.over900Label },
+  ];
+
   const [sortKey, setSortKey] = useState<ProductSortKey>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
   const [quickViewSlug, setQuickViewSlug] = useState<string | null>(null);

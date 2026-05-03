@@ -3,10 +3,10 @@
 import React from 'react';
 import type { ProductSizeKey } from '../../data/catalog-types';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
-import { useUiLocale } from '../../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../../i18n/ui-locale';
 import { PdpSizeFlatDiagram } from '../PdpSizeFlatDiagram';
 
-const { copy } = PDP_SCHEMA;
+const { pdp: copy } = useDictionary();
 
 function localizedSizeTableLabel(config: PdpSizeTableConfig, locale: 'en' | 'ar') {
   const label = config.displayLabel;

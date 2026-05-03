@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { useUiLocale } from '../i18n/ui-locale';
+import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 export type PageBreadcrumbItem = {
   label: string;
@@ -16,7 +16,7 @@ type PageBreadcrumbProps = {
  * Shared trail: last item is current page (no link). Matches policy/PDP breadcrumb tone.
  */
 export function PageBreadcrumb({ items, className = '' }: PageBreadcrumbProps) {
-  const { copy } = useUiLocale();
+  const copy = useDictionary();
   if (items.length === 0) return null;
 
   return (

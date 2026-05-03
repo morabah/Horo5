@@ -1,7 +1,8 @@
+import { DICTIONARY } from '../i18n/dictionary';
 import { PDP_SCHEMA } from '../data/domain-config';
 import type { PdpFitModel, Product } from '../data/site';
 
-const { copy } = PDP_SCHEMA;
+const copy = DICTIONARY.en.pdp;
 
 function fitNoteSuffixFromModel(model: PdpFitModel): string {
   const note = model.fitNote?.trim();
@@ -47,5 +48,5 @@ export function formatPdpFitModelLines(product: Product): string[] {
 
 export function defaultPdpModelParagraph(product: Product): string {
   const fitSuffix = product.fitLabel ? ` — ${product.fitLabel.toLowerCase()} fit` : '';
-  return PDP_SCHEMA.copy.modelLineTemplate.replace('{fit}', fitSuffix);
+  return DICTIONARY.en.pdp.modelLineTemplate.replace('{fit}', fitSuffix);
 }
