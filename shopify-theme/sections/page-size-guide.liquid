@@ -1,0 +1,273 @@
+{{ 'component-size-guide.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div
+  id="PageSizeGuide-{{ section.id }}"
+  class="horo-section size-guide color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+>
+  <div class="page-width">
+    <div class="size-guide__wrapper">
+      {%- if section.settings.heading != blank -%}
+        <h1 class="size-guide__heading {{ section.settings.heading_size }}">
+          {{ section.settings.heading | escape }}
+        </h1>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <div class="size-guide__table-wrapper">
+          <table class="size-guide__table">
+            <thead>
+              <tr>
+                <th scope="col">{{ section.settings.size_column_label | escape }}</th>
+                <th scope="col">{{ section.settings.chest_column_label | escape }}</th>
+                <th scope="col">{{ section.settings.length_column_label | escape }}</th>
+                <th scope="col">{{ section.settings.shoulder_column_label | escape }}</th>
+                <th scope="col">{{ section.settings.sleeve_column_label | escape }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for block in section.blocks -%}
+                <tr {{ block.shopify_attributes }}>
+                  <td>{{ block.settings.size_label | escape }}</td>
+                  <td>{{ block.settings.chest | escape }}</td>
+                  <td>{{ block.settings.length | escape }}</td>
+                  <td>{{ block.settings.shoulder | escape }}</td>
+                  <td>{{ block.settings.sleeve | escape }}</td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+      {%- elsif request.design_mode -%}
+        <div class="size-guide__placeholder">
+          <p>Add size blocks to populate the size table.</p>
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.disclaimer != blank -%}
+        <p class="size-guide__disclaimer">
+          {{ section.settings.disclaimer | escape }}
+        </p>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HORO Page Size Guide",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "T-Shirt Size Guide"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "text",
+      "id": "size_column_label",
+      "label": "Size column label",
+      "default": "Size"
+    },
+    {
+      "type": "text",
+      "id": "chest_column_label",
+      "label": "Chest column label",
+      "default": "Chest"
+    },
+    {
+      "type": "text",
+      "id": "length_column_label",
+      "label": "Length column label",
+      "default": "Length"
+    },
+    {
+      "type": "text",
+      "id": "shoulder_column_label",
+      "label": "Shoulder column label",
+      "default": "Shoulder"
+    },
+    {
+      "type": "text",
+      "id": "sleeve_column_label",
+      "label": "Sleeve column label",
+      "default": "Sleeve"
+    },
+    {
+      "type": "text",
+      "id": "disclaimer",
+      "label": "Measurement disclaimer",
+      "default": "Measurements may vary slightly depending on fabric and printing."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "size_row",
+      "name": "Size row",
+      "settings": [
+        {
+          "type": "text",
+          "id": "size_label",
+          "label": "Size label",
+          "default": "M"
+        },
+        {
+          "type": "text",
+          "id": "chest",
+          "label": "Chest",
+          "default": "50 cm"
+        },
+        {
+          "type": "text",
+          "id": "length",
+          "label": "Length",
+          "default": "70 cm"
+        },
+        {
+          "type": "text",
+          "id": "shoulder",
+          "label": "Shoulder",
+          "default": "44 cm"
+        },
+        {
+          "type": "text",
+          "id": "sleeve",
+          "label": "Sleeve",
+          "default": "21 cm"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Page Size Guide",
+      "blocks": {
+        "xs": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "XS",
+            "chest": "46 cm",
+            "length": "64 cm",
+            "shoulder": "40 cm",
+            "sleeve": "19 cm"
+          }
+        },
+        "s": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "S",
+            "chest": "48 cm",
+            "length": "66 cm",
+            "shoulder": "42 cm",
+            "sleeve": "20 cm"
+          }
+        },
+        "m": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "M",
+            "chest": "50 cm",
+            "length": "70 cm",
+            "shoulder": "44 cm",
+            "sleeve": "21 cm"
+          }
+        },
+        "l": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "L",
+            "chest": "53 cm",
+            "length": "72 cm",
+            "shoulder": "46 cm",
+            "sleeve": "22 cm"
+          }
+        },
+        "xl": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "XL",
+            "chest": "56 cm",
+            "length": "74 cm",
+            "shoulder": "48 cm",
+            "sleeve": "23 cm"
+          }
+        },
+        "xxl": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "XXL",
+            "chest": "59 cm",
+            "length": "76 cm",
+            "shoulder": "50 cm",
+            "sleeve": "24 cm"
+          }
+        }
+      },
+      "block_order": [
+        "xs",
+        "s",
+        "m",
+        "l",
+        "xl",
+        "xxl"
+      ]
+    }
+  ]
+}
+{% endschema %}

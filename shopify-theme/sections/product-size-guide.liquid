@@ -1,0 +1,192 @@
+{{ 'component-size-guide.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign size_fit_note = product.metafields.custom.size_fit_note.value
+  assign size_table_metaobject = product.metafields.custom.size_table.value
+
+  assign has_content = false
+
+  if size_fit_note != blank and size_fit_note != empty
+    assign has_content = true
+  endif
+
+  if size_table_metaobject != blank
+    assign has_content = true
+  endif
+
+  if section.settings.fallback_table != blank and section.settings.fallback_table != empty
+    assign has_content = true
+  endif
+-%}
+
+{%- if has_content or request.design_mode -%}
+  {%- style -%}
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    id="ProductSizeGuide-{{ section.id }}"
+    class="horo-section size-guide color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    <div class="page-width">
+      {%- if has_content -%}
+        <div class="size-guide__wrapper">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="size-guide__heading {{ section.settings.heading_size }}">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+
+          {%- if size_fit_note != blank and size_fit_note != empty -%}
+            <p class="size-guide__note">{{ size_fit_note | escape }}</p>
+          {%- elsif section.settings.fallback_fit_note != blank and section.settings.fallback_fit_note != empty -%}
+            <p class="size-guide__note">{{ section.settings.fallback_fit_note | escape }}</p>
+          {%- endif -%}
+
+          {%- if size_table_metaobject != blank -%}
+            {%- if size_table_metaobject.rows != blank -%}
+              <div class="size-guide__table-wrapper">
+                <table class="size-guide__table">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{ 'Size' | escape }}</th>
+                      <th scope="col">{{ 'Chest' | escape }}</th>
+                      <th scope="col">{{ 'Length' | escape }}</th>
+                      <th scope="col">{{ 'Shoulder' | escape }}</th>
+                      <th scope="col">{{ 'Sleeve' | escape }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {%- for row in size_table_metaobject.rows -%}
+                      <tr>
+                        <td>{{ row.size_label | default: '' | escape }}</td>
+                        <td>{{ row.chest | default: '' | escape }}</td>
+                        <td>{{ row.length | default: '' | escape }}</td>
+                        <td>{{ row.shoulder | default: '' | escape }}</td>
+                        <td>{{ row.sleeve | default: '' | escape }}</td>
+                      </tr>
+                    {%- endfor -%}
+                  </tbody>
+                </table>
+              </div>
+            {%- elsif size_table_metaobject.content != blank -%}
+              <div class="size-guide__table-wrapper">
+                <div class="rte">
+                  {{ size_table_metaobject.content }}
+                </div>
+              </div>
+            {%- endif -%}
+          {%- elsif section.settings.fallback_table != blank and section.settings.fallback_table != empty -%}
+            <div class="size-guide__table-wrapper">
+              <div class="rte">
+                {{ section.settings.fallback_table }}
+              </div>
+            </div>
+          {%- endif -%}
+
+          {%- if section.settings.disclaimer != blank -%}
+            <p class="size-guide__disclaimer">
+              {{ section.settings.disclaimer | escape }}
+            </p>
+          {%- endif -%}
+        </div>
+      {%- elsif request.design_mode -%}
+        <div class="size-guide__placeholder">
+          <p>
+            Add <code>custom.size_fit_note</code> and/or <code>custom.size_table</code> product metafields, or enter fallback content below, to populate this size guide.
+          </p>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Size Guide",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Size guide"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "text",
+      "id": "fallback_fit_note",
+      "label": "Fallback fit note",
+      "info": "Shown if the product has no size_fit_note metafield."
+    },
+    {
+      "type": "richtext",
+      "id": "fallback_table",
+      "label": "Fallback size table",
+      "info": "Shown if the product has no size_table metafield. Use the rich-text editor to create a simple table, or leave blank to hide the section."
+    },
+    {
+      "type": "text",
+      "id": "disclaimer",
+      "label": "Measurement disclaimer",
+      "default": "Measurements may vary slightly depending on fabric and printing."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Size Guide"
+    }
+  ]
+}
+{% endschema %}

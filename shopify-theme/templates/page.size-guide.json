@@ -1,0 +1,93 @@
+{
+  "sections": {
+    "size_guide": {
+      "type": "page-size-guide",
+      "settings": {
+        "heading": "T-Shirt Size Guide",
+        "heading_size": "h1",
+        "size_column_label": "Size",
+        "chest_column_label": "Chest",
+        "length_column_label": "Length",
+        "shoulder_column_label": "Shoulder",
+        "sleeve_column_label": "Sleeve",
+        "disclaimer": "Measurements may vary slightly depending on fabric and printing.",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "xs": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "XS",
+            "chest": "46 cm",
+            "length": "64 cm",
+            "shoulder": "40 cm",
+            "sleeve": "19 cm"
+          }
+        },
+        "s": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "S",
+            "chest": "48 cm",
+            "length": "66 cm",
+            "shoulder": "42 cm",
+            "sleeve": "20 cm"
+          }
+        },
+        "m": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "M",
+            "chest": "50 cm",
+            "length": "70 cm",
+            "shoulder": "44 cm",
+            "sleeve": "21 cm"
+          }
+        },
+        "l": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "L",
+            "chest": "53 cm",
+            "length": "72 cm",
+            "shoulder": "46 cm",
+            "sleeve": "22 cm"
+          }
+        },
+        "xl": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "XL",
+            "chest": "56 cm",
+            "length": "74 cm",
+            "shoulder": "48 cm",
+            "sleeve": "23 cm"
+          }
+        },
+        "xxl": {
+          "type": "size_row",
+          "settings": {
+            "size_label": "XXL",
+            "chest": "59 cm",
+            "length": "76 cm",
+            "shoulder": "50 cm",
+            "sleeve": "24 cm"
+          }
+        }
+      },
+      "block_order": [
+        "xs",
+        "s",
+        "m",
+        "l",
+        "xl",
+        "xxl"
+      ]
+    }
+  },
+  "order": [
+    "size_guide"
+  ]
+}
