@@ -94,6 +94,45 @@
         "padding_bottom": 36
       }
     },
+    "gift_block": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Gift by Meaning",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Say it without saying it. Find the perfect gift for every moment.<\/p>"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "button_label": "Explore Gifts",
+            "button_link": "/pages/gifts",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": [
+        "heading",
+        "text",
+        "button"
+      ],
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "color_scheme": "scheme-2",
+        "full_width": true,
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
+    },
     "rich_text": {
       "type": "rich-text",
       "blocks": {
@@ -253,6 +292,7 @@
     "primary_routes",
     "feeling_grid",
     "occasion_grid",
+    "gift_block",
     "rich_text",
     "featured_collection",
     "collage",
