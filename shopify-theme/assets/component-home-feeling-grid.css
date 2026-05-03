@@ -2,6 +2,8 @@
 
 .home-feeling-grid {
   text-align: start;
+  border-block-start: 1px solid rgba(31, 28, 26, 0.08);
+  padding-block-start: 3.2rem;
 }
 
 .home-feeling-grid__heading {
@@ -9,11 +11,15 @@
   margin: 0 0 0.8rem;
 }
 
+/* Eyebrow label treatment */
 .home-feeling-grid__subheading {
   text-align: center;
   margin: 0 0 2.4rem;
-  font-size: 1.4rem;
-  opacity: 0.7;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.6;
 }
 
 .home-feeling-grid__list {
@@ -55,20 +61,23 @@
   display: block;
   text-decoration: none;
   color: inherit;
-  border-radius: var(--border-radius);
+  border-radius: max(var(--border-radius), 1.6rem);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(212, 204, 192, 0.45);
+  box-shadow: 0 0.6rem 2rem rgba(26, 26, 26, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .home-feeling-grid__card:hover {
-  transform: translateY(-0.3rem);
-  box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.1);
+  transform: translateY(-0.35rem);
+  box-shadow: 0 1rem 2.8rem rgba(26, 26, 26, 0.1);
 }
 
 /* Media */
 .home-feeling-grid__media {
-  aspect-ratio: 4 / 5;
-  border-radius: var(--border-radius);
+  aspect-ratio: 1 / 1.1;
+  border-start-start-radius: max(var(--border-radius), 1.6rem);
+  border-start-end-radius: max(var(--border-radius), 1.6rem);
   overflow: hidden;
   background: var(--gradient-background);
 }
@@ -78,7 +87,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
 }
 
 .home-feeling-grid__card:hover .home-feeling-grid__image {
@@ -87,19 +96,21 @@
 
 /* Content */
 .home-feeling-grid__content {
-  padding-block: 1rem;
-  padding-inline: 0.2rem;
+  padding-block: 1.2rem;
+  padding-inline: 0.8rem;
 }
 
 .home-feeling-grid__name {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.3rem;
   text-align: start;
+  font-weight: 600;
 }
 
 .home-feeling-grid__blurb {
   margin: 0;
   font-size: 1.3rem;
-  opacity: 0.65;
+  line-height: 1.45;
+  opacity: 0.6;
   text-align: start;
 }
 
@@ -109,7 +120,7 @@
   padding-block: 3rem;
   opacity: 0.5;
   border: 1px dashed currentColor;
-  border-radius: var(--border-radius);
+  border-radius: max(var(--border-radius), 1.6rem);
 }
 
 .home-feeling-grid__placeholder p {

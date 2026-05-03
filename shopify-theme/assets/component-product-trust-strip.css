@@ -2,6 +2,8 @@
 
 .trust-strip {
   text-align: start;
+  border-block-start: 1px solid rgba(31, 28, 26, 0.06);
+  padding-block-start: 1.2rem;
 }
 
 .trust-strip__list {
@@ -9,7 +11,7 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 0.8rem 1.6rem;
+  gap: 0.4rem 1.2rem;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -18,8 +20,8 @@
 .trust-strip__item {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.4rem 0;
+  gap: 0.4rem;
+  padding: 0.2rem 0;
 }
 
 .trust-strip__icon {
@@ -27,10 +29,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 1.8rem;
-  block-size: 1.8rem;
+  inline-size: 1.4rem;
+  block-size: 1.4rem;
   color: rgb(var(--color-foreground));
-  opacity: 0.6;
+  opacity: 0.45;
 }
 
 .trust-strip__icon svg {
@@ -39,11 +41,13 @@
 }
 
 .trust-strip__label {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   line-height: 1.4;
   color: rgb(var(--color-foreground));
-  opacity: 0.75;
+  opacity: 0.55;
   white-space: nowrap;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 /* Placeholder (editor only) */
@@ -57,14 +61,19 @@
 /* Mobile: more compact */
 @media screen and (max-width: 749px) {
   .trust-strip__list {
-    gap: 0.4rem 1.2rem;
+    gap: 0.3rem 0.9rem;
   }
 
   .trust-strip__item {
-    padding: 0.2rem 0;
+    padding: 0.15rem 0;
+  }
+
+  .trust-strip__icon {
+    inline-size: 1.3rem;
+    block-size: 1.3rem;
   }
 
   .trust-strip__label {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 }
