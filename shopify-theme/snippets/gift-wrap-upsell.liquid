@@ -17,6 +17,8 @@
       <p class="gift-wrap__title">{{ _label | escape }}</p>
       {%- if _price_hint != blank -%}
         <p class="gift-wrap__hint">{{ _price_hint | escape }}</p>
+      {%- elsif _variant.price != blank -%}
+        <p class="gift-wrap__hint">{{ _variant.price | money }}</p>
       {%- endif -%}
     </div>
     <div class="gift-wrap__actions">

@@ -1,0 +1,157 @@
+{{ 'component-cart-free-shipping-progress.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if section.settings.enable_free_shipping_progress -%}
+  {%- assign threshold_cents = section.settings.threshold_egp | times: 100 -%}
+  {%- assign total_cents = cart.total_price -%}
+  {%- assign remaining_cents = threshold_cents | minus: total_cents -%}
+
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="cart-free-shipping-progress">
+        {%- if section.settings.heading_before != blank -%}
+          <h2 class="cart-free-shipping-progress__heading">{{ section.settings.heading_before | escape }}</h2>
+        {%- endif -%}
+
+        {%- if remaining_cents > 0 -%}
+          <p class="cart-free-shipping-progress__message">
+            {%- if section.settings.message_before contains '{{ amount }}' -%}
+              {{- section.settings.message_before | split: '{{ amount }}' | first | escape -}}
+              {{- remaining_cents | divided_by: 100 | money -}}
+              {{- section.settings.message_before | split: '{{ amount }}' | last | escape -}}
+            {%- else -%}
+              {{- section.settings.message_before | escape -}}
+            {%- endif -%}
+          </p>
+          <div class="cart-free-shipping-progress__bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ threshold_cents }}" aria-valuenow="{{ total_cents }}">
+            <div class="cart-free-shipping-progress__fill" style="width: {{ total_cents | times: 100.0 | divided_by: threshold_cents | at_most: 100 }}%"></div>
+          </div>
+        {%- else -%}
+          <p class="cart-free-shipping-progress__message cart-free-shipping-progress__message--unlocked">
+            {{- section.settings.message_after | escape -}}
+          </p>
+          <div class="cart-free-shipping-progress__bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ threshold_cents }}" aria-valuenow="{{ threshold_cents }}">
+            <div class="cart-free-shipping-progress__fill" style="width: 100%"></div>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="cart-free-shipping-progress cart-free-shipping-progress--placeholder">
+        <p>Enable free shipping progress in section settings to display this block.</p>
+        <p class="cart-free-shipping-progress__warning">
+          Only enable after configuring a matching free shipping rate or discount in Shopify Admin.
+        </p>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Free shipping progress",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_free_shipping_progress",
+      "default": false,
+      "label": "Enable free shipping progress",
+      "info": "Only enable after configuring a matching Shopify shipping rate or discount."
+    },
+    {
+      "type": "header",
+      "content": "Threshold"
+    },
+    {
+      "type": "range",
+      "id": "threshold_egp",
+      "min": 500,
+      "max": 5000,
+      "step": 100,
+      "unit": "EGP",
+      "label": "Free shipping threshold (EGP)",
+      "default": 1500
+    },
+    {
+      "type": "header",
+      "content": "Before threshold"
+    },
+    {
+      "type": "text",
+      "id": "heading_before",
+      "default": "Free shipping progress",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "message_before",
+      "default": "Add {{ amount }} more to reach the free shipping threshold.",
+      "label": "Message before threshold",
+      "info": "Use {{ amount }} as placeholder for the remaining amount."
+    },
+    {
+      "type": "header",
+      "content": "After threshold"
+    },
+    {
+      "type": "textarea",
+      "id": "message_after",
+      "default": "Your cart may qualify for free shipping if the shipping rate is configured in checkout.",
+      "label": "Message after threshold"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Free shipping progress"
+    }
+  ]
+}
+{% endschema %}

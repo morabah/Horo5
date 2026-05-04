@@ -1,0 +1,181 @@
+{{ 'component-horo-delivery-estimate.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if section.settings.show_delivery_estimate -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="horo-delivery-estimate">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="horo-delivery-estimate__heading">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+
+        <div class="horo-delivery-estimate__grid">
+          <div class="horo-delivery-estimate__item">
+            <div class="horo-delivery-estimate__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div class="horo-delivery-estimate__content">
+              <p class="horo-delivery-estimate__label">{{ 'Standard delivery' | escape }}</p>
+              <p class="horo-delivery-estimate__value">
+                {{- section.settings.standard_min_days }}–{{ section.settings.standard_max_days }} {{ 'business days' | escape -}}
+              </p>
+            </div>
+          </div>
+
+          <div class="horo-delivery-estimate__item">
+            <div class="horo-delivery-estimate__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="horo-delivery-estimate__content">
+              <p class="horo-delivery-estimate__label">{{ 'Express delivery' | escape }}</p>
+              <p class="horo-delivery-estimate__value">
+                {{- section.settings.express_min_days }}–{{ section.settings.express_max_days }} {{ 'business days where available' | escape -}}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {%- if section.settings.text != blank -%}
+          <p class="horo-delivery-estimate__note">{{ section.settings.text | escape }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.show_exact_date_range -%}
+          <p class="horo-delivery-estimate__exact-note">
+            {{ 'Exact delivery dates depend on your order time and area. You will see available options at checkout.' | escape }}
+          </p>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="horo-delivery-estimate horo-delivery-estimate--placeholder">
+        <p>Enable delivery estimate in section settings to display this block.</p>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Delivery estimate",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_delivery_estimate",
+      "default": true,
+      "label": "Show delivery estimate"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Estimated delivery",
+      "label": "Heading"
+    },
+    {
+      "type": "range",
+      "id": "standard_min_days",
+      "min": 1,
+      "max": 14,
+      "step": 1,
+      "unit": "d",
+      "label": "Standard min days",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "standard_max_days",
+      "min": 1,
+      "max": 14,
+      "step": 1,
+      "unit": "d",
+      "label": "Standard max days",
+      "default": 7
+    },
+    {
+      "type": "range",
+      "id": "express_min_days",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "unit": "d",
+      "label": "Express min days",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "express_max_days",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "unit": "d",
+      "label": "Express max days",
+      "default": 4
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "default": "Delivery time depends on your area. You will confirm available options at checkout.",
+      "label": "Cautionary text"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_exact_date_range",
+      "default": false,
+      "label": "Show exact date range note",
+      "info": "If enabled, adds a note explaining exact dates are shown at checkout."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Delivery estimate"
+    }
+  ]
+}
+{% endschema %}

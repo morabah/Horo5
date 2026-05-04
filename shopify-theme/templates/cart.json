@@ -38,6 +38,19 @@
         "padding_bottom": 24
       }
     },
+    "cart_free_shipping_progress": {
+      "type": "cart-free-shipping-progress",
+      "settings": {
+        "enable_free_shipping_progress": false,
+        "threshold_egp": 1500,
+        "heading_before": "Free shipping progress",
+        "message_before": "Add {{ amount }} more to reach the free shipping threshold.",
+        "message_after": "Your cart may qualify for free shipping if the shipping rate is configured in checkout.",
+        "color_scheme": "scheme-1",
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
+    },
     "cart-footer": {
       "type": "main-cart-footer",
       "blocks": {
@@ -83,6 +96,7 @@
     "cart_gift_wrap_upsell",
     "cart_trust_explainer",
     "cart_bundle_nudge",
+    "cart_free_shipping_progress",
     "cart-footer",
     "featured-collection"
   ]
