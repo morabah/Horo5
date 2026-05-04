@@ -1,0 +1,238 @@
+/* ===== HORO Visual System =====
+   Shared tokens and utility classes for HORO brand adaptation.
+   Load in theme.liquid or per-section as needed.
+   RTL-safe: uses logical properties (margin-inline, padding-inline, inset, etc.).
+   Mobile-first with progressive enhancement.
+   Respects prefers-reduced-motion.
+*/
+
+/* --- Brand color tokens (scoped to HORO sections) --- */
+:root {
+  --horo-obsidian: #1a1a1a;
+  --horo-papyrus: #f4efe7;
+  --horo-linen: #faf8f5;
+  --horo-clay: #8c7b6b;
+  --horo-warm-charcoal: #4a4440;
+  --horo-deep-teal: #2d6b6b;
+  --horo-stone: #c4b8ab;
+  --horo-ember: #c0392b;
+  --horo-amber-700: #b45309;
+  --horo-white: #ffffff;
+}
+
+/* --- Surface backgrounds --- */
+.horo-surface--papyrus {
+  background-color: var(--horo-papyrus);
+}
+
+.horo-surface--linen {
+  background-color: var(--horo-linen);
+}
+
+.horo-surface--obsidian {
+  background-color: var(--horo-obsidian);
+  color: var(--horo-white);
+}
+
+/* --- Editorial typography --- */
+.horo-eyebrow {
+  font-family: var(--font-body-family);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--horo-clay);
+}
+
+@media screen and (min-width: 750px) {
+  .horo-eyebrow {
+    font-size: 1.2rem;
+  }
+}
+
+.horo-heading--editorial {
+  font-family: var(--font-heading-family);
+  font-size: clamp(2.4rem, 4.5vw, 4.8rem);
+  font-weight: var(--font-heading-weight);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: inherit;
+}
+
+.horo-heading--large {
+  font-family: var(--font-heading-family);
+  font-size: clamp(2rem, 3.5vw, 3.6rem);
+  font-weight: var(--font-heading-weight);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.horo-body--editorial {
+  font-family: var(--font-body-family);
+  font-size: clamp(1.4rem, 1.8vw, 1.7rem);
+  line-height: 1.65;
+  color: inherit;
+  max-width: 52ch;
+}
+
+/* --- Cards --- */
+.horo-card {
+  background-color: var(--horo-white);
+  border-radius: 1.2rem;
+  border: 1px solid rgba(196, 184, 171, 0.35);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .horo-card {
+    transition: none;
+  }
+}
+
+.horo-card--hover:hover {
+  transform: translateY(-0.3rem);
+  box-shadow: 0 0.8rem 2.4rem rgba(26, 26, 26, 0.08);
+}
+
+.horo-card--paper {
+  background-color: var(--horo-papyrus);
+  border-color: rgba(196, 184, 171, 0.25);
+}
+
+.horo-card--glass {
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* --- Image treatments --- */
+.horo-image--rounded {
+  border-radius: 1.2rem;
+  overflow: hidden;
+}
+
+.horo-image--lift {
+  transition: transform 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .horo-image--lift {
+    transition: none;
+  }
+}
+
+.horo-image--lift:hover,
+.horo-card--hover:hover .horo-image--lift {
+  transform: scale(1.03);
+}
+
+/* --- Shadows --- */
+.horo-shadow--soft {
+  box-shadow: 0 0.4rem 1.2rem rgba(26, 26, 26, 0.06);
+}
+
+.horo-shadow--medium {
+  box-shadow: 0 0.8rem 2.4rem rgba(26, 26, 26, 0.1);
+}
+
+/* --- Buttons --- */
+.horo-btn--label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.4rem;
+  padding-inline: 2.4rem;
+  padding-block: 0.8rem;
+  font-family: var(--font-body-family);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid rgba(26, 26, 26, 0.15);
+  background-color: rgba(255, 255, 255, 0.95);
+  color: var(--horo-obsidian);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+
+.horo-btn--label:hover {
+  background-color: var(--horo-white);
+  border-color: var(--horo-obsidian);
+}
+
+.horo-btn--label-dark {
+  border-color: rgba(255, 255, 255, 0.35);
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--horo-white);
+}
+
+.horo-btn--label-dark:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* --- Badges / chips --- */
+.horo-chip {
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 55%;
+  padding-inline: 0.6rem;
+  padding-block: 0.4rem;
+  font-family: var(--font-body-family);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(196, 184, 171, 0.35);
+  background-color: rgba(255, 255, 255, 0.92);
+  color: var(--horo-obsidian);
+  box-shadow: 0 0.1rem 0.4rem rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media screen and (min-width: 750px) {
+  .horo-chip {
+    font-size: 1rem;
+    padding-inline: 1rem;
+    padding-block: 0.5rem;
+  }
+}
+
+/* --- Layout utilities --- */
+.horo-container {
+  width: 100%;
+  max-inline-size: var(--page-width);
+  margin-inline: auto;
+  padding-inline: max(var(--page-width-margin), env(safe-area-inset-left));
+}
+
+.horo-section-padding {
+  padding-block: clamp(2.4rem, 5vh, 4.8rem);
+}
+
+/* --- Divider --- */
+.horo-divider {
+  border-block-start: 1px solid rgba(196, 184, 171, 0.25);
+}
+
+/* --- Grain overlay (reusable) --- */
+.horo-grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}

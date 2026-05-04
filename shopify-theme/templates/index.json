@@ -13,6 +13,16 @@
         "desktop_content_position": "center-center",
         "mobile_content_alignment": "center",
         "color_scheme": "scheme-3",
+        "enable_cinematic_mode": false,
+        "show_grain_overlay": true,
+        "show_split_typography": false,
+        "split_word_1": "Wear",
+        "split_word_2": "What",
+        "split_word_3": "You Mean",
+        "show_hero_ribbon": true,
+        "hero_ribbon_text": "COD available · 14-day exchange · Printed in Egypt",
+        "hero_cta_position_mobile": "center",
+        "hero_cta_position_desktop": "bottom-left",
         "padding_top": 0,
         "padding_bottom": 0
       }
@@ -57,6 +67,49 @@
         "color_scheme": "scheme-1",
         "padding_top": 36,
         "padding_bottom": 36
+      }
+    },
+    "feeling_expression": {
+      "type": "horo-feeling-expression",
+      "blocks": {
+        "card_1": {
+          "type": "card",
+          "settings": {
+            "label": "Mood",
+            "text": "Find the vibe that matches your day"
+          }
+        },
+        "card_2": {
+          "type": "card",
+          "settings": {
+            "label": "Sign",
+            "text": "Zodiac and symbol-led designs"
+          }
+        },
+        "card_3": {
+          "type": "card",
+          "settings": {
+            "label": "Attitude",
+            "text": "Wear what you mean without explaining"
+          }
+        }
+      },
+      "block_order": [
+        "card_1",
+        "card_2",
+        "card_3"
+      ],
+      "settings": {
+        "eyebrow": "Feel it. Wear it.",
+        "heading": "Start with a feeling",
+        "heading_size": "h0",
+        "subheading": "HORO starts with mood, sign, attitude, or moment — then turns it into artwork you can wear.",
+        "button_label": "Explore Feelings",
+        "button_link": "/pages/feelings",
+        "button_style_secondary": false,
+        "color_scheme": "scheme-1",
+        "padding_top": 48,
+        "padding_bottom": 48
       }
     },
     "occasion_grid": {
@@ -118,7 +171,7 @@
     "featured_collection": {
       "type": "featured-collection",
       "settings": {
-        "title": "Featured products",
+        "title": "Just Dropped",
         "heading_size": "h2",
         "collection": "all",
         "products_to_show": 8,
@@ -314,6 +367,7 @@
     "home_hero",
     "horo_trust_ribbon",
     "primary_routes",
+    "feeling_expression",
     "story_plan",
     "featured_collection",
     "feeling_grid",

@@ -1,0 +1,218 @@
+{{ 'component-horo-feeling-expression.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div
+  id="FeelingExpression-{{ section.id }}"
+  class="horo-section horo-feeling-expression color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+>
+  <div class="page-width">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="horo-feeling-expression__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      <h2 class="horo-feeling-expression__heading {{ section.settings.heading_size }}">
+        {{ section.settings.heading | escape }}
+      </h2>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <p class="horo-feeling-expression__subheading">{{ section.settings.subheading | escape }}</p>
+    {%- endif -%}
+
+    {%- if section.settings.button_label != blank -%}
+      <a
+        {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
+        class="horo-feeling-expression__cta button{% if section.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+        {% if section.settings.button_link == blank %}aria-disabled="true"{% endif %}
+      >
+        {{ section.settings.button_label | escape }}
+      </a>
+    {%- endif -%}
+
+    {%- assign card_count = section.blocks.size -%}
+    {%- if card_count > 0 -%}
+      <ul class="horo-feeling-expression__grid" role="list">
+        {%- for block in section.blocks -%}
+          <li class="horo-feeling-expression__card" {{ block.shopify_attributes }}>
+            {%- if block.settings.image != blank -%}
+              <div class="horo-feeling-expression__media">
+                {{
+                  block.settings.image
+                  | image_url: width: 1100
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '275, 550, 750, 1100',
+                    sizes: '(min-width: 990px) calc((100vw - 10rem) / 3), (min-width: 750px) calc((100vw - 10rem) / 2), calc(100vw - 3rem)',
+                    class: 'horo-feeling-expression__image'
+                }}
+              </div>
+            {%- endif -%}
+            {%- if block.settings.label != blank -%}
+              <h3 class="horo-feeling-expression__label">{{ block.settings.label | escape }}</h3>
+            {%- endif -%}
+            {%- if block.settings.text != blank -%}
+              <p class="horo-feeling-expression__text">{{ block.settings.text | escape }}</p>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HORO Feeling Expression",
+  "tag": "section",
+  "class": "section",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "default": "Feel it. Wear it.",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Start with a feeling",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h0",
+      "label": "Heading size"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "default": "HORO starts with mood, sign, attitude, or moment — then turns it into artwork you can wear.",
+      "label": "Subheading"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "default": "Explore Feelings",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_style_secondary",
+      "label": "Use secondary button style",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Expression card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Card image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Short text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Feeling Expression",
+      "blocks": {
+        "card_1": {
+          "type": "card",
+          "settings": {
+            "label": "Mood",
+            "text": "Find the vibe that matches your day"
+          }
+        },
+        "card_2": {
+          "type": "card",
+          "settings": {
+            "label": "Sign",
+            "text": "Zodiac and symbol-led designs"
+          }
+        },
+        "card_3": {
+          "type": "card",
+          "settings": {
+            "label": "Attitude",
+            "text": "Wear what you mean without explaining"
+          }
+        }
+      },
+      "block_order": [
+        "card_1",
+        "card_2",
+        "card_3"
+      ]
+    }
+  ]
+}
+{% endschema %}

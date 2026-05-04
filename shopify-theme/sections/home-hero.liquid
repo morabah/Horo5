@@ -17,8 +17,9 @@
 
 <div
   id="HomeHero-{{ section.id }}"
-  class="horo-section home-hero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
-  data-position="{{ section.settings.desktop_content_position }}"
+  class="horo-section home-hero{% if section.settings.enable_cinematic_mode %} home-hero--cinematic{% endif %}{% if section.settings.show_grain_overlay == false %} home-hero--no-grain{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+  data-desktop-position="{{ section.settings.hero_cta_position_desktop }}"
+  data-mobile-position="{{ section.settings.hero_cta_position_mobile }}"
 >
   {%- if section.settings.image != blank -%}
     <div class="home-hero__media">
@@ -41,6 +42,23 @@
   {%- else -%}
     <div class="home-hero__media home-hero__media--placeholder">
       {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    </div>
+  {%- endif -%}
+
+  {%- if section.settings.show_split_typography -%}
+    <div
+      class="home-hero__split-typography"
+      aria-hidden="true"
+    >
+      {%- if section.settings.split_word_1 != blank -%}
+        <span class="home-hero__split-line">{{ section.settings.split_word_1 | escape }}</span>
+      {%- endif -%}
+      {%- if section.settings.split_word_2 != blank -%}
+        <span class="home-hero__split-line">{{ section.settings.split_word_2 | escape }}</span>
+      {%- endif -%}
+      {%- if section.settings.split_word_3 != blank -%}
+        <span class="home-hero__split-line">{{ section.settings.split_word_3 | escape }}</span>
+      {%- endif -%}
     </div>
   {%- endif -%}
 
@@ -80,6 +98,12 @@
       {%- endif -%}
     </div>
   </div>
+
+  {%- if section.settings.show_hero_ribbon and section.settings.hero_ribbon_text != blank -%}
+    <div class="home-hero__ribbon" aria-hidden="true">
+      <span class="home-hero__ribbon-text">{{ section.settings.hero_ribbon_text | escape }}</span>
+    </div>
+  {%- endif -%}
 </div>
 
 {% schema %}
@@ -173,7 +197,82 @@
     },
     {
       "type": "header",
-      "content": "Editorial word layer"
+      "content": "Cinematic mode"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_cinematic_mode",
+      "default": false,
+      "label": "Enable cinematic mode",
+      "info": "Uses full viewport height and stronger dark treatment."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_grain_overlay",
+      "default": true,
+      "label": "Show grain overlay"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_split_typography",
+      "default": false,
+      "label": "Show split typography",
+      "info": "Large decorative split text. Marked aria-hidden."
+    },
+    {
+      "type": "text",
+      "id": "split_word_1",
+      "default": "Wear",
+      "label": "Split word 1"
+    },
+    {
+      "type": "text",
+      "id": "split_word_2",
+      "default": "What",
+      "label": "Split word 2"
+    },
+    {
+      "type": "text",
+      "id": "split_word_3",
+      "default": "You Mean",
+      "label": "Split word 3"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_hero_ribbon",
+      "default": true,
+      "label": "Show hero ribbon"
+    },
+    {
+      "type": "text",
+      "id": "hero_ribbon_text",
+      "default": "COD available · 14-day exchange · Printed in Egypt",
+      "label": "Hero ribbon text"
+    },
+    {
+      "type": "select",
+      "id": "hero_cta_position_mobile",
+      "options": [
+        { "value": "center", "label": "Center" },
+        { "value": "bottom-left", "label": "Bottom left" }
+      ],
+      "default": "center",
+      "label": "Mobile CTA position"
+    },
+    {
+      "type": "select",
+      "id": "hero_cta_position_desktop",
+      "options": [
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "center-center", "label": "Center" },
+        { "value": "bottom-center", "label": "Bottom center" }
+      ],
+      "default": "bottom-left",
+      "label": "Desktop CTA position"
+    },
+    {
+      "type": "header",
+      "content": "Editorial word layer (legacy)"
     },
     {
       "type": "checkbox",

@@ -67,6 +67,17 @@
   max-width: 60rem;
 }
 
+.collection-hero__count {
+  font-family: var(--font-body-family);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 0.8rem;
+  text-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.35);
+}
+
 .collection-hero__title {
   color: #ffffff;
   margin: 0 0 1.2rem;

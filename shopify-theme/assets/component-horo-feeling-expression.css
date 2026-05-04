@@ -1,0 +1,144 @@
+/* ===== HORO: Feeling Expression section ===== */
+
+.horo-feeling-expression {
+  text-align: center;
+}
+
+.horo-feeling-expression__eyebrow {
+  font-family: var(--font-body-family);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  color: var(--horo-clay, #8c7b6b);
+  margin-block: 0 1.2rem;
+}
+
+@media screen and (min-width: 750px) {
+  .horo-feeling-expression__eyebrow {
+    font-size: 1.2rem;
+  }
+}
+
+.horo-feeling-expression__heading {
+  font-family: var(--font-heading-family);
+  font-size: clamp(2.8rem, 5vw, 5.2rem);
+  font-weight: var(--font-heading-weight);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-block: 0 1.6rem;
+}
+
+.horo-feeling-expression__subheading {
+  font-family: var(--font-body-family);
+  font-size: clamp(1.4rem, 1.8vw, 1.7rem);
+  line-height: 1.65;
+  color: rgba(var(--color-foreground), 0.85);
+  max-inline-size: 52ch;
+  margin-inline: auto;
+  margin-block: 0 2.4rem;
+}
+
+.horo-feeling-expression__cta {
+  margin-block-start: 0.5rem;
+  margin-block-end: 3.2rem;
+}
+
+.horo-feeling-expression__grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.6rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .horo-feeling-expression__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+.horo-feeling-expression__card {
+  background-color: var(--horo-white, #ffffff);
+  border-radius: 1.2rem;
+  border: 1px solid rgba(196, 184, 171, 0.3);
+  overflow: hidden;
+  padding: 2rem;
+  text-align: start;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .horo-feeling-expression__card {
+    transition: none;
+  }
+}
+
+.horo-feeling-expression__card:hover {
+  transform: translateY(-0.3rem);
+  box-shadow: 0 0.8rem 2.4rem rgba(26, 26, 26, 0.08);
+}
+
+.horo-feeling-expression__media {
+  position: relative;
+  border-radius: 0.8rem;
+  overflow: hidden;
+  margin-block-end: 1.6rem;
+  aspect-ratio: 4 / 3;
+}
+
+.horo-feeling-expression__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .horo-feeling-expression__image {
+    transition: none;
+  }
+}
+
+.horo-feeling-expression__card:hover .horo-feeling-expression__image {
+  transform: scale(1.03);
+}
+
+.horo-feeling-expression__label {
+  font-family: var(--font-heading-family);
+  font-size: 1.8rem;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin-block: 0 0.6rem;
+}
+
+.horo-feeling-expression__text {
+  font-family: var(--font-body-family);
+  font-size: 1.4rem;
+  line-height: 1.55;
+  color: rgba(var(--color-foreground), 0.75);
+  margin: 0;
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .horo-feeling-expression__heading {
+    font-size: clamp(2.4rem, 8vw, 3.6rem);
+  }
+
+  .horo-feeling-expression__subheading {
+    font-size: 1.4rem;
+  }
+
+  .horo-feeling-expression__grid {
+    gap: 1.2rem;
+  }
+
+  .horo-feeling-expression__card {
+    padding: 1.6rem;
+  }
+}

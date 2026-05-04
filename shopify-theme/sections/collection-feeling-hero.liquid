@@ -49,12 +49,21 @@
 
     <div class="page-width collection-hero__content">
       <div class="collection-hero__text">
+        {%- if collection.products_count > 0 -%}
+          <p class="collection-hero__count">
+            {{ collection.products_count }} design{% if collection.products_count != 1 %}s{% endif %}
+          </p>
+        {%- endif -%}
         <h1 class="collection-hero__title h0">
           {{ feeling.name | escape }}
         </h1>
         {%- if feeling.blurb != blank -%}
           <p class="collection-hero__blurb">
             {{ feeling.blurb | escape }}
+          </p>
+        {%- elsif collection.description != blank -%}
+          <p class="collection-hero__blurb">
+            {{ collection.description | strip_html | truncatewords: 20 }}
           </p>
         {%- endif -%}
       </div>
