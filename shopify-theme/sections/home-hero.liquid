@@ -44,6 +44,17 @@
     </div>
   {%- endif -%}
 
+  {%- if section.settings.show_editorial_word_layer -%}
+    <div
+      class="home-hero__editorial-layer home-hero__editorial-layer--{{ section.settings.editorial_word_position }}"
+      aria-hidden="true"
+      style="opacity: {{ section.settings.editorial_word_opacity | divided_by: 100.0 }};"
+    >
+      <span class="home-hero__editorial-line">{{ section.settings.editorial_word_line_1 | escape }}</span>
+      <span class="home-hero__editorial-line">{{ section.settings.editorial_word_line_2 | escape }}</span>
+    </div>
+  {%- endif -%}
+
   <div class="home-hero__content page-width">
     <div class="home-hero__text-wrapper">
       {%- if section.settings.heading != blank -%}
@@ -159,6 +170,50 @@
       "id": "color_scheme",
       "label": "Color scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Editorial word layer"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_editorial_word_layer",
+      "default": false,
+      "label": "Show editorial word layer",
+      "info": "Large background text behind hero content. Enable only after testing readability."
+    },
+    {
+      "type": "text",
+      "id": "editorial_word_line_1",
+      "default": "WEAR",
+      "label": "Line 1"
+    },
+    {
+      "type": "text",
+      "id": "editorial_word_line_2",
+      "default": "WHAT YOU FEEL",
+      "label": "Line 2"
+    },
+    {
+      "type": "range",
+      "id": "editorial_word_opacity",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "%",
+      "label": "Opacity",
+      "default": 18
+    },
+    {
+      "type": "select",
+      "id": "editorial_word_position",
+      "options": [
+        { "value": "center", "label": "Center" },
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center",
+      "label": "Position"
     },
     {
       "type": "header",

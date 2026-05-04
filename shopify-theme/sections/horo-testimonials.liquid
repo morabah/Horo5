@@ -1,0 +1,222 @@
+{{ 'component-horo-testimonials.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign visible_count = 0
+  for block in section.blocks
+    if block.type == 'testimonial'
+      assign visible_count = visible_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if visible_count > 0 or request.design_mode -%}
+  {%- style -%}
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    id="Testimonials-{{ section.id }}"
+    class="horo-section horo-testimonials color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    <div class="page-width">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="horo-testimonials__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.heading != blank -%}
+        <h2 class="horo-testimonials__heading {{ section.settings.heading_size }}">
+          {{ section.settings.heading | escape }}
+        </h2>
+      {%- endif -%}
+
+      {%- if visible_count > 0 -%}
+        <ul class="horo-testimonials__grid" role="list">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'testimonial' -%}
+              <li class="horo-testimonials__card" role="listitem" {{ block.shopify_attributes }}>
+                {%- if block.settings.quote != blank -%}
+                  <blockquote class="horo-testimonials__quote">
+                    <p>{{ block.settings.quote | escape }}</p>
+                  </blockquote>
+                {%- endif -%}
+
+                <div class="horo-testimonials__meta">
+                  {%- if block.settings.name != blank -%}
+                    <p class="horo-testimonials__name">{{ block.settings.name | escape }}</p>
+                  {%- endif -%}
+                  {%- if block.settings.city != blank -%}
+                    <p class="horo-testimonials__city">{{ block.settings.city | escape }}</p>
+                  {%- endif -%}
+                  {%- if block.settings.label != blank -%}
+                    <p class="horo-testimonials__label">{{ block.settings.label | escape }}</p>
+                  {%- endif -%}
+                </div>
+
+                {%- if section.settings.show_sample_copy == true and request.design_mode -%}
+                  <p class="horo-testimonials__sample-notice">Sample copy — replace before launch</p>
+                {%- endif -%}
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- elsif request.design_mode -%}
+        <div class="horo-testimonials__placeholder">
+          <p>Add at least one testimonial block to display quotes.</p>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Testimonials",
+  "tag": "section",
+  "class": "section",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "default": "What people say",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Why people wear HORO",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sample_copy",
+      "default": true,
+      "label": "Show as sample copy",
+      "info": "Displays a small editor-only notice when sample quotes are used."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Testimonial",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "quote",
+          "default": "Finally, a T-shirt that feels personal without needing explanation.",
+          "label": "Quote"
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "default": "A. H.",
+          "label": "Name"
+        },
+        {
+          "type": "text",
+          "id": "city",
+          "default": "Cairo",
+          "label": "City / location"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "default": "",
+          "label": "Optional label",
+          "info": "e.g. Verified buyer, First drop customer"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Testimonials",
+      "blocks": {
+        "testimonial_1": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "Finally, a T-shirt that feels personal without needing explanation.",
+            "name": "A. H.",
+            "city": "Cairo",
+            "label": ""
+          }
+        },
+        "testimonial_2": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "The design feels different from the usual printed tees.",
+            "name": "M. K.",
+            "city": "Alexandria",
+            "label": ""
+          }
+        },
+        "testimonial_3": {
+          "type": "testimonial",
+          "settings": {
+            "quote": "I bought it as a gift because it actually meant something.",
+            "name": "S. R.",
+            "city": "Giza",
+            "label": ""
+          }
+        }
+      },
+      "block_order": [
+        "testimonial_1",
+        "testimonial_2",
+        "testimonial_3"
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -199,7 +199,7 @@
         "badge_3_label": "Cash on Delivery available at checkout",
         "show_badge_4": true,
         "badge_4_icon": "exchange",
-        "badge_4_label": "14-day exchange — see policy",
+        "badge_4_label": "14-day exchange \u2014 see policy",
         "show_badge_5": true,
         "badge_5_icon": "chat",
         "badge_5_label": "WhatsApp support",
@@ -213,14 +213,14 @@
         "image-with-text-0": {
           "type": "heading",
           "settings": {
-            "heading": "Image with text",
+            "heading": "Made to say something",
             "heading_size": "h1"
           }
         },
         "image-with-text-1": {
           "type": "text",
           "settings": {
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "text": "<p>HORO pieces begin with a feeling, then become artwork you can wear.</p>",
             "text_style": "body"
           }
         }
@@ -248,8 +248,8 @@
         "column-0": {
           "type": "column",
           "settings": {
-            "title": "Free Shipping",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "title": "Printed locally",
+            "text": "<p>Produced in Egypt with careful print handling.</p>",
             "link_label": "",
             "link": ""
           }
@@ -257,8 +257,8 @@
         "column-1": {
           "type": "column",
           "settings": {
-            "title": "Hassle-Free Exchanges",
-            "text": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.<\/p>",
+            "title": "Size support",
+            "text": "<p>Check the size guide before ordering; exchange terms apply.</p>",
             "link_label": "",
             "link": ""
           }

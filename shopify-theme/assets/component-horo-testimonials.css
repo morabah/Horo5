@@ -1,0 +1,125 @@
+/* ===== HORO: Testimonials / Social Proof ===== */
+
+.horo-testimonials {
+  text-align: center;
+}
+
+.horo-testimonials__eyebrow {
+  margin: 0 0 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-foreground));
+  opacity: 0.5;
+}
+
+.horo-testimonials__heading {
+  margin: 0 0 3.2rem;
+  color: rgb(var(--color-foreground));
+}
+
+.horo-testimonials__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.horo-testimonials__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 2.4rem 1.8rem;
+  border: 1px solid rgba(var(--color-foreground), 0.08);
+  border-radius: var(--border-radius);
+  background: rgb(var(--color-background));
+  text-align: center;
+}
+
+.horo-testimonials__quote {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground));
+  opacity: 0.85;
+  font-style: italic;
+}
+
+.horo-testimonials__quote p {
+  margin: 0;
+}
+
+.horo-testimonials__quote::before {
+  content: '"';
+  display: block;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: rgb(var(--color-foreground));
+  opacity: 0.2;
+  margin-block-end: 0.4rem;
+}
+
+.horo-testimonials__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.horo-testimonials__name {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: rgb(var(--color-foreground));
+}
+
+.horo-testimonials__city {
+  margin: 0;
+  font-size: 1.2rem;
+  color: rgb(var(--color-foreground));
+  opacity: 0.5;
+}
+
+.horo-testimonials__label {
+  margin: 0.4rem 0 0;
+  font-size: 1.1rem;
+  color: rgb(var(--color-foreground));
+  opacity: 0.4;
+  letter-spacing: 0.02em;
+}
+
+.horo-testimonials__sample-notice {
+  margin: 0.8rem 0 0;
+  font-size: 1rem;
+  color: rgb(var(--color-foreground));
+  opacity: 0.35;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+/* Placeholder (editor only) */
+.horo-testimonials__placeholder {
+  text-align: center;
+  padding-block: 3rem;
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+/* Mobile: stack or scroll */
+@media screen and (max-width: 749px) {
+  .horo-testimonials__grid {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+
+  .horo-testimonials__card {
+    padding: 1.8rem 1.4rem;
+  }
+
+  .horo-testimonials__heading {
+    margin-block-end: 2.4rem;
+  }
+}

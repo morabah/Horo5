@@ -1,0 +1,101 @@
+/* ===== HORO: Homepage Trust Ribbon ===== */
+
+.horo-trust-ribbon {
+  text-align: start;
+}
+
+.horo-trust-ribbon__heading {
+  text-align: center;
+  margin: 0 0 1.2rem;
+  color: rgb(var(--color-foreground));
+  opacity: 0.85;
+}
+
+.horo-trust-ribbon__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 0.8rem 1.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.horo-trust-ribbon__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+}
+
+.horo-trust-ribbon__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.8rem;
+  block-size: 1.8rem;
+  color: rgb(var(--color-foreground));
+  opacity: 0.45;
+}
+
+.horo-trust-ribbon__icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.horo-trust-ribbon__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.horo-trust-ribbon__label {
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: rgb(var(--color-foreground));
+  opacity: 0.75;
+  white-space: nowrap;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.horo-trust-ribbon__subtext {
+  font-size: 1.1rem;
+  line-height: 1.3;
+  color: rgb(var(--color-foreground));
+  opacity: 0.45;
+  white-space: nowrap;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+/* Placeholder (editor only) */
+.horo-trust-ribbon__placeholder {
+  text-align: center;
+  padding-block: 2rem;
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+/* Mobile: tighter and more compact */
+@media screen and (max-width: 749px) {
+  .horo-trust-ribbon__list {
+    gap: 0.6rem 1.2rem;
+  }
+
+  .horo-trust-ribbon__icon {
+    inline-size: 1.6rem;
+    block-size: 1.6rem;
+  }
+
+  .horo-trust-ribbon__label {
+    font-size: 1.1rem;
+  }
+
+  .horo-trust-ribbon__subtext {
+    font-size: 1rem;
+  }
+}
