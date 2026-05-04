@@ -24,6 +24,20 @@
         "padding_bottom": 24
       }
     },
+    "cart_bundle_nudge": {
+      "type": "cart-bundle-nudge",
+      "settings": {
+        "enable_bundle_message": false,
+        "heading": "Thinking of another design?",
+        "text": "You can add another piece before checkout. Bundle offers may be announced separately.",
+        "discount_code_text": "",
+        "button_label": "Continue shopping",
+        "button_link": "/collections/all",
+        "color_scheme": "scheme-1",
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
+    },
     "cart-footer": {
       "type": "main-cart-footer",
       "blocks": {
@@ -68,6 +82,7 @@
     "cart-items",
     "cart_gift_wrap_upsell",
     "cart_trust_explainer",
+    "cart_bundle_nudge",
     "cart-footer",
     "featured-collection"
   ]
