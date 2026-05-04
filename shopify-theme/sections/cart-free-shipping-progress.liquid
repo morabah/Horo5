@@ -27,11 +27,12 @@
         {%- endif -%}
 
         {%- if remaining_cents > 0 -%}
+          {%- assign amount_placeholder = '[amount]' -%}
           <p class="cart-free-shipping-progress__message">
-            {%- if section.settings.message_before contains '{{ amount }}' -%}
-              {{- section.settings.message_before | split: '{{ amount }}' | first | escape -}}
+            {%- if section.settings.message_before contains amount_placeholder -%}
+              {{- section.settings.message_before | split: amount_placeholder | first | escape -}}
               {{- remaining_cents | money -}}
-              {{- section.settings.message_before | split: '{{ amount }}' | last | escape -}}
+              {{- section.settings.message_before | split: amount_placeholder | last | escape -}}
             {%- else -%}
               {{- section.settings.message_before | escape -}}
             {%- endif -%}
@@ -109,9 +110,9 @@
     {
       "type": "textarea",
       "id": "message_before",
-      "default": "Add {{ amount }} more to reach the free shipping threshold.",
+      "default": "Add [amount] more to reach the free shipping threshold.",
       "label": "Message before threshold",
-      "info": "Use {{ amount }} as placeholder for the remaining amount."
+      "info": "Use [amount] as placeholder for the remaining amount."
     },
     {
       "type": "header",
