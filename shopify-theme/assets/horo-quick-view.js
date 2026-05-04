@@ -103,7 +103,13 @@
         atcBtn.textContent = 'Adding…';
         addToCart(vid, function () {
           atcBtn.textContent = 'Added!';
-          setTimeout(function () { atcBtn.textContent = 'Add to cart'; atcBtn.disabled = false; }, 1500);
+          atcBtn.insertAdjacentHTML('afterend', '<a href="' + window.routes.cart_url + '" class="horo-quick-view-modal__cart-link">View cart</a>');
+          setTimeout(function () {
+            var link = atcBtn.parentNode.querySelector('.horo-quick-view-modal__cart-link');
+            if (link) link.remove();
+            atcBtn.textContent = 'Add to cart';
+            atcBtn.disabled = false;
+          }, 2500);
         }, function () {
           atcBtn.textContent = 'Error — try again';
           atcBtn.disabled = false;
@@ -141,7 +147,7 @@
   function formatPrice(product) {
     var price = product.price;
     var compare = product.compare_at_price;
-    var symbol = Shopify && Shopify.currencyActive ? Shopify.currencyActive : 'EGP';
+    var symbol = (window.Shopify && window.Shopify.currencyActive) ? window.Shopify.currencyActive : 'EGP';
 
     function money(cents) {
       return (cents / 100).toLocaleString('en-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + symbol;

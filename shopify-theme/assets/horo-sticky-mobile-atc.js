@@ -57,20 +57,23 @@
     }
     if (!v) return;
 
+    var currency = (window.Shopify && window.Shopify.currencyActive) ? window.Shopify.currencyActive : 'EGP';
     if (priceEl) {
       priceEl.textContent = (v.price / 100).toLocaleString('en-EG', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }) + ' EGP';
+      }) + ' ' + currency;
     }
 
     if (btn) {
+      var addLabel = (window.variantStrings && window.variantStrings.addToCart) ? window.variantStrings.addToCart : 'Add to cart';
+      var soldLabel = (window.variantStrings && window.variantStrings.soldOut) ? window.variantStrings.soldOut : 'Sold out';
       if (v.available) {
         btn.disabled = false;
-        btn.textContent = 'Add to cart';
+        btn.textContent = addLabel;
       } else {
         btn.disabled = true;
-        btn.textContent = 'Sold out';
+        btn.textContent = soldLabel;
       }
     }
   }
@@ -94,6 +97,25 @@
       }
     });
     observer.observe(hiddenInput, { attributes: true, attributeFilter: ['value'] });
+  }
+
+  /**
+   * Fallback: listen for change events inside variant pickers
+   * (selects or radios) and read the hidden variant input after a short delay.
+   */
+  var pickerArea = document.querySelector('variant-radios, variant-selects, .product-form__input');
+  if (pickerArea) {
+    pickerArea.addEventListener('change', function () {
+      setTimeout(function () {
+        var fallbackInput = document.querySelector('.product-variant-id');
+        if (fallbackInput) {
+          var newId = parseInt(fallbackInput.value, 10);
+          if (newId && newId !== selectedVariantId) {
+            updateBar(newId);
+          }
+        }
+      }, 120);
+    });
   }
 
   /**
@@ -122,8 +144,10 @@
           for (var i = 0; i < variants.length; i++) {
             if (variants[i].id === selectedVariantId) { v = variants[i]; break; }
           }
-          btn.textContent = (v && v.available) ? 'Add to cart' : 'Sold out';
-          btn.disabled = !(v && v.available);
+          btn.textContent = (v && v.available)
+        ? ((window.variantStrings && window.variantStrings.addToCart) ? window.variantStrings.addToCart : 'Add to cart')
+        : ((window.variantStrings && window.variantStrings.soldOut) ? window.variantStrings.soldOut : 'Sold out');
+      btn.disabled = !(v && v.available);
         }, 1500);
       })
       .catch(function () {

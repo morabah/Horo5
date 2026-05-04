@@ -30,7 +30,7 @@
           <p class="cart-free-shipping-progress__message">
             {%- if section.settings.message_before contains '{{ amount }}' -%}
               {{- section.settings.message_before | split: '{{ amount }}' | first | escape -}}
-              {{- remaining_cents | divided_by: 100 | money -}}
+              {{- remaining_cents | money -}}
               {{- section.settings.message_before | split: '{{ amount }}' | last | escape -}}
             {%- else -%}
               {{- section.settings.message_before | escape -}}

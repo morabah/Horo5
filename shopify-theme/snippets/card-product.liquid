@@ -104,6 +104,9 @@
                 >
               {%- endif -%}
             </div>
+            <div class="card__quick-view no-js-hidden">
+              {% render 'horo-quick-view-button', card_product: card_product, section_id: section_id %}
+            </div>
           </div>
         {%- endif -%}
         <div class="card__content">
