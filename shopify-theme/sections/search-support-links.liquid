@@ -1,0 +1,148 @@
+{{ 'component-search-support-links.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width section-{{ section.id }}-padding">
+    <div class="search-support-links">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="search-support-links__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+      {%- if section.settings.text != blank -%}
+        <p class="search-support-links__text">{{ section.settings.text | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="search-support-links__list" role="list">
+          {%- for block in section.blocks -%}
+            {%- if block.settings.show == true and block.settings.label != blank and block.settings.url != blank -%}
+              <li class="search-support-links__item" role="listitem" {{ block.shopify_attributes }}>
+                <a href="{{ block.settings.url }}" class="search-support-links__link">
+                  <span class="search-support-links__label">{{ block.settings.label | escape }}</span>
+                  <span class="search-support-links__arrow" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                </a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- elsif request.design_mode -%}
+        <div class="horo-page__placeholder">
+          <p>Add at least one link block to display recovery links.</p>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Search support links",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Not sure what to search?",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "default": "Start by feeling, gift, or size guide.",
+      "label": "Text"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "Link",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show",
+          "default": true,
+          "label": "Show link"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "default": "Shop by Feeling",
+          "label": "Label"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "URL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Search support links",
+      "blocks": {
+        "link-0": {
+          "type": "link",
+          "settings": { "show": true, "label": "Shop by Feeling", "url": "/pages/feelings" }
+        },
+        "link-1": {
+          "type": "link",
+          "settings": { "show": true, "label": "Gifts", "url": "/pages/gifts" }
+        },
+        "link-2": {
+          "type": "link",
+          "settings": { "show": true, "label": "Size Guide", "url": "/pages/size-guide" }
+        }
+      },
+      "block_order": ["link-0", "link-1", "link-2"]
+    }
+  ]
+}
+{% endschema %}

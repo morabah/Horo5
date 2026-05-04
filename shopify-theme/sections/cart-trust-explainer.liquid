@@ -1,0 +1,139 @@
+{{ 'component-cart-trust-explainer.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="page-width section-{{ section.id }}-padding">
+    <div class="cart-trust-explainer">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="cart-trust-explainer__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="cart-trust-explainer__grid" role="list">
+          {%- for block in section.blocks -%}
+            {%- if block.settings.show == true and block.settings.title != blank -%}
+              <li class="cart-trust-explainer__card" role="listitem" {{ block.shopify_attributes }}>
+                <span class="cart-trust-explainer__title">{{ block.settings.title | escape }}</span>
+                {%- if block.settings.subtitle != blank -%}
+                  <span class="cart-trust-explainer__subtitle">{{ block.settings.subtitle | escape }}</span>
+                {%- endif -%}
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- elsif request.design_mode -%}
+        <div class="horo-page__placeholder">
+          <p>Add at least one trust card block to display trust signals.</p>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Cart trust explainer",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Quick info",
+      "label": "Heading"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 24
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_card",
+      "name": "Trust card",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show",
+          "default": true,
+          "label": "Show card"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "default": "COD available at checkout",
+          "label": "Title"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subtitle"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart trust explainer",
+      "blocks": {
+        "card-0": {
+          "type": "trust_card",
+          "settings": { "show": true, "title": "COD available at checkout" }
+        },
+        "card-1": {
+          "type": "trust_card",
+          "settings": { "show": true, "title": "Exchange terms apply" }
+        },
+        "card-2": {
+          "type": "trust_card",
+          "settings": { "show": true, "title": "Delivery depends on your area" }
+        },
+        "card-3": {
+          "type": "trust_card",
+          "settings": { "show": true, "title": "Gift wrap can be removed from cart" }
+        }
+      },
+      "block_order": ["card-0", "card-1", "card-2", "card-3"]
+    }
+  ]
+}
+{% endschema %}

@@ -3,7 +3,7 @@
 {%- liquid
   assign visible_count = 0
   for block in section.blocks
-    if block.settings.show == true and block.settings.text != blank
+    if block.type == 'content_block' and block.settings.show == true and block.settings.text != blank
       assign visible_count = visible_count | plus: 1
     endif
   endfor
@@ -25,14 +25,52 @@
 
 <div class="color-{{ section.settings.color_scheme }} gradient">
   <div class="page-width page-width--narrow section-{{ section.id }}-padding">
+    {%- if section.settings.hero_image != blank -%}
+      <div class="horo-about__hero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+        <div class="horo-about__hero-media">
+          <img
+            src="{{ section.settings.hero_image | image_url: width: 1200 }}"
+            srcset="{{ section.settings.hero_image | image_url: width: 600 }} 600w, {{ section.settings.hero_image | image_url: width: 900 }} 900w, {{ section.settings.hero_image | image_url: width: 1200 }} 1200w"
+            sizes="100vw"
+            alt="{{ section.settings.heading | escape }}"
+            loading="eager"
+            width="{{ section.settings.hero_image.width }}"
+            height="{{ section.settings.hero_image.height }}"
+            class="horo-about__hero-img"
+          >
+        </div>
+      </div>
+    {%- endif -%}
+
     <h1 class="main-page-title page-title {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
       {{ section.settings.heading | escape }}
     </h1>
 
+    {%- if section.settings.subheading != blank -%}
+      <p class="horo-about__subheading">{{ section.settings.subheading | escape }}</p>
+    {%- endif -%}
+
+    {%- assign trust_count = 0 -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'trust_point' and block.settings.show == true and block.settings.label != blank -%}
+        {%- assign trust_count = trust_count | plus: 1 -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- if trust_count > 0 -%}
+      <div class="horo-about__trust" role="list" aria-label="Trust signals">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'trust_point' and block.settings.show == true and block.settings.label != blank -%}
+            <span class="horo-about__trust-chip" role="listitem" {{ block.shopify_attributes }}>{{ block.settings.label | escape }}</span>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
     {%- if visible_count > 0 -%}
       <div class="horo-page__content">
         {%- for block in section.blocks -%}
-          {%- if block.settings.show == true and block.settings.text != blank -%}
+          {%- if block.type == 'content_block' and block.settings.show == true and block.settings.text != blank -%}
             <div class="horo-page__block{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" {{ block.shopify_attributes }}>
               {%- if block.settings.title != blank -%}
                 <h2 class="horo-page__block-title">{{ block.settings.title | escape }}</h2>
@@ -47,6 +85,14 @@
     {%- elsif request.design_mode -%}
       <div class="horo-page__placeholder">
         <p>Enable at least one content block to display the About page section.</p>
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+      <div class="horo-about__cta">
+        <a href="{{ section.settings.cta_link }}" class="button">
+          {{ section.settings.cta_label | escape }}
+        </a>
       </div>
     {%- endif -%}
   </div>
@@ -80,6 +126,37 @@
       "id": "color_scheme",
       "label": "Color scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Hero"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Hero image",
+      "info": "Optional. Displays a full-width image above the heading."
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "info": "Optional text shown below the heading."
+    },
+    {
+      "type": "header",
+      "content": "CTA"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "info": "Leave blank to hide the CTA button."
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
     },
     {
       "type": "header",
@@ -129,6 +206,24 @@
           "label": "Text"
         }
       ]
+    },
+    {
+      "type": "trust_point",
+      "name": "Trust point",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show",
+          "default": true,
+          "label": "Show point"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "default": "220 GSM cotton",
+          "label": "Label"
+        }
+      ]
     }
   ],
   "presets": [
@@ -142,10 +237,35 @@
             "title": "",
             "text": "<p>HORO creates wearable art based on feelings, moods, moments, gifts, and self-expression. Every piece is designed to mean something — to the person wearing it and the person receiving it. We work with artists to turn emotional territory into something tangible. Based in Egypt, printed locally, shipped with care.</p>"
           }
+        },
+        "trust-0": {
+          "type": "trust_point",
+          "settings": { "show": true, "label": "220 GSM cotton" }
+        },
+        "trust-1": {
+          "type": "trust_point",
+          "settings": { "show": true, "label": "Original artist-made design" }
+        },
+        "trust-2": {
+          "type": "trust_point",
+          "settings": { "show": true, "label": "Printed locally in Egypt" }
+        },
+        "trust-3": {
+          "type": "trust_point",
+          "settings": { "show": true, "label": "COD available" }
+        },
+        "trust-4": {
+          "type": "trust_point",
+          "settings": { "show": true, "label": "14-day exchange terms apply" }
         }
       },
       "block_order": [
-        "content-0"
+        "content-0",
+        "trust-0",
+        "trust-1",
+        "trust-2",
+        "trust-3",
+        "trust-4"
       ]
     }
   ]

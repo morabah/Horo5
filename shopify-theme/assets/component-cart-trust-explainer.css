@@ -1,0 +1,64 @@
+/* Cart trust explainer */
+.cart-trust-explainer {
+  text-align: center;
+}
+
+.cart-trust-explainer__heading {
+  margin-block: 0 2rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
+}
+
+.cart-trust-explainer__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1.2rem;
+}
+
+.cart-trust-explainer__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.6rem;
+  border: 1px solid rgba(var(--color-foreground), 0.1);
+  border-radius: 0.6rem;
+  background: rgba(var(--color-foreground), 0.02);
+}
+
+.cart-trust-explainer__title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cart-trust-explainer__subtitle {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: rgba(var(--color-foreground), 0.65);
+}
+
+@media screen and (max-width: 749px) {
+  .cart-trust-explainer__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .cart-trust-explainer__card {
+    padding: 1.2rem;
+  }
+
+  .cart-trust-explainer__title {
+    font-size: 1.2rem;
+  }
+
+  .cart-trust-explainer__subtitle {
+    font-size: 1.1rem;
+  }
+}

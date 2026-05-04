@@ -126,6 +126,84 @@
   font-size: 1.4rem;
 }
 
+/* About page enhancements */
+.horo-about__hero {
+  margin-block-end: 2.4rem;
+}
+
+.horo-about__hero-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.8rem;
+  aspect-ratio: 16 / 9;
+}
+
+.horo-about__hero-img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.horo-about__subheading {
+  margin-block: 0 2.4rem;
+  font-size: 1.6rem;
+  line-height: 1.5;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+.horo-about__trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-block: 0 2.4rem;
+}
+
+.horo-about__trust-chip {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.8rem;
+  padding-inline: 1.2rem;
+  padding-block: 0.4rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(var(--color-foreground), 0.12);
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(var(--color-foreground), 0.75);
+  background: rgba(var(--color-foreground), 0.04);
+}
+
+.horo-about__cta {
+  margin-block-start: 2.4rem;
+}
+
+/* FAQ support CTA */
+.horo-faq__support {
+  margin-block-start: 3.2rem;
+  padding-block: 2.4rem;
+  padding-inline: 2rem;
+  border: 1px solid rgba(var(--color-foreground), 0.1);
+  border-radius: 0.8rem;
+  text-align: center;
+  background: rgba(var(--color-foreground), 0.03);
+}
+
+.horo-faq__support-heading {
+  margin-block: 0 0.8rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.horo-faq__support-text {
+  margin-block: 0 1.6rem;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.8);
+}
+
 /* Mobile */
 @media screen and (max-width: 749px) {
   .horo-faq__summary {
