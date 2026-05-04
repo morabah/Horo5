@@ -1,0 +1,153 @@
+/* ===== HORO: Product Purchase Context ===== */
+
+.product-purchase-context {
+  text-align: start;
+}
+
+.product-purchase-context__wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+/* Feeling / subfeeling pills */
+.product-purchase-context__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.product-purchase-context__pill {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 1.2rem;
+  padding-block: 0.4rem;
+  border-radius: 999px;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.product-purchase-context__pill--feeling {
+  background: rgba(var(--color-foreground), 0.08);
+  color: rgb(var(--color-foreground));
+}
+
+.product-purchase-context__pill--subfeeling {
+  background: rgba(var(--color-button), 0.1);
+  color: rgb(var(--color-button));
+  border: 1px solid rgba(var(--color-button), 0.2);
+}
+
+/* Fit note */
+.product-purchase-context__fit-note {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+.product-purchase-context__fit-note-label {
+  font-weight: 500;
+  color: rgba(var(--color-foreground), 0.9);
+}
+
+/* Chips (features + trust) */
+.product-purchase-context__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.product-purchase-context__chip {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  border-radius: 0.4rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.product-purchase-context__chip--feature {
+  background: rgba(var(--color-foreground), 0.06);
+  color: rgba(var(--color-foreground), 0.85);
+  border: 1px solid rgba(var(--color-foreground), 0.1);
+}
+
+.product-purchase-context__chip--trust {
+  background: rgba(var(--color-button), 0.08);
+  color: rgb(var(--color-button));
+  border: 1px solid rgba(var(--color-button), 0.15);
+}
+
+/* Low-stock urgency */
+.product-purchase-context__urgency {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgb(var(--color-sale));
+}
+
+/* WhatsApp support */
+.product-purchase-context__support {
+  display: flex;
+}
+
+.product-purchase-context__whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  text-decoration: none;
+}
+
+.product-purchase-context__whatsapp-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  inline-size: 1.8rem;
+  block-size: 1.8rem;
+}
+
+.product-purchase-context__whatsapp-icon svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* Placeholder (editor only) */
+.product-purchase-context__placeholder {
+  text-align: center;
+  padding-block: 3rem;
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+.product-purchase-context__placeholder code {
+  background: rgba(var(--color-foreground), 0.08);
+  padding-block: 0.2rem;
+  padding-inline: 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 1.2rem;
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .product-purchase-context__wrapper {
+    gap: 1.2rem;
+  }
+
+  .product-purchase-context__fit-note {
+    font-size: 1.3rem;
+  }
+
+  .product-purchase-context__chip {
+    font-size: 1.1rem;
+  }
+}

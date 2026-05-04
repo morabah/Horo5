@@ -300,12 +300,33 @@
         "padding_top": 36,
         "padding_bottom": 28
       }
+    },
+    "product_purchase_context": {
+      "type": "product-purchase-context",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "show_default_trust_chips": true,
+        "padding_top": 20,
+        "padding_bottom": 20
+      }
+    },
+    "product_details_accordions": {
+      "type": "product-details-accordions",
+      "settings": {
+        "heading": "Product details",
+        "heading_size": "h2",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
     "main",
+    "product_purchase_context",
     "product_story",
     "product_artist_card",
+    "product_details_accordions",
     "product_delivery_payment",
     "product_size_guide",
     "product_gift_wrap_upsell",
