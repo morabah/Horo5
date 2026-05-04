@@ -1,0 +1,52 @@
+/* HORO Sticky Mobile Add-to-Cart */
+.horo-sticky-mobile-atc {
+  display: none;
+}
+
+@media screen and (max-width: 749px) {
+  .horo-sticky-mobile-atc {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    position: fixed;
+    inset-block-end: 0;
+    inset-inline: 0;
+    z-index: 90;
+    padding: 0.8rem 1.2rem;
+    padding-block-end: calc(0.8rem + env(safe-area-inset-bottom, 0px));
+    background: rgb(var(--color-background));
+    border-block-start: 1px solid rgba(var(--color-foreground), 0.08);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .horo-sticky-mobile-atc[hidden] {
+    display: none;
+  }
+
+  .horo-sticky-mobile-atc__info {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .horo-sticky-mobile-atc__title {
+    margin-block: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .horo-sticky-mobile-atc__variant-price {
+    margin-block: 0.2rem 0 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: rgba(var(--color-foreground), 0.7);
+  }
+
+  .horo-sticky-mobile-atc__btn {
+    flex-shrink: 0;
+    min-inline-size: 10rem;
+  }
+}

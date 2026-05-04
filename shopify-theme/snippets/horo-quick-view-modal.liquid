@@ -1,0 +1,40 @@
+{{ 'component-horo-quick-view.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  HORO Quick View Modal.
+  A single shared modal for all quick-view interactions.
+  Include once per page (e.g. in layout/theme.liquid or at the end of collection sections).
+
+  The JS (horo-quick-view.js) populates this modal dynamically.
+{%- endcomment -%}
+
+<div
+  id="HoroQuickViewModal"
+  class="horo-quick-view-modal"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Quick view"
+  hidden
+>
+  <div class="horo-quick-view-modal__backdrop" data-horo-quick-view-close></div>
+  <div class="horo-quick-view-modal__content">
+    <button
+      type="button"
+      class="horo-quick-view-modal__close"
+      data-horo-quick-view-close
+      aria-label="Close quick view"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <div class="horo-quick-view-modal__body" data-horo-quick-view-body>
+      {%- comment -%} Populated by JS {%- endcomment -%}
+      <div class="horo-quick-view-modal__loading">
+        <div class="horo-quick-view-modal__spinner" aria-hidden="true"></div>
+        <p>Loading&hellip;</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'horo-quick-view.js' | asset_url }}" defer></script>

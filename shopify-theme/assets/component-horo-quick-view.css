@@ -1,0 +1,204 @@
+/* HORO Quick View */
+.horo-quick-view-btn {
+  position: absolute;
+  inset-block-end: 1.2rem;
+  inset-inline-end: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid rgba(var(--color-foreground), 0.15);
+  border-radius: 2rem;
+  background: rgba(var(--color-background), 0.92);
+  color: rgb(var(--color-foreground));
+  font-size: 1.2rem;
+  font-weight: 500;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.product-card-wrapper:hover .horo-quick-view-btn,
+.horo-quick-view-btn:focus-visible {
+  opacity: 1;
+}
+
+.horo-quick-view-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--color-foreground), 0.35);
+}
+
+.horo-quick-view-btn svg {
+  flex-shrink: 0;
+}
+
+/* Modal overlay */
+.horo-quick-view-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.horo-quick-view-modal[hidden] {
+  display: none;
+}
+
+.horo-quick-view-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.horo-quick-view-modal__content {
+  position: relative;
+  width: min(90vw, 560px);
+  max-block-size: 85vh;
+  overflow-y: auto;
+  background: rgb(var(--color-background));
+  border-radius: 1.2rem;
+  padding: 2.4rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  z-index: 1;
+}
+
+.horo-quick-view-modal__close {
+  position: absolute;
+  inset-block-start: 1.2rem;
+  inset-inline-end: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(var(--color-foreground), 0.06);
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.horo-quick-view-modal__close:hover {
+  background: rgba(var(--color-foreground), 0.12);
+}
+
+/* Product layout */
+.horo-quick-view-modal__product {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.horo-quick-view-modal__image img {
+  width: 100%;
+  border-radius: 0.8rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.horo-quick-view-modal__title {
+  margin-block: 0 0.8rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.horo-quick-view-modal__price {
+  margin-block-end: 1.2rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.horo-quick-view-modal__price-sale {
+  color: #d62b2b;
+}
+
+.horo-quick-view-modal__price-compare {
+  font-size: 1.2rem;
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.horo-quick-view-modal__atc,
+.horo-quick-view-modal__view {
+  display: block;
+  inline-size: 100%;
+  margin-block-end: 0.8rem;
+  text-align: center;
+}
+
+.horo-quick-view-modal__link {
+  display: block;
+  font-size: 1.2rem;
+  text-align: center;
+  color: rgba(var(--color-foreground), 0.6);
+}
+
+.horo-quick-view-modal__link:hover {
+  color: rgb(var(--color-foreground));
+}
+
+/* Loading / error */
+.horo-quick-view-modal__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 3.2rem;
+  font-size: 1.3rem;
+  color: rgba(var(--color-foreground), 0.55);
+}
+
+.horo-quick-view-modal__spinner {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 2px solid rgba(var(--color-foreground), 0.12);
+  border-block-start-color: rgb(var(--color-foreground));
+  border-radius: 50%;
+  animation: horo-qv-spin 0.6s linear infinite;
+}
+
+@keyframes horo-qv-spin {
+  to { transform: rotate(360deg); }
+}
+
+.horo-quick-view-modal__error {
+  padding: 2.4rem;
+  text-align: center;
+  font-size: 1.3rem;
+  color: rgba(var(--color-foreground), 0.65);
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .horo-quick-view-modal__product {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+
+  .horo-quick-view-modal__content {
+    padding: 1.6rem;
+    border-radius: 0.8rem;
+    width: 95vw;
+  }
+
+  .horo-quick-view-modal__image img {
+    max-block-size: 24rem;
+  }
+
+  .horo-quick-view-btn {
+    opacity: 1;
+    position: static;
+    inline-size: 100%;
+    justify-content: center;
+    margin-block-start: 0.8rem;
+    border-radius: 0.6rem;
+  }
+}

@@ -43,6 +43,11 @@
           <p class="cart-free-shipping-progress__message cart-free-shipping-progress__message--unlocked">
             {{- section.settings.message_after | escape -}}
           </p>
+          {%- if section.settings.show_admin_warning_in_editor and request.design_mode -%}
+            <p class="cart-free-shipping-progress__admin-warning">
+              Only applies if the matching free-shipping rule is active at checkout.
+            </p>
+          {%- endif -%}
           <div class="cart-free-shipping-progress__bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ threshold_cents }}" aria-valuenow="{{ threshold_cents }}">
             <div class="cart-free-shipping-progress__fill" style="width: 100%"></div>
           </div>
@@ -115,8 +120,16 @@
     {
       "type": "textarea",
       "id": "message_after",
-      "default": "Your cart may qualify for free shipping if the shipping rate is configured in checkout.",
-      "label": "Message after threshold"
+      "default": "Your cart has reached the free-shipping threshold. Final shipping options are confirmed at checkout.",
+      "label": "Message after threshold",
+      "info": "Do not promise guaranteed free shipping unless you have verified the matching shipping rule."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_admin_warning_in_editor",
+      "default": true,
+      "label": "Show admin warning in editor",
+      "info": "Displays a reminder in the Theme Editor that free shipping only applies if the matching rule is active."
     },
     {
       "type": "color_scheme",

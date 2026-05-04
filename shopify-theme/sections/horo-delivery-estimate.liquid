@@ -17,7 +17,17 @@
 {%- if section.settings.show_delivery_estimate -%}
   <div class="color-{{ section.settings.color_scheme }} gradient">
     <div class="page-width section-{{ section.id }}-padding">
-      <div class="horo-delivery-estimate">
+      <div
+        class="horo-delivery-estimate"
+        data-delivery-estimate
+        data-standard-min-days="{{ section.settings.standard_min_days }}"
+        data-standard-max-days="{{ section.settings.standard_max_days }}"
+        data-express-min-days="{{ section.settings.express_min_days }}"
+        data-express-max-days="{{ section.settings.express_max_days }}"
+        data-cutoff-hour-local="{{ section.settings.cutoff_hour_local }}"
+        data-timezone="Africa/Cairo"
+        data-weekend-days="{{ section.settings.weekend_days }}"
+      >
         {%- if section.settings.heading != blank -%}
           <h2 class="horo-delivery-estimate__heading">{{ section.settings.heading | escape }}</h2>
         {%- endif -%}
@@ -32,6 +42,9 @@
               <p class="horo-delivery-estimate__value">
                 {{- section.settings.standard_min_days }}–{{ section.settings.standard_max_days }} {{ 'business days' | escape -}}
               </p>
+              {%- if section.settings.show_exact_date_range -%}
+                <p class="horo-delivery-estimate__date-range" data-standard-date-range hidden aria-live="polite"></p>
+              {%- endif -%}
             </div>
           </div>
 
@@ -45,6 +58,9 @@
               <p class="horo-delivery-estimate__value">
                 {{- section.settings.express_min_days }}–{{ section.settings.express_max_days }} {{ 'business days where available' | escape -}}
               </p>
+              {%- if section.settings.show_exact_date_range -%}
+                <p class="horo-delivery-estimate__date-range" data-express-date-range hidden aria-live="polite"></p>
+              {%- endif -%}
             </div>
           </div>
           {%- endif -%}
@@ -56,12 +72,16 @@
 
         {%- if section.settings.show_exact_date_range -%}
           <p class="horo-delivery-estimate__exact-note">
-            {{ 'Exact delivery dates depend on your order time and area. You will see available options at checkout.' | escape }}
+            {{ 'Estimated dates depend on order time and area. Final shipping options are confirmed at checkout.' | escape }}
           </p>
         {%- endif -%}
       </div>
     </div>
   </div>
+
+  {%- if section.settings.show_exact_date_range -%}
+    <script src="{{ 'horo-delivery-estimate.js' | asset_url }}" defer></script>
+  {%- endif -%}
 {%- elsif request.design_mode -%}
   <div class="color-{{ section.settings.color_scheme }} gradient">
     <div class="page-width section-{{ section.id }}-padding">
@@ -137,17 +157,39 @@
       "label": "Show express delivery line"
     },
     {
+      "type": "checkbox",
+      "id": "show_exact_date_range",
+      "default": false,
+      "label": "Show estimated date range",
+      "info": "Calculates estimated delivery dates using Cairo timezone and business-day logic. Static range remains as fallback."
+    },
+    {
+      "type": "range",
+      "id": "cutoff_hour_local",
+      "min": 0,
+      "max": 23,
+      "step": 1,
+      "unit": "h",
+      "label": "Same-day cutoff hour (Cairo)",
+      "default": 18,
+      "info": "Orders placed after this Cairo local hour start from the next business day."
+    },
+    {
+      "type": "select",
+      "id": "weekend_days",
+      "options": [
+        { "value": "friday_saturday", "label": "Friday – Saturday" },
+        { "value": "saturday_sunday", "label": "Saturday – Sunday" }
+      ],
+      "default": "friday_saturday",
+      "label": "Weekend days",
+      "info": "Business days skip these days. Egypt default: Friday–Saturday."
+    },
+    {
       "type": "textarea",
       "id": "text",
       "default": "Delivery time depends on your area. You will confirm available options at checkout.",
       "label": "Cautionary text"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_exact_date_range",
-      "default": false,
-      "label": "Show exact date range note",
-      "info": "If enabled, adds a note explaining exact dates are shown at checkout."
     },
     {
       "type": "color_scheme",

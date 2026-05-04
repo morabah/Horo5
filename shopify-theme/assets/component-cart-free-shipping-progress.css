@@ -32,6 +32,13 @@
   color: rgba(var(--color-foreground), 0.55);
 }
 
+.cart-free-shipping-progress__admin-warning {
+  margin-block: 0.4rem 0 0;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: rgba(var(--color-foreground), 0.45);
+}
+
 .cart-free-shipping-progress__bar {
   width: 100%;
   max-width: 48rem;

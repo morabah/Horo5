@@ -1,0 +1,51 @@
+{{ 'component-horo-sticky-mobile-atc.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  HORO Sticky Mobile Add-to-Cart.
+  Renders a sticky bar at the bottom of product pages on mobile.
+
+  Accepts:
+  - product: {Object} Product Liquid object (required)
+  - section_id: {String} Section ID (optional)
+
+  Include in product template or main-product section.
+{%- endcomment -%}
+
+{%- if product and product != empty -%}
+  <div
+    class="horo-sticky-mobile-atc"
+    data-horo-sticky-mobile-atc
+    data-product-id="{{ product.id }}"
+    hidden
+  >
+    <div class="horo-sticky-mobile-atc__info">
+      <p class="horo-sticky-mobile-atc__title">{{ product.title | escape }}</p>
+      <p class="horo-sticky-mobile-atc__variant-price" aria-live="polite">
+        {%- if product.selected_or_first_available_variant -%}
+          {{ product.selected_or_first_available_variant.price | money }}
+        {%- endif -%}
+      </p>
+    </div>
+    <button
+      type="button"
+      class="horo-sticky-mobile-atc__btn button"
+      data-horo-sticky-atc-btn
+      {%- if product.selected_or_first_available_variant.available == false %} disabled{% endif -%}
+    >
+      {%- if product.selected_or_first_available_variant.available -%}
+        {{ 'products.product.add_to_cart' | t }}
+      {%- else -%}
+        {{ 'products.product.sold_out' | t }}
+      {%- endif -%}
+    </button>
+  </div>
+
+  {%- comment -%} Embed product variant data for JS sync {%- endcomment -%}
+  <script type="application/json" data-horo-sticky-atc-variants>
+    {%- for variant in product.variants -%}
+      { "id": {{ variant.id }}, "available": {{ variant.available }}, "price": {{ variant.price }}, "title": {{ variant.title | json }} }{%- unless forloop.last %},{% endunless -%}
+    {%- endfor -%}
+  </script>
+
+  <script src="{{ 'horo-sticky-mobile-atc.js' | asset_url }}" defer></script>
+{%- endif -%}

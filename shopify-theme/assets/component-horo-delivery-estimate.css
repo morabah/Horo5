@@ -70,6 +70,18 @@
   color: rgba(var(--color-foreground), 0.55);
 }
 
+.horo-delivery-estimate__date-range {
+  margin-block: 0.4rem 0 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(var(--color-foreground), 0.85);
+}
+
+.horo-delivery-estimate__date-range[hidden] {
+  display: none;
+}
+
 .horo-delivery-estimate--placeholder {
   opacity: 0.6;
   font-size: 1.3rem;
