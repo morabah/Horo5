@@ -6,7 +6,7 @@
         "overlay_opacity": 30,
         "heading": "Wear What You Mean",
         "heading_size": "h0",
-        "subheading": "Original digital artwork, turned into identity-led t-shirts",
+        "subheading": "Original artwork printed on everyday T-shirts — made to carry a feeling, sign, or attitude.",
         "button_label": "Shop by Feeling",
         "button_link": "/pages/feelings",
         "button_style_secondary": false,
@@ -59,39 +59,6 @@
         "padding_bottom": 36
       }
     },
-    "featured_collection": {
-      "type": "featured-collection",
-      "settings": {
-        "title": "Featured products",
-        "heading_size": "h2",
-        "collection": "all",
-        "products_to_show": 8,
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "show_view_all": false,
-        "swipe_on_mobile": false,
-        "image_ratio": "adapt",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_rating": false,
-        "columns_mobile": "2",
-        "padding_top": 28,
-        "padding_bottom": 36
-      }
-    },
-    "feeling_grid": {
-      "type": "home-feeling-grid",
-      "settings": {
-        "heading": "Shop by Feeling",
-        "heading_size": "h1",
-        "subheading": "Find the mood you wear",
-        "columns_desktop": 3,
-        "columns_mobile": "2",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
     "occasion_grid": {
       "type": "home-occasion-grid",
       "settings": {
@@ -103,45 +70,6 @@
         "color_scheme": "scheme-1",
         "padding_top": 36,
         "padding_bottom": 36
-      }
-    },
-    "gift_block": {
-      "type": "rich-text",
-      "blocks": {
-        "heading": {
-          "type": "heading",
-          "settings": {
-            "heading": "Gift by Meaning",
-            "heading_size": "h1"
-          }
-        },
-        "text": {
-          "type": "text",
-          "settings": {
-            "text": "<p>Say it without saying it. Find the perfect gift for every moment.</p>"
-          }
-        },
-        "button": {
-          "type": "button",
-          "settings": {
-            "button_label": "Explore Gifts",
-            "button_link": "/pages/gifts",
-            "button_style_secondary": false
-          }
-        }
-      },
-      "block_order": [
-        "heading",
-        "text",
-        "button"
-      ],
-      "settings": {
-        "desktop_content_position": "center",
-        "content_alignment": "center",
-        "color_scheme": "scheme-2",
-        "full_width": true,
-        "padding_top": 40,
-        "padding_bottom": 40
       }
     },
     "story_plan": {
@@ -179,9 +107,42 @@
       ],
       "settings": {
         "eyebrow": "How HORO works",
-        "heading": "Start with meaning, then choose the piece",
+        "heading": "Start with a feeling. Choose the piece.",
         "heading_size": "h1",
-        "subheading": "HORO is organized around feelings, signs, attitudes, and moments.",
+        "subheading": "HORO helps you shop by mood, sign, attitude, or moment — not only by product type.",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "featured_collection": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Featured products",
+        "heading_size": "h2",
+        "collection": "all",
+        "products_to_show": 8,
+        "columns_desktop": 4,
+        "color_scheme": "scheme-1",
+        "show_view_all": false,
+        "swipe_on_mobile": false,
+        "image_ratio": "adapt",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": false,
+        "columns_mobile": "2",
+        "padding_top": 28,
+        "padding_bottom": 36
+      }
+    },
+    "feeling_grid": {
+      "type": "home-feeling-grid",
+      "settings": {
+        "heading": "Shop by Feeling",
+        "heading_size": "h1",
+        "subheading": "Find the mood you wear",
+        "columns_desktop": 3,
+        "columns_mobile": "2",
         "color_scheme": "scheme-1",
         "padding_top": 36,
         "padding_bottom": 36
@@ -224,8 +185,8 @@
         "testimonial_3"
       ],
       "settings": {
-        "eyebrow": "What people say",
-        "heading": "Why people wear HORO",
+        "eyebrow": "What HORO is designed to feel like",
+        "heading": "Why people choose HORO",
         "heading_size": "h1",
         "show_sample_copy": true,
         "color_scheme": "scheme-1",
@@ -233,13 +194,52 @@
         "padding_bottom": 36
       }
     },
+    "gift_block": {
+      "type": "rich-text",
+      "blocks": {
+        "heading": {
+          "type": "heading",
+          "settings": {
+            "heading": "Gift by feeling",
+            "heading_size": "h1"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Choose a design that says something personal without needing a long message.</p>"
+          }
+        },
+        "button": {
+          "type": "button",
+          "settings": {
+            "button_label": "Explore Gifts",
+            "button_link": "/pages/gifts",
+            "button_style_secondary": false
+          }
+        }
+      },
+      "block_order": [
+        "heading",
+        "text",
+        "button"
+      ],
+      "settings": {
+        "desktop_content_position": "center",
+        "content_alignment": "center",
+        "color_scheme": "scheme-2",
+        "full_width": true,
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
+    },
     "final_cta": {
       "type": "horo-final-cta",
       "settings": {
         "eyebrow": "Find your piece",
-        "heading": "Wear what feels close to you",
+        "heading": "Find the piece that feels like you",
         "heading_size": "h1",
-        "text": "Start with a feeling, then choose the design that matches it.",
+        "text": "Start with a feeling and move from there.",
         "button_label": "Shop by Feeling",
         "button_link": "/pages/feelings",
         "color_scheme": "scheme-2",
@@ -314,12 +314,12 @@
     "home_hero",
     "horo_trust_ribbon",
     "primary_routes",
+    "story_plan",
     "featured_collection",
     "feeling_grid",
     "occasion_grid",
-    "gift_block",
-    "story_plan",
     "testimonials",
+    "gift_block",
     "final_cta"
   ]
 }

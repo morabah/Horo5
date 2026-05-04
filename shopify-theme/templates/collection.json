@@ -33,8 +33,8 @@
     "editorial_proof": {
       "type": "collection-editorial-proof",
       "settings": {
-        "heading": "Choose by meaning, not only by product",
-        "text": "Each collection groups designs around a feeling, sign, attitude, or moment.",
+        "heading": "Designed around this feeling",
+        "text": "This collection gathers pieces connected by the same mood, sign, or attitude.",
         "color_scheme": "scheme-1",
         "padding_top": 20,
         "padding_bottom": 20
