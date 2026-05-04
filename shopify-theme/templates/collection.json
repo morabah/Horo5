@@ -30,6 +30,16 @@
         "padding_bottom": 0
       }
     },
+    "editorial_proof": {
+      "type": "collection-editorial-proof",
+      "settings": {
+        "heading": "Choose by meaning, not only by product",
+        "text": "Each collection groups designs around a feeling, sign, attitude, or moment.",
+        "color_scheme": "scheme-1",
+        "padding_top": 20,
+        "padding_bottom": 20
+      }
+    },
     "product-grid": {
       "type": "main-collection-product-grid",
       "settings": {
@@ -45,6 +55,46 @@
         "padding_top": 36,
         "padding_bottom": 36
       }
+    },
+    "related_routes": {
+      "type": "collection-related-routes",
+      "blocks": {
+        "route_1": {
+          "type": "route",
+          "settings": {
+            "title": "Shop all feelings",
+            "text": "Browse every mood and sign",
+            "link": "/pages/feelings"
+          }
+        },
+        "route_2": {
+          "type": "route",
+          "settings": {
+            "title": "Shop gifts",
+            "text": "Meaningful gift ideas",
+            "link": "/pages/gifts"
+          }
+        },
+        "route_3": {
+          "type": "route",
+          "settings": {
+            "title": "Shop all products",
+            "text": "See every design",
+            "link": "/collections/all"
+          }
+        }
+      },
+      "block_order": [
+        "route_1",
+        "route_2",
+        "route_3"
+      ],
+      "settings": {
+        "heading": "More ways to shop",
+        "color_scheme": "scheme-1",
+        "padding_top": 20,
+        "padding_bottom": 20
+      }
     }
   },
   "order": [
@@ -52,6 +102,8 @@
     "feeling_hero",
     "occasion_hero",
     "subfeeling_nav",
-    "product-grid"
+    "editorial_proof",
+    "product-grid",
+    "related_routes"
   ]
 }

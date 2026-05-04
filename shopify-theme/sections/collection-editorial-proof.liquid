@@ -1,0 +1,141 @@
+{{ 'component-collection-editorial-proof.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign editorial_heading = collection.metafields.custom.editorial_heading.value
+  assign editorial_text = collection.metafields.custom.editorial_text.value
+  assign editorial_image = collection.metafields.custom.editorial_image.value
+  assign has_metafield_data = false
+
+  if editorial_heading != blank or editorial_text != blank
+    assign has_metafield_data = true
+  endif
+
+  assign show_section = false
+  if has_metafield_data
+    assign show_section = true
+  elsif section.settings.heading != blank or section.settings.text != blank
+    assign show_section = true
+  endif
+-%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if show_section -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="collection-editorial-proof">
+        {%- if editorial_image != blank -%}
+          <div class="collection-editorial-proof__image">
+            {%- if editorial_image.aspect_ratio -%}
+              {%- assign img_height = 800 | divided_by: editorial_image.aspect_ratio | round -%}
+            {%- else -%}
+              {%- assign img_height = 800 -%}
+            {%- endif -%}
+            <img
+              src="{{ editorial_image | image_url: width: 800 }}"
+              alt="{{ editorial_heading | default: section.settings.heading | escape }}"
+              loading="lazy"
+              width="800"
+              height="{{ img_height }}"
+            >
+          </div>
+        {%- endif -%}
+
+        <div class="collection-editorial-proof__content">
+          {%- if editorial_heading != blank -%}
+            <h2 class="collection-editorial-proof__heading">{{ editorial_heading | escape }}</h2>
+          {%- elsif section.settings.heading != blank -%}
+            <h2 class="collection-editorial-proof__heading">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+
+          {%- if editorial_text != blank -%}
+            <p class="collection-editorial-proof__text">{{ editorial_text | escape }}</p>
+          {%- elsif section.settings.text != blank -%}
+            <p class="collection-editorial-proof__text">{{ section.settings.text | escape }}</p>
+          {%- elsif collection.description != blank and editorial_heading == blank and editorial_text == blank -%}
+            <p class="collection-editorial-proof__text">{{ collection.description | strip_html | truncatewords: 40 }}</p>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="collection-editorial-proof collection-editorial-proof--placeholder">
+        <p>Add a heading or text in section settings, or populate collection metafields (custom.editorial_heading, custom.editorial_text) to display editorial content.</p>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Collection editorial",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Choose by meaning, not only by product",
+      "label": "Heading",
+      "info": "Overridden by collection metafield custom.editorial_heading if set"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "default": "Each collection groups designs around a feeling, sign, attitude, or moment.",
+      "label": "Text",
+      "info": "Overridden by collection metafield custom.editorial_text if set"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection editorial"
+    }
+  ]
+}
+{% endschema %}

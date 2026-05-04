@@ -1,0 +1,61 @@
+/* ===== HORO: Collection Editorial Proof ===== */
+
+.collection-editorial-proof {
+  display: flex;
+  gap: 3.2rem;
+  align-items: center;
+}
+
+.collection-editorial-proof__image {
+  flex-shrink: 0;
+  inline-size: 33%;
+}
+
+.collection-editorial-proof__image img {
+  inline-size: 100%;
+  border-radius: var(--border-radius);
+}
+
+.collection-editorial-proof__content {
+  flex: 1;
+}
+
+.collection-editorial-proof__heading {
+  margin: 0 0 1.2rem;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.3;
+  color: rgb(var(--color-foreground));
+}
+
+.collection-editorial-proof__text {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+  max-inline-size: 56ch;
+}
+
+.collection-editorial-proof--placeholder {
+  opacity: 0.5;
+  font-size: 1.3rem;
+}
+
+@media screen and (max-width: 749px) {
+  .collection-editorial-proof {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .collection-editorial-proof__image {
+    inline-size: 100%;
+  }
+
+  .collection-editorial-proof__heading {
+    font-size: 1.6rem;
+  }
+
+  .collection-editorial-proof__text {
+    font-size: 1.3rem;
+  }
+}

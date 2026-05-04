@@ -12,9 +12,23 @@
         "padding_top": 36,
         "padding_bottom": 36
       }
+    },
+    "editorial_guide": {
+      "type": "gifts-editorial-guide",
+      "settings": {
+        "eyebrow": "Gifts",
+        "heading": "Send something with meaning",
+        "text": "HORO designs work as gifts because they start with a feeling.",
+        "cta_label": "Shop all products",
+        "cta_link": "/collections/all",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
-    "gifts_hub"
+    "gifts_hub",
+    "editorial_guide"
   ]
 }

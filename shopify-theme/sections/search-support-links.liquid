@@ -46,6 +46,13 @@
           <p>Add at least one link block to display recovery links.</p>
         </div>
       {%- endif -%}
+
+      {%- if section.settings.popular_searches != blank -%}
+        <div class="search-support-links__popular">
+          <p class="search-support-links__popular-label">{{ section.settings.popular_searches_label | escape }}</p>
+          <p class="search-support-links__popular-terms">{{ section.settings.popular_searches | escape }}</p>
+        </div>
+      {%- endif -%}
     </div>
   </div>
 </div>
@@ -67,6 +74,19 @@
       "id": "text",
       "default": "Start by feeling, gift, or size guide.",
       "label": "Text"
+    },
+    {
+      "type": "text",
+      "id": "popular_searches_label",
+      "default": "Popular searches",
+      "label": "Popular searches label"
+    },
+    {
+      "type": "textarea",
+      "id": "popular_searches",
+      "default": "Zodiac, Cancer, I care, Gift",
+      "label": "Popular searches",
+      "info": "Comma-separated search terms displayed as suggestion text. No predictive search logic."
     },
     {
       "type": "color_scheme",
@@ -139,9 +159,13 @@
         "link-2": {
           "type": "link",
           "settings": { "show": true, "label": "Size Guide", "url": "/pages/size-guide" }
+        },
+        "link-3": {
+          "type": "link",
+          "settings": { "show": true, "label": "Shop all", "url": "/collections/all" }
         }
       },
-      "block_order": ["link-0", "link-1", "link-2"]
+      "block_order": ["link-0", "link-1", "link-2", "link-3"]
     }
   ]
 }

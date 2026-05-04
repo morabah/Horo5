@@ -1,0 +1,46 @@
+/* ===== HORO: Occasions Editorial Guide ===== */
+
+.occasions-editorial-guide {
+  text-align: center;
+  max-inline-size: 64rem;
+  margin-inline: auto;
+}
+
+.occasions-editorial-guide__eyebrow {
+  display: block;
+  margin-block-end: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(var(--color-foreground), 0.55);
+}
+
+.occasions-editorial-guide__heading {
+  margin-block: 0 1.6rem;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.occasions-editorial-guide__text {
+  margin-block: 0 2.4rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+.occasions-editorial-guide--placeholder {
+  opacity: 0.5;
+  font-size: 1.3rem;
+}
+
+@media screen and (max-width: 749px) {
+  .occasions-editorial-guide__heading {
+    font-size: 1.8rem;
+  }
+
+  .occasions-editorial-guide__text {
+    font-size: 1.3rem;
+  }
+}

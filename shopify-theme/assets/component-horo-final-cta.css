@@ -1,0 +1,46 @@
+/* ===== HORO: Final CTA ===== */
+
+.horo-final-cta {
+  text-align: center;
+  max-inline-size: 64rem;
+  margin-inline: auto;
+}
+
+.horo-final-cta__eyebrow {
+  margin: 0 0 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--color-foreground));
+  opacity: 0.5;
+}
+
+.horo-final-cta__heading {
+  margin: 0 0 1.6rem;
+  color: rgb(var(--color-foreground));
+}
+
+.horo-final-cta__text {
+  margin: 0 auto 2.4rem;
+  max-inline-size: 52ch;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground));
+  opacity: 0.7;
+}
+
+.horo-final-cta--placeholder {
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+@media screen and (max-width: 749px) {
+  .horo-final-cta__heading {
+    font-size: 2rem;
+  }
+
+  .horo-final-cta__text {
+    font-size: 1.3rem;
+  }
+}

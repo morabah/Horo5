@@ -54,6 +54,26 @@
   color: rgba(var(--color-foreground), 0.5);
 }
 
+.search-support-links__popular {
+  margin-block-start: 2.4rem;
+}
+
+.search-support-links__popular-label {
+  margin: 0 0 0.8rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(var(--color-foreground), 0.5);
+}
+
+.search-support-links__popular-terms {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.65);
+}
+
 @media screen and (max-width: 749px) {
   .search-support-links__heading {
     font-size: 1.6rem;

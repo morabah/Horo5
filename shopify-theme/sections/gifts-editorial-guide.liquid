@@ -1,0 +1,121 @@
+{{ 'component-gifts-editorial-guide.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if section.settings.heading != blank or section.settings.text != blank -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="gifts-editorial-guide">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="gifts-editorial-guide__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="gifts-editorial-guide__heading">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <p class="gifts-editorial-guide__text">{{ section.settings.text | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+          <a href="{{ section.settings.cta_link }}" class="button">
+            {{ section.settings.cta_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="gifts-editorial-guide gifts-editorial-guide--placeholder">
+        <p>Add a heading or text to display the editorial guide.</p>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Gifts editorial guide",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "default": "Gifts",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Send something with meaning",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "default": "HORO designs work as gifts because they start with a feeling.",
+      "label": "Text"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "default": "Shop all products",
+      "label": "CTA label"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "default": "/collections/all",
+      "label": "CTA link"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Gifts editorial guide"
+    }
+  ]
+}
+{% endschema %}
