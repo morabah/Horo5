@@ -1,4 +1,7 @@
 {{ 'component-cart-bundle-nudge.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.use_incentives_api -%}
+  <script src="{{ 'horo-incentives.js' | asset_url }}" defer></script>
+{%- endif -%}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -14,26 +17,61 @@
   }
 {%- endstyle -%}
 
+{%- liquid
+  assign gift_wrap_product = settings.horo_gift_wrap_product
+  assign eligible_quantity = 0
+  for item in cart.items
+    assign is_gift_wrap = false
+    if gift_wrap_product != blank and item.product.handle == gift_wrap_product.handle
+      assign is_gift_wrap = true
+    endif
+    unless is_gift_wrap
+      if section.settings.eligible_collection != blank
+        if item.product.collections contains section.settings.eligible_collection
+          assign eligible_quantity = eligible_quantity | plus: item.quantity
+        endif
+      else
+        assign eligible_quantity = eligible_quantity | plus: item.quantity
+      endif
+    endunless
+  endfor
+  assign remaining_items = section.settings.required_quantity | minus: eligible_quantity
+-%}
+
 {%- if section.settings.enable_bundle_message -%}
   <div class="color-{{ section.settings.color_scheme }} gradient">
     <div class="page-width section-{{ section.id }}-padding">
-      <div class="cart-bundle-nudge">
-        {%- if section.settings.heading != blank -%}
-          <h2 class="cart-bundle-nudge__heading">{{ section.settings.heading | escape }}</h2>
+      <div
+        class="cart-bundle-nudge"
+        {%- if section.settings.use_incentives_api -%}
+          data-horo-bundle-progress
+          data-use-incentives-api="true"
+          data-incentives-api-url="{{ section.settings.incentives_api_url | default: '/apps/horo-incentives' }}"
+          data-api-timeout-ms="{{ section.settings.api_timeout_ms | default: 2500 }}"
+          data-eligible-count="{{ eligible_quantity }}"
+          data-heading-before="{{ section.settings.heading_before | escape }}"
+          data-heading-after="{{ section.settings.heading_after | escape }}"
         {%- endif -%}
-        {%- if section.settings.text != blank -%}
-          <p class="cart-bundle-nudge__text">{{ section.settings.text | escape }}</p>
+      >
+        {%- if remaining_items > 0 -%}
+          {%- if section.settings.heading_before != blank -%}
+            <h2 class="cart-bundle-nudge__heading" data-bundle-heading>{{ section.settings.heading_before | replace: '{{ count }}', remaining_items | escape }}</h2>
+          {%- endif -%}
+        {%- else -%}
+          {%- if section.settings.heading_after != blank -%}
+            <h2 class="cart-bundle-nudge__heading" data-bundle-heading>{{ section.settings.heading_after | escape }}</h2>
+          {%- endif -%}
         {%- endif -%}
+
+        {%- if section.settings.note != blank -%}
+          <p class="cart-bundle-nudge__text" data-bundle-note>{{ section.settings.note | escape }}</p>
+        {%- endif -%}
+
         {%- if section.settings.discount_code_text != blank -%}
-          <p class="cart-bundle-nudge__code">
-            <span class="cart-bundle-nudge__code-label">{{ 'Use code:' | escape }}</span>
-            <span class="cart-bundle-nudge__code-value">{{ section.settings.discount_code_text | escape }}</span>
+          <p class="cart-bundle-nudge__code" data-bundle-code>
+            <span class="cart-bundle-nudge__code-label">{{ 'horo.incentives.use_code' | t | escape }}</span>
+            <span class="cart-bundle-nudge__code-value" data-bundle-code-value>{{ section.settings.discount_code_text | escape }}</span>
           </p>
-        {%- endif -%}
-        {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
-          <a href="{{ section.settings.button_link }}" class="button button--secondary">
-            {{ section.settings.button_label | escape }}
-          </a>
         {%- endif -%}
       </div>
     </div>
@@ -63,19 +101,57 @@
     },
     {
       "type": "header",
+      "content": "Bundle settings"
+    },
+    {
+      "type": "range",
+      "id": "required_quantity",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "label": "Required quantity",
+      "default": 3,
+      "info": "Number of eligible items to reach the bundle offer."
+    },
+    {
+      "type": "range",
+      "id": "discount_egp",
+      "min": 0,
+      "max": 1000,
+      "step": 50,
+      "unit": "EGP",
+      "label": "Discount amount (EGP)",
+      "default": 100,
+      "info": "Display only. Must match a real Shopify discount."
+    },
+    {
+      "type": "collection",
+      "id": "eligible_collection",
+      "label": "Eligible collection",
+      "info": "Leave blank to count all non-gift-wrap cart items."
+    },
+    {
+      "type": "header",
       "content": "Content"
     },
     {
       "type": "text",
-      "id": "heading",
-      "default": "Thinking of another design?",
-      "label": "Heading"
+      "id": "heading_before",
+      "default": "Add {{ count }} more to unlock the bundle offer",
+      "label": "Heading before threshold",
+      "info": "Use {{ count }} as placeholder for remaining items."
+    },
+    {
+      "type": "text",
+      "id": "heading_after",
+      "default": "Your cart may qualify for the bundle offer",
+      "label": "Heading at/after threshold"
     },
     {
       "type": "textarea",
-      "id": "text",
-      "default": "You can add another piece before checkout. Bundle offers may be announced separately.",
-      "label": "Text"
+      "id": "note",
+      "default": "Final discount is confirmed at checkout.",
+      "label": "Note text"
     },
     {
       "type": "text",
@@ -84,15 +160,31 @@
       "info": "Leave blank to hide. Only fill if a discount code exists in Shopify Admin."
     },
     {
-      "type": "text",
-      "id": "button_label",
-      "default": "Continue shopping",
-      "label": "Button label"
+      "type": "header",
+      "content": "API sync (optional)"
     },
     {
-      "type": "url",
-      "id": "button_link",
-      "label": "Button link"
+      "type": "checkbox",
+      "id": "use_incentives_api",
+      "default": false,
+      "label": "Use incentives API",
+      "info": "Fetch bundle config from a public app proxy. Falls back to manual settings if API fails."
+    },
+    {
+      "type": "text",
+      "id": "incentives_api_url",
+      "default": "/apps/horo-incentives",
+      "label": "Incentives API URL"
+    },
+    {
+      "type": "range",
+      "id": "api_timeout_ms",
+      "min": 1000,
+      "max": 10000,
+      "step": 500,
+      "unit": "ms",
+      "label": "API timeout",
+      "default": 2500
     },
     {
       "type": "color_scheme",

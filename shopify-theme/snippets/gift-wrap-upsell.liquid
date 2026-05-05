@@ -6,13 +6,26 @@
   assign _price_hint = price_hint | default: ''
   assign _section_id = section_id
   assign _context = context | default: 'product'
+  assign _show_preview = show_preview | default: true
 -%}
 
 {%- if _product != blank and _variant != blank -%}
   <div class="gift-wrap__card">
-    <div class="gift-wrap__icon" aria-hidden="true">
-      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-    </div>
+    {%- if _show_preview and _product.featured_image -%}
+      <div class="gift-wrap__preview">
+        <img
+          src="{{ _product.featured_image | image_url: width: 120 }}"
+          alt="{{ _product.featured_image.alt | escape }}"
+          loading="lazy"
+          width="60"
+          height="60"
+        >
+      </div>
+    {%- else -%}
+      <div class="gift-wrap__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+      </div>
+    {%- endif -%}
     <div class="gift-wrap__content">
       <p class="gift-wrap__title">{{ _label | escape }}</p>
       {%- if _price_hint != blank -%}
@@ -20,12 +33,40 @@
       {%- elsif _variant.price != blank -%}
         <p class="gift-wrap__hint">{{ _variant.price | money }}</p>
       {%- endif -%}
+      {%- if _context == 'product' -%}
+        <p class="gift-wrap__copy">{{ 'horo.gift_wrap.description' | t | escape }}</p>
+      {%- endif -%}
     </div>
     <div class="gift-wrap__actions">
-      {%- if _in_cart -%}
+      {%- if _context == 'cart' and _in_cart -%}
+        <label class="gift-wrap__toggle">
+          <input
+            type="checkbox"
+            class="gift-wrap__checkbox"
+            data-gift-wrap-remove
+            data-variant-id="{{ _variant.id }}"
+            data-section-id="{{ _section_id }}"
+            checked
+            aria-label="{{ 'horo.gift_wrap.remove' | t | escape }}"
+          >
+          <span class="gift-wrap__toggle-label">{{ 'horo.gift_wrap.already_added' | t | escape }}</span>
+        </label>
+      {%- elsif _context == 'cart' -%}
+        <label class="gift-wrap__toggle">
+          <input
+            type="checkbox"
+            class="gift-wrap__checkbox"
+            data-gift-wrap-add
+            data-variant-id="{{ _variant.id }}"
+            data-section-id="{{ _section_id }}"
+            aria-label="{{ _label | escape }}"
+          >
+          <span class="gift-wrap__toggle-label">{{ _label | escape }}</span>
+        </label>
+      {%- elsif _in_cart -%}
         <div class="gift-wrap__done">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          Gift wrap is already added
+          {{ 'horo.gift_wrap.already_added' | t | escape }}
         </div>
       {%- else -%}
         <button
@@ -38,13 +79,13 @@
         >
           {{ _label | escape }}
         </button>
-        <p
-          class="gift-wrap__status"
-          data-gift-wrap-status="{{ _section_id }}"
-          aria-live="polite"
-          aria-atomic="true"
-        ></p>
       {%- endif -%}
+      <p
+        class="gift-wrap__status"
+        data-gift-wrap-status="{{ _section_id }}"
+        aria-live="polite"
+        aria-atomic="true"
+      ></p>
     </div>
   </div>
 {%- elsif request.design_mode -%}

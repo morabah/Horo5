@@ -195,6 +195,7 @@
     "product_gift_wrap_upsell": {
       "type": "product-gift-wrap-upsell",
       "settings": {
+        "show_preview_image": true,
         "color_scheme": "scheme-1",
         "padding_top": 36,
         "padding_bottom": 36
@@ -317,6 +318,18 @@
         "padding_bottom": 28
       }
     },
+    "product_pair_with": {
+      "type": "product-pair-with",
+      "settings": {
+        "heading": "Style it with",
+        "include_current_product": false,
+        "preselect_items": true,
+        "redirect_to_cart": false,
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
     "product_purchase_context": {
       "type": "product-purchase-context",
       "settings": {
@@ -324,6 +337,14 @@
         "show_default_trust_chips": true,
         "padding_top": 20,
         "padding_bottom": 20
+      }
+    },
+    "product_promo_countdown": {
+      "type": "product-promo-countdown",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 16,
+        "padding_bottom": 16
       }
     },
     "product_details_accordions": {
@@ -340,6 +361,7 @@
   "order": [
     "main",
     "product_purchase_context",
+    "product_promo_countdown",
     "product_story",
     "product_artist_card",
     "product_details_accordions",
@@ -350,6 +372,7 @@
     "product_trust_strip",
     "image-with-text",
     "multicolumn",
-    "related-products"
+    "related-products",
+    "product_pair_with"
   ]
 }

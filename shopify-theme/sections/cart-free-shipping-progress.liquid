@@ -1,4 +1,7 @@
 {{ 'component-cart-free-shipping-progress.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.use_incentives_api -%}
+  <script src="{{ 'horo-incentives.js' | asset_url }}" defer></script>
+{%- endif -%}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -21,14 +24,26 @@
 
   <div class="color-{{ section.settings.color_scheme }} gradient">
     <div class="page-width section-{{ section.id }}-padding">
-      <div class="cart-free-shipping-progress">
+      <div
+        class="cart-free-shipping-progress"
+        {%- if section.settings.use_incentives_api -%}
+          data-horo-free-shipping-progress
+          data-use-incentives-api="true"
+          data-incentives-api-url="{{ section.settings.incentives_api_url | default: '/apps/horo-incentives' }}"
+          data-api-timeout-ms="{{ section.settings.api_timeout_ms | default: 2500 }}"
+          data-locale="{{ request.locale.iso_code }}"
+          data-cart-total-cents="{{ cart.total_price }}"
+          data-message-before="{{ section.settings.message_before | escape }}"
+          data-message-after="{{ section.settings.message_after | escape }}"
+        {%- endif -%}
+      >
         {%- if section.settings.heading_before != blank -%}
-          <h2 class="cart-free-shipping-progress__heading">{{ section.settings.heading_before | escape }}</h2>
+          <h2 class="cart-free-shipping-progress__heading" data-fsp-label>{{ section.settings.heading_before | escape }}</h2>
         {%- endif -%}
 
         {%- if remaining_cents > 0 -%}
           {%- assign amount_placeholder = '[amount]' -%}
-          <p class="cart-free-shipping-progress__message">
+          <p class="cart-free-shipping-progress__message" data-fsp-message>
             {%- if section.settings.message_before contains amount_placeholder -%}
               {{- section.settings.message_before | split: amount_placeholder | first | escape -}}
               {{- remaining_cents | money -}}
@@ -37,11 +52,11 @@
               {{- section.settings.message_before | escape -}}
             {%- endif -%}
           </p>
-          <div class="cart-free-shipping-progress__bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ threshold_cents }}" aria-valuenow="{{ total_cents }}">
-            <div class="cart-free-shipping-progress__fill" style="width: {{ total_cents | times: 100.0 | divided_by: threshold_cents | at_most: 100 }}%"></div>
+          <div class="cart-free-shipping-progress__bar" data-fsp-bar role="progressbar" aria-valuemin="0" aria-valuemax="{{ threshold_cents }}" aria-valuenow="{{ total_cents }}">
+            <div class="cart-free-shipping-progress__fill" data-fsp-fill style="width: {{ total_cents | times: 100.0 | divided_by: threshold_cents | at_most: 100 }}%"></div>
           </div>
         {%- else -%}
-          <p class="cart-free-shipping-progress__message cart-free-shipping-progress__message--unlocked">
+          <p class="cart-free-shipping-progress__message cart-free-shipping-progress__message--unlocked" data-fsp-message>
             {{- section.settings.message_after | escape -}}
           </p>
           {%- if section.settings.show_admin_warning_in_editor and request.design_mode -%}
@@ -49,8 +64,8 @@
               Only applies if the matching free-shipping rule is active at checkout.
             </p>
           {%- endif -%}
-          <div class="cart-free-shipping-progress__bar" role="progressbar" aria-valuemin="0" aria-valuemax="{{ threshold_cents }}" aria-valuenow="{{ threshold_cents }}">
-            <div class="cart-free-shipping-progress__fill" style="width: 100%"></div>
+          <div class="cart-free-shipping-progress__bar" data-fsp-bar role="progressbar" aria-valuemin="0" aria-valuemax="{{ threshold_cents }}" aria-valuenow="{{ threshold_cents }}">
+            <div class="cart-free-shipping-progress__fill" data-fsp-fill style="width: 100%"></div>
           </div>
         {%- endif -%}
       </div>
@@ -131,6 +146,39 @@
       "default": true,
       "label": "Show admin warning in editor",
       "info": "Displays a reminder in the Theme Editor that free shipping only applies if the matching rule is active."
+    },
+    {
+      "type": "header",
+      "content": "API sync (optional)"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_incentives_api",
+      "default": false,
+      "label": "Use incentives API",
+      "info": "Fetch threshold from a public app proxy. Falls back to manual setting if API fails."
+    },
+    {
+      "type": "text",
+      "id": "incentives_api_url",
+      "default": "/apps/horo-incentives",
+      "label": "Incentives API URL"
+    },
+    {
+      "type": "range",
+      "id": "api_timeout_ms",
+      "min": 1000,
+      "max": 10000,
+      "step": 500,
+      "unit": "ms",
+      "label": "API timeout",
+      "default": 2500
+    },
+    {
+      "type": "checkbox",
+      "id": "fallback_to_manual_threshold",
+      "default": true,
+      "label": "Fallback to manual threshold on API failure"
     },
     {
       "type": "color_scheme",

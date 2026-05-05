@@ -84,7 +84,26 @@
       "added": "اتضاف تغليف الهدية",
       "already_added": "تغليف الهدية موجود بالفعل في السلة",
       "remove": "شيل تغليف الهدية",
-      "price_hint": "+ ٥٠ ج.م"
+      "price_hint": "+ ٥٠ ج.م",
+      "description": "أضف تغليف هدية عشان تبقى جاهزة للإهداء."
+    },
+    "incentives": {
+      "free_shipping_add_more": "أضف {{ amount }} للوصول إلى حد الشحن المجاني",
+      "free_shipping_threshold_reached": "وصلت السلة إلى حد الشحن المجاني. يتم تأكيد خيارات الشحن عند الدفع.",
+      "limited_offer": "عرض لفترة محدودة",
+      "ends_in": "ينتهي خلال",
+      "offer_ended": "انتهى العرض",
+      "save_amount": "وفر {{ amount }}",
+      "you_saved": "وفرت {{ amount }}",
+      "savings_note": "الوفرة مبنية على أسعار التخفيض والخصومات المطبقة على السلة.",
+      "use_code": "استخدم الكود:",
+      "bundle_note": "يتم تأكيد الخصم النهائي عند الدفع.",
+      "add_selected_pieces": "أضف القطع المختارة",
+      "choose_options": "اختار الخيارات",
+      "pair_select": "اختار على الأقل قطعة واحدة.",
+      "pair_adding": "جاري الإضافة...",
+      "pair_success": "تمت إضافة القطع للسلة.",
+      "pair_error": "تعذر إضافة القطع. حاول تاني."
     },
     "feelings_hub": {
       "heading": "تسوق بالمشاعر",

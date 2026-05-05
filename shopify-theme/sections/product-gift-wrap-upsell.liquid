@@ -56,7 +56,8 @@
             label: _label,
             price_hint: _price,
             section_id: section.id,
-            context: 'product'
+            context: 'product',
+            show_preview: section.settings.show_preview_image
           -%}
         {%- elsif request.design_mode -%}
           <div class="gift-wrap__placeholder">
@@ -77,6 +78,13 @@
     {
       "type": "paragraph",
       "content": "This section adds a gift-wrap upsell below the product form. The gift wrap product is selected in Theme Settings > HORO. Duplicate prevention is automatic."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_preview_image",
+      "default": true,
+      "label": "Show gift wrap preview image",
+      "info": "Displays the gift wrap product image if available."
     },
     {
       "type": "color_scheme",

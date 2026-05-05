@@ -28,11 +28,16 @@
       "type": "cart-bundle-nudge",
       "settings": {
         "enable_bundle_message": false,
-        "heading": "Thinking of another design?",
-        "text": "You can add another piece before checkout. Bundle offers may be announced separately.",
+        "required_quantity": 3,
+        "discount_egp": 100,
+        "eligible_collection": "",
+        "heading_before": "Add {{ count }} more to unlock the bundle offer",
+        "heading_after": "Your cart may qualify for the bundle offer",
+        "note": "Final discount is confirmed at checkout.",
         "discount_code_text": "",
-        "button_label": "Continue shopping",
-        "button_link": "/collections/all",
+        "use_incentives_api": false,
+        "incentives_api_url": "/apps/horo-incentives",
+        "api_timeout_ms": 2500,
         "color_scheme": "scheme-1",
         "padding_top": 24,
         "padding_bottom": 24
@@ -45,10 +50,23 @@
         "threshold_egp": 1500,
         "heading_before": "Free shipping progress",
         "message_before": "Add [amount] more to reach the free shipping threshold.",
-        "message_after": "Your cart may qualify for free shipping if the shipping rate is configured in checkout.",
+        "message_after": "Your cart has reached the free-shipping threshold. Final shipping options are confirmed at checkout.",
+        "show_admin_warning_in_editor": true,
+        "use_incentives_api": false,
+        "incentives_api_url": "/apps/horo-incentives",
+        "api_timeout_ms": 2500,
+        "fallback_to_manual_threshold": true,
         "color_scheme": "scheme-1",
         "padding_top": 24,
         "padding_bottom": 24
+      }
+    },
+    "cart_savings_summary": {
+      "type": "cart-savings-summary",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 16,
+        "padding_bottom": 16
       }
     },
     "cart-footer": {
@@ -97,6 +115,7 @@
     "cart_trust_explainer",
     "cart_bundle_nudge",
     "cart_free_shipping_progress",
+    "cart_savings_summary",
     "cart-footer",
     "featured-collection"
   ]

@@ -1,0 +1,87 @@
+/* Product promo countdown */
+.product-promo-countdown {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 1.6rem;
+  border: 1px solid rgba(var(--color-foreground), 0.12);
+  border-radius: var(--border-radius);
+  background: rgba(var(--color-foreground), 0.03);
+}
+
+.product-promo-countdown--expired {
+  opacity: 0.6;
+}
+
+.product-promo-countdown__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.4rem;
+  background: rgb(var(--color-button));
+  color: rgb(var(--color-button-text));
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.product-promo-countdown__badge svg {
+  inline-size: 1.4rem;
+  block-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.product-promo-countdown__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1.2rem;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.product-promo-countdown__label {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.product-promo-countdown__display {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.product-promo-countdown__ended {
+  margin: 0;
+  font-size: 1.4rem;
+  color: rgba(var(--color-foreground), 0.65);
+}
+
+.product-promo-countdown__savings {
+  margin: 0;
+  font-size: 1.3rem;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
+@media screen and (max-width: 749px) {
+  .product-promo-countdown {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .product-promo-countdown__body {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-promo-countdown__display {
+    transition: none;
+  }
+}

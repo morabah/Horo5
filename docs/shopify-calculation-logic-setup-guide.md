@@ -43,6 +43,32 @@ If you prefer a discount-based approach:
 - Always test a draft order after changing settings.
 - Keep the threshold in the theme **exactly equal** to the threshold in Shopify Admin.
 
+### Auto-sync via app proxy (optional)
+
+To make auto-sync real, you can build a lightweight Shopify app with a public app proxy:
+
+1. Create an app that reads the free-shipping threshold from Shopify Admin (server-side only, using the Admin API).
+2. Expose a public endpoint at `/apps/horo-incentives`.
+3. Return JSON like:
+   ```json
+   {
+     "freeShipping": {
+       "active": true,
+       "thresholdEgp": 1500,
+       "label": { "en": "Free shipping over 1500 EGP", "ar": "شحن مجاني للطلبات فوق 1500 جنيه" }
+     }
+   }
+   ```
+4. In the theme, enable **Use incentives API** in the Free shipping progress section.
+5. The theme fetches the endpoint and updates the threshold dynamically.
+6. If the API fails, the theme falls back to the manual **Threshold (EGP)** setting.
+
+**Security:** The app proxy must never expose Admin tokens or private data. It is for public display only. It does not apply discounts.
+
+### To make free shipping real
+- Configure a matching Shopify free-shipping discount or shipping rule.
+- Theme progress is display only.
+
 ---
 
 ## 2. Delivery Estimate Display

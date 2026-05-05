@@ -613,7 +613,26 @@
       "added": "Gift wrap added",
       "already_added": "Gift wrap already in cart",
       "remove": "Remove gift wrap",
-      "price_hint": "+ EGP 50"
+      "price_hint": "+ EGP 50",
+      "description": "Add gift wrap to make it ready for gifting."
+    },
+    "incentives": {
+      "free_shipping_add_more": "Add {{ amount }} more to reach the free-shipping threshold.",
+      "free_shipping_threshold_reached": "Your cart has reached the free-shipping threshold. Final shipping options are confirmed at checkout.",
+      "limited_offer": "Limited offer",
+      "ends_in": "Ends in",
+      "offer_ended": "Offer ended",
+      "save_amount": "Save {{ amount }}",
+      "you_saved": "You saved {{ amount }}",
+      "savings_note": "Savings are based on sale prices and discounts applied in cart.",
+      "use_code": "Use code:",
+      "bundle_note": "Final discount is confirmed at checkout.",
+      "add_selected_pieces": "Add selected pieces",
+      "choose_options": "Choose options",
+      "pair_select": "Please select at least one item.",
+      "pair_adding": "Adding...",
+      "pair_success": "Items added to cart.",
+      "pair_error": "Unable to add items. Please try again."
     },
     "feelings_hub": {
       "heading": "Shop by Feeling",

@@ -1,0 +1,114 @@
+{{ 'component-cart-savings-summary.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign compare_at_savings_cents = 0
+  for item in cart.items
+    if item.variant.compare_at_price and item.variant.compare_at_price > item.final_price
+      assign item_saving = item.variant.compare_at_price | minus: item.final_price
+      assign item_saving_total = item_saving | times: item.quantity
+      assign compare_at_savings_cents = compare_at_savings_cents | plus: item_saving_total
+    endif
+  endfor
+
+  assign cart_discount_savings_cents = cart.total_discount
+  assign total_savings_cents = compare_at_savings_cents | plus: cart_discount_savings_cents
+-%}
+
+{%- if total_savings_cents > 0 -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="cart-savings-summary">
+        <p class="cart-savings-summary__label">
+          {%- if request.locale.iso_code == 'ar' -%}
+            {{- 'horo.incentives.you_saved' | t: amount: total_savings_cents | money -}}
+          {%- else -%}
+            {{- 'horo.incentives.you_saved' | t: amount: total_savings_cents | money -}}
+          {%- endif -%}
+        </p>
+        <p class="cart-savings-summary__amount">
+          {{- total_savings_cents | money -}}
+        </p>
+      </div>
+      <p class="cart-savings-summary__note">
+        {%- if request.locale.iso_code == 'ar' -%}
+          {{- 'horo.incentives.savings_note' | t -}}
+        {%- else -%}
+          {{- 'horo.incentives.savings_note' | t -}}
+        {%- endif -%}
+      </p>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="cart-savings-summary" style="opacity:0.6;">
+        <p class="cart-savings-summary__label">{{ 'horo.incentives.you_saved' | t: amount: '0 EGP' }}</p>
+        <p class="cart-savings-summary__amount">{{ 0 | money }}</p>
+      </div>
+      <p class="cart-savings-summary__note">This block appears only when cart savings are greater than zero.</p>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cart savings summary",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows a safe savings summary based on compare-at prices and Shopify cart discounts. Only renders when savings are greater than zero."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart savings summary"
+    }
+  ]
+}
+{% endschema %}

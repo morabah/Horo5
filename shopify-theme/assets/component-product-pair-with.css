@@ -1,0 +1,135 @@
+/* Product pair with / cross-sell */
+.product-pair-with {
+  text-align: start;
+}
+
+.product-pair-with__heading {
+  margin-block: 0 1.6rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.product-pair-with__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1.6rem;
+  margin-block: 0 1.6rem;
+}
+
+.product-pair-with__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.product-pair-with__checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  cursor: pointer;
+}
+
+.product-pair-with__checkbox input[type="checkbox"] {
+  flex-shrink: 0;
+  inline-size: 1.8rem;
+  block-size: 1.8rem;
+  margin-block-start: 0.2rem;
+}
+
+.product-pair-with__image {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background: rgba(var(--color-foreground), 0.05);
+}
+
+.product-pair-with__image img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.product-pair-with__title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.product-pair-with__price {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  opacity: 0.75;
+}
+
+.product-pair-with__choose-link {
+  font-size: 1.2rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.product-pair-with__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.product-pair-with__btn {
+  appearance: none;
+  border: 1px solid rgba(var(--color-button), var(--alpha-button-background));
+  background: rgb(var(--color-button));
+  color: rgb(var(--color-button-text));
+  font-size: 1.3rem;
+  font-weight: 600;
+  padding-block: 1rem;
+  padding-inline: 1.8rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.product-pair-with__btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.product-pair-with__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.product-pair-with__status {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  min-block-size: 1.8rem;
+}
+
+.product-pair-with__status--success {
+  color: rgb(var(--color-success, 42 130 59));
+}
+
+.product-pair-with__status--error {
+  color: rgb(var(--color-error, 196 26 22));
+}
+
+@media screen and (max-width: 749px) {
+  .product-pair-with__list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+  }
+
+  .product-pair-with__heading {
+    font-size: 1.6rem;
+  }
+
+  .product-pair-with__btn {
+    width: 100%;
+    text-align: center;
+  }
+}

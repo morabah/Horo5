@@ -1,0 +1,278 @@
+{{ 'component-product-pair-with.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'horo-pair-with.js' | asset_url }}" defer></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign companion_products = product.metafields.custom.pair_with_products.value
+  assign has_companions = false
+  if companion_products != blank
+    assign has_companions = true
+  endif
+-%}
+
+{%- if has_companions or section.blocks.size > 0 -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div
+        class="product-pair-with"
+        data-pair-with-section
+        data-msg-select="{{ 'horo.incentives.pair_select' | t | escape }}"
+        data-msg-adding="{{ 'horo.incentives.pair_adding' | t | escape }}"
+        data-msg-success="{{ 'horo.incentives.pair_success' | t | escape }}"
+        data-msg-error="{{ 'horo.incentives.pair_error' | t | escape }}"
+        data-redirect="{{ section.settings.redirect_to_cart }}"
+      >
+        {%- if section.settings.heading != blank -%}
+          <h2 class="product-pair-with__heading">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+
+        <form data-pair-with-form>
+          <div class="product-pair-with__list">
+            {%- if section.settings.include_current_product -%}
+              {%- liquid
+                assign current_variant = product.selected_or_first_available_variant
+                assign current_sold_out = true
+                if current_variant and current_variant.available
+                  assign current_sold_out = false
+                endif
+              -%}
+              {%- unless current_sold_out -%}
+                <div class="product-pair-with__item">
+                  <label class="product-pair-with__checkbox">
+                    <input
+                      type="checkbox"
+                      name="pair_with_items"
+                      data-variant-id="{{ current_variant.id }}"
+                      {%- if section.settings.preselect_items -%}checked{%- endif -%}
+                    >
+                    <span>{{ product.title | escape }}</span>
+                  </label>
+                  {%- if product.featured_image -%}
+                    <div class="product-pair-with__image">
+                      <img src="{{ product.featured_image | image_url: width: 300 }}" alt="{{ product.featured_image.alt | escape }}" loading="lazy" width="150" height="150">
+                    </div>
+                  {%- endif -%}
+                  <p class="product-pair-with__price">{{ current_variant.price | money }}</p>
+                </div>
+              {%- endunless -%}
+            {%- endif -%}
+
+            {%- if has_companions -%}
+              {%- for companion in companion_products -%}
+                {%- liquid
+                  assign comp_variant = companion.selected_or_first_available_variant
+                  assign comp_sold_out = true
+                  if comp_variant and comp_variant.available
+                    assign comp_sold_out = false
+                  endif
+                  assign comp_multi_variant = false
+                  if companion.variants.size > 1
+                    assign comp_multi_variant = true
+                  endif
+                -%}
+                {%- unless comp_sold_out -%}
+                  <div class="product-pair-with__item">
+                    {%- if comp_multi_variant -%}
+                      <a href="{{ companion.url }}" class="product-pair-with__choose-link">
+                        {{ 'horo.incentives.choose_options' | t }}
+                      </a>
+                      {%- if companion.featured_image -%}
+                        <div class="product-pair-with__image">
+                          <img src="{{ companion.featured_image | image_url: width: 300 }}" alt="{{ companion.featured_image.alt | escape }}" loading="lazy" width="150" height="150">
+                        </div>
+                      {%- endif -%}
+                      <p class="product-pair-with__title">{{ companion.title | escape }}</p>
+                      <p class="product-pair-with__price">{{ comp_variant.price | money }}</p>
+                    {%- else -%}
+                      <label class="product-pair-with__checkbox">
+                        <input
+                          type="checkbox"
+                          name="pair_with_items"
+                          data-variant-id="{{ comp_variant.id }}"
+                          {%- if section.settings.preselect_items -%}checked{%- endif -%}
+                        >
+                        <span>{{ companion.title | escape }}</span>
+                      </label>
+                      {%- if companion.featured_image -%}
+                        <div class="product-pair-with__image">
+                          <img src="{{ companion.featured_image | image_url: width: 300 }}" alt="{{ companion.featured_image.alt | escape }}" loading="lazy" width="150" height="150">
+                        </div>
+                      {%- endif -%}
+                      <p class="product-pair-with__price">{{ comp_variant.price | money }}</p>
+                    {%- endif -%}
+                  </div>
+                {%- endunless -%}
+              {%- endfor -%}
+            {%- endif -%}
+
+            {%- for block in section.blocks -%}
+              {%- if block.settings.product != blank -%}
+                {%- liquid
+                  assign block_product = block.settings.product
+                  assign block_variant = block_product.selected_or_first_available_variant
+                  assign block_sold_out = true
+                  if block_variant and block_variant.available
+                    assign block_sold_out = false
+                  endif
+                  assign block_multi_variant = false
+                  if block_product.variants.size > 1
+                    assign block_multi_variant = true
+                  endif
+                -%}
+                {%- unless block_sold_out -%}
+                  <div class="product-pair-with__item" {{ block.shopify_attributes }}>
+                    {%- if block_multi_variant -%}
+                      <a href="{{ block_product.url }}" class="product-pair-with__choose-link">
+                        {{ 'horo.incentives.choose_options' | t }}
+                      </a>
+                      {%- if block_product.featured_image -%}
+                        <div class="product-pair-with__image">
+                          <img src="{{ block_product.featured_image | image_url: width: 300 }}" alt="{{ block_product.featured_image.alt | escape }}" loading="lazy" width="150" height="150">
+                        </div>
+                      {%- endif -%}
+                      <p class="product-pair-with__title">{{ block_product.title | escape }}</p>
+                      <p class="product-pair-with__price">{{ block_variant.price | money }}</p>
+                    {%- else -%}
+                      <label class="product-pair-with__checkbox">
+                        <input
+                          type="checkbox"
+                          name="pair_with_items"
+                          data-variant-id="{{ block_variant.id }}"
+                          {%- if section.settings.preselect_items -%}checked{%- endif -%}
+                        >
+                        <span>{{ block_product.title | escape }}</span>
+                      </label>
+                      {%- if block_product.featured_image -%}
+                        <div class="product-pair-with__image">
+                          <img src="{{ block_product.featured_image | image_url: width: 300 }}" alt="{{ block_product.featured_image.alt | escape }}" loading="lazy" width="150" height="150">
+                        </div>
+                      {%- endif -%}
+                      <p class="product-pair-with__price">{{ block_variant.price | money }}</p>
+                    {%- endif -%}
+                  </div>
+                {%- endunless -%}
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          <div class="product-pair-with__actions">
+            <button type="button" class="product-pair-with__btn" data-pair-with-add>
+              {{ 'horo.incentives.add_selected_pieces' | t }}
+            </button>
+            <p class="product-pair-with__status" data-pair-with-status aria-live="polite" aria-atomic="true"></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="product-pair-with" style="opacity:0.6;">
+        <h2 class="product-pair-with__heading">{{ section.settings.heading | default: 'Pair with' | escape }}</h2>
+        <p>Set the <code>custom.pair_with_products</code> product metafield or add product blocks to display companion items.</p>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Product pair with",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows companion products from the custom.pair_with_products metafield or manual blocks. Single-variant products can be added in one click; multi-variant products link to their pages."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Style it with",
+      "label": "Heading"
+    },
+    {
+      "type": "checkbox",
+      "id": "include_current_product",
+      "default": false,
+      "label": "Include current product",
+      "info": "Adds the main product as a selectable item."
+    },
+    {
+      "type": "checkbox",
+      "id": "preselect_items",
+      "default": true,
+      "label": "Preselect items",
+      "info": "Checkboxes are selected by default."
+    },
+    {
+      "type": "checkbox",
+      "id": "redirect_to_cart",
+      "default": false,
+      "label": "Redirect to cart after add"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product pair with"
+    }
+  ]
+}
+{% endschema %}
