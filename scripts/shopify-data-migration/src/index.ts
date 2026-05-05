@@ -18,7 +18,7 @@ import { fileURLToPath } from 'url';
 import { assertEnv, Env } from './utils/assert-env.js';
 import * as logger from './utils/logger.js';
 import { ShopifyAdminClient } from './shopify-admin.js';
-import { createIdMap, saveIdMap, IdMap } from './state/id-map.js';
+import { createIdMap, saveIdMap, loadIdMap, IdMap } from './state/id-map.js';
 import { REQUIRED_DEFINITIONS } from './utils/validate-locked-model.js';
 
 import { extractFromJson } from './extract/from-json.js';
@@ -31,8 +31,10 @@ import { mapOccasion } from './transform/map-occasions.js';
 import { mapArtist } from './transform/map-artists.js';
 import { mapSizeTable } from './transform/map-size-tables.js';
 import { mapProduct } from './transform/map-products.js';
-import { mapCollection } from './transform/map-collections.js';
+import { mapCollection, CollectionInput } from './transform/map-collections.js';
 import { mapProductMetafields, mapCollectionMetafields } from './transform/map-metafields.js';
+import { createEmptyReport, MigrationReport } from './report/types.js';
+import { writeReports } from './report/report-writer.js';
 
 import { createMetaobjectEntries, MetaobjectEntry } from './load/create-metaobjects.js';
 import { createProducts, ShopifyProductInput } from './load/create-products.js';
@@ -141,9 +143,10 @@ async function main(): Promise<void> {
 
   // ── Validate definitions exist ──
   logger.section('Validating Shopify definitions');
+
+  // Metaobject definitions
   const definitions = await client.getMetaobjectDefinitions();
   const defTypes = new Set(definitions.map((d) => d.type));
-
   const missingDefs = REQUIRED_DEFINITIONS.metaobjectTypes.filter((t) => !defTypes.has(t));
   if (missingDefs.length > 0) {
     logger.error(`Missing metaobject definitions: ${missingDefs.join(', ')}`);
@@ -151,6 +154,28 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   logger.success('All required metaobject definitions found');
+
+  // Product metafield definitions
+  const productMetafields = await client.getMetafieldDefinitions('PRODUCT');
+  const productMfKeys = new Set(productMetafields.map((m) => `${m.namespace}.${m.key}`));
+  const missingProductMfs = REQUIRED_DEFINITIONS.productMetafieldKeys.filter((k) => !productMfKeys.has(k));
+  if (missingProductMfs.length > 0) {
+    logger.error(`Missing product metafield definitions: ${missingProductMfs.join(', ')}`);
+    logger.error('Run the seeder script first: scripts/shopify-admin-seed/');
+    process.exit(1);
+  }
+  logger.success('All required product metafield definitions found');
+
+  // Collection metafield definitions
+  const collectionMetafields = await client.getMetafieldDefinitions('COLLECTION');
+  const collectionMfKeys = new Set(collectionMetafields.map((m) => `${m.namespace}.${m.key}`));
+  const missingCollectionMfs = REQUIRED_DEFINITIONS.collectionMetafieldKeys.filter((k) => !collectionMfKeys.has(k));
+  if (missingCollectionMfs.length > 0) {
+    logger.error(`Missing collection metafield definitions: ${missingCollectionMfs.join(', ')}`);
+    logger.error('Run the seeder script first: scripts/shopify-admin-seed/');
+    process.exit(1);
+  }
+  logger.success('All required collection metafield definitions found');
 
   // ── Extract data ──
   logger.section('Extracting data');
@@ -163,12 +188,32 @@ async function main(): Promise<void> {
   const webDefaults = extractFromWebNext();
 
   const totalResult: MigrationResult = { created: [], skipped: [], errors: [] };
-  const idMap = createIdMap();
+  const outDir = path.join(process.cwd(), 'output');
+
+  // Load existing id-map if available
+  let idMap = createIdMap();
+  try {
+    const loaded = loadIdMap(outDir);
+    if (loaded) {
+      idMap = {
+        metaobjects: { ...loaded.metaobjects, ...idMap.metaobjects },
+        products: { ...loaded.products, ...idMap.products },
+        collections: { ...loaded.collections, ...idMap.collections },
+        files: { ...loaded.files, ...idMap.files },
+      };
+      logger.info('Loaded existing id-map');
+    } else {
+      logger.info('No existing id-map found');
+    }
+  } catch (err) {
+    logger.error(`Failed to load id-map: ${err instanceof Error ? err.message : String(err)}`);
+    process.exit(1);
+  }
 
   // ── Scope: test-path ──
   if (args.scope.includes('test-path')) {
     logger.section('Test-path migration');
-    await runTestPath(client, jsonData, idMap, !args.apply, args.limit);
+    await runTestPath(client, jsonData, idMap, !args.apply, args.limit, env.allowMissingReferences);
     process.exit(0);
   }
 
@@ -250,7 +295,7 @@ async function main(): Promise<void> {
         });
       }
     }
-    const pmfResult = await assignProductMetafields(client, productMfAssignments, idMap, !args.apply);
+    const pmfResult = await assignProductMetafields(client, productMfAssignments, idMap, !args.apply, env.allowMissingReferences);
     totalResult.created.push(...pmfResult.assigned);
     totalResult.skipped.push(...pmfResult.skipped);
     totalResult.errors.push(...pmfResult.errors);
@@ -271,18 +316,43 @@ async function main(): Promise<void> {
         });
       }
     }
-    const cmfResult = await assignCollectionMetafields(client, collectionMfAssignments, idMap, !args.apply);
+    const cmfResult = await assignCollectionMetafields(client, collectionMfAssignments, idMap, !args.apply, env.allowMissingReferences);
     totalResult.created.push(...cmfResult.assigned);
     totalResult.skipped.push(...cmfResult.skipped);
     totalResult.errors.push(...cmfResult.errors);
   }
 
   // ── Save ID map ──
-  const outDir = path.join(process.cwd(), 'output');
   if (args.apply) {
     saveIdMap(idMap, outDir);
     logger.success(`Saved ID map to ${path.join(outDir, 'id-map.json')}`);
   }
+
+  // ── Generate report ──
+  const report: MigrationReport = {
+    date: new Date().toISOString(),
+    store: env.storeDomain,
+    mode: args.apply ? 'apply' : 'dry-run',
+    scope: args.scope,
+    created: totalResult.created,
+    skipped: totalResult.skipped,
+    updated: [],
+    conflicts: [],
+    missingReferences: [],
+    missingImages: [],
+    warnings: [],
+    errors: totalResult.errors,
+    nextSteps: [
+      'Upload product images to Shopify Files',
+      'Configure collection automated rules',
+      'Set up discounts and shipping in Shopify Admin',
+      'Configure payment providers',
+      'Test storefront rendering with actual data',
+    ],
+  };
+
+  writeReports(report, outDir);
+  logger.success(`Saved report to ${path.join(outDir, args.apply ? 'migration-report.md' : 'dry-run-report.md')}`);
 
   // ── Summary ──
   logger.section('Summary');
@@ -299,13 +369,15 @@ async function main(): Promise<void> {
 
 /**
  * Run a minimal test-path migration.
+ * Validates: Home → Feelings → Zodiac → Cancer → Product → Cart
  */
 async function runTestPath(
   client: ShopifyAdminClient,
   data: ReturnType<typeof extractFromJson>,
   idMap: IdMap,
   dryRun: boolean,
-  limit: number
+  limit: number,
+  allowMissingReferences: boolean
 ): Promise<void> {
   logger.info('Test-path: Creating minimal HORO data set');
 
@@ -315,10 +387,11 @@ async function runTestPath(
   const artist = data.artists[0];
   const sizeTable = data.sizeTables[0];
   const cancerProduct = data.products.find((p) => p.handle.includes('cancer') || p.title.toLowerCase().includes('cancer'));
+  const companionProduct = data.products.find((p) => p.handle !== cancerProduct?.handle);
   const giftWrap = data.products.find((p) => p.handle.includes('gift') || p.title.toLowerCase().includes('gift'));
 
+  // ── Metaobjects ──
   const entries: MetaobjectEntry[] = [];
-
   if (zodiac) {
     const mapped = mapFeeling(zodiac);
     entries.push({ type: 'feeling', handle: mapped.handle, fields: mapped.fields });
@@ -340,10 +413,14 @@ async function runTestPath(
   const moResult = await createMetaobjectEntries(client, limitedEntries, idMap, dryRun);
   logger.success(`Metaobjects: ${moResult.created.length} created, ${moResult.skipped.length} skipped, ${moResult.errors.length} errors`);
 
-  // Products
+  // ── Products ──
   const products: Array<{ handle: string; shopifyInput: ShopifyProductInput }> = [];
   if (cancerProduct) {
     const mapped = mapProduct(cancerProduct);
+    products.push({ handle: mapped.input.handle, shopifyInput: mapped.shopifyInput });
+  }
+  if (companionProduct) {
+    const mapped = mapProduct(companionProduct);
     products.push({ handle: mapped.input.handle, shopifyInput: mapped.shopifyInput });
   }
   if (giftWrap) {
@@ -354,6 +431,59 @@ async function runTestPath(
   const limitedProducts = products.slice(0, limit);
   const pResult = await createProducts(client, limitedProducts, idMap, dryRun);
   logger.success(`Products: ${pResult.created.length} created, ${pResult.skipped.length} skipped, ${pResult.errors.length} errors`);
+
+  // ── Collections ──
+  const testCollections = [
+    { title: 'Zodiac', handle: 'feeling-zodiac', feeling: zodiac ? (zodiac.handle ?? zodiac.title.toLowerCase()) : undefined },
+    { title: 'Cancer', handle: 'feeling-zodiac-cancer', feeling: zodiac ? (zodiac.handle ?? zodiac.title.toLowerCase()) : undefined },
+  ];
+  const mappedCollections = testCollections.map((c) => mapCollection(c as CollectionInput));
+  const cResult = await createCollections(
+    client,
+    mappedCollections.map((c) => ({ handle: c.input.handle, shopifyInput: c.shopifyInput })),
+    idMap,
+    dryRun
+  );
+  logger.success(`Collections: ${cResult.created.length} created, ${cResult.skipped.length} skipped, ${cResult.errors.length} errors`);
+
+  // ── Product metafields ──
+  const productMfAssignments: ProductMetafieldAssignment[] = [];
+  if (cancerProduct) {
+    const metafields = mapProductMetafields({
+      feeling: zodiac ? (zodiac.handle ?? zodiac.title.toLowerCase()) : undefined,
+      subfeeling: cancer ? (cancer.handle ?? cancer.title.toLowerCase()) : undefined,
+      artist: artist ? (artist.slug ?? artist.name.toLowerCase()) : undefined,
+      size_table: sizeTable ? (sizeTable.handle ?? sizeTable.name.toLowerCase()) : undefined,
+      pair_with_products: companionProduct ? [companionProduct.handle] : undefined,
+    });
+    for (const mf of metafields) {
+      productMfAssignments.push({
+        productHandle: cancerProduct.handle,
+        namespace: mf.namespace,
+        key: mf.key,
+        value: mf.value,
+        type: mf.type,
+      });
+    }
+  }
+  const pmfResult = await assignProductMetafields(client, productMfAssignments, idMap, dryRun, allowMissingReferences);
+  logger.success(`Product metafields: ${pmfResult.assigned.length} assigned, ${pmfResult.skipped.length} skipped, ${pmfResult.errors.length} errors`);
+
+  // ── Collection metafields ──
+  const collectionMfAssignments: CollectionMetafieldAssignment[] = [];
+  for (const c of testCollections) {
+    if (c.feeling) {
+      collectionMfAssignments.push({
+        collectionHandle: c.handle,
+        namespace: 'custom',
+        key: 'feeling',
+        value: c.feeling,
+        type: 'metaobject_reference',
+      });
+    }
+  }
+  const cmfResult = await assignCollectionMetafields(client, collectionMfAssignments, idMap, dryRun, allowMissingReferences);
+  logger.success(`Collection metafields: ${cmfResult.assigned.length} assigned, ${cmfResult.skipped.length} skipped, ${cmfResult.errors.length} errors`);
 
   // Save
   if (!dryRun) {

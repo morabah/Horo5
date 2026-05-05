@@ -23,5 +23,10 @@ export function saveIdMap(map: IdMap, outDir: string): void {
 export function loadIdMap(outDir: string): IdMap | null {
   const filePath = path.join(outDir, 'id-map.json');
   if (!fs.existsSync(filePath)) return null;
-  return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as IdMap;
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as IdMap;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to parse id-map.json: ${message}`);
+  }
 }

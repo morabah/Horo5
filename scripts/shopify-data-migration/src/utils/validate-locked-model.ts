@@ -25,6 +25,7 @@ export const REQUIRED_DEFINITIONS: DefinitionCheck = {
     'custom.pair_with_products',
   ],
   collectionMetafieldKeys: [
+    'custom.feeling',
     'custom.occasion',
     'custom.editorial_heading',
     'custom.hero_image',

@@ -106,14 +106,50 @@ export interface JsonCollections {
   active?: boolean;
 }
 
+const LEGACY_PRODUCT_FIELDS = [
+  'feeling_slug',
+  'artist_slug',
+  'subfeeling_slug',
+  'occasion_slugs',
+  'size_table_key',
+  'fit_label',
+  'related_products',
+  'frequently_bought_with',
+  'customers_also_bought',
+  'complementary_slugs',
+  'promo_show_countdown',
+  'hero_image',
+  'card_image',
+  'proof_image',
+];
+
+function detectLegacyFields(products: JsonProducts[]): string[] {
+  const warnings: string[] = [];
+  for (const product of products) {
+    const keys = Object.keys(product);
+    for (const legacy of LEGACY_PRODUCT_FIELDS) {
+      if (keys.includes(legacy)) {
+        warnings.push(`Product "${product.handle}" contains legacy field "${legacy}" — map to canonical field or remove`);
+      }
+    }
+  }
+  return warnings;
+}
+
 export function extractFromJson(inputDir: string) {
+  const products = readJson<JsonProducts>(inputDir, 'products.json');
+  const legacyWarnings = detectLegacyFields(products);
+  if (legacyWarnings.length > 0) {
+    legacyWarnings.forEach((w) => logger.warn(w));
+  }
+
   return {
     feelings: readJson<JsonFeelings>(inputDir, 'feelings.json'),
     subfeelings: readJson<JsonSubfeelings>(inputDir, 'subfeelings.json'),
     occasions: readJson<JsonOccasions>(inputDir, 'occasions.json'),
     artists: readJson<JsonArtists>(inputDir, 'artists.json'),
     sizeTables: readJson<JsonSizeTables>(inputDir, 'size-tables.json'),
-    products: readJson<JsonProducts>(inputDir, 'products.json'),
+    products,
     collections: readJson<JsonCollections>(inputDir, 'collections.json'),
   };
 }

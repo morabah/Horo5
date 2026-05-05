@@ -82,21 +82,60 @@ export class ShopifyAdminClient {
   }
 
   /**
+   * Fetch all existing metafield definitions for an owner type.
+   */
+  async getMetafieldDefinitions(
+    ownerType: 'PRODUCT' | 'COLLECTION'
+  ): Promise<
+    Array<{
+      id: string;
+      namespace: string;
+      key: string;
+      type: { name: string };
+      ownerType: string;
+    }>
+  > {
+    const query = `
+      query GetMetafieldDefinitions($ownerType: MetafieldOwnerType!) {
+        metafieldDefinitions(first: 250, ownerType: $ownerType) {
+          nodes {
+            id
+            namespace
+            key
+            type { name }
+            ownerType
+          }
+        }
+      }
+    `;
+    const res = await this.request<{
+      metafieldDefinitions: { nodes: Array<Record<string, unknown>> };
+    }>(query, { ownerType });
+    return (res.data?.metafieldDefinitions.nodes ?? []) as Array<{
+      id: string; namespace: string; key: string; type: { name: string }; ownerType: string;
+    }>;
+  }
+
+  /**
    * Create a metaobject entry.
    */
-  async createMetaobjectEntry(definitionType: string, fields: Array<{ key: string; value: string }>): Promise<{ id: string } | null> {
+  async createMetaobjectEntry(
+    definitionType: string,
+    handle: string,
+    fields: Array<{ key: string; value: string }>
+  ): Promise<{ id: string; handle: string } | null> {
     const mutation = `
       mutation CreateMetaobject($metaobject: MetaobjectCreateInput!) {
         metaobjectCreate(metaobject: $metaobject) {
-          metaobject { id }
+          metaobject { id handle }
           userErrors { field message code }
         }
       }
     `;
     const res = await this.request<{
-      metaobjectCreate: { metaobject: { id: string } | null; userErrors: Array<{ field: string; message: string; code: string }> };
+      metaobjectCreate: { metaobject: { id: string; handle: string } | null; userErrors: Array<{ field: string; message: string; code: string }> };
     }>(mutation, {
-      metaobject: { type: definitionType, fields },
+      metaobject: { type: definitionType, handle, fields },
     });
 
     const result = res.data?.metaobjectCreate;

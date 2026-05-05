@@ -22,11 +22,38 @@ export async function createMetaobjectEntries(
   const skipped: string[] = [];
   const errors: string[] = [];
 
+  // Pre-fetch existing entries for all types we need
+  const typesNeeded = [...new Set(entries.map((e) => e.type))];
+  const existingByType = new Map<string, Map<string, string>>();
+  if (!dryRun) {
+    for (const type of typesNeeded) {
+      try {
+        const existing = await client.getMetaobjectEntries(type);
+        const handleToId = new Map(existing.map((e) => [e.handle, e.id]));
+        existingByType.set(type, handleToId);
+      } catch (err) {
+        logger.warn(`Could not pre-fetch existing ${type} entries: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+  }
+
   for (const entry of entries) {
-    // Check if already exists in id-map
+    // Check id-map first
     if (idMap.metaobjects[entry.handle]) {
       skipped.push(`${entry.type}:${entry.handle}`);
       continue;
+    }
+
+    // Check Shopify side for existing entry
+    if (!dryRun) {
+      const existingHandles = existingByType.get(entry.type);
+      if (existingHandles?.has(entry.handle)) {
+        const existingId = existingHandles.get(entry.handle)!;
+        idMap.metaobjects[entry.handle] = existingId;
+        skipped.push(`${entry.type}:${entry.handle} (already exists in Shopify)`);
+        logger.info(`${entry.type}:${entry.handle} already exists in Shopify, skipping`);
+        continue;
+      }
     }
 
     if (dryRun) {
@@ -36,7 +63,7 @@ export async function createMetaobjectEntries(
     }
 
     try {
-      const result = await client.createMetaobjectEntry(entry.type, entry.fields);
+      const result = await client.createMetaobjectEntry(entry.type, entry.handle, entry.fields);
       if (result) {
         idMap.metaobjects[entry.handle] = result.id;
         created.push(`${entry.type}:${entry.handle}`);

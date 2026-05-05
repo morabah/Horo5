@@ -25,7 +25,6 @@ export function mapOccasion(input: OccasionInput): OccasionOutput {
     handle,
     fields: [
       { key: 'title', value: input.title },
-      { key: 'handle', value: handle },
       { key: 'description', value: input.description ?? '' },
       { key: 'accent_color', value: input.accent_color ?? '' },
       { key: 'hero_image', value: input.hero_image ?? '' },

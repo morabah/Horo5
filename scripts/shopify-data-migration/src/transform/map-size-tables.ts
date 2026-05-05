@@ -20,7 +20,6 @@ export function mapSizeTable(input: SizeTableInput): SizeTableOutput {
     handle,
     fields: [
       { key: 'name', value: input.name },
-      { key: 'handle', value: handle },
       { key: 'unit_system', value: input.unit_system ?? 'cm' },
       { key: 'rows', value: JSON.stringify(input.rows) },
       { key: 'note', value: input.note ?? '' },
