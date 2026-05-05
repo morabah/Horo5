@@ -153,6 +153,7 @@ export class ShopifyAdminClient {
       type: string;
       required?: boolean;
       description?: string;
+      validations?: Array<{ name: string; value?: string }>;
     }>;
   }): Promise<{ id: string; type: string } | null> {
     const mutation = `

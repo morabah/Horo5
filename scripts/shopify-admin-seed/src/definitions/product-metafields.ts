@@ -162,7 +162,7 @@ export const PRODUCT_METAFIELDS: MetafieldDef[] = [
     name: 'Promo savings (EGP)',
     namespace: 'custom',
     key: 'promo_savings_egp',
-    type: 'integer',
+    type: 'number_integer',
     description: 'Optional savings amount for promo countdown',
   },
 ];

@@ -184,12 +184,37 @@ async function seedMetaobjects(
   return result;
 }
 
+function buildMetafieldValidations(
+  type: string,
+  key: string,
+  metaobjectIds: Map<string, string>
+): Array<{ name: string; value: string }> | undefined {
+  if (type === 'metaobject_reference' || type === 'list.metaobject_reference') {
+    // Map specific metafield keys to their target metaobject types
+    const keyToType: Record<string, string> = {
+      feeling: 'feeling',
+      subfeeling: 'subfeeling',
+      occasions: 'occasion',
+      artist: 'artist',
+      size_table: 'size_table',
+      occasion: 'occasion',
+    };
+    const targetType = keyToType[key];
+    if (targetType && metaobjectIds.has(targetType)) {
+      const id = metaobjectIds.get(targetType)!;
+      return [{ name: 'metaobject_definition_id', value: id }];
+    }
+  }
+  return undefined;
+}
+
 async function seedMetafields(
   client: ShopifyAdminClient,
   desired: Array<{ name: string; namespace: string; key: string; type: string; description?: string }>,
   existing: Array<{ id: string; namespace: string; key: string; type: { name: string }; ownerType: string }>,
   ownerType: 'PRODUCT' | 'COLLECTION',
-  dryRun: boolean
+  dryRun: boolean,
+  metaobjectIds: Map<string, string>
 ): Promise<Result> {
   const result: Result = { created: [], skipped: [], conflicts: [], errors: [] };
 
@@ -219,6 +244,7 @@ async function seedMetafields(
     }
 
     try {
+      const validations = buildMetafieldValidations(def.type, def.key, metaobjectIds);
       const created = await client.createMetafieldDefinition({
         name: def.name,
         namespace: def.namespace,
@@ -226,6 +252,7 @@ async function seedMetafields(
         type: def.type,
         ownerType,
         description: def.description,
+        validations,
       });
       if (created) {
         result.created.push(`${key}`);
@@ -405,30 +432,29 @@ async function main(): Promise<void> {
 
   let totalResult: Result = { created: [], skipped: [], conflicts: [], errors: [] };
 
-  // Check-only mode
-  if (args.check) {
-    logger.section('Check mode — verifying definitions');
-    // Re-use seed logic with dryRun=true (we just want to compare)
-    const moResult = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, true, args.forceRecreate);
-    const pmResult = await seedMetafields(client, PRODUCT_METAFIELDS, existingProductMetafields, 'PRODUCT', true);
-    const cmResult = await seedMetafields(client, COLLECTION_METAFIELDS, existingCollectionMetafields, 'COLLECTION', true);
-    totalResult = mergeResults(mergeResults(moResult, pmResult), cmResult);
-  } else {
-    // Metaobjects
-    logger.section('Processing metaobject definitions');
-    const moResult = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, !args.apply, args.forceRecreate);
-    totalResult = mergeResults(totalResult, moResult);
+  // ── Phase 1: Metaobjects ──
+  logger.section('Processing metaobject definitions');
+  const moResult = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, args.check || !args.apply, args.forceRecreate);
+  totalResult = mergeResults(totalResult, moResult);
 
-    // Product metafields
-    logger.section('Processing product metafield definitions');
-    const pmResult = await seedMetafields(client, PRODUCT_METAFIELDS, existingProductMetafields, 'PRODUCT', !args.apply);
-    totalResult = mergeResults(totalResult, pmResult);
-
-    // Collection metafields
-    logger.section('Processing collection metafield definitions');
-    const cmResult = await seedMetafields(client, COLLECTION_METAFIELDS, existingCollectionMetafields, 'COLLECTION', !args.apply);
-    totalResult = mergeResults(totalResult, cmResult);
+  // ── Phase 2: Refresh metaobject IDs for metafield validations ──
+  let metaobjectIds = new Map<string, string>();
+  if (args.apply) {
+    logger.info('Refreshing metaobject definitions to obtain IDs for metafield validations...');
+    const refreshedMetaobjects = await client.getMetaobjectDefinitions();
+    metaobjectIds = new Map(refreshedMetaobjects.map((m) => [m.type, m.id]));
+    logger.info(`Mapped ${metaobjectIds.size} metaobject definition IDs`);
   }
+
+  // ── Phase 3: Product metafields ──
+  logger.section('Processing product metafield definitions');
+  const pmResult = await seedMetafields(client, PRODUCT_METAFIELDS, existingProductMetafields, 'PRODUCT', args.check || !args.apply, metaobjectIds);
+  totalResult = mergeResults(totalResult, pmResult);
+
+  // ── Phase 4: Collection metafields ──
+  logger.section('Processing collection metafield definitions');
+  const cmResult = await seedMetafields(client, COLLECTION_METAFIELDS, existingCollectionMetafields, 'COLLECTION', args.check || !args.apply, metaobjectIds);
+  totalResult = mergeResults(totalResult, cmResult);
 
   // Summary
   logger.section('Summary');
