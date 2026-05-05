@@ -70,9 +70,9 @@
         "route_2": {
           "type": "route",
           "settings": {
-            "title": "Shop gifts",
-            "text": "Meaningful gift ideas",
-            "link": "/pages/gifts"
+            "title": "Shop by occasion",
+            "text": "Find the moment you need",
+            "link": "/pages/occasions"
           }
         },
         "route_3": {

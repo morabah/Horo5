@@ -235,7 +235,7 @@
     align-items: flex-end;
     justify-content: flex-start;
     text-align: start;
-    padding-block-end: clamp(4rem, 9vh, 8rem);
+    padding-block-end: clamp(5.5rem, 10vh, 9rem);
   }
 
   .home-hero[data-desktop-position="bottom-left"] .home-hero__text-wrapper {
@@ -274,7 +274,7 @@
     align-items: flex-end;
     justify-content: center;
     text-align: center;
-    padding-block-end: clamp(4rem, 9vh, 8rem);
+    padding-block-end: clamp(5.5rem, 10vh, 9rem);
   }
 
   .home-hero[data-desktop-position="bottom-center"] .home-hero__text-wrapper {
@@ -332,7 +332,7 @@
     justify-content: flex-start;
     text-align: start;
     padding-inline: 2rem;
-    padding-block-end: 4rem;
+    padding-block-end: 5.5rem;
   }
 
   .home-hero[data-mobile-position="bottom-left"] .home-hero__text-wrapper {

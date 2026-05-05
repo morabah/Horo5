@@ -20,7 +20,7 @@
         "split_word_2": "What",
         "split_word_3": "You Mean",
         "show_hero_ribbon": true,
-        "hero_ribbon_text": "COD available · 14-day exchange · Printed in Egypt",
+        "hero_ribbon_text": "COD available · 14-day exchange — terms apply · Printed in Egypt",
         "hero_cta_position_mobile": "center",
         "hero_cta_position_desktop": "bottom-left",
         "padding_top": 0,
@@ -208,27 +208,27 @@
           "type": "testimonial",
           "settings": {
             "quote": "A design that feels personal without needing explanation.",
-            "name": "A. H.",
-            "city": "Cairo",
-            "label": ""
+            "name": "",
+            "city": "",
+            "label": "For self-expression"
           }
         },
         "testimonial_2": {
           "type": "testimonial",
           "settings": {
             "quote": "Different from the usual printed tees.",
-            "name": "M. K.",
-            "city": "Alexandria",
-            "label": ""
+            "name": "",
+            "city": "",
+            "label": "For everyday identity"
           }
         },
         "testimonial_3": {
           "type": "testimonial",
           "settings": {
             "quote": "A gift idea with meaning, not just another item.",
-            "name": "S. R.",
-            "city": "Giza",
-            "label": ""
+            "name": "",
+            "city": "",
+            "label": "For gifting"
           }
         }
       },
@@ -239,7 +239,7 @@
       ],
       "settings": {
         "eyebrow": "What HORO is designed to feel like",
-        "heading": "Why people choose HORO",
+        "heading": "Why the piece feels personal",
         "heading_size": "h1",
         "show_sample_copy": true,
         "color_scheme": "scheme-1",
@@ -340,7 +340,7 @@
           "settings": {
             "show_badge": true,
             "icon": "exchange",
-            "label": "14-day size exchange",
+            "label": "14-day size exchange — terms apply",
             "subtext": ""
           }
         },

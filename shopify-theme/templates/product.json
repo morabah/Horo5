@@ -54,7 +54,7 @@
         "collapsible-row-1": {
           "type": "collapsible_tab",
           "settings": {
-            "heading": "Shipping & Returns",
+            "heading": "Shipping & delivery",
             "icon": "truck",
             "content": "",
             "page": ""
@@ -151,7 +151,7 @@
         "card_2_body": "Manual confirmation may be required",
         "show_card_3": true,
         "card_3_icon": "exchange",
-        "card_3_title": "14-Day Exchange",
+        "card_3_title": "14-Day Exchange — Terms Apply",
         "card_3_body": "See policy for details",
         "show_card_4": true,
         "card_4_icon": "delivery",

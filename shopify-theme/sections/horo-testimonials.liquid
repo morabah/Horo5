@@ -51,11 +51,13 @@
                 {%- endif -%}
 
                 <div class="horo-testimonials__meta">
-                  {%- if block.settings.name != blank -%}
-                    <p class="horo-testimonials__name">{{ block.settings.name | escape }}</p>
-                  {%- endif -%}
-                  {%- if block.settings.city != blank -%}
-                    <p class="horo-testimonials__city">{{ block.settings.city | escape }}</p>
+                  {%- if section.settings.show_sample_copy == false -%}
+                    {%- if block.settings.name != blank -%}
+                      <p class="horo-testimonials__name">{{ block.settings.name | escape }}</p>
+                    {%- endif -%}
+                    {%- if block.settings.city != blank -%}
+                      <p class="horo-testimonials__city">{{ block.settings.city | escape }}</p>
+                    {%- endif -%}
                   {%- endif -%}
                   {%- if block.settings.label != blank -%}
                     <p class="horo-testimonials__label">{{ block.settings.label | escape }}</p>
@@ -88,13 +90,13 @@
     {
       "type": "text",
       "id": "eyebrow",
-      "default": "What people say",
+      "default": "What HORO is designed to feel like",
       "label": "Eyebrow"
     },
     {
       "type": "text",
       "id": "heading",
-      "default": "Why people wear HORO",
+      "default": "Why the piece feels personal",
       "label": "Heading"
     },
     {
@@ -185,28 +187,28 @@
         "testimonial_1": {
           "type": "testimonial",
           "settings": {
-            "quote": "Finally, a T-shirt that feels personal without needing explanation.",
-            "name": "A. H.",
-            "city": "Cairo",
-            "label": ""
+            "quote": "A design that feels personal without needing explanation.",
+            "name": "",
+            "city": "",
+            "label": "For self-expression"
           }
         },
         "testimonial_2": {
           "type": "testimonial",
           "settings": {
-            "quote": "The design feels different from the usual printed tees.",
-            "name": "M. K.",
-            "city": "Alexandria",
-            "label": ""
+            "quote": "Different from the usual printed tees.",
+            "name": "",
+            "city": "",
+            "label": "For everyday identity"
           }
         },
         "testimonial_3": {
           "type": "testimonial",
           "settings": {
-            "quote": "I bought it as a gift because it actually meant something.",
-            "name": "S. R.",
-            "city": "Giza",
-            "label": ""
+            "quote": "A gift idea with meaning, not just another item.",
+            "name": "",
+            "city": "",
+            "label": "For gifting"
           }
         }
       },

@@ -1570,7 +1570,7 @@
         "type": "text",
         "id": "horo_trust_badge_4",
         "label": "Trust badge 4",
-        "default": "14-day exchange"
+        "default": "14-day exchange — terms apply"
       },
       {
         "type": "text",
