@@ -1,12 +1,13 @@
 <!-- HORO: Occasion card for metaobject entries -->
 {%- liquid
   assign occasion = card
-  assign card_url = '/collections/occasion-' | append: occasion.slug
+  assign occasion_handle = occasion.handle | default: occasion.slug | default: ''
+  assign card_url = '/collections/occasion-' | append: occasion_handle
   assign image_width = 1100
 -%}
 
 <li class="home-occasion-grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" role="listitem">
-  <a href="{{ card_url }}" class="home-occasion-grid__card" aria-label="{{ occasion.name | escape }}">
+  <a href="{{ card_url }}" class="home-occasion-grid__card" aria-label="{{ occasion.title | default: occasion.name | default: occasion.display_name | escape }}">
     <div class="home-occasion-grid__media media media--transparent">
       {%- if occasion.card_image != blank -%}
         {{
@@ -23,9 +24,9 @@
       {%- endif -%}
     </div>
     <div class="home-occasion-grid__content">
-      <h3 class="home-occasion-grid__name h4">{{ occasion.name }}</h3>
-      {%- if occasion.blurb != blank -%}
-        <p class="home-occasion-grid__blurb">{{ occasion.blurb }}</p>
+      <h3 class="home-occasion-grid__name h4">{{ occasion.title | default: occasion.name | default: occasion.display_name }}</h3>
+      {%- if occasion.description != blank or occasion.blurb != blank -%}
+        <p class="home-occasion-grid__blurb">{{ occasion.description | default: occasion.blurb }}</p>
       {%- endif -%}
       {%- if occasion.price_hint != blank -%}
         <p class="home-occasion-grid__price-hint">{{ occasion.price_hint }}</p>

@@ -5,6 +5,7 @@
   if feeling == blank
     assign feeling = nil
   endif
+  assign feeling_handle = feeling.handle | default: feeling.slug | default: ''
 -%}
 
 {%- if feeling != blank -%}
@@ -12,7 +13,16 @@
   {%- assign subfeeling_count = 0 -%}
 
   {%- for subfeeling in all_subfeelings -%}
-    {%- if subfeeling.feeling_slug == feeling.slug and subfeeling.active != false -%}
+    {%- liquid
+      assign subfeeling_parent_handle = ''
+      if subfeeling.parent_feeling != blank
+        assign subfeeling_parent_handle = subfeeling.parent_feeling.handle | default: subfeeling.parent_feeling.slug | default: ''
+      elsif subfeeling.feeling_slug != blank
+        assign subfeeling_parent_handle = subfeeling.feeling_slug
+      endif
+      assign subfeeling_handle = subfeeling.handle | default: subfeeling.slug | default: ''
+    -%}
+    {%- if subfeeling_parent_handle == feeling_handle and subfeeling.active != false -%}
       {%- assign subfeeling_count = subfeeling_count | plus: 1 -%}
     {%- endif -%}
   {%- endfor -%}
@@ -25,25 +35,42 @@
     >
       <ul class="subfeeling-nav__list" role="list">
         {%- for subfeeling in all_subfeelings -%}
-          {%- if subfeeling.feeling_slug == feeling.slug and subfeeling.active != false -%}
+          {%- liquid
+            assign subfeeling_parent_handle = ''
+            if subfeeling.parent_feeling != blank
+              assign subfeeling_parent_handle = subfeeling.parent_feeling.handle | default: subfeeling.parent_feeling.slug | default: ''
+            elsif subfeeling.feeling_slug != blank
+              assign subfeeling_parent_handle = subfeeling.feeling_slug
+            endif
+            assign subfeeling_handle = subfeeling.handle | default: subfeeling.slug | default: ''
+            assign subfeeling_title = subfeeling.title | default: subfeeling.name | default: subfeeling.display_name | default: ''
+          -%}
+          {%- if subfeeling_parent_handle == feeling_handle and subfeeling.active != false -%}
             <li class="subfeeling-nav__item" role="listitem">
               {%- if subfeeling.filter_url != blank -%}
                 <a
                   href="{{ subfeeling.filter_url }}"
                   class="subfeeling-nav__pill"
                 >
-                  {{ subfeeling.name | escape }}
+                  {{ subfeeling_title | escape }}
                 </a>
               {%- elsif subfeeling.collection_url != blank -%}
                 <a
                   href="{{ subfeeling.collection_url }}"
                   class="subfeeling-nav__pill"
                 >
-                  {{ subfeeling.name | escape }}
+                  {{ subfeeling_title | escape }}
+                </a>
+              {%- elsif subfeeling_handle != blank -%}
+                <a
+                  href="/collections/feeling-{{ feeling_handle }}-{{ subfeeling_handle }}"
+                  class="subfeeling-nav__pill"
+                >
+                  {{ subfeeling_title | escape }}
                 </a>
               {%- else -%}
                 <span class="subfeeling-nav__pill subfeeling-nav__pill--inactive">
-                  {{ subfeeling.name | escape }}
+                  {{ subfeeling_title | escape }}
                 </span>
               {%- endif -%}
             </li>
@@ -53,7 +80,7 @@
     </nav>
   {%- elsif request.design_mode -%}
     <div class="subfeeling-nav__placeholder">
-      <p>No active subfeeling entries found for this feeling, or subfeeling data is not yet configured. Add subfeeling metaobjects linked to feeling "{{ feeling.name | escape }}" to populate these filter pills.</p>
+      <p>No active subfeeling entries found for this feeling, or subfeeling data is not yet configured. Add subfeeling metaobjects linked to feeling "{{ feeling.title | default: feeling.name | escape }}" to populate these filter pills.</p>
     </div>
   {%- endif -%}
 {%- endif -%}

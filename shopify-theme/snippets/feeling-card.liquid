@@ -1,12 +1,13 @@
 <!-- HORO: Feeling card for metaobject entries -->
 {%- liquid
   assign feeling = card
-  assign card_url = '/collections/feeling-' | append: feeling.slug
+  assign feeling_handle = feeling.handle | default: feeling.slug | default: ''
+  assign card_url = '/collections/feeling-' | append: feeling_handle
   assign image_width = 1100
 -%}
 
 <li class="home-feeling-grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" role="listitem">
-  <a href="{{ card_url }}" class="home-feeling-grid__card" aria-label="{{ feeling.name | escape }}">
+  <a href="{{ card_url }}" class="home-feeling-grid__card" aria-label="{{ feeling.title | default: feeling.name | default: feeling.display_name | escape }}">
     <div class="home-feeling-grid__media media media--transparent">
       {%- if feeling.card_image != blank -%}
         {{
@@ -23,9 +24,9 @@
       {%- endif -%}
     </div>
     <div class="home-feeling-grid__content">
-      <h3 class="home-feeling-grid__name h4">{{ feeling.name }}</h3>
-      {%- if feeling.blurb != blank -%}
-        <p class="home-feeling-grid__blurb">{{ feeling.blurb }}</p>
+      <h3 class="home-feeling-grid__name h4">{{ feeling.title | default: feeling.name | default: feeling.display_name }}</h3>
+      {%- if feeling.description != blank or feeling.blurb != blank -%}
+        <p class="home-feeling-grid__blurb">{{ feeling.description | default: feeling.blurb }}</p>
       {%- endif -%}
     </div>
   </a>

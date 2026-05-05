@@ -55,11 +55,11 @@
           </p>
         {%- endif -%}
         <h1 class="collection-hero__title h0">
-          {{ feeling.name | escape }}
+          {{ feeling.title | default: feeling.name | default: feeling.display_name | escape }}
         </h1>
-        {%- if feeling.blurb != blank -%}
+        {%- if feeling.description != blank or feeling.blurb != blank -%}
           <p class="collection-hero__blurb">
-            {{ feeling.blurb | escape }}
+            {{ feeling.description | default: feeling.blurb | escape }}
           </p>
         {%- elsif collection.description != blank -%}
           <p class="collection-hero__blurb">

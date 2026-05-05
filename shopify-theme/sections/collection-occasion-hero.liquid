@@ -50,11 +50,11 @@
     <div class="page-width collection-hero__content">
       <div class="collection-hero__text">
         <h1 class="collection-hero__title h0">
-          {{ occasion.name | escape }}
+          {{ occasion.title | default: occasion.name | default: occasion.display_name | escape }}
         </h1>
-        {%- if occasion.blurb != blank -%}
+        {%- if occasion.description != blank or occasion.blurb != blank -%}
           <p class="collection-hero__blurb">
-            {{ occasion.blurb | escape }}
+            {{ occasion.description | default: occasion.blurb | escape }}
           </p>
         {%- endif -%}
         {%- if occasion.price_hint != blank -%}

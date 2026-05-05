@@ -84,12 +84,12 @@
             <div class="product-purchase-context__pills" role="group" aria-label="Product feeling">
               {%- if has_feeling -%}
                 <span class="product-purchase-context__pill product-purchase-context__pill--feeling">
-                  {{ feeling_metaobject.name | default: feeling_metaobject.display_name | escape }}
+                  {{ feeling_metaobject.title | default: feeling_metaobject.name | default: feeling_metaobject.display_name | escape }}
                 </span>
               {%- endif -%}
               {%- if has_subfeeling -%}
                 <span class="product-purchase-context__pill product-purchase-context__pill--subfeeling">
-                  {{ subfeeling_metaobject.name | default: subfeeling_metaobject.display_name | escape }}
+                  {{ subfeeling_metaobject.title | default: subfeeling_metaobject.name | default: subfeeling_metaobject.display_name | escape }}
                 </span>
               {%- endif -%}
             </div>

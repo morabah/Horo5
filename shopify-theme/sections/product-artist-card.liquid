@@ -29,7 +29,7 @@
     <div class="page-width">
       {%- if artist != blank -%}
         {%- liquid
-          assign artist_name = artist.name | default: ''
+          assign artist_name = artist.name | default: artist.display_name | default: ''
           assign initials = artist_name | truncate: 2, '' | upcase
         -%}
 
@@ -42,9 +42,9 @@
 
           <div class="artist-card__card">
             <div class="artist-card__media">
-              {%- if artist.avatar_image != blank -%}
+              {%- if artist.avatar != blank or artist.avatar_image != blank -%}
                 {{
-                  artist.avatar_image
+                  artist.avatar | default: artist.avatar_image
                   | image_url: width: 500
                   | image_tag:
                     loading: 'lazy',
@@ -68,15 +68,15 @@
                 <p class="artist-card__style">{{ artist.style | escape }}</p>
               {%- endif -%}
 
-              {%- if artist.short_bio != blank -%}
-                <p class="artist-card__bio">{{ artist.short_bio | escape }}</p>
-              {%- elsif artist.bio != blank -%}
+              {%- if artist.bio != blank -%}
                 <p class="artist-card__bio">{{ artist.bio | escape }}</p>
+              {%- elsif artist.short_bio != blank -%}
+                <p class="artist-card__bio">{{ artist.short_bio | escape }}</p>
               {%- endif -%}
 
-              {%- if artist.profile_url != blank -%}
+              {%- if artist.portfolio_url != blank or artist.profile_url != blank -%}
                 <a
-                  href="{{ artist.profile_url }}"
+                  href="{{ artist.portfolio_url | default: artist.profile_url }}"
                   class="artist-card__link link"
                   target="_blank"
                   rel="noopener noreferrer"
