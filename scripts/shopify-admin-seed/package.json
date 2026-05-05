@@ -1,0 +1,23 @@
+{
+  "name": "@horo/shopify-admin-seed",
+  "version": "1.0.0",
+  "description": "HORO Shopify Admin definitions seeder — metaobjects and metafields",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed:definitions": "tsx src/index.ts --apply",
+    "seed:definitions:dry": "tsx src/index.ts",
+    "seed:definitions:all": "tsx src/index.ts --apply --include-drops",
+    "check": "tsx src/index.ts --check",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "dotenv": "^16.4.5",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
