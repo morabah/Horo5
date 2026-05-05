@@ -15,7 +15,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 
-import { assertEnv } from './utils/assert-env.js';
+import { assertEnv, getOAuthConfig } from './utils/assert-env.js';
+import { getAccessTokenViaOAuth } from './utils/oauth.js';
 import * as logger from './utils/logger.js';
 import { ShopifyAdminClient } from './shopify-admin.js';
 import { CORE_METAOBJECTS, OPTIONAL_METAOBJECTS } from './definitions/metaobjects.js';
@@ -70,8 +71,15 @@ Options:
 
 Required environment variables (in .env):
   SHOPIFY_STORE_DOMAIN
-  SHOPIFY_ADMIN_ACCESS_TOKEN
   SHOPIFY_API_VERSION
+
+  Option A — Static token (Custom App):
+    SHOPIFY_ADMIN_ACCESS_TOKEN
+
+  Option B — OAuth (Partner App):
+    SHOPIFY_CLIENT_ID
+    SHOPIFY_CLIENT_SECRET
+    SHOPIFY_SCOPES (optional, defaults to required scopes)
 `);
   process.exit(0);
 }
@@ -339,6 +347,21 @@ async function main(): Promise<void> {
   logger.info(`Include drops: ${args.includeDrops}`);
 
   const env = assertEnv();
+
+  // If OAuth mode, obtain access token via browser flow
+  if (env.authMode === 'oauth') {
+    logger.section('OAuth Authentication');
+    const oauthConfig = getOAuthConfig();
+    const tokenResult = await getAccessTokenViaOAuth({
+      storeDomain: oauthConfig.storeDomain,
+      clientId: oauthConfig.clientId,
+      clientSecret: oauthConfig.clientSecret,
+      scopes: oauthConfig.scopes,
+    });
+    env.accessToken = tokenResult.accessToken;
+    logger.success(`OAuth token obtained (scope: ${tokenResult.scope})`);
+  }
+
   const client = new ShopifyAdminClient(env);
 
   // Gather desired definitions
