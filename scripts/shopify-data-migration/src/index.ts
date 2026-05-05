@@ -17,6 +17,7 @@ import { fileURLToPath } from 'url';
 
 import { assertEnv, Env } from './utils/assert-env.js';
 import * as logger from './utils/logger.js';
+import { getAccessTokenViaOAuth } from './utils/oauth.js';
 import { ShopifyAdminClient } from './shopify-admin.js';
 import { createIdMap, saveIdMap, loadIdMap, IdMap } from './state/id-map.js';
 import { REQUIRED_DEFINITIONS } from './utils/validate-locked-model.js';
@@ -135,9 +136,24 @@ async function main(): Promise<void> {
   }
 
   const env = assertEnv();
+
+  // ── Authenticate ──
+  let accessToken = env.accessToken;
+  if (!accessToken && env.clientId && env.clientSecret) {
+    logger.section('OAuth Authentication');
+    const result = await getAccessTokenViaOAuth({
+      storeDomain: env.storeDomain,
+      clientId: env.clientId,
+      clientSecret: env.clientSecret,
+      scopes: 'read_metaobjects,write_metaobjects,read_products,write_products,read_collections,write_collections',
+    });
+    accessToken = result.accessToken;
+    logger.success(`OAuth token obtained (scope: ${result.scope})`);
+  }
+
   const client = new ShopifyAdminClient({
     storeDomain: env.storeDomain,
-    accessToken: env.accessToken,
+    accessToken,
     apiVersion: env.apiVersion,
   });
 
@@ -213,7 +229,7 @@ async function main(): Promise<void> {
   // ── Scope: test-path ──
   if (args.scope.includes('test-path')) {
     logger.section('Test-path migration');
-    await runTestPath(client, jsonData, idMap, !args.apply, args.limit, env.allowMissingReferences);
+    await runTestPath(client, jsonData, idMap, !args.apply, args.limit, env.allowMissingReferences, env.storeDomain);
     process.exit(0);
   }
 
@@ -377,7 +393,8 @@ async function runTestPath(
   idMap: IdMap,
   dryRun: boolean,
   limit: number,
-  allowMissingReferences: boolean
+  allowMissingReferences: boolean,
+  storeDomain: string
 ): Promise<void> {
   logger.info('Test-path: Creating minimal HORO data set');
 
@@ -486,10 +503,35 @@ async function runTestPath(
   logger.success(`Collection metafields: ${cmfResult.assigned.length} assigned, ${cmfResult.skipped.length} skipped, ${cmfResult.errors.length} errors`);
 
   // Save
+  const testOutDir = path.join(process.cwd(), 'output');
   if (!dryRun) {
-    const outDir = path.join(process.cwd(), 'output');
-    saveIdMap(idMap, outDir);
+    saveIdMap(idMap, testOutDir);
   }
+
+  // Generate report
+  const report: MigrationReport = {
+    date: new Date().toISOString(),
+    store: storeDomain,
+    mode: dryRun ? 'dry-run' : 'apply',
+    scope: ['test-path'],
+    created: [...moResult.created, ...pResult.created, ...cResult.created, ...pmfResult.assigned, ...cmfResult.assigned],
+    skipped: [...moResult.skipped, ...pResult.skipped, ...cResult.skipped, ...pmfResult.skipped, ...cmfResult.skipped],
+    updated: [],
+    conflicts: [],
+    missingReferences: [...pmfResult.missingRefs, ...cmfResult.missingRefs],
+    missingImages: [],
+    warnings: [],
+    errors: [...moResult.errors, ...pResult.errors, ...cResult.errors, ...pmfResult.errors, ...cmfResult.errors],
+    nextSteps: [
+      'Verify metaobjects in Shopify Admin → Content → Metaobjects',
+      'Verify products in Shopify Admin → Products',
+      'Verify collections in Shopify Admin → Collections',
+      'Upload product images to Shopify Files',
+      'Test storefront rendering: Home → Feelings → Zodiac → Cancer → Product',
+    ],
+  };
+  writeReports(report, testOutDir);
+  logger.success(`Saved report to ${path.join(testOutDir, dryRun ? 'dry-run-report.md' : 'migration-report.md')}`);
 
   logger.success('Test-path migration complete.');
 }
