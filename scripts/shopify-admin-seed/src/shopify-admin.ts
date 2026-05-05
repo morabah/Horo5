@@ -197,7 +197,7 @@ export class ShopifyAdminClient {
     const mutation = `
       mutation DeleteMetaobjectDefinition($id: ID!) {
         metaobjectDefinitionDelete(id: $id) {
-          deletedDefinitionId
+          deletedId
           userErrors {
             field
             message
@@ -209,7 +209,7 @@ export class ShopifyAdminClient {
 
     const res = await this.request<{
       metaobjectDefinitionDelete: {
-        deletedDefinitionId: string | null;
+        deletedId: string | null;
         userErrors: Array<{ field: string; message: string; code: string }>;
       };
     }>(mutation, { id });
@@ -221,7 +221,7 @@ export class ShopifyAdminClient {
       throw new Error(`metaobjectDefinitionDelete error: ${errors}`);
     }
 
-    return !!result?.deletedDefinitionId;
+    return !!result?.deletedId;
   }
 
   /**
