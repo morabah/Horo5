@@ -190,6 +190,40 @@ export class ShopifyAdminClient {
   }
 
   /**
+   * Delete a metaobject definition.
+   */
+  async deleteMetaobjectDefinition(id: string): Promise<boolean> {
+    const mutation = `
+      mutation DeleteMetaobjectDefinition($id: ID!) {
+        metaobjectDefinitionDelete(id: $id) {
+          deletedDefinitionId
+          userErrors {
+            field
+            message
+            code
+          }
+        }
+      }
+    `;
+
+    const res = await this.request<{
+      metaobjectDefinitionDelete: {
+        deletedDefinitionId: string | null;
+        userErrors: Array<{ field: string; message: string; code: string }>;
+      };
+    }>(mutation, { id });
+
+    const result = res.data?.metaobjectDefinitionDelete;
+
+    if (result?.userErrors && result.userErrors.length > 0) {
+      const errors = result.userErrors.map((e) => `${e.field}: ${e.message}`).join('; ');
+      throw new Error(`metaobjectDefinitionDelete error: ${errors}`);
+    }
+
+    return !!result?.deletedDefinitionId;
+  }
+
+  /**
    * Create a metafield definition.
    */
   async createMetafieldDefinition(definition: {

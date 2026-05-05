@@ -6,8 +6,9 @@
  *   --dry-run    (default) Show what would be created
  *   --apply      Actually create definitions
  *   --check      Only verify existing definitions, no creation
- *   --include-drops  Include optional drop metaobject
- *   --verbose    Detailed logging
+ *   --include-drops     Include optional drop metaobject
+ *   --verbose           Detailed logging
+ *   --force-recreate    Delete and recreate conflicting metaobject definitions
  */
 
 import 'dotenv/config';
@@ -32,6 +33,7 @@ interface CliArgs {
   check: boolean;
   includeDrops: boolean;
   verbose: boolean;
+  forceRecreate: boolean;
 }
 
 interface Result {
@@ -49,6 +51,7 @@ function parseArgs(): CliArgs {
     check: args.includes('--check'),
     includeDrops: args.includes('--include-drops'),
     verbose: args.includes('--verbose'),
+    forceRecreate: args.includes('--force-recreate'),
   };
 }
 
@@ -63,11 +66,12 @@ Usage:
   npm run check                         # Verify existing definitions
 
 Options:
-  --dry-run       (default) Preview changes without creating
-  --apply         Actually create definitions in Shopify Admin
-  --check         Verify existing definitions, no creation
-  --include-drops Include optional 'drop' metaobject (Phase 2C)
-  --verbose       Detailed logging
+  --dry-run         (default) Preview changes without creating
+  --apply           Actually create definitions in Shopify Admin
+  --check           Verify existing definitions, no creation
+  --include-drops   Include optional 'drop' metaobject (Phase 2C)
+  --verbose         Detailed logging
+  --force-recreate  Delete and recreate conflicting metaobject definitions (data loss!)
 
 Required environment variables (in .env):
   SHOPIFY_STORE_DOMAIN
@@ -96,7 +100,8 @@ async function seedMetaobjects(
   client: ShopifyAdminClient,
   desired: Array<{ type: string; name: string; fieldDefinitions: Array<{ key: string; name: string; type: string; required?: boolean; description?: string }> }>,
   existing: Array<{ id: string; type: string; name: string; fieldDefinitions: Array<{ key: string; name: string; type: { name: string } }> }>,
-  dryRun: boolean
+  dryRun: boolean,
+  forceRecreate: boolean
 ): Promise<Result> {
   const result: Result = { created: [], skipped: [], conflicts: [], errors: [] };
 
@@ -130,14 +135,31 @@ async function seedMetaobjects(
       if (!conflict) {
         const missingFields = def.fieldDefinitions.filter((f) => !existingFields.has(f.key));
         if (missingFields.length > 0) {
-          result.conflicts.push(
-            `${key}: missing fields [${missingFields.map((f) => f.key).join(', ')}] — cannot add fields to existing metaobject definition via this script`
-          );
+          if (forceRecreate && !dryRun) {
+            logger.warn(`${key}: missing fields [${missingFields.map((f) => f.key).join(', ')}] — force-recreating (deleting existing definition)`);
+            try {
+              await client.deleteMetaobjectDefinition(existingDef.id);
+              logger.info(`${key}: deleted existing definition`);
+              // Fall through to creation below
+            } catch (err) {
+              const message = err instanceof Error ? err.message : String(err);
+              result.errors.push(`${key}: failed to delete existing definition: ${message}`);
+              logger.error(`${key}: failed to delete existing definition: ${message}`);
+              continue;
+            }
+          } else {
+            result.conflicts.push(
+              `${key}: missing fields [${missingFields.map((f) => f.key).join(', ')}] — cannot add fields to existing metaobject definition via this script (use --force-recreate to delete and recreate)`
+            );
+            continue;
+          }
         } else {
           result.skipped.push(`${key} (already exists)`);
+          continue;
         }
+      } else {
+        continue;
       }
-      continue;
     }
 
     if (dryRun) {
@@ -387,14 +409,14 @@ async function main(): Promise<void> {
   if (args.check) {
     logger.section('Check mode — verifying definitions');
     // Re-use seed logic with dryRun=true (we just want to compare)
-    const moResult = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, true);
+    const moResult = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, true, args.forceRecreate);
     const pmResult = await seedMetafields(client, PRODUCT_METAFIELDS, existingProductMetafields, 'PRODUCT', true);
     const cmResult = await seedMetafields(client, COLLECTION_METAFIELDS, existingCollectionMetafields, 'COLLECTION', true);
     totalResult = mergeResults(mergeResults(moResult, pmResult), cmResult);
   } else {
     // Metaobjects
     logger.section('Processing metaobject definitions');
-    const moResult = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, !args.apply);
+    const moResult = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, !args.apply, args.forceRecreate);
     totalResult = mergeResults(totalResult, moResult);
 
     // Product metafields
