@@ -55,7 +55,7 @@
       >
         {%- if remaining_items > 0 -%}
           {%- if section.settings.heading_before != blank -%}
-            <h2 class="cart-bundle-nudge__heading" data-bundle-heading>{{ section.settings.heading_before | replace: '{{ count }}', remaining_items | escape }}</h2>
+            <h2 class="cart-bundle-nudge__heading" data-bundle-heading>{{ section.settings.heading_before | replace: '[count]', remaining_items | escape }}</h2>
           {%- endif -%}
         {%- else -%}
           {%- if section.settings.heading_after != blank -%}
@@ -137,9 +137,9 @@
     {
       "type": "text",
       "id": "heading_before",
-      "default": "Add {{ count }} more to unlock the bundle offer",
+      "default": "Add [count] more to unlock the bundle offer",
       "label": "Heading before threshold",
-      "info": "Use {{ count }} as placeholder for remaining items."
+      "info": "Use [count] as placeholder for remaining items."
     },
     {
       "type": "text",
@@ -180,7 +180,7 @@
       "type": "range",
       "id": "api_timeout_ms",
       "min": 1000,
-      "max": 10000,
+      "max": 5000,
       "step": 500,
       "unit": "ms",
       "label": "API timeout",

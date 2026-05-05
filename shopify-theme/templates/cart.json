@@ -31,7 +31,7 @@
         "required_quantity": 3,
         "discount_egp": 100,
         "eligible_collection": "",
-        "heading_before": "Add {{ count }} more to unlock the bundle offer",
+        "heading_before": "Add [count] more to unlock the bundle offer",
         "heading_after": "Your cart may qualify for the bundle offer",
         "note": "Final discount is confirmed at checkout.",
         "discount_code_text": "",
