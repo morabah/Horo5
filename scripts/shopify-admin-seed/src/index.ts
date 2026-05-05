@@ -96,21 +96,42 @@ function metafieldKey(def: { namespace: string; key: string; ownerType?: string 
   return `metafield:${def.namespace}.${def.key}${def.ownerType ? ` (${def.ownerType})` : ''}`;
 }
 
+interface MetaobjectFieldDefInput {
+  key: string;
+  name: string;
+  type: string;
+  required?: boolean;
+  description?: string;
+  validations?: Array<{ name: string; value?: string }>;
+}
+
+interface MetaobjectDefInput {
+  type: string;
+  name: string;
+  fieldDefinitions: MetaobjectFieldDefInput[];
+}
+
 async function seedMetaobjects(
   client: ShopifyAdminClient,
-  desired: Array<{ type: string; name: string; fieldDefinitions: Array<{ key: string; name: string; type: string; required?: boolean; description?: string }> }>,
+  desired: MetaobjectDefInput[],
   existing: Array<{ id: string; type: string; name: string; fieldDefinitions: Array<{ key: string; name: string; type: { name: string } }> }>,
   dryRun: boolean,
   forceRecreate: boolean
-): Promise<Result> {
+): Promise<{ result: Result; ids: Map<string, string> }> {
   const result: Result = { created: [], skipped: [], conflicts: [], errors: [] };
+  const ids = new Map<string, string>();
 
-  for (const def of desired) {
+  // Populate IDs from existing definitions
+  for (const e of existing) {
+    ids.set(e.type, e.id);
+  }
+
+  // Helper: process a single definition
+  async function processDef(def: typeof desired[0]): Promise<void> {
     const key = metaobjectKey(def);
     const existingDef = existing.find((e) => e.type === def.type);
 
     if (existingDef) {
-      // Check field compatibility
       const desiredFields = new Map(def.fieldDefinitions.map((f) => [f.key, f.type]));
       const existingFields = new Map(existingDef.fieldDefinitions.map((f) => [f.key, f.type.name]));
 
@@ -125,7 +146,6 @@ async function seedMetaobjects(
         }
       }
 
-      // Check for extra fields in existing that aren't in desired (not a conflict, just a skip)
       for (const [fieldKey] of existingFields) {
         if (!desiredFields.has(fieldKey)) {
           logger.info(`${key}: existing field "${fieldKey}" not in desired definition — ignored`);
@@ -140,38 +160,40 @@ async function seedMetaobjects(
             try {
               await client.deleteMetaobjectDefinition(existingDef.id);
               logger.info(`${key}: deleted existing definition`);
+              ids.delete(def.type);
               // Fall through to creation below
             } catch (err) {
               const message = err instanceof Error ? err.message : String(err);
               result.errors.push(`${key}: failed to delete existing definition: ${message}`);
               logger.error(`${key}: failed to delete existing definition: ${message}`);
-              continue;
+              return;
             }
           } else {
             result.conflicts.push(
               `${key}: missing fields [${missingFields.map((f) => f.key).join(', ')}] — cannot add fields to existing metaobject definition via this script (use --force-recreate to delete and recreate)`
             );
-            continue;
+            return;
           }
         } else {
           result.skipped.push(`${key} (already exists)`);
-          continue;
+          return;
         }
       } else {
-        continue;
+        return;
       }
     }
 
     if (dryRun) {
       logger.dryRun(`Would create metaobject definition: ${def.type}`);
       result.created.push(`${key} (dry-run)`);
-      continue;
+      return;
     }
 
     try {
       const created = await client.createMetaobjectDefinition(def);
       if (created) {
         result.created.push(`${key}`);
+        ids.set(def.type, created.id);
         logger.success(`Created metaobject definition: ${def.type}`);
       }
     } catch (err) {
@@ -181,7 +203,52 @@ async function seedMetaobjects(
     }
   }
 
-  return result;
+  // ── Pass 1: Create metaobjects without metaobject_reference fields ──
+  const withoutRefs = desired.filter((d) =>
+    !d.fieldDefinitions.some((f) => f.type === 'metaobject_reference' || f.type === 'list.metaobject_reference')
+  );
+  const withRefs = desired.filter((d) =>
+    d.fieldDefinitions.some((f) => f.type === 'metaobject_reference' || f.type === 'list.metaobject_reference')
+  );
+
+  for (const def of withoutRefs) {
+    await processDef(def);
+  }
+
+  // ── Pass 2: Refresh IDs and substitute references ──
+  if (withRefs.length > 0 && !dryRun) {
+    logger.info('Refreshing metaobject IDs for cross-reference fields...');
+    const refreshed = await client.getMetaobjectDefinitions();
+    for (const m of refreshed) {
+      ids.set(m.type, m.id);
+    }
+
+    for (const def of withRefs) {
+      // Substitute validation values with actual IDs
+      const patchedDef = {
+        ...def,
+        fieldDefinitions: def.fieldDefinitions.map((f) => {
+          if ((f.type === 'metaobject_reference' || f.type === 'list.metaobject_reference') && f.validations) {
+            return {
+              ...f,
+              validations: f.validations.map((v: { name: string; value?: string }) => ({
+                ...v,
+                value: v.value ? (ids.get(v.value) ?? v.value) : v.value, // substitute type name with GraphQL ID
+              })),
+            };
+          }
+          return f;
+        }),
+      };
+      await processDef(patchedDef);
+    }
+  } else {
+    for (const def of withRefs) {
+      await processDef(def);
+    }
+  }
+
+  return { result, ids };
 }
 
 function buildMetafieldValidations(
@@ -434,17 +501,8 @@ async function main(): Promise<void> {
 
   // ── Phase 1: Metaobjects ──
   logger.section('Processing metaobject definitions');
-  const moResult = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, args.check || !args.apply, args.forceRecreate);
+  const { result: moResult, ids: metaobjectIds } = await seedMetaobjects(client, desiredMetaobjects, existingMetaobjects, args.check || !args.apply, args.forceRecreate);
   totalResult = mergeResults(totalResult, moResult);
-
-  // ── Phase 2: Refresh metaobject IDs for metafield validations ──
-  let metaobjectIds = new Map<string, string>();
-  if (args.apply) {
-    logger.info('Refreshing metaobject definitions to obtain IDs for metafield validations...');
-    const refreshedMetaobjects = await client.getMetaobjectDefinitions();
-    metaobjectIds = new Map(refreshedMetaobjects.map((m) => [m.type, m.id]));
-    logger.info(`Mapped ${metaobjectIds.size} metaobject definition IDs`);
-  }
 
   // ── Phase 3: Product metafields ──
   logger.section('Processing product metafield definitions');
