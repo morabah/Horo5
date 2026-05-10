@@ -1,0 +1,57 @@
+{
+  "sections": {
+    "terms_of_service": {
+      "type": "page-about-horo",
+      "settings": {
+        "heading": "Terms of Service",
+        "heading_size": "h0",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "intro": {
+          "type": "content_block",
+          "settings": {
+            "show": true,
+            "title": "",
+            "text": "<p>These terms set the basic rules for browsing, ordering, and using HORO's storefront.</p>"
+          }
+        },
+        "general": {
+          "type": "content_block",
+          "settings": {
+            "show": true,
+            "title": "General terms",
+            "text": "<p>By using this site, you agree to the terms described here. If you do not agree, please do not use the storefront.</p>"
+          }
+        },
+        "orders": {
+          "type": "content_block",
+          "settings": {
+            "show": true,
+            "title": "Orders and payments",
+            "text": "<p>All orders are subject to availability and confirmation. Prices are shown in EGP and include applicable taxes. Payment options available at checkout are the ones shown on the site at the time of purchase.</p>"
+          }
+        },
+        "contact": {
+          "type": "content_block",
+          "settings": {
+            "show": true,
+            "title": "Contact",
+            "text": "<p>For questions about these terms, use the live HORO support links shown on the site when they are available.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "intro",
+        "general",
+        "orders",
+        "contact"
+      ]
+    }
+  },
+  "order": [
+    "terms_of_service"
+  ]
+}

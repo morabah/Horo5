@@ -12,12 +12,20 @@
       "about": "عن هورو",
       "size_guide": "دليل المقاسات",
       "faq": "أسئلة شائعة",
-      "exchange": "سياسة الاستبدال"
+      "exchange": "سياسة الاستبدال",
+      "searchPlaceholder": "ابحث عن تصاميم، مشاعر، أو مناسبات...",
+      "searchSubmit": "بحث",
+      "searchClear": "مسح البحث",
+      "searchOpen": "فتح البحث",
+      "search_placeholder": "ابحث عن تصاميم، مشاعر، أو مناسبات...",
+      "search_submit": "بحث",
+      "search_clear": "مسح البحث",
+      "search_open": "فتح البحث"
     },
     "home_hero": {
-      "title": "البس اللي بيمثلك",
-      "subtitle": "رسومات رقمية أصلية، اتحولت لتيشيرتات بتعبر عن شخصيتك",
-      "cta": "تسوق بالمشاعر"
+      "title": "البس اللي تحسه",
+      "subtitle": "تيشيرتات فنانين · مطبوعة في مصر · الدفع عند الاستلام",
+      "cta": "تسوّق الإطلاق الأول"
     },
     "trust_ribbon": {
       "artist_made": "تصميم فنان",
@@ -159,17 +167,49 @@
       "view_piece": "شوف القطعة",
       "add_to_cart": "أضف للسلة",
       "sold_out": "نفذت الكمية",
-      "select_size": "اختار المقاس"
+      "select_size": "اختار المقاس",
+      "addBtnCTA": "أضف للسلة",
+      "shippingLine": "شحن سريع · استبدال خلال ١٤ يوم · دفع آمن",
+      "sizeGuideLabel": "دليل المقاسات",
+      "selectSizePrompt": "اختار المقاس",
+      "storyCardHeading": "للشخص اللي…",
+      "illustratedByLabel": "رسم",
+      "trustReturnsLine": "استبدال خلال ١٤ يوم",
+      "accordionProductDetails": "تفاصيل المنتج والمقاس",
+      "accordionDesignStory": "قصة التصميم",
+      "accordionShipping": "الشحن والاستبدال"
     },
     "cart": {
       "trust_explainer_heading": "اللي هتحصله",
       "free_shipping_progress_before": "أضف {{ amount }} عشان توصل للشحن المجاني.",
       "free_shipping_progress_after": "وصلت للشحن المجاني",
-      "gift_wrap_label": "تغليف هدية",
+      "gift_wrap_label": "تغليف هدية + كرت قصة",
       "savings_summary": "وفرت {{ amount }}",
-      "empty_state": "السلة فاضية",
+      "empty_state": "السلة فاضية. استكشف المشاعر وأضف تصميم في مقاسك لما تكون جاهز.",
       "continue_shopping": "اكمل التسوق",
-      "checkout": "إتمام الشراء"
+      "checkout": "أكمل الشراء",
+      "heading": "السلة",
+      "orderSummaryHeading": "ملخص الطلب",
+      "shippingLabel": "الشحن المقدر",
+      "shippingConfirmedAtCheckout": "يتأكد عند الدفع",
+      "totalLabel": "الإجمالي المقدر",
+      "subtotalLabel": "المجموع الفرعي",
+      "quantityLabel": "الكمية",
+      "removeLabel": "إزالة",
+      "itemLabelSingular": "قطعة",
+      "itemLabelPlural": "قطع",
+      "giftUpsellHeading": "خلّيها هدية يحتفظ بيها",
+      "giftUpsellIncludedHeading": "إضافات الهدية",
+      "giftUpsellBody": "ضف كرت قصة الفنان + تغليف هدية — عشان يعرفوا من عملها وليه مهمة.",
+      "giftUpsellIncludedBody": "كرت قصة الفنان + تغليف هدية متضمن في التقدير.",
+      "giftUpsellCta": "أضف تغليف هدية +200",
+      "giftUpsellDecline": "لا شكراً",
+      "giftUpsellRemove": "إزالة تغليف الهدية",
+      "bundleUpsellHeading": "أضف تالت قطعة ووفّر ١٠٠ ج.م.",
+      "bundleUpsellBody": "اختار تصميم تاني لفنان مختلف واحصل على خصم ١٠٠ ج.م.",
+      "bundleUpsellCta": "تصفح التصاميم →",
+      "estimatedDeliveryLabel": "التوصيل المقدر (قياسي)",
+      "estimatedDeliveryCheckoutNote": "خيارات التوصيل السريع والتواريخ الدقيقة تتأكد عند الدفع."
     },
     "quick_view": {
       "title": "نظرة سريعة",
@@ -184,6 +224,13 @@
       "popular_searches": "بحث شائع"
     },
     "home": {
+      "hero_promise_line": "تيشيرتات فنانين · مطبوعة في مصر · الدفع عند الاستلام",
+      "hero_primary_cta": "تسوّق الإطلاق الأول",
+      "hero_secondary_cta": "تصفح حسب الشعور",
+      "plan_eyebrow": "خطوات واضحة",
+      "plan_title": "كيف يعمل HORO",
+      "feelings_title": "تسوّق حسب الشعور",
+      "gift_headline": "قطع لها معنى للحظات لها معنى",
       "art_by_label": "تصميم",
       "why_hor": "ليش HORO",
       "why_hor_block_local_artists_title": "فنانين حقيقيين، حقوق حقيقية",
@@ -218,6 +265,22 @@
       "first_drop_confirm": "انت في القائمة — هنتواصل معاك لما الإصدار الجديد يبقى جاهز.",
       "first_drop_disclaimer": "بنستخدم الواتساب أو الإيميل بس لإعلانات الإصدار. مافيش بيع، مافيش سبام."
     },
+    "exit_intent": {
+      "copy": "نسخ",
+      "copy_coupon": "نسخ كود الخصم",
+      "coupon_label": "الكود:"
+    },
+    "feeling_quiz": {
+      "restart": "اعمل الكويز تاني"
+    },
+    "launch_countdown": {
+      "days": "يوم",
+      "hours": "ساعة",
+      "minutes": "دقيقة",
+      "seconds": "ثانية",
+      "until_launch": "حتى الإطلاق",
+      "ended": "الإطلاق بدأ"
+    },
     "pages": {
       "size_guide_eyebrow": "مساعدة المقاس",
       "size_guide_title": "دليل المقاسات",
@@ -227,7 +290,56 @@
       "faq_intro": "إجابات سريعة للطلبات الأولى، التوصيل، الدفع، التبديل، والدعم.",
       "order_confirmation_title": "تم تأكيد الطلب",
       "order_confirmation_body": "طلبك بيتم تحضيره. هنحدثك لما يتشحن.",
-      "order_confirmation_cta": "استمر في التسوق"
+      "order_confirmation_cta": "استمر في التسوق",
+      "privacy_title": "سياسة الخصوصية",
+      "privacy_intro": "يشرح هذا الملخص المعلومات التي يستخدمها HORO لتشغيل المتجر ودعم كل طلب.",
+      "terms_title": "الشروط والأحكام",
+      "terms_intro": "تحدد هذه الشروط القواعد الأساسية لتصفح وطلب واستخدام متجر HORO."
+    },
+    "shell": {
+      "home": "الرئيسية",
+      "shopAll": "تسوّق الكل",
+      "shopAllIntro": "أول مجموعة إطلاق من HORO — تصاميم أصلية لفنانين مصريين، مطبوعة في مصر.",
+      "shopByFeeling": "المشاعر",
+      "shopByMoment": "المناسبات",
+      "about": "عن HORO",
+      "search": "البحث",
+      "cart": "السلة",
+      "menu": "القائمة",
+      "openMenu": "فتح القائمة",
+      "closeMenu": "إغلاق القائمة",
+      "shopHeading": "التسوق",
+      "helpHeading": "المساعدة",
+      "aboutHeading": "عن HORO",
+      "contactHeading": "التواصل",
+      "contactWhatsapp": "التواصل / واتساب",
+      "deliveryReturns": "التوصيل والاستبدال",
+      "sizeGuide": "دليل المقاسات",
+      "faq": "الأسئلة الشائعة",
+      "privacyPolicy": "سياسة الخصوصية",
+      "termsOfService": "الشروط والأحكام",
+      "language": "اللغة",
+      "englishShort": "EN",
+      "arabicShort": "AR",
+      "orderPlacedHint": "تم الطلب — راجع صفحة التأكيد.",
+      "orderPlacedViewReceipt": "عرض الإيصال",
+      "orderPlacedDismiss": "إغلاق",
+      "items_in_cart": "عنصر",
+      "open_menu": "فتح القائمة",
+      "close_menu": "إغلاق القائمة",
+      "english_short": "EN",
+      "arabic_short": "AR",
+      "order_placed_hint": "تم الطلب — راجع صفحة التأكيد.",
+      "order_placed_view_receipt": "عرض الإيصال",
+      "order_placed_dismiss": "إغلاق",
+      "drawer_navigation": "القائمة",
+      "primary_navigation": "القائمة الرئيسية"
+    },
+    "404": {
+      "title": "الصفحة غير موجودة",
+      "body": "المسار ده لسه موجودش.",
+      "back_home": "رجوع للرئيسية",
+      "search": "البحث"
     }
   }
 }

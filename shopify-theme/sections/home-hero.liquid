@@ -96,6 +96,15 @@
           {{ section.settings.button_label | escape }}
         </a>
       {%- endif -%}
+      {%- if section.settings.button_label_secondary != blank -%}
+        <a
+          {% if section.settings.button_link_secondary != blank %}href="{{ section.settings.button_link_secondary }}"{% endif %}
+          class="home-hero__cta button button--secondary"
+          {% if section.settings.button_link_secondary == blank %}aria-disabled="true"{% endif %}
+        >
+          {{ section.settings.button_label_secondary | escape }}
+        </a>
+      {%- endif -%}
     </div>
   </div>
 
@@ -166,6 +175,17 @@
       "id": "button_style_secondary",
       "label": "Use secondary button style",
       "default": false
+    },
+    {
+      "type": "text",
+      "id": "button_label_secondary",
+      "label": "Secondary button label",
+      "default": "Browse by feeling"
+    },
+    {
+      "type": "url",
+      "id": "button_link_secondary",
+      "label": "Secondary button link"
     },
     {
       "type": "select",

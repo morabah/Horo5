@@ -1,53 +1,133 @@
 {
-  "name": "t:sections.footer.name",
+  "name": "HORO Footer Group",
   "type": "footer",
   "sections": {
-    "footer": {
-      "type": "footer",
+    "horo-trust-ribbon": {
+      "type": "horo-trust-ribbon",
+      "settings": {
+        "color_scheme": "scheme-2",
+        "padding_top": 12,
+        "padding_bottom": 12
+      },
       "blocks": {
-        "footer-0": {
-          "type": "link_list",
+        "badge_1": {
+          "type": "trust_badge",
           "settings": {
-            "heading": "Quick links",
-            "menu": "footer"
+            "show_badge": true,
+            "icon": "artist",
+            "label": "Original artist-made designs",
+            "subtext": ""
           }
         },
-        "footer-1": {
-          "type": "link_list",
+        "badge_2": {
+          "type": "trust_badge",
           "settings": {
-            "heading": "Info",
-            "menu": "footer"
+            "show_badge": true,
+            "icon": "print",
+            "label": "Printed locally in Egypt",
+            "subtext": ""
           }
         },
-        "footer-2": {
-          "type": "text",
+        "badge_3": {
+          "type": "trust_badge",
           "settings": {
-            "heading": "Our mission",
-            "subtext": "<p>Share contact information, store details, and brand content with your customers.<\/p>"
+            "show_badge": true,
+            "icon": "cash",
+            "label": "Cash on delivery available",
+            "subtext": ""
+          }
+        },
+        "badge_4": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "exchange",
+            "label": "14-day size exchange — terms apply",
+            "subtext": ""
+          }
+        },
+        "badge_5": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "whatsapp",
+            "label": "WhatsApp support",
+            "subtext": ""
           }
         }
       },
       "block_order": [
-        "footer-0",
-        "footer-1",
-        "footer-2"
+        "badge_1",
+        "badge_2",
+        "badge_3",
+        "badge_4",
+        "badge_5"
+      ]
+    },
+    "horo-footer-mantra": {
+      "type": "horo-footer-mantra",
+      "settings": {
+        "color_scheme": "scheme-3",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "footer-brand": {
+          "type": "text",
+          "settings": {
+            "heading": "",
+            "subtext": "<p>Artist-made clothing for feelings, moments, and meaningful giving in Egypt, backed by quality print, visible proof, and clear service.</p>"
+          }
+        },
+        "footer-shop": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Shop",
+            "menu": "horo-footer-shop"
+          }
+        },
+        "footer-help": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Help",
+            "menu": "horo-footer-help"
+          }
+        },
+        "footer-contact": {
+          "type": "link_list",
+          "settings": {
+            "heading": "Contact",
+            "menu": "horo-footer-contact"
+          }
+        }
+      },
+      "block_order": [
+        "footer-brand",
+        "footer-shop",
+        "footer-help",
+        "footer-contact"
       ],
       "settings": {
-        "color_scheme": "scheme-1",
+        "color_scheme": "scheme-3",
         "newsletter_enable": true,
-        "newsletter_heading": "Subscribe to our emails",
+        "newsletter_heading": "Join the First Drop Circle",
         "show_social": true,
         "enable_country_selector": false,
         "enable_language_selector": false,
         "payment_enable": true,
-        "show_policy": false,
-        "margin_top": 48,
+        "show_policy": true,
+        "margin_top": 0,
         "padding_top": 36,
         "padding_bottom": 36
       }
     }
   },
   "order": [
+    "horo-trust-ribbon",
+    "horo-footer-mantra",
     "footer"
   ]
 }

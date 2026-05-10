@@ -20,10 +20,18 @@
 >
   <div class="page-width">
     <div class="size-guide__wrapper">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="size-guide__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+
       {%- if section.settings.heading != blank -%}
         <h1 class="size-guide__heading {{ section.settings.heading_size }}">
           {{ section.settings.heading | escape }}
         </h1>
+      {%- endif -%}
+
+      {%- if section.settings.intro != blank -%}
+        <p class="size-guide__intro">{{ section.settings.intro | escape }}</p>
       {%- endif -%}
 
       {%- if section.blocks.size > 0 -%}
@@ -62,6 +70,22 @@
           {{ section.settings.disclaimer | escape }}
         </p>
       {%- endif -%}
+
+      {%- assign body_blocks = section.blocks | where: 'type', 'body_section' -%}
+      {%- if body_blocks.size > 0 -%}
+        <div class="size-guide__body-sections">
+          {%- for block in body_blocks -%}
+            <div class="size-guide__body-section" {{ block.shopify_attributes }}>
+              {%- if block.settings.title != blank -%}
+                <h2 class="size-guide__body-title">{{ block.settings.title | escape }}</h2>
+              {%- endif -%}
+              {%- if block.settings.body != blank -%}
+                <div class="size-guide__body-text rte">{{ block.settings.body }}</div>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
     </div>
   </div>
 </div>
@@ -74,9 +98,21 @@
   "settings": [
     {
       "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Fit help"
+    },
+    {
+      "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "T-Shirt Size Guide"
+      "default": "Size Guide"
+    },
+    {
+      "type": "textarea",
+      "id": "intro",
+      "label": "Intro text",
+      "default": "Use these notes before choosing a tee size. Product pages remain the source of truth when a design has its own measurements."
     },
     {
       "type": "select",
@@ -157,6 +193,24 @@
     }
   ],
   "blocks": [
+    {
+      "type": "body_section",
+      "name": "Body section",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "How to choose"
+        },
+        {
+          "type": "richtext",
+          "id": "body",
+          "label": "Body",
+          "default": "<p>Start with the fit label on the product card or product page, then compare the size chart before checkout.</p>"
+        }
+      ]
+    },
     {
       "type": "size_row",
       "name": "Size row",

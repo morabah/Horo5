@@ -1629,5 +1629,47 @@
         "default": "+ EGP 50"
       }
     ]
+  },
+  {
+    "name": "HORO Chrome",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "horo_show_launch_countdown",
+        "label": "Show launch countdown",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "horo_show_order_placed_hint",
+        "label": "Show order placed hint",
+        "default": true
+      },
+      {
+        "type": "link_list",
+        "id": "horo_drawer_menu",
+        "label": "Mobile drawer menu"
+      },
+      {
+        "type": "select",
+        "id": "horo_locale_toggle_mode",
+        "label": "Locale toggle mode",
+        "options": [
+          {
+            "value": "auto",
+            "label": "Auto"
+          },
+          {
+            "value": "native",
+            "label": "Native form"
+          },
+          {
+            "value": "ui_only",
+            "label": "UI only"
+          }
+        ],
+        "default": "auto"
+      }
+    ]
   }
 ]

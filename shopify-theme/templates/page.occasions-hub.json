@@ -5,7 +5,7 @@
       "settings": {
         "heading": "",
         "heading_size": "h0",
-        "subheading": "Dress for the moment",
+        "subheading": "Find the design that fits the moment.",
         "columns_desktop": 3,
         "columns_mobile": "2",
         "color_scheme": "scheme-1",
@@ -17,7 +17,7 @@
       "type": "occasions-editorial-guide",
       "settings": {
         "eyebrow": "Shop by occasion",
-        "heading": "Choose for the moment",
+        "heading": "Give something that means something",
         "text": "Some designs work better for a specific day, person, or memory.",
         "cta_label": "Shop all products",
         "cta_link": "/collections/all",

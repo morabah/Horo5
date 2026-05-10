@@ -46,15 +46,15 @@
       <div class="gift-wrap__wrapper">
         {%- if gift_wrap_product != blank and gift_wrap_variant != blank -%}
           {%- liquid
-            assign _label = settings.horo_gift_wrap_label | default: 'Add gift wrap'
-            assign _price = settings.horo_gift_wrap_price_hint | default: ''
+            assign gift_wrap_label = settings.horo_gift_wrap_label | default: 'Add gift wrap'
+            assign gift_wrap_price = settings.horo_gift_wrap_price_hint | default: ''
           -%}
           {%- render 'gift-wrap-upsell',
             gift_wrap_product: gift_wrap_product,
             gift_wrap_variant: gift_wrap_variant,
             in_cart: gift_wrap_in_cart,
-            label: _label,
-            price_hint: _price,
+            label: gift_wrap_label,
+            price_hint: gift_wrap_price,
             section_id: section.id,
             context: 'cart',
             show_preview: section.settings.show_preview_image

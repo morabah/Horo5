@@ -1,5 +1,5 @@
 {
-  "name": "t:sections.header.name",
+  "name": "HORO Header Group",
   "type": "header",
   "sections": {
     "announcement-bar": {
@@ -8,7 +8,7 @@
         "announcement-bar-0": {
           "type": "announcement",
           "settings": {
-            "text": "Welcome to our store",
+            "text": "Artist-made designs · Printed in Egypt · COD available",
             "text_alignment": "center",
             "color_scheme": "scheme-1",
             "link": ""
@@ -19,19 +19,23 @@
         "announcement-bar-0"
       ]
     },
-    "header": {
-      "type": "header",
+    "horo-launch-countdown": {
+      "type": "horo-launch-countdown",
+      "settings": {
+        "color_scheme": "scheme-3",
+        "padding_top": 12,
+        "padding_bottom": 12
+      }
+    },
+    "horo-header": {
+      "type": "horo-header",
       "settings": {
         "color_scheme": "scheme-1",
-        "logo_position": "middle-left",
         "menu": "main-menu",
-        "menu_type_desktop": "dropdown",
         "sticky_header_type": "on-scroll-up",
         "show_line_separator": true,
-        "enable_country_selector": true,
-        "enable_language_selector": true,
-        "mobile_logo_position": "center",
-        "margin_bottom": 0,
+        "show_locale_toggle": true,
+        "show_wishlist": true,
         "padding_top": 20,
         "padding_bottom": 20
       }
@@ -39,6 +43,7 @@
   },
   "order": [
     "announcement-bar",
-    "header"
+    "horo-launch-countdown",
+    "horo-header"
   ]
 }

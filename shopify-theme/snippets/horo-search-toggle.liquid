@@ -1,0 +1,79 @@
+{%- comment -%}
+  HORO Search Toggle — collapsible expanding search form.
+
+  Mirrors Nav.tsx desktop search (collapsed icon → expanded input with submit/clear).
+  On mobile, redirects to /search?focus=1 (mirrors Nav.tsx:544).
+
+  Usage:
+    {% render 'horo-search-toggle', input_id: 'horo-search-desktop' %}
+
+  Params:
+    - input_id : unique ID for the search input (default: 'horo-search-desktop')
+    - mobile_redirect : boolean (default: true on mobile, false on desktop)
+{%- endcomment -%}
+
+{%- liquid
+  assign search_id = input_id | default: 'horo-search-desktop'
+  assign search_placeholder = 'horo.nav.search_placeholder' | t | default: 'Search designs, feelings, or occasions...'
+  assign search_label = 'horo.nav.search_open' | t | default: 'Open search'
+  assign search_clear = 'horo.nav.search_clear' | t | default: 'Clear search'
+  assign search_submit = 'horo.nav.search_submit' | t | default: 'Search'
+-%}
+
+<div class="horo-search" data-horo-search>
+  <button
+    type="button"
+    class="horo-search__trigger"
+    aria-label="{{ search_label }}"
+    data-horo-search-trigger
+    aria-expanded="false"
+    aria-controls="{{ search_id }}-panel"
+  >
+    <span class="horo-header__icon-inner" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </span>
+  </button>
+
+  <form
+    id="{{ search_id }}-panel"
+    class="horo-search__form"
+    action="{{ routes.search_url }}"
+    method="get"
+    role="search"
+    hidden
+  >
+    <label for="{{ search_id }}" class="visually-hidden">{{ search_placeholder }}</label>
+    <input
+      id="{{ search_id }}"
+      class="horo-search__input"
+      type="search"
+      name="q"
+      placeholder="{{ search_placeholder }}"
+      value="{{ search.terms | escape }}"
+      autocomplete="off"
+      aria-label="{{ search_placeholder }}"
+    >
+    <button
+      type="button"
+      class="horo-search__clear"
+      aria-label="{{ search_clear }}"
+      data-horo-search-clear
+      hidden
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <button
+      type="submit"
+      class="horo-search__submit"
+      aria-label="{{ search_submit }}"
+    >
+      <span class="horo-label">{{ search_submit }}</span>
+    </button>
+  </form>
+</div>

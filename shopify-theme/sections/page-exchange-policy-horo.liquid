@@ -25,9 +25,17 @@
 
 <div class="color-{{ section.settings.color_scheme }} gradient">
   <div class="page-width page-width--narrow section-{{ section.id }}-padding">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="horo-page__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+    {%- endif -%}
+
     <h1 class="main-page-title page-title {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
       {{ section.settings.heading | escape }}
     </h1>
+
+    {%- if section.settings.intro != blank -%}
+      <p class="horo-page__intro">{{ section.settings.intro | escape }}</p>
+    {%- endif -%}
 
     {%- if visible_count > 0 -%}
       <ul class="horo-policy__list" role="list">
@@ -58,9 +66,21 @@
   "settings": [
     {
       "type": "text",
+      "id": "eyebrow",
+      "default": "Support",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
       "id": "heading",
-      "default": "Exchange policy",
+      "default": "Exchange Policy",
       "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "intro",
+      "default": "This page explains how HORO handles exchanges so sizing decisions feel lower risk before checkout.",
+      "label": "Intro text"
     },
     {
       "type": "select",

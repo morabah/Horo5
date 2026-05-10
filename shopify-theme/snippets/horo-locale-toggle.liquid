@@ -1,0 +1,71 @@
+{%- comment -%}
+  HORO Locale Toggle — Hybrid EN / AR pill.
+
+  Strategy (per plan §1.3):
+    - When localization.available_languages.size > 1 → native localization-form with styled pills.
+    - Else → UI-only client-side pill backed by localStorage + ?uiLocale=.
+
+  Mirrors Nav.tsx LocaleToggle component.
+  Usage:
+    {% render 'horo-locale-toggle' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign has_multiple_languages = false
+  if localization.available_languages.size > 1
+    assign has_multiple_languages = true
+  endif
+
+  assign current_locale = request.locale.iso_code
+  assign is_ar = false
+  if current_locale == 'ar'
+    assign is_ar = true
+  endif
+
+  assign english_label = 'horo.shell.english_short' | t | default: 'EN'
+  assign arabic_label = 'horo.shell.arabic_short' | t | default: 'AR'
+  assign lang_label = 'horo.shell.language' | t | default: 'Language'
+-%}
+
+<div class="horo-locale-toggle" aria-label="{{ lang_label }}">
+  {%- if has_multiple_languages -%}
+    {%- comment -%} Native Shopify Markets form with styled pills {%- endcomment -%}
+    <localization-form data-prevent-hide>
+      {%- form 'localization', id: 'HoroLocaleForm', class: 'horo-locale-form' -%}
+        <div class="horo-locale-pills" role="group" aria-label="{{ lang_label }}">
+          {%- for locale_option in localization.available_languages -%}
+            <button
+              type="submit"
+              name="locale_code"
+              value="{{ locale_option.iso_code }}"
+              class="horo-locale-pill{% if locale_option.iso_code == current_locale %} horo-locale-pill--active{% endif %}"
+              aria-pressed="{% if locale_option.iso_code == current_locale %}true{% else %}false{% endif %}"
+            >
+              {{ locale_option.iso_code | upcase }}
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endform -%}
+    </localization-form>
+  {%- else -%}
+    {%- comment -%} UI-only pill — client-side toggle via JS {%- endcomment -%}
+    <div class="horo-locale-pills" role="group" aria-label="{{ lang_label }}">
+      <button
+        type="button"
+        class="horo-locale-pill{% unless is_ar %} horo-locale-pill--active{% endunless %}"
+        data-horo-locale="en"
+        aria-pressed="{% unless is_ar %}true{% else %}false{% endunless %}"
+      >
+        {{ english_label }}
+      </button>
+      <button
+        type="button"
+        class="horo-locale-pill{% if is_ar %} horo-locale-pill--active{% endif %}"
+        data-horo-locale="ar"
+        aria-pressed="{% if is_ar %}true{% else %}false{% endif %}"
+      >
+        {{ arabic_label }}
+      </button>
+    </div>
+  {%- endif -%}
+</div>

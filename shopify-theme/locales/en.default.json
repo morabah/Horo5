@@ -263,7 +263,10 @@
     },
     "404": {
       "title": "Page not found",
-      "subtext": "404"
+      "subtext": "404",
+      "body": "That route doesn't exist yet.",
+      "back_home": "Back home",
+      "search": "Search"
     }
   },
   "sections": {
@@ -541,12 +544,20 @@
       "about": "About",
       "size_guide": "Size Guide",
       "faq": "FAQ",
-      "exchange": "Exchange Policy"
+      "exchange": "Exchange Policy",
+      "searchPlaceholder": "Search designs, feelings, or occasions...",
+      "searchSubmit": "Search",
+      "searchClear": "Clear search",
+      "searchOpen": "Open search",
+      "search_placeholder": "Search designs, feelings, or occasions...",
+      "search_submit": "Search",
+      "search_clear": "Clear search",
+      "search_open": "Open search"
     },
     "home_hero": {
-      "title": "Wear What You Mean",
-      "subtitle": "Original digital artwork, turned into identity-led t-shirts",
-      "cta": "Shop by Feeling"
+      "title": "Wear What You Feel",
+      "subtitle": "Artist-made tees · Printed in Egypt · COD",
+      "cta": "Shop the Founding Drop"
     },
     "trust_ribbon": {
       "artist_made": "Artist-made design",
@@ -688,17 +699,49 @@
       "view_piece": "View piece",
       "add_to_cart": "Add to cart",
       "sold_out": "Sold out",
-      "select_size": "Select size"
+      "select_size": "Select size",
+      "addBtnCTA": "Add to Bag",
+      "shippingLine": "Express shipping · 14-day hassle-free returns · Secure checkout",
+      "sizeGuideLabel": "Size guide",
+      "selectSizePrompt": "Choose Size",
+      "storyCardHeading": "For the one who…",
+      "illustratedByLabel": "Illustrated by",
+      "trustReturnsLine": "14-day hassle-free returns",
+      "accordionProductDetails": "Product Details & Fit",
+      "accordionDesignStory": "The Design Story",
+      "accordionShipping": "Shipping & Returns"
     },
     "cart": {
       "trust_explainer_heading": "What to expect",
       "free_shipping_progress_before": "Add {{ amount }} more to reach the free-shipping threshold.",
       "free_shipping_progress_after": "Free shipping reached",
-      "gift_wrap_label": "Gift wrap",
+      "gift_wrap_label": "Gift wrap + story card",
       "savings_summary": "You saved {{ amount }}",
-      "empty_state": "Your cart is empty",
+      "empty_state": "Your bag is empty. Explore feelings and add a design in your size when you're ready.",
       "continue_shopping": "Continue shopping",
-      "checkout": "Checkout"
+      "checkout": "Proceed to checkout",
+      "heading": "Your cart",
+      "orderSummaryHeading": "Order summary",
+      "shippingLabel": "Est. shipping",
+      "shippingConfirmedAtCheckout": "Confirmed at checkout",
+      "totalLabel": "Est. order total",
+      "subtotalLabel": "Subtotal",
+      "quantityLabel": "Qty",
+      "removeLabel": "Remove",
+      "itemLabelSingular": "item",
+      "itemLabelPlural": "items",
+      "giftUpsellHeading": "Make it a gift they'll keep",
+      "giftUpsellIncludedHeading": "Gift add-ons",
+      "giftUpsellBody": "Add artist story card + gift wrap — so they know who made it and why it matters.",
+      "giftUpsellIncludedBody": "Artist story card + gift wrap is included in your estimate.",
+      "giftUpsellCta": "Add Gift Wrap +200",
+      "giftUpsellDecline": "No thanks",
+      "giftUpsellRemove": "Remove gift wrap",
+      "bundleUpsellHeading": "Add a 3rd, save 100 EGP",
+      "bundleUpsellBody": "Pick one more design by a different artist and get 100 EGP off.",
+      "bundleUpsellCta": "Browse designs →",
+      "estimatedDeliveryLabel": "Est. delivery (standard)",
+      "estimatedDeliveryCheckoutNote": "Express options and exact dates are confirmed at checkout."
     },
     "quick_view": {
       "title": "Quick view",
@@ -713,6 +756,13 @@
       "popular_searches": "Popular searches"
     },
     "home": {
+      "hero_promise_line": "Artist-made tees · Printed in Egypt · COD",
+      "hero_primary_cta": "Shop the Founding Drop",
+      "hero_secondary_cta": "Browse by feeling",
+      "plan_eyebrow": "Simple plan",
+      "plan_title": "How it works",
+      "feelings_title": "Shop by Feeling",
+      "gift_headline": "Meaningful pieces for meaningful moments",
       "art_by_label": "Art by",
       "why_hor": "Why HORO",
       "why_hor_block_local_artists_title": "Real Artists, Real Credit",
@@ -770,7 +820,50 @@
       "faq_intro": "Quick answers for first orders, delivery, payment, exchanges, and support.",
       "order_confirmation_title": "Order confirmed",
       "order_confirmation_body": "Your order is being prepared. We'll update you when it ships.",
-      "order_confirmation_cta": "Continue shopping"
+      "order_confirmation_cta": "Continue shopping",
+      "privacy_title": "Privacy Policy",
+      "privacy_intro": "This summary explains what information HORO uses to run the storefront and support each order.",
+      "terms_title": "Terms of Service",
+      "terms_intro": "These terms set the basic rules for browsing, ordering, and using HORO's storefront."
+    },
+    "shell": {
+      "home": "Home",
+      "shopAll": "Shop All",
+      "shopAllIntro": "Our launch collection — original art by Egyptian illustrators, printed in Egypt.",
+      "shopByFeeling": "Feelings",
+      "shopByMoment": "Occasions",
+      "about": "About",
+      "search": "Search",
+      "cart": "Cart",
+      "menu": "Menu",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "shopHeading": "Shop",
+      "helpHeading": "Help",
+      "aboutHeading": "About",
+      "contactHeading": "Contact",
+      "contactWhatsapp": "Contact / WhatsApp",
+      "deliveryReturns": "Delivery & returns",
+      "sizeGuide": "Size guide",
+      "faq": "FAQ",
+      "privacyPolicy": "Privacy policy",
+      "termsOfService": "Terms of service",
+      "language": "Language",
+      "englishShort": "EN",
+      "arabicShort": "AR",
+      "orderPlacedHint": "Order placed — see your confirmation page.",
+      "orderPlacedViewReceipt": "View receipt",
+      "orderPlacedDismiss": "Dismiss",
+      "items_in_cart": "items",
+      "open_menu": "Open menu",
+      "close_menu": "Close menu",
+      "english_short": "EN",
+      "arabic_short": "AR",
+      "order_placed_hint": "Order placed — see your confirmation page.",
+      "order_placed_view_receipt": "View receipt",
+      "order_placed_dismiss": "Dismiss",
+      "drawer_navigation": "Menu",
+      "primary_navigation": "Main menu"
     }
   }
 }

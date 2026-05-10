@@ -1,0 +1,67 @@
+{%- comment -%}
+  HORO Order Placed Hint — mint-frost banner above header.
+
+  Mirrors Nav.tsx:496-523 (orderPlacedHint + orderPlacedViewReceipt + orderPlacedDismiss).
+  Liquid renders the DOM hidden by default; inline JS reveals it client-side
+  when localStorage['horo_placed_order_id'] is present.
+
+  Usage:
+    {% render 'horo-order-placed-hint' %}
+{%- endcomment -%}
+
+{%- liquid
+  assign hint_text = 'horo.shell.order_placed_hint' | t | default: 'Order placed — see your confirmation page.'
+  assign view_receipt = 'horo.shell.order_placed_view_receipt' | t | default: 'View receipt'
+  assign dismiss_label = 'horo.shell.order_placed_dismiss' | t | default: 'Dismiss'
+-%}
+
+<div
+  id="horo-order-placed-hint"
+  class="horo-order-placed-hint"
+  role="status"
+  hidden
+  data-horo-order-hint
+>
+  <div class="horo-order-placed-hint__inner page-width">
+    <p class="horo-order-placed-hint__text">{{ hint_text }}</p>
+    <div class="horo-order-placed-hint__actions">
+      <a
+        href="{{ routes.root_url }}checkout/success"
+        class="horo-order-placed-hint__btn"
+        data-horo-order-hint-receipt
+      >
+        {{ view_receipt }}
+      </a>
+      <button
+        type="button"
+        class="horo-order-placed-hint__dismiss"
+        data-horo-order-hint-dismiss
+      >
+        {{ dismiss_label }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+  try {
+    var id = localStorage.getItem('horo_placed_order_id');
+    if (!id) return;
+    var el = document.getElementById('horo-order-placed-hint');
+    if (!el) return;
+    var receiptBtn = el.querySelector('[data-horo-order-hint-receipt]');
+    if (receiptBtn) {
+      receiptBtn.href = receiptBtn.href + '?order_id=' + encodeURIComponent(id);
+    }
+    el.hidden = false;
+    el.querySelector('[data-horo-order-hint-dismiss]').addEventListener('click', function() {
+      localStorage.removeItem('horo_placed_order_id');
+      el.hidden = true;
+    });
+  } catch (e) {
+    // localStorage may be unavailable in strict privacy mode
+  }
+})();
+</script>

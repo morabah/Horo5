@@ -49,8 +49,8 @@
         "collapsible-row-0": {
           "type": "collapsible_tab",
           "settings": {
-            "heading": "Materials",
-            "icon": "leather",
+            "heading": "Product Details & Fit",
+            "icon": "ruler",
             "content": "",
             "page": ""
           }
@@ -58,8 +58,8 @@
         "collapsible-row-1": {
           "type": "collapsible_tab",
           "settings": {
-            "heading": "Shipping & delivery",
-            "icon": "truck",
+            "heading": "The Design Story",
+            "icon": "heart",
             "content": "",
             "page": ""
           }
@@ -67,8 +67,8 @@
         "collapsible-row-2": {
           "type": "collapsible_tab",
           "settings": {
-            "heading": "Dimensions",
-            "icon": "ruler",
+            "heading": "Shipping & Returns",
+            "icon": "truck",
             "content": "",
             "page": ""
           }
@@ -76,8 +76,8 @@
         "collapsible-row-3": {
           "type": "collapsible_tab",
           "settings": {
-            "heading": "Care Instructions",
-            "icon": "heart",
+            "heading": "Size guide",
+            "icon": "ruler",
             "content": "",
             "page": ""
           }
@@ -116,20 +116,10 @@
         "padding_bottom": 12
       }
     },
-    "product_proof_strip": {
-      "type": "product-proof-strip",
-      "settings": {
-        "heading": "The details",
-        "heading_size": "h2",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
     "product_story": {
       "type": "product-story",
       "settings": {
-        "heading": "The story behind this piece",
+        "heading": "For the one who…",
         "heading_size": "h1",
         "description_label": "Full story",
         "story_description_open": false,
@@ -141,7 +131,7 @@
     "product_artist_card": {
       "type": "product-artist-card",
       "settings": {
-        "heading": "About the artist",
+        "heading": "Illustrated by",
         "heading_size": "h1",
         "color_scheme": "scheme-1",
         "padding_top": 36,
@@ -158,58 +148,33 @@
         "show_card_1": true,
         "card_1_icon": "cash",
         "card_1_title": "Cash on Delivery",
-        "card_1_body": "Available at checkout",
+        "card_1_body": "Available when shown at checkout",
         "show_card_2": true,
         "card_2_icon": "bank",
         "card_2_title": "Bank Transfer / Instapay",
         "card_2_body": "Manual confirmation may be required",
         "show_card_3": true,
         "card_3_icon": "exchange",
-        "card_3_title": "14-Day Exchange — Terms Apply",
+        "card_3_title": "14-day exchange",
         "card_3_body": "See policy for details",
         "show_card_4": true,
         "card_4_icon": "delivery",
         "card_4_title": "Delivery",
-        "card_4_body": "Delivery window depends on your area",
-        "show_card_5": false,
+        "card_4_body": "Depends on your area — confirm at checkout",
+        "show_card_5": true,
         "card_5_icon": "support",
-        "card_5_title": "WhatsApp Support",
+        "card_5_title": "WhatsApp support",
         "card_5_body": "Contact us for questions",
         "padding_top": 36,
         "padding_bottom": 36
-      }
-    },
-    "horo_delivery_estimate": {
-      "type": "horo-delivery-estimate",
-      "settings": {
-        "show_delivery_estimate": true,
-        "heading": "Estimated delivery",
-        "standard_min_days": 3,
-        "standard_max_days": 7,
-        "express_min_days": 2,
-        "express_max_days": 4,
-        "text": "Delivery time depends on your area. You will confirm available options at checkout.",
-        "show_exact_date_range": false,
-        "color_scheme": "scheme-1",
-        "padding_top": 24,
-        "padding_bottom": 24
       }
     },
     "product_size_guide": {
       "type": "product-size-guide",
       "settings": {
         "heading": "Size guide",
-        "heading_size": "h1",
+        "heading_size": "h2",
         "disclaimer": "Measurements may vary slightly depending on fabric and printing.",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "product_gift_wrap_upsell": {
-      "type": "product-gift-wrap-upsell",
-      "settings": {
-        "show_preview_image": true,
         "color_scheme": "scheme-1",
         "padding_top": 36,
         "padding_bottom": 36
@@ -221,16 +186,16 @@
         "color_scheme": "scheme-1",
         "show_badge_1": true,
         "badge_1_icon": "cotton",
-        "badge_1_label": "Premium cotton",
+        "badge_1_label": "Artist-made design",
         "show_badge_2": true,
         "badge_2_icon": "print",
         "badge_2_label": "Printed in Egypt",
         "show_badge_3": true,
         "badge_3_icon": "cash",
-        "badge_3_label": "Cash on Delivery available at checkout",
+        "badge_3_label": "COD available",
         "show_badge_4": true,
         "badge_4_icon": "exchange",
-        "badge_4_label": "14-day exchange \u2014 see policy",
+        "badge_4_label": "14-day exchange",
         "show_badge_5": true,
         "badge_5_icon": "chat",
         "badge_5_label": "WhatsApp support",
@@ -238,92 +203,14 @@
         "padding_bottom": 24
       }
     },
-    "image-with-text": {
-      "type": "image-with-text",
-      "blocks": {
-        "image-with-text-0": {
-          "type": "heading",
-          "settings": {
-            "heading": "Made to say something",
-            "heading_size": "h1"
-          }
-        },
-        "image-with-text-1": {
-          "type": "text",
-          "settings": {
-            "text": "<p>HORO pieces begin with a feeling, then become artwork you can wear.</p>",
-            "text_style": "body"
-          }
-        }
-      },
-      "block_order": [
-        "image-with-text-0",
-        "image-with-text-1"
-      ],
-      "settings": {
-        "height": "small",
-        "desktop_image_width": "medium",
-        "layout": "text_first",
-        "desktop_content_position": "top",
-        "desktop_content_alignment": "left",
-        "content_layout": "no-overlap",
-        "color_scheme": "scheme-2",
-        "mobile_content_alignment": "left",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "multicolumn": {
-      "type": "multicolumn",
-      "blocks": {
-        "column-0": {
-          "type": "column",
-          "settings": {
-            "title": "Printed locally",
-            "text": "<p>Produced in Egypt with careful print handling.</p>",
-            "link_label": "",
-            "link": ""
-          }
-        },
-        "column-1": {
-          "type": "column",
-          "settings": {
-            "title": "Size support",
-            "text": "<p>Check the size guide before ordering; exchange terms apply.</p>",
-            "link_label": "",
-            "link": ""
-          }
-        }
-      },
-      "block_order": [
-        "column-0",
-        "column-1"
-      ],
-      "settings": {
-        "title": "",
-        "heading_size": "h1",
-        "image_width": "full",
-        "image_ratio": "adapt",
-        "columns_desktop": 2,
-        "column_alignment": "left",
-        "background_style": "none",
-        "button_label": "",
-        "button_link": "",
-        "swipe_on_mobile": false,
-        "color_scheme": "scheme-1",
-        "columns_mobile": "1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
     "related-products": {
       "type": "related-products",
       "settings": {
-        "heading": "More pieces that fit",
+        "heading": "More from this feeling",
         "heading_size": "h2",
         "columns_desktop": 4,
         "color_scheme": "scheme-1",
-        "image_ratio": "square",
+        "image_ratio": "adapt",
         "show_secondary_image": true,
         "show_vendor": false,
         "show_rating": false,
@@ -335,20 +222,10 @@
     "product_pair_with": {
       "type": "product-pair-with",
       "settings": {
-        "heading": "Style it with",
+        "heading": "Pairing",
         "include_current_product": false,
         "preselect_items": true,
         "redirect_to_cart": false,
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "horo_seen_on_you": {
-      "type": "horo-seen-on-you",
-      "settings": {
-        "heading": "Seen on you",
-        "heading_size": "h1",
         "color_scheme": "scheme-1",
         "padding_top": 36,
         "padding_bottom": 36
@@ -373,27 +250,10 @@
         "padding_bottom": 36
       }
     },
-    "product_purchase_context": {
-      "type": "product-purchase-context",
-      "settings": {
-        "color_scheme": "scheme-1",
-        "show_default_trust_chips": true,
-        "padding_top": 20,
-        "padding_bottom": 20
-      }
-    },
-    "product_promo_countdown": {
-      "type": "product-promo-countdown",
-      "settings": {
-        "color_scheme": "scheme-1",
-        "padding_top": 16,
-        "padding_bottom": 16
-      }
-    },
     "product_details_accordions": {
       "type": "product-details-accordions",
       "settings": {
-        "heading": "Product details",
+        "heading": "Product Details & Fit",
         "heading_size": "h2",
         "color_scheme": "scheme-1",
         "padding_top": 36,
@@ -410,28 +270,87 @@
         "padding_top": 36,
         "padding_bottom": 36
       }
+    },
+    "horo_breadcrumb": {
+      "type": "horo-breadcrumb",
+      "settings": {}
+    },
+    "horo_launch_countdown": {
+      "type": "horo-launch-countdown",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "horo_trust_ribbon": {
+      "type": "horo-trust-ribbon",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "badge_1": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "artist",
+            "label": "Artist-made",
+            "subtext": ""
+          }
+        },
+        "badge_2": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "print",
+            "label": "Printed in Egypt",
+            "subtext": ""
+          }
+        },
+        "badge_3": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "exchange",
+            "label": "14-day exchange",
+            "subtext": ""
+          }
+        }
+      },
+      "block_order": [
+        "badge_1",
+        "badge_2",
+        "badge_3"
+      ]
+    },
+    "horo_share_your_fit": {
+      "type": "horo-share-your-fit",
+      "settings": {
+        "heading": "Share your fit",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
+    "horo_breadcrumb",
+    "horo_launch_countdown",
     "horo_product_data",
     "main",
-    "product_proof_strip",
-    "product_purchase_context",
-    "product_promo_countdown",
+    "product_trust_strip",
+    "product_details_accordions",
     "product_story",
     "product_artist_card",
-    "product_details_accordions",
-    "product_delivery_payment",
-    "horo_delivery_estimate",
     "product_size_guide",
-    "product_gift_wrap_upsell",
-    "product_trust_strip",
-    "image-with-text",
-    "multicolumn",
-    "related-products",
+    "product_delivery_payment",
     "product_pair_with",
-    "horo_seen_on_you",
+    "horo_recently_viewed",
+    "related-products",
     "horo_cross_sell",
-    "horo_recently_viewed"
+    "horo_trust_ribbon",
+    "horo_share_your_fit"
   ]
 }

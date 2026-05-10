@@ -1,0 +1,298 @@
+{{ 'component-horo-header.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .horo-header {
+    padding-top: {{ section.settings.padding_top | times: 0.5 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.5 | round: 0 }}px;
+  }
+  @media screen and (min-width: 750px) {
+    .horo-header {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  assign has_drawer = true
+  if section.settings.drawer_menu != blank
+    assign drawer_menu_linklist = section.settings.drawer_menu
+  else
+    assign drawer_menu_linklist = section.settings.menu
+  endif
+-%}
+
+<sticky-header
+  data-sticky-type="{{ section.settings.sticky_header_type }}"
+  class="section-header horo-header-wrapper{% if section.settings.show_line_separator %} horo-header-wrapper--border{% endif %}"
+>
+  <header
+    class="horo-header color-{{ section.settings.color_scheme }} gradient"
+    role="banner"
+  >
+    {%- comment -%} Desktop row {%- endcomment -%}
+    <div class="horo-header__desktop page-width">
+      <a
+        href="{{ routes.root_url }}"
+        class="horo-header__logo"
+        aria-label="{{ shop.name }}"
+      >
+        {% render 'horo-brand-logo', variant: 'dark' %}
+      </a>
+
+      {% render 'horo-nav-links',
+        context: 'primary',
+        menu: section.settings.menu,
+        active_path: request.path
+      %}
+
+      <div class="horo-header__search">
+        {% render 'horo-search-toggle' %}
+      </div>
+
+      <div class="horo-header__actions">
+        {%- if section.settings.show_locale_toggle -%}
+          <div class="horo-header__locale desktop-only">
+            {% render 'horo-locale-toggle' %}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.show_wishlist -%}
+          {% render 'horo-header-wishlist' %}
+        {%- endif -%}
+
+        {% render 'horo-cart-icon' %}
+      </div>
+    </div>
+
+    {%- comment -%} Mobile row {%- endcomment -%}
+    <div class="horo-header__mobile page-width">
+      {% render 'horo-mobile-drawer',
+        drawer_menu: drawer_menu_linklist,
+        active_path: request.path
+      %}
+
+      <a
+        href="{{ routes.root_url }}"
+        class="horo-header__logo horo-header__logo--center"
+        aria-label="{{ shop.name }}"
+      >
+        {% render 'horo-brand-logo', variant: 'dark' %}
+      </a>
+
+      <div class="horo-header__actions">
+        <a
+          href="{{ routes.search_url }}"
+          class="horo-header__icon"
+          aria-label="{{ 'horo.nav.search_open' | t | default: 'Open search' }}"
+        >
+          <span class="horo-header__icon-inner" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+        </a>
+
+        {%- if section.settings.show_wishlist -%}
+          {% render 'horo-header-wishlist' %}
+        {%- endif -%}
+
+        {% render 'horo-cart-icon' %}
+      </div>
+    </div>
+  </header>
+</sticky-header>
+
+<script src="{{ 'horo-header.js' | asset_url }}" defer></script>
+
+{% javascript %}
+  class StickyHeader extends HTMLElement {
+    constructor() {
+      super();
+    }
+
+    connectedCallback() {
+      this.header = document.querySelector('.section-header');
+      this.headerIsAlwaysSticky = this.getAttribute('data-sticky-type') === 'always' || this.getAttribute('data-sticky-type') === 'reduce-logo-size';
+      this.headerBounds = {};
+
+      this.setHeaderHeight();
+
+      window.matchMedia('(max-width: 990px)').addEventListener('change', this.setHeaderHeight.bind(this));
+
+      if (this.headerIsAlwaysSticky) {
+        this.header.classList.add('shopify-section-header-sticky');
+      }
+
+      this.currentScrollTop = 0;
+      this.preventReveal = false;
+
+      this.onScrollHandler = this.onScroll.bind(this);
+      this.hideHeaderOnScrollUp = () => this.preventReveal = true;
+
+      this.addEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
+      window.addEventListener('scroll', this.onScrollHandler, false);
+
+      this.createObserver();
+    }
+
+    setHeaderHeight() {
+      document.documentElement.style.setProperty('--header-height', `${this.header.offsetHeight}px`);
+    }
+
+    disconnectedCallback() {
+      this.removeEventListener('preventHeaderReveal', this.hideHeaderOnScrollUp);
+      window.removeEventListener('scroll', this.onScrollHandler);
+    }
+
+    createObserver() {
+      let observer = new IntersectionObserver((entries, observer) => {
+        this.headerBounds = entries[0].intersectionRect;
+        observer.disconnect();
+      });
+      observer.observe(this.header);
+    }
+
+    onScroll() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        this.header.classList.add('scrolled-past-header');
+        if (this.preventHide) return;
+        requestAnimationFrame(this.hide.bind(this));
+      } else if (scrollTop < this.currentScrollTop && scrollTop > this.headerBounds.bottom) {
+        this.header.classList.add('scrolled-past-header');
+        if (!this.preventReveal) {
+          requestAnimationFrame(this.reveal.bind(this));
+        } else {
+          window.clearTimeout(this.isScrolling);
+          this.isScrolling = setTimeout(() => {
+            this.preventReveal = false;
+          }, 66);
+          requestAnimationFrame(this.hide.bind(this));
+        }
+      } else if (scrollTop <= this.headerBounds.top) {
+        this.header.classList.remove('scrolled-past-header');
+        requestAnimationFrame(this.reset.bind(this));
+      }
+      this.currentScrollTop = scrollTop;
+    }
+
+    hide() {
+      if (this.headerIsAlwaysSticky) return;
+      this.header.classList.add('shopify-section-header-hidden', 'shopify-section-header-sticky');
+      this.closeMenuDisclosure();
+    }
+
+    reveal() {
+      if (this.headerIsAlwaysSticky) return;
+      this.header.classList.add('shopify-section-header-sticky', 'animate');
+      this.header.classList.remove('shopify-section-header-hidden');
+    }
+
+    reset() {
+      if (this.headerIsAlwaysSticky) return;
+      this.header.classList.remove('shopify-section-header-hidden', 'shopify-section-header-sticky', 'animate');
+    }
+
+    closeMenuDisclosure() {
+      this.disclosures = this.disclosures || this.header.querySelectorAll('details');
+      this.disclosures.forEach(disclosure => disclosure.open = false);
+    }
+  }
+
+  customElements.define('sticky-header', StickyHeader);
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "HORO Header",
+  "class": "section-header",
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "default": "main-menu",
+      "label": "Primary navigation menu"
+    },
+    {
+      "type": "link_list",
+      "id": "drawer_menu",
+      "label": "Drawer navigation menu (optional)",
+      "info": "If left empty, the primary menu is reused for the drawer."
+    },
+    {
+      "type": "select",
+      "id": "sticky_header_type",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "on-scroll-up",
+          "label": "On scroll up"
+        },
+        {
+          "value": "always",
+          "label": "Always"
+        },
+        {
+          "value": "reduce-logo-size",
+          "label": "Reduce logo size"
+        }
+      ],
+      "default": "on-scroll-up",
+      "label": "Sticky header type"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_line_separator",
+      "default": true,
+      "label": "Show line separator"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale_toggle",
+      "default": true,
+      "label": "Show language toggle"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wishlist",
+      "default": true,
+      "label": "Show wishlist icon"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 36,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 36,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 20
+    }
+  ]
+}
+{% endschema %}

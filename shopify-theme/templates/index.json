@@ -4,12 +4,14 @@
       "type": "home-hero",
       "settings": {
         "overlay_opacity": 30,
-        "heading": "Wear What You Mean",
+        "heading": "Wear What You Feel",
         "heading_size": "h0",
-        "subheading": "Original artwork printed on everyday T-shirts — made to carry a feeling, sign, or attitude.",
-        "button_label": "Shop by Feeling",
-        "button_link": "/pages/feelings",
+        "subheading": "Artist-made tees · Printed in Egypt · COD",
+        "button_label": "Shop the Founding Drop",
+        "button_link": "/collections/founding-drop",
         "button_style_secondary": false,
+        "button_label_secondary": "Browse by feeling",
+        "button_link_secondary": "/pages/feelings",
         "desktop_content_position": "center-center",
         "mobile_content_alignment": "center",
         "color_scheme": "scheme-3",
@@ -18,7 +20,7 @@
         "show_split_typography": false,
         "split_word_1": "Wear",
         "split_word_2": "What",
-        "split_word_3": "You Mean",
+        "split_word_3": "You Feel",
         "show_hero_ribbon": true,
         "hero_ribbon_text": "COD available · 14-day exchange — terms apply · Printed in Egypt",
         "hero_cta_position_mobile": "center",
@@ -27,166 +29,108 @@
         "padding_bottom": 0
       }
     },
-    "primary_routes": {
-      "type": "home-primary-routes",
+    "the_proof": {
+      "type": "horo-trust-ribbon",
+      "settings": {
+        "heading": "The Proof",
+        "heading_size": "h0",
+        "color_scheme": "scheme-2",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
       "blocks": {
-        "route_1": {
-          "type": "route",
+        "badge_1": {
+          "type": "trust_badge",
           "settings": {
-            "label": "Shop by Feeling",
-            "short_text": "Find the mood you wear",
-            "link": "/pages/feelings"
+            "show_badge": true,
+            "icon": "leaf",
+            "label": "Premium cotton",
+            "subtext": ""
           }
         },
-        "route_2": {
-          "type": "route",
+        "badge_2": {
+          "type": "trust_badge",
           "settings": {
-            "label": "Shop by Occasion",
-            "short_text": "Dress for the moment",
-            "link": "/pages/occasions"
+            "show_badge": true,
+            "icon": "artist",
+            "label": "Licensed artwork",
+            "subtext": ""
           }
         },
-        "route_3": {
-          "type": "route",
+        "badge_3": {
+          "type": "trust_badge",
           "settings": {
-            "label": "Gift by Meaning",
-            "short_text": "Say it without saying it",
-            "link": "/pages/gifts"
+            "show_badge": true,
+            "icon": "exchange",
+            "label": "14-day exchange",
+            "subtext": ""
+          }
+        },
+        "badge_4": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "cash",
+            "label": "COD available",
+            "subtext": ""
           }
         }
       },
       "block_order": [
-        "route_1",
-        "route_2",
-        "route_3"
-      ],
+        "badge_1",
+        "badge_2",
+        "badge_3",
+        "badge_4"
+      ]
+    },
+    "home_founding_drop": {
+      "type": "home-founding-drop",
       "settings": {
-        "heading": "Shop by",
+        "eyebrow": "FOUNDING DROP",
+        "heading": "The first HORO pieces",
         "heading_size": "h1",
         "subheading": "",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "feeling_expression": {
-      "type": "horo-feeling-expression",
-      "blocks": {
-        "card_1": {
-          "type": "card",
-          "settings": {
-            "label": "Mood",
-            "text": "Find the vibe that matches your day"
-          }
-        },
-        "card_2": {
-          "type": "card",
-          "settings": {
-            "label": "Sign",
-            "text": "Zodiac and symbol-led designs"
-          }
-        },
-        "card_3": {
-          "type": "card",
-          "settings": {
-            "label": "Attitude",
-            "text": "Wear what you mean without explaining"
-          }
-        }
-      },
-      "block_order": [
-        "card_1",
-        "card_2",
-        "card_3"
-      ],
-      "settings": {
-        "eyebrow": "Feel it. Wear it.",
-        "heading": "Start with a feeling",
-        "heading_size": "h0",
-        "subheading": "HORO starts with mood, sign, attitude, or moment — then turns it into artwork you can wear.",
-        "button_label": "Explore Feelings",
-        "button_link": "/pages/feelings",
-        "button_style_secondary": false,
-        "color_scheme": "scheme-1",
-        "padding_top": 48,
-        "padding_bottom": 48
-      }
-    },
-    "occasion_grid": {
-      "type": "home-occasion-grid",
-      "settings": {
-        "heading": "Shop by Occasion",
-        "heading_size": "h1",
-        "subheading": "Dress for the moment",
-        "columns_desktop": 3,
-        "columns_mobile": "2",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "story_plan": {
-      "type": "horo-story-plan",
-      "blocks": {
-        "step_1": {
-          "type": "step",
-          "settings": {
-            "icon": "search",
-            "title": "Find your feeling",
-            "body": "Start with a mood, sign, attitude, or moment."
-          }
-        },
-        "step_2": {
-          "type": "step",
-          "settings": {
-            "icon": "heart",
-            "title": "Pick your design",
-            "body": "Choose artwork that says it without explaining."
-          }
-        },
-        "step_3": {
-          "type": "step",
-          "settings": {
-            "icon": "package",
-            "title": "Wear it",
-            "body": "Your piece arrives ready to join your everyday rotation."
-          }
-        }
-      },
-      "block_order": [
-        "step_1",
-        "step_2",
-        "step_3"
-      ],
-      "settings": {
-        "eyebrow": "How HORO works",
-        "heading": "Start with a feeling. Choose the piece.",
-        "heading_size": "h1",
-        "subheading": "HORO helps you shop by mood, sign, attitude, or moment — not only by product type.",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "featured_collection": {
-      "type": "featured-collection",
-      "settings": {
-        "title": "Just Dropped",
-        "heading_size": "h2",
         "collection": "all",
-        "products_to_show": 8,
-        "columns_desktop": 4,
-        "color_scheme": "scheme-1",
-        "show_view_all": false,
-        "swipe_on_mobile": false,
+        "product_limit": 6,
+        "columns_desktop": 3,
         "image_ratio": "adapt",
         "show_secondary_image": true,
         "show_vendor": false,
         "show_rating": false,
-        "columns_mobile": "2",
-        "padding_top": 28,
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
         "padding_bottom": 36
       }
+    },
+    "horo_feeling_quiz": {
+      "type": "horo-feeling-quiz",
+      "settings": {
+        "heading": "What are you feeling?",
+        "subheading": "Answer a few questions and we'll match you to a collection.",
+        "heading_size": "h0",
+        "result_heading": "We found your feeling",
+        "result_cta": "Shop this feeling",
+        "color_scheme": "scheme-1",
+        "padding_top": 60,
+        "padding_bottom": 60
+      },
+      "blocks": {
+        "question_1": {
+          "type": "question",
+          "settings": {
+            "question": "Pick a vibe for today:",
+            "option_1_label": "Bold and loud",
+            "option_1_value": "emotions",
+            "option_2_label": "Quiet and reflective",
+            "option_2_value": "fiction",
+            "option_3_label": "Grounded and real",
+            "option_3_value": "career"
+          }
+        }
+      },
+      "block_order": [
+        "question_1"
+      ]
     },
     "feeling_grid": {
       "type": "home-feeling-grid",
@@ -201,49 +145,12 @@
         "padding_bottom": 36
       }
     },
-    "testimonials": {
-      "type": "horo-testimonials",
-      "blocks": {
-        "testimonial_1": {
-          "type": "testimonial",
-          "settings": {
-            "quote": "A design that feels personal without needing explanation.",
-            "name": "",
-            "city": "",
-            "label": "For self-expression"
-          }
-        },
-        "testimonial_2": {
-          "type": "testimonial",
-          "settings": {
-            "quote": "Different from the usual printed tees.",
-            "name": "",
-            "city": "",
-            "label": "For everyday identity"
-          }
-        },
-        "testimonial_3": {
-          "type": "testimonial",
-          "settings": {
-            "quote": "A gift idea with meaning, not just another item.",
-            "name": "",
-            "city": "",
-            "label": "For gifting"
-          }
-        }
-      },
-      "block_order": [
-        "testimonial_1",
-        "testimonial_2",
-        "testimonial_3"
-      ],
+    "latest_drop": {
+      "type": "home-drop-strip",
       "settings": {
-        "eyebrow": "What HORO is designed to feel like",
-        "heading": "Why the piece feels personal",
         "heading_size": "h1",
-        "show_sample_copy": true,
         "color_scheme": "scheme-1",
-        "padding_top": 36,
+        "padding_top": 28,
         "padding_bottom": 36
       }
     },
@@ -253,7 +160,7 @@
         "heading": {
           "type": "heading",
           "settings": {
-            "heading": "Gift by feeling",
+            "heading": "For the person on your mind",
             "heading_size": "h1"
           }
         },
@@ -266,7 +173,7 @@
         "button": {
           "type": "button",
           "settings": {
-            "button_label": "Explore Gifts",
+            "button_label": "Shop gift-ready pieces",
             "button_link": "/pages/gifts",
             "button_style_secondary": false
           }
@@ -285,95 +192,15 @@
         "padding_top": 40,
         "padding_bottom": 40
       }
-    },
-    "final_cta": {
-      "type": "horo-final-cta",
-      "settings": {
-        "eyebrow": "Find your piece",
-        "heading": "Find the piece that feels like you",
-        "heading_size": "h1",
-        "text": "Start with a feeling and move from there.",
-        "button_label": "Shop by Feeling",
-        "button_link": "/pages/feelings",
-        "color_scheme": "scheme-2",
-        "padding_top": 48,
-        "padding_bottom": 48
-      }
-    },
-    "horo_trust_ribbon": {
-      "type": "horo-trust-ribbon",
-      "settings": {
-        "color_scheme": "scheme-2",
-        "padding_top": 12,
-        "padding_bottom": 12
-      },
-      "blocks": {
-        "badge_1": {
-          "type": "trust_badge",
-          "settings": {
-            "show_badge": true,
-            "icon": "artist",
-            "label": "Original artist-made designs",
-            "subtext": ""
-          }
-        },
-        "badge_2": {
-          "type": "trust_badge",
-          "settings": {
-            "show_badge": true,
-            "icon": "print",
-            "label": "Printed locally in Egypt",
-            "subtext": ""
-          }
-        },
-        "badge_3": {
-          "type": "trust_badge",
-          "settings": {
-            "show_badge": true,
-            "icon": "cash",
-            "label": "Cash on delivery available",
-            "subtext": ""
-          }
-        },
-        "badge_4": {
-          "type": "trust_badge",
-          "settings": {
-            "show_badge": true,
-            "icon": "exchange",
-            "label": "14-day size exchange — terms apply",
-            "subtext": ""
-          }
-        },
-        "badge_5": {
-          "type": "trust_badge",
-          "settings": {
-            "show_badge": true,
-            "icon": "whatsapp",
-            "label": "WhatsApp support",
-            "subtext": ""
-          }
-        }
-      },
-      "block_order": [
-        "badge_1",
-        "badge_2",
-        "badge_3",
-        "badge_4",
-        "badge_5"
-      ]
     }
   },
   "order": [
     "home_hero",
-    "horo_trust_ribbon",
-    "primary_routes",
-    "feeling_expression",
-    "story_plan",
-    "featured_collection",
+    "the_proof",
+    "home_founding_drop",
+    "horo_feeling_quiz",
     "feeling_grid",
-    "occasion_grid",
-    "testimonials",
-    "gift_block",
-    "final_cta"
+    "latest_drop",
+    "gift_block"
   ]
 }

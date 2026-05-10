@@ -1,0 +1,31 @@
+{%- comment -%}
+  HORO Brand Logo — dual-line wordmark (HORO / هورو).
+
+  Mirrors web-next BrandLogo.tsx.
+  Usage:
+    {% render 'horo-brand-logo', variant: 'dark', class: 'my-class' %}
+    {% render 'horo-brand-logo', variant: 'light' %}
+
+  Params:
+    - variant : 'dark' | 'light'  (default: 'dark')
+    - class   : extra CSS classes (optional)
+{%- endcomment -%}
+
+{%- liquid
+  assign logo_variant = variant | default: 'dark'
+  if logo_variant == 'light'
+    assign latin_class = 'horo-wordmark--light'
+    assign arabic_class = 'horo-wordmark__ar--light'
+  else
+    assign latin_class = 'horo-wordmark--dark'
+    assign arabic_class = 'horo-wordmark__ar--dark'
+  endif
+-%}
+
+<span
+  class="horo-wordmark {{ class }}"
+  aria-label="{{ shop.name }}"
+>
+  <span class="horo-wordmark__latin {{ latin_class }}">HORO</span>
+  <span lang="ar" dir="rtl" class="horo-wordmark__ar {{ arabic_class }}">هورو</span>
+</span>

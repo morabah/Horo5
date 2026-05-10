@@ -1,0 +1,32 @@
+{%- comment -%}
+  HORO Cart Icon with count badge.
+
+  Mirrors Nav.tsx cart button (desktop + mobile share same markup).
+  Usage:
+    {% render 'horo-cart-icon' %}
+{%- endcomment -%}
+
+<a
+  href="{{ routes.cart_url }}"
+  class="horo-header__icon horo-header__icon--cart"
+  aria-label="{{ 'horo.shell.cart' | t | default: 'Cart' }}{% if cart.item_count > 0 %} ({{ cart.item_count }}){% endif %}"
+  id="horo-cart-icon-bubble"
+>
+  <span class="horo-header__icon-inner" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <path d="M16 10a4 4 0 0 1-8 0"></path>
+    </svg>
+  </span>
+  {%- if cart.item_count > 0 -%}
+    <span class="horo-cart-badge" aria-hidden="true">
+      {%- if cart.item_count < 100 -%}
+        {{ cart.item_count }}
+      {%- else -%}
+        99+
+      {%- endif -%}
+    </span>
+    <span class="visually-hidden">{{ cart.item_count }} {{ 'horo.shell.items_in_cart' | t | default: 'items' }}</span>
+  {%- endif -%}
+</a>

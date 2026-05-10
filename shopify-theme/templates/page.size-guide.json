@@ -3,8 +3,10 @@
     "size_guide": {
       "type": "page-size-guide",
       "settings": {
-        "heading": "T-Shirt Size Guide",
+        "eyebrow": "Fit help",
+        "heading": "Size Guide",
         "heading_size": "h1",
+        "intro": "Use these notes before choosing a tee size. Product pages remain the source of truth when a design has its own measurements.",
         "size_column_label": "Size",
         "chest_column_label": "Chest",
         "length_column_label": "Length",
@@ -75,6 +77,27 @@
             "shoulder": "50 cm",
             "sleeve": "24 cm"
           }
+        },
+        "section_how": {
+          "type": "body_section",
+          "settings": {
+            "title": "How to choose",
+            "body": "<p>Start with the fit label on the product card or product page, then compare the size chart before checkout.</p><p>If you are between sizes, choose based on how you want the tee to sit: closer for a cleaner fit, larger for a relaxed feel.</p>"
+          }
+        },
+        "section_check": {
+          "type": "body_section",
+          "settings": {
+            "title": "What to check",
+            "body": "<p>Chest width, body length, and sleeve length matter more than the letter size alone.</p><p>Use a tee you already like as a reference and compare flat measurements when they are shown.</p>"
+          }
+        },
+        "section_exchange": {
+          "type": "body_section",
+          "settings": {
+            "title": "Exchange support",
+            "body": "<p>HORO supports eligible size exchanges within 14 days of delivery when items are unworn, unwashed, and kept with original packaging.</p>"
+          }
         }
       },
       "block_order": [
@@ -83,7 +106,10 @@
         "m",
         "l",
         "xl",
-        "xxl"
+        "xxl",
+        "section_how",
+        "section_check",
+        "section_exchange"
       ]
     }
   },

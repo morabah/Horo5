@@ -3,7 +3,9 @@
     "exchange_horo": {
       "type": "page-exchange-policy-horo",
       "settings": {
-        "heading": "Exchange policy",
+        "eyebrow": "Support",
+        "heading": "Exchange Policy",
+        "intro": "This page explains how HORO handles exchanges so sizing decisions feel lower risk before checkout.",
         "heading_size": "h0",
         "color_scheme": "scheme-1",
         "padding_top": 36,
@@ -14,62 +16,68 @@
           "type": "policy_item",
           "settings": {
             "show": true,
-            "title": "Exchange window",
-            "body": "<p>You may request an exchange within 14 days of receiving your order. The request must be made before the 14-day window closes.</p>"
+            "title": "What this covers",
+            "body": "<p>We offer exchange support for sizing issues and eligible defects within 14 days of delivery.</p><p>Items should be unworn, unwashed, and returned with the original packaging so we can process the exchange quickly.</p>"
           }
         },
         "policy-1": {
           "type": "policy_item",
           "settings": {
             "show": true,
-            "title": "Product condition",
-            "body": "<p>Items must be unworn, unwashed, and in original packaging with all tags attached. We reserve the right to refuse exchanges for items that do not meet these conditions.</p>"
+            "title": "How exchange requests work",
+            "body": "<p>Start with your order number and the item you want to exchange. If a replacement size is available, we will confirm the next step before dispatch.</p><p>If the requested replacement is unavailable, we will help you choose another eligible design or review the order for the best available resolution.</p>"
           }
         },
         "policy-2": {
           "type": "policy_item",
           "settings": {
             "show": true,
-            "title": "Size exchange",
-            "body": "<p>If the size does not fit, you may exchange for a different size of the same product, subject to availability. If the requested size is out of stock, we will offer store credit or a replacement of equal value.</p>"
-          }
-        },
-        "policy-3": {
-          "type": "policy_item",
-          "settings": {
-            "show": true,
-            "title": "Defective item",
-            "body": "<p>If you receive a defective or damaged item, contact us within 48 hours of delivery with photos. We will arrange a replacement or exchange at no additional cost.</p>"
-          }
-        },
-        "policy-4": {
-          "type": "policy_item",
-          "settings": {
-            "show": true,
-            "title": "How to request an exchange",
-            "body": "<p>Contact us via WhatsApp or email with your order number and the reason for the exchange. We will guide you through the return process and confirm availability of the replacement item before proceeding.</p>"
-          }
-        },
-        "policy-5": {
-          "type": "policy_item",
-          "settings": {
-            "show": true,
-            "title": "Important notes",
-            "body": "<p>Exchange shipping costs may vary depending on the case. If the item is defective, contact us within 48 hours with photos so we can review and arrange the appropriate next step.</p>"
+            "title": "What is not eligible",
+            "body": "<p>Items that show signs of wear, washing, damage after delivery, or missing packaging may not qualify for exchange.</p><p>Gift-wrap add-ons, custom handling, and shipping fees are not exchangeable on their own.</p>"
           }
         }
       },
       "block_order": [
         "policy-0",
         "policy-1",
-        "policy-2",
-        "policy-3",
-        "policy-4",
-        "policy-5"
+        "policy-2"
+      ]
+    },
+    "trust_ribbon": {
+      "type": "horo-trust-ribbon",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "badge_1": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "cash",
+            "label": "COD available",
+            "subtext": ""
+          }
+        },
+        "badge_2": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "exchange",
+            "label": "14-day exchange",
+            "subtext": ""
+          }
+        }
+      },
+      "block_order": [
+        "badge_1",
+        "badge_2"
       ]
     }
   },
   "order": [
-    "exchange_horo"
+    "exchange_horo",
+    "trust_ribbon"
   ]
 }

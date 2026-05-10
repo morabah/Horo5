@@ -284,7 +284,88 @@
     {{ 'component-horo-motion.css' | asset_url | stylesheet_tag }}
     {{ 'component-horo-visual-system.css' | asset_url | stylesheet_tag }}
     {{ 'component-horo-breadcrumb.css' | asset_url | stylesheet_tag }}
+    {{ 'component-horo-header.css' | asset_url | stylesheet_tag }}
     {{ 'component-horo-footer-mantra.css' | asset_url | stylesheet_tag }}
+
+    <script src="{{ 'horo-ui-locale.js' | asset_url }}" defer="defer"></script>
+
+    {%- comment -%}HORO: inline UI locale dictionary for client-side EN/AR toggle{%- endcomment -%}
+    <script id="horo-ui-i18n" type="application/json">
+      {
+        "en": {
+          "shell": {
+            "home": "Home",
+            "shopAll": "Shop All",
+            "shopByFeeling": "Feelings",
+            "shopByMoment": "Occasions",
+            "about": "About",
+            "search": "Search",
+            "cart": "Cart",
+            "menu": "Menu",
+            "openMenu": "Open menu",
+            "closeMenu": "Close menu",
+            "shopHeading": "Shop",
+            "helpHeading": "Help",
+            "aboutHeading": "About",
+            "contactHeading": "Contact",
+            "contactWhatsapp": "Contact / WhatsApp",
+            "deliveryReturns": "Delivery & returns",
+            "sizeGuide": "Size guide",
+            "faq": "FAQ",
+            "privacyPolicy": "Privacy policy",
+            "termsOfService": "Terms of service",
+            "language": "Language",
+            "englishShort": "EN",
+            "arabicShort": "AR",
+            "orderPlacedHint": "Order placed — see your confirmation page.",
+            "orderPlacedViewReceipt": "View receipt",
+            "orderPlacedDismiss": "Dismiss"
+          },
+          "nav": {
+            "searchPlaceholder": "Search designs, feelings, or occasions...",
+            "searchSubmit": "Search",
+            "searchClear": "Clear search",
+            "searchOpen": "Open search"
+          }
+        },
+        "ar": {
+          "shell": {
+            "home": "الرئيسية",
+            "shopAll": "تسوّق الكل",
+            "shopByFeeling": "المشاعر",
+            "shopByMoment": "المناسبات",
+            "about": "عن HORO",
+            "search": "البحث",
+            "cart": "السلة",
+            "menu": "القائمة",
+            "openMenu": "فتح القائمة",
+            "closeMenu": "إغلاق القائمة",
+            "shopHeading": "التسوق",
+            "helpHeading": "المساعدة",
+            "aboutHeading": "عن HORO",
+            "contactHeading": "التواصل",
+            "contactWhatsapp": "التواصل / واتساب",
+            "deliveryReturns": "التوصيل والاستبدال",
+            "sizeGuide": "دليل المقاسات",
+            "faq": "الأسئلة الشائعة",
+            "privacyPolicy": "سياسة الخصوصية",
+            "termsOfService": "الشروط والأحكام",
+            "language": "اللغة",
+            "englishShort": "EN",
+            "arabicShort": "AR",
+            "orderPlacedHint": "تم الطلب — راجع صفحة التأكيد.",
+            "orderPlacedViewReceipt": "عرض الإيصال",
+            "orderPlacedDismiss": "إغلاق"
+          },
+          "nav": {
+            "searchPlaceholder": "ابحث عن تصاميم، مشاعر، أو مناسبات...",
+            "searchSubmit": "بحث",
+            "searchClear": "مسح البحث",
+            "searchOpen": "فتح البحث"
+          }
+        }
+      }
+    </script>
     {{ 'component-horo-search-recovery.css' | asset_url | stylesheet_tag }}
     {{ 'component-horo-account-surface.css' | asset_url | stylesheet_tag }}
     {{ 'component-horo-wishlist.css' | asset_url | stylesheet_tag }}
@@ -408,6 +489,7 @@
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
 
+    {%- render 'horo-order-placed-hint' -%}
     {% section 'horo-exit-intent' %}
     {%- render 'horo-quick-view-modal' -%}
     {%- render 'horo-whatsapp-float' -%}

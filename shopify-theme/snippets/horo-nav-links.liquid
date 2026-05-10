@@ -1,0 +1,122 @@
+{%- comment -%}
+  HORO Nav Links — single source of truth for primary + drawer navigation.
+
+  Reads from a Shopify navigation link list when present; otherwise falls back
+  to a hard-coded HORO route map that mirrors NAV_ROUTE from web-next.
+
+  Usage:
+    {% render 'horo-nav-links', context: 'primary', active_path: request.path %}
+    {% render 'horo-nav-links', context: 'drawer', active_path: request.path %}
+
+  Params:
+    - context  : 'primary' | 'drawer'
+    - menu     : link_list (optional — Shopify nav for primary)
+    - drawer_menu : link_list (optional — Shopify nav for drawer)
+    - active_path : string (request.path)
+{%- endcomment -%}
+
+{%- liquid
+  assign nav_active_path = active_path | default: request.path
+
+  if context == 'primary'
+    if menu != blank and menu.links.size > 0
+      assign nav_items = menu.links
+    else
+      assign nav_items = 'fallback'
+    endif
+  else
+    if drawer_menu != blank and drawer_menu.links.size > 0
+      assign nav_items = drawer_menu.links
+    else
+      assign nav_items = 'fallback'
+    endif
+  endif
+-%}
+
+{%- if context == 'primary' -%}
+  <nav class="horo-nav__primary" aria-label="{{ 'horo.shell.primary_navigation' | t | default: 'Primary navigation' }}">
+    <ul class="horo-nav__list" role="list">
+      {%- if nav_items == 'fallback' -%}
+        {%- assign primary_routes = "products:Shop All:/collections/all,collection:Feelings:/collections/feelings,gifts:Gifts:/pages/gifts-hub,about:About:/pages/about-horo" | split: ',' -%}
+        {%- for route in primary_routes -%}
+          {%- assign parts = route | split: ':' -%}
+          {%- assign key = parts[0] -%}
+          {%- assign label = parts[1] -%}
+          {%- assign href = parts[2] -%}
+          {%- assign is_active = false -%}
+          {%- if nav_active_path == href or nav_active_path contains href and href != '/' -%}
+            {%- assign is_active = true -%}
+          {%- endif -%}
+          <li>
+            <a
+              href="{{ href }}"
+              class="horo-nav__link{% if is_active %} horo-nav__link--active{% endif %}"
+              {% if is_active %}aria-current="page"{% endif %}
+            >
+              {{ label | escape }}
+            </a>
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for link in nav_items -%}
+          {%- assign is_active = false -%}
+          {%- if nav_active_path == link.url or link.child_active or nav_active_path contains link.url and link.url != '/' -%}
+            {%- assign is_active = true -%}
+          {%- endif -%}
+          <li>
+            <a
+              href="{{ link.url }}"
+              class="horo-nav__link{% if is_active %} horo-nav__link--active{% endif %}"
+              {% if is_active %}aria-current="page"{% endif %}
+            >
+              {{ link.title | escape }}
+            </a>
+          </li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- elsif context == 'drawer' -%}
+  <nav class="horo-nav__drawer-nav" aria-label="{{ 'horo.shell.drawer_navigation' | t | default: 'Menu' }}">
+    <ul class="horo-nav__drawer-list" role="list">
+      {%- if nav_items == 'fallback' -%}
+        {%- assign drawer_routes = "home:Home:/,products:Shop All:/collections/all,collection:Feelings:/collections/feelings,gifts:Gifts:/pages/gifts-hub,occasions:Occasions:/collections/occasions,about:About:/pages/about-horo,search:Search:/search" | split: ',' -%}
+        {%- for route in drawer_routes -%}
+          {%- assign parts = route | split: ':' -%}
+          {%- assign key = parts[0] -%}
+          {%- assign label = parts[1] -%}
+          {%- assign href = parts[2] -%}
+          {%- assign is_active = false -%}
+          {%- if nav_active_path == href or nav_active_path contains href and href != '/' -%}
+            {%- assign is_active = true -%}
+          {%- endif -%}
+          <li>
+            <a
+              href="{{ href }}"
+              class="horo-nav__drawer-link{% if is_active %} horo-nav__drawer-link--active{% endif %}"
+              {% if is_active %}aria-current="page"{% endif %}
+            >
+              {{ label | escape }}
+            </a>
+          </li>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for link in nav_items -%}
+          {%- assign is_active = false -%}
+          {%- if nav_active_path == link.url or link.child_active or nav_active_path contains link.url and link.url != '/' -%}
+            {%- assign is_active = true -%}
+          {%- endif -%}
+          <li>
+            <a
+              href="{{ link.url }}"
+              class="horo-nav__drawer-link{% if is_active %} horo-nav__drawer-link--active{% endif %}"
+              {% if is_active %}aria-current="page"{% endif %}
+            >
+              {{ link.title | escape }}
+            </a>
+          </li>
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- endif -%}

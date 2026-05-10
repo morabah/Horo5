@@ -1,0 +1,51 @@
+{{ 'component-horo-pages.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .horo-404 {
+    text-align: center;
+    padding: 4rem 0;
+  }
+  .horo-404__eyebrow {
+    font-family: var(--font-label-family);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: rgba(var(--color-foreground), 0.55);
+    margin-bottom: 1rem;
+  }
+  .horo-404__title {
+    font-family: var(--font-heading-family);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  .horo-404__body {
+    color: rgba(var(--color-foreground), 0.75);
+    margin-bottom: 1.5rem;
+  }
+  .horo-404__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+{%- endstyle -%}
+
+<div class="horo-404 page-width">
+  <p class="horo-404__eyebrow">{{ 'templates.404.subtext' | t }}</p>
+  <h1 class="horo-404__title">{{ 'templates.404.title' | t }}</h1>
+  <p class="horo-404__body">{{ 'horo.404.body' | t }}</p>
+  <div class="horo-404__actions">
+    <a href="{{ routes.root_url }}" class="button button--primary">
+      {{ 'horo.404.back_home' | t }}
+    </a>
+    <a href="{{ routes.search_url }}" class="button button--secondary">
+      {{ 'horo.404.search' | t }}
+    </a>
+    <a href="/pages/feelings" class="button button--secondary">
+      {{ 'horo.nav.feelings' | t }}
+    </a>
+  </div>
+</div>

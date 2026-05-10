@@ -1,0 +1,673 @@
+/* ===== HORO Header Chrome =====
+   Mirrors web-next Nav.tsx + BrandLogo + SearchToggle + MobileDrawer
+   styling with Dawn-compatible selectors and HORO visual tokens.
+*/
+
+/* --- Header surface --- */
+.horo-header-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  margin-bottom: 0;
+}
+
+.horo-header-wrapper--border {
+  border-bottom: 1px solid rgba(196, 184, 171, 0.3);
+}
+
+.horo-header {
+  transition: transform 300ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.scrolled-past-header .horo-header {
+  background: rgba(var(--color-background), 0.9);
+  backdrop-filter: blur(12px) saturate(1.02);
+  -webkit-backdrop-filter: blur(12px) saturate(1.02);
+}
+
+@supports (background: color-mix(in srgb, red 50%, transparent)) {
+  .scrolled-past-header .horo-header {
+    background: color-mix(in srgb, rgb(var(--color-background)) 90%, transparent);
+  }
+}
+
+/* --- Layout rows --- */
+.horo-header__desktop {
+  display: none;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.horo-header__mobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+@media screen and (min-width: 990px) {
+  .horo-header__desktop {
+    display: flex;
+  }
+  .horo-header__mobile {
+    display: none;
+  }
+}
+
+/* --- Wordmark / Brand Logo --- */
+.horo-wordmark {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1;
+  font-family: var(--font-heading-family);
+}
+
+.horo-wordmark__latin {
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.horo-wordmark__ar {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-family: 'Cairo', var(--font-body-family);
+}
+
+.horo-wordmark--dark {
+  color: var(--horo-obsidian, #1a1a1a);
+}
+
+.horo-wordmark__ar--dark {
+  color: var(--horo-warm-charcoal, #4a4440);
+}
+
+.horo-wordmark--light {
+  color: #f5f0e8;
+}
+
+.horo-wordmark__ar--light {
+  color: rgba(245, 240, 232, 0.7);
+}
+
+@media screen and (min-width: 990px) {
+  .horo-wordmark__latin {
+    font-size: 1.12rem;
+  }
+}
+
+/* --- Header logo positioning --- */
+.horo-header__logo {
+  flex-shrink: 0;
+  display: inline-flex;
+  text-decoration: none;
+  padding: 0.25rem 0;
+}
+
+.horo-header__logo--center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* --- Primary navigation --- */
+.horo-nav__primary {
+  flex-shrink: 0;
+}
+
+.horo-nav__list {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.horo-nav__link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-body-family);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(var(--color-foreground), 0.9);
+  text-decoration: none;
+  border-radius: 9999px;
+  transition: color 200ms ease, background-color 200ms ease;
+  position: relative;
+}
+
+.horo-nav__link:hover {
+  color: rgba(var(--color-foreground), 1);
+}
+
+.horo-nav__link--active {
+  background: rgba(var(--color-foreground), 1);
+  color: rgb(var(--color-background));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+@media screen and (min-width: 990px) {
+  .horo-nav__link {
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+/* --- Nav link underline (non-active only) --- */
+.horo-nav__link:not(.horo-nav__link--active)::after {
+  content: '';
+  position: absolute;
+  left: 0.625rem;
+  right: 0.625rem;
+  bottom: 0.3rem;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.22;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 300ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.horo-nav__link:not(.horo-nav__link--active):hover::after {
+  transform: scaleX(1);
+}
+
+/* --- Search --- */
+.horo-header__search {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0.5rem;
+  min-width: 0;
+}
+
+.horo-search {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.horo-search__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: none;
+  border: none;
+  color: rgba(var(--color-foreground), 0.85);
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 200ms ease;
+}
+
+.horo-search__trigger:hover {
+  background-color: rgba(0,0,0,0.04);
+}
+
+.horo-search__form {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: width 500ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 300ms ease;
+}
+
+.horo-search__form[hidden] {
+  display: none;
+}
+
+.horo-search__form.is-open {
+  width: 18rem;
+  opacity: 1;
+}
+
+@media screen and (min-width: 1200px) {
+  .horo-search__form.is-open {
+    width: 24rem;
+  }
+}
+
+.horo-search__input {
+  width: 100%;
+  height: 2.5rem;
+  padding: 0 3.5rem 0 2.5rem;
+  border: none;
+  border-bottom: 1px solid rgba(var(--color-foreground), 0.15);
+  background: transparent;
+  font-family: var(--font-body-family);
+  font-size: 0.8125rem;
+  color: rgba(var(--color-foreground), 1);
+  outline: none;
+  transition: border-color 200ms ease;
+}
+
+.horo-search__input:focus {
+  border-bottom-color: rgba(var(--color-foreground), 0.6);
+}
+
+.horo-search__input::placeholder {
+  color: rgba(var(--color-foreground), 0.4);
+}
+
+.horo-search__clear {
+  position: absolute;
+  right: 3.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: none;
+  border: none;
+  color: rgba(var(--color-foreground), 0.6);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 200ms ease;
+}
+
+.horo-search__clear:hover {
+  background-color: rgba(0,0,0,0.05);
+}
+
+.horo-search__submit {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+  padding: 0 0.75rem;
+  background: none;
+  border: none;
+  color: rgba(var(--color-foreground), 0.7);
+  cursor: pointer;
+  border-radius: 9999px;
+  transition: color 200ms ease;
+}
+
+.horo-search__submit:hover {
+  color: rgba(var(--color-foreground), 1);
+}
+
+.horo-label {
+  font-family: var(--font-body-family);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+/* --- Actions (icons) --- */
+.horo-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.horo-header__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: rgba(var(--color-foreground), 0.85);
+  text-decoration: none;
+  border-radius: 0.25rem;
+  transition: background-color 200ms ease, color 200ms ease;
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.horo-header__icon:hover {
+  background-color: rgba(0,0,0,0.04);
+  color: rgba(var(--color-foreground), 1);
+}
+
+.horo-header__icon-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.horo-header__icon-inner svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- Cart badge --- */
+.horo-cart-badge {
+  position: absolute;
+  top: 0.125rem;
+  right: 0.125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  background: rgba(var(--color-foreground), 1);
+  color: rgb(var(--color-background));
+  font-family: var(--font-body-family);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* --- Locale toggle --- */
+.horo-locale-toggle {
+  display: inline-flex;
+}
+
+.horo-locale-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid rgba(var(--color-foreground), 0.18);
+  border-radius: 9999px;
+  background: rgba(var(--color-background), 0.5);
+}
+
+.horo-locale-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+  font-family: var(--font-body-family);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(var(--color-foreground), 0.7);
+  background: none;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease;
+  text-decoration: none;
+}
+
+.horo-locale-pill:hover {
+  color: rgba(var(--color-foreground), 1);
+}
+
+.horo-locale-pill--active {
+  background: rgba(var(--color-foreground), 1);
+  color: rgb(var(--color-background));
+}
+
+.horo-header__locale {
+  display: none;
+}
+
+@media screen and (min-width: 990px) {
+  .horo-header__locale.desktop-only {
+    display: block;
+  }
+}
+
+/* --- Mobile drawer --- */
+.horo-drawer-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.horo-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+}
+
+.horo-drawer[hidden] {
+  display: none;
+}
+
+.horo-drawer__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+.horo-drawer.is-open .horo-drawer__overlay {
+  opacity: 1;
+}
+
+.horo-drawer__panel {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 24rem;
+  height: 100%;
+  background: rgb(var(--color-background));
+  border-right: 1px solid rgba(196, 184, 171, 0.3);
+  box-shadow: 8px 0 40px rgba(26, 26, 26, 0.18);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-top: env(safe-area-inset-top, 0px);
+  transform: translateX(-100%);
+  transition: transform 300ms ease-out;
+}
+
+.horo-drawer.is-open .horo-drawer__panel {
+  transform: translateX(0);
+}
+
+.horo-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(196, 184, 171, 0.25);
+  box-shadow: 0 1px 0 rgba(26, 26, 26, 0.06);
+  flex-shrink: 0;
+}
+
+.horo-drawer__logo {
+  text-decoration: none;
+}
+
+.horo-drawer__locale {
+  padding: 1.5rem 1rem 0;
+  flex-shrink: 0;
+}
+
+.horo-drawer__locale-label {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-body-family);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(var(--color-foreground), 0.7);
+}
+
+.horo-drawer__nav {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: 1.5rem 1rem;
+}
+
+.horo-drawer__open {
+  display: block;
+}
+
+.horo-drawer__close-icon {
+  display: none;
+}
+
+.horo-drawer-wrapper.is-open .horo-drawer__open {
+  display: none;
+}
+
+.horo-drawer-wrapper.is-open .horo-drawer__close-icon {
+  display: block;
+}
+
+/* --- Drawer navigation links --- */
+.horo-nav__drawer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.horo-nav__drawer-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-body-family);
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: rgba(var(--color-foreground), 0.9);
+  text-decoration: none;
+  border-radius: 0.25rem;
+  border-left: 3px solid transparent;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+.horo-nav__drawer-link:hover,
+.horo-nav__drawer-link:focus {
+  background-color: rgba(0,0,0,0.04);
+  color: rgba(var(--color-foreground), 1);
+}
+
+.horo-nav__drawer-link--active {
+  border-left-color: rgba(var(--color-foreground), 1);
+  background-color: rgba(var(--color-foreground), 0.05);
+  color: rgba(var(--color-foreground), 1);
+}
+
+.horo-nav__drawer-badge {
+  margin-left: 0.5rem;
+  font-weight: 600;
+}
+
+/* --- Order placed hint --- */
+.horo-order-placed-hint {
+  background: #e8ede6;
+  border-bottom: 1px solid rgba(196, 184, 171, 0.35);
+  padding: 0.625rem 0;
+}
+
+.horo-order-placed-hint[hidden] {
+  display: none;
+}
+
+.horo-order-placed-hint__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.horo-order-placed-hint__text {
+  margin: 0;
+  font-family: var(--font-body-family);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: rgba(var(--color-foreground), 1);
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.horo-order-placed-hint__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.horo-order-placed-hint__btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-body-family);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(var(--color-foreground), 1);
+  text-decoration: none;
+  border: 1px solid rgba(var(--color-foreground), 0.25);
+  border-radius: 0.25rem;
+  transition: background-color 200ms ease;
+}
+
+.horo-order-placed-hint__btn:hover {
+  background-color: rgba(255,255,255,0.8);
+}
+
+.horo-order-placed-hint__dismiss {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-body-family);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(var(--color-foreground), 0.6);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.horo-order-placed-hint__dismiss:hover {
+  color: rgba(var(--color-foreground), 1);
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .horo-header,
+  .horo-drawer__overlay,
+  .horo-drawer__panel,
+  .horo-search__form,
+  .horo-search__input,
+  .horo-nav__link::after {
+    transition: none !important;
+  }
+  .horo-drawer__panel {
+    transform: none;
+  }
+  .horo-drawer[hidden] {
+    display: none;
+  }
+}

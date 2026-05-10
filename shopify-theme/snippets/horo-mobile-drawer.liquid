@@ -1,0 +1,97 @@
+{%- comment -%}
+  HORO Mobile Drawer — full-height slide-in drawer.
+
+  Mirrors Nav.tsx mobile drawer (locale pill at top + 7 routes + cart link).
+  Replaces Dawn header-drawer.liquid on the HORO header.
+
+  Usage:
+    {% render 'horo-mobile-drawer',
+      drawer_menu: section.settings.drawer_menu,
+      active_path: request.path
+    %}
+
+  Params:
+    - drawer_menu : link_list (optional)
+    - active_path : string (request.path)
+{%- endcomment -%}
+
+{%- liquid
+  assign drawer_label = 'horo.shell.open_menu' | t | default: 'Open menu'
+  assign close_label = 'horo.shell.close_menu' | t | default: 'Close menu'
+  assign cart_label = 'horo.shell.cart' | t | default: 'Cart'
+-%}
+
+<div class="horo-drawer-wrapper" data-horo-drawer>
+  <button
+    type="button"
+    class="horo-header__icon horo-header__icon--menu"
+    aria-label="{{ drawer_label }}"
+    aria-expanded="false"
+    aria-controls="horo-drawer-panel"
+    data-horo-drawer-trigger
+  >
+    <span class="horo-header__icon-inner" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="horo-drawer__open">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="horo-drawer__close-icon">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </span>
+  </button>
+
+  <div
+    id="horo-drawer-panel"
+    class="horo-drawer"
+    role="dialog"
+    aria-modal="true"
+    aria-label="{{ 'horo.shell.menu' | t | default: 'Menu' }}"
+    hidden
+    data-horo-drawer-panel
+  >
+    <div class="horo-drawer__overlay" data-horo-drawer-overlay></div>
+    <div class="horo-drawer__panel" data-horo-drawer-panel-inner>
+      <div class="horo-drawer__header">
+        <a href="{{ routes.root_url }}" class="horo-drawer__logo" aria-label="{{ 'horo.shell.home' | t | default: 'Home' }}">
+          {% render 'horo-brand-logo', variant: 'dark' %}
+        </a>
+        <button
+          type="button"
+          class="horo-header__icon"
+          aria-label="{{ close_label }}"
+          data-horo-drawer-close
+        >
+          <span class="horo-header__icon-inner" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <div class="horo-drawer__locale">
+        <p class="horo-drawer__locale-label">{{ 'horo.shell.language' | t | default: 'Language' }}</p>
+        {% render 'horo-locale-toggle' %}
+      </div>
+
+      <div class="horo-drawer__nav">
+        {% render 'horo-nav-links', context: 'drawer', drawer_menu: drawer_menu, active_path: active_path %}
+
+        <a
+          href="{{ routes.cart_url }}"
+          class="horo-nav__drawer-link{% if active_path == routes.cart_url %} horo-nav__drawer-link--active{% endif %}"
+          {% if active_path == routes.cart_url %}aria-current="page"{% endif %}
+        >
+          {{ cart_label }}
+          {%- if cart.item_count > 0 -%}
+            <span class="horo-nav__drawer-badge">({{ cart.item_count }})</span>
+          {%- endif -%}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

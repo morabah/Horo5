@@ -1,0 +1,57 @@
+{
+  "sections": {
+    "privacy_policy": {
+      "type": "page-about-horo",
+      "settings": {
+        "heading": "Privacy Policy",
+        "heading_size": "h0",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "intro": {
+          "type": "content_block",
+          "settings": {
+            "show": true,
+            "title": "",
+            "text": "<p>This summary explains what information HORO uses to run the storefront and support each order.</p>"
+          }
+        },
+        "collect": {
+          "type": "content_block",
+          "settings": {
+            "show": true,
+            "title": "What we collect",
+            "text": "<p>We collect the details needed to process and fulfill your order, such as your name, contact information, delivery address, and the products you purchase.</p><p>We may also keep basic session and device information that helps the storefront function, remember your cart, and improve the shopping experience.</p><p>The storefront may store a short list of recently viewed product identifiers on your device (browser local storage) so you can return to designs you browsed; this data is not personally identifying and can be cleared with your browser's site data settings.</p>"
+          }
+        },
+        "use": {
+          "type": "content_block",
+          "settings": {
+            "show": true,
+            "title": "How we use it",
+            "text": "<p>Your information is used to confirm orders, coordinate delivery, share requested order updates, and provide customer support.</p><p>We do not present support channels or follow-up promises that are not active on the site.</p>"
+          }
+        },
+        "control": {
+          "type": "content_block",
+          "settings": {
+            "show": true,
+            "title": "Your control",
+            "text": "<p>You can decide whether to opt into WhatsApp order updates during checkout when that option is shown.</p><p>If you need help with a privacy question, use the live HORO support links shown below when they are available.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "intro",
+        "collect",
+        "use",
+        "control"
+      ]
+    }
+  },
+  "order": [
+    "privacy_policy"
+  ]
+}
