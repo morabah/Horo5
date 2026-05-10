@@ -1,0 +1,71 @@
+/**
+ * HORO Design Tokens
+ * Ported from web-next/src/storefront/index.css:7-68
+ * Load after Dawn's base.css so HORO tokens override where needed.
+ */
+
+:root {
+  /* === Brand Palette === */
+  --color-chalk: #f4efe7;
+  --color-linen: #e6ddd1;
+  --color-ink: #1f1c1a;
+  --color-warm-charcoal: #4b4641;
+  --color-dusk-plum: #6a5b76;
+  --color-moon-gold: #c5a15c;
+  --color-clay-action: #b77a67;
+  --color-moss: #7d8771;
+  --color-river: #556f73;
+
+  /* === Semantic Aliases === */
+  --color-outline: #6b5540;
+  --color-secondary-fixed: #e8dfd4;
+  --color-ember: #b77a67;
+  --color-primary: #b77a67;
+  --color-surface: #f4efe7;
+  --color-on-surface: #1f1c1a;
+  --color-secondary: #4b4641;
+  --color-outline-variant: #d4ccc0;
+  --color-surface-container-high: #e6ddd1;
+  --color-surface-container: #ebe3d8;
+
+  /* === Legacy v2.6 Neutrals === */
+  --color-papyrus: #f4efe7;
+  --color-clean-white: #ffffff;
+  --color-obsidian: #1f1c1a;
+  --color-stone: #d4ccc0;
+  --color-clay: #4b4641;
+  --color-label: #4b4641;
+  --color-desert-sand: #c5a15c;
+  --color-deep-teal: #556f73;
+  --color-dusk-violet: #6a5b76;
+  --color-nile-dark: #556f73;
+  --color-kohl-gold-bright: #c5a15c;
+  --color-kohl-gold-dark: #8a7349;
+
+  /* === Matte UI Tints === */
+  --color-glass-white: #f4efe7;
+  --color-frost-blue: #e8e4df;
+  --color-soft-violet: #ebe5ef;
+  --color-warm-glow: #f2ebe0;
+  --color-mint-frost: #e8ede6;
+
+  /* === Typography === */
+  --font-headline: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-label: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-wordmark: Georgia, 'Times New Roman', serif;
+  --font-pdp-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
+  /* === Radius Scale === */
+  --radius-sm: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+}
+
+/* === Arabic font override === */
+:lang(ar) {
+  --font-headline: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-label: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}

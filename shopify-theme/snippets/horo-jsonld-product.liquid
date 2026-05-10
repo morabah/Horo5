@@ -1,0 +1,85 @@
+{%- comment -%}
+  HORO JSON-LD Product Schema
+  Emits schema.org/Product matching web-next's product-jsonld-schema.ts shape.
+  Usage: {% render 'horo-jsonld-product', product: product %}
+{%- endcomment -%}
+
+{%- liquid
+  assign product_url = request.origin | append: product.url
+  assign feeling = product.metafields.custom.feeling.value
+  assign occasions = product.metafields.custom.occasions.value
+  assign images = product.images | map: 'src'
+
+  assign in_stock = false
+  for variant in product.variants
+    if variant.available
+      assign in_stock = true
+      break
+    endif
+  endfor
+
+  assign variant_count = product.variants.size
+  assign prices = product.variants | map: 'price'
+  assign min_price = prices | sort | first
+  assign max_price = prices | sort | last
+-%}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ product.title | json }},
+  "description": {{ product.description | strip_html | truncate: 500 | json }},
+  "image": {{ images | json }},
+  "sku": {{ product.selected_or_first_available_variant.sku | default: product.handle | json }},
+  "url": {{ product_url | json }},
+  "brand": {
+    "@type": "Brand",
+    "name": "HORO Egypt"
+  },
+  {%- if feeling -%}
+  "category": {{ feeling.title | default: feeling.name | append: ' graphic tee' | json }},
+  {%- endif -%}
+  {%- if occasions and occasions.size > 0 -%}
+  "keywords": {{ occasions | map: 'title' | join: ', ' | json }},
+  {%- endif -%}
+  {%- if product.variants.size > 0 -%}
+  "additionalProperty": [
+    {%- for variant in product.variants -%}
+    {
+      "@type": "PropertyValue",
+      "name": "size",
+      "value": {{ variant.title | json }},
+      {%- if variant.sku != blank -%}
+      "identifier": {{ variant.sku | json }}
+      {%- endif -%}
+    }{%- unless forloop.last -%},{%- endunless -%}
+    {%- endfor -%}
+  ],
+  {%- endif -%}
+  "offers": {
+    {%- if variant_count > 1 -%}
+    "@type": "AggregateOffer",
+    "url": {{ product_url | json }},
+    "priceCurrency": {{ cart.currency.iso_code | default: 'EGP' | json }},
+    "lowPrice": {{ min_price | divided_by: 100.0 | json }},
+    "highPrice": {{ max_price | divided_by: 100.0 | json }},
+    "offerCount": {{ variant_count | json }},
+    {%- else -%}
+    "@type": "Offer",
+    "url": {{ product_url | json }},
+    "priceCurrency": {{ cart.currency.iso_code | default: 'EGP' | json }},
+    "price": {{ product.selected_or_first_available_variant.price | divided_by: 100.0 | json }},
+    {%- endif -%}
+    "availability": {{ in_stock | replace: true, 'https://schema.org/InStock' | replace: false, 'https://schema.org/OutOfStock' | json }},
+    "itemCondition": "https://schema.org/NewCondition"
+  },
+  "hasMerchantReturnPolicy": {
+    "@type": "MerchantReturnPolicy",
+    "applicableCountry": "EG",
+    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+    "merchantReturnDays": 14,
+    "returnPolicyUrl": {{ request.origin | append: '/policies/exchange-policy' | json }}
+  }
+}
+</script>

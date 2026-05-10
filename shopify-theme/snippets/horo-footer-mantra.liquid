@@ -1,0 +1,11 @@
+{%- comment -%}
+  HORO Footer Mantra Band
+  Shows the brand mantra across the full footer width.
+  Usage: {% render 'horo-footer-mantra' %}
+{%- endcomment -%}
+
+{%- assign mantra = shop.metafields.custom.brand_mantra | default: 'horo.brand.mantra' | t -%}
+
+<div class="horo-footer-mantra" data-reveal>
+  <p class="horo-footer-mantra__text font-wordmark">{{ mantra }}</p>
+</div>

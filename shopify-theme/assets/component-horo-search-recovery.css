@@ -1,0 +1,90 @@
+/* ================================================================
+   HORO Search Recovery Shortcuts
+   ================================================================ */
+
+.horo-search-recovery {
+  padding-block: 4rem;
+  text-align: center;
+}
+
+.horo-search-recovery__heading {
+  margin-block-end: 2.4rem;
+  font-family: var(--font-headline);
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.horo-search-recovery__routes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-block-end: 2.4rem;
+}
+
+.horo-search-recovery__route {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1.2rem 2rem;
+  border-radius: var(--radius-full);
+  background: var(--color-chalk);
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-ink);
+  font-family: var(--font-label);
+  font-size: 1.4rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.horo-search-recovery__route:hover {
+  background: var(--color-linen);
+  transform: translateY(-2px);
+}
+
+.horo-search-recovery__arrow {
+  font-size: 1.6rem;
+  transition: transform 0.2s ease;
+}
+
+[dir="rtl"] .horo-search-recovery__arrow {
+  transform: scaleX(-1);
+}
+
+.horo-search-recovery__route:hover .horo-search-recovery__arrow {
+  transform: translateX(3px);
+}
+
+[dir="rtl"] .horo-search-recovery__route:hover .horo-search-recovery__arrow {
+  transform: scaleX(-1) translateX(3px);
+}
+
+.horo-search-recovery__popular {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.horo-search-recovery__popular-label {
+  font-size: 1.3rem;
+  color: var(--color-warm-charcoal);
+}
+
+.horo-search-recovery__chip {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container);
+  color: var(--color-ink);
+  font-size: 1.3rem;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.horo-search-recovery__chip:hover {
+  background: var(--color-surface-container-high);
+}

@@ -1,0 +1,85 @@
+/* ================================================================
+   HORO PDP — Product Proof Strip
+   ================================================================ */
+
+.product-proof-strip {
+  border-block-start: 1px solid var(--color-stone, #c4b8ab);
+}
+
+.product-proof-strip__heading {
+  margin: 0 0 2rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.product-proof-strip__list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.product-proof-strip__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.product-proof-strip__media {
+  position: relative;
+  border-radius: 1.2rem;
+  overflow: hidden;
+  border: 1px solid rgba(196, 184, 171, 0.3);
+  background-color: var(--color-linen, #f5efe8);
+  aspect-ratio: 4 / 3;
+}
+
+.product-proof-strip__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-proof-strip__label {
+  font-family: var(--font-label);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.product-proof-strip__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+.product-proof-strip__placeholder code {
+  font-size: 1.2rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.4rem;
+  background-color: var(--color-linen);
+  color: var(--color-ink);
+}
+
+@media screen and (min-width: 750px) {
+  .product-proof-strip__list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+  }
+
+  .product-proof-strip__media {
+    border-radius: 1.6rem;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .product-proof-strip__list {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}

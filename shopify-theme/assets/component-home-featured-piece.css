@@ -1,0 +1,121 @@
+/* ================================================================
+   HORO Home — Featured Piece section
+   ================================================================ */
+
+.home-featured-piece {
+  border-block-start: 1px solid var(--color-stone, #c4b8ab);
+}
+
+.home-featured-piece__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.4rem;
+  align-items: center;
+}
+
+.home-featured-piece__grid--no-image {
+  grid-template-columns: 1fr;
+}
+
+.home-featured-piece__media {
+  order: 2;
+  border-radius: 1.8rem;
+  overflow: hidden;
+  border: 1px solid rgba(196, 184, 171, 0.4);
+  background-color: rgba(245, 239, 232, 0.5);
+  box-shadow: 0 1.8rem 4.4rem -3rem rgba(26, 26, 26, 0.18);
+}
+
+.home-featured-piece__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+  object-position: center 18%;
+}
+
+.home-featured-piece__content {
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.home-featured-piece__eyebrow {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-label);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-warm-charcoal);
+}
+
+.home-featured-piece__heading {
+  margin: 0 0 1.2rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-featured-piece__story {
+  margin: 0 0 1.2rem;
+  max-inline-size: 32rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.home-featured-piece__artist {
+  margin: 0 0 1.2rem;
+  font-family: var(--font-label);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-clay, #9c8b7a);
+}
+
+.home-featured-piece__price {
+  margin: 0 0 2rem;
+  font-family: var(--font-heading-family);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-featured-piece__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.home-featured-piece__cta {
+  min-inline-size: 14rem;
+}
+
+.home-featured-piece__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+@media screen and (min-width: 750px) {
+  .home-featured-piece__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 4.8rem;
+  }
+
+  .home-featured-piece__media {
+    order: 1;
+  }
+
+  .home-featured-piece__content {
+    order: 2;
+  }
+
+  .home-featured-piece__price {
+    font-size: 2rem;
+  }
+}

@@ -1,0 +1,110 @@
+/* ================================================================
+   HORO Home — Artist Spotlight section
+   ================================================================ */
+
+.home-artist-spotlight {
+  border-block-start: 1px solid var(--color-stone, #c4b8ab);
+}
+
+.home-artist-spotlight__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.4rem;
+  align-items: stretch;
+  overflow: hidden;
+  border-radius: 1.8rem;
+  border: 1px solid rgba(196, 184, 171, 0.55);
+  background-color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 1.8rem 4.4rem -3rem rgba(26, 26, 26, 0.18);
+}
+
+.home-artist-spotlight__media {
+  position: relative;
+  min-block-size: 22rem;
+  background-color: var(--color-linen, #f5efe8);
+}
+
+.home-artist-spotlight__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-artist-spotlight__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.4rem;
+}
+
+.home-artist-spotlight__eyebrow {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-label);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-warm-charcoal);
+}
+
+.home-artist-spotlight__heading {
+  margin: 0 0 1.2rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-artist-spotlight__body {
+  margin: 0 0 2rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.home-artist-spotlight__actions {
+  margin-block-start: auto;
+}
+
+.home-artist-spotlight__cta {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 4.4rem;
+  font-family: var(--font-body-family);
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-deep-teal, #1e5f5b);
+  text-underline-offset: 0.4rem;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.home-artist-spotlight__cta:hover {
+  color: var(--color-ink, #1a1a1a);
+  text-decoration: underline;
+}
+
+.home-artist-spotlight__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+@media screen and (min-width: 750px) {
+  .home-artist-spotlight__grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .home-artist-spotlight__media {
+    min-block-size: 32rem;
+  }
+
+  .home-artist-spotlight__content {
+    padding: 4rem;
+  }
+
+  .home-artist-spotlight__body {
+    font-size: 1.6rem;
+  }
+}

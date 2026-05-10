@@ -1,0 +1,263 @@
+{{ 'component-page-artist.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign artist = page.metafields.custom.artist.value
+  if artist == blank and section.settings.fallback_artist != blank
+    assign artist = section.settings.fallback_artist
+  endif
+
+  assign has_artist = false
+  if artist != blank and artist.name != blank
+    assign has_artist = true
+  endif
+
+  assign avatar = artist.avatar
+  assign portfolio_url = artist.portfolio_url | default: ''
+  assign bio = artist.bio | default: artist.style | default: ''
+-%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if has_artist or request.design_mode -%}
+  <div
+    id="PageArtist-{{ section.id }}"
+    class="horo-section page-artist color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+  >
+    <div class="page-width">
+      {%- if has_artist -%}
+        <div class="page-artist__header">
+          {%- if avatar != blank -%}
+            <div class="page-artist__avatar">
+              {{
+                avatar
+                | image_url: width: 400
+                | image_tag:
+                  loading: 'eager',
+                  widths: '200, 400',
+                  sizes: '200px',
+                  class: 'page-artist__avatar-img'
+              }}
+            </div>
+          {%- endif -%}
+
+          <div class="page-artist__info">
+            <h1 class="page-artist__name {{ section.settings.heading_size }}">
+              {{ artist.name | escape }}
+            </h1>
+
+            {%- if artist.style != blank -%}
+              <p class="page-artist__style">{{ artist.style | escape }}</p>
+            {%- endif -%}
+
+            {%- if bio != blank -%}
+              <p class="page-artist__bio">{{ bio | escape }}</p>
+            {%- endif -%}
+
+            {%- if portfolio_url != blank -%}
+              <a
+                href="{{ portfolio_url }}"
+                class="page-artist__portfolio"
+                target="_blank"
+                rel="noopener"
+              >
+                {{ 'horo.pdp.view_piece' | t }}
+                <span class="page-artist__portfolio-arrow" aria-hidden="true">→</span>
+              </a>
+            {%- endif -%}
+          </div>
+        </div>
+
+        {%- if section.settings.show_products -%}
+          {%- assign artist_handle = artist.slug | default: artist.handle | default: '' -%}
+          {%- if artist_handle != blank -%}
+            {%- assign artist_products = collections.all.products
+              | where: 'metafields.custom.artist.value.slug', artist_handle
+            -%}
+            {%- comment -%}
+              Fallback: loop all products and check metafield match
+              since Liquid "where" on nested metaobjects is unreliable.
+            {%- endcomment -%}
+            {%- assign matched_products = '' -%}
+            {%- for prod in collections.all.products -%}
+              {%- assign prod_artist = prod.metafields.custom.artist.value -%}
+              {%- if prod_artist != blank -%}
+                {%- assign prod_artist_slug = prod_artist.slug | default: prod_artist.handle | default: '' -%}
+                {%- if prod_artist_slug == artist_handle -%}
+                  {%- assign matched_products = matched_products | append: prod.handle | append: ',' -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- assign matched_handles = matched_products | split: ',' -%}
+            {%- assign match_count = 0 -%}
+            {%- for h in matched_handles -%}
+              {%- if h != blank -%}{%- assign match_count = match_count | plus: 1 -%}{%- endif -%}
+            {%- endfor -%}
+
+            {%- if match_count > 0 -%}
+              <div class="page-artist__products">
+                <h2 class="page-artist__products-heading">
+                  {{ 'horo.home.featured_piece_eyebrow' | t }}
+                </h2>
+                <ul class="page-artist__product-grid" role="list">
+                  {%- for h in matched_handles limit: section.settings.products_limit -%}
+                    {%- if h == blank -%}{%- continue -%}{%- endif -%}
+                    {%- assign prod = all_products[h] -%}
+                    {%- if prod != blank -%}
+                      <li class="page-artist__product-item" role="listitem">
+                        {% render 'card-product',
+                          card_product: prod,
+                          media_aspect_ratio: section.settings.image_ratio,
+                          show_secondary_image: section.settings.show_secondary_image,
+                          show_vendor: section.settings.show_vendor,
+                          show_rating: section.settings.show_rating,
+                          show_quick_add: section.settings.enable_quick_add,
+                          section_id: section.id
+                        %}
+                      </li>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- elsif request.design_mode -%}
+        <div class="page-artist__placeholder">
+          <p>
+            This page needs a <code>custom.artist</code> page metafield referencing an artist metaobject,
+            or select a fallback artist in section settings.
+          </p>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Artist Page",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Reads the page's custom.artist metafield to display artist details and their products."
+    },
+    {
+      "type": "metaobject",
+      "id": "fallback_artist",
+      "label": "Fallback artist (for design mode preview)",
+      "metaobject_type": "artist"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h0",
+      "label": "Heading size"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_products",
+      "label": "Show artist's products",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "products_limit",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "label": "Products to show",
+      "default": 6
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "square", "label": "Square" }
+      ],
+      "default": "adapt",
+      "label": "Image ratio"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show secondary image on hover",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Show rating",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_quick_add",
+      "label": "Enable quick add",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Artist Page"
+    }
+  ]
+}
+{% endschema %}

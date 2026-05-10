@@ -1,0 +1,105 @@
+{
+  "_comment": "HORO Search Synonyms for Shopify Search & Discovery. Each rule maps a search term to expansion phrases. Use Shopify Admin > Search & Discovery to add these, or import via Admin API.",
+  "schema_version": "1.0",
+  "locale": "mixed",
+  "rules": [
+    {
+      "term": "tshirt",
+      "type": "expansion",
+      "synonyms": ["graphic tee", "t shirt", "t-shirt", "tee"]
+    },
+    {
+      "term": "tee",
+      "type": "expansion",
+      "synonyms": ["graphic tee", "t shirt"]
+    },
+    {
+      "term": "shirt",
+      "type": "expansion",
+      "synonyms": ["graphic tee", "t shirt"]
+    },
+    {
+      "term": "تيشيرت",
+      "type": "expansion",
+      "synonyms": ["graphic tee", "t shirt", "tee"]
+    },
+    {
+      "term": "تيشرت",
+      "type": "expansion",
+      "synonyms": ["graphic tee", "t shirt"]
+    },
+    {
+      "term": "obsidian",
+      "type": "expansion",
+      "synonyms": ["black", "dark", "midnight"]
+    },
+    {
+      "term": "black",
+      "type": "expansion",
+      "synonyms": ["obsidian", "midnight", "dark tee"]
+    },
+    {
+      "term": "أسود",
+      "type": "expansion",
+      "synonyms": ["obsidian", "black", "midnight"]
+    },
+    {
+      "term": "papyrus",
+      "type": "expansion",
+      "synonyms": ["off white", "cream", "natural"]
+    },
+    {
+      "term": "white",
+      "type": "expansion",
+      "synonyms": ["papyrus", "clean white", "natural tee"]
+    },
+    {
+      "term": "oversized",
+      "type": "expansion",
+      "synonyms": ["relaxed unisex fit", "loose fit"]
+    },
+    {
+      "term": "birthday",
+      "type": "expansion",
+      "synonyms": ["birthday pick", "gift something real"]
+    },
+    {
+      "term": "ramadan",
+      "type": "expansion",
+      "synonyms": ["eid and ramadan", "eid", "festive"]
+    },
+    {
+      "term": "egp",
+      "type": "expansion",
+      "synonyms": ["price", "egypt", "cairo"]
+    },
+    {
+      "term": "cairo",
+      "type": "expansion",
+      "synonyms": ["egypt", "shipping", "giza"]
+    },
+    {
+      "term": "giza",
+      "type": "expansion",
+      "synonyms": ["cairo", "egypt"]
+    }
+  ],
+  "redirects": [
+    {
+      "query": "size guide",
+      "redirect_to": "/pages/size-guide"
+    },
+    {
+      "query": "feelings",
+      "redirect_to": "/pages/feelings"
+    },
+    {
+      "query": "occasions",
+      "redirect_to": "/pages/occasions"
+    },
+    {
+      "query": "gift",
+      "redirect_to": "/pages/gifts"
+    }
+  ]
+}

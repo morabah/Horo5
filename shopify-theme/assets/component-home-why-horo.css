@@ -1,0 +1,86 @@
+/* ================================================================
+   HORO Home — Why HORO section
+   ================================================================ */
+
+.home-why-horo {
+  border-block-start: 1px solid var(--color-stone, #c4b8ab);
+}
+
+.home-why-horo__heading {
+  margin: 0 0 2.4rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-why-horo__grid {
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: 1fr;
+}
+
+.home-why-horo__block {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 2rem;
+  border-radius: 1.8rem;
+  border: 1px solid rgba(196, 184, 171, 0.55);
+  background-color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 1.8rem 4.4rem -3rem rgba(26, 26, 26, 0.18);
+}
+
+.home-why-horo__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 4rem;
+  block-size: 4rem;
+  margin-block-end: 1.6rem;
+  border-radius: 50%;
+  background-color: var(--color-linen, #f5efe8);
+  color: var(--color-deep-teal, #1e5f5b);
+}
+
+.home-why-horo__icon svg {
+  inline-size: 2.4rem;
+  block-size: 2.4rem;
+}
+
+.home-why-horo__block-title {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-heading-family);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-why-horo__block-body {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.home-why-horo__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+@media screen and (min-width: 750px) {
+  .home-why-horo__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+  }
+
+  .home-why-horo__block {
+    padding: 2.4rem;
+  }
+
+  .home-why-horo__block-title {
+    font-size: 1.6rem;
+  }
+}

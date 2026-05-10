@@ -184,7 +184,7 @@
   padding-inline: 0.6rem;
   padding-block: 0.4rem;
   font-family: var(--font-body-family);
-  font-size: 0.8rem;
+  font-size: 1.1rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -424,13 +424,12 @@
 .nav-link-underline::after {
   content: '';
   position: absolute;
-  left: 0.625rem;
-  right: 0.625rem;
-  bottom: 2px;
+  inset-inline: 0.625rem;
+  inset-block-end: 2px;
   height: 1.5px;
   background: currentColor;
   transform: scaleX(0);
-  transform-origin: left center;
+  transform-origin: start center;
   transition: transform 300ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 

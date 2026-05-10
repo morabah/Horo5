@@ -1,0 +1,148 @@
+/* ================================================================
+   HORO Page — Artist page
+   ================================================================ */
+
+.page-artist__header {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.4rem;
+  align-items: center;
+  text-align: center;
+}
+
+.page-artist__avatar {
+  inline-size: 16rem;
+  block-size: 16rem;
+  margin-inline: auto;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(196, 184, 171, 0.4);
+  background-color: var(--color-linen, #f5efe8);
+}
+
+.page-artist__avatar-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.page-artist__info {
+  max-inline-size: 48rem;
+  margin-inline: auto;
+}
+
+.page-artist__name {
+  margin: 0 0 0.8rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.page-artist__style {
+  margin: 0 0 1.2rem;
+  font-family: var(--font-label);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-clay, #9c8b7a);
+}
+
+.page-artist__bio {
+  margin: 0 0 2rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.page-artist__portfolio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-block-size: 4.4rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-deep-teal, #1e5f5b);
+  text-underline-offset: 0.4rem;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.page-artist__portfolio:hover {
+  color: var(--color-ink, #1a1a1a);
+  text-decoration: underline;
+}
+
+.page-artist__portfolio-arrow {
+  transition: transform 150ms ease;
+}
+
+.page-artist__portfolio:hover .page-artist__portfolio-arrow {
+  transform: translateX(0.3rem);
+}
+
+.page-artist__products {
+  margin-block-start: 4rem;
+  padding-block-start: 4rem;
+  border-block-start: 1px solid rgba(196, 184, 171, 0.3);
+}
+
+.page-artist__products-heading {
+  margin: 0 0 2rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.page-artist__product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.page-artist__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+.page-artist__placeholder code {
+  font-size: 1.2rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.4rem;
+  background-color: var(--color-linen);
+  color: var(--color-ink);
+}
+
+@media screen and (min-width: 750px) {
+  .page-artist__header {
+    grid-template-columns: auto 1fr;
+    gap: 4rem;
+    text-align: start;
+  }
+
+  .page-artist__avatar {
+    margin-inline: 0;
+    inline-size: 20rem;
+    block-size: 20rem;
+  }
+
+  .page-artist__info {
+    margin-inline: 0;
+  }
+
+  .page-artist__product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.4rem;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .page-artist__product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

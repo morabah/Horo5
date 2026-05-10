@@ -34,6 +34,13 @@ import { mapSizeTable } from './transform/map-size-tables.js';
 import { mapProduct } from './transform/map-products.js';
 import { mapCollection, CollectionInput } from './transform/map-collections.js';
 import { mapProductMetafields, mapCollectionMetafields } from './transform/map-metafields.js';
+import {
+  mapMedusaProductToInput,
+  mapMedusaFeelingToInput,
+  mapMedusaSubfeelingToInput,
+  mapMedusaOccasionToInput,
+  mapMedusaArtistToInput,
+} from './transform/map-medusa-to-input.js';
 import { createEmptyReport, MigrationReport } from './report/types.js';
 import { writeReports } from './report/report-writer.js';
 
@@ -203,6 +210,31 @@ async function main(): Promise<void> {
   });
   const webDefaults = extractFromWebNext();
 
+  // Merge Medusa data with JSON data (Medusa takes precedence)
+  const mergedData = {
+    feelings: medusaData?.feelings?.length
+      ? medusaData.feelings.map(mapMedusaFeelingToInput)
+      : jsonData.feelings,
+    subfeelings: medusaData?.subfeelings?.length
+      ? medusaData.subfeelings.map(mapMedusaSubfeelingToInput)
+      : jsonData.subfeelings,
+    occasions: medusaData?.occasions?.length
+      ? medusaData.occasions.map(mapMedusaOccasionToInput)
+      : jsonData.occasions,
+    artists: medusaData?.artists?.length
+      ? medusaData.artists.map(mapMedusaArtistToInput)
+      : jsonData.artists,
+    sizeTables: jsonData.sizeTables, // Size tables are only from JSON for now
+    products: medusaData?.products?.length
+      ? medusaData.products.map(mapMedusaProductToInput)
+      : jsonData.products,
+    collections: jsonData.collections, // Collections from JSON only
+  };
+
+  if (medusaData) {
+    logger.info(`Using Medusa data for ${mergedData.products.length} products`);
+  }
+
   const totalResult: MigrationResult = { created: [], skipped: [], errors: [] };
   const outDir = path.join(process.cwd(), 'output');
 
@@ -229,18 +261,18 @@ async function main(): Promise<void> {
   // ── Scope: test-path ──
   if (args.scope.includes('test-path')) {
     logger.section('Test-path migration');
-    await runTestPath(client, jsonData, idMap, !args.apply, args.limit, env.allowMissingReferences, env.storeDomain);
+    await runTestPath(client, mergedData, idMap, !args.apply, args.limit, env.allowMissingReferences, env.storeDomain);
     process.exit(0);
   }
 
   // ── Scope: metaobjects ──
   if (args.scope.includes('all') || args.scope.includes('metaobjects')) {
     logger.section('Migrating metaobjects');
-    const feelings = jsonData.feelings.slice(0, args.limit).map(mapFeeling);
-    const subfeelings = jsonData.subfeelings.slice(0, args.limit).map(mapSubfeeling);
-    const occasions = jsonData.occasions.slice(0, args.limit).map(mapOccasion);
-    const artists = jsonData.artists.slice(0, args.limit).map(mapArtist);
-    const sizeTables = jsonData.sizeTables.slice(0, args.limit).map(mapSizeTable);
+    const feelings = mergedData.feelings.slice(0, args.limit).map(mapFeeling);
+    const subfeelings = mergedData.subfeelings.slice(0, args.limit).map(mapSubfeeling);
+    const occasions = mergedData.occasions.slice(0, args.limit).map(mapOccasion);
+    const artists = mergedData.artists.slice(0, args.limit).map(mapArtist);
+    const sizeTables = mergedData.sizeTables.slice(0, args.limit).map(mapSizeTable);
 
     const allMetaobjects: MetaobjectEntry[] = [
       ...feelings.map((f) => ({ type: 'feeling', handle: f.handle, fields: f.fields })),
@@ -259,10 +291,15 @@ async function main(): Promise<void> {
   // ── Scope: products ──
   if (args.scope.includes('all') || args.scope.includes('products')) {
     logger.section('Migrating products');
-    const products = jsonData.products.slice(0, args.limit).map(mapProduct);
+    const products = mergedData.products.slice(0, args.limit).map(mapProduct);
     const pResult = await createProducts(
       client,
-      products.map((p) => ({ handle: p.input.handle, shopifyInput: p.shopifyInput })),
+      products.map((p) => ({
+        handle: p.input.handle,
+        shopifyInput: p.shopifyInput,
+        images: p.input.images,
+        imageAlts: p.input.imageAlts,
+      })),
       idMap,
       !args.apply
     );
@@ -292,7 +329,7 @@ async function main(): Promise<void> {
 
     // Product metafields
     const productMfAssignments: ProductMetafieldAssignment[] = [];
-    for (const p of jsonData.products.slice(0, args.limit)) {
+    for (const p of mergedData.products.slice(0, args.limit)) {
       const metafields = mapProductMetafields({
         feeling: p.feeling,
         subfeeling: p.subfeeling,
@@ -318,7 +355,7 @@ async function main(): Promise<void> {
 
     // Collection metafields
     const collectionMfAssignments: CollectionMetafieldAssignment[] = [];
-    for (const c of jsonData.collections.slice(0, args.limit)) {
+    for (const c of mergedData.collections.slice(0, args.limit)) {
       const metafields = mapCollectionMetafields({
         occasion: c.occasion,
       });
@@ -359,7 +396,6 @@ async function main(): Promise<void> {
     warnings: [],
     errors: totalResult.errors,
     nextSteps: [
-      'Upload product images to Shopify Files',
       'Configure collection automated rules',
       'Set up discounts and shipping in Shopify Admin',
       'Configure payment providers',
@@ -389,7 +425,34 @@ async function main(): Promise<void> {
  */
 async function runTestPath(
   client: ShopifyAdminClient,
-  data: ReturnType<typeof extractFromJson>,
+  data: {
+    feelings: Array<{ title: string; handle?: string }>;
+    subfeelings: Array<{ title: string; handle?: string; parent_feeling?: string }>;
+    occasions: Array<{ title: string; handle?: string }>;
+    artists: Array<{ name: string; slug?: string }>;
+    sizeTables: Array<{ name: string; handle?: string }>;
+    products: Array<{
+      title: string;
+      handle: string;
+      description?: string;
+      price: number;
+      compare_at_price?: number;
+      vendor?: string;
+      product_type?: string;
+      tags?: string[];
+      feeling?: string;
+      subfeeling?: string;
+      occasions?: string[];
+      artist?: string;
+      size_table?: string;
+      pair_with_products?: string[];
+      images?: string[];
+      imageAlts?: string[];
+      variants?: Array<{ option1: string; option2?: string; price: number; compareAtPrice?: number; sku?: string; inventoryQuantity?: number }>;
+      active?: boolean;
+    }>;
+    collections: Array<{ title: string; handle: string; description?: string; feeling?: string; occasion?: string; product_handles?: string[]; active?: boolean }>;
+  },
   idMap: IdMap,
   dryRun: boolean,
   limit: number,
@@ -410,19 +473,19 @@ async function runTestPath(
   // ── Metaobjects ──
   const entries: MetaobjectEntry[] = [];
   if (zodiac) {
-    const mapped = mapFeeling(zodiac);
+    const mapped = mapFeeling(zodiac as Parameters<typeof mapFeeling>[0]);
     entries.push({ type: 'feeling', handle: mapped.handle, fields: mapped.fields });
   }
   if (cancer) {
-    const mapped = mapSubfeeling(cancer);
+    const mapped = mapSubfeeling(cancer as Parameters<typeof mapSubfeeling>[0]);
     entries.push({ type: 'subfeeling', handle: mapped.handle, fields: mapped.fields });
   }
   if (artist) {
-    const mapped = mapArtist(artist);
+    const mapped = mapArtist(artist as Parameters<typeof mapArtist>[0]);
     entries.push({ type: 'artist', handle: mapped.slug, fields: mapped.fields });
   }
   if (sizeTable) {
-    const mapped = mapSizeTable(sizeTable);
+    const mapped = mapSizeTable(sizeTable as Parameters<typeof mapSizeTable>[0]);
     entries.push({ type: 'size_table', handle: mapped.handle, fields: mapped.fields });
   }
 
@@ -431,18 +494,18 @@ async function runTestPath(
   logger.success(`Metaobjects: ${moResult.created.length} created, ${moResult.skipped.length} skipped, ${moResult.errors.length} errors`);
 
   // ── Products ──
-  const products: Array<{ handle: string; shopifyInput: ShopifyProductInput }> = [];
+  const products: Array<{ handle: string; shopifyInput: ShopifyProductInput; images?: string[]; imageAlts?: string[] }> = [];
   if (cancerProduct) {
-    const mapped = mapProduct(cancerProduct);
-    products.push({ handle: mapped.input.handle, shopifyInput: mapped.shopifyInput });
+    const mapped = mapProduct(cancerProduct as Parameters<typeof mapProduct>[0]);
+    products.push({ handle: mapped.input.handle, shopifyInput: mapped.shopifyInput, images: mapped.input.images, imageAlts: mapped.input.imageAlts });
   }
   if (companionProduct) {
-    const mapped = mapProduct(companionProduct);
-    products.push({ handle: mapped.input.handle, shopifyInput: mapped.shopifyInput });
+    const mapped = mapProduct(companionProduct as Parameters<typeof mapProduct>[0]);
+    products.push({ handle: mapped.input.handle, shopifyInput: mapped.shopifyInput, images: mapped.input.images, imageAlts: mapped.input.imageAlts });
   }
   if (giftWrap) {
-    const mapped = mapProduct(giftWrap);
-    products.push({ handle: mapped.input.handle, shopifyInput: mapped.shopifyInput });
+    const mapped = mapProduct(giftWrap as Parameters<typeof mapProduct>[0]);
+    products.push({ handle: mapped.input.handle, shopifyInput: mapped.shopifyInput, images: mapped.input.images, imageAlts: mapped.input.imageAlts });
   }
 
   const limitedProducts = products.slice(0, limit);

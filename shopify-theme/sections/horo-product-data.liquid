@@ -17,9 +17,14 @@
       compare_at_price: {{ product.selected_or_first_available_variant.compare_at_price | divided_by: 100.0 | json }},
       variant_title: {{ product.selected_or_first_available_variant.title | json }},
       currency: {{ cart.currency.iso_code | json }},
-      url: {{ product.url | json }}
+      url: {{ product.url | json }},
+      feeling: {{ product.metafields.custom.feeling.value.title | default: product.metafields.custom.feeling.value.name | json }},
+      occasion: {{ product.metafields.custom.occasions.value | map: 'title' | join: ', ' | json }},
+      category: {{ product.metafields.custom.feeling.value.title | default: product.metafields.custom.feeling.value.name | json }}
     };
   </script>
+
+  {% render 'horo-jsonld-product', product: product %}
 {%- endif -%}
 
 {% schema %}

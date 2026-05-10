@@ -1,0 +1,157 @@
+/* ================================================================
+   HORO Page — Drop landing page
+   ================================================================ */
+
+.page-drop__media {
+  position: relative;
+  margin-block-end: 2.4rem;
+  border-radius: 1.8rem;
+  overflow: hidden;
+  border: 1px solid rgba(196, 184, 171, 0.4);
+  background-color: var(--color-linen, #f5efe8);
+}
+
+.page-drop__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  aspect-ratio: 21 / 9;
+}
+
+.page-drop__content {
+  text-align: center;
+  max-inline-size: 64rem;
+  margin-inline: auto;
+}
+
+.page-drop__badge {
+  margin-block-end: 1.2rem;
+}
+
+.page-drop__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10rem;
+  font-family: var(--font-label);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.page-drop__status--live {
+  background-color: rgba(45, 106, 79, 0.12);
+  color: var(--color-moss, #2d6a4f);
+}
+
+.page-drop__status--live::before {
+  content: '';
+  inline-size: 0.6rem;
+  block-size: 0.6rem;
+  border-radius: 50%;
+  background-color: var(--color-moss, #2d6a4f);
+  animation: page-drop-pulse 2s ease-in-out infinite;
+}
+
+@keyframes page-drop-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.page-drop__status--soon {
+  background-color: rgba(196, 184, 171, 0.25);
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.page-drop__status--ended {
+  background-color: rgba(196, 184, 171, 0.15);
+  color: var(--color-stone, #c4b8ab);
+}
+
+.page-drop__name {
+  margin: 0 0 1.2rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.page-drop__teaser {
+  margin: 0 0 1.6rem;
+  font-size: 1.6rem;
+  line-height: 1.5;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.page-drop__body {
+  margin: 0 0 2rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.page-drop__date {
+  margin: 0 0 0.8rem;
+  font-size: 1.4rem;
+  color: var(--color-warm-charcoal);
+}
+
+.page-drop__label {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.page-drop__products {
+  margin-block-start: 4rem;
+  padding-block-start: 4rem;
+  border-block-start: 1px solid rgba(196, 184, 171, 0.3);
+}
+
+.page-drop__products-heading {
+  margin: 0 0 2rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.page-drop__product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.6rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.page-drop__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+.page-drop__placeholder code {
+  font-size: 1.2rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.4rem;
+  background-color: var(--color-linen);
+  color: var(--color-ink);
+}
+
+@media screen and (min-width: 750px) {
+  .page-drop__image {
+    aspect-ratio: 21 / 7;
+  }
+
+  .page-drop__product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.4rem;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .page-drop__product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

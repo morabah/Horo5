@@ -1,0 +1,23 @@
+{
+  "sections": {
+    "drop_page": {
+      "type": "page-drop",
+      "settings": {
+        "heading_size": "h0",
+        "show_products": true,
+        "products_limit": 8,
+        "image_ratio": "adapt",
+        "show_secondary_image": false,
+        "show_vendor": false,
+        "show_rating": false,
+        "enable_quick_add": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "drop_page"
+  ]
+}

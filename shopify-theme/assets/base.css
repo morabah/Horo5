@@ -3731,3 +3731,31 @@ details-disclosure > details {
     opacity: 1 !important;
   }
 }
+
+/* === HORO body baseline overrides === */
+html {
+  scroll-padding-top: max(5rem, calc(env(safe-area-inset-top, 0px) + 4.25rem));
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-river);
+  outline-offset: 2px;
+}
+
+body {
+  font-feature-settings: 'liga' 1, 'kern' 1;
+}
+
+/* === HORO Arabic / RTL overrides === */
+:lang(ar) {
+  font-family: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+:lang(ar) body {
+  font-feature-settings: 'liga' 1, 'kern' 1;
+}
+
+:lang(ar) .font-pdp-serif,
+:lang(ar) .font-wordmark {
+  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}

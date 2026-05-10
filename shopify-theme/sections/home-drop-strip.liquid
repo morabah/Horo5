@@ -1,0 +1,168 @@
+{{ 'component-home-drop-strip.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign all_drops = shop.metaobjects.drop.values
+  assign featured_drop = nil
+
+  if section.settings.drop != blank
+    assign featured_drop = section.settings.drop
+  else
+    for drop in all_drops
+      if drop.active != false and drop.status != 'ended'
+        assign featured_drop = drop
+        break
+      endif
+    endfor
+  endif
+
+  assign has_drop = false
+  if featured_drop != blank and featured_drop.name != blank
+    assign has_drop = true
+  endif
+
+  assign hero_image = featured_drop.hero_image
+  assign status = featured_drop.status | default: 'coming_soon'
+  assign drop_url = featured_drop.slug | prepend: '/pages/' | default: ''
+-%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if has_drop or request.design_mode -%}
+  <div
+    id="DropStrip-{{ section.id }}"
+    class="horo-section home-drop-strip color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+  >
+    <div class="page-width">
+      {%- if has_drop -%}
+        <a
+          href="{{ drop_url }}"
+          class="home-drop-strip__card"
+          {%- if status == 'ended' -%}aria-disabled="true" tabindex="-1"{%- endif -%}
+        >
+          {%- if hero_image != blank -%}
+            <div class="home-drop-strip__media">
+              {{
+                hero_image
+                | image_url: width: 1200
+                | image_tag:
+                  loading: 'lazy',
+                  widths: '400, 600, 800, 1200',
+                  sizes: '(min-width: 750px) 50vw, 100vw',
+                  class: 'home-drop-strip__image'
+              }}
+            </div>
+          {%- endif -%}
+
+          <div class="home-drop-strip__content">
+            <div class="home-drop-strip__meta">
+              {%- case status -%}
+                {%- when 'live' -%}
+                  <span class="home-drop-strip__status home-drop-strip__status--live">Live now</span>
+                {%- when 'ended' -%}
+                  <span class="home-drop-strip__status home-drop-strip__status--ended">Ended</span>
+                {%- else -%}
+                  <span class="home-drop-strip__status home-drop-strip__status--soon">Coming soon</span>
+              {%- endcase -%}
+              <span class="home-drop-strip__eyebrow">{{ 'horo.home.first_drop_eyebrow' | t }}</span>
+            </div>
+
+            <h2 class="home-drop-strip__heading {{ section.settings.heading_size }}">
+              {{ featured_drop.name | escape }}
+            </h2>
+
+            {%- if featured_drop.teaser != blank -%}
+              <p class="home-drop-strip__teaser">{{ featured_drop.teaser | escape }}</p>
+            {%- endif -%}
+
+            <span class="home-drop-strip__cta">
+              {%- if status == 'ended' -%}
+                View archive
+              {%- else -%}
+                {{ 'horo.home.featured_piece_cta' | t }}
+              {%- endif -%}
+              <span class="home-drop-strip__arrow" aria-hidden="true">→</span>
+            </span>
+          </div>
+        </a>
+      {%- elsif request.design_mode -%}
+        <div class="home-drop-strip__placeholder">
+          <p>Add an active drop metaobject to display the drop strip, or select one in section settings.</p>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Drop Strip",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "metaobject",
+      "id": "drop",
+      "label": "Featured drop",
+      "metaobject_type": "drop"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Drop Strip"
+    }
+  ]
+}
+{% endschema %}

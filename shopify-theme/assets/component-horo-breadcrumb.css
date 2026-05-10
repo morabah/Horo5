@@ -1,0 +1,46 @@
+/* ================================================================
+   HORO Breadcrumb
+   ================================================================ */
+
+.horo-breadcrumb {
+  padding: 1.2rem 0;
+  font-size: 1.2rem;
+  color: var(--color-warm-charcoal);
+}
+
+.horo-breadcrumb__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.horo-breadcrumb__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.horo-breadcrumb__item:not(:last-child)::after {
+  content: '/';
+  margin-inline: 0.6rem;
+  color: var(--color-stone);
+}
+
+.horo-breadcrumb__link {
+  color: var(--color-warm-charcoal);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.horo-breadcrumb__link:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+
+.horo-breadcrumb__item--current {
+  color: var(--color-ink);
+  font-weight: 500;
+}

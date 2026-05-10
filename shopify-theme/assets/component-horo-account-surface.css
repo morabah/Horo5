@@ -1,0 +1,44 @@
+/* ================================================================
+   HORO Customer Account Brand Surface
+   ================================================================ */
+
+.horo-account-surface {
+  padding-block: 3.2rem;
+}
+
+.horo-account-surface__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  margin-block-end: 3.2rem;
+  padding-block-end: 2.4rem;
+  border-block-end: 1px solid var(--color-outline-variant);
+  text-align: center;
+}
+
+.horo-account-surface__logo {
+  display: inline-block;
+  color: var(--color-ink);
+  font-family: var(--font-wordmark);
+  font-size: 2.4rem;
+  text-decoration: none;
+}
+
+.horo-account-surface__logo img {
+  max-height: 4rem;
+  width: auto;
+}
+
+.horo-account-surface__mantra {
+  margin: 0;
+  font-family: var(--font-wordmark);
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: var(--color-warm-charcoal);
+}
+
+.horo-account-surface__content {
+  max-inline-size: 48rem;
+  margin-inline: auto;
+}

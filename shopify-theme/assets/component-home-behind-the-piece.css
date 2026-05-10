@@ -1,0 +1,84 @@
+/* ================================================================
+   HORO Home — Behind the Piece section
+   ================================================================ */
+
+.home-behind-the-piece {
+  border-block-start: 1px solid var(--color-stone, #c4b8ab);
+}
+
+.home-behind-the-piece__eyebrow {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-label);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-warm-charcoal);
+}
+
+.home-behind-the-piece__heading {
+  margin: 0 0 0.8rem;
+  max-inline-size: 32rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-behind-the-piece__body {
+  margin: 0 0 2.4rem;
+  max-inline-size: 36rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.home-behind-the-piece__grid {
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: 1fr;
+}
+
+.home-behind-the-piece__card {
+  padding: 2rem;
+  border-radius: 1.6rem;
+  border: 1px solid rgba(196, 184, 171, 0.3);
+  background-color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.04);
+}
+
+.home-behind-the-piece__card-title {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-heading-family);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-behind-the-piece__card-body {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.home-behind-the-piece__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+@media screen and (min-width: 750px) {
+  .home-behind-the-piece__grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.6rem;
+  }
+
+  .home-behind-the-piece__card {
+    padding: 2.4rem;
+  }
+
+  .home-behind-the-piece__card-title {
+    font-size: 1.6rem;
+  }
+}

@@ -15,6 +15,7 @@ Migrates HORO data from Medusa/web-next/static JSON into Shopify Admin according
    - `read_metaobjects`, `write_metaobjects`
    - `read_products`, `write_products`
    - `read_collections`, `write_collections`
+   - `read_files`, `write_files` (for image upload)
 
 3. **Copy `.env.example` to `.env`** and fill in your credentials.
 
@@ -26,6 +27,10 @@ Migrates HORO data from Medusa/web-next/static JSON into Shopify Admin according
 | `SHOPIFY_ADMIN_ACCESS_TOKEN` | Yes | Custom app Admin API token (starts with `shpat_`) |
 | `SHOPIFY_API_VERSION` | Yes | API version (e.g., `2025-04`) |
 | `MIGRATION_INPUT_DIR` | No | Directory for JSON input files (default: `./input`) |
+| `MEDUSA_BACKEND_URL` | No | Medusa storefront API URL (e.g., `http://localhost:9000`) |
+| `MEDUSA_ADMIN_API_TOKEN` | No | Medusa publishable API key for storefront access |
+
+When `MEDUSA_BACKEND_URL` is set, the pipeline fetches live data from Medusa and merges it with any JSON input files. Medusa data takes precedence.
 
 ## Commands
 
@@ -125,16 +130,13 @@ This creates:
 ## Next Steps
 
 After migration, manually in Shopify Admin:
-1. Upload product images (if not auto-uploaded)
-2. Configure collections with automated rules
-3. Set up discounts and shipping
-4. Configure payment providers
-5. Review and publish the theme
+1. Configure collections with automated rules
+2. Set up discounts and shipping
+3. Configure payment providers
+4. Review and publish the theme
 
 ## Known Limitations
 
-- Image upload is not yet implemented. Products are created without images.
-- Medusa API extraction is not yet implemented. Use JSON input files.
-- Product variants (sizes/colors) are not yet created.
-- Compare-at prices are not created.
 - Order/customer migration is out of scope for Phase 2A.
+- Multi-location inventory requires knowing the Shopify location ID; falls back to simple quantity.
+- Web-next static defaults extraction (`from-web-next.ts`) is not yet implemented.

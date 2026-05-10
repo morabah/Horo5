@@ -1,0 +1,132 @@
+/* ================================================================
+   HORO Founding Drop Strip
+   ================================================================ */
+
+.founding-drop {
+  overflow: hidden;
+}
+
+.founding-drop__eyebrow {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-label);
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-warm-charcoal);
+}
+
+.founding-drop__heading {
+  margin: 0 0 0.8rem;
+  color: var(--color-ink);
+}
+
+.founding-drop__subheading {
+  margin: 0 0 2.4rem;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  color: var(--color-warm-charcoal);
+  max-inline-size: 48rem;
+}
+
+.founding-drop__scroll-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-inline: max(1.5rem, calc((100vw - var(--page-width)) / 2));
+  padding-block: 0.4rem;
+}
+
+.founding-drop__scroll-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.founding-drop__list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(16rem, 1fr);
+  gap: 1.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.founding-drop__list--2-col-desktop {
+  grid-auto-columns: minmax(20rem, 1fr);
+}
+
+.founding-drop__list--3-col-desktop {
+  grid-auto-columns: minmax(18rem, 1fr);
+}
+
+.founding-drop__list--4-col-desktop {
+  grid-auto-columns: minmax(16rem, 1fr);
+}
+
+.founding-drop__list--5-col-desktop {
+  grid-auto-columns: minmax(14rem, 1fr);
+}
+
+.founding-drop__item {
+  min-inline-size: 0;
+}
+
+.founding-drop__item .horo-product-card .card {
+  min-inline-size: 14rem;
+}
+
+.founding-drop__footer {
+  margin-block-start: 2.4rem;
+  text-align: center;
+}
+
+.founding-drop__cta {
+  min-inline-size: 16rem;
+}
+
+.founding-drop__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+@media screen and (min-width: 750px) {
+  .founding-drop__list {
+    gap: 1.6rem;
+  }
+
+  .founding-drop__scroll-wrapper {
+    padding-inline: max(5rem, calc((100vw - var(--page-width)) / 2));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .founding-drop__list {
+    grid-auto-flow: row;
+    grid-template-columns: repeat(var(--columns, 4), 1fr);
+  }
+
+  .founding-drop__list--2-col-desktop {
+    --columns: 2;
+  }
+
+  .founding-drop__list--3-col-desktop {
+    --columns: 3;
+  }
+
+  .founding-drop__list--4-col-desktop {
+    --columns: 4;
+  }
+
+  .founding-drop__list--5-col-desktop {
+    --columns: 5;
+  }
+
+  .founding-drop__scroll-wrapper {
+    overflow-x: visible;
+    padding-inline: 0;
+  }
+}

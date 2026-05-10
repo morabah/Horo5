@@ -1,0 +1,95 @@
+/* ================================================================
+   HORO Home — First Drop Circle section
+   ================================================================ */
+
+.home-first-drop {
+  border-block-start: 1px solid var(--color-stone, #c4b8ab);
+}
+
+.home-first-drop__content {
+  max-inline-size: 56rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.home-first-drop__eyebrow {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-label);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-warm-charcoal);
+}
+
+.home-first-drop__heading {
+  margin: 0 0 1.2rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-first-drop__body {
+  margin: 0 0 2.4rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.home-first-drop__form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  max-inline-size: 40rem;
+  margin-inline: auto;
+}
+
+.home-first-drop__input {
+  min-block-size: 5.2rem;
+  padding-inline: 1.6rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(196, 184, 171, 0.6);
+  background-color: rgba(255, 255, 255, 0.9);
+  font-size: 1.5rem;
+}
+
+.home-first-drop__input:focus {
+  border-color: var(--color-deep-teal, #1e5f5b);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(30, 95, 91, 0.2);
+}
+
+.home-first-drop__submit {
+  min-block-size: 5.2rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-radius: 1.2rem;
+}
+
+.home-first-drop__disclaimer {
+  margin: 1.6rem 0 0;
+  font-size: 1.2rem;
+  color: var(--color-warm-charcoal);
+  opacity: 0.8;
+}
+
+.home-first-drop__unavailable {
+  margin: 1.6rem 0 0;
+  padding: 1.6rem;
+  border-radius: 1.2rem;
+  background-color: var(--color-linen, #f5efe8);
+  font-size: 1.4rem;
+  color: var(--color-warm-charcoal);
+}
+
+@media screen and (min-width: 750px) {
+  .home-first-drop__form {
+    flex-direction: row;
+  }
+
+  .home-first-drop__input {
+    flex: 1;
+  }
+
+  .home-first-drop__submit {
+    min-inline-size: 16rem;
+  }
+}

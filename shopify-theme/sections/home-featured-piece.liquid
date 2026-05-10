@@ -1,0 +1,180 @@
+{{ 'component-home-featured-piece.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign product = section.settings.product
+  assign has_product = false
+  if product != blank
+    assign has_product = true
+  endif
+
+  assign image = product.featured_media
+  assign story = product.metafields.custom.story.value
+  assign artist = product.metafields.custom.artist.value
+  assign artist_name = artist.name | default: artist.display_name | default: ''
+-%}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if has_product or request.design_mode -%}
+  <div
+    id="FeaturedPiece-{{ section.id }}"
+    class="horo-section home-featured-piece color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    <div class="page-width">
+      <div class="home-featured-piece__grid{% if image == blank %} home-featured-piece__grid--no-image{% endif %}">
+        {%- if image != blank -%}
+          <div class="home-featured-piece__media" data-reveal>
+            {%- assign image_height = image.width | divided_by: image.aspect_ratio -%}
+            {{
+              image
+              | image_url: width: 1200
+              | image_tag:
+                loading: 'lazy',
+                widths: '400, 600, 800, 1200',
+                sizes: '(min-width: 750px) 50vw, 100vw',
+                width: image.width,
+                height: image_height,
+                class: 'home-featured-piece__image'
+            }}
+          </div>
+        {%- endif -%}
+
+        <div class="home-featured-piece__content" data-reveal="stagger-1">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="home-featured-piece__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+
+          {%- if has_product -%}
+            <h2 class="home-featured-piece__heading {{ section.settings.heading_size }}">
+              {{ product.title | escape }}
+            </h2>
+
+            {%- if story != blank -%}
+              <p class="home-featured-piece__story">
+                {%- if story.size > 140 -%}
+                  {{ story | slice: 0, 140 | strip }}…
+                {%- else -%}
+                  {{ story }}
+                {%- endif -%}
+              </p>
+            {%- endif -%}
+
+            {%- if artist_name != blank -%}
+              <p class="home-featured-piece__artist">
+                {{ 'horo.home.art_by_label' | t }} {{ artist_name | escape }}
+              </p>
+            {%- endif -%}
+
+            <p class="home-featured-piece__price">
+              {{ product.selected_or_first_available_variant.price | money }}
+            </p>
+
+            <div class="home-featured-piece__actions">
+              <a href="{{ product.url }}" class="home-featured-piece__cta button button--primary">
+                {{ section.settings.cta_label | default: 'View piece' }}
+              </a>
+              <a href="{{ routes.all_products_collection_url }}" class="home-featured-piece__cta button button--secondary">
+                {{ section.settings.browse_label | default: 'Browse all' }}
+              </a>
+            </div>
+          {%- elsif request.design_mode -%}
+            <div class="home-featured-piece__placeholder">
+              <p>Select a product to display the featured piece section.</p>
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Featured Piece",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Featured"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Featured product"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "View piece"
+    },
+    {
+      "type": "text",
+      "id": "browse_label",
+      "label": "Browse button label",
+      "default": "Browse all"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Featured Piece"
+    }
+  ]
+}
+{% endschema %}

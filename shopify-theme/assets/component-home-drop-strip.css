@@ -1,0 +1,166 @@
+/* ================================================================
+   HORO Home — Drop Strip section
+   ================================================================ */
+
+.home-drop-strip {
+  border-block-start: 1px solid var(--color-stone, #c4b8ab);
+}
+
+.home-drop-strip__card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 1.8rem;
+  border: 1px solid rgba(196, 184, 171, 0.55);
+  background-color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 1.8rem 4.4rem -3rem rgba(26, 26, 26, 0.18);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.home-drop-strip__card:hover {
+  transform: translateY(-0.4rem);
+  box-shadow: 0 2.4rem 5.6rem -3rem rgba(26, 26, 26, 0.22);
+}
+
+.home-drop-strip__card[aria-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.home-drop-strip__media {
+  position: relative;
+  min-block-size: 22rem;
+  background-color: var(--color-linen, #f5efe8);
+}
+
+.home-drop-strip__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 16 / 9;
+}
+
+.home-drop-strip__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.4rem;
+}
+
+.home-drop-strip__meta {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-block-end: 1.2rem;
+}
+
+.home-drop-strip__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 1rem;
+  border-radius: 10rem;
+  font-family: var(--font-label);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.home-drop-strip__status--live {
+  background-color: rgba(45, 106, 79, 0.12);
+  color: var(--color-moss, #2d6a4f);
+}
+
+.home-drop-strip__status--live::before {
+  content: '';
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--color-moss, #2d6a4f);
+  animation: home-drop-strip-pulse 2s ease-in-out infinite;
+}
+
+@keyframes home-drop-strip-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.home-drop-strip__status--soon {
+  background-color: rgba(196, 184, 171, 0.25);
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.home-drop-strip__status--ended {
+  background-color: rgba(196, 184, 171, 0.15);
+  color: var(--color-stone, #c4b8ab);
+}
+
+.home-drop-strip__eyebrow {
+  font-family: var(--font-label);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-warm-charcoal);
+}
+
+.home-drop-strip__heading {
+  margin: 0 0 1.2rem;
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-drop-strip__teaser {
+  margin: 0 0 2rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--color-warm-charcoal, #5c5550);
+}
+
+.home-drop-strip__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--color-deep-teal, #1e5f5b);
+  transition: color 150ms ease;
+}
+
+.home-drop-strip__card:hover .home-drop-strip__cta {
+  color: var(--color-ink, #1a1a1a);
+}
+
+.home-drop-strip__arrow {
+  transition: transform 150ms ease;
+}
+
+.home-drop-strip__card:hover .home-drop-strip__arrow {
+  transform: translateX(0.3rem);
+}
+
+.home-drop-strip__placeholder {
+  padding: 2.4rem;
+  text-align: center;
+  border: 1px dashed var(--color-stone);
+  border-radius: var(--radius-lg);
+  color: var(--color-warm-charcoal);
+}
+
+@media screen and (min-width: 750px) {
+  .home-drop-strip__card {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  }
+
+  .home-drop-strip__media {
+    min-block-size: 28rem;
+  }
+
+  .home-drop-strip__content {
+    padding: 4rem;
+  }
+}

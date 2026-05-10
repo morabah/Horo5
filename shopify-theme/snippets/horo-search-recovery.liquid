@@ -1,0 +1,32 @@
+{%- comment -%}
+  HORO Search Recovery Shortcuts
+  Renders when search returns zero results.
+  Usage: {% render 'horo-search-recovery' %}
+{%- endcomment -%}
+
+<div class="horo-search-recovery" data-reveal>
+  <h2 class="horo-search-recovery__heading">{{ 'horo.search_recovery.heading' | t }}</h2>
+
+  <div class="horo-search-recovery__routes">
+    <a href="/collections/feelings" class="horo-search-recovery__route cta-clay">
+      <span class="horo-search-recovery__label">{{ 'horo.search_recovery.try_feeling' | t }}</span>
+      <span class="horo-search-recovery__arrow" aria-hidden="true">→</span>
+    </a>
+    <a href="/collections/occasions" class="horo-search-recovery__route cta-clay">
+      <span class="horo-search-recovery__label">{{ 'horo.search_recovery.try_occasion' | t }}</span>
+      <span class="horo-search-recovery__arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+
+  {%- if shop.metafields.custom.popular_searches != blank -%}
+    {%- assign popular = shop.metafields.custom.popular_searches | split: ',' -%}
+    <div class="horo-search-recovery__popular">
+      <span class="horo-search-recovery__popular-label">{{ 'horo.search_recovery.popular_searches' | t }}:</span>
+      {%- for term in popular -%}
+        <a href="/search?q={{ term | strip | url_encode }}" class="horo-search-recovery__chip">
+          {{ term | strip }}
+        </a>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</div>

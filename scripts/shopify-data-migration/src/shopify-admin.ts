@@ -168,7 +168,7 @@ export class ShopifyAdminClient {
   }
 
   /**
-   * Create a product.
+   * Create a product with variants.
    */
   async createProduct(input: {
     title: string;
@@ -177,7 +177,14 @@ export class ShopifyAdminClient {
     productType?: string;
     tags?: string[];
     status?: 'ACTIVE' | 'DRAFT' | 'ARCHIVED';
-    variants?: Array<{ price: string; sku?: string; options?: string[] }>;
+    variants?: Array<{
+      price: string;
+      compareAtPrice?: string;
+      sku?: string;
+      inventoryQuantities?: Array<{ locationId?: string; availableQuantity: number }>;
+      options?: string[];
+    }>;
+    options?: string[];
   }): Promise<{ id: string; handle: string } | null> {
     const mutation = `
       mutation CreateProduct($input: ProductInput!) {
@@ -336,6 +343,107 @@ export class ShopifyAdminClient {
     if (result?.userErrors && result.userErrors.length > 0) {
       const errors = result.userErrors.map((e) => `${e.field}: ${e.message}`).join('; ');
       throw new Error(`collectionAddProducts error: ${errors}`);
+    }
+  }
+
+  /**
+   * Create staged upload targets for file upload.
+   */
+  async createStagedUploads(
+    files: Array<{ filename: string; mimeType: string; size: number; resource: string }>
+  ): Promise<
+    Array<{
+      url: string;
+      resourceUrl: string | null;
+      parameters: Array<{ name: string; value: string }>;
+    }>
+  > {
+    const mutation = `
+      mutation StagedUploadsCreate($input: [StagedUploadInput!]!) {
+        stagedUploadsCreate(input: $input) {
+          stagedTargets {
+            url
+            resourceUrl
+            parameters { name value }
+          }
+          userErrors { field message }
+        }
+      }
+    `;
+    const input = files.map((f) => ({
+      filename: f.filename,
+      mimeType: f.mimeType,
+      httpMethod: 'POST',
+      size: f.size,
+      resource: f.resource,
+    }));
+    const res = await this.request<{
+      stagedUploadsCreate: {
+        stagedTargets: Array<{ url: string; resourceUrl: string | null; parameters: Array<{ name: string; value: string }> }>;
+        userErrors: Array<{ field: string; message: string }>;
+      };
+    }>(mutation, { input });
+
+    const result = res.data?.stagedUploadsCreate;
+    if (result?.userErrors && result.userErrors.length > 0) {
+      const errors = result.userErrors.map((e) => `${e.field}: ${e.message}`).join('; ');
+      throw new Error(`stagedUploadsCreate error: ${errors}`);
+    }
+    return result?.stagedTargets ?? [];
+  }
+
+  /**
+   * Create files from staged uploads.
+   */
+  async createFiles(
+    files: Array<{ alt: string; contentType: string; originalSource: string }>
+  ): Promise<Array<{ id: string; alt: string; preview?: { image?: { url?: string } } }>> {
+    const mutation = `
+      mutation FileCreate($files: [FileCreateInput!]!) {
+        fileCreate(files: $files) {
+          files { id alt preview { image { url } } }
+          userErrors { field message }
+        }
+      }
+    `;
+    const res = await this.request<{
+      fileCreate: {
+        files: Array<{ id: string; alt: string; preview?: { image?: { url?: string } } }>;
+        userErrors: Array<{ field: string; message: string }>;
+      };
+    }>(mutation, { files });
+
+    const result = res.data?.fileCreate;
+    if (result?.userErrors && result.userErrors.length > 0) {
+      const errors = result.userErrors.map((e) => `${e.field}: ${e.message}`).join('; ');
+      throw new Error(`fileCreate error: ${errors}`);
+    }
+    return result?.files ?? [];
+  }
+
+  /**
+   * Append media to a product.
+   */
+  async productAppendMedia(
+    productId: string,
+    media: Array<{ mediaContentType: string; originalSource: string; alt: string }>
+  ): Promise<void> {
+    const mutation = `
+      mutation ProductAppendMedia($id: ID!, $media: [CreateMediaInput!]!) {
+        productAppendMedia(id: $id, media: $media) {
+          product { id }
+          userErrors { field message }
+        }
+      }
+    `;
+    const res = await this.request<{
+      productAppendMedia: { product: { id: string } | null; userErrors: Array<{ field: string; message: string }> };
+    }>(mutation, { id: productId, media });
+
+    const result = res.data?.productAppendMedia;
+    if (result?.userErrors && result.userErrors.length > 0) {
+      const errors = result.userErrors.map((e) => `${e.field}: ${e.message}`).join('; ');
+      throw new Error(`productAppendMedia error: ${errors}`);
     }
   }
 }

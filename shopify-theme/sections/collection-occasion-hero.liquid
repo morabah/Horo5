@@ -27,6 +27,8 @@
     {%- endif -%}
   {%- endstyle -%}
 
+  {%- render 'horo-breadcrumb' -%}
+
   <div
     id="OccasionHero-{{ section.id }}"
     class="horo-section collection-hero OccasionHero-{{ section.id }}{% if hero_image != blank %} collection-hero--has-image{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"

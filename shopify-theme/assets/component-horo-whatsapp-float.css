@@ -4,8 +4,8 @@
 
 .horo-whatsapp-float {
   position: fixed;
-  bottom: max(1.6rem, env(safe-area-inset-bottom, 0px) + 1.2rem);
-  right: 1.6rem;
+  inset-block-end: max(1.6rem, env(safe-area-inset-bottom, 0px) + 1.2rem);
+  inset-inline-end: 1.6rem;
   z-index: 500;
   display: inline-flex;
   align-items: center;
@@ -46,12 +46,6 @@
   .horo-whatsapp-float__label {
     display: inline;
   }
-}
-
-/* RTL */
-[dir="rtl"] .horo-whatsapp-float {
-  right: auto;
-  left: 1.6rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
