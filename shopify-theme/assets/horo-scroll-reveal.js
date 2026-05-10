@@ -1,9 +1,11 @@
 /**
  * HORO Scroll Reveal — IntersectionObserver-based reveal system
- * Ported from web-next data-reveal implementation.
+ * Ported from web-next src/storefront/hooks/useScrollReveal.ts
  * Features:
- * - data-horo-reveal attribute matching
+ * - data-reveal attribute support
+ * - data-reveal-pending flicker guard
  * - Stagger delay support (stagger-1 … stagger-5)
+ * - Divider mode (data-reveal="divider")
  * - prefers-reduced-motion respect
  * - Scroll milestone tracking for GA4/GTM dataLayer
  */
@@ -11,9 +13,8 @@
 (function () {
   'use strict';
 
-  const DATA_ATTR = 'data-horo-reveal';
-  const PENDING_CLASS = 'horo-reveal-pending';
-  const REVEALED_CLASS = 'horo-revealed';
+  const DATA_ATTR = 'data-reveal';
+  const REVEALED_CLASS = 'is-revealed';
   const MILESTONE_ATTR = 'data-horo-scroll-milestone';
 
   // Respect reduced motion
@@ -30,7 +31,8 @@
 
     if (prefersReducedMotion) {
       elements.forEach((el) => {
-        el.classList.remove(PENDING_CLASS);
+        el.setAttribute('data-reveal-pending', 'false');
+        el.classList.remove('data-reveal-pending');
         el.classList.add(REVEALED_CLASS);
       });
       return;
@@ -39,7 +41,8 @@
     // Set pending state before observing to avoid flash
     elements.forEach((el) => {
       if (!el.classList.contains(REVEALED_CLASS)) {
-        el.classList.add(PENDING_CLASS);
+        el.setAttribute('data-reveal-pending', 'true');
+        el.classList.add('data-reveal-pending');
       }
     });
 
@@ -48,7 +51,8 @@
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const el = entry.target;
-            el.classList.remove(PENDING_CLASS);
+            el.setAttribute('data-reveal-pending', 'false');
+            el.classList.remove('data-reveal-pending');
             el.classList.add(REVEALED_CLASS);
             observer.unobserve(el);
 

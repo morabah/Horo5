@@ -1,0 +1,308 @@
+/**
+ * HORO Motion System
+ * Keyframes, helper classes, and animation utilities.
+ * All animations respect prefers-reduced-motion at the bottom of this file.
+ */
+
+/* === Keyframes === */
+
+@keyframes home-hero-wear-in {
+  from { opacity: 0; transform: translateY(2rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes home-hero-stage-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes home-hero-mean-word-in {
+  from { opacity: 0; transform: translateY(1.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes home-hero-fade-up {
+  from { opacity: 0; transform: translateY(1rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mini-cart-slide-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes vibe-dot-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes floatPolaroid {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-0.5rem) rotate(1deg); }
+}
+
+@keyframes hero-editorial-zoom {
+  from { transform: scale(1.05); }
+  to { transform: scale(1); }
+}
+
+@keyframes heroBleedRise {
+  from { opacity: 0; transform: translateY(3rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroBleedGrainDrift {
+  0% { background-position: 0 0; }
+  100% { background-position: 100px 100px; }
+}
+
+@keyframes section-divider-draw {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes merch-card-lift-hover {
+  from { transform: translateY(0); box-shadow: 0 0 0 rgba(0,0,0,0); }
+  to { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(31,28,26,0.08); }
+}
+
+/* === Animation helper classes === */
+
+[data-reveal] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-reveal].data-reveal-pending {
+  opacity: 0;
+  transform: translateY(1.5rem);
+}
+
+[data-reveal].is-revealed,
+[data-reveal-pending="false"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-reveal="divider"] svg path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition: stroke-dashoffset 1.2s ease-out;
+}
+
+[data-reveal="divider"].is-revealed svg path,
+[data-reveal="divider"][data-reveal-pending="false"] svg path {
+  stroke-dashoffset: 0;
+}
+
+/* Stagger variants */
+[data-reveal].stagger-1 { transition-delay: 0.1s; }
+[data-reveal].stagger-2 { transition-delay: 0.2s; }
+[data-reveal].stagger-3 { transition-delay: 0.3s; }
+[data-reveal].stagger-4 { transition-delay: 0.4s; }
+[data-reveal].stagger-5 { transition-delay: 0.5s; }
+
+/* Merch card lift */
+.merch-card-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.merch-card-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(31, 28, 26, 0.08);
+}
+
+/* CTA clay hover */
+.cta-clay {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.cta-clay:hover {
+  transform: translateY(-2px);
+}
+
+/* Nav link underline */
+.nav-link-underline {
+  position: relative;
+}
+
+.nav-link-underline::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-end: -2px;
+  inline-size: 0;
+  block-size: 2px;
+  background: currentColor;
+  transition: inline-size 0.3s ease;
+}
+
+.nav-link-underline:hover::after {
+  inline-size: 100%;
+}
+
+/* Feeling polaroid float */
+.feeling-polaroid {
+  animation: floatPolaroid 6s ease-in-out infinite;
+}
+
+/* Vibe card explore */
+.vibe-card-explore {
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.group:hover .vibe-card-explore {
+  transform: translateX(4px);
+}
+
+/* Quick view pill */
+.quick-view-pill {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.group:hover .quick-view-pill {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Glass nav */
+.glass-nav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(244, 239, 231, 0.85);
+}
+
+/* Editorial shadow */
+.editorial-shadow {
+  box-shadow: 0 24px 48px rgba(31, 28, 26, 0.12);
+}
+
+/* Hero bleed variants */
+.hero-bleed-zoom {
+  animation: hero-editorial-zoom 20s ease-out forwards;
+}
+
+.hero-bleed-rise {
+  animation: heroBleedRise 0.8s ease-out forwards;
+}
+
+.hero-bleed-grain {
+  animation: heroBleedGrainDrift 20s linear infinite;
+}
+
+/* Home grain overlay */
+.home-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* Home trust glass */
+.home-trust-glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* Warm glow glass */
+.warm-glow-glass {
+  background: color-mix(in srgb, var(--color-linen) 92%, var(--color-moon-gold) 8%);
+  border: 1px solid color-mix(in srgb, var(--color-stone) 75%, transparent);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(31, 28, 26, 0.06);
+}
+
+/* Home glass frame */
+.home-glass-frame {
+  background: linear-gradient(180deg, var(--color-clean-white) 0%, var(--color-linen) 100%);
+  border: 1px solid color-mix(in srgb, var(--color-stone) 65%, transparent);
+  box-shadow: 0 16px 40px -24px rgba(31, 28, 26, 0.12);
+}
+
+/* Home glass chip */
+.home-glass-chip {
+  background: color-mix(in srgb, var(--color-clean-white) 88%, var(--color-linen) 12%);
+  border: 1px solid color-mix(in srgb, var(--color-stone) 55%, transparent);
+  box-shadow: 0 6px 18px rgba(31, 28, 26, 0.06);
+}
+
+.home-glass-chip:hover {
+  background: color-mix(in srgb, var(--color-clean-white) 92%, var(--color-linen) 8%);
+  border-color: color-mix(in srgb, var(--color-dusk-plum) 22%, var(--color-stone) 78%);
+}
+
+/* Section divider wrap */
+.section-divider-wrap {
+  display: block;
+  inline-size: 100%;
+  padding-block: 2rem;
+  overflow: hidden;
+}
+
+.section-divider-wrap svg {
+  inline-size: 100%;
+  block-size: auto;
+  max-block-size: 60px;
+}
+
+.section-divider-wrap path {
+  fill: none;
+  stroke: var(--color-stone);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* === prefers-reduced-motion global guard === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-reveal],
+  [data-reveal].is-revealed,
+  [data-reveal].data-reveal-pending,
+  [data-reveal][data-reveal-pending="false"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-reveal="divider"] svg path,
+  [data-reveal="divider"].is-revealed svg path,
+  [data-reveal="divider"][data-reveal-pending="false"] svg path {
+    stroke-dashoffset: 0;
+  }
+
+  .merch-card-lift,
+  .merch-card-lift:hover,
+  .cta-clay:hover,
+  .vibe-card-img,
+  .group:hover .vibe-card-img,
+  .vibe-card-explore,
+  .group:hover .vibe-card-explore,
+  .feeling-polaroid,
+  .hero-bleed-zoom,
+  .hero-bleed-rise,
+  .hero-bleed-grain {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+  }
+}
