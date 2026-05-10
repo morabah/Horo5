@@ -1,0 +1,133 @@
+/* ===== HORO: Exit Intent Modal ===== */
+
+.horo-exit-intent {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.horo-exit-intent--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.horo-exit-intent__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.horo-exit-intent__panel {
+  position: relative;
+  width: 100%;
+  max-width: 48rem;
+  padding: 3.2rem;
+  border-radius: 1.2rem;
+  text-align: center;
+  background: rgb(var(--color-background));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+.horo-exit-intent__close {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(var(--color-foreground), 0.06);
+  color: rgb(var(--color-foreground));
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.horo-exit-intent__close:hover {
+  background: rgba(var(--color-foreground), 0.12);
+}
+
+.horo-exit-intent__heading {
+  margin: 0 0 1.2rem;
+  color: rgb(var(--color-foreground));
+}
+
+.horo-exit-intent__body {
+  margin: 0 0 2rem;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: rgb(var(--color-foreground));
+  opacity: 0.75;
+}
+
+.horo-exit-intent__coupon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0 0 2rem;
+  padding: 1.2rem 1.6rem;
+  border: 1px dashed rgba(var(--color-foreground), 0.2);
+  border-radius: 0.6rem;
+  background: rgba(var(--color-foreground), 0.03);
+}
+
+.horo-exit-intent__coupon-label {
+  font-size: 1.3rem;
+  opacity: 0.7;
+}
+
+.horo-exit-intent__coupon-code {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-foreground));
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.horo-exit-intent__copy {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgb(var(--color-link));
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.horo-exit-intent__copy:hover {
+  text-decoration: underline;
+}
+
+.horo-exit-intent__cta {
+  min-width: 20rem;
+}
+
+@media screen and (max-width: 749px) {
+  .horo-exit-intent__panel {
+    padding: 2.4rem 2rem;
+  }
+
+  .horo-exit-intent__heading {
+    font-size: 2rem;
+  }
+
+  .horo-exit-intent__body {
+    font-size: 1.3rem;
+  }
+}

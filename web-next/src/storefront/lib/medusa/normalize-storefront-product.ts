@@ -52,6 +52,7 @@ export type StorefrontProductApi = {
   stockNote?: string;
   story: string;
   thumbnail?: string | null;
+  hasValidPrimaryImage?: boolean;
   trustBadges?: string[];
   useCase?: string;
   variantsBySize?: StorefrontVariantApi;
@@ -162,6 +163,7 @@ export function normalizeStorefrontProductApi(product: StorefrontProductApi): Pr
     stockNote: product.stockNote,
     story: product.story,
     thumbnail: product.thumbnail,
+    hasValidPrimaryImage: product.hasValidPrimaryImage,
     trustBadges: product.trustBadges,
     useCase: product.useCase,
     variantsBySize: normalizeVariantMap(product.variantsBySize),

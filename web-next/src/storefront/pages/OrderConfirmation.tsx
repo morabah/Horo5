@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { LoyaltyCreditBanner } from '../components/LoyaltyCreditBanner';
+import { LoyaltyVIPBadge } from '../components/LoyaltyVIPBadge';
+import { PostPurchaseEmailPreview } from '../components/PostPurchaseEmailPreview';
+import { ReferralCard } from '../components/ReferralCard';
+import { ShareYourFit } from '../components/ShareYourFit';
 import { TeeImage } from '../components/TeeImage';
 import { trackPurchase } from '../analytics/events';
 import { getCartLineViews } from '../cart/view';
@@ -574,6 +578,11 @@ export function OrderConfirmation() {
               : copy.confirmation.followUpFallback}
           </p>
         </section>
+
+        <LoyaltyVIPBadge />
+        <PostPurchaseEmailPreview />
+        <ReferralCard />
+        <ShareYourFit />
 
         <section className="mb-8 rounded-2xl border border-stone/45 bg-white/75 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">

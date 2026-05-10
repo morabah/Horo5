@@ -4,10 +4,11 @@ import { useDictionary } from '../../i18n/ui-locale';
 import Link from 'next/link';
 import { type FormEvent, type RefObject } from 'react';
 
-import type { Product, ProductSizeKey, Feeling } from '../../data/catalog-types';
+import type { Product, ProductSizeKey, Feeling, StockStatusKey } from '../../data/catalog-types';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
 import { pickLocalizedText } from '../../lib/storefront/incentives-client';
+import { StockStatusChip } from '../StockStatusChip';
 import { PdpSizeSelector } from './PdpSizeSelector';
 
 
@@ -37,6 +38,7 @@ type PdpBuyBoxProps = {
   feeling: Feeling | undefined;
   pdpArtist: { name: string; avatarSrc?: string } | null;
   isArabic: boolean;
+  isRevealMode?: boolean;
   // Price
   displayPriceEgp: number;
   displayOriginalPriceEgp: number | null;
@@ -56,6 +58,7 @@ type PdpBuyBoxProps = {
   // Size
   sizeButtons: { key: string; disabled?: boolean }[];
   selectedSize: string | null;
+  selectedStockStatus?: StockStatusKey | null;
   oosSelected: boolean;
   sizeReady: boolean;
   sizeTableResolved: PdpSizeTableConfig;
@@ -93,6 +96,7 @@ export function PdpBuyBox({
   feeling,
   pdpArtist,
   isArabic,
+  isRevealMode,
   displayPriceEgp,
   displayOriginalPriceEgp,
   promoCountdown,
@@ -107,6 +111,7 @@ export function PdpBuyBox({
   onColorSelect,
   sizeButtons,
   selectedSize,
+  selectedStockStatus,
   oosSelected,
   sizeReady,
   sizeTableResolved,
@@ -254,6 +259,7 @@ export function PdpBuyBox({
                 {priceSizeLabel}
               </p>
             ) : null}
+            <StockStatusChip status={selectedStockStatus} />
           </div>
 
           {/* Short description */}
@@ -371,8 +377,8 @@ export function PdpBuyBox({
             </span>
           </div>
 
-          {/* WhatsApp order button */}
-          {whatsappSupportUrl ? (
+          {/* WhatsApp order button — hidden in reveal mode */}
+          {whatsappSupportUrl && !isRevealMode ? (
             <a
               href={whatsappSupportUrl}
               target="_blank"
@@ -384,15 +390,17 @@ export function PdpBuyBox({
             </a>
           ) : null}
 
-          {/* OOS notify form */}
-          {oosSelected ? (
+          {/* Notify form — OOS or reveal mode */}
+          {oosSelected || isRevealMode ? (
             <div ref={notifyFormRef} className="space-y-3">
               {notifySuccess ? (
                 <p
                   className="rounded-xl border border-deep-teal/25 bg-frost-blue/40 px-4 py-3 font-body text-sm text-obsidian"
                   role="status"
                 >
-                  {copy.notifySuccess}
+                  {isRevealMode
+                    ? (isArabic ? 'تم الحفظ — سنراسلك عند طرح هذه القطعة.' : "Saved — we'll reach out when this piece goes live.")
+                    : copy.notifySuccess}
                 </p>
               ) : (
                 <form onSubmit={onNotifySubmit} className="space-y-3">
@@ -400,7 +408,9 @@ export function PdpBuyBox({
                     htmlFor={notifyFieldId}
                     className="font-label block text-[11px] font-medium uppercase tracking-[0.18em] text-label"
                   >
-                    {copy.notifyFieldLabel}
+                    {isRevealMode
+                      ? (isArabic ? 'احصل على إشعار عند الإطلاق' : 'Get notified when this drops')
+                      : copy.notifyFieldLabel}
                   </label>
                   <input
                     ref={notifyInputRef}
@@ -408,7 +418,7 @@ export function PdpBuyBox({
                     type="email"
                     name="notify-email"
                     autoComplete="email"
-                    placeholder={copy.notifyEmailPlaceholder}
+                    placeholder={isRevealMode ? (isArabic ? 'بريدك الإلكتروني' : 'Your email') : copy.notifyEmailPlaceholder}
                     value={notifyEmail}
                     onChange={(event) => onNotifyEmailChange(event.target.value)}
                     className="min-h-12 w-full rounded-xl border border-stone bg-white px-4 py-3 font-body text-sm text-obsidian shadow-sm placeholder:text-clay/80 focus:border-deep-teal focus:outline-none focus:ring-2 focus:ring-deep-teal/25"
@@ -422,7 +432,7 @@ export function PdpBuyBox({
                   ) : null}
                   <button type="submit" className={ctaClass}>
                     <IconCart />
-                    <span>{copy.notifyMeCTA}</span>
+                    <span>{isRevealMode ? (isArabic ? 'أخبرني عند الإطلاق' : 'Notify me when live') : copy.notifyMeCTA}</span>
                   </button>
                 </form>
               )}

@@ -747,6 +747,20 @@
       "first_drop_confirm": "You're on the list — we'll reach out when the next drop is ready.",
       "first_drop_disclaimer": "We use WhatsApp or email only for drop announcements. No resale, no spam."
     },
+    "exit_intent": {
+      "copy": "Copy",
+      "copy_coupon": "Copy coupon code",
+      "coupon_label": "Your code:"
+    },
+    "feeling_quiz": {
+      "restart": "Take the quiz again"
+    },
+    "launch_countdown": {
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds"
+    },
     "pages": {
       "size_guide_eyebrow": "Fit help",
       "size_guide_title": "Size Guide",

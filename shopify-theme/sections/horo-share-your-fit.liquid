@@ -1,0 +1,107 @@
+{{ 'component-horo-share-your-fit.css' | asset_url | stylesheet_tag }}
+
+<div class="horo-share-your-fit section-{{ section.id }}-padding">
+  <div class="page-width">
+    <div class="share-fit__header">
+      <h2 class="{{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
+      <p>{{ section.settings.subheading | escape }}</p>
+    </div>
+    
+    <div class="share-fit__form-wrapper">
+      {%- form 'contact', id: 'ShareFitForm' -%}
+        {%- if form.posted_successfully? -%}
+          <p class="form-status form-status-list form__message" tabindex="-1" autofocus>
+            Thank you! Your fit has been submitted.
+          </p>
+        {%- else -%}
+          <input type="hidden" name="contact[tags]" value="share-fit">
+          <input type="hidden" name="contact[product]" value="{{ product.title | escape }}">
+          
+          <div class="field">
+            <input class="field__input" autocomplete="name" type="text" id="ShareFitName" name="contact[name]" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}" placeholder="Name">
+            <label class="field__label" for="ShareFitName">Name</label>
+          </div>
+          
+          <div class="field">
+            <input autocomplete="email" type="email" id="ShareFitEmail" class="field__input" name="contact[email]" spellcheck="false" autocapitalize="off" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}" aria-required="true" placeholder="Email">
+            <label class="field__label" for="ShareFitEmail">Email</label>
+          </div>
+          
+          <div class="field">
+            <input class="field__input" type="url" id="ShareFitPhoto" name="contact[photo_url]" placeholder="Link to your photo (Instagram, Drive, etc.)">
+            <label class="field__label" for="ShareFitPhoto">Photo link</label>
+          </div>
+          
+          <div class="field">
+            <textarea rows="4" id="ShareFitNote" class="text-area field__input" name="contact[body]" placeholder="Tell us about your look">{% if form.body %}{{ form.body }}{% endif %}</textarea>
+            <label class="form__label field__label" for="ShareFitNote">Tell us about your look</label>
+          </div>
+          
+          <div class="submit-button-wrapper">
+            <button type="submit" class="button button--primary">
+              Submit your fit
+            </button>
+          </div>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Share your fit",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Share your fit",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "default": "Upload a photo of you wearing this piece.",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Share your fit"
+    }
+  ]
+}
+{% endschema %}

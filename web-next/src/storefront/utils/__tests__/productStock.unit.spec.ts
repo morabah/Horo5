@@ -1,5 +1,6 @@
 import type { Product, ProductVariantRecord } from '../../data/site';
 import {
+  deriveProductStockStatus,
   getProductSizeStockLimit,
   getVariantStockLimit,
   productVariantCanBeSelected,
@@ -49,5 +50,39 @@ describe('product stock helpers', () => {
 
     expect(getProductSizeStockLimit(product, 'M')).toBe(4);
     expect(getProductSizeStockLimit(product, 'M', 'var_m')).toBe(4);
+  });
+
+  describe('deriveProductStockStatus', () => {
+    it('returns null when no stockStatusBySize', () => {
+      expect(deriveProductStockStatus({ variantsBySize: {} } as Product)).toBeNull();
+    });
+
+    it('returns in_stock when any size is in_stock', () => {
+      const product = {
+        stockStatusBySize: { M: 'sold_out', L: 'low_stock', XL: 'in_stock' },
+      } as Product;
+      expect(deriveProductStockStatus(product)).toBe('in_stock');
+    });
+
+    it('returns low_stock when no in_stock but some low_stock', () => {
+      const product = {
+        stockStatusBySize: { M: 'sold_out', L: 'low_stock' },
+      } as Product;
+      expect(deriveProductStockStatus(product)).toBe('low_stock');
+    });
+
+    it('returns preorder when no in_stock or low_stock but some preorder', () => {
+      const product = {
+        stockStatusBySize: { M: 'sold_out', L: 'preorder' },
+      } as Product;
+      expect(deriveProductStockStatus(product)).toBe('preorder');
+    });
+
+    it('returns sold_out when all sizes are sold_out', () => {
+      const product = {
+        stockStatusBySize: { M: 'sold_out', L: 'sold_out' },
+      } as Product;
+      expect(deriveProductStockStatus(product)).toBe('sold_out');
+    });
   });
 });

@@ -1,0 +1,252 @@
+{{ 'component-horo-gift-cohorts.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign cohorts = shop.metafields.custom.gift_cohorts.value
+  assign cohort_count = 0
+  if cohorts != blank
+    for cohort in cohorts
+      assign cohort_count = cohort_count | plus: 1
+    endfor
+  endif
+
+  if section.blocks.size > 0
+    assign has_blocks = true
+  else
+    assign has_blocks = false
+  endif
+-%}
+
+{%- if cohort_count > 0 or has_blocks or request.design_mode -%}
+  {%- style -%}
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    id="GiftCohorts-{{ section.id }}"
+    class="horo-section gift-cohorts color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  >
+    <div class="page-width">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="gift-cohorts__heading {{ section.settings.heading_size }}">
+          {{ section.settings.heading | escape }}
+        </h2>
+      {%- endif -%}
+
+      {%- if section.settings.subheading != blank -%}
+        <p class="gift-cohorts__subheading">{{ section.settings.subheading | escape }}</p>
+      {%- endif -%}
+
+      <ul class="gift-cohorts__grid" role="list">
+        {%- if cohort_count > 0 -%}
+          {%- for cohort in cohorts -%}
+            {%- assign cohort_collection = collections[cohort.collection_handle] -%}
+            <li class="gift-cohorts__item" role="listitem">
+              <a
+                href="{{ cohort_collection.url | default: routes.all_products_collection_url }}"
+                class="gift-cohorts__link"
+              >
+                <div class="gift-cohorts__image-wrapper">
+                  {%- if cohort_collection.featured_image != blank -%}
+                    {{
+                      cohort_collection.featured_image
+                      | image_url: width: 600
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '200, 400, 600',
+                        sizes: '(min-width: 750px) 33vw, 50vw',
+                        class: 'gift-cohorts__image'
+                    }}
+                  {%- elsif section.settings.fallback_image != blank -%}
+                    {{
+                      section.settings.fallback_image
+                      | image_url: width: 600
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '200, 400, 600',
+                        sizes: '(min-width: 750px) 33vw, 50vw',
+                        class: 'gift-cohorts__image'
+                    }}
+                  {%- endif -%}
+                </div>
+                <div class="gift-cohorts__content">
+                  {%- if cohort.title != blank -%}
+                    <h3 class="gift-cohorts__title">{{ cohort.title | escape }}</h3>
+                  {%- endif -%}
+                  {%- if cohort.subtitle != blank -%}
+                    <p class="gift-cohorts__subtitle">{{ cohort.subtitle | escape }}</p>
+                  {%- endif -%}
+                </div>
+              </a>
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
+
+        {%- for block in section.blocks -%}
+          {%- assign block_collection = block.settings.collection_handle -%}
+          <li class="gift-cohorts__item" role="listitem" {{ block.shopify_attributes }}>
+            <a
+              href="{{ block_collection.url | default: routes.all_products_collection_url }}"
+              class="gift-cohorts__link"
+            >
+              <div class="gift-cohorts__image-wrapper">
+                {%- if block.settings.image != blank -%}
+                  {{
+                    block.settings.image
+                    | image_url: width: 600
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '200, 400, 600',
+                      sizes: '(min-width: 750px) 33vw, 50vw',
+                      class: 'gift-cohorts__image'
+                  }}
+                {%- elsif block_collection.featured_image != blank -%}
+                  {{
+                    block_collection.featured_image
+                    | image_url: width: 600
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '200, 400, 600',
+                      sizes: '(min-width: 750px) 33vw, 50vw',
+                      class: 'gift-cohorts__image'
+                  }}
+                {%- endif -%}
+              </div>
+              <div class="gift-cohorts__content">
+                {%- if block.settings.title != blank -%}
+                  <h3 class="gift-cohorts__title">{{ block.settings.title | escape }}</h3>
+                {%- elsif block_collection.title != blank -%}
+                  <h3 class="gift-cohorts__title">{{ block_collection.title | escape }}</h3>
+                {%- endif -%}
+                {%- if block.settings.subtitle != blank -%}
+                  <p class="gift-cohorts__subtitle">{{ block.settings.subtitle | escape }}</p>
+                {%- endif -%}
+              </div>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {%- if cohort_count == 0 and section.blocks.size == 0 and request.design_mode -%}
+        <div class="gift-cohorts__placeholder">
+          <p>
+            Add a <code>custom.gift_cohorts</code> shop metafield (JSON array) or configure blocks below to populate gift cohort cards.
+          </p>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Gift Cohorts",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Gift by meaning",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "default": "Say it without saying it.",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "image_picker",
+      "id": "fallback_image",
+      "label": "Fallback image",
+      "info": "Shown when a collection has no featured image."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "blocks": [
+    {
+      "type": "cohort",
+      "name": "Cohort",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "default": "For the bold",
+          "label": "Title"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "default": "Pieces that speak before you do",
+          "label": "Subtitle"
+        },
+        {
+          "type": "collection",
+          "id": "collection_handle",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Gift Cohorts"
+    }
+  ]
+}
+{% endschema %}

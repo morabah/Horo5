@@ -1,0 +1,79 @@
+/* ===== HORO: Launch Countdown ===== */
+
+.launch-countdown {
+  text-align: center;
+}
+
+.launch-countdown__heading {
+  margin-block: 0 1.2rem;
+  color: rgb(var(--color-foreground));
+}
+
+.launch-countdown__body {
+  margin-block: 0 2.4rem;
+  font-size: 1.6rem;
+  line-height: 1.5;
+  color: rgb(var(--color-foreground));
+  opacity: 0.7;
+}
+
+.launch-countdown__timer {
+  display: inline-flex;
+  gap: 1.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.launch-countdown__unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 7.2rem;
+  padding: 1.6rem 1.2rem;
+  border-radius: 0.8rem;
+  background: rgba(var(--color-foreground), 0.04);
+  border: 1px solid rgba(var(--color-foreground), 0.08);
+}
+
+.launch-countdown__value {
+  font-size: 3.2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: rgb(var(--color-foreground));
+}
+
+.launch-countdown__label {
+  margin-block: 0.8rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+}
+
+.launch-countdown__ended {
+  margin-block: 2rem 0 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: rgb(var(--color-foreground));
+}
+
+@media screen and (max-width: 749px) {
+  .launch-countdown__timer {
+    gap: 1rem;
+  }
+
+  .launch-countdown__unit {
+    min-width: 6rem;
+    padding: 1.2rem 0.8rem;
+  }
+
+  .launch-countdown__value {
+    font-size: 2.4rem;
+  }
+
+  .launch-countdown__label {
+    font-size: 1rem;
+  }
+}

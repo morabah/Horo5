@@ -1216,6 +1216,7 @@ function buildProduct(
     story: asString(metadata.story) || product.description || "",
     storyDescription: asString(metadata.storyDescription) || undefined,
     thumbnail: mainImage,
+    hasValidPrimaryImage: Boolean(mainImage),
     ...(product.updated_at ? { updatedAt: product.updated_at } : {}),
     trustBadges: trustBadges.length > 0 ? trustBadges : (defaultTrustBadges && defaultTrustBadges.length > 0 ? [...defaultTrustBadges] : [...DEFAULT_TRUST_BADGES]),
     worksFor: asStringArrayOrCSV(metadata.worksFor),
@@ -1223,6 +1224,7 @@ function buildProduct(
     variantsBySize,
     ...(variantsByColor ? { variantsByColor } : {}),
     wearerStories: asObjectArray(metadata.wearerStories),
+    artistStorySlides: asObjectArray(metadata.artist_story_slides),
   }
 }
 
@@ -1555,7 +1557,7 @@ export async function retrieveStorefrontProductsByHandles(
   const out: StorefrontProductDTO[] = []
   for (const handle of unique) {
     const product = byHandle.get(handle)
-    if (product) {
+    if (product && product.hasValidPrimaryImage) {
       out.push(product)
     }
   }
@@ -1824,7 +1826,8 @@ export async function buildStorefrontCatalog(scope: MedusaContainer): Promise<St
     listStorefrontMerchEvents(scope),
     retrieveStorefrontSettingsPayload(scope),
   ])
-  const products = sortStorefrontProducts(pq.products, pq.categoriesById, artistsBySlug, pq.priceListEndsAtByVariantId, settings.defaultTrustBadges)
+  const sortedProducts = sortStorefrontProducts(pq.products, pq.categoriesById, artistsBySlug, pq.priceListEndsAtByVariantId, settings.defaultTrustBadges)
+  const products = sortedProducts.filter((p) => p.hasValidPrimaryImage)
 
   const { feelings, subfeelings } = feelingsBundle
 

@@ -86,6 +86,8 @@ export type StorefrontProductDTO = {
   customersAlsoBoughtSlugs?: string[]
   decorationType?: "plain" | "graphic" | "embroidered" | "mixed"
   description?: string
+  /** True when the product has a non-null primary image (thumbnail / main). Used to gate catalog during launch readiness. */
+  hasValidPrimaryImage: boolean
   /** Emotion/mood cues from metadata.feelsLike — e.g. ["quiet confidence", "rebel energy"]. */
   feelsLike?: string[]
   feelingSlug: string
@@ -159,6 +161,7 @@ export type StorefrontProductDTO = {
    */
   variantsByColor?: Record<string, StorefrontVariantDTO[]>
   wearerStories?: Array<Record<string, unknown>>
+  artistStorySlides?: Array<Record<string, unknown>>
 }
 
 export type StorefrontFeelingDTO = {

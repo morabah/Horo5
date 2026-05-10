@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import {
   pickLocalizedStorefrontText,
   type LocalizedStorefrontText,
@@ -7,6 +7,7 @@ import {
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 import { HOME_TRUST_BADGES } from '../data/homeContent';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { getArtists, getProducts, productHasRealImage } from '../data/site';
 
 const TRUST_ICONS: Record<string, ReactNode> = {
   premiumCotton: (
@@ -44,11 +45,25 @@ function canShowTrustItem(item: { key: string }): boolean {
   return isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl);
 }
 
+function useTrustStats() {
+  const [artists, setArtists] = useState(0);
+  const [pieces, setPieces] = useState(0);
+
+  useEffect(() => {
+    setArtists(getArtists().filter((a) => a.active !== false).length);
+    setPieces(getProducts().filter(productHasRealImage).length);
+  }, []);
+
+  return { artists, pieces };
+}
+
 export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
   const isArabic = locale === 'ar';
   const sectionItems = trustItemsFromSection(section);
+  const { artists, pieces } = useTrustStats();
+
   const items =
     sectionItems.length > 0
       ? sectionItems.filter(canShowTrustItem).map((item) => {
@@ -70,12 +85,12 @@ export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSecti
   if (items.length === 0) return null;
 
   return (
-    <div
-      role="list"
-      aria-label={isArabic ? 'مزايا الخدمة' : 'Service promises'}
-      className="border-y border-obsidian/10 bg-linen"
-    >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4 py-3 sm:gap-x-8 sm:px-6 lg:px-8">
+    <div className="border-y border-obsidian/10 bg-linen">
+      <div
+        role="list"
+        aria-label={isArabic ? 'مزايا الخدمة' : 'Service promises'}
+        className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4 py-3 sm:gap-x-8 sm:px-6 lg:px-8"
+      >
         {items.map((badge, i) => (
           <span
             key={badge.key}
@@ -91,6 +106,27 @@ export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSecti
           </span>
         ))}
       </div>
+      {(artists > 0 || pieces > 0) && (
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-1 border-t border-obsidian/5 px-4 py-2 sm:gap-x-10 sm:px-6 lg:px-8">
+          {artists > 0 ? (
+            <span className="font-label text-[11px] font-medium uppercase tracking-[0.14em] text-clay">
+              {isArabic
+                ? `${artists}+ فنان`
+                : `${artists}+ artists`}
+            </span>
+          ) : null}
+          {pieces > 0 ? (
+            <span className="font-label text-[11px] font-medium uppercase tracking-[0.14em] text-clay">
+              {isArabic
+                ? `${pieces}+ قطعة`
+                : `${pieces}+ pieces`}
+            </span>
+          ) : null}
+          <span className="font-label text-[11px] font-medium uppercase tracking-[0.14em] text-clay">
+            {isArabic ? 'مصر' : 'Egypt'}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

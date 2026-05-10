@@ -1,0 +1,175 @@
+{{ 'component-horo-launch-countdown.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'horo-launch-countdown.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign launch_at = shop.metafields.custom.launch_at.value
+  assign launch_phase = shop.metafields.custom.launch_phase.value | default: 'live'
+  assign now_ts = 'now' | date: '%s' | plus: 0
+  assign launch_ts = launch_at | date: '%s' | plus: 0
+  assign is_future = false
+  if launch_ts > now_ts
+    assign is_future = true
+  endif
+-%}
+
+{%- if launch_phase == 'launch' and is_future -%}
+  {%- style -%}
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
+
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
+
+  <div
+    id="LaunchCountdown-{{ section.id }}"
+    class="horo-section launch-countdown color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    data-launch-countdown
+    data-launch-at="{{ launch_at | date: '%Y-%m-%dT%H:%M:%S' }}"
+    data-timezone="Africa/Cairo"
+  >
+    <div class="page-width">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="launch-countdown__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.body != blank -%}
+        <p class="launch-countdown__body">{{ section.settings.body | escape }}</p>
+      {%- endif -%}
+
+      <div class="launch-countdown__timer" data-countdown-display aria-live="polite">
+        <div class="launch-countdown__unit">
+          <span class="launch-countdown__value" data-countdown-days>--</span>
+          <span class="launch-countdown__label">{{ 'horo.launch_countdown.days' | t | default: 'Days' | escape }}</span>
+        </div>
+        <div class="launch-countdown__unit">
+          <span class="launch-countdown__value" data-countdown-hours>--</span>
+          <span class="launch-countdown__label">{{ 'horo.launch_countdown.hours' | t | default: 'Hours' | escape }}</span>
+        </div>
+        <div class="launch-countdown__unit">
+          <span class="launch-countdown__value" data-countdown-minutes>--</span>
+          <span class="launch-countdown__label">{{ 'horo.launch_countdown.minutes' | t | default: 'Minutes' | escape }}</span>
+        </div>
+        <div class="launch-countdown__unit">
+          <span class="launch-countdown__value" data-countdown-seconds>--</span>
+          <span class="launch-countdown__label">{{ 'horo.launch_countdown.seconds' | t | default: 'Seconds' | escape }}</span>
+        </div>
+      </div>
+
+      {%- if section.settings.show_ended_message -%}
+        <p class="launch-countdown__ended" data-countdown-ended hidden>
+          {{ section.settings.ended_message | default: "We're live!" | escape }}
+        </p>
+      {%- endif -%}
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="launch-countdown" style="opacity:0.6;">
+        <h2 class="launch-countdown__heading">Launch countdown</h2>
+        <div class="launch-countdown__timer">
+          <div class="launch-countdown__unit">
+            <span class="launch-countdown__value">02</span>
+            <span class="launch-countdown__label">Days</span>
+          </div>
+          <div class="launch-countdown__unit">
+            <span class="launch-countdown__value">14</span>
+            <span class="launch-countdown__label">Hours</span>
+          </div>
+          <div class="launch-countdown__unit">
+            <span class="launch-countdown__value">30</span>
+            <span class="launch-countdown__label">Minutes</span>
+          </div>
+          <div class="launch-countdown__unit">
+            <span class="launch-countdown__value">00</span>
+            <span class="launch-countdown__label">Seconds</span>
+          </div>
+        </div>
+        <p style="font-size:1.2rem;opacity:0.55;margin-top:0.6rem;">
+          Set <code>custom.launch_phase="launch"</code> and <code>custom.launch_at</code> shop metafields to display this countdown.
+        </p>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Launch Countdown",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Displays a live countdown when shop.metafields.custom.launch_phase == 'launch' and launch_at is in the future. Hidden otherwise."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Launching soon",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "default": "Something new is dropping. Be ready.",
+      "label": "Body text"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ended_message",
+      "default": true,
+      "label": "Show 'ended' message",
+      "info": "Shown when the countdown reaches zero."
+    },
+    {
+      "type": "text",
+      "id": "ended_message",
+      "default": "We're live! Refresh to shop.",
+      "label": "Ended message"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Launch Countdown"
+    }
+  ]
+}
+{% endschema %}

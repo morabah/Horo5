@@ -70,6 +70,17 @@
               assign quantity_rule_soldout = true
             endif
           -%}
+
+          {%- if check_against_inventory and product.selected_or_first_available_variant.inventory_quantity > 0 -%}
+            <div class="horo-stock-status">
+              {%- if product.selected_or_first_available_variant.inventory_quantity <= 5 -%}
+                <span class="stock-badge stock-badge--low">Only {{ product.selected_or_first_available_variant.inventory_quantity }} left</span>
+              {%- else -%}
+                <span class="stock-badge stock-badge--in">In stock</span>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
           <button
             id="ProductSubmitButton-{{ section_id }}"
             type="submit"

@@ -91,6 +91,20 @@ export function buildSeoHeadArtifacts(pathname: string): SeoHeadArtifacts {
         name: 'HORO Egypt',
       };
 
+  const medusaBackend = (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || '').trim();
+  const resourceHints: LinkTagDescriptor[] = [];
+  if (medusaBackend) {
+    try {
+      const url = new URL(medusaBackend);
+      resourceHints.push(
+        { rel: 'preconnect', href: `${url.protocol}//${url.host}` },
+        { rel: 'dns-prefetch', href: `${url.protocol}//${url.host}` },
+      );
+    } catch {
+      /* ignore invalid URL */
+    }
+  }
+
   return {
     title: meta.title,
     metaTags: [
@@ -108,7 +122,10 @@ export function buildSeoHeadArtifacts(pathname: string): SeoHeadArtifacts {
       { name: 'twitter:description', content: meta.description },
       ...(ogImage ? [{ name: 'twitter:image', content: ogImage }] : []),
     ],
-    linkTags: canonical ? [{ rel: 'canonical', href: canonical }] : [],
+    linkTags: [
+      ...(canonical ? [{ rel: 'canonical', href: canonical }] : []),
+      ...resourceHints,
+    ],
     jsonLd: [organizationLd, websiteLd, ...routeStructuredData],
   };
 }

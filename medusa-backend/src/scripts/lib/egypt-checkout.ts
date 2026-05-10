@@ -13,10 +13,19 @@ export function isPaymobConfigured() {
   )
 }
 
+export function isFawryConfigured() {
+  return Boolean(
+    process.env.PAYMOB_API_KEY?.trim() &&
+      process.env.PAYMOB_FAWRY_INTEGRATION_ID?.trim() &&
+      process.env.MEDUSA_BACKEND_URL?.trim()
+  )
+}
+
 export function getEgyptRegionPaymentProviders() {
   return [
     "pp_system_default",
     "pp_instapay_instapay",
     ...(isPaymobConfigured() ? ["pp_paymob_paymob"] : []),
+    ...(isFawryConfigured() ? ["pp_paymob_fawry"] : []),
   ]
 }

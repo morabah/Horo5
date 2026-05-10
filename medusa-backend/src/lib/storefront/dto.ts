@@ -106,6 +106,7 @@ export const storefrontProductSchema = z.looseObject({
     useCase: z.string().optional(),
     variantsBySize: z.record(z.string(), storefrontVariantSchema),
     wearerStories: z.array(z.record(z.string(), z.unknown())).optional(),
+    artistStorySlides: z.array(z.record(z.string(), z.unknown())).optional(),
   })
 
 const storefrontNavItemSchema = z.looseObject({

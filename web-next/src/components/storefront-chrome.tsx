@@ -8,27 +8,28 @@ import { FunnelNavigationTracker } from "@/storefront/components/FunnelNavigatio
 import { Nav } from "@/storefront/components/Nav";
 import { Footer } from "@/storefront/components/Footer";
 import type { StorefrontSettingsPayload } from "@/lib/storefront-server";
+import { LaunchCountdownBanner } from "@/storefront/components/LaunchCountdownBanner";
+import { ConsentBanner } from "@/storefront/components/ConsentBanner";
+import { SkipLink } from "@/storefront/components/SkipLink";
 
 /** App shell for main storefront pages: skip link, nav, footer, analytics wrapper. */
 export function StorefrontChrome({
   children,
   navigation = null,
+  launchAt = null,
 }: {
   children: ReactNode;
   navigation?: StorefrontSettingsPayload["navigation"];
+  launchAt?: string | null;
 }) {
   const pathname = usePathname() ?? "/";
   const isHome = pathname === "/";
 
   return (
     <>
-      <a
-        href="#main-content"
-        className="sr-only left-4 top-[max(0.75rem,env(safe-area-inset-top))] z-[300] rounded-sm border border-outline-variant/50 bg-papyrus px-4 py-3 font-label text-[11px] font-semibold uppercase tracking-widest text-obsidian shadow-md outline-none ring-deep-teal focus:not-sr-only focus:fixed focus:ring-2"
-      >
-        Skip to main content
-      </a>
+      <SkipLink />
       <FunnelNavigationTracker />
+      {launchAt ? <LaunchCountdownBanner launchAt={launchAt} /> : null}
       <Suspense fallback={null}>
         <Nav navigation={navigation} />
       </Suspense>
@@ -36,6 +37,7 @@ export function StorefrontChrome({
         <AppErrorBoundary key={pathname}>{children}</AppErrorBoundary>
       </main>
       <Footer />
+      <ConsentBanner />
     </>
   );
 }

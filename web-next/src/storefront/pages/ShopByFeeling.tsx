@@ -31,6 +31,7 @@ function sortActiveFeelings(feelings: Feeling[]) {
         (left.feeling.sortOrder ?? left.index) - (right.feeling.sortOrder ?? right.index) ||
         left.index - right.index,
     )
+    .slice(0, 8)
     .map((entry) => entry.feeling);
 }
 

@@ -37,7 +37,7 @@ export function VibeCommerceCard({
   const coverSrc = cover.src?.trim() ? cover.src : heroVectorizedV2;
   const displayCoverSrc = resolveProductImageSrcForDisplay(coverSrc);
   const accentColor = feeling.accent?.trim() || '#53706c';
-  const bodyCopy = feeling.blurb || feeling.tagline || '';
+  const bodyCopy = feeling.tagline || feeling.blurb || '';
   const ctaLabel = variant === 'see-vibe' ? DICTIONARY.en.vibes.cardSeeVibeCta : DICTIONARY.en.vibes.cardExploreCta;
   const ariaLabel = DICTIONARY.en.vibes.cardAriaTemplate
     .replace('{cta}', ctaLabel.replace(/\s*→$/, '').trim())
@@ -102,7 +102,7 @@ export function VibeCommerceCard({
               />
               {titleEl}
             </div>
-            <p className="relative z-10 mt-1 line-clamp-2 pl-[clamp(1.125rem,5cqw,1.375rem)] font-body text-[clamp(0.6875rem,2.8cqw,0.84rem)] leading-snug text-white/90">
+            <p className="relative z-10 mt-1 line-clamp-1 pl-[clamp(1.125rem,5cqw,1.375rem)] font-body text-[clamp(0.6875rem,2.8cqw,0.84rem)] leading-snug text-white/90">
               {bodyCopy}
             </p>
             <span className="relative z-10 mt-2 inline-flex items-center gap-1.5 pl-[clamp(1.125rem,5cqw,1.375rem)] font-body text-[clamp(0.75rem,2.7cqw,0.82rem)] font-medium text-white">

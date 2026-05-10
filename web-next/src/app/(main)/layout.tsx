@@ -1,6 +1,7 @@
 import { OrganizationJsonLd } from "@/components/organization-jsonld";
 import { StorefrontChrome } from "@/components/storefront-chrome";
 import { fetchStorefrontSettingsServer, logStorefrontFetchError } from "@/lib/storefront-server";
+import { getPreLaunchPhase, getLaunchAt } from "@/lib/pre-launch";
 import { Providers } from "../providers";
 
 export default async function MainStoreLayout({
@@ -14,10 +15,15 @@ export default async function MainStoreLayout({
     return null;
   });
 
+  const phase = getPreLaunchPhase();
+  const launchAt = phase === "launch" ? getLaunchAt()?.toISOString() ?? null : null;
+
   return (
     <Providers initialCatalog={null} renderedAt={renderedAt} skipCatalogHydration>
       <OrganizationJsonLd />
-      <StorefrontChrome navigation={settings?.navigation ?? null}>{children}</StorefrontChrome>
+      <StorefrontChrome navigation={settings?.navigation ?? null} launchAt={launchAt}>
+        {children}
+      </StorefrontChrome>
     </Providers>
   );
 }

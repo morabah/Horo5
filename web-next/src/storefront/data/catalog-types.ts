@@ -277,6 +277,8 @@ export type Product = {
   physicalAttributes?: ProductPhysicalAttributes;
   /** Optional studio / design-intent quotes — not customer reviews (no review schema emitted). */
   wearerStories?: readonly WearerStory[];
+  /** Reveal mode artist studio slides from Medusa metadata.artist_story_slides */
+  artistStorySlides?: { src: string; labelEn: string; labelAr: string; descriptionEn: string; descriptionAr: string }[];
   /** Runtime-configurable trust/service bullets surfaced on PDP and merchandising entry points. */
   trustBadges?: readonly string[];
   /** Merchandising: complementary product slugs for “Style it with”. */
@@ -290,6 +292,8 @@ export type Product = {
   /** Occasion/moment cues from Medusa metadata.worksFor — e.g. ["night out", "gift"]. */
   worksFor?: string[];
   thumbnail?: string | null;
+  /** True when the product has a non-null primary image. Used to gate catalog during launch readiness. */
+  hasValidPrimaryImage?: boolean;
   media?: ProductMediaRecord;
   variantsBySize?: Partial<Record<ProductSizeKey, ProductVariantRecord>>;
   /**

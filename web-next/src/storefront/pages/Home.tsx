@@ -8,11 +8,14 @@ import { trackHomeScrollMilestone, trackHomeView } from '../analytics/funnel';
 import { HomeArtistSpotlight } from '../components/HomeArtistSpotlight';
 import { HomeBehindThePiece } from '../components/HomeBehindThePiece';
 import { HomeFeelingCards } from '../components/HomeFeelingCards';
+import { HomeFeelingQuiz } from '../components/HomeFeelingQuiz';
 import { HomeFeaturedPiece } from '../components/HomeFeaturedPiece';
 import { HomeFirstDropCircle } from '../components/HomeFirstDropCircle';
 import { HomeHeroWearMean } from '../components/HomeHeroWearMean';
 import { HomeGiftBlock } from '../components/HomeGiftBlock';
+import { HomeLatestDrop } from '../components/HomeLatestDrop';
 import { HomeOccasionCards } from '../components/HomeOccasionCards';
+import { PillarSurfaceMap } from '../components/PillarSurfaceMap';
 import { HomePrimaryRoutes } from '../components/HomePrimaryRoutes';
 import { HomeSeenOnYou } from '../components/HomeSeenOnYou';
 import { HomeStartHere } from '../components/HomeStartHere';
@@ -35,7 +38,7 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
  * Default homepage section list.
  *
  * Keep the launch-mode storefront short and shop-led (audit P1):
- * hero · trust ribbon · founding drop grid · feeling grid · gift block.
+ * hero · trust ribbon · founding drop grid · feeling quiz · feeling grid · latest drop · gift block.
  *
  * Operators can override the order or re-enable additional sections from the
  * homepage_section module. `store.metadata.homepage.sectionsEnabled` remains a
@@ -45,7 +48,9 @@ const HOME_DEFAULT_SECTIONS: readonly string[] = [
   'hero',
   'trust_ribbon',
   'founding_drop',
+  'feeling_quiz',
   'feeling_grid',
+  'latest_drop',
   'gift_block',
 ];
 
@@ -59,9 +64,12 @@ const HOME_SECTION_COMPONENTS: Record<string, HomeSectionRenderer> = {
   featured_piece: () => <HomeFeaturedPiece />,
   behind_the_piece: () => <HomeBehindThePiece />,
   feeling_grid: ({ section }) => <HomeFeelingCards section={section} />,
+  feeling_quiz: () => <HomeFeelingQuiz />,
   occasion_grid: () => <HomeOccasionCards />,
   why_horo: () => <HomeWhyHoro />,
   gift_block: ({ section }) => <HomeGiftBlock section={section} />,
+  latest_drop: () => <HomeLatestDrop />,
+  pillar_surface_map: () => <PillarSurfaceMap />,
   first_drop_circle: () => <HomeFirstDropCircle />,
   artist_spotlight: () =>
     HOME_FEATURED_ARTIST || getArtists().length > 0 ? <HomeArtistSpotlight /> : null,

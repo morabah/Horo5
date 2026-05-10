@@ -61,6 +61,10 @@ const ProductQuickView = dynamic(
   () => import('../components/ProductQuickView').then((m) => m.ProductQuickView),
   { ssr: false },
 );
+const ArtistStudioBlock = dynamic(
+  () => import('../components/ArtistStudioBlock').then((m) => m.ArtistStudioBlock),
+  { ssr: false, loading: () => <div className="h-64" /> },
+);
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { humanizeArtistSlugForDisplay } from '../utils/humanizeArtistSlug';
@@ -79,6 +83,7 @@ import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useWishlist } from '../hooks/useWishlist';
 import { useCountdown } from '../hooks/useCountdown';
 import { useStableNow } from '../runtime/render-time';
+import type { PreLaunchPhase } from '@/lib/pre-launch';
 import type { PdpDeliveryRules } from '../utils/deliveryEstimate';
 import {
   formatPdpFitModelLine,
@@ -164,6 +169,7 @@ type ProductDetailProps = {
   deliveryRules?: PdpDeliveryRules;
   /** Size chart + model lines from RSC; when omitted, merged from built-in defaults + product.sizeTableKey. */
   sizeTableConfig?: PdpSizeTableConfig;
+  preLaunchPhase?: PreLaunchPhase;
 };
 
 export function ProductDetail({
@@ -173,6 +179,7 @@ export function ProductDetail({
   initialSlug,
   deliveryRules: deliveryRulesProp,
   sizeTableConfig: sizeTableConfigProp,
+  preLaunchPhase,
 }: ProductDetailProps = {}) {
   if (initialProduct || catalogSnapshot || catalogProducts?.length) {
     const productsForRuntime = [
@@ -192,6 +199,7 @@ export function ProductDetail({
   const shellCopy = useDictionary();
   const { pdp: copy } = shellCopy;
   const isArabic = locale === 'ar';
+  const isRevealMode = preLaunchPhase === 'reveal';
   const now = useStableNow();
   const [searchParams] = useAppSearchParams();
   const { addItem, setMiniCartOpen } = useCart();
@@ -622,6 +630,7 @@ export function ProductDetail({
     return [...bySlug.values()];
   }, [frequentlyBoughtWithProducts, styleWithProducts]);
   const showCrossSellSection =
+    !isRevealMode &&
     !compactPdp &&
     uniqueCrossSellCompanions.length >= 3 &&
     (primaryCrossSellProducts.length > 0 || fallbackCrossSellProducts.length > 0);
@@ -705,18 +714,6 @@ export function ProductDetail({
       );
     }
   }, [lightboxOpen, photoIndex, gallery.length, heroView.label]);
-
-  useEffect(() => {
-    if (!primaryGallerySrc) return;
-
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = imgUrl(primaryGallerySrc, 1200);
-    document.head.appendChild(link);
-
-    return () => link.remove();
-  }, [primaryGallerySrc]);
 
   useEffect(() => {
     if (!sizeGuideOpen) return;
@@ -895,7 +892,7 @@ export function ProductDetail({
 
   function handleNotifySubmit(event: FormEvent) {
     event.preventDefault();
-    if (!product || !selectedSize || !sizeDef?.disabled) return;
+    if (!product) return;
 
     const email = notifyEmail.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -904,6 +901,22 @@ export function ProductDetail({
     }
 
     setNotifyError(false);
+
+    if (isRevealMode) {
+      void fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          locale,
+          source: `pdp_notify_${product.slug}`,
+        }),
+      });
+      setNotifySuccess(true);
+      return;
+    }
+
+    if (!selectedSize || !sizeDef?.disabled) return;
     notifyRestockSignup({ productSlug: product.slug, size: selectedSize, email });
     setNotifySuccess(true);
   }
@@ -919,6 +932,12 @@ export function ProductDetail({
 
   function handlePrimaryAction() {
     if (!product) return;
+
+    if (isRevealMode) {
+      notifyFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      window.setTimeout(() => notifyInputRef.current?.focus(), 320);
+      return;
+    }
 
     if (oosSelected) {
       notifyFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -984,6 +1003,7 @@ export function ProductDetail({
 
 
   function primaryCtaLabel() {
+    if (isRevealMode) return isArabic ? 'أخبرني عند الإطلاق' : 'Notify me when live';
     if (oosSelected) return copy.notifyMeCTA;
     if (sizeReady && product) return `${copy.addBtnCTA} — ${formatEgp(displayPriceEgp)}`;
     return copy.selectSizePrompt;
@@ -1121,6 +1141,7 @@ export function ProductDetail({
           feeling={feeling}
           pdpArtist={pdpArtist}
           isArabic={isArabic}
+          isRevealMode={isRevealMode}
           displayPriceEgp={displayPriceEgp}
           displayOriginalPriceEgp={displayOriginalPriceEgp}
           promoCountdown={promoCountdown}
@@ -1138,6 +1159,7 @@ export function ProductDetail({
           }}
           sizeButtons={sizeButtons}
           selectedSize={selectedSize}
+          selectedStockStatus={selectedStockStatus}
           oosSelected={oosSelected}
           sizeReady={sizeReady}
           sizeTableResolved={sizeTableResolved}
@@ -1205,6 +1227,14 @@ export function ProductDetail({
 
       {!compactPdp ? <PdpShareStrip productName={product.name} productSlug={product.slug} /> : null}
 
+      {isRevealMode ? (
+        <ArtistStudioBlock
+          slides={product.artistStorySlides as any}
+          artistName={pdpArtist?.name}
+          isRevealMode={isRevealMode}
+        />
+      ) : null}
+
       <PdpReviewsZone product={product} />
 
       <PdpStoryCard storyText={storyText} tagLabels={storyTagLabels} />
@@ -1252,7 +1282,7 @@ export function ProductDetail({
         onQuickView={setRelatedQuickViewSlug}
       />
 
-      {product ? (
+      {product && !isRevealMode ? (
         <StickyAddToCart
           visible={stickyCtaVisible && !lightboxOpen && !sizeGuideOpen}
           productName={product.name}

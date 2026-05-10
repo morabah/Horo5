@@ -4,6 +4,7 @@ import type { Product, RuntimeCatalog } from "@/storefront/data/site";
 import { ProductDetail } from "@/storefront/pages/ProductDetail";
 import type { PdpDeliveryRules } from "@/storefront/utils/deliveryEstimate";
 import type { PdpSizeTableConfig } from "@/storefront/data/domain-config";
+import type { PreLaunchPhase } from "@/lib/pre-launch";
 
 export function ProductDetailPage({
   slug,
@@ -12,6 +13,7 @@ export function ProductDetailPage({
   catalogProducts,
   deliveryRules,
   sizeTableConfig,
+  preLaunchPhase,
 }: {
   slug: string;
   product: Product;
@@ -21,6 +23,7 @@ export function ProductDetailPage({
   deliveryRules: PdpDeliveryRules;
   /** Merged from `store.metadata.sizeTables` + product `sizeTableKey` + built-in fallback. */
   sizeTableConfig: PdpSizeTableConfig;
+  preLaunchPhase: PreLaunchPhase;
 }) {
   return (
     <ProductDetail
@@ -30,6 +33,7 @@ export function ProductDetailPage({
       catalogProducts={catalogProducts}
       deliveryRules={deliveryRules}
       sizeTableConfig={sizeTableConfig}
+      preLaunchPhase={preLaunchPhase}
     />
   );
 }

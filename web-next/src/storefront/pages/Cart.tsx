@@ -11,6 +11,7 @@ import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
 import { getCartLineViews, type CartLineView } from '../cart/view';
 import { cartLineIdentityKey, type CartLine } from '../cart/types';
+import { ExitIntentModal } from '../components/ExitIntentModal';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -1005,6 +1006,8 @@ export function Cart({
             incentives={incentives}
           />
         </div>
+
+        <ExitIntentModal cartValueEgp={displaySubtotalEgp} />
       </div>
     </div>
   );

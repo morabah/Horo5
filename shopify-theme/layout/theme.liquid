@@ -60,6 +60,9 @@
     <script src="{{ 'horo-recently-viewed.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'horo-analytics.js' | asset_url }}" defer="defer"></script>
 
+    {%- comment -%}HORO: PostHog analytics initialization{%- endcomment -%}
+    {% render 'horo-posthog' %}
+
     {{ content_for_header }}
 
     {%- liquid
@@ -353,6 +356,7 @@
 
     <script>
       window.shopUrl = '{{ request.origin }}';
+      window.horoLaunchPhase = {{ shop.metafields.horo.launch_phase.value | json | default: '"live"' }};
       window.routes = {
         cart_add_url: '{{ routes.cart_add_url }}',
         cart_change_url: '{{ routes.cart_change_url }}',
@@ -404,6 +408,7 @@
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
 
+    {% section 'horo-exit-intent' %}
     {%- render 'horo-quick-view-modal' -%}
     {%- render 'horo-whatsapp-float' -%}
   </body>

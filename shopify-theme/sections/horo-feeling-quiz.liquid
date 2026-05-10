@@ -1,0 +1,268 @@
+{{ 'component-horo-feeling-quiz.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'horo-feeling-quiz.js' | asset_url }}" defer></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- assign all_feelings = collections['feelings'] | default: nil -%}
+
+<div
+  id="FeelingQuiz-{{ section.id }}"
+  class="horo-section feeling-quiz color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  data-feeling-quiz
+  data-result-url-template="{{ routes.collections_url }}/{{ 'handle' }}"
+>
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <h1 class="feeling-quiz__heading {{ section.settings.heading_size }}">
+        {{ section.settings.heading | escape }}
+      </h1>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <p class="feeling-quiz__subheading">{{ section.settings.subheading | escape }}</p>
+    {%- endif -%}
+
+    <div class="feeling-quiz__progress" data-quiz-progress hidden>
+      <div class="feeling-quiz__progress-track">
+        <div class="feeling-quiz__progress-bar" data-quiz-progress-bar></div>
+      </div>
+      <span class="feeling-quiz__progress-text" data-quiz-progress-text></span>
+    </div>
+
+    <div class="feeling-quiz__steps" data-quiz-steps>
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'question' -%}
+          <div
+            class="feeling-quiz__step"
+            data-quiz-step
+            data-step-index="{{ forloop.index0 }}"
+            {% unless forloop.first %}hidden{% endunless %}
+            {{ block.shopify_attributes }}
+          >
+            <h2 class="feeling-quiz__question">{{ block.settings.question | escape }}</h2>
+            <ul class="feeling-quiz__options" role="list">
+              {%- for i in (1..4) -%}
+                {%- assign label_key = 'option_' | append: i | append: '_label' -%}
+                {%- assign value_key = 'option_' | append: i | append: '_value' -%}
+                {%- assign label = block.settings[label_key] -%}
+                {%- assign value = block.settings[value_key] -%}
+                {%- if label != blank -%}
+                  <li role="listitem">
+                    <button
+                      type="button"
+                      class="feeling-quiz__option"
+                      data-quiz-option
+                      data-value="{{ value | escape }}"
+                    >
+                      {{ label | escape }}
+                    </button>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+
+      <div class="feeling-quiz__step" data-quiz-result hidden>
+        <h2 class="feeling-quiz__result-heading">{{ section.settings.result_heading | default: 'We found your feeling' | escape }}</h2>
+        <p class="feeling-quiz__result-body" data-quiz-result-body></p>
+        <a
+          href="#"
+          class="button button--primary feeling-quiz__result-cta"
+          data-quiz-result-cta
+        >
+          {{ section.settings.result_cta | default: 'Shop this feeling' | escape }}
+        </a>
+        <button
+          type="button"
+          class="link feeling-quiz__restart"
+          data-quiz-restart
+        >
+          {{ 'horo.feeling_quiz.restart' | t | default: 'Take the quiz again' | escape }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HORO Feeling Quiz",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "What are you feeling?",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "default": "Answer a few questions and we'll match you to a collection.",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h0",
+      "label": "Heading size"
+    },
+    {
+      "type": "text",
+      "id": "result_heading",
+      "default": "We found your feeling",
+      "label": "Result heading"
+    },
+    {
+      "type": "text",
+      "id": "result_cta",
+      "default": "Shop this feeling",
+      "label": "Result CTA label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 60
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "Question",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "default": "Pick a vibe for today:",
+          "label": "Question text"
+        },
+        {
+          "type": "header",
+          "content": "Option 1"
+        },
+        {
+          "type": "text",
+          "id": "option_1_label",
+          "default": "Bold and loud",
+          "label": "Label"
+        },
+        {
+          "type": "text",
+          "id": "option_1_value",
+          "default": "emotions",
+          "label": "Collection handle"
+        },
+        {
+          "type": "header",
+          "content": "Option 2"
+        },
+        {
+          "type": "text",
+          "id": "option_2_label",
+          "default": "Quiet and reflective",
+          "label": "Label"
+        },
+        {
+          "type": "text",
+          "id": "option_2_value",
+          "default": "fiction",
+          "label": "Collection handle"
+        },
+        {
+          "type": "header",
+          "content": "Option 3"
+        },
+        {
+          "type": "text",
+          "id": "option_3_label",
+          "default": "Grounded and real",
+          "label": "Label"
+        },
+        {
+          "type": "text",
+          "id": "option_3_value",
+          "default": "career",
+          "label": "Collection handle"
+        },
+        {
+          "type": "header",
+          "content": "Option 4"
+        },
+        {
+          "type": "text",
+          "id": "option_4_label",
+          "label": "Label"
+        },
+        {
+          "type": "text",
+          "id": "option_4_value",
+          "label": "Collection handle"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Feeling Quiz",
+      "blocks": {
+        "question": {
+          "1": {
+            "question": "Pick a vibe for today:",
+            "option_1_label": "Bold and loud",
+            "option_1_value": "emotions",
+            "option_2_label": "Quiet and reflective",
+            "option_2_value": "fiction",
+            "option_3_label": "Grounded and real",
+            "option_3_value": "career"
+          }
+        }
+      }
+    }
+  ]
+}
+{% endschema %}

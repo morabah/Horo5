@@ -1,5 +1,5 @@
 /** Storefront payment method discriminator (Medusa `payment_providers` ids resolved in checkout). */
-export type CheckoutPaymentMethodKind = 'cod' | 'card' | 'wallet' | 'instapay';
+export type CheckoutPaymentMethodKind = 'cod' | 'card' | 'wallet' | 'instapay' | 'fawry';
 
 /** Persisted on `LastOrderSnapshot` after place order / success. */
 export type StorefrontPaymentChoice = 'cod' | 'card' | 'instapay';
@@ -8,16 +8,18 @@ export function resolveCheckoutPaymentMethodKind(providerId: string): CheckoutPa
   const normalized = providerId.toLowerCase();
   if (normalized.includes('system_default')) return 'cod';
   if (normalized.includes('instapay')) return 'instapay';
+  if (normalized.includes('fawry')) return 'fawry';
   if (normalized.includes('apple') || normalized.includes('google')) return 'wallet';
   return 'card';
 }
 
-/** COD first (highest trust for EG mobile shoppers), then Instapay, then Paymob card, then wallets. */
+/** COD first (highest trust for EG mobile shoppers), then Instapay, then Fawry, then Paymob card, then wallets. */
 export function checkoutPaymentProviderSortKey(providerId: string): number {
   const id = providerId.toLowerCase();
   const kind = resolveCheckoutPaymentMethodKind(providerId);
   if (kind === 'cod') return 0;
   if (kind === 'instapay') return 10;
+  if (kind === 'fawry') return 20;
   if (id.includes('paymob')) return 30;
   if (kind === 'card') return 40;
   if (kind === 'wallet') {
@@ -29,7 +31,7 @@ export function checkoutPaymentProviderSortKey(providerId: string): number {
 }
 
 export function isOfflineCheckoutPaymentKind(kind: CheckoutPaymentMethodKind): boolean {
-  return kind === 'cod' || kind === 'instapay';
+  return kind === 'cod' || kind === 'instapay' || kind === 'fawry';
 }
 
 /** True when Medusa returned a COD / system_default provider for this cart region. */

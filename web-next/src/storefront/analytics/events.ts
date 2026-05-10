@@ -281,6 +281,8 @@ export function trackCheckoutSubmitted(payload: {
   shippingEgp?: number;
 }) {
   if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
   const cartPayload = createCartPayload(payload.lines, payload.subtotalEgp, payload.giftWrapEgp);
   if (cartPayload.items.length === 0) return;
 
@@ -289,6 +291,20 @@ export function trackCheckoutSubmitted(payload: {
     ...(payload.paymentMethodKind ? { payment_method_kind: payload.paymentMethodKind } : {}),
     ...(typeof payload.shippingEgp === 'number' ? { shipping: payload.shippingEgp } : {}),
   });
+
+  if (window.gtag && gaId) {
+    window.gtag('event', 'checkout_submitted', {
+      ...cartPayload,
+      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    });
+  }
+  if (window.fbq && pixelId) {
+    window.fbq('trackCustom', 'CheckoutSubmitted', {
+      value: cartPayload.value,
+      currency: 'EGP',
+      content_ids: payload.lines.map((l) => l.productSlug),
+    });
+  }
 }
 
 export function trackPaymentMethodSelected(payload: {
@@ -297,12 +313,26 @@ export function trackPaymentMethodSelected(payload: {
   source?: string;
 }) {
   if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
 
   capturePostHogCommerceEvent('commerce_payment_method_selected', {
     payment_method_kind: payload.paymentMethodKind,
     ...(payload.paymentMethodProviderId ? { payment_method_provider_id: payload.paymentMethodProviderId } : {}),
     source: payload.source ?? 'checkout',
   });
+
+  if (window.gtag && gaId) {
+    window.gtag('event', 'payment_method_selected', {
+      payment_method_kind: payload.paymentMethodKind,
+      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    });
+  }
+  if (window.fbq && pixelId) {
+    window.fbq('trackCustom', 'PaymentMethodSelected', {
+      payment_method_kind: payload.paymentMethodKind,
+    });
+  }
 }
 
 export function trackPurchase(payload: {

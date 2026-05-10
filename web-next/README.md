@@ -27,6 +27,42 @@ Storefront code reads **`process.env.NEXT_PUBLIC_*`** (see `.env.example`).
 
 ---
 
+## Pre-Launch Phases
+
+The storefront supports four launch phases controlled by `NEXT_PUBLIC_PRELAUNCH_PHASE` in `.env.local`:
+
+| Phase | Behavior |
+|---|---|
+| `tease` | Homepage shows `PreLaunchTeaseHero` with email waitlist signup. All other routes redirect to `/` via middleware. Public `/waitlist` page is always accessible. |
+| `reveal` | Shows products but disables checkout (browse-only). |
+| `launch` | Full checkout with launch countdown banner. |
+| `live` | Normal storefront (default if env is unset). |
+
+### Developer preview (dev-only)
+
+When the site is in `tease` mode, developers can preview other phases locally by adding a secret token:
+
+```
+http://localhost:3000/?_horo_preview=live&_horo_secret=YOUR_SECRET
+```
+
+Set `HORO_PREVIEW_SECRET` in `.env.local` to enable this. The secret is server-only (no `NEXT_PUBLIC_` prefix) and the override only works when the secret matches. Without it, the param is ignored and normal phase routing applies.
+
+### Permanent waitlist page
+
+`/waitlist` exists as a dedicated route (`app/(main)/waitlist/page.tsx`) and always renders the signup form regardless of phase. This gives users a stable URL to share even after launch.
+
+### Files involved
+
+- `src/lib/pre-launch.ts` — phase resolution + launch date helpers
+- `src/app/(main)/page.tsx` — phase-based routing (`PreLaunchTeaseHero` vs `HomePage`)
+- `src/middleware.ts` — tease mode route blocking
+- `src/app/(main)/waitlist/page.tsx` — permanent signup page
+- `src/storefront/components/PreLaunchTeaseHero.tsx` — tease UI with `WaitlistForm`
+- `src/storefront/components/WaitlistForm.tsx` — email capture + referral sharing
+
+---
+
 ## Getting Started
 
 First, run the development server:

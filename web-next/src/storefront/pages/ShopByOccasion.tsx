@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 
+import { GiftCohortCards } from '../components/GiftCohortCards';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
@@ -201,6 +202,8 @@ export function ShopByOccasion({ initialOccasions, mode = 'occasions' }: ShopByO
             </div>
           </div>
         </section>
+
+        {isGiftsHub && <GiftCohortCards />}
       </div>
 
       <RecentlyViewedStrip className="border-t border-stone/20" />

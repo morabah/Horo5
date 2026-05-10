@@ -3,6 +3,21 @@ import { useEffect, useRef, useState } from 'react';
 
 import { getGaMeasurementId, getMetaPixelId, hasAnySemIds } from './config';
 import { initWebVitalsReporting } from './webVitals';
+import { useAnalyticsConsent } from '../components/ConsentBanner';
+
+const ALLOWED_ANALYTICS_PREFIXES = ['/', '/products', '/feelings', '/occasions', '/collections', '/campaigns', '/about', '/faq', '/gift', '/shop'];
+
+function isAnalyticsAllowed(path: string): boolean {
+  return ALLOWED_ANALYTICS_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
+function defer(callback: () => void): void {
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    window.requestIdleCallback(() => callback(), { timeout: 2000 });
+  } else {
+    setTimeout(callback, 1500);
+  }
+}
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -27,17 +42,40 @@ y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
   document.head.appendChild(inline);
 }
 
+function loadMetaPixel(pixelId: string) {
+  if (typeof document === 'undefined') return;
+  if (window.fbq) return;
+  const inline = document.createElement('script');
+  inline.textContent = `
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', ${JSON.stringify(pixelId)});
+`;
+  document.head.appendChild(inline);
+}
+
 export function AnalyticsRoot() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/';
   const gaId = getGaMeasurementId();
   const pixelId = getMetaPixelId();
   const [ready, setReady] = useState(false);
   const initRef = useRef(false);
+  const allowed = isAnalyticsAllowed(pathname);
+  const { consent } = useAnalyticsConsent();
+  const semAllowed = allowed && consent === 'granted';
 
   useEffect(() => {
+    if (!semAllowed) return;
     const clarityId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID?.trim();
-    if (clarityId) loadClarity(clarityId);
-  }, []);
+    if (!clarityId) return;
+    defer(() => loadClarity(clarityId));
+  }, [semAllowed]);
 
   useEffect(() => {
     if (initRef.current) return;
@@ -47,7 +85,7 @@ export function AnalyticsRoot() {
     // even when no GA4 key is configured.
     initWebVitalsReporting();
 
-    if (!hasAnySemIds()) return;
+    if (!semAllowed || !hasAnySemIds()) return;
 
     const run = async () => {
       if (gaId) {
@@ -60,19 +98,7 @@ export function AnalyticsRoot() {
       }
 
       if (pixelId) {
-        const inline = document.createElement('script');
-        inline.textContent = `
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', ${JSON.stringify(pixelId)});
-`;
-        document.head.appendChild(inline);
+        defer(() => loadMetaPixel(pixelId));
       }
 
       setReady(true);
@@ -81,7 +107,7 @@ fbq('init', ${JSON.stringify(pixelId)});
     void run().catch(() => {
       setReady(true);
     });
-  }, [gaId, pixelId]);
+  }, [gaId, pixelId, semAllowed]);
 
   useEffect(() => {
     if (!ready) return;

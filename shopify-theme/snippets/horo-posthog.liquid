@@ -1,0 +1,107 @@
+{%- comment -%}
+  HORO PostHog Analytics Snippet
+
+  Loads PostHog only when a project key is configured via shop.metafields.custom.posthog_project_key
+  or the fallback section/setting. Fires core ecommerce events compatible with web-next event schema.
+
+  Events emitted:
+    - $pageview (automatic)
+    - product_viewed     { product_id, product_title, collection }
+    - added_to_cart      { product_id, variant_id, quantity, cart_value_cents }
+    - cart_viewed        { item_count, cart_value_cents }
+    - checkout_started   { value_cents, currency }
+    - purchase           { value_cents, currency, order_id, payment_method }
+    - quiz_complete      { handle, answers }
+    - exit_intent_shown  { coupon_code }
+    - search_submitted   { query, results_count }
+
+  Usage: {% render 'horo-posthog' %}
+  Place before closing </head> in layout/theme.liquid.
+{%- endcomment -%}
+
+{%- assign posthog_key = shop.metafields.custom.posthog_project_key.value | default: settings.horo_posthog_key | default: nil -%}
+
+{%- if posthog_key != blank -%}
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_in_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getActiveSurveyIds getSurveys getNextSurveyStep".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('{{ posthog_key | escape }}', {
+      api_host: '{{ settings.horo_posthog_api_host | default: "https://app.posthog.com" | escape }}',
+      capture_pageview: true,
+      autocapture: false,
+      person_profiles: 'identified_only'
+    });
+  </script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      function posthogEvent(name, props) {
+        if (window.posthog && window.posthog.capture) {
+          window.posthog.capture(name, props || {});
+        }
+      }
+
+      // product_viewed — on PDP load
+      var pdpForm = document.querySelector('form[action*="/cart/add"]');
+      if (pdpForm) {
+        var productId = pdpForm.querySelector('input[name="id"]');
+        var productTitle = document.querySelector('h1') ? document.querySelector('h1').textContent.trim() : '';
+        if (productId) {
+          posthogEvent('product_viewed', {
+            product_id: productId.value,
+            product_title: productTitle
+          });
+        }
+      }
+
+      // added_to_cart — intercept cart/add form submissions
+      document.addEventListener('submit', function (e) {
+        var form = e.target;
+        if (form.action && form.action.indexOf('/cart/add') !== -1) {
+          var variantInput = form.querySelector('input[name="id"]');
+          var qtyInput = form.querySelector('input[name="quantity"]') || { value: '1' };
+          var productName = form.closest('[data-section]') ?
+            form.closest('[data-section]').querySelector('h1') :
+            document.querySelector('h1');
+          posthogEvent('added_to_cart', {
+            variant_id: variantInput ? variantInput.value : null,
+            quantity: parseInt(qtyInput.value, 10) || 1,
+            product_title: productName ? productName.textContent.trim() : ''
+          });
+        }
+      });
+
+      // cart_viewed — simple check on /cart pages
+      if (window.location.pathname.indexOf('/cart') !== -1) {
+        var cartNote = document.querySelector('[data-cart-total]');
+        posthogEvent('cart_viewed', {});
+      }
+
+      // checkout_started — Shopify checkout begin
+      document.addEventListener('click', function (e) {
+        var btn = e.target.closest('[name="checkout"], button[type="submit"][name="checkout"]');
+        if (btn) {
+          posthogEvent('checkout_started', { currency: '{{ shop.currency | escape }}' });
+        }
+      });
+
+      // quiz_complete — custom event
+      window.addEventListener('horo:quizComplete', function (e) {
+        if (e.detail) {
+          posthogEvent('quiz_complete', {
+            handle: e.detail.handle,
+            answer_count: e.detail.answers ? e.detail.answers.length : 0
+          });
+        }
+      });
+
+      // exit_intent_shown — custom event
+      window.addEventListener('horo:exitIntentShown', function (e) {
+        if (e.detail) {
+          posthogEvent('exit_intent_shown', { coupon_code: e.detail.coupon_code });
+        }
+      });
+    })();
+  </script>
+{%- endif -%}

@@ -302,6 +302,17 @@ function buildCheckoutPaymentMethods(
       };
     }
 
+    if (kind === 'fawry') {
+      return {
+        id: provider.id,
+        kind,
+        label: isArabic ? 'فوري' : 'Fawry',
+        description: isArabic
+          ? 'ادفع عبر أي نقطة فوري — ستحصل على رقم مرجعي لاستخدامه عند الدفع.'
+          : 'Pay at any Fawry point — you will receive a reference number to use when paying.',
+      };
+    }
+
     if (provider.id.toLowerCase().includes('apple')) {
       return {
         id: provider.id,

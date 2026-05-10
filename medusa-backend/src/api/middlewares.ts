@@ -8,6 +8,26 @@ import multer from "multer"
 
 const dropsUpload = multer({ storage: multer.memoryStorage() })
 
+const PUBLIC_STOREFRONT_CACHE_MAX_AGE = parseInt(
+  process.env.STOREFRONT_PUBLIC_CACHE_MAX_AGE || "60",
+  10
+) || 60
+
+/**
+ * Sets Cache-Control on safe, public storefront GET responses.
+ * Allows CDN / edge caching without exposing private data.
+ */
+function storefrontCacheControl(req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) {
+  if (req.method === "GET" || req.method === "HEAD") {
+    const maxAge = PUBLIC_STOREFRONT_CACHE_MAX_AGE
+    res.setHeader(
+      "Cache-Control",
+      `public, max-age=${maxAge}, s-maxage=${maxAge}, stale-while-revalidate=300`
+    )
+  }
+  next()
+}
+
 /**
  * Medusa's built-in CORS covers /store/* but not custom /storefront/* routes.
  * Apply store CORS origins to /storefront/* so browser fetch() from the storefront works.
@@ -107,7 +127,7 @@ export default defineMiddlewares({
   routes: [
     {
       matcher: /^\/storefront(\/|$)/,
-      middlewares: [storefrontCors, httpRequestTiming],
+      middlewares: [storefrontCors, storefrontCacheControl, httpRequestTiming],
     },
     {
       matcher: /^\/(store|admin|store-media|integrations)(\/|$)/,

@@ -380,6 +380,40 @@ export const fetchStorefrontOccasionServer = cache((slug: string) =>
   })
 );
 
+type MerchEventResponse = {
+  ok: boolean;
+  event?: MerchEvent & { body: string; teaser: string; heroImageSrc?: string; heroImageAlt?: string; cardImageSrc?: string; cardImageAlt?: string; seoTitle?: string; seoDescription?: string; productHandles: string[] };
+  products?: StorefrontProductApi[];
+};
+
+async function fetchStorefrontMerchEventServerImpl(
+  slug: string,
+  init: NextFetchOptions = {}
+): Promise<{ event: MerchEvent; products: Product[] } | null> {
+  try {
+    const data = await storefrontRequest<MerchEventResponse>(
+      `/store/custom/merch-events/${encodeURIComponent(slug)}`,
+      init
+    );
+    if (!data.ok || !data.event) return null;
+    return {
+      event: data.event,
+      products: (data.products || []).map(normalizeStorefrontProductApi),
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("(404)")) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export const fetchStorefrontMerchEventServer = cache((slug: string) =>
+  fetchStorefrontMerchEventServerImpl(slug, {
+    next: { revalidate: 60, tags: ["catalog", "merch-event", `merch-event:${slug}`] },
+  })
+);
+
 type StorefrontLocalizedTextRaw = string | { en?: string; ar?: string };
 
 type StorefrontNavItemRaw = {

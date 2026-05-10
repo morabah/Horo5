@@ -6,10 +6,12 @@ import { useWishlist } from '../hooks/useWishlist';
 import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
 import { trackSizeSelected, trackWishlistAdd, trackWishlistRemove } from '../analytics/events';
-import { PDP_SCHEMA } from '../data/domain-config';
-import { getProduct, type Product, type ProductSizeKey } from '../data/site';
+import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, PDP_SCHEMA } from '../data/domain-config';
+import { getOccasions, getProduct, type Product, type ProductSizeKey } from '../data/site';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { productAvailableSizes } from '../utils/productSizes';
+import { deriveProductStockStatus } from '../utils/productStock';
+import { StockStatusChip } from './StockStatusChip';
 import { QuickViewTrigger } from './QuickViewTrigger';
 import { TeeImageFrame } from './TeeImage';
 import { formatEgp } from '../utils/formatPrice';
@@ -103,6 +105,7 @@ export function MerchProductCard({
   const [addedFeedback, setAddedFeedback] = useState(false);
   const [quickAddMessage, setQuickAddMessage] = useState('');
   const addedTimeoutRef = useRef<number | null>(null);
+  const stockStatus = deriveProductStockStatus(product);
   const quickAddAvailable = availableSizes.length > 0;
   const quickAddLabel = locale === 'ar' ? 'إضافة سريعة' : 'Quick add';
   const chooseSizeLabel = locale === 'ar' ? 'اختر المقاس' : 'Choose size';
@@ -202,6 +205,11 @@ export function MerchProductCard({
               {product?.fitLabel?.trim()}
             </span>
           ) : null}
+          {stockStatus ? (
+            <span className="absolute left-2 bottom-2 z-10 md:left-3 md:bottom-3">
+              <StockStatusChip status={stockStatus} />
+            </span>
+          ) : null}
         </Link>
         {/* Wishlist heart — always visible, top-right corner */}
         <button
@@ -281,20 +289,41 @@ export function MerchProductCard({
               >
                 {addedFeedback ? addedLabel : quickAddLabel}
               </button>
-            ) : null}
+            ) : (
+              <a
+                href={isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl) ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl : '#'}
+                target="_blank"
+                rel="noreferrer"
+                className="font-label inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/90 px-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                aria-label={`${locale === 'ar' ? 'أبلغني لما يتاح' : 'Notify me'}: ${name}`}
+              >
+                {locale === 'ar' ? 'أبلغني' : 'Notify me'}
+              </a>
+            )}
           </div>
         </div>
       </div>
 
       {/* Mobile: single compact CTA */}
       <div className="mb-3 md:hidden">
-        <Link
-          href={`/products/${slug}`}
-          className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
-          onClick={onProductClick}
-        >
-          {copy.home.viewPiece}
-        </Link>
+        {quickAddAvailable ? (
+          <Link
+            href={`/products/${slug}`}
+            className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
+            onClick={onProductClick}
+          >
+            {copy.home.viewPiece}
+          </Link>
+        ) : (
+          <a
+            href={isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl) ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl : '#'}
+            target="_blank"
+            rel="noreferrer"
+            className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
+          >
+            {locale === 'ar' ? 'أبلغني' : 'Notify me'}
+          </a>
+        )}
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col text-left">
@@ -313,9 +342,17 @@ export function MerchProductCard({
           </p>
         ) : null}
         {eyebrow?.trim() ? (
-          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-clay md:mt-1.5 md:text-[10px]">
+          <span className="font-label mt-1 inline-flex w-fit rounded-full border border-deep-teal/15 bg-deep-teal/5 px-2 py-0.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-deep-teal md:mt-1.5 md:text-[10px]">
             {eyebrow.trim()}
-          </p>
+          </span>
+        ) : null}
+        {product && product.occasionSlugs.some((s) => getOccasions().some((o) => o.slug === s && o.isGiftOccasion)) ? (
+          <span className="font-label mt-1 inline-flex w-fit items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-amber-700 md:mt-1.5 md:text-[10px]">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            {locale === 'ar' ? 'تغليف هدية متاح' : 'Gift wrap included'}
+          </span>
         ) : null}
         {promoLabel?.trim() ? (
           <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-amber-700 md:mt-1.5 md:text-[10px]">

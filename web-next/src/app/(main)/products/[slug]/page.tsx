@@ -13,6 +13,7 @@ import {
 } from "@/lib/storefront-server";
 import { mergePdpDeliveryRules, mergePdpSizeTableConfig, type PdpSizeTableConfig } from "@/storefront/data/domain-config";
 import type { PdpDeliveryRules } from "@/storefront/utils/deliveryEstimate";
+import { getPreLaunchPhase } from "@/lib/pre-launch";
 
 type ProductPageProps = {
   params: Promise<{
@@ -75,6 +76,12 @@ export async function generateMetadata({ params, searchParams }: ProductPageProp
 }
 
 export default async function Page({ params, searchParams }: ProductPageProps) {
+  const phase = getPreLaunchPhase();
+
+  if (phase === "tease") {
+    notFound();
+  }
+
   const { slug } = await params;
   const preview = isPreviewValue((await searchParams)?.preview);
   if (preview) {
@@ -110,6 +117,7 @@ export default async function Page({ params, searchParams }: ProductPageProps) {
           catalogProducts={crossSellProducts}
           deliveryRules={deliveryRules}
           sizeTableConfig={sizeTableConfig}
+          preLaunchPhase={phase}
         />
       </Suspense>
     </>

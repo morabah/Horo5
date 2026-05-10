@@ -1,0 +1,16 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {}
+    },
+    "waitlist_form": {
+      "type": "horo-waitlist-form",
+      "settings": {}
+    }
+  },
+  "order": [
+    "main",
+    "waitlist_form"
+  ]
+}

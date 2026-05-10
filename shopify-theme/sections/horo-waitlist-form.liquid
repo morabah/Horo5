@@ -1,0 +1,97 @@
+{{ 'component-horo-waitlist.css' | asset_url | stylesheet_tag }}
+
+<div class="horo-waitlist section-{{ section.id }}-padding">
+  <div class="page-width page-width--narrow">
+    <div class="waitlist__header center">
+      <h2 class="{{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h2>
+      <p>{{ section.settings.subheading | escape }}</p>
+    </div>
+    
+    <div class="waitlist__form-wrapper">
+      {%- form 'customer', id: 'WaitlistForm' -%}
+        <input type="hidden" name="contact[tags]" value="waitlist">
+        {%- if form.posted_successfully? -%}
+          <p class="form-status form-status-list form__message" tabindex="-1" autofocus>
+            You're on the list. We'll email you when we launch.
+          </p>
+        {%- else -%}
+          {{ form.errors | default_errors }}
+          
+          <div class="field">
+            <input class="field__input" autocomplete="name" type="text" id="WaitlistName" name="contact[first_name]" placeholder="First name">
+            <label class="field__label" for="WaitlistName">First name</label>
+          </div>
+          
+          <div class="field">
+            <input autocomplete="email" type="email" id="WaitlistEmail" class="field__input" name="contact[email]" spellcheck="false" autocapitalize="off" aria-required="true" placeholder="Email" required>
+            <label class="field__label" for="WaitlistEmail">Email</label>
+          </div>
+          
+          <div class="submit-button-wrapper center">
+            <button type="submit" class="button button--primary">
+              Join Waitlist
+            </button>
+          </div>
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Waitlist form",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Join the waitlist",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "default": "Be the first to know when we launch.",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Waitlist form"
+    }
+  ]
+}
+{% endschema %}

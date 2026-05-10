@@ -68,9 +68,7 @@ export function TeeImage({
             loading={eager ? 'eager' : 'lazy'}
             decoding="async"
           />
-          <span className="font-label relative rounded-full border border-obsidian/15 bg-papyrus/85 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em]">
-            Image coming soon
-          </span>
+          <span className="sr-only">{alt}</span>
         </div>
       ) : useNextOptimizer ? (
         <Image

@@ -1,0 +1,150 @@
+{{ 'component-horo-exit-intent.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'horo-exit-intent.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign enabled = section.settings.enabled
+  assign heading = section.settings.heading
+  assign body = section.settings.body
+  assign cta_label = section.settings.cta_label
+  assign coupon_code = section.settings.coupon_code
+  assign once_per_session = section.settings.once_per_session
+  assign delay_seconds = section.settings.delay_seconds
+-%}
+
+{%- if enabled -%}
+  <div
+    id="ExitIntentModal"
+    class="horo-exit-intent{% if request.design_mode %} horo-exit-intent--visible{% endif %}"
+    data-exit-intent
+    data-once-per-session="{{ once_per_session }}"
+    data-delay-seconds="{{ delay_seconds }}"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="ExitIntentHeading"
+    tabindex="-1"
+    hidden
+  >
+    <div class="horo-exit-intent__overlay" data-exit-intent-close aria-hidden="true"></div>
+    <div class="horo-exit-intent__panel color-{{ section.settings.color_scheme }} gradient">
+      <button
+        type="button"
+        class="horo-exit-intent__close"
+        data-exit-intent-close
+        aria-label="{{ 'accessibility.close' | t }}"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M1 1L15 15M15 1L1 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      {%- if heading != blank -%}
+        <h2 id="ExitIntentHeading" class="horo-exit-intent__heading">{{ heading | escape }}</h2>
+      {%- endif -%}
+
+      {%- if body != blank -%}
+        <p class="horo-exit-intent__body">{{ body | escape }}</p>
+      {%- endif -%}
+
+      {%- if coupon_code != blank -%}
+        <div class="horo-exit-intent__coupon">
+          <span class="horo-exit-intent__coupon-label">{{ 'horo.exit_intent.coupon_label' | t | escape }}</span>
+          <code class="horo-exit-intent__coupon-code">{{ coupon_code | escape }}</code>
+          <button
+            type="button"
+            class="horo-exit-intent__copy"
+            data-exit-intent-copy
+            data-coupon="{{ coupon_code | escape }}"
+            aria-label="{{ 'horo.exit_intent.copy_coupon' | t | escape }}"
+          >
+            {{ 'horo.exit_intent.copy' | t | escape }}
+          </button>
+        </div>
+      {%- endif -%}
+
+      {%- if cta_label != blank -%}
+        <a
+          href="{{ section.settings.cta_url | default: routes.all_products_collection_url }}"
+          class="button button--primary horo-exit-intent__cta"
+        >
+          {{ cta_label | escape }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Exit Intent",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "default": false,
+      "label": "Enable exit intent modal",
+      "info": "Shows a modal when the user moves their cursor toward the browser close button (desktop) or triggers beforeunload (mobile)."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Wait — one last thing",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "default": "Leave with something. Use this code for 10% off your first order.",
+      "label": "Body text"
+    },
+    {
+      "type": "text",
+      "id": "coupon_code",
+      "default": "HORO10",
+      "label": "Coupon code",
+      "info": "Displayed in the modal. You must create a matching Shopify discount code in Admin."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "default": "Shop now",
+      "label": "CTA button label"
+    },
+    {
+      "type": "url",
+      "id": "cta_url",
+      "label": "CTA button URL",
+      "info": "Defaults to all-products collection."
+    },
+    {
+      "type": "checkbox",
+      "id": "once_per_session",
+      "default": true,
+      "label": "Show once per session",
+      "info": "Uses sessionStorage to prevent repeated displays."
+    },
+    {
+      "type": "range",
+      "id": "delay_seconds",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "default": 10,
+      "label": "Minimum page time before triggering (seconds)",
+      "info": "The modal will not show until the user has spent at least this many seconds on the page."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Exit Intent"
+    }
+  ]
+}
+{% endschema %}

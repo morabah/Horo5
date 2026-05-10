@@ -158,6 +158,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const { count: wishlistCount } = useWishlist();
   const { locale, setLocale } = useUiLocale();
   const copy = useDictionary();
+  const [mounted, setMounted] = useState(false);
   const [q, setQ] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPanelOpen, setMenuPanelOpen] = useState(false);
@@ -178,6 +179,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const [placedOrderMedusaId, setPlacedOrderMedusaId] = useState<string | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     if (pathname.startsWith('/checkout/success')) {
       clearPlacedOrderMedusaIdHint();
       setPlacedOrderMedusaId(null);
@@ -546,11 +548,11 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
             <button
               type="button"
               className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
-              aria-label={wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
+              aria-label={mounted && wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
               onClick={() => router.push('/wishlist')}
             >
               <AppIcon name="favorite" className="h-6 w-6" />
-              {wishlistCount > 0 ? (
+              {mounted && wishlistCount > 0 ? (
                 <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
                   {wishlistCount > 99 ? '99+' : wishlistCount}
                 </span>
@@ -559,11 +561,11 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
             <button
               type="button"
               className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
-              aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
+              aria-label={mounted && totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
               onClick={handleCartNavigation}
             >
               <AppIcon name="shopping_bag" className="h-6 w-6" />
-              {totalQty > 0 ? (
+              {mounted && totalQty > 0 ? (
                 <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
                   {totalQty > 99 ? '99+' : totalQty}
                 </span>
@@ -683,11 +685,11 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
           <button
             type="button"
             className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
-            aria-label={wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
+            aria-label={mounted && wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
             onClick={() => router.push('/wishlist')}
           >
             <AppIcon name="favorite" className="h-6 w-6" />
-            {wishlistCount > 0 ? (
+            {mounted && wishlistCount > 0 ? (
               <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
                 {wishlistCount > 99 ? '99+' : wishlistCount}
               </span>
@@ -696,11 +698,11 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
           <button
             type="button"
             className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
-            aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
+            aria-label={mounted && totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
             onClick={handleCartNavigation}
           >
             <AppIcon name="shopping_bag" className="h-6 w-6" />
-            {totalQty > 0 ? (
+            {mounted && totalQty > 0 ? (
               <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
                 {totalQty > 99 ? '99+' : totalQty}
               </span>
@@ -777,10 +779,10 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                     setMiniCartOpen(false);
                     closeMenu();
                   }}
-                  aria-label={totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
+                  aria-label={mounted && totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
                 >
                   {copy.shell.cart}
-                  {totalQty > 0 ? ` (${totalQty})` : ''}
+                  {mounted && totalQty > 0 ? ` (${totalQty})` : ''}
                 </Link>
               </nav>
             </div>
