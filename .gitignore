@@ -7,3 +7,9 @@ node_modules/
 /web-next/.next
 # Vite app removed from git; ignore stray local `web/` (build output, old checkouts).
 /web/
+
+# Directories not meant for version control
+docs/
+doc/
+Books/
+screenshots/

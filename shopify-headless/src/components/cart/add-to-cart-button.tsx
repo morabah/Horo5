@@ -18,8 +18,11 @@ export function AddToCartButton({ merchandiseId }: AddToCartButtonProps) {
       className="rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-60"
       onClick={async () => {
         setIsSubmitting(true);
-        await addToCart(merchandiseId, 1);
-        setIsSubmitting(false);
+        try {
+          await addToCart(merchandiseId, 1);
+        } finally {
+          setIsSubmitting(false);
+        }
       }}
       disabled={isSubmitting}
     >

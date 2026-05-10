@@ -1,0 +1,37 @@
+{%- comment -%}
+  HORO Product Data — injects current product handle + data for JS modules.
+  Loaded at the top of the product template so wishlist, recently-viewed,
+  and analytics can read it immediately.
+{%- endcomment -%}
+
+{%- if product -%}
+  <script>
+    window.HoroCurrentProductHandle = {{ product.handle | json }};
+    window.HoroCurrencySymbol = {{ cart.currency.symbol | default: '' | json }};
+    window.HoroCurrentProductData = {
+      id: {{ product.id | json }},
+      title: {{ product.title | json }},
+      handle: {{ product.handle | json }},
+      vendor: {{ product.vendor | json }},
+      price: {{ product.selected_or_first_available_variant.price | divided_by: 100.0 | json }},
+      compare_at_price: {{ product.selected_or_first_available_variant.compare_at_price | divided_by: 100.0 | json }},
+      variant_title: {{ product.selected_or_first_available_variant.title | json }},
+      currency: {{ cart.currency.iso_code | json }},
+      url: {{ product.url | json }}
+    };
+  </script>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Product Data",
+  "tag": "section",
+  "class": "section",
+  "settings": [],
+  "presets": [
+    {
+      "name": "HORO Product Data"
+    }
+  ]
+}
+{% endschema %}

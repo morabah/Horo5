@@ -1,0 +1,250 @@
+{{ 'component-horo-wishlist.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} .horo-wishlist-page {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    #shopify-section-{{ section.id }} .horo-wishlist-page {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="horo-wishlist-page page-width">
+  <div class="horo-wishlist-page__header">
+    <h1 class="horo-wishlist-page__title">
+      {{ section.settings.heading | default: 'Your Wishlist' }}
+    </h1>
+    <p class="horo-wishlist-page__count" data-horo-wishlist-count>
+      <span data-horo-wishlist-count-value>0</span> {{ section.settings.items_label | default: 'items' }}
+    </p>
+  </div>
+
+  <div
+    class="horo-wishlist-page__grid"
+    data-horo-wishlist-grid
+    data-grid-columns="{{ section.settings.columns_desktop }}"
+  >
+    <div class="horo-wishlist-page__empty" data-horo-wishlist-empty>
+      <p>{{ section.settings.empty_text | default: 'Your wishlist is empty. Explore the collection and save pieces you love.' }}</p>
+      {%- if section.settings.empty_button_link != blank -%}
+        <a href="{{ section.settings.empty_button_link }}" class="button">
+          {{ section.settings.empty_button_label | default: 'Start exploring' }}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  function initWishlistPage() {
+    const grid = document.querySelector('[data-horo-wishlist-grid]');
+    if (!grid) return;
+
+    const emptyEl = grid.querySelector('[data-horo-wishlist-empty]');
+    const countValue = document.querySelector('[data-horo-wishlist-count-value]');
+    const handles = window.HoroWishlist ? window.HoroWishlist.getAll() : [];
+
+    if (!handles.length) {
+      if (emptyEl) emptyEl.style.display = 'block';
+      if (countValue) countValue.textContent = '0';
+      return;
+    }
+
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (countValue) countValue.textContent = String(handles.length);
+
+    // Fetch each product and render a card
+    const promises = handles.map((handle) =>
+      fetch(`/products/${handle}.js`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null)
+    );
+
+    Promise.all(promises).then((products) => {
+      products.forEach((product) => {
+        if (!product) return;
+        const card = buildCard(product);
+        grid.appendChild(card);
+      });
+
+      // Re-init wishlist buttons on newly rendered cards
+      if (window.HoroWishlistRefresh) {
+        window.HoroWishlistRefresh();
+      }
+    });
+  }
+
+  function formatMoney(cents) {
+    if (!cents && cents !== 0) return '';
+    const amount = (cents / 100).toFixed(2);
+    return `${window.HoroCurrencySymbol || ''}${amount}`;
+  }
+
+  function buildCard(product) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-wrapper';
+
+    const firstVariant = product.variants && product.variants[0] ? product.variants[0] : {};
+    const priceCents = firstVariant.price || 0;
+    const compareCents = firstVariant.compare_at_price || 0;
+    const hasSavings = compareCents > priceCents;
+    const image = product.images && product.images[0] ? product.images[0] : '';
+    const productUrl = product.url || '/products/' + product.handle;
+    const saleClass = hasSavings ? ' card--sale' : '';
+
+    wrapper.innerHTML = `
+      <div class="card card--product${saleClass}" style="position:relative">
+        <div class="card__media" style="position:relative">
+          <a href="${productUrl}" class="media media--transparent media--square">
+            ${image ? `<img src="${image}" alt="${product.title}" loading="lazy" class="motion-reduce">` : ''}
+          </a>
+          <button type="button" class="horo-wishlist-btn horo-wishlist-btn--active" data-horo-wishlist-btn="${product.handle}" aria-label="Remove from wishlist" aria-pressed="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="card__content">
+          <div class="card__information">
+            <h3 class="card__heading h5">
+              <a href="${productUrl}" class="full-unstyled-link">${product.title}</a>
+            </h3>
+            <div class="card-information">
+              <span class="price">
+                <span class="price-item price-item--regular">${formatMoney(priceCents)}</span>
+                ${hasSavings ? `<span class="price-item price-item--sale">${formatMoney(compareCents)}</span>` : ''}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    return wrapper;
+  }
+
+  // Remove cards no longer in wishlist and update empty state
+  function syncCardsWithWishlist() {
+    const grid = document.querySelector('[data-horo-wishlist-grid]');
+    if (!grid) return;
+    const emptyEl = grid.querySelector('[data-horo-wishlist-empty]');
+    const countValue = document.querySelector('[data-horo-wishlist-count-value]');
+    const handles = window.HoroWishlist ? window.HoroWishlist.getAll() : [];
+
+    // Remove cards whose handles are no longer in wishlist
+    grid.querySelectorAll('.card-wrapper').forEach((wrapper) => {
+      const btn = wrapper.querySelector('[data-horo-wishlist-btn]');
+      if (!btn) return;
+      const handle = btn.dataset.horoWishlistBtn;
+      if (!handles.includes(handle)) {
+        wrapper.remove();
+      }
+    });
+
+    const remainingCards = grid.querySelectorAll('.card-wrapper').length;
+
+    if (!remainingCards) {
+      if (emptyEl) emptyEl.style.display = 'block';
+      if (countValue) countValue.textContent = '0';
+    } else {
+      if (emptyEl) emptyEl.style.display = 'none';
+      if (countValue) countValue.textContent = String(remainingCards);
+    }
+  }
+
+  // Listen for wishlist changes to sync cards
+  window.addEventListener('horo:wishlist:change', () => {
+    setTimeout(syncCardsWithWishlist, 100);
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWishlistPage);
+  } else {
+    initWishlistPage();
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "HORO Wishlist Page",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Your Wishlist",
+      "label": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "items_label",
+      "default": "items",
+      "label": "Items label"
+    },
+    {
+      "type": "textarea",
+      "id": "empty_text",
+      "default": "Your wishlist is empty. Explore the collection and save pieces you love.",
+      "label": "Empty state text"
+    },
+    {
+      "type": "text",
+      "id": "empty_button_label",
+      "default": "Start exploring",
+      "label": "Empty button label"
+    },
+    {
+      "type": "url",
+      "id": "empty_button_link",
+      "label": "Empty button link"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 4,
+      "label": "Columns on desktop"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Wishlist Page"
+    }
+  ]
+}
+{% endschema %}

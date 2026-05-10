@@ -662,6 +662,20 @@
     "accessibility": {
       "skip_to_content": "Skip to content",
       "close": "Close"
+    },
+    "wishlist": {
+      "add": "Add to wishlist",
+      "remove": "Remove from wishlist",
+      "empty": "Your wishlist is empty",
+      "count_one": "{{ count }} item",
+      "count_other": "{{ count }} items"
+    },
+    "recently_viewed": {
+      "title": "Recently viewed",
+      "empty": "Products you view will appear here."
+    },
+    "whatsapp": {
+      "label": "Chat on WhatsApp"
     }
   }
 }

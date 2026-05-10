@@ -1,0 +1,161 @@
+{{ 'component-horo-recently-viewed.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} .horo-recently-viewed {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    #shopify-section-{{ section.id }} .horo-recently-viewed {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="horo-recently-viewed page-width color-{{ section.settings.color_scheme }}">
+  <div class="horo-recently-viewed__header">
+    <h2 class="horo-recently-viewed__title {{ section.settings.heading_size }}">
+      {{ section.settings.heading | default: 'Recently viewed' }}
+    </h2>
+  </div>
+
+  <div class="horo-recently-viewed__track scroll-snap-carousel" data-horo-recently-viewed-track>
+    <p class="horo-recently-viewed__empty" data-horo-recently-viewed-empty>
+      {{ section.settings.empty_text | default: 'Products you view will appear here.' }}
+    </p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  function init() {
+    const track = document.querySelector('[data-horo-recently-viewed-track]');
+    if (!track) return;
+
+    const handles = window.HoroRecentlyViewed ? window.HoroRecentlyViewed.getAll() : [];
+    if (!handles.length) return;
+
+    const emptyEl = track.querySelector('[data-horo-recently-viewed-empty]');
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    // Fetch each product and render a mini card
+    const promises = handles.map((handle) =>
+      fetch(`/products/${handle}.js`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null)
+    );
+
+    Promise.all(promises).then((products) => {
+      products.forEach((product) => {
+        if (!product) return;
+        const card = buildMiniCard(product);
+        track.appendChild(card);
+      });
+    });
+  }
+
+  function formatMoney(cents) {
+    if (!cents && cents !== 0) return '';
+    const amount = (cents / 100).toFixed(2);
+    return `${window.HoroCurrencySymbol || ''}${amount}`;
+  }
+
+  function buildMiniCard(product) {
+    const el = document.createElement('a');
+    el.href = product.url || '/products/' + product.handle;
+    el.className = 'horo-recently-viewed__card';
+
+    const image = product.images && product.images[0] ? product.images[0] : '';
+    const priceCents = product.price || 0;
+
+    el.innerHTML = `
+      <div class="horo-recently-viewed__media">
+        ${image ? `<img src="${image}" alt="${product.title}" loading="lazy">` : ''}
+      </div>
+      <div class="horo-recently-viewed__info">
+        <p class="horo-recently-viewed__name">${product.title}</p>
+        <p class="horo-recently-viewed__price">${formatMoney(priceCents)}</p>
+      </div>
+    `;
+    return el;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "HORO Recently Viewed",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Recently viewed",
+      "label": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h1", "label": "H1" },
+        { "value": "h0", "label": "H0" }
+      ],
+      "default": "h2",
+      "label": "Heading size"
+    },
+    {
+      "type": "textarea",
+      "id": "empty_text",
+      "default": "Products you view will appear here.",
+      "label": "Empty state text"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Recently Viewed"
+    }
+  ]
+}
+{% endschema %}

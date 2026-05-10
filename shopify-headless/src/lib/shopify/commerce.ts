@@ -1,6 +1,14 @@
 import { hasShopifyEnv } from "@/lib/env";
 import { shopifyFetch } from "@/lib/shopify/client";
-import type { ShopifyCart, ShopifyCollection, ShopifyProduct } from "@/lib/shopify/types";
+import type {
+  ShopifyCart,
+  ShopifyCartLine,
+  ShopifyCollection,
+  ShopifyImage,
+  ShopifyProduct,
+  ShopifyProductVariant,
+  ShopifyUserError,
+} from "@/lib/shopify/types";
 
 const PRODUCT_FIELDS = `
   id
@@ -51,7 +59,7 @@ const PRODUCT_FIELDS = `
 
 type ProductsQueryResponse = {
   products: {
-    nodes: ShopifyProduct[];
+    nodes: ShopifyProductConnectionNode[];
   };
 };
 
@@ -62,17 +70,30 @@ type CollectionsQueryResponse = {
 };
 
 type ProductByHandleResponse = {
-  productByHandle: ShopifyProduct | null;
+  productByHandle: ShopifyProductConnectionNode | null;
 };
 
 type CartQueryResponse = {
-  cart: ShopifyCart | null;
+  cart: ShopifyCartConnectionNode | null;
 };
 
 type CartMutationResponse = {
-  cartCreate?: { cart: ShopifyCart | null };
-  cartLinesAdd?: { cart: ShopifyCart | null };
-  cartLinesUpdate?: { cart: ShopifyCart | null };
+  cartCreate?: { cart: ShopifyCartConnectionNode | null; userErrors: ShopifyUserError[] };
+  cartLinesAdd?: { cart: ShopifyCartConnectionNode | null; userErrors: ShopifyUserError[] };
+  cartLinesUpdate?: { cart: ShopifyCartConnectionNode | null; userErrors: ShopifyUserError[] };
+};
+
+type ShopifyConnection<TNode> = {
+  nodes: TNode[];
+};
+
+type ShopifyProductConnectionNode = Omit<ShopifyProduct, "images" | "variants"> & {
+  images: ShopifyConnection<ShopifyImage>;
+  variants: ShopifyConnection<ShopifyProductVariant>;
+};
+
+type ShopifyCartConnectionNode = Omit<ShopifyCart, "lines"> & {
+  lines: ShopifyConnection<ShopifyCartLine>;
 };
 
 const CART_FIELDS = `
@@ -127,6 +148,30 @@ const CART_FIELDS = `
   }
 `;
 
+function normalizeProduct(product: ShopifyProductConnectionNode): ShopifyProduct {
+  return {
+    ...product,
+    images: product.images.nodes,
+    variants: product.variants.nodes,
+  };
+}
+
+function normalizeCart(cart: ShopifyCartConnectionNode): ShopifyCart {
+  return {
+    ...cart,
+    lines: cart.lines.nodes,
+  };
+}
+
+function assertNoUserErrors(scope: string, userErrors: ShopifyUserError[] | undefined): void {
+  if (!userErrors?.length) {
+    return;
+  }
+
+  const [firstError] = userErrors;
+  throw new Error(`${scope}: ${firstError?.message ?? "Shopify rejected the request."}`);
+}
+
 export async function getProducts(first = 12): Promise<ShopifyProduct[]> {
   if (!hasShopifyEnv()) {
     return [];
@@ -146,7 +191,7 @@ export async function getProducts(first = 12): Promise<ShopifyProduct[]> {
     revalidate: 60,
   });
 
-  return data.products.nodes;
+  return data.products.nodes.map(normalizeProduct);
 }
 
 export async function getCollections(first = 8): Promise<ShopifyCollection[]> {
@@ -197,7 +242,7 @@ export async function getProductByHandle(handle: string): Promise<ShopifyProduct
     revalidate: 60,
   });
 
-  return data.productByHandle;
+  return data.productByHandle ? normalizeProduct(data.productByHandle) : null;
 }
 
 export async function getCart(cartId: string): Promise<ShopifyCart | null> {
@@ -210,7 +255,7 @@ export async function getCart(cartId: string): Promise<ShopifyCart | null> {
     variables: { cartId },
   });
 
-  return data.cart;
+  return data.cart ? normalizeCart(data.cart) : null;
 }
 
 export async function createCart(lines: Array<{ merchandiseId: string; quantity: number }>): Promise<ShopifyCart> {
@@ -220,16 +265,22 @@ export async function createCart(lines: Array<{ merchandiseId: string; quantity:
         cart {
           ${CART_FIELDS}
         }
+        userErrors {
+          field
+          message
+        }
       }
     }`,
     variables: { lines },
   });
 
+  assertNoUserErrors("Failed to create cart", data.cartCreate?.userErrors);
+
   if (!data.cartCreate?.cart) {
     throw new Error("Failed to create cart.");
   }
 
-  return data.cartCreate.cart;
+  return normalizeCart(data.cartCreate.cart);
 }
 
 export async function addCartLines(
@@ -242,16 +293,22 @@ export async function addCartLines(
         cart {
           ${CART_FIELDS}
         }
+        userErrors {
+          field
+          message
+        }
       }
     }`,
     variables: { cartId, lines },
   });
 
+  assertNoUserErrors("Failed to add cart lines", data.cartLinesAdd?.userErrors);
+
   if (!data.cartLinesAdd?.cart) {
     throw new Error("Failed to add cart lines.");
   }
 
-  return data.cartLinesAdd.cart;
+  return normalizeCart(data.cartLinesAdd.cart);
 }
 
 export async function updateCartLines(
@@ -264,14 +321,20 @@ export async function updateCartLines(
         cart {
           ${CART_FIELDS}
         }
+        userErrors {
+          field
+          message
+        }
       }
     }`,
     variables: { cartId, lines },
   });
 
+  assertNoUserErrors("Failed to update cart lines", data.cartLinesUpdate?.userErrors);
+
   if (!data.cartLinesUpdate?.cart) {
     throw new Error("Failed to update cart lines.");
   }
 
-  return data.cartLinesUpdate.cart;
+  return normalizeCart(data.cartLinesUpdate.cart);
 }

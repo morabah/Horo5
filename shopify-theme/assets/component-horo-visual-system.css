@@ -236,3 +236,225 @@
   opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
+/* ================================================================
+   Web-Next Parity — Phase 1 (appended below existing HORO tokens)
+   ================================================================ */
+
+/* --- Web-next aligned brand tokens --- */
+:root {
+  --horo-chalk: #f4efe7;
+  --horo-linen: #e6ddd1;
+  --horo-ink: #1f1c1a;
+  --horo-warm-charcoal: #4b4641;
+  --horo-dusk-plum: #6a5b76;
+  --horo-moon-gold: #c5a15c;
+  --horo-clay-action: #b77a67;
+  --horo-moss: #7d8771;
+  --horo-river: #556f73;
+  --horo-stone: #d4ccc0;
+
+  --font-horo-headline: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-horo-body: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-horo-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+/* --- Glassmorphism nav (sticky header) --- */
+.glass-nav {
+  padding-top: env(safe-area-inset-top, 0px);
+  background: rgba(244, 239, 231, 0.9);
+  backdrop-filter: blur(12px) saturate(1.02);
+  -webkit-backdrop-filter: blur(12px) saturate(1.02);
+  border-bottom: 1px solid rgba(212, 204, 192, 0.3);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 8px 28px -24px rgba(0, 0, 0, 0.18);
+}
+
+/* --- Dark glass for vibe cards --- */
+.vibe-card-glass {
+  background: rgba(31, 28, 26, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 32px -8px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Feelings hub glass pill --- */
+.feelings-hub-glass-pill {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 16px -4px rgba(0, 0, 0, 0.25);
+}
+
+/* --- Feelings hub glass bar --- */
+.feelings-hub-glass-bar {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.02) 0%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* --- Editorial shadows --- */
+.editorial-shadow {
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Quick-view pill glass --- */
+.quick-view-pill {
+  background: rgba(248, 246, 242, 0.58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 6px 22px rgba(26, 26, 26, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-view-pill:hover {
+  background: rgba(248, 246, 242, 0.72);
+  transform: scale(1.02);
+}
+
+.quick-view-pill:active {
+  transform: scale(0.98);
+}
+
+/* --- Matte editorial surfaces --- */
+.warm-glow-glass {
+  background: rgba(244, 239, 231, 0.92);
+  border: 1px solid rgba(212, 204, 192, 0.75);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(31, 28, 26, 0.06);
+}
+
+.home-trust-glass {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.home-glass-frame {
+  background: linear-gradient(180deg, #ffffff 0%, #e6ddd1 100%);
+  border: 1px solid rgba(212, 204, 192, 0.65);
+  box-shadow: 0 16px 40px -24px rgba(31, 28, 26, 0.12);
+}
+
+.home-glass-chip {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(212, 204, 192, 0.55);
+  box-shadow: 0 6px 18px rgba(31, 28, 26, 0.06);
+}
+
+/* --- Scroll reveal system --- */
+[data-horo-reveal] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 1s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-horo-reveal].horo-reveal-pending {
+  opacity: 0;
+  transform: translateY(32px) scale(0.98);
+}
+
+[data-horo-reveal='stagger-1'] {
+  transition-delay: 0.12s;
+}
+
+[data-horo-reveal='stagger-2'] {
+  transition-delay: 0.24s;
+}
+
+[data-horo-reveal='stagger-3'] {
+  transition-delay: 0.36s;
+}
+
+[data-horo-reveal='stagger-4'] {
+  transition-delay: 0.48s;
+}
+
+[data-horo-reveal='stagger-5'] {
+  transition-delay: 0.6s;
+}
+
+[data-horo-reveal].horo-revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Vibe commerce card variant */
+[data-horo-reveal].vibe-commerce-card.horo-reveal-pending {
+  transform: translateY(24px) scale(0.95);
+}
+
+/* --- Homepage grain overlay (fixed, page-wide) --- */
+.home-grain::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.042;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* --- Nav link underline animation --- */
+.nav-link-underline {
+  position: relative;
+}
+
+.nav-link-underline::after {
+  content: '';
+  position: absolute;
+  left: 0.625rem;
+  right: 0.625rem;
+  bottom: 2px;
+  height: 1.5px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 300ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.nav-link-underline:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-link-underline--active::after {
+  transform: scaleX(1);
+}
+
+/* --- Reduced motion overrides --- */
+@media (prefers-reduced-motion: reduce) {
+  [data-horo-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .home-grain::after {
+    opacity: 0.024;
+  }
+
+  .nav-link-underline::after {
+    transition: none !important;
+  }
+}

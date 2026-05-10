@@ -74,3 +74,8 @@ export type ShopifyCart = {
 export type ShopifyGraphQLError = {
   message: string;
 };
+
+export type ShopifyUserError = {
+  field?: string[] | null;
+  message: string;
+};

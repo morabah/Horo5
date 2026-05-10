@@ -1,0 +1,22 @@
+{%- comment -%}
+  HORO Wishlist Button snippet
+  Usage: {% render 'horo-wishlist-button', product_handle: product.handle %}
+  Can also be used inside custom_liquid blocks.
+{%- endcomment -%}
+
+{%- assign wishlist_handle = product_handle | default: handle | default: product.handle -%}
+{%- assign wishlist_label = 'horo.wishlist.add' | t -%}
+{%- if wishlist_label == blank -%}{%- assign wishlist_label = 'Add to wishlist' -%}{%- endif -%}
+
+<button
+  type="button"
+  class="horo-wishlist-btn{% if wishlist_handle == blank %} horo-wishlist-btn--disabled{% endif %}"
+  data-horo-wishlist-btn="{{ wishlist_handle }}"
+  aria-label="{{ wishlist_label }}"
+  aria-pressed="false"
+  {% if wishlist_handle == blank %}disabled{% endif %}
+>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+  </svg>
+</button>

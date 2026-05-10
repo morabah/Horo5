@@ -24,20 +24,48 @@ async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
+function loadCartId(): string | null {
+  try {
+    return window.localStorage.getItem(CART_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function persistCartId(cartId: string | null): void {
+  try {
+    if (!cartId) {
+      window.localStorage.removeItem(CART_STORAGE_KEY);
+      return;
+    }
+    window.localStorage.setItem(CART_STORAGE_KEY, cartId);
+  } catch {
+    /* localStorage is an enhancement only. */
+  }
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<ShopifyCart | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const cartId = window.localStorage.getItem(CART_STORAGE_KEY);
+    const cartId = loadCartId();
     if (!cartId) {
       return;
     }
 
+    setIsLoading(true);
     fetch(`/api/cart?id=${encodeURIComponent(cartId)}`)
       .then((response) => parseJson<{ cart: ShopifyCart | null }>(response))
       .then((payload) => {
         setCart(payload.cart);
+        if (!payload.cart) {
+          persistCartId(null);
+        }
+      })
+      .catch(() => {
+        setCart(null);
+        persistCartId(null);
       })
       .finally(() => {
         setIsLoading(false);
@@ -46,26 +74,29 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   async function addToCart(merchandiseId: string, quantity = 1) {
     setIsLoading(true);
-    const payload = await parseJson<{ cart: ShopifyCart }>(
-      await fetch("/api/cart", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cartId: cart?.id,
-          lines: [{ merchandiseId, quantity }],
-        }),
-      })
-    );
-    setCart(payload.cart);
-    window.localStorage.setItem(CART_STORAGE_KEY, payload.cart.id);
-    trackEvent({
-      event: "add_to_cart",
-      cart_id: payload.cart.id,
-      quantity,
-    });
-    setIsLoading(false);
+    try {
+      const payload = await parseJson<{ cart: ShopifyCart }>(
+        await fetch("/api/cart", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cartId: cart?.id,
+            lines: [{ merchandiseId, quantity }],
+          }),
+        })
+      );
+      setCart(payload.cart);
+      persistCartId(payload.cart.id);
+      trackEvent({
+        event: "add_to_cart",
+        cart_id: payload.cart.id,
+        quantity,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function updateLine(lineId: string, quantity: number) {
@@ -74,20 +105,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setIsLoading(true);
-    const payload = await parseJson<{ cart: ShopifyCart }>(
-      await fetch("/api/cart/lines", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cartId: cart.id,
-          lines: [{ id: lineId, quantity }],
-        }),
-      })
-    );
-    setCart(payload.cart);
-    setIsLoading(false);
+    try {
+      const payload = await parseJson<{ cart: ShopifyCart }>(
+        await fetch("/api/cart/lines", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cartId: cart.id,
+            lines: [{ id: lineId, quantity }],
+          }),
+        })
+      );
+      setCart(payload.cart);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function beginCheckout() {

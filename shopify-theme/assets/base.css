@@ -3625,3 +3625,109 @@ details-disclosure > details {
 :lang(ar) .horo-primary-routes {
   direction: rtl;
 }
+
+/* ================================================================
+   Web-Next Parity — Global utilities (appended to base.css)
+   ================================================================ */
+
+/* Glass nav applied to header wrapper */
+.header-wrapper.glass-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Scroll snap carousels */
+.scroll-snap-carousel {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Product card hover lift (merch-card-lift) */
+.merch-card-lift {
+  transition:
+    transform 300ms cubic-bezier(0.33, 1, 0.68, 1),
+    box-shadow 300ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.merch-card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px -12px rgba(26, 26, 26, 0.15);
+}
+
+@media (hover: none) {
+  .merch-card-lift:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* Clay CTA hover glow */
+.cta-clay {
+  transition:
+    background-color 200ms ease,
+    box-shadow 300ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.cta-clay:hover {
+  box-shadow:
+    0 0 20px rgba(183, 122, 103, 0.28),
+    0 8px 20px -4px rgba(183, 122, 103, 0.18);
+}
+
+/* Vibe card image hover zoom */
+.vibe-card-img {
+  transition: transform 800ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.group:hover .vibe-card-img {
+  transform: scale(1.04);
+}
+
+/* Vibe card explore text reveal */
+.vibe-card-explore {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 400ms cubic-bezier(0.33, 1, 0.68, 1),
+    transform 400ms cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.group:hover .vibe-card-explore {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Quote carousel (mobile) */
+.quote-carousel {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.quote-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.quote-carousel > * {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+}
+
+/* Reduced motion: suppress lift / zoom / glow */
+@media (prefers-reduced-motion: reduce) {
+  .merch-card-lift,
+  .merch-card-lift:hover,
+  .cta-clay:hover,
+  .vibe-card-img,
+  .group:hover .vibe-card-img,
+  .vibe-card-explore,
+  .group:hover .vibe-card-explore {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+  }
+}
