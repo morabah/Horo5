@@ -12,7 +12,7 @@ export function FAQ() {
       eyebrow={page.eyebrow}
       title={page.title}
       intro={page.intro}
-      sections={page.sections.map((section: any) => ({
+      sections={page.sections.map((section) => ({
         title: section.title,
         body: section.body,
       }))}

@@ -8,7 +8,8 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'horo_wishlist_v1';
+  const STORAGE_KEY = 'horo-wishlist-v1';
+  const LEGACY_KEY = 'horo_wishlist_v1';
   const EVENT_WISHLIST_CHANGE = 'horo:wishlist:change';
   const SELECTOR_CARD_LINK = '.card__information a[href*="/products/"], .card-product a[href*="/products/"], a.card-product__link[href*="/products/"]';
   const SELECTOR_CARD_WRAPPER = '.card-wrapper, .product-card-wrapper, .card';
@@ -21,6 +22,21 @@
       return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
+    }
+  }
+
+  function migrateLegacyKey() {
+    try {
+      const legacy = localStorage.getItem(LEGACY_KEY);
+      if (!legacy) return;
+      const existing = localStorage.getItem(STORAGE_KEY);
+      if (existing) return; // already migrated
+      const parsed = JSON.parse(legacy);
+      if (Array.isArray(parsed)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+      }
+    } catch {
+      /* ignore */
     }
   }
 
@@ -245,6 +261,7 @@
 
   // Run injection after DOM ready and on section re-renders
   function init() {
+    migrateLegacyKey();
     injectHeaderWishlist();
     injectCardButtons();
     injectSavingsChips();

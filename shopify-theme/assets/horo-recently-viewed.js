@@ -6,8 +6,9 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'horo_recently_viewed_v1';
-  const MAX_ITEMS = 12;
+  const STORAGE_KEY = 'horo-recently-viewed-v1';
+  const LEGACY_KEY = 'horo_recently_viewed_v1';
+  const MAX_ITEMS = 8;
 
   function readStorage() {
     try {
@@ -17,6 +18,21 @@
       return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
+    }
+  }
+
+  function migrateLegacyKey() {
+    try {
+      const legacy = localStorage.getItem(LEGACY_KEY);
+      if (!legacy) return;
+      const existing = localStorage.getItem(STORAGE_KEY);
+      if (existing) return;
+      const parsed = JSON.parse(legacy);
+      if (Array.isArray(parsed)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed.slice(0, MAX_ITEMS)));
+      }
+    } catch {
+      /* ignore */
     }
   }
 
@@ -33,7 +49,8 @@
     writeStorage(handles);
   }
 
-  // Track current PDP product
+  // Migrate legacy key, then track current PDP product
+  migrateLegacyKey();
   const currentProductHandle = window.HoroCurrentProductHandle || null;
   if (currentProductHandle) {
     addViewedHandle(currentProductHandle);

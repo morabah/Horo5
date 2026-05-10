@@ -1,7 +1,7 @@
 {
   "horo": {
     "brand": {
-      "mantra": "البس اللي بيمثلك",
+      "mantra": "البس اللي تحسه",
       "tagline": "رسومات رقمية أصلية، تيشيرتات بتعبر عن هويتك"
     },
     "nav": {
@@ -133,6 +133,101 @@
     "accessibility": {
       "skip_to_content": "تخطى للمحتوى",
       "close": "إغلاق"
+    },
+    "wishlist": {
+      "add": "أضف للمفضلة",
+      "remove": "شيل من المفضلة",
+      "empty": "المفضلة فاضية",
+      "count_one": "{{ count }} عنصر",
+      "count_other": "{{ count }} عناصر"
+    },
+    "recently_viewed": {
+      "title": "شوفتها مؤخراً",
+      "empty": "المنتجات اللي بتشوفها هتظهر هنا."
+    },
+    "whatsapp": {
+      "label": "تواصل واتساب"
+    },
+    "pdp": {
+      "trust_strip": {
+        "artist_made": "تصميم فنان",
+        "licensed_art": "رسومات مرخصة",
+        "free_exchange_14d": "استبدال مجاني ١٤ يوم",
+        "cod_available": "الدفع عند الاستلام متاح"
+      },
+      "size_guide_link": "دليل المقاسات",
+      "view_piece": "شوف القطعة",
+      "add_to_cart": "أضف للسلة",
+      "sold_out": "نفذت الكمية",
+      "select_size": "اختار المقاس"
+    },
+    "cart": {
+      "trust_explainer_heading": "اللي هتحصله",
+      "free_shipping_progress_before": "أضف {{ amount }} عشان توصل للشحن المجاني.",
+      "free_shipping_progress_after": "وصلت للشحن المجاني",
+      "gift_wrap_label": "تغليف هدية",
+      "savings_summary": "وفرت {{ amount }}",
+      "empty_state": "السلة فاضية",
+      "continue_shopping": "اكمل التسوق",
+      "checkout": "إتمام الشراء"
+    },
+    "quick_view": {
+      "title": "نظرة سريعة",
+      "close": "إغلاق النظرة السريعة",
+      "select_size": "اختار المقاس",
+      "add_to_cart": "أضف للسلة"
+    },
+    "search_recovery": {
+      "heading": "ملقتش اللي بتدور عليه؟",
+      "try_feeling": "تصفح بالمشاعر",
+      "try_occasion": "تصفح بالمناسبات",
+      "popular_searches": "بحث شائع"
+    },
+    "home": {
+      "art_by_label": "تصميم",
+      "why_hor": "ليش HORO",
+      "why_hor_block_local_artists_title": "فنانين حقيقيين، حقوق حقيقية",
+      "why_hor_block_local_artists_body": "كل تصميم هو عمل أصلي لفنان مصري — اسمه موجود على الصفحة، مش مخبي في النصوص الصغيرة.",
+      "why_hor_block_printed_egypt_title": "مطبوع في مصر",
+      "why_hor_block_printed_egypt_body": "العمل الفني يتم إعداده والطباعة محلياً عشان نوصل بسرعة، ندعم الإنتاج المحلي، ونتأكد من كل قطعة قبل ما تخرج.",
+      "why_hor_block_personal_title": "مصمم يحسسك بشخصيتك",
+      "why_hor_block_personal_body": "تصفح بالمشاعر، المناسبة، أو الهدية — مش مجرد شبكة صور. القطعة المناسبة هتلاقيك.",
+      "why_hor_block_fit_title": "تفاصيل المقاس واضحة",
+      "why_hor_block_fit_body": "كل صفحة منتج بتعرض المقاسات وملاحظة القياس. تخمين أقل، تبديلات أقل، قرارات أسهل.",
+      "why_hor_block_cod_title": "الدفع عند الاستلام وتبديل ١٤ يوم",
+      "why_hor_block_cod_body": "ادفع عند باب البيت. لو المقاس مش مظبوط، بدل خلال ١٤ يوم لو القطعة ممستعملة وفي التغليف الأصلي.",
+      "why_hor_block_proof_title": "دليل حقيقي بس",
+      "why_hor_block_proof_body": "التقييمات بتظهر لما تكون حقيقية. لحد ما ده يحصل، بنعرضلك دليل العمل الفني والطباعة والتغليف — مش تقييمات مزيفة أو مدفوعة.",
+      "behind_piece_eyebrow": "ورا القطعة",
+      "behind_piece_title": "إيه اللي بيخليها حقيقية",
+      "behind_piece_body": "كل قطعة HORO بتبدأ كعمل فني أصلي. بنطبع كميات صغيرة، نتفحص كل قطعة، ونوصل بملاحظات مقاس واضحة — مافيش غموض، مافيش صور وهمية.",
+      "behind_piece_card_artwork_title": "توجيه العمل الفني",
+      "behind_piece_card_artwork_body": "كل تصميم بيبدأ بفنان مصري. الفكرة، الرسمة، والعمل النهائي مذكورين في صفحة المنتج.",
+      "behind_piece_card_print_title": "مطبوع في مصر",
+      "behind_piece_card_print_body": "بنعد ونطبع محلياً عشان الجودة تبقى واضحة والشحن يبقى صادق. مافيش شحن من بره.",
+      "behind_piece_card_care_title": "تفاصيل المقاس والعناية",
+      "behind_piece_card_care_body": "كل صفحة منتج بتعرض المقاسات، ملاحظات القياس، وتعليمات العناية قبل ما تشتري.",
+      "featured_piece_eyebrow": "قطعة مختارة",
+      "featured_piece_cta": "شوف القطعة",
+      "featured_piece_browse_all": "شوف المجموعة",
+      "first_drop_eyebrow": "وصول مبكر",
+      "first_drop_title": "انضم لدائرة الإصدار الأول",
+      "first_drop_body": "كون أول من يعرف لما القطع الجديدة تنزل. مافيش سبام، مافيش استعجال مزيف — رسالة بس لما حاجة حقيقية تكون جاهزة.",
+      "first_drop_placeholder": "الإيميل أو رقم الواتساب",
+      "first_drop_cta": "انضم للإصدار الأول",
+      "first_drop_confirm": "انت في القائمة — هنتواصل معاك لما الإصدار الجديد يبقى جاهز.",
+      "first_drop_disclaimer": "بنستخدم الواتساب أو الإيميل بس لإعلانات الإصدار. مافيش بيع، مافيش سبام."
+    },
+    "pages": {
+      "size_guide_eyebrow": "مساعدة المقاس",
+      "size_guide_title": "دليل المقاسات",
+      "size_guide_intro": "استخدم الملاحظات دي قبل ما تختار مقاس التيشيرت. صفحات المنتجات هي المصدر الأساسي لما يكون للتصميم مقاساته الخاصة.",
+      "faq_eyebrow": "مساعدة",
+      "faq_title": "أسئلة شائعة",
+      "faq_intro": "إجابات سريعة للطلبات الأولى، التوصيل، الدفع، التبديل، والدعم.",
+      "order_confirmation_title": "تم تأكيد الطلب",
+      "order_confirmation_body": "طلبك بيتم تحضيره. هنحدثك لما يتشحن.",
+      "order_confirmation_cta": "استمر في التسوق"
     }
   }
 }

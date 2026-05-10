@@ -29,7 +29,7 @@ export function HomeBehindThePiece() {
           {copy.home.behindThePieceBody}
         </p>
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6">
-          {cards.map((card: any) => (
+          {cards.map((card) => (
             <div
               key={card.title}
               data-reveal="stagger-1"

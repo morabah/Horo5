@@ -106,13 +106,13 @@ const PdpSizeTableRowSchema = z.object({
 });
 
 const PresetBodySchema = z.preprocess(
-  (val: any) => {
+  (val: unknown) => {
     if (!val || typeof val !== 'object') return val;
     return {
-      ...val,
-      displayLabel: val.displayLabel ?? {
-        en: val.label_en ?? val.labelEn,
-        ar: val.label_ar ?? val.labelAr,
+      ...val as Record<string, unknown>,
+      displayLabel: (val as Record<string, unknown>).displayLabel ?? {
+        en: (val as Record<string, unknown>).label_en ?? (val as Record<string, unknown>).labelEn,
+        ar: (val as Record<string, unknown>).label_ar ?? (val as Record<string, unknown>).labelAr,
       }
     };
   },
@@ -124,7 +124,7 @@ const PresetBodySchema = z.preprocess(
       ar: coerceString.optional(),
     }).refine(val => val.en || val.ar, "Require at least one label").optional(),
   })
-).catch(undefined as any);
+).optional().catch(undefined);
 
 const SizeTablesRecordSchema = z.record(z.string().trim().min(1), PresetBodySchema)
   .transform(record => {

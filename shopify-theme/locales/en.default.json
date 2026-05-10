@@ -530,7 +530,7 @@
   },
   "horo": {
     "brand": {
-      "mantra": "Wear What You Mean",
+      "mantra": "Wear What You Feel",
       "tagline": "Wearable illustration for identity-led expression"
     },
     "nav": {
@@ -676,6 +676,87 @@
     },
     "whatsapp": {
       "label": "Chat on WhatsApp"
+    },
+    "pdp": {
+      "trust_strip": {
+        "artist_made": "Artist-made design",
+        "licensed_art": "Licensed art",
+        "free_exchange_14d": "Free exchange 14 days",
+        "cod_available": "Cash on Delivery available"
+      },
+      "size_guide_link": "Size guide",
+      "view_piece": "View piece",
+      "add_to_cart": "Add to cart",
+      "sold_out": "Sold out",
+      "select_size": "Select size"
+    },
+    "cart": {
+      "trust_explainer_heading": "What to expect",
+      "free_shipping_progress_before": "Add {{ amount }} more to reach the free-shipping threshold.",
+      "free_shipping_progress_after": "Free shipping reached",
+      "gift_wrap_label": "Gift wrap",
+      "savings_summary": "You saved {{ amount }}",
+      "empty_state": "Your cart is empty",
+      "continue_shopping": "Continue shopping",
+      "checkout": "Checkout"
+    },
+    "quick_view": {
+      "title": "Quick view",
+      "close": "Close quick view",
+      "select_size": "Select size",
+      "add_to_cart": "Add to cart"
+    },
+    "search_recovery": {
+      "heading": "Didn't find what you wanted?",
+      "try_feeling": "Browse by feeling",
+      "try_occasion": "Browse by occasion",
+      "popular_searches": "Popular searches"
+    },
+    "home": {
+      "art_by_label": "Art by",
+      "why_hor": "Why HORO",
+      "why_hor_block_local_artists_title": "Real Artists, Real Credit",
+      "why_hor_block_local_artists_body": "Every design is an original by an Egyptian illustrator — their name is on the page, not buried in fine print.",
+      "why_hor_block_printed_egypt_title": "Printed in Egypt",
+      "why_hor_block_printed_egypt_body": "Artwork is prepared and printed locally so we can ship fast, support local production, and inspect every piece before it leaves.",
+      "why_hor_block_personal_title": "Made to Feel Personal",
+      "why_hor_block_personal_body": "Browse by feeling, moment, or gift intent — not just a grid of thumbnails. The right piece finds you.",
+      "why_hor_block_fit_title": "Clear Fit Details",
+      "why_hor_block_fit_body": "Every product page shows measurements and a fit note. Less guessing, fewer exchanges, easier decisions.",
+      "why_hor_block_cod_title": "COD & 14-Day Exchange",
+      "why_hor_block_cod_body": "Pay at your doorstep. If the fit is off, exchange within 14 days when unworn and in original packaging.",
+      "why_hor_block_proof_title": "Real Proof Only",
+      "why_hor_block_proof_body": "Reviews appear only when real. Until then, we show artwork, print, and packaging proof — not fake ratings or bought praise.",
+      "behind_piece_eyebrow": "Behind the piece",
+      "behind_piece_title": "What makes it real",
+      "behind_piece_body": "Every HORO piece starts as original illustration. We print in small runs, inspect each item, and ship with clear fit notes — no mystery, no placeholders.",
+      "behind_piece_card_artwork_title": "Artwork direction",
+      "behind_piece_card_artwork_body": "Each design starts with an Egyptian illustrator. The concept, sketch, and final art are credited on the product page.",
+      "behind_piece_card_print_title": "Printed in Egypt",
+      "behind_piece_card_print_body": "We prepare and print locally to keep quality visible and shipping honest. No overseas dropshipping claims.",
+      "behind_piece_card_care_title": "Fit and care details",
+      "behind_piece_card_care_body": "Every product page shows measurements, fit notes, and care instructions before you buy.",
+      "featured_piece_eyebrow": "Featured piece",
+      "featured_piece_cta": "View the piece",
+      "featured_piece_browse_all": "See the drop",
+      "first_drop_eyebrow": "Early access",
+      "first_drop_title": "Join the First Drop Circle",
+      "first_drop_body": "Be the first to know when new pieces drop. No spam, no fake urgency — just a message when something real is ready.",
+      "first_drop_placeholder": "Email or WhatsApp number",
+      "first_drop_cta": "Join the first drop",
+      "first_drop_confirm": "You're on the list — we'll reach out when the next drop is ready.",
+      "first_drop_disclaimer": "We use WhatsApp or email only for drop announcements. No resale, no spam."
+    },
+    "pages": {
+      "size_guide_eyebrow": "Fit help",
+      "size_guide_title": "Size Guide",
+      "size_guide_intro": "Use these notes before choosing a tee size. Product pages remain the source of truth when a design has its own measurements.",
+      "faq_eyebrow": "Help",
+      "faq_title": "FAQ",
+      "faq_intro": "Quick answers for first orders, delivery, payment, exchanges, and support.",
+      "order_confirmation_title": "Order confirmed",
+      "order_confirmation_body": "Your order is being prepared. We'll update you when it ships.",
+      "order_confirmation_cta": "Continue shopping"
     }
   }
 }

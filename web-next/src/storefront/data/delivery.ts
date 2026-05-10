@@ -68,7 +68,7 @@ export function mergePdpDeliveryRules(remote: unknown): PdpDeliveryRules {
   return DeliveryRulesSchema.parse(parsed);
 }
 
-const optionalShippingPrice = z.union([z.number(), z.string()]).transform(v => Number(v)).refine(n => Number.isFinite(n) && n >= 0, "Invalid").transform(n => Math.min(500000, Math.trunc(n))).catch(undefined as any).optional();
+const optionalShippingPrice = z.union([z.number(), z.string()]).transform(v => Number(v)).refine(n => Number.isFinite(n) && n >= 0, "Invalid").transform(n => Math.min(500000, Math.trunc(n))).optional().catch(undefined);
 
 export const JsonLdShippingSchema = z.object({
   jsonLdStandardShippingEgp: optionalShippingPrice,
