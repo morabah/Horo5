@@ -36,8 +36,8 @@
         "show_line_separator": true,
         "show_locale_toggle": true,
         "show_wishlist": true,
-        "padding_top": 20,
-        "padding_bottom": 20
+        "padding_top": 12,
+        "padding_bottom": 12
       }
     }
   },

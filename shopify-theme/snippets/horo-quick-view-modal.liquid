@@ -13,8 +13,18 @@
   class="horo-quick-view-modal"
   role="dialog"
   aria-modal="true"
-  aria-label="Quick view"
+  aria-label="{{ 'horo.quick_view.title' | t | escape }}"
   tabindex="-1"
+  data-product-json-template="{{ routes.root_url }}products/__handle__.js"
+  data-loading-label="{{ 'horo.quick_view.loading' | t | escape }}"
+  data-error-label="{{ 'horo.quick_view.load_error' | t | escape }}"
+  data-visit-product-label="{{ 'horo.quick_view.visit_product_page' | t | escape }}"
+  data-view-product-label="{{ 'horo.quick_view.view_product' | t | escape }}"
+  data-full-details-label="{{ 'horo.quick_view.full_details' | t | escape }}"
+  data-adding-label="{{ 'horo.quick_view.adding' | t | escape }}"
+  data-added-label="{{ 'horo.quick_view.added' | t | escape }}"
+  data-error-try-again-label="{{ 'horo.quick_view.error_try_again' | t | escape }}"
+  data-view-cart-label="{{ 'horo.quick_view.view_cart' | t | escape }}"
   hidden
 >
   <div class="horo-quick-view-modal__backdrop" data-horo-quick-view-close></div>
@@ -23,7 +33,7 @@
       type="button"
       class="horo-quick-view-modal__close"
       data-horo-quick-view-close
-      aria-label="Close quick view"
+      aria-label="{{ 'horo.quick_view.close' | t | escape }}"
     >
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
@@ -32,7 +42,7 @@
       {%- comment -%} Populated by JS {%- endcomment -%}
       <div class="horo-quick-view-modal__loading">
         <div class="horo-quick-view-modal__spinner" aria-hidden="true"></div>
-        <p>Loading&hellip;</p>
+        <p>{{ 'horo.quick_view.loading' | t }}</p>
       </div>
     </div>
   </div>

@@ -63,7 +63,7 @@
                 </a>
               {%- elsif subfeeling_handle != blank -%}
                 <a
-                  href="/collections/feeling-{{ feeling_handle }}-{{ subfeeling_handle }}"
+                  href="{{ routes.collections_url }}/feeling-{{ feeling_handle }}-{{ subfeeling_handle }}"
                   class="subfeeling-nav__pill"
                 >
                   {{ subfeeling_title | escape }}

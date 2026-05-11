@@ -1,10 +1,26 @@
 {
   "sections": {
+    "horo_account_hero": {
+      "type": "horo-account-hero",
+      "settings": {
+        "eyebrow": "Account",
+        "heading": "Create your HORO account",
+        "body": "Save your details once so future drops and exchanges are easier to manage.",
+        "heading_size": "h1",
+        "trust_one": "Faster checkout",
+        "trust_two": "Order history",
+        "trust_three": "Saved addresses",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 12
+      }
+    },
     "main": {
       "type": "main-register"
     }
   },
   "order": [
+    "horo_account_hero",
     "main"
   ]
 }

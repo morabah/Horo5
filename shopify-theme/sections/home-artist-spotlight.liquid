@@ -2,24 +2,13 @@
 
 {%- liquid
   assign all_artists = shop.metaobjects.artist.values
-  assign active_artists = ''
-  assign artist_count = 0
-
-  for artist in all_artists
-    if artist.active != false and artist.avatar != blank
-      assign active_artists = active_artists | append: artist.id | append: ','
-      assign artist_count = artist_count | plus: 1
-    endif
-  endfor
 
   assign featured_artist = nil
   if section.settings.artist != blank
     assign featured_artist = section.settings.artist
-  elsif artist_count > 0
-    assign artist_ids = active_artists | split: ','
-    assign first_id = artist_ids[0] | plus: 0
+  else
     for artist in all_artists
-      if artist.id == first_id
+      if artist.active != false and artist.avatar != blank
         assign featured_artist = artist
         break
       endif
@@ -34,6 +23,11 @@
   assign avatar = featured_artist.avatar
   assign artist_name = featured_artist.name
   assign style = featured_artist.style | default: featured_artist.bio | default: ''
+  assign artist_url = section.settings.artists_page_url | default: featured_artist.profile_url | default: featured_artist.portfolio_url
+  if artist_url == blank and featured_artist.slug != blank
+    assign artist_page_path = 'pages/' | append: featured_artist.slug
+    assign artist_url = routes.root_url | append: artist_page_path
+  endif
 -%}
 
 {%- style -%}
@@ -80,11 +74,13 @@
             {%- if style != blank -%}
               <p class="home-artist-spotlight__body">{{ style | escape }}</p>
             {%- endif -%}
-            <div class="home-artist-spotlight__actions">
-              <a href="{{ section.settings.artists_page_url | default: '/pages/artists' }}" class="home-artist-spotlight__cta">
-                {{ 'horo.home.artist_spotlight_cta' | t }}
-              </a>
-            </div>
+            {%- if artist_url != blank -%}
+              <div class="home-artist-spotlight__actions">
+                <a href="{{ artist_url }}" class="home-artist-spotlight__cta">
+                  {{ 'horo.home.artist_spotlight_cta' | t }}
+                </a>
+              </div>
+            {%- endif -%}
           </div>
         </div>
       {%- elsif request.design_mode -%}

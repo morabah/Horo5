@@ -1,10 +1,26 @@
 {
   "sections": {
+    "horo_account_hero": {
+      "type": "horo-account-hero",
+      "settings": {
+        "eyebrow": "Account",
+        "heading": "Activate your HORO account",
+        "body": "Set your password to access order history and saved delivery details.",
+        "heading_size": "h1",
+        "trust_one": "Secure activation",
+        "trust_two": "Order history",
+        "trust_three": "Saved addresses",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 12
+      }
+    },
     "main": {
       "type": "main-activate-account"
     }
   },
   "order": [
+    "horo_account_hero",
     "main"
   ]
 }

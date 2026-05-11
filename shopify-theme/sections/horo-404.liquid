@@ -34,6 +34,7 @@
 {%- endstyle -%}
 
 <div class="horo-404 page-width">
+  {%- assign feelings_url = routes.root_url | append: 'pages/feelings' -%}
   <p class="horo-404__eyebrow">{{ 'templates.404.subtext' | t }}</p>
   <h1 class="horo-404__title">{{ 'templates.404.title' | t }}</h1>
   <p class="horo-404__body">{{ 'horo.404.body' | t }}</p>
@@ -44,7 +45,7 @@
     <a href="{{ routes.search_url }}" class="button button--secondary">
       {{ 'horo.404.search' | t }}
     </a>
-    <a href="/pages/feelings" class="button button--secondary">
+    <a href="{{ feelings_url }}" class="button button--secondary">
       {{ 'horo.nav.feelings' | t }}
     </a>
   </div>

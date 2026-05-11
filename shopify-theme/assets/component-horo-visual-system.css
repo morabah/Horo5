@@ -8,14 +8,14 @@
 
 /* --- Brand color tokens (scoped to HORO sections) --- */
 :root {
-  --horo-obsidian: #1a1a1a;
+  --horo-obsidian: #1f1c1a;
   --horo-papyrus: #f4efe7;
-  --horo-linen: #faf8f5;
-  --horo-clay: #8c7b6b;
-  --horo-warm-charcoal: #4a4440;
-  --horo-deep-teal: #2d6b6b;
-  --horo-stone: #c4b8ab;
-  --horo-ember: #c0392b;
+  --horo-linen: #e6ddd1;
+  --horo-clay: #4b4641;
+  --horo-warm-charcoal: #4b4641;
+  --horo-deep-teal: #556f73;
+  --horo-stone: #d4ccc0;
+  --horo-ember: #b77a67;
   --horo-amber-700: #b45309;
   --horo-white: #ffffff;
 }

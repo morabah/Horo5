@@ -143,6 +143,7 @@
       "close": "إغلاق"
     },
     "wishlist": {
+      "title": "المفضلة",
       "add": "أضف للمفضلة",
       "remove": "شيل من المفضلة",
       "empty": "المفضلة فاضية",
@@ -215,7 +216,16 @@
       "title": "نظرة سريعة",
       "close": "إغلاق النظرة السريعة",
       "select_size": "اختار المقاس",
-      "add_to_cart": "أضف للسلة"
+      "add_to_cart": "أضف للسلة",
+      "loading": "جاري التحميل...",
+      "load_error": "تعذر تحميل تفاصيل المنتج.",
+      "visit_product_page": "زيارة صفحة المنتج",
+      "view_product": "عرض المنتج",
+      "full_details": "التفاصيل الكاملة",
+      "adding": "جاري الإضافة...",
+      "added": "تمت الإضافة!",
+      "error_try_again": "حدث خطأ - حاول مرة أخرى",
+      "view_cart": "عرض السلة"
     },
     "search_recovery": {
       "heading": "ملقتش اللي بتدور عليه؟",
@@ -257,13 +267,20 @@
       "featured_piece_eyebrow": "قطعة مختارة",
       "featured_piece_cta": "شوف القطعة",
       "featured_piece_browse_all": "شوف المجموعة",
+      "drop_live_now": "متاح الآن",
+      "drop_ended": "انتهى",
+      "drop_coming_soon": "قريباً",
+      "drop_view_archive": "عرض الأرشيف",
       "first_drop_eyebrow": "وصول مبكر",
       "first_drop_title": "انضم لدائرة الإصدار الأول",
       "first_drop_body": "كون أول من يعرف لما القطع الجديدة تنزل. مافيش سبام، مافيش استعجال مزيف — رسالة بس لما حاجة حقيقية تكون جاهزة.",
       "first_drop_placeholder": "الإيميل أو رقم الواتساب",
       "first_drop_cta": "انضم للإصدار الأول",
       "first_drop_confirm": "انت في القائمة — هنتواصل معاك لما الإصدار الجديد يبقى جاهز.",
-      "first_drop_disclaimer": "بنستخدم الواتساب أو الإيميل بس لإعلانات الإصدار. مافيش بيع، مافيش سبام."
+      "first_drop_disclaimer": "بنستخدم الواتساب أو الإيميل بس لإعلانات الإصدار. مافيش بيع، مافيش سبام.",
+      "first_drop_unavailable_message": "الإصدار الأول بيتجهز. ارجع قريب.",
+      "artist_spotlight_title": "الفنان",
+      "artist_spotlight_cta": "شوف الفنان"
     },
     "exit_intent": {
       "copy": "نسخ",

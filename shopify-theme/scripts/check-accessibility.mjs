@@ -15,6 +15,44 @@ const layoutDir = path.resolve(process.cwd(), 'layout');
 let errors = 0;
 let warnings = 0;
 
+const DAWN_BASELINE_FILES = new Set([
+  'card-product.liquid',
+  'cart-drawer.liquid',
+  'cart-icon-bubble.liquid',
+  'cart-live-region-text.liquid',
+  'cart-notification-button.liquid',
+  'cart-notification-product.liquid',
+  'cart-notification.liquid',
+  'facets.liquid',
+  'main-cart-footer.liquid',
+  'main-cart-items.liquid',
+  'main-product.liquid',
+  'price.liquid',
+  'product-media-gallery.liquid',
+  'product-media-modal.liquid',
+  'product-media.liquid',
+  'product-thumbnail.liquid',
+  'product-variant-options.liquid',
+  'product-variant-picker.liquid',
+]);
+
+function isHoroOwnedFile(file) {
+  const name = path.basename(file);
+  if (DAWN_BASELINE_FILES.has(name)) return false;
+  return (
+    name.startsWith('horo-') ||
+    name.startsWith('component-horo-') ||
+    name.startsWith('component-home-') ||
+    name.startsWith('product-') ||
+    name.startsWith('cart-') ||
+    name.startsWith('page-') ||
+    name.includes('feeling') ||
+    name.includes('occasion') ||
+    name.includes('gift') ||
+    name.includes('search-support')
+  );
+}
+
 function walkDir(dir) {
   const results = [];
   if (!fs.existsSync(dir)) return results;
@@ -79,32 +117,40 @@ function checkImageAlt() {
   const liquidFiles = [...walkDir(snippetsDir), ...walkDir(sectionsDir), ...walkDir(layoutDir)];
   let imageTags = 0;
   let withAlt = 0;
+  let horoImageTags = 0;
+  let horoWithAlt = 0;
 
   for (const file of liquidFiles) {
     const content = fs.readFileSync(file, 'utf-8');
     const lines = content.split('\n');
+    const horoOwned = isHoroOwnedFile(file);
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       // Check for image_tag usage - look for `| image_tag:`
       if (line.includes('| image_tag:')) {
         imageTags++;
+        if (horoOwned) horoImageTags++;
         // Check next 8 lines for alt: parameter
         const context = lines.slice(i, Math.min(i + 8, lines.length)).join('\n');
         if (context.includes('alt:')) {
           withAlt++;
+          if (horoOwned) horoWithAlt++;
         } else if (line.includes('.alt') || line.includes('image.alt')) {
           // Shopify image objects that pipe their own alt
           withAlt++;
+          if (horoOwned) horoWithAlt++;
         }
       }
     }
   }
 
   const pct = imageTags > 0 ? Math.round((withAlt / imageTags) * 100) : 0;
-  const label = pct >= 95 ? '✅' : pct >= 70 ? '⚠️' : '❌';
-  console.log(`  ${label} ${withAlt}/${imageTags} image tags have alt text (${pct}%)`);
-  if (pct < 70) warnings++;
-  else if (pct < 95) warnings++;
+  const horoPct = horoImageTags > 0 ? Math.round((horoWithAlt / horoImageTags) * 100) : 100;
+  const label = horoPct >= 95 ? '✅' : horoPct >= 70 ? '⚠️' : '❌';
+  console.log(`  ${label} HORO-owned image tags: ${horoWithAlt}/${horoImageTags} have alt text (${horoPct}%)`);
+  console.log(`  ℹ️  Full theme baseline: ${withAlt}/${imageTags} image tags have alt text (${pct}%). Dawn baseline files are reported for visibility, not failed here.`);
+  if (horoPct < 70) warnings++;
+  else if (horoPct < 95) warnings++;
 }
 
 function checkSvgAria() {
@@ -112,22 +158,35 @@ function checkSvgAria() {
   const liquidFiles = [...walkDir(snippetsDir), ...walkDir(sectionsDir), ...walkDir(layoutDir)];
   let svgCount = 0;
   let withAriaHidden = 0;
+  let horoSvgCount = 0;
+  let horoWithAriaHidden = 0;
 
   for (const file of liquidFiles) {
     const content = fs.readFileSync(file, 'utf-8');
     const svgMatches = [...content.matchAll(/<svg[\s\S]*?>/g)];
+    const horoOwned = isHoroOwnedFile(file);
     for (const match of svgMatches) {
+      const parentContext = content.slice(Math.max(0, match.index - 180), match.index);
+      const hasA11yMarker =
+        match[0].includes('aria-hidden') ||
+        match[0].includes('role="img"') ||
+        match[0].includes('<title>') ||
+        parentContext.includes('aria-hidden="true"');
       svgCount++;
-      if (match[0].includes('aria-hidden') || match[0].includes('role="img"') || match[0].includes('<title>')) {
+      if (hasA11yMarker) {
         withAriaHidden++;
+        if (horoOwned) horoWithAriaHidden++;
       }
+      if (horoOwned) horoSvgCount++;
     }
   }
 
   const pct = svgCount > 0 ? Math.round((withAriaHidden / svgCount) * 100) : 0;
-  const label = pct >= 90 ? '✅' : pct >= 70 ? '⚠️' : '❌';
-  console.log(`  ${label} ${withAriaHidden}/${svgCount} SVGs have aria-hidden or role (${pct}%)`);
-  if (pct < 70) warnings++;
+  const horoPct = horoSvgCount > 0 ? Math.round((horoWithAriaHidden / horoSvgCount) * 100) : 100;
+  const label = horoPct >= 90 ? '✅' : horoPct >= 70 ? '⚠️' : '❌';
+  console.log(`  ${label} HORO-owned SVGs: ${horoWithAriaHidden}/${horoSvgCount} have aria-hidden or role (${horoPct}%)`);
+  console.log(`  ℹ️  Full theme baseline: ${withAriaHidden}/${svgCount} SVGs have aria-hidden or role (${pct}%). Dawn baseline files are reported for visibility, not failed here.`);
+  if (horoPct < 70) warnings++;
 }
 
 function checkTouchTargets() {

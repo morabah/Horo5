@@ -7,12 +7,16 @@
 {%- unless template == 'index' -%}
   {%- assign crumbs = '' | split: '' -%}
 
-  {%- if product.metafields.custom.breadcrumb_list != blank -%}
-    {%- assign crumbs = product.metafields.custom.breadcrumb_list | split: ' > ' -%}
-  {%- elsif collection.metafields.custom.breadcrumb_list != blank -%}
-    {%- assign crumbs = collection.metafields.custom.breadcrumb_list | split: ' > ' -%}
-  {%- elsif page.metafields.custom.breadcrumb_list != blank -%}
-    {%- assign crumbs = page.metafields.custom.breadcrumb_list | split: ' > ' -%}
+  {%- assign product_breadcrumbs = product.metafields.custom.breadcrumb_list.value | default: product.metafields.custom.breadcrumb_list -%}
+  {%- assign collection_breadcrumbs = collection.metafields.custom.breadcrumb_list.value | default: collection.metafields.custom.breadcrumb_list -%}
+  {%- assign page_breadcrumbs = page.metafields.custom.breadcrumb_list.value | default: page.metafields.custom.breadcrumb_list -%}
+
+  {%- if product_breadcrumbs != blank -%}
+    {%- assign crumbs = product_breadcrumbs | split: ' > ' -%}
+  {%- elsif collection_breadcrumbs != blank -%}
+    {%- assign crumbs = collection_breadcrumbs | split: ' > ' -%}
+  {%- elsif page_breadcrumbs != blank -%}
+    {%- assign crumbs = page_breadcrumbs | split: ' > ' -%}
   {%- else -%}
     {%- comment -%}Fallback: build from URL path{%- endcomment -%}
     {%- assign path_parts = request.path | split: '/' -%}
@@ -35,7 +39,7 @@
       {%- if template == 'product' and product.metafields.custom.feeling != blank -%}
         {%- assign feeling_meta = product.metafields.custom.feeling.value -%}
         <li class="horo-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          <a class="horo-breadcrumb__link" href="/collections/{{ feeling_meta.handle }}" itemprop="item">
+          <a class="horo-breadcrumb__link" href="{{ routes.collections_url }}/{{ feeling_meta.handle }}" itemprop="item">
             <span itemprop="name">{{ feeling_meta.title }}</span>
           </a>
           <meta itemprop="position" content="2" />
@@ -45,7 +49,7 @@
       {%- if template == 'product' and product.metafields.custom.subfeeling != blank -%}
         {%- assign subfeeling_meta = product.metafields.custom.subfeeling.value -%}
         <li class="horo-breadcrumb__item" itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          <a class="horo-breadcrumb__link" href="/collections/{{ subfeeling_meta.handle }}" itemprop="item">
+          <a class="horo-breadcrumb__link" href="{{ routes.collections_url }}/{{ subfeeling_meta.handle }}" itemprop="item">
             <span itemprop="name">{{ subfeeling_meta.title }}</span>
           </a>
           <meta itemprop="position" content="3" />

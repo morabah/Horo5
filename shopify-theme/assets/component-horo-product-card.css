@@ -5,7 +5,7 @@
 */
 
 .horo-product-card .card {
-  border-radius: 1.2rem;
+  border-radius: 0.6rem;
   overflow: hidden;
   border: 1px solid rgba(196, 184, 171, 0.25);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -19,11 +19,11 @@
 
 .horo-product-card .card:hover {
   transform: translateY(-0.3rem);
-  box-shadow: 0 0.8rem 2.4rem rgba(26, 26, 26, 0.08);
+  box-shadow: 0 1.6rem 4rem -1.2rem rgba(31, 28, 26, 0.15);
 }
 
 .horo-product-card .card__media {
-  border-radius: 1.2rem 1.2rem 0 0;
+  border-radius: 0.6rem 0.6rem 0 0;
   overflow: hidden;
 }
 
@@ -38,7 +38,7 @@
 }
 
 .horo-product-card .card:hover .card__media .media img {
-  transform: scale(1.03);
+  transform: scale(1.025);
 }
 
 .horo-product-card .card__content {
@@ -68,7 +68,7 @@
 }
 
 .horo-product-card .card__heading a:hover {
-  color: var(--horo-clay, #8c7b6b);
+  color: var(--horo-clay-action, #b77a67);
 }
 
 .horo-product-card .card-information {
@@ -84,7 +84,7 @@
 }
 
 .horo-product-card .price .price-item--sale {
-  color: var(--horo-ember, #c0392b);
+  color: var(--horo-clay-action, #b77a67);
 }
 
 /* HORO chip / badge inside card content */

@@ -1,0 +1,132 @@
+{{ 'component-horo-account-surface.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div
+  id="AccountHero-{{ section.id }}"
+  class="horo-account-hero color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+>
+  <div class="page-width page-width--narrow">
+    <div class="horo-account-hero__header">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="horo-account-hero__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if section.settings.heading != blank -%}
+        <h1 class="horo-account-hero__heading {{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</h1>
+      {%- endif -%}
+      {%- if section.settings.body != blank -%}
+        <p class="horo-account-hero__body">{{ section.settings.body | escape }}</p>
+      {%- endif -%}
+    </div>
+
+    <div class="horo-account-hero__trust" role="list" aria-label="Account trust signals">
+      <span role="listitem">{{ section.settings.trust_one | escape }}</span>
+      <span role="listitem">{{ section.settings.trust_two | escape }}</span>
+      <span role="listitem">{{ section.settings.trust_three | escape }}</span>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HORO Account Hero",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "default": "Account",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Your HORO account",
+      "label": "Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "default": "Track orders, manage addresses, and keep launch updates in one place.",
+      "label": "Body"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "text",
+      "id": "trust_one",
+      "default": "Order history",
+      "label": "Trust point 1"
+    },
+    {
+      "type": "text",
+      "id": "trust_two",
+      "default": "Address book",
+      "label": "Trust point 2"
+    },
+    {
+      "type": "text",
+      "id": "trust_three",
+      "default": "Secure Shopify account",
+      "label": "Trust point 3"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Account Hero"
+    }
+  ]
+}
+{% endschema %}

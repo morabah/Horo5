@@ -28,6 +28,9 @@
     class="horo-wishlist-page__grid"
     data-horo-wishlist-grid
     data-grid-columns="{{ section.settings.columns_desktop }}"
+    data-product-json-template="{{ routes.root_url }}products/__handle__.js"
+    data-product-url-template="{{ routes.root_url }}products/__handle__"
+    data-remove-label="{{ 'horo.wishlist.remove' | t | escape }}"
   >
     <div class="horo-wishlist-page__empty" data-horo-wishlist-empty>
       <p>{{ section.settings.empty_text | default: 'Your wishlist is empty. Explore the collection and save pieces you love.' }}</p>
@@ -60,10 +63,11 @@
 
     if (emptyEl) emptyEl.style.display = 'none';
     if (countValue) countValue.textContent = String(handles.length);
+    const productJsonTemplate = grid.dataset.productJsonTemplate || '/products/__handle__.js';
 
     // Fetch each product and render a card
     const promises = handles.map((handle) =>
-      fetch(`/products/${handle}.js`)
+      fetch(buildProductUrl(productJsonTemplate, handle))
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null)
     );
@@ -88,7 +92,24 @@
     return `${window.HoroCurrencySymbol || ''}${amount}`;
   }
 
+  function escapeHTML(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[char]);
+  }
+
+  function buildProductUrl(template, handle) {
+    return template.replace('__handle__', encodeURIComponent(handle));
+  }
+
   function buildCard(product) {
+    const grid = document.querySelector('[data-horo-wishlist-grid]');
+    const productUrlTemplate = grid ? grid.dataset.productUrlTemplate : '/products/__handle__';
+    const removeLabel = grid ? grid.dataset.removeLabel : 'Remove from wishlist';
     const wrapper = document.createElement('div');
     wrapper.className = 'card-wrapper';
 
@@ -97,16 +118,18 @@
     const compareCents = firstVariant.compare_at_price || 0;
     const hasSavings = compareCents > priceCents;
     const image = product.images && product.images[0] ? product.images[0] : '';
-    const productUrl = product.url || '/products/' + product.handle;
+    const productUrl = product.url || buildProductUrl(productUrlTemplate, product.handle);
     const saleClass = hasSavings ? ' card--sale' : '';
+    const title = escapeHTML(product.title || '');
+    const imageMarkup = image ? `<img src="${escapeHTML(image)}" alt="${title}" loading="lazy" class="motion-reduce">` : '';
 
     wrapper.innerHTML = `
       <div class="card card--product${saleClass}" style="position:relative">
         <div class="card__media" style="position:relative">
-          <a href="${productUrl}" class="media media--transparent media--square">
-            ${image ? `<img src="${image}" alt="${product.title}" loading="lazy" class="motion-reduce">` : ''}
+          <a href="${escapeHTML(productUrl)}" class="media media--transparent media--square">
+            ${imageMarkup}
           </a>
-          <button type="button" class="horo-wishlist-btn horo-wishlist-btn--active" data-horo-wishlist-btn="${product.handle}" aria-label="Remove from wishlist" aria-pressed="true">
+          <button type="button" class="horo-wishlist-btn horo-wishlist-btn--active" data-horo-wishlist-btn="${escapeHTML(product.handle)}" aria-label="${escapeHTML(removeLabel)}" aria-pressed="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
             </svg>
@@ -115,7 +138,7 @@
         <div class="card__content">
           <div class="card__information">
             <h3 class="card__heading h5">
-              <a href="${productUrl}" class="full-unstyled-link">${product.title}</a>
+              <a href="${escapeHTML(productUrl)}" class="full-unstyled-link">${title}</a>
             </h3>
             <div class="card-information">
               <span class="price">

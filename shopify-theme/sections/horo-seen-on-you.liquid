@@ -41,6 +41,7 @@
           {%- for item in ugc_items -%}
             {%- assign ugc_image = item.image | default: item -%}
             {%- assign ugc_caption = item.caption | default: '' -%}
+            {%- assign ugc_alt = ugc_caption | default: product.title | default: 'HORO customer photo' -%}
             <li class="seen-on-you__item" role="listitem">
               <div class="seen-on-you__media">
                 {%- if ugc_image != blank -%}
@@ -51,6 +52,7 @@
                       loading: 'lazy',
                       widths: '200, 400, 600, 800',
                       sizes: '(min-width: 750px) 25vw, 50vw',
+                      alt: ugc_alt,
                       class: 'seen-on-you__image'
                   }}
                 {%- endif -%}

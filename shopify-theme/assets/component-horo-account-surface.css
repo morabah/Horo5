@@ -42,3 +42,55 @@
   max-inline-size: 48rem;
   margin-inline: auto;
 }
+
+.horo-account-hero {
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+}
+
+.horo-account-hero__header {
+  display: grid;
+  gap: 1.2rem;
+  text-align: center;
+}
+
+.horo-account-hero__eyebrow,
+.horo-account-hero__heading,
+.horo-account-hero__body {
+  margin: 0;
+}
+
+.horo-account-hero__eyebrow {
+  color: var(--horo-clay-action, #b77a67);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.horo-account-hero__body {
+  max-width: 58rem;
+  margin-inline: auto;
+  color: rgba(var(--color-foreground), 0.72);
+}
+
+.horo-account-hero__trust {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-block-start: 2rem;
+}
+
+.horo-account-hero__trust span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3.6rem;
+  padding: 0.8rem 1.2rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.14);
+  border-radius: 999px;
+  background: rgba(var(--color-foreground), 0.035);
+  color: rgba(var(--color-foreground), 0.78);
+  font-size: 1rem;
+  font-weight: 600;
+}

@@ -16,25 +16,37 @@
 {%- endstyle -%}
 
 {%- liquid
-  assign promo_active = product.metafields.custom.promo_active
-  assign promo_ends_at = product.metafields.custom.promo_ends_at
-  assign promo_label = product.metafields.custom.promo_label
-  assign promo_label_ar = product.metafields.custom.promo_label_ar
-  assign promo_savings_egp = product.metafields.custom.promo_savings_egp
+  assign promo_active = product.metafields.custom.promo_active.value
+  assign promo_starts_at = product.metafields.custom.promo_starts_at.value
+  assign promo_ends_at = product.metafields.custom.promo_ends_at.value
+  assign promo_label = product.metafields.custom.promo_label.value
+  assign promo_label_ar = product.metafields.custom.promo_label_ar.value
+  assign promo_savings_egp = product.metafields.custom.promo_savings_egp.value
+  assign promo_show_countdown = true
+  if product.metafields.custom.promo_show_countdown != blank
+    assign promo_show_countdown = product.metafields.custom.promo_show_countdown.value
+  endif
 
   assign now_ts = 'now' | date: '%s' | plus: 0
+  assign starts_ts = promo_starts_at | date: '%s' | plus: 0
   assign ends_ts = promo_ends_at | date: '%s' | plus: 0
+  assign has_started = true
+  if promo_starts_at != blank and starts_ts > now_ts
+    assign has_started = false
+  endif
   assign is_future = false
   if ends_ts > now_ts
     assign is_future = true
   endif
 -%}
 
-{%- if promo_active and promo_ends_at != blank and is_future -%}
-  {%- assign _label = promo_label | default: 'horo.incentives.limited_offer' | t -%}
+{%- if promo_active and promo_show_countdown and has_started and promo_ends_at != blank and is_future -%}
+  {%- assign fallback_promo_label = 'horo.incentives.limited_offer' | t -%}
+  {%- assign promo_display_label = promo_label | default: fallback_promo_label -%}
   {%- if request.locale.iso_code == 'ar' and promo_label_ar != blank -%}
-    {%- assign _label = promo_label_ar -%}
+    {%- assign promo_display_label = promo_label_ar -%}
   {%- endif -%}
+  {%- assign promo_savings_money = promo_savings_egp | times: 100 | money -%}
 
   <div class="color-{{ section.settings.color_scheme }} gradient">
     <div class="page-width section-{{ section.id }}-padding">
@@ -47,7 +59,7 @@
       >
         <span class="product-promo-countdown__badge">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          {{- _label | escape -}}
+          {{- promo_display_label | escape -}}
         </span>
         <div class="product-promo-countdown__body">
           <p class="product-promo-countdown__label">
@@ -58,7 +70,7 @@
           </p>
           {%- if promo_savings_egp and promo_savings_egp > 0 -%}
             <p class="product-promo-countdown__savings">
-              {{- 'horo.incentives.save_amount' | t: amount: promo_savings_egp | times: 100 | money -}}
+              {{- 'horo.incentives.save_amount' | t: amount: promo_savings_money -}}
             </p>
           {%- endif -%}
         </div>

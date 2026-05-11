@@ -6,7 +6,7 @@
   assign care_instructions = product.metafields.custom.care_instructions.value
   assign dimensions_note = product.metafields.custom.dimensions_note.value
   assign shipping_returns_note = product.metafields.custom.shipping_returns_note.value
-  assign fit_note = product.metafields.custom.fit_note.value
+  assign fit_note = product.metafields.custom.fit_note.value | default: product.metafields.custom.fit_label.value | default: product.metafields.custom.size_fit_note.value
 
   assign has_materials = false
   if materials != blank
@@ -156,7 +156,8 @@
           <p>
             Add product metafields to populate accordions:<br>
             <code>custom.materials</code>, <code>custom.design_story</code>, <code>custom.care_instructions</code>,
-            <code>custom.dimensions_note</code>, <code>custom.shipping_returns_note</code>, <code>custom.fit_note</code>
+            <code>custom.dimensions_note</code>, <code>custom.shipping_returns_note</code>, <code>custom.fit_note</code>,
+            <code>custom.fit_label</code>, <code>custom.size_fit_note</code>
           </p>
         </div>
       {%- endif -%}

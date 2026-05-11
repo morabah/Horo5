@@ -1,0 +1,55 @@
+.horo-waitlist {
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+}
+
+.waitlist__header,
+.waitlist__form-wrapper {
+  max-width: 56rem;
+  margin-inline: auto;
+}
+
+.waitlist__header {
+  display: grid;
+  gap: 1.2rem;
+  margin-block-end: 2.4rem;
+}
+
+.waitlist__header h2,
+.waitlist__header p {
+  margin: 0;
+}
+
+.waitlist__header p {
+  color: rgba(var(--color-foreground), 0.72);
+}
+
+.waitlist__form-wrapper {
+  padding: 2.4rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.14);
+  border-radius: 0.6rem;
+  background: rgba(var(--color-foreground), 0.025);
+}
+
+.waitlist__form-wrapper form {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.waitlist__form-wrapper .field__input {
+  min-height: 4.4rem;
+}
+
+.waitlist__form-wrapper .submit-button-wrapper {
+  margin-block-start: 0.8rem;
+}
+
+.waitlist__form-wrapper .button {
+  min-height: 4.4rem;
+}
+
+@media screen and (max-width: 749px) {
+  .waitlist__form-wrapper {
+    padding: 1.6rem;
+  }
+}

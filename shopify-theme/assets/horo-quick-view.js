@@ -21,6 +21,22 @@
   var closeBtns = modal.querySelectorAll('[data-horo-quick-view-close]');
   var triggerEl = null; // element that opened the modal
 
+  function modalString(key, fallback) {
+    var attr = 'data-' + key.replace(/[A-Z]/g, function (char) { return '-' + char.toLowerCase(); }) + '-label';
+    return modal.getAttribute(attr) || fallback;
+  }
+
+  function productJsonUrl(handle) {
+    var template = modal.getAttribute('data-product-json-template') ||
+      (window.routes && window.routes.product_json_template) ||
+      '/products/__handle__.js';
+    return template.replace('__handle__', encodeURIComponent(handle));
+  }
+
+  function variantString(key, fallback) {
+    return window.variantStrings && window.variantStrings[key] ? window.variantStrings[key] : fallback;
+  }
+
   /**
    * Open modal and fetch product data.
    */
@@ -29,18 +45,18 @@
     body.innerHTML =
       '<div class="horo-quick-view-modal__loading">' +
       '<div class="horo-quick-view-modal__spinner" aria-hidden="true"></div>' +
-      '<p>Loading&hellip;</p></div>';
+      '<p>' + escapeHtml(modalString('loading', 'Loading...')) + '</p></div>';
     modal.removeAttribute('hidden');
     modal.focus();
     document.body.style.overflow = 'hidden';
 
-    fetch('/products/' + handle + '.js')
+    fetch(productJsonUrl(handle))
       .then(function (r) { return r.json(); })
       .then(function (product) { renderProduct(product, productUrl, hasVariants); })
       .catch(function () {
         body.innerHTML =
-          '<p class="horo-quick-view-modal__error">Could not load product details. ' +
-          '<a href="' + escapeHtml(productUrl) + '">Visit the product page</a>.</p>';
+          '<p class="horo-quick-view-modal__error">' + escapeHtml(modalString('error', 'Could not load product details.')) + ' ' +
+          '<a href="' + escapeHtml(productUrl) + '">' + escapeHtml(modalString('visitProduct', 'Visit the product page')) + '</a>.</p>';
       });
   }
 
@@ -79,17 +95,17 @@
       if (firstAvailable) {
         html += '<button type="button" class="button horo-quick-view-modal__atc" data-variant-id="' +
           firstAvailable.id + '" ' + (firstAvailable.available ? '' : 'disabled') + '>' +
-          (firstAvailable.available ? 'Add to cart' : 'Sold out') +
+          escapeHtml(firstAvailable.available ? variantString('addToCart', 'Add to cart') : variantString('soldOut', 'Sold out')) +
           '</button>';
       } else {
-        html += '<button type="button" class="button horo-quick-view-modal__atc" disabled>Sold out</button>';
+        html += '<button type="button" class="button horo-quick-view-modal__atc" disabled>' + escapeHtml(variantString('soldOut', 'Sold out')) + '</button>';
       }
     } else {
       // Multi-variant → safe fallback to product page
-      html += '<a href="' + escapeHtml(productUrl) + '" class="button horo-quick-view-modal__view">View product</a>';
+      html += '<a href="' + escapeHtml(productUrl) + '" class="button horo-quick-view-modal__view">' + escapeHtml(modalString('viewProduct', 'View product')) + '</a>';
     }
 
-    html += '<a href="' + escapeHtml(productUrl) + '" class="horo-quick-view-modal__link">Full details</a>';
+    html += '<a href="' + escapeHtml(productUrl) + '" class="horo-quick-view-modal__link">' + escapeHtml(modalString('fullDetails', 'Full details')) + '</a>';
     html += '</div></div>';
 
     body.innerHTML = html;
@@ -100,18 +116,19 @@
       atcBtn.addEventListener('click', function () {
         var vid = atcBtn.getAttribute('data-variant-id');
         atcBtn.disabled = true;
-        atcBtn.textContent = 'Adding…';
+        atcBtn.textContent = modalString('adding', 'Adding...');
         addToCart(vid, function () {
-          atcBtn.textContent = 'Added!';
-          atcBtn.insertAdjacentHTML('afterend', '<a href="' + window.routes.cart_url + '" class="horo-quick-view-modal__cart-link">View cart</a>');
+          atcBtn.textContent = modalString('added', 'Added!');
+          var cartUrl = window.routes && window.routes.cart_url ? window.routes.cart_url : '/cart';
+          atcBtn.insertAdjacentHTML('afterend', '<a href="' + escapeHtml(cartUrl) + '" class="horo-quick-view-modal__cart-link">' + escapeHtml(modalString('viewCart', 'View cart')) + '</a>');
           setTimeout(function () {
             var link = atcBtn.parentNode.querySelector('.horo-quick-view-modal__cart-link');
             if (link) link.remove();
-            atcBtn.textContent = 'Add to cart';
+            atcBtn.textContent = variantString('addToCart', 'Add to cart');
             atcBtn.disabled = false;
           }, 2500);
         }, function () {
-          atcBtn.textContent = 'Error — try again';
+          atcBtn.textContent = modalString('errorTryAgain', 'Error - try again');
           atcBtn.disabled = false;
         });
       });
@@ -122,7 +139,8 @@
    * Add to cart via /cart/add.js.
    */
   function addToCart(variantId, onSuccess, onError) {
-    fetch('/cart/add.js', {
+    var cartAddUrl = window.routes && window.routes.cart_add_url ? window.routes.cart_add_url : '/cart/add.js';
+    fetch(cartAddUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: variantId, quantity: 1 })

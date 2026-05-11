@@ -47,6 +47,7 @@
     {%- if card_count > 0 -%}
       <ul class="horo-feeling-expression__grid" role="list">
         {%- for block in section.blocks -%}
+          {%- assign card_alt = block.settings.label | default: section.settings.heading | default: 'HORO feeling expression' -%}
           <li class="horo-feeling-expression__card" {{ block.shopify_attributes }}>
             {%- if block.settings.image != blank -%}
               <div class="horo-feeling-expression__media">
@@ -57,6 +58,7 @@
                     loading: 'lazy',
                     widths: '275, 550, 750, 1100',
                     sizes: '(min-width: 990px) calc((100vw - 10rem) / 3), (min-width: 750px) calc((100vw - 10rem) / 2), calc(100vw - 3rem)',
+                    alt: card_alt,
                     class: 'horo-feeling-expression__image'
                 }}
               </div>

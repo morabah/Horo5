@@ -17,6 +17,7 @@
       assign hero_image = nil
     endif
     assign accent_color = feeling.accent_color | default: false
+    assign hero_alt = feeling.title | default: feeling.name | default: feeling.display_name | default: collection.title
   -%}
 
   {%- style -%}
@@ -43,6 +44,7 @@
             fetchpriority: 'high',
             widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840',
             sizes: '100vw',
+            alt: hero_alt,
             class: 'collection-hero__image'
         }}
       </div>

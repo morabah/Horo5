@@ -15,8 +15,6 @@
   }
 {%- endstyle -%}
 
-{%- assign all_feelings = collections['feelings'] | default: nil -%}
-
 <div
   id="FeelingQuiz-{{ section.id }}"
   class="horo-section feeling-quiz color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
@@ -249,9 +247,10 @@
   "presets": [
     {
       "name": "HORO Feeling Quiz",
-      "blocks": {
-        "question": {
-          "1": {
+      "blocks": [
+        {
+          "type": "question",
+          "settings": {
             "question": "Pick a vibe for today:",
             "option_1_label": "Bold and loud",
             "option_1_value": "emotions",
@@ -261,7 +260,7 @@
             "option_3_value": "career"
           }
         }
-      }
+      ]
     }
   ]
 }

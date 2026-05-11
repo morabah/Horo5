@@ -4,7 +4,7 @@
   Usage: {% render 'horo-footer-mantra' %}
 {%- endcomment -%}
 
-{%- assign mantra = shop.metafields.custom.brand_mantra | default: 'horo.brand.mantra' | t -%}
+{%- assign mantra = shop.metafields.custom.brand_mantra.value | default: 'horo.brand.mantra' | t -%}
 
 <div class="horo-footer-mantra" data-reveal>
   <p class="horo-footer-mantra__text font-wordmark">{{ mantra }}</p>

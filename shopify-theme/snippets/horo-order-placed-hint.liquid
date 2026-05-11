@@ -26,7 +26,7 @@
     <p class="horo-order-placed-hint__text">{{ hint_text }}</p>
     <div class="horo-order-placed-hint__actions">
       <a
-        href="{{ routes.root_url }}checkout/success"
+        href="{{ routes.account_url }}"
         class="horo-order-placed-hint__btn"
         data-horo-order-hint-receipt
       >
@@ -53,7 +53,8 @@
     if (!el) return;
     var receiptBtn = el.querySelector('[data-horo-order-hint-receipt]');
     if (receiptBtn) {
-      receiptBtn.href = receiptBtn.href + '?order_id=' + encodeURIComponent(id);
+      var separator = receiptBtn.href.indexOf('?') === -1 ? '?' : '&';
+      receiptBtn.href = receiptBtn.href + separator + 'order_id=' + encodeURIComponent(id);
     }
     el.hidden = false;
     el.querySelector('[data-horo-order-hint-dismiss]').addEventListener('click', function() {

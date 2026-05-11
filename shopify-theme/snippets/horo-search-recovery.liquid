@@ -7,23 +7,26 @@
 <div class="horo-search-recovery" data-reveal>
   <h2 class="horo-search-recovery__heading">{{ 'horo.search_recovery.heading' | t }}</h2>
 
+  {%- assign feelings_url = routes.root_url | append: 'pages/feelings' -%}
+  {%- assign occasions_url = routes.root_url | append: 'pages/occasions' -%}
   <div class="horo-search-recovery__routes">
-    <a href="/collections/feelings" class="horo-search-recovery__route cta-clay">
+    <a href="{{ feelings_url }}" class="horo-search-recovery__route cta-clay">
       <span class="horo-search-recovery__label">{{ 'horo.search_recovery.try_feeling' | t }}</span>
       <span class="horo-search-recovery__arrow" aria-hidden="true">→</span>
     </a>
-    <a href="/collections/occasions" class="horo-search-recovery__route cta-clay">
+    <a href="{{ occasions_url }}" class="horo-search-recovery__route cta-clay">
       <span class="horo-search-recovery__label">{{ 'horo.search_recovery.try_occasion' | t }}</span>
       <span class="horo-search-recovery__arrow" aria-hidden="true">→</span>
     </a>
   </div>
 
-  {%- if shop.metafields.custom.popular_searches != blank -%}
-    {%- assign popular = shop.metafields.custom.popular_searches | split: ',' -%}
+  {%- assign popular_searches = shop.metafields.custom.popular_searches.value | default: shop.metafields.custom.popular_searches -%}
+  {%- if popular_searches != blank -%}
+    {%- assign popular = popular_searches | split: ',' -%}
     <div class="horo-search-recovery__popular">
       <span class="horo-search-recovery__popular-label">{{ 'horo.search_recovery.popular_searches' | t }}:</span>
       {%- for term in popular -%}
-        <a href="/search?q={{ term | strip | url_encode }}" class="horo-search-recovery__chip">
+        <a href="{{ routes.search_url }}?q={{ term | strip | url_encode }}" class="horo-search-recovery__chip">
           {{ term | strip }}
         </a>
       {%- endfor -%}

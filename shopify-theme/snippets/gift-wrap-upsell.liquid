@@ -1,21 +1,21 @@
 {%- liquid
-  assign _product = gift_wrap_product
-  assign _variant = gift_wrap_variant
-  assign _in_cart = in_cart | default: false
-  assign _label = label | default: 'Add gift wrap'
-  assign _price_hint = price_hint | default: ''
-  assign _section_id = section_id
-  assign _context = context | default: 'product'
-  assign _show_preview = show_preview | default: true
+  assign gift_product = gift_wrap_product
+  assign gift_variant = gift_wrap_variant
+  assign gift_in_cart = in_cart | default: false
+  assign gift_label = label | default: 'Add gift wrap'
+  assign gift_price_hint = price_hint | default: ''
+  assign gift_section_id = section_id
+  assign gift_context = context | default: 'product'
+  assign gift_show_preview = show_preview | default: true
 -%}
 
-{%- if _product != blank and _variant != blank -%}
+{%- if gift_product != blank and gift_variant != blank -%}
   <div class="gift-wrap__card">
-    {%- if _show_preview and _product.featured_image -%}
+    {%- if gift_show_preview and gift_product.featured_image -%}
       <div class="gift-wrap__preview">
         <img
-          src="{{ _product.featured_image | image_url: width: 120 }}"
-          alt="{{ _product.featured_image.alt | escape }}"
+          src="{{ gift_product.featured_image | image_url: width: 120 }}"
+          alt="{{ gift_product.featured_image.alt | escape }}"
           loading="lazy"
           width="60"
           height="60"
@@ -27,43 +27,43 @@
       </div>
     {%- endif -%}
     <div class="gift-wrap__content">
-      <p class="gift-wrap__title">{{ _label | escape }}</p>
-      {%- if _price_hint != blank -%}
-        <p class="gift-wrap__hint">{{ _price_hint | escape }}</p>
-      {%- elsif _variant.price != blank -%}
-        <p class="gift-wrap__hint">{{ _variant.price | money }}</p>
+      <p class="gift-wrap__title">{{ gift_label | escape }}</p>
+      {%- if gift_price_hint != blank -%}
+        <p class="gift-wrap__hint">{{ gift_price_hint | escape }}</p>
+      {%- elsif gift_variant.price != blank -%}
+        <p class="gift-wrap__hint">{{ gift_variant.price | money }}</p>
       {%- endif -%}
-      {%- if _context == 'product' -%}
+      {%- if gift_context == 'product' -%}
         <p class="gift-wrap__copy">{{ 'horo.gift_wrap.description' | t | escape }}</p>
       {%- endif -%}
     </div>
     <div class="gift-wrap__actions">
-      {%- if _context == 'cart' and _in_cart -%}
+      {%- if gift_context == 'cart' and gift_in_cart -%}
         <label class="gift-wrap__toggle">
           <input
             type="checkbox"
             class="gift-wrap__checkbox"
             data-gift-wrap-remove
-            data-variant-id="{{ _variant.id }}"
-            data-section-id="{{ _section_id }}"
+            data-variant-id="{{ gift_variant.id }}"
+            data-section-id="{{ gift_section_id }}"
             checked
             aria-label="{{ 'horo.gift_wrap.remove' | t | escape }}"
           >
           <span class="gift-wrap__toggle-label">{{ 'horo.gift_wrap.already_added' | t | escape }}</span>
         </label>
-      {%- elsif _context == 'cart' -%}
+      {%- elsif gift_context == 'cart' -%}
         <label class="gift-wrap__toggle">
           <input
             type="checkbox"
             class="gift-wrap__checkbox"
             data-gift-wrap-add
-            data-variant-id="{{ _variant.id }}"
-            data-section-id="{{ _section_id }}"
-            aria-label="{{ _label | escape }}"
+            data-variant-id="{{ gift_variant.id }}"
+            data-section-id="{{ gift_section_id }}"
+            aria-label="{{ gift_label | escape }}"
           >
-          <span class="gift-wrap__toggle-label">{{ _label | escape }}</span>
+          <span class="gift-wrap__toggle-label">{{ gift_label | escape }}</span>
         </label>
-      {%- elsif _in_cart -%}
+      {%- elsif gift_in_cart -%}
         <div class="gift-wrap__done">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
           {{ 'horo.gift_wrap.already_added' | t | escape }}
@@ -73,16 +73,16 @@
           type="button"
           class="gift-wrap__btn"
           data-gift-wrap-add
-          data-variant-id="{{ _variant.id }}"
-          data-section-id="{{ _section_id }}"
-          aria-label="{{ _label | escape }}"
+          data-variant-id="{{ gift_variant.id }}"
+          data-section-id="{{ gift_section_id }}"
+          aria-label="{{ gift_label | escape }}"
         >
-          {{ _label | escape }}
+          {{ gift_label | escape }}
         </button>
       {%- endif -%}
       <p
         class="gift-wrap__status"
-        data-gift-wrap-status="{{ _section_id }}"
+        data-gift-wrap-status="{{ gift_section_id }}"
         aria-live="polite"
         aria-atomic="true"
       ></p>

@@ -47,6 +47,7 @@
                   loading: 'eager',
                   widths: '200, 400',
                   sizes: '200px',
+                  alt: artist.name,
                   class: 'page-artist__avatar-img'
               }}
             </div>
@@ -82,9 +83,6 @@
         {%- if section.settings.show_products -%}
           {%- assign artist_handle = artist.slug | default: artist.handle | default: '' -%}
           {%- if artist_handle != blank -%}
-            {%- assign artist_products = collections.all.products
-              | where: 'metafields.custom.artist.value.slug', artist_handle
-            -%}
             {%- comment -%}
               Fallback: loop all products and check metafield match
               since Liquid "where" on nested metaobjects is unreliable.

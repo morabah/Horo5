@@ -1,0 +1,57 @@
+.horo-share-your-fit {
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+}
+
+.share-fit__header,
+.share-fit__form-wrapper {
+  max-width: 72rem;
+  margin-inline: auto;
+}
+
+.share-fit__header {
+  display: grid;
+  gap: 1.2rem;
+  margin-block-end: 2.4rem;
+}
+
+.share-fit__header h2,
+.share-fit__header p {
+  margin: 0;
+}
+
+.share-fit__header p {
+  max-width: 56rem;
+  color: rgba(var(--color-foreground), 0.72);
+}
+
+.share-fit__form-wrapper {
+  padding: 2.4rem;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.14);
+  border-radius: 0.6rem;
+  background: rgba(var(--color-foreground), 0.025);
+}
+
+.share-fit__form-wrapper form {
+  display: grid;
+  gap: 1.6rem;
+}
+
+.share-fit__form-wrapper .field__input,
+.share-fit__form-wrapper .text-area {
+  min-height: 4.4rem;
+}
+
+.share-fit__form-wrapper .submit-button-wrapper {
+  margin-block-start: 0.8rem;
+}
+
+.share-fit__form-wrapper .button {
+  min-height: 4.4rem;
+}
+
+@media screen and (max-width: 749px) {
+  .share-fit__form-wrapper {
+    padding: 1.6rem;
+  }
+}

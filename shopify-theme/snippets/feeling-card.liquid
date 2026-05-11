@@ -2,12 +2,13 @@
 {%- liquid
   assign feeling = card
   assign feeling_handle = feeling.handle | default: feeling.slug | default: ''
-  assign card_url = '/collections/feeling-' | append: feeling_handle
+  assign feeling_label = feeling.title | default: feeling.name | default: feeling.display_name | default: 'Feeling'
+  assign card_url = routes.collections_url | append: '/feeling-' | append: feeling_handle
   assign image_width = 1100
 -%}
 
 <li class="home-feeling-grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" role="listitem">
-  <a href="{{ card_url }}" class="home-feeling-grid__card" aria-label="{{ feeling.title | default: feeling.name | default: feeling.display_name | escape }}">
+  <a href="{{ card_url }}" class="home-feeling-grid__card" aria-label="{{ feeling_label | escape }}">
     <div class="home-feeling-grid__media media media--transparent">
       {%- if feeling.card_image != blank -%}
         {{
@@ -17,6 +18,7 @@
             loading: 'lazy',
             widths: '275, 550, 750, 1100',
             sizes: '(min-width: 990px) calc((100vw - 10rem) / 3), (min-width: 750px) calc((100vw - 10rem) / 2), calc(100vw - 3rem)',
+            alt: feeling_label,
             class: 'home-feeling-grid__image'
         }}
       {%- else -%}

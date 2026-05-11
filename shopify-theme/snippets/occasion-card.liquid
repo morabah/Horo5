@@ -2,12 +2,13 @@
 {%- liquid
   assign occasion = card
   assign occasion_handle = occasion.handle | default: occasion.slug | default: ''
-  assign card_url = '/collections/occasion-' | append: occasion_handle
+  assign occasion_label = occasion.title | default: occasion.name | default: occasion.display_name | default: 'Occasion'
+  assign card_url = routes.collections_url | append: '/occasion-' | append: occasion_handle
   assign image_width = 1100
 -%}
 
 <li class="home-occasion-grid__item{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}" role="listitem">
-  <a href="{{ card_url }}" class="home-occasion-grid__card" aria-label="{{ occasion.title | default: occasion.name | default: occasion.display_name | escape }}">
+  <a href="{{ card_url }}" class="home-occasion-grid__card" aria-label="{{ occasion_label | escape }}">
     <div class="home-occasion-grid__media media media--transparent">
       {%- if occasion.card_image != blank -%}
         {{
@@ -17,6 +18,7 @@
             loading: 'lazy',
             widths: '275, 550, 750, 1100',
             sizes: '(min-width: 990px) calc((100vw - 10rem) / 3), (min-width: 750px) calc((100vw - 10rem) / 2), calc(100vw - 3rem)',
+            alt: occasion_label,
             class: 'home-occasion-grid__image'
         }}
       {%- else -%}

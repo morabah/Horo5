@@ -20,10 +20,12 @@
 {%- liquid
   assign gift_wrap_product = settings.horo_gift_wrap_product
   assign eligible_quantity = 0
+  assign gift_wrap_in_cart = false
   for item in cart.items
     assign is_gift_wrap = false
     if gift_wrap_product != blank and item.product.handle == gift_wrap_product.handle
       assign is_gift_wrap = true
+      assign gift_wrap_in_cart = true
     endif
     unless is_gift_wrap
       if section.settings.eligible_collection != blank
@@ -36,9 +38,13 @@
     endunless
   endfor
   assign remaining_items = section.settings.required_quantity | minus: eligible_quantity
+  assign show_bundle_nudge = false
+  if section.settings.enable_bundle_message and eligible_quantity >= 2 and remaining_items > 0 and gift_wrap_in_cart == false
+    assign show_bundle_nudge = true
+  endif
 -%}
 
-{%- if section.settings.enable_bundle_message -%}
+{%- if show_bundle_nudge -%}
   <div class="color-{{ section.settings.color_scheme }} gradient">
     <div class="page-width section-{{ section.id }}-padding">
       <div

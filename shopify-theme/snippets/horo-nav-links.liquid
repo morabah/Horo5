@@ -17,6 +17,10 @@
 
 {%- liquid
   assign nav_active_path = active_path | default: request.path
+  assign feelings_url = routes.root_url | append: 'pages/feelings'
+  assign gifts_url = routes.root_url | append: 'pages/gifts'
+  assign occasions_url = routes.root_url | append: 'pages/occasions'
+  assign about_url = routes.root_url | append: 'pages/about-horo'
 
   if context == 'primary'
     if menu != blank and menu.links.size > 0
@@ -37,14 +41,24 @@
   <nav class="horo-nav__primary" aria-label="{{ 'horo.shell.primary_navigation' | t | default: 'Primary navigation' }}">
     <ul class="horo-nav__list" role="list">
       {%- if nav_items == 'fallback' -%}
-        {%- assign primary_routes = "products:Shop All:/collections/all,collection:Feelings:/collections/feelings,gifts:Gifts:/pages/gifts-hub,about:About:/pages/about-horo" | split: ',' -%}
-        {%- for route in primary_routes -%}
-          {%- assign parts = route | split: ':' -%}
-          {%- assign key = parts[0] -%}
-          {%- assign label = parts[1] -%}
-          {%- assign href = parts[2] -%}
+        {%- assign primary_route_keys = 'products,collection,gifts,about' | split: ',' -%}
+        {%- for route_key in primary_route_keys -%}
+          {%- case route_key -%}
+            {%- when 'products' -%}
+              {%- assign label = 'horo.nav.shop_all' | t | default: 'Shop All' -%}
+              {%- assign href = routes.all_products_collection_url -%}
+            {%- when 'collection' -%}
+              {%- assign label = 'horo.nav.feelings' | t | default: 'Feelings' -%}
+              {%- assign href = feelings_url -%}
+            {%- when 'gifts' -%}
+              {%- assign label = 'horo.nav.gifts' | t | default: 'Gifts' -%}
+              {%- assign href = gifts_url -%}
+            {%- when 'about' -%}
+              {%- assign label = 'horo.nav.about' | t | default: 'About' -%}
+              {%- assign href = about_url -%}
+          {%- endcase -%}
           {%- assign is_active = false -%}
-          {%- if nav_active_path == href or nav_active_path contains href and href != '/' -%}
+          {%- if nav_active_path == href or nav_active_path contains href and href != routes.root_url -%}
             {%- assign is_active = true -%}
           {%- endif -%}
           <li>
@@ -80,14 +94,33 @@
   <nav class="horo-nav__drawer-nav" aria-label="{{ 'horo.shell.drawer_navigation' | t | default: 'Menu' }}">
     <ul class="horo-nav__drawer-list" role="list">
       {%- if nav_items == 'fallback' -%}
-        {%- assign drawer_routes = "home:Home:/,products:Shop All:/collections/all,collection:Feelings:/collections/feelings,gifts:Gifts:/pages/gifts-hub,occasions:Occasions:/collections/occasions,about:About:/pages/about-horo,search:Search:/search" | split: ',' -%}
-        {%- for route in drawer_routes -%}
-          {%- assign parts = route | split: ':' -%}
-          {%- assign key = parts[0] -%}
-          {%- assign label = parts[1] -%}
-          {%- assign href = parts[2] -%}
+        {%- assign drawer_route_keys = 'home,products,collection,gifts,occasions,about,search' | split: ',' -%}
+        {%- for route_key in drawer_route_keys -%}
+          {%- case route_key -%}
+            {%- when 'home' -%}
+              {%- assign label = 'horo.shell.home' | t | default: 'Home' -%}
+              {%- assign href = routes.root_url -%}
+            {%- when 'products' -%}
+              {%- assign label = 'horo.nav.shop_all' | t | default: 'Shop All' -%}
+              {%- assign href = routes.all_products_collection_url -%}
+            {%- when 'collection' -%}
+              {%- assign label = 'horo.nav.feelings' | t | default: 'Feelings' -%}
+              {%- assign href = feelings_url -%}
+            {%- when 'gifts' -%}
+              {%- assign label = 'horo.nav.gifts' | t | default: 'Gifts' -%}
+              {%- assign href = gifts_url -%}
+            {%- when 'occasions' -%}
+              {%- assign label = 'horo.nav.occasions' | t | default: 'Occasions' -%}
+              {%- assign href = occasions_url -%}
+            {%- when 'about' -%}
+              {%- assign label = 'horo.nav.about' | t | default: 'About' -%}
+              {%- assign href = about_url -%}
+            {%- when 'search' -%}
+              {%- assign label = 'horo.shell.search' | t | default: 'Search' -%}
+              {%- assign href = routes.search_url -%}
+          {%- endcase -%}
           {%- assign is_active = false -%}
-          {%- if nav_active_path == href or nav_active_path contains href and href != '/' -%}
+          {%- if nav_active_path == href or route_key != 'home' and nav_active_path contains href and href != routes.root_url -%}
             {%- assign is_active = true -%}
           {%- endif -%}
           <li>

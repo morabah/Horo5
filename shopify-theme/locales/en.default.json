@@ -675,6 +675,7 @@
       "close": "Close"
     },
     "wishlist": {
+      "title": "Wishlist",
       "add": "Add to wishlist",
       "remove": "Remove from wishlist",
       "empty": "Your wishlist is empty",
@@ -747,7 +748,16 @@
       "title": "Quick view",
       "close": "Close quick view",
       "select_size": "Select size",
-      "add_to_cart": "Add to cart"
+      "add_to_cart": "Add to cart",
+      "loading": "Loading...",
+      "load_error": "Could not load product details.",
+      "visit_product_page": "Visit the product page",
+      "view_product": "View product",
+      "full_details": "Full details",
+      "adding": "Adding...",
+      "added": "Added!",
+      "error_try_again": "Error - try again",
+      "view_cart": "View cart"
     },
     "search_recovery": {
       "heading": "Didn't find what you wanted?",
@@ -789,13 +799,20 @@
       "featured_piece_eyebrow": "Featured piece",
       "featured_piece_cta": "View the piece",
       "featured_piece_browse_all": "See the drop",
+      "drop_live_now": "Live now",
+      "drop_ended": "Ended",
+      "drop_coming_soon": "Coming soon",
+      "drop_view_archive": "View archive",
       "first_drop_eyebrow": "Early access",
       "first_drop_title": "Join the First Drop Circle",
       "first_drop_body": "Be the first to know when new pieces drop. No spam, no fake urgency — just a message when something real is ready.",
       "first_drop_placeholder": "Email or WhatsApp number",
       "first_drop_cta": "Join the first drop",
       "first_drop_confirm": "You're on the list — we'll reach out when the next drop is ready.",
-      "first_drop_disclaimer": "We use WhatsApp or email only for drop announcements. No resale, no spam."
+      "first_drop_disclaimer": "We use WhatsApp or email only for drop announcements. No resale, no spam.",
+      "first_drop_unavailable_message": "The first drop is being prepared. Check back soon.",
+      "artist_spotlight_title": "Artist spotlight",
+      "artist_spotlight_cta": "Meet the artist"
     },
     "exit_intent": {
       "copy": "Copy",
@@ -806,10 +823,18 @@
       "restart": "Take the quiz again"
     },
     "launch_countdown": {
+      "until_launch": "Launching soon",
       "days": "Days",
       "hours": "Hours",
       "minutes": "Minutes",
-      "seconds": "Seconds"
+      "seconds": "Seconds",
+      "ended": "Launch is live"
+    },
+    "404": {
+      "title": "Page not found",
+      "body": "The page you were looking for is no longer here. Start from the launch collection, search the store, or browse by feeling.",
+      "back_home": "Back home",
+      "search": "Search HORO"
     },
     "pages": {
       "size_guide_eyebrow": "Fit help",

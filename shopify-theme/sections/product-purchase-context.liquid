@@ -3,7 +3,7 @@
 {%- liquid
   assign feeling_metaobject = product.metafields.custom.feeling.value
   assign subfeeling_metaobject = product.metafields.custom.subfeeling.value
-  assign fit_note = product.metafields.custom.fit_note.value
+  assign fit_note = product.metafields.custom.fit_note.value | default: product.metafields.custom.fit_label.value | default: product.metafields.custom.size_fit_note.value
   assign low_stock_message = product.metafields.custom.low_stock_message.value
   assign whatsapp_url = product.metafields.custom.whatsapp_help_url.value
   assign trust_chips = product.metafields.custom.trust_chips.value
@@ -155,6 +155,7 @@
           <p>
             Add product metafields to populate this section:<br>
             <code>custom.feeling</code>, <code>custom.subfeeling</code>, <code>custom.fit_note</code>,
+            <code>custom.fit_label</code>, <code>custom.size_fit_note</code>,
             <code>custom.low_stock_message</code>, <code>custom.whatsapp_help_url</code>,
             <code>custom.trust_chips</code>, <code>custom.features</code>
           </p>

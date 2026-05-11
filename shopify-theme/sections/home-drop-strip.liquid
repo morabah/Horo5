@@ -22,7 +22,12 @@
 
   assign hero_image = featured_drop.hero_image
   assign status = featured_drop.status | default: 'coming_soon'
-  assign drop_url = featured_drop.slug | prepend: '/pages/' | default: ''
+  assign drop_url = featured_drop.url | default: featured_drop.page_url | default: featured_drop.link
+  if drop_url == blank and featured_drop.slug != blank
+    assign drop_page_path = 'pages/' | append: featured_drop.slug
+    assign drop_url = routes.root_url | append: drop_page_path
+  endif
+  assign drop_url = drop_url | default: routes.all_products_collection_url
 -%}
 
 {%- style -%}
@@ -69,11 +74,11 @@
             <div class="home-drop-strip__meta">
               {%- case status -%}
                 {%- when 'live' -%}
-                  <span class="home-drop-strip__status home-drop-strip__status--live">Live now</span>
+                  <span class="home-drop-strip__status home-drop-strip__status--live">{{ 'horo.home.drop_live_now' | t }}</span>
                 {%- when 'ended' -%}
-                  <span class="home-drop-strip__status home-drop-strip__status--ended">Ended</span>
+                  <span class="home-drop-strip__status home-drop-strip__status--ended">{{ 'horo.home.drop_ended' | t }}</span>
                 {%- else -%}
-                  <span class="home-drop-strip__status home-drop-strip__status--soon">Coming soon</span>
+                  <span class="home-drop-strip__status home-drop-strip__status--soon">{{ 'horo.home.drop_coming_soon' | t }}</span>
               {%- endcase -%}
               <span class="home-drop-strip__eyebrow">{{ 'horo.home.first_drop_eyebrow' | t }}</span>
             </div>
@@ -88,7 +93,7 @@
 
             <span class="home-drop-strip__cta">
               {%- if status == 'ended' -%}
-                View archive
+                {{ 'horo.home.drop_view_archive' | t }}
               {%- else -%}
                 {{ 'horo.home.featured_piece_cta' | t }}
               {%- endif -%}

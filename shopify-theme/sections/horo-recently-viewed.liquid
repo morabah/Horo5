@@ -21,7 +21,12 @@
     </h2>
   </div>
 
-  <div class="horo-recently-viewed__track scroll-snap-carousel" data-horo-recently-viewed-track>
+  <div
+    class="horo-recently-viewed__track scroll-snap-carousel"
+    data-horo-recently-viewed-track
+    data-product-json-template="{{ routes.root_url }}products/__handle__.js"
+    data-product-url-template="{{ routes.root_url }}products/__handle__"
+  >
     <p class="horo-recently-viewed__empty" data-horo-recently-viewed-empty>
       {{ section.settings.empty_text | default: 'Products you view will appear here.' }}
     </p>
@@ -41,10 +46,11 @@
 
     const emptyEl = track.querySelector('[data-horo-recently-viewed-empty]');
     if (emptyEl) emptyEl.style.display = 'none';
+    const productJsonTemplate = track.dataset.productJsonTemplate || '/products/__handle__.js';
 
     // Fetch each product and render a mini card
     const promises = handles.map((handle) =>
-      fetch(`/products/${handle}.js`)
+      fetch(buildProductUrl(productJsonTemplate, handle))
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null)
     );
@@ -64,20 +70,38 @@
     return `${window.HoroCurrencySymbol || ''}${amount}`;
   }
 
+  function escapeHTML(value) {
+    return String(value || '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[char]);
+  }
+
+  function buildProductUrl(template, handle) {
+    return template.replace('__handle__', encodeURIComponent(handle));
+  }
+
   function buildMiniCard(product) {
     const el = document.createElement('a');
-    el.href = product.url || '/products/' + product.handle;
+    const track = document.querySelector('[data-horo-recently-viewed-track]');
+    const productUrlTemplate = track ? track.dataset.productUrlTemplate : '/products/__handle__';
+    el.href = product.url || buildProductUrl(productUrlTemplate, product.handle);
     el.className = 'horo-recently-viewed__card';
 
     const image = product.images && product.images[0] ? product.images[0] : '';
     const priceCents = product.price || 0;
+    const title = escapeHTML(product.title || '');
+    const imageMarkup = image ? `<img src="${escapeHTML(image)}" alt="${title}" loading="lazy">` : '';
 
     el.innerHTML = `
       <div class="horo-recently-viewed__media">
-        ${image ? `<img src="${image}" alt="${product.title}" loading="lazy">` : ''}
+        ${imageMarkup}
       </div>
       <div class="horo-recently-viewed__info">
-        <p class="horo-recently-viewed__name">${product.title}</p>
+        <p class="horo-recently-viewed__name">${title}</p>
         <p class="horo-recently-viewed__price">${formatMoney(priceCents)}</p>
       </div>
     `;

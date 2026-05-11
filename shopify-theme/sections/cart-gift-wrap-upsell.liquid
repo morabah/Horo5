@@ -13,17 +13,28 @@
   endif
 
   assign gift_wrap_in_cart = false
+  assign eligible_item_quantity = 0
   if gift_wrap_product != blank
     for item in cart.items
       if item.product.handle == gift_wrap_product.handle
         assign gift_wrap_in_cart = true
-        break
+      else
+        assign eligible_item_quantity = eligible_item_quantity | plus: item.quantity
       endif
     endfor
+  else
+    assign eligible_item_quantity = cart.item_count
+  endif
+
+  assign show_gift_wrap_upsell = false
+  if gift_wrap_product != blank and gift_wrap_variant != blank
+    if eligible_item_quantity == 1 or gift_wrap_in_cart
+      assign show_gift_wrap_upsell = true
+    endif
   endif
 -%}
 
-{%- if gift_wrap_product != blank and gift_wrap_variant != blank or request.design_mode -%}
+{%- if show_gift_wrap_upsell or request.design_mode -%}
   {%- style -%}
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;

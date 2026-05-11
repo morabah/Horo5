@@ -1,10 +1,26 @@
 {
   "sections": {
+    "horo_account_hero": {
+      "type": "horo-account-hero",
+      "settings": {
+        "eyebrow": "Account",
+        "heading": "Sign in to HORO",
+        "body": "Use your Shopify customer account to continue with saved details and order history.",
+        "heading_size": "h1",
+        "trust_one": "Secure sign-in",
+        "trust_two": "Order tracking",
+        "trust_three": "Address book",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 12
+      }
+    },
     "main": {
       "type": "main-login"
     }
   },
   "order": [
+    "horo_account_hero",
     "main"
   ]
 }
