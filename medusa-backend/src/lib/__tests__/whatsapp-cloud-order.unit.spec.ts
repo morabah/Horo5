@@ -1,5 +1,6 @@
 import {
   buildPaymentLabelFromOrderRow,
+  buildPostDeliveryUgcRequestCopy,
   buildWhatsAppOrderTemplateBody,
   buildWhatsAppTemplateMessagePayload,
   extractWhatsAppIncomingMessageEvents,
@@ -45,6 +46,11 @@ describe("whatsapp-cloud-order", () => {
         ],
       }),
     ).toBe("Cash on delivery")
+  })
+
+  it("buildPostDeliveryUgcRequestCopy returns permission-aware Arabic and English copy", () => {
+    expect(buildPostDeliveryUgcRequestCopy("ar")).toContain("بإذنك")
+    expect(buildPostDeliveryUgcRequestCopy("en")).toContain("only repost")
   })
 
   it("buildWhatsAppTemplateMessagePayload has four body parameters", () => {

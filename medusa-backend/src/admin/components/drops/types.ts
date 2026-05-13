@@ -5,6 +5,9 @@ export type ProductSizeKey = "S" | "M" | "L" | "XL" | "XXL"
 export const DROP_SIZE_KEYS: readonly ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
 export const DEFAULT_DROP_TRUST_BADGES = DEFAULT_TRUST_BADGES
 export type DropImageTag = "main" | "lifestyle" | "flat_lay" | "proof_fabric" | "proof_print" | "proof_wash"
+export type DropArtistPaymentModel = "flat_fee" | "royalty" | "revenue_share" | "hybrid" | "unknown"
+export type DropBuyerRoute = "feeling" | "moment" | "gift" | "personality" | "artist_drop" | "world"
+export type DropPrimaryAudience = "25-40" | "18-24" | "gift-buyer" | "artist-aware" | "40-plus"
 
 export type DropImage = {
   url: string
@@ -36,6 +39,27 @@ export type DropPayload = {
   merchandisingBadge?: string
   stockNote?: string
   sizeTableKey?: string
+  hasLifestyleImage?: boolean
+  hasFlatLayImage?: boolean
+  hasProofFabricImage?: boolean
+  hasProofPrintImage?: boolean
+  hasProofWashImage?: boolean
+  samplePrintApproved?: boolean
+  productPhotosApproved?: boolean
+  artistRightsApproved?: boolean
+  artistCreditApproved?: boolean
+  usageScope?: string | null
+  artistPaymentModel?: DropArtistPaymentModel
+  conceptApprovedAt?: string
+  sketchApprovedAt?: string
+  mockupApprovedAt?: string
+  printReadyApprovedAt?: string
+  samplePrintApprovedAt?: string
+  buyerRoute?: DropBuyerRoute
+  primaryAudience?: DropPrimaryAudience
+  firstWedgeEligible?: boolean
+  giftable?: boolean
+  giftOccasionTags?: string[]
   images?: DropImage[]
   capsuleSlugs?: string[]
   complementarySlugs?: string[]

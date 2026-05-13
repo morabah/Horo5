@@ -1,9 +1,12 @@
 import path from "node:path"
 
 import {
+  DROP_ARTIST_PAYMENT_MODELS,
+  DROP_BUYER_ROUTES,
   DEFAULT_DROP_SIZES,
   DROP_DECORATION_TYPES,
   DROP_IMAGE_TAGS,
+  DROP_PRIMARY_AUDIENCES,
   DROP_SIZE_KEYS,
   DROP_STATUSES,
   type DropImageInput,
@@ -20,6 +23,10 @@ const PATH_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/
 const STATUS_SET = new Set<string>(DROP_STATUSES)
 const DECORATION_SET = new Set<string>(DROP_DECORATION_TYPES)
 const IMAGE_TAG_SET = new Set<string>(DROP_IMAGE_TAGS)
+const ARTIST_PAYMENT_MODEL_SET = new Set<string>(DROP_ARTIST_PAYMENT_MODELS)
+const BUYER_ROUTE_SET = new Set<string>(DROP_BUYER_ROUTES)
+const PRIMARY_AUDIENCE_SET = new Set<string>(DROP_PRIMARY_AUDIENCES)
+const FIRST_WEDGE_BUYER_ROUTES = new Set(["feeling", "moment", "gift"])
 
 const TAG_PREFIXES: Array<{ prefix: string; tag: DropImageTag }> = [
   { prefix: "main", tag: "main" },
@@ -133,6 +140,21 @@ function validateIsoDate(issues: DropValidationIssue[], field: string, value: st
   }
 }
 
+function imageCountByTag(images: DropImageInput[], tag: DropImageTag): number {
+  return images.filter((image) => image.tag === tag && image.url?.trim()).length
+}
+
+function hasPositiveStockForSelectedSize(
+  sizes: ProductSizeKey[],
+  stockPerSize: Partial<Record<ProductSizeKey, number>> | undefined,
+): boolean {
+  if (!stockPerSize) return false
+  return sizes.some((size) => {
+    const qty = stockPerSize[size]
+    return typeof qty === "number" && Number.isInteger(qty) && qty > 0
+  })
+}
+
 export function validateDropPayload(payload: UpsertDropPayload): DropValidationIssue[] {
   const issues: DropValidationIssue[] = []
   const status = normalizeDropStatus(payload.status)
@@ -164,6 +186,7 @@ export function validateDropPayload(payload: UpsertDropPayload): DropValidationI
   validateSlugList(issues, "complementarySlugs", payload.complementarySlugs)
   validateSlugList(issues, "frequentlyBoughtWithSlugs", payload.frequentlyBoughtWithSlugs)
   validateSlugList(issues, "customersAlsoBoughtSlugs", payload.customersAlsoBoughtSlugs)
+  validateSlugList(issues, "giftOccasionTags", payload.giftOccasionTags)
 
   if (payload.status && !STATUS_SET.has(payload.status)) {
     pushIssue(issues, "status", "Status must be draft, published, or archived.")
@@ -175,6 +198,18 @@ export function validateDropPayload(payload: UpsertDropPayload): DropValidationI
 
   if (payload.decorationType && !DECORATION_SET.has(payload.decorationType)) {
     pushIssue(issues, "decorationType", "Decoration type must be plain, graphic, embroidered, or mixed.")
+  }
+
+  if (payload.artistPaymentModel && !ARTIST_PAYMENT_MODEL_SET.has(payload.artistPaymentModel)) {
+    pushIssue(issues, "artistPaymentModel", "Artist payment model must be flat_fee, royalty, revenue_share, hybrid, or unknown.")
+  }
+
+  if (payload.buyerRoute && !BUYER_ROUTE_SET.has(payload.buyerRoute)) {
+    pushIssue(issues, "buyerRoute", "Buyer route must be feeling, moment, gift, personality, artist_drop, or world.")
+  }
+
+  if (payload.primaryAudience && !PRIMARY_AUDIENCE_SET.has(payload.primaryAudience)) {
+    pushIssue(issues, "primaryAudience", "Primary audience must be 25-40, 18-24, gift-buyer, artist-aware, or 40-plus.")
   }
 
   if (payload.priceEgp === undefined) {
@@ -230,8 +265,65 @@ export function validateDropPayload(payload: UpsertDropPayload): DropValidationI
     pushIssue(issues, "images", "One image must be tagged main before publishing.")
   }
 
+  if (publishing) {
+    if (!payload.artist?.trim()) {
+      pushIssue(issues, "artist", "Artist is required before publishing.")
+    }
+    if (!payload.sizeTableKey?.trim()) {
+      pushIssue(issues, "sizeTableKey", "Size table is required before publishing.")
+    }
+    if (!payload.fitLabel?.trim()) {
+      pushIssue(issues, "fitLabel", "Fit label is required before publishing.")
+    }
+    if (!hasPositiveStockForSelectedSize(sizes, payload.stockPerSize)) {
+      pushIssue(issues, "stockPerSize", "Stock per size is required before publishing.")
+    }
+    if (imageCountByTag(images, "lifestyle") === 0) {
+      pushIssue(issues, "images.lifestyle", "Lifestyle/on-body image is required before publishing.")
+    }
+    if (imageCountByTag(images, "flat_lay") === 0) {
+      pushIssue(issues, "images.flat_lay", "Flat-lay image is required before publishing.")
+    }
+    if (imageCountByTag(images, "proof_fabric") === 0) {
+      pushIssue(issues, "images.proof_fabric", "Fabric proof image is required before publishing.")
+    }
+    if (imageCountByTag(images, "proof_print") === 0) {
+      pushIssue(issues, "images.proof_print", "Print proof image is required before publishing.")
+    }
+    if (payload.artistRightsApproved !== true) {
+      pushIssue(issues, "artistRightsApproved", "Artist rights must be approved before publishing.")
+    }
+    if (payload.artistCreditApproved !== true) {
+      pushIssue(issues, "artistCreditApproved", "Artist credit must be approved before publishing.")
+    }
+    if (payload.samplePrintApproved !== true) {
+      pushIssue(issues, "samplePrintApproved", "Sample print must be approved before publishing.")
+    }
+    if (payload.productPhotosApproved !== true) {
+      pushIssue(issues, "productPhotosApproved", "Product photos must be approved before publishing.")
+    }
+    if (!payload.buyerRoute) {
+      pushIssue(issues, "buyerRoute", "Buyer route is required before publishing.")
+    }
+    if (!payload.primaryAudience) {
+      pushIssue(issues, "primaryAudience", "Primary audience is required before publishing.")
+    }
+    if (payload.giftable === true && !(payload.giftOccasionTags ?? []).length) {
+      pushIssue(issues, "giftOccasionTags", "Giftable products need at least one gift occasion tag.")
+    }
+  }
+
+  if (payload.firstWedgeEligible === true && payload.buyerRoute && !FIRST_WEDGE_BUYER_ROUTES.has(payload.buyerRoute)) {
+    pushIssue(issues, "firstWedgeEligible", "First-wedge products must use buyer route feeling, moment, or gift.")
+  }
+
   validateIsoDate(issues, "launchAt", payload.launchAt)
   validateIsoDate(issues, "sunsetAt", payload.sunsetAt)
+  validateIsoDate(issues, "conceptApprovedAt", payload.conceptApprovedAt)
+  validateIsoDate(issues, "sketchApprovedAt", payload.sketchApprovedAt)
+  validateIsoDate(issues, "mockupApprovedAt", payload.mockupApprovedAt)
+  validateIsoDate(issues, "printReadyApprovedAt", payload.printReadyApprovedAt)
+  validateIsoDate(issues, "samplePrintApprovedAt", payload.samplePrintApprovedAt)
 
   return issues
 }

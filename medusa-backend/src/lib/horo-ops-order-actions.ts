@@ -6,6 +6,7 @@ import {
 } from "@medusajs/medusa/core-flows"
 
 import { coerceMoneyAmount } from "./egp-amount"
+import { canDispatchCodOrder } from "./cod-confirmation"
 import { isPaymentCaptured } from "./horo-ops-classify"
 import { ORDER_OPS_ACTION_GRAPH_FIELDS } from "./horo-ops-order-query-fields"
 
@@ -222,6 +223,10 @@ export async function executeHoroOpsOrderAction(args: {
       break
     }
     case "create_fulfillment": {
+      const codDispatch = canDispatchCodOrder(row)
+      if (!codDispatch.ok) {
+        throw new MedusaError(MedusaError.Types.INVALID_DATA, codDispatch.message)
+      }
       if (orderUsesInstapayPayment(row) && !isPaymentCaptured(typeof row.payment_status === "string" ? row.payment_status : null)) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,

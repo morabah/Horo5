@@ -50,6 +50,9 @@ describe("drop upsert metadata", () => {
     "avatarUrl": "https://cdn.test/nada.jpg",
     "name": "Nada Ibrahim",
   },
+  "artistCreditApproved": false,
+  "artistPaymentModel": "unknown",
+  "artistRightsApproved": false,
   "artistSlug": "nada-ibrahim",
   "artworkSlug": "quiet-revolt",
   "availableSizes": [
@@ -57,6 +60,7 @@ describe("drop upsert metadata", () => {
     "M",
     "L",
   ],
+  "buyerRoute": null,
   "capsuleSlugs": [
     "summer-capsule",
   ],
@@ -64,11 +68,13 @@ describe("drop upsert metadata", () => {
   "complementarySlugs": [
     "quiet-cap",
   ],
+  "conceptApprovedAt": null,
   "customersAlsoBoughtSlugs": [
     "plain-black-tee",
   ],
   "decorationType": "graphic",
   "feelingSlug": "streetwear",
+  "firstWedgeEligible": false,
   "fitLabel": "Regular fit",
   "frequentlyBoughtWithSlugs": [
     "gift-wrap",
@@ -76,6 +82,13 @@ describe("drop upsert metadata", () => {
   "garmentColors": [
     "Black",
   ],
+  "giftOccasionTags": [],
+  "giftable": false,
+  "hasFlatLayImage": false,
+  "hasLifestyleImage": false,
+  "hasProofFabricImage": false,
+  "hasProofPrintImage": true,
+  "hasProofWashImage": false,
   "launchAt": "2026-05-01T00:00:00.000Z",
   "media": {
     "gallery": [
@@ -87,19 +100,27 @@ describe("drop upsert metadata", () => {
     "main": "https://cdn.test/main.jpg",
   },
   "merchandisingBadge": "New",
+  "mockupApprovedAt": null,
   "occasionSlugs": [
     "launch-day",
   ],
   "originalPriceEgp": 950,
   "priceEgp": 850,
+  "primaryAudience": null,
   "primaryOccasionSlug": "launch-day",
+  "printReadyApprovedAt": null,
+  "productPhotosApproved": false,
+  "samplePrintApproved": false,
+  "samplePrintApprovedAt": null,
   "sizeTableKey": "tee-standard",
+  "sketchApprovedAt": null,
   "stockNote": "Limited run",
   "story": "A quiet statement tee.",
   "sunsetAt": "2026-06-01T00:00:00.000Z",
   "trustBadges": [
     "premium cotton",
   ],
+  "usageScope": null,
 }
 `)
   })

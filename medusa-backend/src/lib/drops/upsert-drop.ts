@@ -70,6 +70,10 @@ function uniqueUrls(images: DropImageInput[]): string[] {
   return [...new Set(images.map((image) => image.url).filter(Boolean))]
 }
 
+function hasImageTag(images: DropImageInput[], tag: DropImageInput["tag"]): boolean {
+  return images.some((image) => image.tag === tag && image.url?.trim())
+}
+
 async function resolveCategoryByPath(query: Query, categoryPath: string): Promise<string | null> {
   const handles = categoryPath.split("/").filter(Boolean)
   const leafHandle = handles[handles.length - 1]
@@ -235,34 +239,60 @@ export function buildDropMetadata(
   const gallery = images
     .filter((image) => image.tag !== "main")
     .map((image) => ({ url: image.url, tag: image.tag }))
+  const hasLifestyleImage = hasImageTag(images, "lifestyle")
+  const hasFlatLayImage = hasImageTag(images, "flat_lay")
+  const hasProofFabricImage = hasImageTag(images, "proof_fabric")
+  const hasProofPrintImage = hasImageTag(images, "proof_print")
+  const hasProofWashImage = hasImageTag(images, "proof_wash")
 
   return {
     apparelCategoryPath: payload.apparelCategory ?? DEFAULT_APPAREL_CATEGORY_PATH,
     artistSlug: payload.artist ?? "",
     ...(artistMeta ? { artist: artistMeta } : {}),
     artworkSlug: payload.handle,
+    artistCreditApproved: payload.artistCreditApproved === true,
+    artistPaymentModel: payload.artistPaymentModel ?? "unknown",
+    artistRightsApproved: payload.artistRightsApproved === true,
     availableSizes: sizes,
+    buyerRoute: payload.buyerRoute ?? null,
     capsuleSlugs: payload.capsuleSlugs ?? [],
     catalogOrder: 0,
     complementarySlugs: payload.complementarySlugs ?? [],
+    conceptApprovedAt: payload.conceptApprovedAt ?? null,
     customersAlsoBoughtSlugs: payload.customersAlsoBoughtSlugs ?? [],
     decorationType: payload.decorationType ?? "graphic",
     feelingSlug: payload.feeling ?? "",
+    firstWedgeEligible: payload.firstWedgeEligible === true,
     fitLabel: payload.fitLabel,
     frequentlyBoughtWithSlugs: payload.frequentlyBoughtWithSlugs ?? [],
     garmentColors: payload.garmentColor ? [payload.garmentColor] : [],
+    giftOccasionTags: payload.giftOccasionTags ?? [],
+    giftable: payload.giftable === true,
+    hasFlatLayImage,
+    hasLifestyleImage,
+    hasProofFabricImage,
+    hasProofPrintImage,
+    hasProofWashImage,
     media: {
       ...(main ? { main } : {}),
       gallery,
     },
     merchandisingBadge: payload.merchandisingBadge,
+    mockupApprovedAt: payload.mockupApprovedAt ?? null,
     occasionSlugs: payload.occasions ?? [],
     primaryOccasionSlug: payload.occasions?.[0] ?? null,
+    primaryAudience: payload.primaryAudience ?? null,
     priceEgp: payload.priceEgp,
+    printReadyApprovedAt: payload.printReadyApprovedAt ?? null,
+    productPhotosApproved: payload.productPhotosApproved === true,
+    samplePrintApproved: payload.samplePrintApproved === true,
+    samplePrintApprovedAt: payload.samplePrintApprovedAt ?? null,
+    sketchApprovedAt: payload.sketchApprovedAt ?? null,
     sizeTableKey: payload.sizeTableKey,
     stockNote: payload.stockNote,
     story: payload.story ?? "",
     trustBadges: payload.trustBadges?.length ? payload.trustBadges : [...DEFAULT_DROP_TRUST_BADGES],
+    usageScope: payload.usageScope ?? null,
     archived: status === "archived",
     ...(payload.launchAt ? { launchAt: payload.launchAt } : {}),
     ...(payload.sunsetAt ? { sunsetAt: payload.sunsetAt } : {}),

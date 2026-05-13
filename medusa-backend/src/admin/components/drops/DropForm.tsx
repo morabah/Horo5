@@ -22,7 +22,17 @@ import { ImageCard } from "./ImageCard"
 import { ArtistPicker, OccasionPicker } from "./LookupCreateFields"
 import { ProductHandlePicker } from "./ProductHandlePicker"
 import { StockBySizeTable } from "./StockBySizeTable"
-import { DROP_SIZE_KEYS, type DropImage, type DropPayload, type ProductSizeKey, type ValidationIssue } from "./types"
+import {
+  DROP_SIZE_KEYS,
+  type DropArtistPaymentModel,
+  type DropBuyerRoute,
+  type DropImage,
+  type DropImageTag,
+  type DropPayload,
+  type DropPrimaryAudience,
+  type ProductSizeKey,
+  type ValidationIssue,
+} from "./types"
 import {
   emptyDrop,
   formatDateTimeLocal,
@@ -40,6 +50,29 @@ type DropFormProps = {
 const none = "__none__"
 const sizeOptions: ProductSizeKey[] = [...DROP_SIZE_KEYS]
 const colorOptions = ["Black", "White", "Off-white", "Grey", "Navy", "Olive", "Burgundy"]
+const artistPaymentModelOptions: Array<{ value: DropArtistPaymentModel; label: string }> = [
+  { value: "unknown", label: "Unknown" },
+  { value: "flat_fee", label: "Flat fee" },
+  { value: "royalty", label: "Royalty" },
+  { value: "revenue_share", label: "Revenue share" },
+  { value: "hybrid", label: "Hybrid" },
+]
+const buyerRouteOptions: Array<{ value: DropBuyerRoute; label: string }> = [
+  { value: "feeling", label: "Feeling" },
+  { value: "moment", label: "Moment" },
+  { value: "gift", label: "Gift" },
+  { value: "personality", label: "Personality" },
+  { value: "artist_drop", label: "Artist drop" },
+  { value: "world", label: "World" },
+]
+const primaryAudienceOptions: Array<{ value: DropPrimaryAudience; label: string }> = [
+  { value: "25-40", label: "25-40" },
+  { value: "18-24", label: "18-24" },
+  { value: "gift-buyer", label: "Gift buyer" },
+  { value: "artist-aware", label: "Artist-aware" },
+  { value: "40-plus", label: "40-plus" },
+]
+const firstWedgeRoutes = new Set<DropBuyerRoute>(["feeling", "moment", "gift"])
 
 function toNumber(value: string): number | undefined {
   if (!value.trim()) return undefined
@@ -50,6 +83,48 @@ function toNumber(value: string): number | undefined {
 function normalizeServerIssues(error: unknown): ValidationIssue[] {
   const body = error as { body?: { issues?: ValidationIssue[] }; issues?: ValidationIssue[] }
   return body.body?.issues ?? body.issues ?? []
+}
+
+function CheckboxField({
+  checked,
+  label,
+  onChange,
+}: {
+  checked: boolean
+  label: string
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <label className="flex min-h-9 cursor-pointer items-center gap-2 rounded-md border border-ui-border-base px-3 py-2 text-sm">
+      <input
+        type="checkbox"
+        className="h-4 w-4"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span>{label}</span>
+    </label>
+  )
+}
+
+function hasTaggedImage(drop: DropPayload, tag: DropImageTag) {
+  return (drop.images ?? []).some((image) => image.tag === tag && image.url?.trim())
+}
+
+function hasStockBySize(drop: DropPayload) {
+  return (drop.sizes ?? []).some((size) => {
+    const qty = drop.stockPerSize?.[size]
+    return typeof qty === "number" && qty > 0
+  })
+}
+
+type ReadinessState = "Ready" | "Missing" | "Warning"
+type ReadinessItem = { label: string; state: ReadinessState }
+
+function readinessBadgeColor(state: ReadinessState): "green" | "orange" | "grey" {
+  if (state === "Ready") return "green"
+  if (state === "Warning") return "orange"
+  return "grey"
 }
 
 function SelectField({
@@ -122,6 +197,31 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
 
   const issues = useMemo(() => [...validationIssues(drop), ...serverIssues], [drop, serverIssues])
   const publishIssues = useMemo(() => validationIssues(drop, "published"), [drop])
+  const readinessItems = useMemo<ReadinessItem[]>(() => {
+    const giftTagsRequired = drop.giftable === true
+    const firstWedgeWarning = drop.firstWedgeEligible === true && drop.buyerRoute && !firstWedgeRoutes.has(drop.buyerRoute)
+
+    return [
+      { label: "Main image", state: hasTaggedImage(drop, "main") ? "Ready" : "Missing" },
+      { label: "Lifestyle/on-body image", state: hasTaggedImage(drop, "lifestyle") ? "Ready" : "Missing" },
+      { label: "Flat-lay image", state: hasTaggedImage(drop, "flat_lay") ? "Ready" : "Missing" },
+      { label: "Fabric proof", state: hasTaggedImage(drop, "proof_fabric") ? "Ready" : "Missing" },
+      { label: "Print proof", state: hasTaggedImage(drop, "proof_print") ? "Ready" : "Missing" },
+      { label: "Story", state: drop.story?.trim() ? "Ready" : "Missing" },
+      { label: "Artist", state: drop.artist?.trim() ? "Ready" : "Missing" },
+      { label: "Artist rights approved", state: drop.artistRightsApproved ? "Ready" : "Missing" },
+      { label: "Artist credit approved", state: drop.artistCreditApproved ? "Ready" : "Missing" },
+      { label: "Sample print approved", state: drop.samplePrintApproved ? "Ready" : "Missing" },
+      { label: "Product photos approved", state: drop.productPhotosApproved ? "Ready" : "Missing" },
+      { label: "Size table", state: drop.sizeTableKey?.trim() ? "Ready" : "Missing" },
+      { label: "Fit label", state: drop.fitLabel?.trim() ? "Ready" : "Missing" },
+      { label: "Stock by size", state: hasStockBySize(drop) ? "Ready" : "Missing" },
+      { label: "Trust badges", state: (drop.trustBadges ?? []).length ? "Ready" : "Warning" },
+      { label: "Buyer route", state: drop.buyerRoute ? (firstWedgeWarning ? "Warning" : "Ready") : "Missing" },
+      { label: "Primary audience", state: drop.primaryAudience ? "Ready" : "Missing" },
+      { label: "Gift tags if giftable", state: giftTagsRequired ? ((drop.giftOccasionTags ?? []).length ? "Ready" : "Missing") : "Ready" },
+    ]
+  }, [drop])
   const subfeelings = useMemo(() => {
     return (lookups?.subfeelings ?? []).filter((item) => !drop.feeling || item.feelingSlug === drop.feeling)
   }, [drop.feeling, lookups?.subfeelings])
@@ -553,6 +653,198 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
 
           <section className="rounded-md border border-ui-border-base p-5">
             <Heading level="h2" className="mb-4">
+              V1.4 Launch Readiness
+            </Heading>
+            <div className="grid gap-5">
+              <div className="rounded-md border border-ui-border-base p-4">
+                <Heading level="h3" className="mb-3 text-base">
+                  Product Proof
+                </Heading>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {([
+                    ["Main image", "main"],
+                    ["Lifestyle/on-body image", "lifestyle"],
+                    ["Flat-lay image", "flat_lay"],
+                    ["Fabric proof image", "proof_fabric"],
+                    ["Print proof image", "proof_print"],
+                  ] as Array<[string, DropImageTag]>).map(([label, tag]) => (
+                    <div key={tag} className="flex items-center justify-between rounded-md bg-ui-bg-subtle px-3 py-2">
+                      <Text size="small">{label}</Text>
+                      <Badge color={hasTaggedImage(drop, tag) ? "green" : "grey"}>
+                        {hasTaggedImage(drop, tag) ? "Ready" : "Missing"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+                {["images.lifestyle", "images.flat_lay", "images.proof_fabric", "images.proof_print"].map((field) =>
+                  issueFor(issues, field) ? (
+                    <Text key={field} size="xsmall" className="mt-2 text-ui-fg-error">
+                      {issueFor(issues, field)}
+                    </Text>
+                  ) : null,
+                )}
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <Field label="Sample print approval" error={issueFor(issues, "samplePrintApproved")}>
+                    <CheckboxField
+                      label="Sample print approved"
+                      checked={drop.samplePrintApproved === true}
+                      onChange={(samplePrintApproved) => update({ samplePrintApproved })}
+                    />
+                  </Field>
+                  <Field label="Product photo approval" error={issueFor(issues, "productPhotosApproved")}>
+                    <CheckboxField
+                      label="Product photos approved"
+                      checked={drop.productPhotosApproved === true}
+                      onChange={(productPhotosApproved) => update({ productPhotosApproved })}
+                    />
+                  </Field>
+                </div>
+              </div>
+
+              <div className="rounded-md border border-ui-border-base p-4">
+                <Heading level="h3" className="mb-3 text-base">
+                  Artist Rights & Approval
+                </Heading>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Artist rights" error={issueFor(issues, "artistRightsApproved")}>
+                    <CheckboxField
+                      label="Rights approved"
+                      checked={drop.artistRightsApproved === true}
+                      onChange={(artistRightsApproved) => update({ artistRightsApproved })}
+                    />
+                  </Field>
+                  <Field label="Artist credit" error={issueFor(issues, "artistCreditApproved")}>
+                    <CheckboxField
+                      label="Credit approved"
+                      checked={drop.artistCreditApproved === true}
+                      onChange={(artistCreditApproved) => update({ artistCreditApproved })}
+                    />
+                  </Field>
+                  <Field label="Payment model" error={issueFor(issues, "artistPaymentModel")}>
+                    <SelectField
+                      value={drop.artistPaymentModel}
+                      onChange={(artistPaymentModel) => update({ artistPaymentModel: artistPaymentModel as DropArtistPaymentModel })}
+                      options={artistPaymentModelOptions}
+                    />
+                  </Field>
+                  <Field label="Usage scope" htmlFor="drop-usage-scope">
+                    <Input
+                      id="drop-usage-scope"
+                      size="small"
+                      value={drop.usageScope ?? ""}
+                      onChange={(event) => update({ usageScope: event.target.value || null })}
+                      placeholder="e.g. Egypt launch campaign"
+                    />
+                  </Field>
+                  {([
+                    ["Concept approved at", "conceptApprovedAt"],
+                    ["Sketch approved at", "sketchApprovedAt"],
+                    ["Mockup approved at", "mockupApprovedAt"],
+                    ["Print-ready approved at", "printReadyApprovedAt"],
+                    ["Sample print approved at", "samplePrintApprovedAt"],
+                  ] as const).map(([label, key]) => (
+                    <Field key={key} label={label}>
+                      <Input
+                        size="small"
+                        type="datetime-local"
+                        value={formatDateTimeLocal(drop[key])}
+                        onChange={(event) => update({ [key]: parseDateTimeLocal(event.target.value) })}
+                      />
+                    </Field>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-md border border-ui-border-base p-4">
+                <Heading level="h3" className="mb-3 text-base">
+                  First Wedge & Buyer Route
+                </Heading>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Buyer route" error={issueFor(issues, "buyerRoute")}>
+                    <SelectField
+                      value={drop.buyerRoute}
+                      onChange={(buyerRoute) => update({ buyerRoute: buyerRoute as DropBuyerRoute })}
+                      placeholder="Select buyer route"
+                      options={buyerRouteOptions}
+                    />
+                  </Field>
+                  <Field label="Primary audience" error={issueFor(issues, "primaryAudience")}>
+                    <SelectField
+                      value={drop.primaryAudience}
+                      onChange={(primaryAudience) => update({ primaryAudience: primaryAudience as DropPrimaryAudience })}
+                      placeholder="Select audience"
+                      options={primaryAudienceOptions}
+                    />
+                  </Field>
+                  <Field label="First wedge eligible" error={issueFor(issues, "firstWedgeEligible")}>
+                    <CheckboxField
+                      label="Eligible for V1.4 first wedge"
+                      checked={drop.firstWedgeEligible === true}
+                      onChange={(firstWedgeEligible) => update({ firstWedgeEligible })}
+                    />
+                  </Field>
+                </div>
+              </div>
+
+              <div className="rounded-md border border-ui-border-base p-4">
+                <Heading level="h3" className="mb-3 text-base">
+                  Stock & Size Readiness
+                </Heading>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Size table" error={issueFor(issues, "sizeTableKey")}>
+                    <SelectField
+                      value={drop.sizeTableKey}
+                      onChange={(sizeTableKey) => update({ sizeTableKey })}
+                      placeholder="Select size table"
+                      options={(lookups?.sizeTables ?? []).map((value) => ({ value, label: value }))}
+                    />
+                  </Field>
+                  <Field label="Fit label" error={issueFor(issues, "fitLabel")}>
+                    <SelectField
+                      value={drop.fitLabel}
+                      onChange={(fitLabel) => update({ fitLabel })}
+                      placeholder="Select fit"
+                      options={(lookups?.fitLabels ?? []).map((value) => ({ value, label: value }))}
+                    />
+                  </Field>
+                  <div className="md:col-span-2">
+                    <Field label="Stock by size" error={issueFor(issues, "stockPerSize")}>
+                      <StockBySizeTable
+                        sizes={drop.sizes ?? []}
+                        stockPerSize={drop.stockPerSize ?? {}}
+                        onChange={(stockPerSize) => update({ stockPerSize })}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-md border border-ui-border-base p-4">
+                <Heading level="h3" className="mb-3 text-base">
+                  Gift Readiness
+                </Heading>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Giftable">
+                    <CheckboxField
+                      label="Giftable product"
+                      checked={drop.giftable === true}
+                      onChange={(giftable) => update({ giftable })}
+                    />
+                  </Field>
+                  <Field label="Gift occasion tags" error={issueFor(issues, "giftOccasionTags")}>
+                    <ChipInput
+                      values={drop.giftOccasionTags ?? []}
+                      onChange={(giftOccasionTags) => update({ giftOccasionTags })}
+                      placeholder="gift occasion slug"
+                    />
+                  </Field>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-md border border-ui-border-base p-5">
+            <Heading level="h2" className="mb-4">
               Cross-sell
             </Heading>
             <div className="grid gap-4 md:grid-cols-2">
@@ -629,6 +921,21 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
                   Ready to publish.
                 </Text>
               )}
+            </div>
+          </div>
+          <div className="rounded-md border border-ui-border-base p-4">
+            <Heading level="h2" className="mb-3">
+              Readiness checklist
+            </Heading>
+            <div className="flex flex-col gap-2">
+              {readinessItems.map((item) => (
+                <div key={item.label} className="flex items-center justify-between gap-3 rounded-md bg-ui-bg-subtle px-3 py-2">
+                  <Text size="xsmall" className="text-ui-fg-muted">
+                    {item.label}
+                  </Text>
+                  <Badge color={readinessBadgeColor(item.state)}>{item.state}</Badge>
+                </div>
+              ))}
             </div>
           </div>
           <div className="rounded-md border border-ui-border-base p-4">

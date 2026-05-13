@@ -12,6 +12,8 @@ import {
   type OpsOrderRow,
 } from "../../../../../lib/horo-ops-classify"
 import { assertOpsBackendAccess } from "../../../../../lib/horo-ops-backend-auth"
+import { readCodConfirmationMetadata } from "../../../../../lib/cod-confirmation"
+import { calculateOrderQualityScore } from "../../../../../lib/order-quality-score"
 import { orderUsesInstapayPayment } from "../../../../../lib/horo-ops-order-actions"
 import {
   effectiveFulfillmentStatusFromOrderGraph,
@@ -112,10 +114,15 @@ function normalizeMetadata(m: unknown): Record<string, unknown> | null {
   return null
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
 function summarizeListRow(row: OpsOrderRow, slaDeliveryDays: number, metadata: unknown) {
   const created = new Date(row.created_at)
   const hasCreated = !Number.isNaN(created.getTime())
   const slaDeadline = hasCreated ? computeSlaDeadlineUtc(created, slaDeliveryDays) : null
+  const meta = normalizeMetadata(metadata)
   return {
     id: row.id,
     display_id: row.display_id,
@@ -130,18 +137,136 @@ function summarizeListRow(row: OpsOrderRow, slaDeliveryDays: number, metadata: u
     payment_status: row.payment_status,
     sla_deadline: slaDeadline ? slaDeadline.toISOString() : null,
     sla_deadline_day_utc: slaDeadline ? utcYmd(slaDeadline) : null,
-    metadata: normalizeMetadata(metadata),
+    cod_confirmation: readCodConfirmationMetadata({ metadata: meta ?? {} }),
+    metadata: meta,
   }
 }
 
 function summarizeFromRaw(raw: Record<string, unknown>, slaDeliveryDays: number) {
-  return summarizeListRow(toOpsRow(raw), slaDeliveryDays, raw.metadata)
+  const base = summarizeListRow(toOpsRow(raw), slaDeliveryDays, raw.metadata)
+  const quality = calculateOrderQualityScore(raw)
+  return {
+    ...base,
+    cod_confirmation: readCodConfirmationMetadata(raw),
+    order_quality_score: quality.orderQualityScore,
+    score_breakdown: quality.scoreBreakdown,
+    contribution_margin_egp: quality.contributionMargin.contributionMarginEgp,
+    contribution_margin_breakdown: quality.contributionMargin.breakdown,
+    order_quality_warnings: quality.warnings,
+  }
 }
 
 function isCanceledMedusaOrder(status: string | null | undefined): boolean {
   if (!status) return false
   const s = status.toLowerCase()
   return s === "canceled" || s === "cancelled"
+}
+
+function itemMetadataRows(order: Record<string, unknown>): Record<string, unknown>[] {
+  const items = Array.isArray(order.items) ? order.items.filter(isRecord) : []
+  return items.map((line) => {
+    const item = isRecord(line.item) ? line.item : {}
+    const product = isRecord(item.product) ? item.product : isRecord(line.product) ? line.product : {}
+    const variant = isRecord(item.variant) ? item.variant : isRecord(line.variant) ? line.variant : {}
+    return {
+      ...(isRecord(product.metadata) ? product.metadata : {}),
+      ...(isRecord(variant.metadata) ? variant.metadata : {}),
+      ...(isRecord(item.metadata) ? item.metadata : {}),
+      ...(isRecord(line.metadata) ? line.metadata : {}),
+    }
+  })
+}
+
+function firstString(values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim()
+  }
+  return null
+}
+
+function orderV14Signals(order: Record<string, unknown>) {
+  const meta = isRecord(order.metadata) ? order.metadata : {}
+  const itemMetas = itemMetadataRows(order)
+  const buyerRoute = firstString([meta.buyerRoute, ...itemMetas.map((row) => row.buyerRoute)]) ?? "unknown"
+  const primaryAudience = firstString([meta.primaryAudience, ...itemMetas.map((row) => row.primaryAudience)]) ?? "unknown"
+  const giftable =
+    meta.isGiftOrder === true ||
+    meta.giftable === true ||
+    itemMetas.some((row) => row.giftable === true || (Array.isArray(row.giftOccasionTags) && row.giftOccasionTags.length > 0))
+  const firstWedgeEligible =
+    meta.firstWedgeEligible === true ||
+    itemMetas.some((row) => row.firstWedgeEligible === true) ||
+    buyerRoute === "feeling" ||
+    buyerRoute === "moment" ||
+    buyerRoute === "gift"
+  return { buyerRoute, primaryAudience, giftable, firstWedgeEligible }
+}
+
+function increment(map: Record<string, number>, key: string) {
+  map[key] = (map[key] ?? 0) + 1
+}
+
+function buildFirstWedgeDashboard(rows: Record<string, unknown>[]) {
+  const buyerRouteBreakdown: Record<string, number> = {}
+  const primaryAudienceBreakdown: Record<string, number> = {}
+  let giftableOrders = 0
+  let firstWedgeEligibleOrders = 0
+
+  for (const row of rows) {
+    const signals = orderV14Signals(row)
+    increment(buyerRouteBreakdown, signals.buyerRoute)
+    increment(primaryAudienceBreakdown, signals.primaryAudience)
+    if (signals.giftable) giftableOrders += 1
+    if (signals.firstWedgeEligible) firstWedgeEligibleOrders += 1
+  }
+
+  const total = rows.length
+  return {
+    total_orders: total,
+    giftable_orders: giftableOrders,
+    giftable_order_share: total ? giftableOrders / total : 0,
+    first_wedge_eligible_orders: firstWedgeEligibleOrders,
+    first_wedge_eligible_order_share: total ? firstWedgeEligibleOrders / total : 0,
+    buyer_route_breakdown: buyerRouteBreakdown,
+    primary_audience_breakdown: primaryAudienceBreakdown,
+  }
+}
+
+function buildCodDashboard(rows: Record<string, unknown>[]) {
+  const counts: Record<string, number> = {
+    not_required: 0,
+    pending: 0,
+    confirmed: 0,
+    failed: 0,
+    unreachable: 0,
+  }
+  for (const row of rows) {
+    counts[readCodConfirmationMetadata(row).codConfirmationStatus] += 1
+  }
+  const required = counts.pending + counts.confirmed + counts.failed + counts.unreachable
+  return {
+    ...counts,
+    required,
+    confirmation_rate: required ? counts.confirmed / required : 1,
+  }
+}
+
+function buildQualityDashboard(rows: Record<string, unknown>[]) {
+  const scored = rows.map((row) => calculateOrderQualityScore(row))
+  const count = scored.length
+  const averageOrderQualityScore = count
+    ? Math.round((scored.reduce((sum, row) => sum + row.orderQualityScore, 0) / count) * 10) / 10
+    : 0
+  const totalContributionMarginEgp = Math.round(scored.reduce((sum, row) => sum + row.contributionMargin.contributionMarginEgp, 0))
+  return {
+    average_order_quality_score: averageOrderQualityScore,
+    total_contribution_margin_egp: totalContributionMarginEgp,
+    average_contribution_margin_egp: count ? Math.round(totalContributionMarginEgp / count) : 0,
+    warning_counts: scored.reduce<Record<string, number>>((acc, row) => {
+      for (const warning of row.warnings) increment(acc, warning)
+      return acc
+    }, {}),
+  }
 }
 
 async function loadOrderRowsBatched(
@@ -193,6 +318,53 @@ async function loadOrderRowsBatched(
   return { rows: out, truncated, batches }
 }
 
+function productV14Missing(row: Record<string, unknown>): string[] {
+  const metadata = isRecord(row.metadata) ? row.metadata : {}
+  const media = isRecord(metadata.media) ? metadata.media : {}
+  const gallery = Array.isArray(media.gallery) ? media.gallery.filter(isRecord) : []
+  const hasTag = (tag: string) => gallery.some((item) => item.tag === tag && typeof item.url === "string" && item.url.trim())
+  const missing: string[] = []
+  if (!row.title) missing.push("title")
+  if (!row.handle) missing.push("handle")
+  if (!metadata.story) missing.push("story")
+  if (!metadata.feelingSlug) missing.push("feeling")
+  if (!metadata.artistSlug) missing.push("artist")
+  if (!metadata.priceEgp) missing.push("price")
+  if (!metadata.sizeTableKey) missing.push("size_table")
+  if (!metadata.fitLabel) missing.push("fit_label")
+  if (!media.main && !row.thumbnail) missing.push("main_image")
+  if (!hasTag("lifestyle")) missing.push("lifestyle_image")
+  if (!hasTag("flat_lay")) missing.push("flat_lay_image")
+  if (!hasTag("proof_fabric")) missing.push("fabric_proof")
+  if (!hasTag("proof_print")) missing.push("print_proof")
+  if (metadata.artistRightsApproved !== true) missing.push("artist_rights")
+  if (metadata.artistCreditApproved !== true) missing.push("artist_credit")
+  if (metadata.samplePrintApproved !== true) missing.push("sample_print")
+  if (metadata.productPhotosApproved !== true) missing.push("product_photos")
+  if (!metadata.buyerRoute) missing.push("buyer_route")
+  if (!metadata.primaryAudience) missing.push("primary_audience")
+  return missing
+}
+
+async function loadProductsMissingV14Readiness(
+  query: { graph: (args: Record<string, unknown>) => Promise<{ data?: unknown[] }> },
+) {
+  const { data } = await query.graph({
+    entity: "product",
+    fields: ["id", "title", "handle", "status", "thumbnail", "metadata"],
+    pagination: { take: 500, order: { updated_at: "DESC" } },
+  })
+  return ((data || []) as Record<string, unknown>[])
+    .filter((row) => String(row.status ?? "").toLowerCase() === "published")
+    .map((row) => ({
+      id: String(row.id ?? ""),
+      handle: String(row.handle ?? ""),
+      title: String(row.title ?? ""),
+      missing: productV14Missing(row),
+    }))
+    .filter((row) => row.missing.length > 0)
+}
+
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   if (!assertOpsBackendAccess(req, res)) return
 
@@ -237,6 +409,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const rows = rowsRawValid.map((r) => toOpsRow(r))
 
     const classified = classifyOpsOrders(rows, config, new Date())
+    const codConfirmation = buildCodDashboard(rowsRawValid)
+    const firstWedge = buildFirstWedgeDashboard(rowsRawValid)
+    const quality = buildQualityDashboard(rowsRawValid)
+    const productsMissingV14Readiness = await loadProductsMissingV14Readiness(query)
 
     const sd = config.slaDeliveryDays
 
@@ -310,6 +486,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       instapayAwaitingCapture: instapayAwaitingCapture.map((raw) => summarizeFromRaw(raw, sd)),
       instapayAwaitingShipment: instapayAwaitingShipment.map((raw) => summarizeFromRaw(raw, sd)),
       list: rowsRawValid.map((raw) => summarizeFromRaw(raw, sd)),
+      codConfirmation,
+      firstWedge,
+      quality,
+      productsMissingV14Readiness,
       dueSoon: classified.dueSoon.map((r) => {
         const raw = rawById.get(r.id)
         return summarizeListRow(r, sd, raw?.metadata)

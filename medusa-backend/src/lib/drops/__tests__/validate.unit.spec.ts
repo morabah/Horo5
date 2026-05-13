@@ -4,6 +4,40 @@ import {
   slugifyDropTitle,
   validateDropPayload,
 } from "../validate"
+import type { UpsertDropPayload } from "../types"
+
+function publishReadyDrop(overrides: Partial<UpsertDropPayload> = {}): UpsertDropPayload {
+  return {
+    handle: "quiet-revolt",
+    title: "Quiet Revolt",
+    status: "published",
+    story: "A tee about quiet confidence.",
+    feeling: "confidence",
+    subfeeling: "quiet-revolt",
+    artist: "nada-ibrahim",
+    priceEgp: 850,
+    sizeTableKey: "regular",
+    fitLabel: "Regular fit",
+    stockPerSize: { S: 0, M: 8, L: 3 },
+    images: [
+      { url: "https://cdn.test/main.jpg", tag: "main" },
+      { url: "https://cdn.test/lifestyle.jpg", tag: "lifestyle" },
+      { url: "https://cdn.test/flat.jpg", tag: "flat_lay" },
+      { url: "https://cdn.test/fabric.jpg", tag: "proof_fabric" },
+      { url: "https://cdn.test/print.jpg", tag: "proof_print" },
+    ],
+    artistRightsApproved: true,
+    artistCreditApproved: true,
+    samplePrintApproved: true,
+    productPhotosApproved: true,
+    buyerRoute: "feeling",
+    primaryAudience: "25-40",
+    firstWedgeEligible: true,
+    giftable: true,
+    giftOccasionTags: ["birthday"],
+    ...overrides,
+  }
+}
 
 describe("drop validators", () => {
   it("slugifies titles for handles", () => {
@@ -34,6 +68,70 @@ describe("drop validators", () => {
       expect.objectContaining({ field: "subfeeling" }),
       expect.objectContaining({ field: "images" }),
     ]))
+  })
+
+  it("allows draft drops to omit V1.4 readiness fields", () => {
+    const issues = validateDropPayload({
+      handle: "quiet-revolt",
+      title: "Quiet Revolt",
+      status: "draft",
+    })
+
+    expect(issues).toEqual([])
+  })
+
+  it("fails published drops without proof images", () => {
+    const issues = validateDropPayload(publishReadyDrop({
+      images: [{ url: "https://cdn.test/main.jpg", tag: "main" }],
+    }))
+
+    expect(issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: "images.lifestyle", message: "Lifestyle/on-body image is required before publishing." }),
+      expect.objectContaining({ field: "images.flat_lay", message: "Flat-lay image is required before publishing." }),
+      expect.objectContaining({ field: "images.proof_fabric", message: "Fabric proof image is required before publishing." }),
+      expect.objectContaining({ field: "images.proof_print", message: "Print proof image is required before publishing." }),
+    ]))
+  })
+
+  it("fails published drops without artist rights approval", () => {
+    const issues = validateDropPayload(publishReadyDrop({ artistRightsApproved: false }))
+
+    expect(issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: "artistRightsApproved", message: "Artist rights must be approved before publishing." }),
+    ]))
+  })
+
+  it("fails published drops without sample approval", () => {
+    const issues = validateDropPayload(publishReadyDrop({ samplePrintApproved: false }))
+
+    expect(issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: "samplePrintApproved", message: "Sample print must be approved before publishing." }),
+    ]))
+  })
+
+  it("fails published drops without stock", () => {
+    const issues = validateDropPayload(publishReadyDrop({ stockPerSize: { S: 0, M: 0, L: 0 } }))
+
+    expect(issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: "stockPerSize", message: "Stock per size is required before publishing." }),
+    ]))
+  })
+
+  it("passes published drops when all V1.4 fields are present", () => {
+    expect(validateDropPayload(publishReadyDrop())).toEqual([])
+  })
+
+  it("fails first-wedge eligible drops outside feeling, moment, or gift routes", () => {
+    for (const buyerRoute of ["personality", "world", "artist_drop"] as const) {
+      const issues = validateDropPayload(publishReadyDrop({ buyerRoute, firstWedgeEligible: true }))
+
+      expect(issues).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          field: "firstWedgeEligible",
+          message: "First-wedge products must use buyer route feeling, moment, or gift.",
+        }),
+      ]))
+    }
   })
 
   it("validates stock quantities against selected sizes", () => {

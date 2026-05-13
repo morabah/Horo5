@@ -136,6 +136,15 @@ export type WhatsAppOrderTemplateBody = {
   paymentLabel: string
 }
 
+export const POST_DELIVERY_UGC_REQUEST_COPY = {
+  ar: "وصل الطلب؟ يهمنا نعرف رأيك. لو حبيت تبعت صورة للقطعة بعد اللبس، ممكن نستخدمها بإذنك على صفحة HORO.",
+  en: "Did your order arrive? We would love your feedback. If you share a photo, we will only repost it with your permission.",
+} as const
+
+export function buildPostDeliveryUgcRequestCopy(locale: "ar" | "en" | string | null | undefined): string {
+  return locale === "ar" ? POST_DELIVERY_UGC_REQUEST_COPY.ar : POST_DELIVERY_UGC_REQUEST_COPY.en
+}
+
 export function buildWhatsAppOrderTemplateBody(orderRow: Record<string, unknown>, orderId: string): WhatsAppOrderTemplateBody {
   const ship = orderRow.shipping_address as Record<string, unknown> | null | undefined
   const first =

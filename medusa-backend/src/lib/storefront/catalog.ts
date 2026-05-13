@@ -12,6 +12,8 @@ import { MERCH_EVENT_MODULE } from "../../modules/merch-event"
 import type MerchEventModuleService from "../../modules/merch-event/service"
 import { OCCASION_MODULE } from "../../modules/occasion"
 import type OccasionModuleService from "../../modules/occasion/service"
+import { PRODUCT_REVIEW_MODULE } from "../../modules/product-review"
+import type ProductReviewModuleService from "../../modules/product-review/service"
 import { FEELINGS_ROOT_HANDLE } from "./feeling-category-metadata"
 import type { CategoryNode, FlatCategoryRow, FeelingBrowseAssignmentRaw } from "./feeling-category-tree"
 import {
@@ -47,6 +49,7 @@ import type {
   StorefrontProductArtistDisplayDTO,
   StorefrontProductDTO,
   StorefrontProductPhysicalAttributesDTO,
+  StorefrontReviewProofDTO,
   StorefrontSubfeelingDTO,
   StorefrontVariantDTO,
 } from "./types"
@@ -1161,11 +1164,18 @@ function buildProduct(
   }
 
   return {
+    id: product.id,
     apparelCategoryPath: apparelPath,
     artistDisplay: resolveArtistDisplay(metadata, artistsBySlug),
     artistSlug: asString(metadata.artistSlug) || "nada-ibrahim",
     artworkSlug: asString(metadata.artworkSlug),
     availableSizes: mappedVariants.length > 0 ? mappedVariants.map((variant) => variant.size) : asStringArrayOrEmpty(metadata.availableSizes),
+    buyerRoute: asString(metadata.buyerRoute) as StorefrontProductDTO["buyerRoute"],
+    primaryAudience: asString(metadata.primaryAudience) as StorefrontProductDTO["primaryAudience"],
+    firstWedgeEligible: metadata.firstWedgeEligible === true,
+    giftable: metadata.giftable === true,
+    giftOccasionTags: asStringArrayOrEmpty(metadata.giftOccasionTags),
+    careInstructions: asString(metadata.careInstructions),
     capsuleSlugs: asStringArrayOrEmpty(metadata.capsuleSlugs),
     complementarySlugs: asStringArrayOrEmpty(metadata.complementarySlugs),
     customersAlsoBoughtSlugs: asStringArrayOrEmpty(metadata.customersAlsoBoughtSlugs),
@@ -1570,6 +1580,100 @@ type StorefrontPdpPayload = {
   crossSellProducts: StorefrontProductDTO[]
 }
 
+type ProductReviewRecord = {
+  id: string
+  product_id?: string | null
+  rating?: number | null
+  body?: string | null
+  locale?: string | null
+  status?: string | null
+  photo_url?: string | null
+  video_url?: string | null
+  instagram_handle?: string | null
+  permission_to_repost?: boolean | null
+  fit_feedback?: string | null
+  gift_feedback?: string | null
+  ugc_type?: string | null
+  source?: string | null
+  created_at?: Date | string | null
+}
+
+function serializeReviewDate(value: Date | string | null | undefined): string | null {
+  if (!value) return null
+  if (value instanceof Date) return value.toISOString()
+  const ms = Date.parse(String(value))
+  return Number.isFinite(ms) ? new Date(ms).toISOString() : null
+}
+
+function reviewProofFromRecord(record: ProductReviewRecord): StorefrontReviewProofDTO {
+  const ugcType = record.ugc_type === "photo" || record.ugc_type === "video" || record.ugc_type === "delivery_reaction"
+    ? record.ugc_type
+    : "review"
+  const source =
+    record.source === "post_delivery_whatsapp" ||
+    record.source === "manual_admin" ||
+    record.source === "instagram"
+      ? record.source
+      : "website"
+
+  return {
+    id: record.id,
+    rating: Number(record.rating || 0),
+    body: record.body || "",
+    locale: record.locale || "en",
+    photoUrl: record.photo_url || null,
+    videoUrl: record.video_url || null,
+    instagramHandle: record.instagram_handle || null,
+    permissionToRepost: record.permission_to_repost === true,
+    fitFeedback: record.fit_feedback || null,
+    giftFeedback: record.gift_feedback || null,
+    ugcType,
+    source,
+    createdAt: serializeReviewDate(record.created_at),
+  }
+}
+
+async function loadApprovedReviewProof(
+  scope: MedusaContainer,
+  productId: string | undefined,
+): Promise<{ reviewsSummary?: StorefrontProductDTO["reviewsSummary"]; reviewProof?: StorefrontReviewProofDTO[] }> {
+  if (!productId) return {}
+  try {
+    const service = scope.resolve<ProductReviewModuleService>(PRODUCT_REVIEW_MODULE)
+    const rows = await service.listProductReviews(
+      { product_id: productId, status: "approved" },
+      { take: 12, skip: 0 },
+    ) as ProductReviewRecord[]
+
+    const visible = rows
+      .map(reviewProofFromRecord)
+      .filter((review) => (
+        review.rating > 0 ||
+        review.body.trim() ||
+        review.fitFeedback?.trim() ||
+        review.giftFeedback?.trim() ||
+        (review.permissionToRepost && (review.photoUrl || review.videoUrl))
+      ))
+
+    if (visible.length === 0) return {}
+
+    const rated = visible.filter((review) => review.rating > 0)
+    const averageRating = rated.length > 0
+      ? Math.round((rated.reduce((sum, review) => sum + review.rating, 0) / rated.length) * 10) / 10
+      : 0
+
+    return {
+      reviewsSummary: {
+        count: visible.length,
+        averageRating,
+      },
+      reviewProof: visible,
+    }
+  } catch {
+    return {}
+  }
+}
+
 let pdpServerCache = new Map<string, { expiresAt: number; value: StorefrontPdpPayload }>()
 let pdpServerInflight = new Map<string, Promise<StorefrontPdpPayload | null>>()
 
@@ -1586,14 +1690,20 @@ async function buildStorefrontPdpPayload(
     return null
   }
 
+  const reviewProof = await loadApprovedReviewProof(scope, product.id)
+  const productWithProof = {
+    ...product,
+    ...reviewProof,
+  }
+
   const crossSellSlugs = [
-    ...(product.complementarySlugs ?? []),
-    ...(product.frequentlyBoughtWithSlugs ?? []),
-    ...(product.customersAlsoBoughtSlugs ?? []),
+    ...(productWithProof.complementarySlugs ?? []),
+    ...(productWithProof.frequentlyBoughtWithSlugs ?? []),
+    ...(productWithProof.customersAlsoBoughtSlugs ?? []),
   ]
   const crossSellProducts = await retrieveStorefrontProductsByHandles(scope, crossSellSlugs)
 
-  return { product, settings, crossSellProducts }
+  return { product: productWithProof, settings, crossSellProducts }
 }
 
 export async function retrieveStorefrontPdpPayload(

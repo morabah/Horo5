@@ -11,6 +11,18 @@ const ProductReview = model
     status: model
       .enum(["pending", "approved", "rejected"])
       .default("pending"),
+    photo_url: model.text().nullable(),
+    video_url: model.text().nullable(),
+    instagram_handle: model.text().nullable(),
+    permission_to_repost: model.boolean().default(false),
+    fit_feedback: model.text().nullable(),
+    gift_feedback: model.text().nullable(),
+    ugc_type: model
+      .enum(["review", "photo", "video", "delivery_reaction"])
+      .default("review"),
+    source: model
+      .enum(["post_delivery_whatsapp", "website", "manual_admin", "instagram"])
+      .default("website"),
   })
   .indexes([
     {

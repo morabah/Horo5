@@ -45,6 +45,11 @@ export function ReviewCard({ review, disabled, onStatusChange, onDelete }: Revie
 
       <div className="mb-3 flex flex-wrap gap-2">
         <Badge size="small" color="grey">{review.locale}</Badge>
+        <Badge size="small" color="grey">{review.ugcType.replace(/_/g, " ")}</Badge>
+        <Badge size="small" color={review.permissionToRepost ? "green" : "orange"}>
+          {review.permissionToRepost ? "repost permitted" : "no repost permission"}
+        </Badge>
+        <Badge size="small" color="grey">{review.source.replace(/_/g, " ")}</Badge>
         {review.customerId ? (
           <Badge size="small" color="grey">customer</Badge>
         ) : null}
@@ -52,6 +57,28 @@ export function ReviewCard({ review, disabled, onStatusChange, onDelete }: Revie
           <Text size="xsmall" className="text-ui-fg-muted">
             {new Date(review.createdAt).toLocaleDateString()}
           </Text>
+        ) : null}
+      </div>
+
+      <div className="mb-3 space-y-1">
+        {review.photoUrl ? (
+          <Text size="xsmall" className="text-ui-fg-muted">
+            Photo: <a href={review.photoUrl} target="_blank" rel="noreferrer" className="underline">{review.photoUrl}</a>
+          </Text>
+        ) : null}
+        {review.videoUrl ? (
+          <Text size="xsmall" className="text-ui-fg-muted">
+            Video: <a href={review.videoUrl} target="_blank" rel="noreferrer" className="underline">{review.videoUrl}</a>
+          </Text>
+        ) : null}
+        {review.instagramHandle ? (
+          <Text size="xsmall" className="text-ui-fg-muted">Instagram: {review.instagramHandle}</Text>
+        ) : null}
+        {review.fitFeedback ? (
+          <Text size="xsmall" className="text-ui-fg-muted">Fit: {review.fitFeedback}</Text>
+        ) : null}
+        {review.giftFeedback ? (
+          <Text size="xsmall" className="text-ui-fg-muted">Gift: {review.giftFeedback}</Text>
         ) : null}
       </div>
 

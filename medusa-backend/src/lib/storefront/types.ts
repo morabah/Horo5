@@ -29,6 +29,21 @@ export type StorefrontMediaDTO = {
   dominantColorMain?: string | null
 }
 
+export type StorefrontBuyerRoute =
+  | "feeling"
+  | "moment"
+  | "gift"
+  | "personality"
+  | "artist_drop"
+  | "world"
+
+export type StorefrontPrimaryAudience =
+  | "25-40"
+  | "18-24"
+  | "gift-buyer"
+  | "artist-aware"
+  | "40-plus"
+
 export type StorefrontVariantDTO = {
   allow_backorder: boolean
   available: boolean
@@ -74,13 +89,41 @@ export type StorefrontProductArtistDisplayDTO = {
   avatarUrl?: string
 }
 
+export type StorefrontReviewProofDTO = {
+  id: string
+  rating: number
+  body: string
+  locale: string
+  photoUrl?: string | null
+  videoUrl?: string | null
+  instagramHandle?: string | null
+  permissionToRepost: boolean
+  fitFeedback?: string | null
+  giftFeedback?: string | null
+  ugcType: "review" | "photo" | "video" | "delivery_reaction"
+  source: "post_delivery_whatsapp" | "website" | "manual_admin" | "instagram"
+  createdAt?: string | null
+}
+
+export type StorefrontReviewsSummaryDTO = {
+  count: number
+  averageRating: number
+}
+
 export type StorefrontProductDTO = {
+  id?: string
   apparelCategoryPath?: string
   /** Resolved for PDP: metadata.artist first, else storefront_artist by artistSlug. */
   artistDisplay?: StorefrontProductArtistDisplayDTO
   artistSlug: string
   availableSizes?: string[]
   artworkSlug?: string
+  buyerRoute?: StorefrontBuyerRoute
+  primaryAudience?: StorefrontPrimaryAudience
+  firstWedgeEligible?: boolean
+  giftable?: boolean
+  giftOccasionTags?: string[]
+  careInstructions?: string
   capsuleSlugs?: string[]
   complementarySlugs?: string[]
   customersAlsoBoughtSlugs?: string[]
@@ -151,6 +194,8 @@ export type StorefrontProductDTO = {
   /** ISO from Medusa `product.updated_at` (sitemap / freshness). */
   updatedAt?: string
   trustBadges?: string[]
+  reviewsSummary?: StorefrontReviewsSummaryDTO
+  reviewProof?: StorefrontReviewProofDTO[]
   /** Occasion/moment cues from metadata.worksFor — e.g. ["night out", "gift", "Eid"]. */
   worksFor?: string[]
   useCase?: string

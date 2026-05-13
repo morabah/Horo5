@@ -3,6 +3,11 @@ import { ContainerRegistrationKeys, MedusaError } from "@medusajs/framework/util
 import { updateOrderWorkflow } from "@medusajs/medusa/core-flows"
 
 import { assertOpsBackendAccess } from "../../../../../../lib/horo-ops-backend-auth"
+import {
+  buildCodConfirmationUpdate,
+  isCodConfirmationStatus,
+  type CodConfirmationStatus,
+} from "../../../../../../lib/cod-confirmation"
 import { ORDER_OPS_GRAPH_FIELDS } from "../../../../../../lib/horo-ops-order-query-fields"
 import { asRecord } from "../../../../../../lib/shared/type-guards"
 
@@ -47,6 +52,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   const hasStatus = Object.prototype.hasOwnProperty.call(body, "status")
   const hasHandling = Object.prototype.hasOwnProperty.call(body, "horo_ops_handling")
+  const hasCodConfirmation =
+    Object.prototype.hasOwnProperty.call(body, "cod_confirmation_status") ||
+    Object.prototype.hasOwnProperty.call(body, "codConfirmationStatus")
 
   const statusRaw = body.status
   const status = typeof statusRaw === "string" ? statusRaw.trim() : null
@@ -55,8 +63,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     res.status(400).json({ message: "order_id is required" })
     return
   }
-  if (!hasStatus && !hasHandling) {
-    res.status(400).json({ message: "Provide status and/or horo_ops_handling" })
+  if (!hasStatus && !hasHandling && !hasCodConfirmation) {
+    res.status(400).json({ message: "Provide status, horo_ops_handling, and/or cod_confirmation_status" })
     return
   }
   if (hasStatus) {
@@ -88,6 +96,15 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     }
   }
 
+  const codStatusRaw = body.cod_confirmation_status ?? body.codConfirmationStatus
+  const codStatus = typeof codStatusRaw === "string" ? codStatusRaw.trim() : null
+  if (hasCodConfirmation && !isCodConfirmationStatus(codStatus)) {
+    res.status(400).json({
+      message: "Invalid cod_confirmation_status. Allowed: not_required, pending, confirmed, failed, unreachable",
+    })
+    return
+  }
+
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
   try {
@@ -111,6 +128,14 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         mergedMeta.horo_ops_handling = handling
       }
     }
+    if (hasCodConfirmation && codStatus) {
+      Object.assign(
+        mergedMeta,
+        buildCodConfirmationUpdate(mergedMeta, codStatus as CodConfirmationStatus, {
+          confirmedBy: "manual_admin",
+        }),
+      )
+    }
 
     const userId = resolveHoroOpsActorUserId(req)
 
@@ -118,7 +143,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       id: orderId,
       user_id: userId,
     }
-    if (hasHandling) {
+    if (hasHandling || hasCodConfirmation) {
       input.metadata = mergedMeta
     }
     if (hasStatus && status) {

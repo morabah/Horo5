@@ -27,6 +27,34 @@ export type DropDecorationType = (typeof DROP_DECORATION_TYPES)[number]
 export const DROP_STATUSES = ["draft", "published", "archived"] as const
 export type DropStatus = (typeof DROP_STATUSES)[number]
 
+export const DROP_ARTIST_PAYMENT_MODELS = [
+  "flat_fee",
+  "royalty",
+  "revenue_share",
+  "hybrid",
+  "unknown",
+] as const
+export type DropArtistPaymentModel = (typeof DROP_ARTIST_PAYMENT_MODELS)[number]
+
+export const DROP_BUYER_ROUTES = [
+  "feeling",
+  "moment",
+  "gift",
+  "personality",
+  "artist_drop",
+  "world",
+] as const
+export type DropBuyerRoute = (typeof DROP_BUYER_ROUTES)[number]
+
+export const DROP_PRIMARY_AUDIENCES = [
+  "25-40",
+  "18-24",
+  "gift-buyer",
+  "artist-aware",
+  "40-plus",
+] as const
+export type DropPrimaryAudience = (typeof DROP_PRIMARY_AUDIENCES)[number]
+
 export type DropImageInput = {
   url: string
   filename?: string
@@ -60,6 +88,27 @@ export type UpsertDropPayload = {
   merchandisingBadge?: string
   stockNote?: string
   sizeTableKey?: string
+  hasLifestyleImage?: boolean
+  hasFlatLayImage?: boolean
+  hasProofFabricImage?: boolean
+  hasProofPrintImage?: boolean
+  hasProofWashImage?: boolean
+  samplePrintApproved?: boolean
+  productPhotosApproved?: boolean
+  artistRightsApproved?: boolean
+  artistCreditApproved?: boolean
+  usageScope?: string | null
+  artistPaymentModel?: DropArtistPaymentModel
+  conceptApprovedAt?: string
+  sketchApprovedAt?: string
+  mockupApprovedAt?: string
+  printReadyApprovedAt?: string
+  samplePrintApprovedAt?: string
+  buyerRoute?: DropBuyerRoute
+  primaryAudience?: DropPrimaryAudience
+  firstWedgeEligible?: boolean
+  giftable?: boolean
+  giftOccasionTags?: string[]
   images?: DropImageInput[]
   imagesByTag?: DropImagesByTag
   stockPerSize?: Partial<Record<ProductSizeKey, number>>

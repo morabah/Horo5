@@ -3,7 +3,15 @@ import type { MedusaContainer } from "@medusajs/types"
 
 import { PRODUCT_REVIEW_MODULE } from "../../modules/product-review"
 import type ProductReviewModuleService from "../../modules/product-review/service"
-import { REVIEW_STATUSES, type AdminReview, type ReviewStatus } from "./types"
+import {
+  REVIEW_SOURCES,
+  REVIEW_STATUSES,
+  REVIEW_UGC_TYPES,
+  type AdminReview,
+  type ReviewSource,
+  type ReviewStatus,
+  type ReviewUgcType,
+} from "./types"
 
 type ReviewRecord = {
   id: string
@@ -13,6 +21,14 @@ type ReviewRecord = {
   body?: string | null
   locale?: string | null
   status?: string | null
+  photo_url?: string | null
+  video_url?: string | null
+  instagram_handle?: string | null
+  permission_to_repost?: boolean | null
+  fit_feedback?: string | null
+  gift_feedback?: string | null
+  ugc_type?: string | null
+  source?: string | null
   created_at?: Date | string | null
 }
 
@@ -49,6 +65,14 @@ export async function buildAdminReview(scope: MedusaContainer, record: ReviewRec
     body: record.body || "",
     locale: record.locale || "en",
     status: (REVIEW_STATUSES.includes(record.status as ReviewStatus) ? record.status : "pending") as ReviewStatus,
+    photoUrl: record.photo_url || null,
+    videoUrl: record.video_url || null,
+    instagramHandle: record.instagram_handle || null,
+    permissionToRepost: record.permission_to_repost === true,
+    fitFeedback: record.fit_feedback || null,
+    giftFeedback: record.gift_feedback || null,
+    ugcType: (REVIEW_UGC_TYPES.includes(record.ugc_type as ReviewUgcType) ? record.ugc_type : "review") as ReviewUgcType,
+    source: (REVIEW_SOURCES.includes(record.source as ReviewSource) ? record.source : "website") as ReviewSource,
     createdAt: serializeDate(record.created_at),
   }
 }
