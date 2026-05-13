@@ -239,7 +239,7 @@ function remoteParityPath() {
   return process.env.PARITY_REMOTE_SNAPSHOT_FILE?.trim() || path.resolve(process.cwd(), ".parity/railway.json")
 }
 
-function snapshotOnly(value: unknown): ParitySnapshot | null {
+export function snapshotOnly(value: unknown): ParitySnapshot | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null
   const record = value as Record<string, unknown>
   if (record.snapshot && typeof record.snapshot === "object") {
@@ -248,12 +248,12 @@ function snapshotOnly(value: unknown): ParitySnapshot | null {
   return null
 }
 
-function diffSet(left: string[], right: string[]) {
+export function diffSet(left: string[], right: string[]) {
   const rightSet = new Set(right)
   return left.filter((item) => !rightSet.has(item)).sort()
 }
 
-function categoryHandles(snapshot: ParitySnapshot) {
+export function categoryHandles(snapshot: ParitySnapshot) {
   return snapshot.snapshot.productCategories.map((category) => category.handle).sort()
 }
 
