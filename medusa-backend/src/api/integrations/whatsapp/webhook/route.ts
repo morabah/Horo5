@@ -23,7 +23,7 @@ type WebhookLogger = {
 
 function resolveLogger(req: MedusaRequest): WebhookLogger {
   try {
-    return req.scope?.resolve(ContainerRegistrationKeys.LOGGER) as WebhookLogger
+    return (req.scope?.resolve(ContainerRegistrationKeys.LOGGER) as WebhookLogger) ?? {}
   } catch {
     return {}
   }
