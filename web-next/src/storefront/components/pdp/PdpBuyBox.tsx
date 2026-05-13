@@ -195,6 +195,14 @@ export function PdpBuyBox({
             {product.name}
           </h1>
 
+          {/* Emotional line */}
+          {product.feelsLike && product.feelsLike.length > 0 ? (
+            <p className="font-body text-[15px] leading-snug text-obsidian">
+              <span className="text-clay">{isArabic ? 'الإحساس' : 'Feels like'}:</span>{' '}
+              {product.feelsLike.slice(0, 3).join(' · ')}
+            </p>
+          ) : null}
+
           {/* Design meaning — 1-line "what this design says" for gift / self-expression buyers */}
           {product.useCase?.trim() ? (
             <p className="font-body text-[15px] leading-snug text-warm-charcoal">
@@ -377,7 +385,7 @@ export function PdpBuyBox({
             </span>
           </div>
 
-          {/* WhatsApp order button — hidden in reveal mode */}
+          {/* WhatsApp size-help button — hidden in reveal mode */}
           {whatsappSupportUrl && !isRevealMode ? (
             <a
               href={whatsappSupportUrl}
@@ -386,8 +394,16 @@ export function PdpBuyBox({
               className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone/60 bg-white/80 px-4 py-3 font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian hover:bg-white"
             >
               <IconWhatsApp />
-              Order on WhatsApp
+              {isArabic ? 'تحتاج مساعدة في المقاس؟ اسألنا على واتساب' : 'Need help with size? Ask us on WhatsApp'}
             </a>
+          ) : null}
+
+          {product.giftable ? (
+            <p className="rounded-xl border border-stone/45 bg-white/70 px-4 py-3 font-body text-sm leading-relaxed text-warm-charcoal">
+              {isArabic
+                ? 'بتشتريها هدية؟ اسألنا عن المقاس قبل الطلب.'
+                : 'Buying it as a gift? Ask us for size help before ordering.'}
+            </p>
           ) : null}
 
           {/* Notify form — OOS or reveal mode */}

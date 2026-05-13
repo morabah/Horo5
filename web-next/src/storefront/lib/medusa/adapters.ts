@@ -84,9 +84,18 @@ export function toProduct(medusa: MedusaProduct): Product {
     : []
 
   return {
+    id: medusa.id,
     slug: medusa.handle,
     name: medusa.title,
     artistSlug,
+    buyerRoute: typeof metadata.buyerRoute === "string" ? metadata.buyerRoute as Product["buyerRoute"] : undefined,
+    primaryAudience: typeof metadata.primaryAudience === "string" ? metadata.primaryAudience as Product["primaryAudience"] : undefined,
+    firstWedgeEligible: metadata.firstWedgeEligible === true,
+    giftable: metadata.giftable === true,
+    giftOccasionTags: Array.isArray(metadata.giftOccasionTags)
+      ? metadata.giftOccasionTags.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+      : undefined,
+    careInstructions: typeof metadata.careInstructions === "string" ? metadata.careInstructions : undefined,
     primaryFeelingSlug,
     feelingSlug,
     occasionSlugs,

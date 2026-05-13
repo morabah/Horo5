@@ -21,6 +21,12 @@ export type OpsOrderSummaryRow = {
   payment_status?: string | null;
   fulfillment_status?: string | null;
   sla_deadline_day_utc?: string | null;
+  cod_confirmation?: {
+    codConfirmationStatus: CodConfirmationStatus;
+    codConfirmedAt?: string | null;
+    codConfirmedBy?: "whatsapp" | "manual_admin" | null;
+    codConfirmationAttempts: number;
+  };
 };
 
 export const MEDUSA_ORDER_STATUS_OPTIONS = [
@@ -31,6 +37,16 @@ export const MEDUSA_ORDER_STATUS_OPTIONS = [
   "canceled",
   "requires_action",
 ] as const;
+
+const COD_CONFIRMATION_STATUS_OPTIONS = [
+  "not_required",
+  "pending",
+  "confirmed",
+  "failed",
+  "unreachable",
+] as const;
+
+type CodConfirmationStatus = typeof COD_CONFIRMATION_STATUS_OPTIONS[number];
 
 type Props = {
   open: boolean;
@@ -54,6 +70,13 @@ function metaString(meta: unknown, key: string): string {
   if (!meta || typeof meta !== "object" || Array.isArray(meta)) return "";
   const v = (meta as Record<string, unknown>)[key];
   return typeof v === "string" ? v : "";
+}
+
+function readCodConfirmationStatus(meta: unknown): CodConfirmationStatus {
+  const value = metaString(meta, "codConfirmationStatus");
+  return COD_CONFIRMATION_STATUS_OPTIONS.includes(value as CodConfirmationStatus)
+    ? (value as CodConfirmationStatus)
+    : "not_required";
 }
 
 function PipelineTracker({
@@ -151,9 +174,12 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
   const [workflowError, setWorkflowError] = useState<string | null>(null);
   const [medusaStatus, setMedusaStatus] = useState<string>("pending");
   const [opsHandling, setOpsHandling] = useState<string>("");
+  const [codConfirmationStatus, setCodConfirmationStatus] = useState<CodConfirmationStatus>("not_required");
   const [initialMedusaStatus, setInitialMedusaStatus] = useState<string>("pending");
   const [initialOpsHandling, setInitialOpsHandling] = useState<string>("");
+  const [initialCodConfirmationStatus, setInitialCodConfirmationStatus] = useState<CodConfirmationStatus>("not_required");
   const [showRaw, setShowRaw] = useState(false);
+  const summaryCodStatus = summary?.cod_confirmation?.codConfirmationStatus;
 
   const resetFromGraph = useCallback((g: Record<string, unknown> | null) => {
     if (!g) return;
@@ -167,6 +193,9 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
     const nextHandling = h === "pending" || h === "received" || h === "collected" ? h : "";
     setOpsHandling(nextHandling);
     setInitialOpsHandling(nextHandling);
+    const nextCod = readCodConfirmationStatus(g.metadata);
+    setCodConfirmationStatus(nextCod);
+    setInitialCodConfirmationStatus(nextCod);
   }, []);
 
   useEffect(() => {
@@ -190,6 +219,10 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
     setWorkflowError(null);
     /** Dashboard `order_graphs` omits payment_collections / fulfillments — do not treat it as the action graph. */
     setGraph(null);
+    if (summaryCodStatus) {
+      setCodConfirmationStatus(summaryCodStatus);
+      setInitialCodConfirmationStatus(summaryCodStatus);
+    }
     if (initialGraph && Object.keys(initialGraph).length > 0) {
       resetFromGraph(initialGraph);
     }
@@ -218,7 +251,7 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
     return () => {
       cancelled = true;
     };
-  }, [open, orderId, initialGraph, resetFromGraph]);
+  }, [open, orderId, initialGraph, resetFromGraph, summaryCodStatus]);
 
   const save = async () => {
     if (!orderId) return;
@@ -232,6 +265,9 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
       }
       if (opsHandling !== initialOpsHandling) {
         body.horo_ops_handling = opsHandling === "" ? null : opsHandling;
+      }
+      if (codConfirmationStatus !== initialCodConfirmationStatus) {
+        body.cod_confirmation_status = codConfirmationStatus;
       }
       if (Object.keys(body).length === 1) {
         setSaveError("No changes to save.");
@@ -311,6 +347,12 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
   const total = graph?.total ?? summary?.total;
   const moneyLine = graph ? formatOrderTotalForUi(currency, total) : "";
   const emailHint = summary?.email ? formatEmailForPrimaryLabel(summary.email) : "customer";
+  const codConfirmedAt = graph ? metaString(graph.metadata, "codConfirmedAt") : summary?.cod_confirmation?.codConfirmedAt ?? "";
+  const codConfirmedBy = graph ? metaString(graph.metadata, "codConfirmedBy") : summary?.cod_confirmation?.codConfirmedBy ?? "";
+  const codAttempts =
+    graph && graph.metadata && typeof graph.metadata === "object" && !Array.isArray(graph.metadata)
+      ? (graph.metadata as Record<string, unknown>).codConfirmationAttempts
+      : summary?.cod_confirmation?.codConfirmationAttempts;
 
   const primaryLabel =
     nextAction && graph
@@ -400,6 +442,45 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
               </div>
             </div>
           ) : null}
+
+          <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-sm dark:border-amber-900/60 dark:bg-amber-950/30">
+            <p className="text-base font-medium text-amber-950 dark:text-amber-100">COD confirmation</p>
+            <p className="mt-1 text-xs text-amber-950/90 dark:text-amber-100/90">
+              Cash-on-delivery orders must be confirmed before the HORO ops dispatch action can create fulfillment.
+            </p>
+            <label className="mt-3 block text-sm">
+              <span className="sr-only">COD confirmation status</span>
+              <select
+                value={codConfirmationStatus}
+                onChange={(e) => setCodConfirmationStatus(e.target.value as CodConfirmationStatus)}
+                className="mt-1 w-full max-w-md rounded-md border border-amber-300 bg-white px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 dark:border-amber-800 dark:bg-neutral-950 dark:text-neutral-100"
+              >
+                {COD_CONFIRMATION_STATUS_OPTIONS.map((status) => (
+                  <option key={status} value={status}>
+                    {status.replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-amber-950/85 dark:text-amber-100/85">
+              {codConfirmedAt ? <span>Confirmed at: {new Date(codConfirmedAt).toLocaleString()}</span> : null}
+              {codConfirmedBy ? <span>By: {codConfirmedBy}</span> : null}
+              {typeof codAttempts === "number" ? <span>Attempts: {codAttempts}</span> : null}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(["confirmed", "unreachable", "failed"] as const).map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  disabled={saving || !!actionBusy}
+                  onClick={() => setCodConfirmationStatus(status)}
+                  className="rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-950 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 disabled:opacity-50 dark:border-amber-800 dark:bg-neutral-950 dark:text-amber-100 dark:hover:bg-amber-950"
+                >
+                  Mark {status.replace(/_/g, " ")}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {graph ? (
             <div className="rounded-lg border border-violet-200 bg-violet-50/80 p-4 text-sm dark:border-violet-900/50 dark:bg-violet-950/30">

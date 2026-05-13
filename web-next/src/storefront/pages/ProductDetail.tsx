@@ -596,7 +596,7 @@ export function ProductDetail({
 
   const physicalFitDisplayLines = useMemo(() => {
     const p = product?.physicalAttributes;
-    if (!p) return [] as string[];
+    if (!p) return [copy.sizeGuidePhysicalMaterial.replace('{value}', 'Cotton T-shirt')];
     const lines: string[] = [];
     if (p.weight) lines.push(copy.sizeGuidePhysicalWeight.replace('{value}', p.weight));
     if (p.length || p.width || p.height) {
@@ -607,7 +607,7 @@ export function ProductDetail({
         copy.sizeGuidePhysicalDimensions.replace('{length}', L).replace('{width}', W).replace('{height}', H),
       );
     }
-    if (p.material) lines.push(copy.sizeGuidePhysicalMaterial.replace('{value}', p.material));
+    lines.push(copy.sizeGuidePhysicalMaterial.replace('{value}', p.material || 'Cotton T-shirt'));
     if (p.originCountry) lines.push(copy.sizeGuidePhysicalOrigin.replace('{value}', p.originCountry));
     if (p.hsCode) lines.push(copy.sizeGuidePhysicalHs.replace('{value}', p.hsCode));
     if (p.midCode) lines.push(copy.sizeGuidePhysicalMid.replace('{value}', p.midCode));
@@ -1094,8 +1094,6 @@ export function ProductDetail({
         {copy.sizeRequiredPrompt}
       </span>
 
-      <PdpTrustStrip />
-
       <nav
         className="bg-papyrus px-4 pb-2 pt-6 font-body text-[11px] uppercase tracking-wider text-clay md:px-12 md:pb-4 md:pt-8"
         aria-label={shellCopy.shell.breadcrumb}
@@ -1194,7 +1192,62 @@ export function ProductDetail({
         />
       </section>
 
+      <PdpTrustStrip />
+
+      <section className="border-t border-stone/25 bg-papyrus">
+        <div className={`mx-auto grid max-w-[1320px] gap-6 px-4 py-14 md:px-12 md:py-16 ${product.giftable ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
+          <PdpDeliveryPaymentCard
+            deliveryRules={deliveryRules}
+            deliveryDynamic={deliveryDynamic}
+            standardDeliveryWindow={standardDeliveryWindow}
+            expressDeliveryWindow={expressDeliveryWindow}
+            trustItems={trustItems}
+          />
+          {product.giftable ? <PdpGiftReadyCard giftWrapAvailable /> : null}
+        </div>
+      </section>
+
+      <PdpStoryCard storyText={storyText} tagLabels={storyTagLabels} />
+
+      {productDescription && productDescription.trim().length > 400 ? (
+        <section className="border-t border-stone/25 bg-papyrus">
+          <div className="mx-auto max-w-[1320px] px-4 py-6 md:px-12">
+            <button
+              type="button"
+              onClick={() => setDesignStoryExpanded((open) => !open)}
+              className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
+            >
+              {designStoryExpanded ? 'Show less' : 'Read full story'}
+            </button>
+          </div>
+        </section>
+      ) : null}
+
+      {isRevealMode ? (
+        <ArtistStudioBlock
+          slides={product.artistStorySlides}
+          artistName={pdpArtist?.name}
+          isRevealMode={isRevealMode}
+        />
+      ) : null}
+
+      <section className="border-t border-stone/25 bg-papyrus">
+        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
+          <div className="max-w-[720px]">
+            <PdpArtistCard artistDisplay={pdpArtist} catalogArtist={artist} isArabic={isArabic} />
+          </div>
+        </div>
+      </section>
+
       <PdpProofStrip product={product} />
+
+      <section className="border-t border-stone/25 bg-papyrus">
+        <div className="mx-auto max-w-[820px] px-4 py-14 md:px-12 md:py-16">
+          <PdpQualityProofCard physicalLines={physicalFitDisplayLines} careInstructions={product.careInstructions} />
+        </div>
+      </section>
+
+      <PdpReviewsZone product={product} />
 
       {showCrossSellSection ? (
         <section className="border-t border-stone/25 bg-papyrus">
@@ -1226,54 +1279,6 @@ export function ProductDetail({
       ) : null}
 
       {!compactPdp ? <PdpShareStrip productName={product.name} productSlug={product.slug} /> : null}
-
-      {isRevealMode ? (
-        <ArtistStudioBlock
-          slides={product.artistStorySlides as any}
-          artistName={pdpArtist?.name}
-          isRevealMode={isRevealMode}
-        />
-      ) : null}
-
-      <PdpReviewsZone product={product} />
-
-      <PdpStoryCard storyText={storyText} tagLabels={storyTagLabels} />
-
-      <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[1320px] px-4 py-14 md:px-12 md:py-16">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <PdpArtistCard artistDisplay={pdpArtist} catalogArtist={artist} isArabic={isArabic} />
-            <PdpQualityProofCard physicalLines={physicalFitDisplayLines} />
-            <PdpDeliveryPaymentCard
-              deliveryRules={deliveryRules}
-              deliveryDynamic={deliveryDynamic}
-              standardDeliveryWindow={standardDeliveryWindow}
-              expressDeliveryWindow={expressDeliveryWindow}
-              trustItems={trustItems}
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-stone/25 bg-papyrus">
-        <div className="mx-auto max-w-[820px] px-4 py-14 md:px-12 md:py-16">
-          <PdpGiftReadyCard giftWrapAvailable />
-        </div>
-      </section>
-
-      {productDescription && productDescription.trim().length > 400 ? (
-        <section className="border-t border-stone/25 bg-papyrus">
-          <div className="mx-auto max-w-[1320px] px-4 py-6 md:px-12">
-            <button
-              type="button"
-              onClick={() => setDesignStoryExpanded((open) => !open)}
-              className="font-label inline-flex min-h-11 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4 transition-colors hover:text-obsidian"
-            >
-              {designStoryExpanded ? 'Show less' : 'Read full story'}
-            </button>
-          </div>
-        </section>
-      ) : null}
 
       <PdpRelatedProducts
         products={related}

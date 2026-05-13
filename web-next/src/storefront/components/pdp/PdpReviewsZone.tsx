@@ -59,11 +59,18 @@ export function PdpReviewsZone({ product }: { product: Product }) {
   const reviewCount = summary?.count ?? 0;
   const avgRating = summary?.averageRating ?? 0;
   const monthSold = summary?.monthSoldCount ?? 0;
+  const proof = (product.reviewProof ?? []).filter((review) => (
+    review.body.trim() ||
+    review.fitFeedback?.trim() ||
+    review.giftFeedback?.trim() ||
+    (review.permissionToRepost && (review.photoUrl || review.videoUrl))
+  ));
 
   const hasReviews = reviewCount > 0 && avgRating > 0;
   const hasSold = monthSold > 0;
+  const hasProof = proof.length > 0;
 
-  if (!hasReviews && !hasSold) return null;
+  if (!hasReviews && !hasSold && !hasProof) return null;
 
   return (
     <section className="border-t border-stone/25 bg-papyrus">
@@ -93,6 +100,51 @@ export function PdpReviewsZone({ product }: { product: Product }) {
             </span>
           ) : null}
         </div>
+
+        {hasProof ? (
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {proof.slice(0, 3).map((review) => (
+              <article key={review.id} className="border border-stone/20 bg-ivory px-4 py-3">
+                {review.permissionToRepost && review.photoUrl ? (
+                  <img
+                    src={review.photoUrl}
+                    alt={isArabic ? 'صورة عميل حقيقية بعد الموافقة' : 'Approved customer photo'}
+                    className="mb-3 aspect-[4/3] w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : null}
+                {review.permissionToRepost && review.videoUrl ? (
+                  <a
+                    href={review.videoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mb-3 block font-label text-[11px] font-semibold uppercase tracking-[0.14em] text-obsidian underline"
+                  >
+                    {isArabic ? 'فيديو العميل' : 'Customer video'}
+                  </a>
+                ) : null}
+                {review.body ? (
+                  <p className="font-body text-sm leading-6 text-warm-charcoal">{review.body}</p>
+                ) : null}
+                {review.fitFeedback ? (
+                  <p className="mt-2 font-label text-[11px] font-medium uppercase tracking-[0.14em] text-clay">
+                    {isArabic ? 'مقاس' : 'Fit'}: {review.fitFeedback}
+                  </p>
+                ) : null}
+                {review.giftFeedback ? (
+                  <p className="mt-1 font-label text-[11px] font-medium uppercase tracking-[0.14em] text-clay">
+                    {isArabic ? 'هدية' : 'Gift'}: {review.giftFeedback}
+                  </p>
+                ) : null}
+                {review.instagramHandle && review.permissionToRepost ? (
+                  <p className="mt-2 font-label text-[10px] font-medium uppercase tracking-[0.14em] text-clay">
+                    {review.instagramHandle}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   );

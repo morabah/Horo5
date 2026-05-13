@@ -32,6 +32,38 @@ type SummarizedOrder = {
   sla_deadline?: string | null;
   sla_deadline_day_utc?: string | null;
   metadata?: Record<string, unknown> | null;
+  cod_confirmation?: CodConfirmationState;
+  order_quality_score?: number;
+  score_breakdown?: ScoreFactor[];
+  contribution_margin_egp?: number;
+  contribution_margin_breakdown?: ContributionMarginBreakdown;
+  order_quality_warnings?: string[];
+};
+
+type CodConfirmationStatus = "not_required" | "pending" | "confirmed" | "failed" | "unreachable";
+
+type CodConfirmationState = {
+  codConfirmationStatus: CodConfirmationStatus;
+  codConfirmedAt?: string | null;
+  codConfirmedBy?: "whatsapp" | "manual_admin" | null;
+  codConfirmationAttempts: number;
+};
+
+type ScoreFactor = {
+  key: string;
+  score: 1 | 3 | 5;
+  reason: string;
+};
+
+type ContributionMarginBreakdown = {
+  sellingPriceEgp: number;
+  blankCostEgp: number;
+  printCostEgp: number;
+  packagingCostEgp: number;
+  shippingSubsidyEgp: number;
+  paymentFeeEgp: number;
+  estimatedCpaEgp: number;
+  rtoAllowanceEgp: number;
 };
 
 type DashboardAlarm = {
@@ -86,6 +118,31 @@ type DashboardJson = {
   moneyCollected?: { by_currency?: Record<string, number>; orders?: SummarizedOrder[] };
   alarms?: DashboardAlarm[];
   today?: TodayQueueItem[];
+  codConfirmation?: Record<CodConfirmationStatus, number> & {
+    required: number;
+    confirmation_rate: number;
+  };
+  firstWedge?: {
+    total_orders: number;
+    giftable_orders: number;
+    giftable_order_share: number;
+    first_wedge_eligible_orders: number;
+    first_wedge_eligible_order_share: number;
+    buyer_route_breakdown: Record<string, number>;
+    primary_audience_breakdown: Record<string, number>;
+  };
+  quality?: {
+    average_order_quality_score: number;
+    total_contribution_margin_egp: number;
+    average_contribution_margin_egp: number;
+    warning_counts: Record<string, number>;
+  };
+  productsMissingV14Readiness?: Array<{
+    id: string;
+    handle: string;
+    title: string;
+    missing: string[];
+  }>;
 };
 
 type LookupMatch = Record<string, unknown>;
@@ -181,6 +238,116 @@ function SectionCard({
       </div>
       <div className="p-4 pt-0">{children}</div>
     </section>
+  );
+}
+
+function formatPercent(value: number | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "0%";
+  return `${Math.round(value * 100)}%`;
+}
+
+function formatEgp(value: number | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "0 EGP";
+  return `${Math.round(value).toLocaleString()} EGP`;
+}
+
+function MetricTile({ label, value, tone = "neutral" }: { label: string; value: string | number; tone?: "neutral" | "good" | "warn" | "bad" }) {
+  const classes =
+    tone === "good"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/60 dark:bg-emerald-950/35 dark:text-emerald-100"
+      : tone === "warn"
+        ? "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/35 dark:text-amber-100"
+        : tone === "bad"
+          ? "border-red-200 bg-red-50 text-red-950 dark:border-red-900/60 dark:bg-red-950/35 dark:text-red-100"
+          : "border-neutral-200 bg-neutral-50 text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900/50 dark:text-neutral-100";
+  return (
+    <div className={`rounded-lg border px-3 py-2 ${classes}`}>
+      <p className="text-xs font-medium uppercase tracking-wide opacity-80">{label}</p>
+      <p className="mt-1 text-lg font-semibold tabular-nums">{value}</p>
+    </div>
+  );
+}
+
+function BreakdownList({ data, empty = "No data" }: { data?: Record<string, number>; empty?: string }) {
+  const entries = Object.entries(data ?? {}).filter(([, value]) => value > 0);
+  if (entries.length === 0) return <p className="text-xs text-neutral-500 dark:text-neutral-400">{empty}</p>;
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {entries.map(([key, value]) => (
+        <span key={key} className="rounded-full bg-neutral-100 px-2 py-1 text-xs text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+          {key.replace(/_/g, " ")}: <span className="font-semibold tabular-nums">{value}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function V14DashboardSignals({ dashboard }: { dashboard: DashboardJson | null }) {
+  const cod = dashboard?.codConfirmation;
+  const firstWedge = dashboard?.firstWedge;
+  const quality = dashboard?.quality;
+  const missing = dashboard?.productsMissingV14Readiness ?? [];
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-2">
+      <SectionCard title="COD confirmation" subtitle="Dispatch guard for cash-on-delivery orders" badge={cod ? `${cod.required} COD` : "0 COD"}>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <MetricTile label="Pending" value={cod?.pending ?? 0} tone={(cod?.pending ?? 0) > 0 ? "warn" : "neutral"} />
+          <MetricTile label="Confirmed" value={cod?.confirmed ?? 0} tone="good" />
+          <MetricTile label="Failed / unreachable" value={(cod?.failed ?? 0) + (cod?.unreachable ?? 0)} tone={(cod?.failed ?? 0) + (cod?.unreachable ?? 0) > 0 ? "bad" : "neutral"} />
+          <MetricTile label="Not required" value={cod?.not_required ?? 0} />
+          <MetricTile label="Confirmation rate" value={formatPercent(cod?.confirmation_rate)} tone={(cod?.confirmation_rate ?? 0) >= 0.8 ? "good" : "warn"} />
+          <MetricTile label="Required" value={cod?.required ?? 0} />
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Order quality" subtitle="Internal signal only; low scores do not block orders" badge={quality ? `${quality.average_order_quality_score.toFixed(1)} avg` : undefined}>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <MetricTile label="Avg quality" value={(quality?.average_order_quality_score ?? 0).toFixed(1)} tone={(quality?.average_order_quality_score ?? 0) >= 4 ? "good" : "warn"} />
+          <MetricTile label="Avg margin" value={formatEgp(quality?.average_contribution_margin_egp)} tone={(quality?.average_contribution_margin_egp ?? 0) >= 0 ? "good" : "bad"} />
+          <MetricTile label="Total margin" value={formatEgp(quality?.total_contribution_margin_egp)} tone={(quality?.total_contribution_margin_egp ?? 0) >= 0 ? "good" : "bad"} />
+        </div>
+        <div className="mt-3">
+          <p className="mb-1 text-xs font-medium text-neutral-500 dark:text-neutral-400">Warnings</p>
+          <BreakdownList data={quality?.warning_counts} empty="No warnings in loaded orders." />
+        </div>
+      </SectionCard>
+
+      <SectionCard title="First wedge" subtitle="Giftable feelings and personal moments" badge={firstWedge ? `${firstWedge.total_orders} orders` : undefined}>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <MetricTile label="Giftable share" value={formatPercent(firstWedge?.giftable_order_share)} tone={(firstWedge?.giftable_order_share ?? 0) > 0 ? "good" : "neutral"} />
+          <MetricTile label="First wedge share" value={formatPercent(firstWedge?.first_wedge_eligible_order_share)} tone={(firstWedge?.first_wedge_eligible_order_share ?? 0) > 0 ? "good" : "neutral"} />
+          <MetricTile label="Giftable orders" value={firstWedge?.giftable_orders ?? 0} />
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div>
+            <p className="mb-1 text-xs font-medium text-neutral-500 dark:text-neutral-400">Buyer route</p>
+            <BreakdownList data={firstWedge?.buyer_route_breakdown} />
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-medium text-neutral-500 dark:text-neutral-400">Primary audience</p>
+            <BreakdownList data={firstWedge?.primary_audience_breakdown} />
+          </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Products missing V1.4 readiness" subtitle="Published products that still miss proof or governance fields" badge={`${missing.length}`}>
+        {missing.length === 0 ? (
+          <EmptyState title="No readiness gaps found in loaded products" hint="This checks published product metadata and proof image tags." />
+        ) : (
+          <ul className="space-y-2">
+            {missing.slice(0, 8).map((product) => (
+              <li key={product.id} className="rounded-lg border border-amber-200 bg-amber-50/80 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/35">
+                <p className="text-sm font-medium text-amber-950 dark:text-amber-100">{product.title || product.handle}</p>
+                <p className="font-mono text-[11px] text-amber-900/80 dark:text-amber-200/80">{product.handle}</p>
+                <p className="mt-1 text-xs text-amber-950/90 dark:text-amber-100/90">{product.missing.join(", ")}</p>
+              </li>
+            ))}
+            {missing.length > 8 ? <li className="text-xs text-neutral-500 dark:text-neutral-400">+{missing.length - 8} more products in JSON.</li> : null}
+          </ul>
+        )}
+      </SectionCard>
+    </div>
   );
 }
 
@@ -1406,6 +1573,8 @@ export function HoroOpsDashboardClient() {
         ) : null}
 
         {meta?.note ? <p className="text-xs text-neutral-500 dark:text-neutral-400">{meta.note}</p> : null}
+
+        {loading && !dashboard ? <TableSkeleton rows={4} /> : <V14DashboardSignals dashboard={dashboard} />}
 
         <div className="grid gap-4 lg:grid-cols-2">
           <SectionCard id="section-alarms" title="Alarms" subtitle="Risk flags for loaded orders" badge={`${dashboard?.alarms?.length ?? 0}`}>

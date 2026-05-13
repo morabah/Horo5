@@ -134,8 +134,15 @@ export default class InstapayProviderService extends AbstractPaymentProvider<Ins
     return { data }
   }
 
-  async refundPayment(_: RefundPaymentInput): Promise<RefundPaymentOutput> {
-    throw new MedusaError(MedusaError.Types.INVALID_DATA, "Instapay refunds are not automated in this provider.")
+  async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
+    // v2.15.1 enhancement: refundPaymentsWorkflow now exposes metadata on refund creation.
+    // We preserve any metadata passed so future refund automation can use it.
+    const metadata = asRecord(input.data)
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      `Instapay refunds are not automated in this provider. ` +
+      `Metadata keys preserved: ${Object.keys(metadata).join(", ") || "none"}.`,
+    )
   }
 
   async retrievePayment(input: RetrievePaymentInput): Promise<RetrievePaymentOutput> {

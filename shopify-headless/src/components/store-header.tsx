@@ -10,6 +10,7 @@ export function StoreHeader() {
         <nav className="flex items-center gap-6 text-sm font-medium text-black/70">
           <Link href="/">Home</Link>
           <Link href="/products">Shop</Link>
+          <Link href="/gifts">Gifts</Link>
           <Link href="/cart">Cart</Link>
         </nav>
       </div>

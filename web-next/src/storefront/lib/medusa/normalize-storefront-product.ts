@@ -2,11 +2,18 @@ import type { Product, ProductSizeKey, ProductVariantRecord } from '@/storefront
 
 /** Medusa storefront product JSON (camelCase DTO from `/storefront/*`). */
 export type StorefrontProductApi = {
+  id?: string;
   apparelCategoryPath?: string;
   artistDisplay?: Product['artistDisplay'];
   artistSlug: string;
   artworkSlug?: string;
   availableSizes?: string[];
+  buyerRoute?: Product['buyerRoute'];
+  primaryAudience?: Product['primaryAudience'];
+  firstWedgeEligible?: boolean;
+  giftable?: boolean;
+  giftOccasionTags?: string[];
+  careInstructions?: string;
   capsuleSlugs?: string[];
   complementarySlugs?: string[];
   customersAlsoBoughtSlugs?: string[];
@@ -54,6 +61,8 @@ export type StorefrontProductApi = {
   thumbnail?: string | null;
   hasValidPrimaryImage?: boolean;
   trustBadges?: string[];
+  reviewsSummary?: Product['reviewsSummary'];
+  reviewProof?: Product['reviewProof'];
   useCase?: string;
   variantsBySize?: StorefrontVariantApi;
   variantsByColor?: Record<string, StorefrontVariantApi[keyof StorefrontVariantApi][]>;
@@ -118,11 +127,18 @@ function normalizeVariantsByColor(raw: StorefrontProductApi['variantsByColor']):
 /** Normalize Medusa storefront product JSON to storefront `Product` (browser + RSC). */
 export function normalizeStorefrontProductApi(product: StorefrontProductApi): Product {
   return {
+    id: product.id,
     apparelCategoryPath: product.apparelCategoryPath,
     artistDisplay: product.artistDisplay,
     artistSlug: product.artistSlug,
     artworkSlug: product.artworkSlug,
     availableSizes: product.availableSizes as Product['availableSizes'],
+    buyerRoute: product.buyerRoute,
+    primaryAudience: product.primaryAudience,
+    firstWedgeEligible: product.firstWedgeEligible,
+    giftable: product.giftable,
+    giftOccasionTags: product.giftOccasionTags,
+    careInstructions: product.careInstructions,
     capsuleSlugs: product.capsuleSlugs,
     complementarySlugs: product.complementarySlugs,
     customersAlsoBoughtSlugs: product.customersAlsoBoughtSlugs,
@@ -165,6 +181,8 @@ export function normalizeStorefrontProductApi(product: StorefrontProductApi): Pr
     thumbnail: product.thumbnail,
     hasValidPrimaryImage: product.hasValidPrimaryImage,
     trustBadges: product.trustBadges,
+    reviewsSummary: product.reviewsSummary,
+    reviewProof: product.reviewProof,
     useCase: product.useCase,
     variantsBySize: normalizeVariantMap(product.variantsBySize),
     variantsByColor: normalizeVariantsByColor(product.variantsByColor),

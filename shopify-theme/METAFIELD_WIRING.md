@@ -15,6 +15,20 @@ This document maps the Shopify theme's metafield/metaobject consumption to the `
 | `story_description` | Multi-line text | `product-story.liquid` | `Product.storyDescription` | Extended narrative. |
 | `subtitle` | Single-line text | `templates/product.json` (caption block) | `Product.subtitle` | Rendered under product title in PDP. |
 | `subfeeling` | Metaobject reference → `subfeeling` | `collection-subfeeling-nav.liquid` | `Product.subfeelingSlug` / `FeelingBrowseAssignment` | For sub-feeling navigation on collection pages. |
+| `feels_like` | List / CSV text | Headless PDP | `Product.feelsLike` | Emotional line under title. |
+| `works_for` | List / CSV text | Headless PDP | `Product.worksFor` | Moments/occasions shown in story block. |
+| `fit_label` | Single-line text | `product-purchase-context.liquid`, headless PDP | `Product.fitLabel` | Required for V1.4 published products. |
+| `size_table_key` | Single-line text | Headless PDP | `Product.sizeTableKey` | Required for V1.4 published products. |
+| `giftable` | Boolean | `product-purchase-context.liquid`, headless `/gifts` | `Product.giftable` | Enables gift helper and gift route inclusion. |
+| `gift_occasion_tags` | List / CSV text | `product-purchase-context.liquid`, headless `/gifts` | `Product.giftOccasionTags` | Real gift tags only; no placeholder occasions. |
+| `buyer_route` | Single-line text | Headless analytics/readiness | `Product.buyerRoute` | Use `feeling`, `moment`, `gift`, `personality`, `artist_drop`, or `world`. |
+| `primary_audience` | Single-line text | Headless analytics/readiness | `Product.primaryAudience` | Use V1.4 allowed audience labels. |
+| `artist_display` | Single-line text | Headless PDP | `Product.artistDisplay.name` | Fallback artist credit for Shopify headless. |
+| `care_instructions` | Multi-line text | Headless PDP | `Product.careInstructions` | Only show care claims that are configured. |
+| `material` | Single-line text | Headless PDP | `Product.physicalAttributes.material` | If missing, storefront says `Cotton T-shirt`; do not claim GSM/cotton % without data. |
+| `whatsapp_help_url` | URL | `product-purchase-context.liquid`, headless PDP | Support channel | Size help CTA. |
+| `delivery_note` | Text | Headless PDP | Storefront delivery proof | Operational copy only. |
+| `exchange_note` | Text | Headless PDP | Storefront exchange proof | Operational copy only. |
 
 ---
 

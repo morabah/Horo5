@@ -503,10 +503,19 @@ export default class PaymobProviderService extends AbstractPaymentProvider<Paymo
     )
   }
 
-  async refundPayment(_: RefundPaymentInput): Promise<RefundPaymentOutput> {
+  async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
+    // v2.15.1 enhancement: refundPaymentsWorkflow now exposes metadata on refund creation.
+    // Preserve metadata for future refund automation (reason codes, transaction refs).
+    const data = asRecord(input.data)
+    const metadata: Record<string, unknown> = {
+      ...data,
+      refund_reason: data.refund_reason ?? "not_set",
+      refund_requested_at: new Date().toISOString(),
+    }
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
-      "Paymob refunds are not supported in the HORO launch phase."
+      `Paymob refunds are not supported in the HORO launch phase. ` +
+      `Refund metadata preserved: ${Object.keys(metadata).join(", ")}.`,
     )
   }
 

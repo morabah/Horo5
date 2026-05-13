@@ -34,11 +34,18 @@ type StorefrontVariantResponse = {
 };
 
 type StorefrontProductResponse = {
+  id?: string;
   apparelCategoryPath?: string;
   artistDisplay?: Product["artistDisplay"];
   artistSlug: string;
   artworkSlug?: string;
   availableSizes?: string[];
+  buyerRoute?: Product["buyerRoute"];
+  primaryAudience?: Product["primaryAudience"];
+  firstWedgeEligible?: boolean;
+  giftable?: boolean;
+  giftOccasionTags?: string[];
+  careInstructions?: string;
   capsuleSlugs?: string[];
   complementarySlugs?: string[];
   customersAlsoBoughtSlugs?: string[];
@@ -77,6 +84,8 @@ type StorefrontProductResponse = {
   storyDescription?: string;
   thumbnail?: string | null;
   trustBadges?: string[];
+  reviewsSummary?: Product["reviewsSummary"];
+  reviewProof?: Product["reviewProof"];
   worksFor?: string[];
   useCase?: string;
   variantsBySize?: Record<string, StorefrontVariantResponse>;
@@ -156,11 +165,18 @@ function normalizeVariantMap(
 
 function normalizeProduct(product: StorefrontProductResponse): Product {
   return {
+    id: product.id,
     apparelCategoryPath: product.apparelCategoryPath,
     artistDisplay: product.artistDisplay,
     artistSlug: product.artistSlug,
     artworkSlug: product.artworkSlug,
     availableSizes: product.availableSizes as Product["availableSizes"],
+    buyerRoute: product.buyerRoute,
+    primaryAudience: product.primaryAudience,
+    firstWedgeEligible: product.firstWedgeEligible,
+    giftable: product.giftable,
+    giftOccasionTags: product.giftOccasionTags,
+    careInstructions: product.careInstructions,
     capsuleSlugs: product.capsuleSlugs,
     complementarySlugs: product.complementarySlugs,
     customersAlsoBoughtSlugs: product.customersAlsoBoughtSlugs,
@@ -199,6 +215,8 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     storyDescription: product.storyDescription,
     thumbnail: product.thumbnail,
     trustBadges: product.trustBadges,
+    reviewsSummary: product.reviewsSummary,
+    reviewProof: product.reviewProof,
     worksFor: product.worksFor,
     useCase: product.useCase,
     variantsBySize: normalizeVariantMap(product.variantsBySize),

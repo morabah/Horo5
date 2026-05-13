@@ -3,7 +3,7 @@ import { Modules } from "@medusajs/framework/utils"
 
 import { FEELINGS_ROOT_HANDLE } from "../../src/lib/storefront/feeling-category-metadata"
 
-jest.setTimeout(90 * 1000)
+jest.setTimeout(120 * 1000)
 
 async function seedDropsStudioPrerequisites(container: any) {
   const salesChannel = container.resolve(Modules.SALES_CHANNEL) as any

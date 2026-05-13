@@ -12,10 +12,14 @@ const featureStripItems = PDP_SCHEMA.features.map((feature) => ({
 type PdpQualityProofCardProps = {
   /** Physical attributes from Medusa (material, weight, origin). */
   physicalLines: string[];
+  careInstructions?: string;
 };
 
-export function PdpQualityProofCard({ physicalLines }: PdpQualityProofCardProps) {
+export function PdpQualityProofCard({ physicalLines, careInstructions }: PdpQualityProofCardProps) {
   const { pdp: copy } = useDictionary();
+  const safeCareInstructions =
+    careInstructions?.trim() || 'Follow the care label. Wash inside out and avoid ironing directly over the print.';
+
   return (
     <div className="rounded-2xl border border-stone/30 bg-white/60 p-6 md:p-8">
       <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
@@ -53,6 +57,15 @@ export function PdpQualityProofCard({ physicalLines }: PdpQualityProofCardProps)
       <p className="mt-4 font-body text-sm leading-relaxed text-warm-charcoal/80">
         {copy.designStoryAccordionBody}
       </p>
+
+      <div className="mt-5 border-t border-stone/25 pt-4">
+        <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-clay">
+          Care
+        </p>
+        <p className="mt-2 font-body text-sm leading-relaxed text-warm-charcoal">
+          {safeCareInstructions}
+        </p>
+      </div>
     </div>
   );
 }

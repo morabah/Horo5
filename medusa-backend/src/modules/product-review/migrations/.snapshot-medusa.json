@@ -1452,6 +1452,27 @@
         },
         {
           "columnNames": [
+            "completed_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_cart_completed_at",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_cart_completed_at\" ON public.cart USING btree (completed_at) WHERE (completed_at IS NOT NULL)"
+        },
+        {
+          "columnNames": [
+            "created_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_cart_created_at",
+          "unique": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
             "currency_code"
           ],
           "composite": false,
@@ -2470,6 +2491,16 @@
           "unique": false,
           "primary": false,
           "expression": "CREATE INDEX \"IDX_cart_line_item_deleted_at\" ON public.cart_line_item USING btree (deleted_at) WHERE (deleted_at IS NOT NULL)"
+        },
+        {
+          "columnNames": [
+            "cart_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_line_item_cart_id",
+          "unique": false,
+          "primary": false
         },
         {
           "columnNames": [
@@ -17890,6 +17921,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "version": {
+          "name": "version",
+          "type": "int4",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": "1",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
         }
       },
       "name": "order_shipping_method_adjustment",
@@ -17905,6 +17952,18 @@
           "unique": false,
           "primary": false,
           "expression": "CREATE INDEX \"IDX_order_shipping_method_adjustment_shipping_method_id\" ON public.order_shipping_method_adjustment USING btree (shipping_method_id) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "version",
+            "shipping_method_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "IDX_order_shipping_method_adjustment_version_shipping_method",
+          "unique": true,
+          "primary": false,
+          "expression": "CREATE UNIQUE INDEX \"IDX_order_shipping_method_adjustment_version_shipping_method\" ON public.order_shipping_method_adjustment USING btree (version, shipping_method_id) WHERE (deleted_at IS NULL)"
         },
         {
           "columnNames": [
@@ -20159,6 +20218,232 @@
           "enumItems": [],
           "mappedType": "text"
         },
+        "product_id": {
+          "name": "product_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'en'",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "notified_at": {
+          "name": "notified_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "name": "pdp_waitlist",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": [
+            "deleted_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_pdp_waitlist_deleted_at",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_pdp_waitlist_deleted_at\" ON public.pdp_waitlist USING btree (deleted_at) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "product_id",
+            "email"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "IDX_pdp_waitlist_product_email",
+          "unique": true,
+          "primary": false,
+          "expression": "CREATE UNIQUE INDEX \"IDX_pdp_waitlist_product_email\" ON public.pdp_waitlist USING btree (product_id, email) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "product_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_pdp_waitlist_product_pending",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_pdp_waitlist_product_pending\" ON public.pdp_waitlist USING btree (product_id) WHERE ((deleted_at IS NULL) AND (notified_at IS NULL))"
+        },
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "pdp_waitlist_pkey",
+          "unique": true,
+          "primary": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {
+        "claim_reason_enum": {
+          "name": "claim_reason_enum",
+          "schema": "public",
+          "items": [
+            "missing_item",
+            "wrong_item",
+            "production_failure",
+            "other"
+          ]
+        },
+        "order_claim_type_enum": {
+          "name": "order_claim_type_enum",
+          "schema": "public",
+          "items": [
+            "refund",
+            "replace"
+          ]
+        },
+        "order_status_enum": {
+          "name": "order_status_enum",
+          "schema": "public",
+          "items": [
+            "pending",
+            "completed",
+            "draft",
+            "archived",
+            "canceled",
+            "requires_action"
+          ]
+        },
+        "return_status_enum": {
+          "name": "return_status_enum",
+          "schema": "public",
+          "items": [
+            "open",
+            "requested",
+            "received",
+            "partially_received",
+            "canceled"
+          ]
+        }
+      },
+      "comment": null
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
         "title": {
           "name": "title",
           "type": "text",
@@ -20699,6 +20984,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "json"
         }
       },
       "name": "price_list",
@@ -21817,67 +22118,67 @@
         },
         "weight": {
           "name": "weight",
-          "type": "text",
+          "type": "float4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": null,
+          "precision": 24,
           "scale": null,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "text"
+          "mappedType": "float"
         },
         "length": {
           "name": "length",
-          "type": "text",
+          "type": "float4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": null,
+          "precision": 24,
           "scale": null,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "text"
+          "mappedType": "float"
         },
         "height": {
           "name": "height",
-          "type": "text",
+          "type": "float4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": null,
+          "precision": 24,
           "scale": null,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "text"
+          "mappedType": "float"
         },
         "width": {
           "name": "width",
-          "type": "text",
+          "type": "float4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": null,
+          "precision": 24,
           "scale": null,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "text"
+          "mappedType": "float"
         },
         "origin_country": {
           "name": "origin_country",
@@ -22088,11 +22389,31 @@
         },
         {
           "columnNames": [
+            "created_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_product_created_at",
+          "unique": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
             "deleted_at"
           ],
           "composite": false,
           "constraint": false,
           "keyName": "IDX_product_deleted_at",
+          "unique": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_product_handle",
           "unique": false,
           "primary": false
         },
@@ -22117,6 +22438,29 @@
           "unique": false,
           "primary": false,
           "expression": "CREATE INDEX \"IDX_product_status\" ON public.product USING btree (status) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "lower((((((COALESCE(title, ::text) ||  ::text) || COALESCE(description, ::text)) ||  ::text) || COALESCE(handle, ::text)) ||  ::text) || COALESCE(metadata ->> story::text, ::text))"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_product_storefront_search_trgm",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_product_storefront_search_trgm\" ON public.product USING gin (lower(((((((COALESCE(title, ''::text) || ' '::text) || COALESCE(description, ''::text)) || ' '::text) || COALESCE(handle, ''::text)) || ' '::text) || COALESCE((metadata ->> 'story'::text), ''::text))) gin_trgm_ops) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "status",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "IDX_product_storefront_status_created_at",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_product_storefront_status_created_at\" ON public.product USING btree (status, created_at) WHERE (deleted_at IS NULL)"
         },
         {
           "columnNames": [
@@ -22423,6 +22767,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "json"
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
         }
       },
       "name": "product_category",
@@ -22441,6 +22801,17 @@
         },
         {
           "columnNames": [
+            "handle"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_product_category_handle_active",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_product_category_handle_active\" ON public.product_category USING btree (handle) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
             "parent_category_id"
           ],
           "composite": false,
@@ -22449,6 +22820,18 @@
           "unique": false,
           "primary": false,
           "expression": "CREATE INDEX \"IDX_product_category_parent_category_id\" ON public.product_category USING btree (parent_category_id) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "parent_category_id",
+            "rank"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "IDX_product_category_parent_rank_active",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_product_category_parent_rank_active\" ON public.product_category USING btree (parent_category_id, rank) WHERE (deleted_at IS NULL)"
         },
         {
           "columnNames": [
@@ -22770,6 +23153,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
         }
       },
       "name": "product_collection",
@@ -23803,6 +24202,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
         }
       },
       "name": "product_tag",
@@ -24108,6 +24523,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "external_id": {
+          "name": "external_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
         }
       },
       "name": "product_type",
@@ -24388,67 +24819,67 @@
         },
         "weight": {
           "name": "weight",
-          "type": "int4",
+          "type": "float4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": 32,
-          "scale": 0,
+          "precision": 24,
+          "scale": null,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "float"
         },
         "length": {
           "name": "length",
-          "type": "int4",
+          "type": "float4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": 32,
-          "scale": 0,
+          "precision": 24,
+          "scale": null,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "float"
         },
         "height": {
           "name": "height",
-          "type": "int4",
+          "type": "float4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": 32,
-          "scale": 0,
+          "precision": 24,
+          "scale": null,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "float"
         },
         "width": {
           "name": "width",
-          "type": "int4",
+          "type": "float4",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
           "length": null,
-          "precision": 32,
-          "scale": 0,
+          "precision": 24,
+          "scale": null,
           "default": null,
           "comment": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "float"
         },
         "metadata": {
           "name": "metadata",
@@ -24620,6 +25051,17 @@
           "unique": false,
           "primary": false,
           "expression": "CREATE INDEX \"IDX_product_variant_product_id\" ON public.product_variant USING btree (product_id) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "sku"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_product_variant_sku",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_product_variant_sku\" ON public.product_variant USING btree (sku) WHERE (sku IS NOT NULL)"
         },
         {
           "columnNames": [
@@ -27517,6 +27959,232 @@
           "deleteRule": "cascade"
         }
       },
+      "nativeEnums": {
+        "claim_reason_enum": {
+          "name": "claim_reason_enum",
+          "schema": "public",
+          "items": [
+            "missing_item",
+            "wrong_item",
+            "production_failure",
+            "other"
+          ]
+        },
+        "order_claim_type_enum": {
+          "name": "order_claim_type_enum",
+          "schema": "public",
+          "items": [
+            "refund",
+            "replace"
+          ]
+        },
+        "order_status_enum": {
+          "name": "order_status_enum",
+          "schema": "public",
+          "items": [
+            "pending",
+            "completed",
+            "draft",
+            "archived",
+            "canceled",
+            "requires_action"
+          ]
+        },
+        "return_status_enum": {
+          "name": "return_status_enum",
+          "schema": "public",
+          "items": [
+            "open",
+            "requested",
+            "received",
+            "partially_received",
+            "canceled"
+          ]
+        }
+      },
+      "comment": null
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "entity": {
+          "name": "entity",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "property": {
+          "name": "property",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "name": "property_label",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": [
+            "deleted_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_property_label_deleted_at",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_property_label_deleted_at\" ON public.property_label USING btree (deleted_at) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "entity"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_property_label_entity",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_property_label_entity\" ON public.property_label USING btree (entity) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "entity",
+            "property"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "IDX_property_label_entity_property_unique",
+          "unique": true,
+          "primary": false,
+          "expression": "CREATE UNIQUE INDEX \"IDX_property_label_entity_property_unique\" ON public.property_label USING btree (entity, property) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "property_label_pkey",
+          "unique": true,
+          "primary": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
       "nativeEnums": {
         "claim_reason_enum": {
           "name": "claim_reason_enum",
@@ -35955,6 +36623,144 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "photo_url": {
+          "name": "photo_url",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "video_url": {
+          "name": "video_url",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "instagram_handle": {
+          "name": "instagram_handle",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "permission_to_repost": {
+          "name": "permission_to_repost",
+          "type": "bool",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
+        "fit_feedback": {
+          "name": "fit_feedback",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "gift_feedback": {
+          "name": "gift_feedback",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "ugc_type": {
+          "name": "ugc_type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'review'",
+          "comment": null,
+          "enumItems": [
+            "review",
+            "photo",
+            "video",
+            "delivery_reaction"
+          ],
+          "mappedType": "enum"
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'website'",
+          "comment": null,
+          "enumItems": [
+            "post_delivery_whatsapp",
+            "website",
+            "manual_admin",
+            "instagram"
+          ],
+          "mappedType": "enum"
         }
       },
       "name": "storefront_product_review",
@@ -36353,6 +37159,295 @@
           "composite": false,
           "constraint": false,
           "keyName": "storefront_subfeeling_pkey",
+          "unique": true,
+          "primary": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {
+        "claim_reason_enum": {
+          "name": "claim_reason_enum",
+          "schema": "public",
+          "items": [
+            "missing_item",
+            "wrong_item",
+            "production_failure",
+            "other"
+          ]
+        },
+        "order_claim_type_enum": {
+          "name": "order_claim_type_enum",
+          "schema": "public",
+          "items": [
+            "refund",
+            "replace"
+          ]
+        },
+        "order_status_enum": {
+          "name": "order_status_enum",
+          "schema": "public",
+          "items": [
+            "pending",
+            "completed",
+            "draft",
+            "archived",
+            "canceled",
+            "requires_action"
+          ]
+        },
+        "return_status_enum": {
+          "name": "return_status_enum",
+          "schema": "public",
+          "items": [
+            "open",
+            "requested",
+            "received",
+            "partially_received",
+            "canceled"
+          ]
+        }
+      },
+      "comment": null
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'en'",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'unknown'",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "referral_code": {
+          "name": "referral_code",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "referral_count": {
+          "name": "referral_count",
+          "type": "int4",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": "0",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "unsubscribed_at": {
+          "name": "unsubscribed_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "notified_at": {
+          "name": "notified_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "coupon_code": {
+          "name": "coupon_code",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        }
+      },
+      "name": "storefront_waitlist",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": [
+            "deleted_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_storefront_waitlist_deleted_at",
+          "unique": false,
+          "primary": false,
+          "expression": "CREATE INDEX \"IDX_storefront_waitlist_deleted_at\" ON public.storefront_waitlist USING btree (deleted_at) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "email"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_storefront_waitlist_email_unique",
+          "unique": true,
+          "primary": false,
+          "expression": "CREATE UNIQUE INDEX \"IDX_storefront_waitlist_email_unique\" ON public.storefront_waitlist USING btree (email) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "coupon_code"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "IDX_waitlist_coupon_code",
+          "unique": true,
+          "primary": false,
+          "expression": "CREATE UNIQUE INDEX \"IDX_waitlist_coupon_code\" ON public.storefront_waitlist USING btree (coupon_code) WHERE (deleted_at IS NULL)"
+        },
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "storefront_waitlist_pkey",
           "unique": true,
           "primary": true
         }

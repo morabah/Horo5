@@ -45,6 +45,43 @@ export function orderUsesInstapayGraph(g: Record<string, unknown>): boolean {
   return false;
 }
 
+function paymentProviderIds(g: Record<string, unknown>): string[] {
+  const ids: string[] = [];
+  const cols = g.payment_collections;
+  if (!Array.isArray(cols)) return ids;
+  for (const c of cols) {
+    if (!c || typeof c !== "object") continue;
+    const rec = c as Record<string, unknown>;
+    for (const key of ["payment_sessions", "payments"] as const) {
+      const rows = rec[key];
+      if (!Array.isArray(rows)) continue;
+      for (const row of rows) {
+        if (!row || typeof row !== "object") continue;
+        const providerId = (row as Record<string, unknown>).provider_id;
+        if (typeof providerId === "string") ids.push(providerId.toLowerCase());
+      }
+    }
+  }
+  return ids;
+}
+
+export function orderUsesCodGraph(g: Record<string, unknown>): boolean {
+  return paymentProviderIds(g).some((providerId) => (
+    providerId.includes("cod") ||
+    providerId.includes("cash") ||
+    providerId.includes("system_default")
+  ));
+}
+
+export function codConfirmationBlocksFulfillment(g: Record<string, unknown>): boolean {
+  if (!orderUsesCodGraph(g)) return false;
+  const meta = g.metadata && typeof g.metadata === "object" && !Array.isArray(g.metadata)
+    ? (g.metadata as Record<string, unknown>)
+    : {};
+  const status = typeof meta.codConfirmationStatus === "string" ? meta.codConfirmationStatus : "pending";
+  return status !== "confirmed";
+}
+
 export function canCapturePayment(g: Record<string, unknown> | null): boolean {
   if (!g) return false;
   const cols = g.payment_collections;
@@ -80,6 +117,9 @@ function hasOrderLineItems(g: Record<string, unknown>): boolean {
 
 export function canCreateFulfillment(g: Record<string, unknown> | null): boolean {
   if (!g) return false;
+  if (codConfirmationBlocksFulfillment(g)) {
+    return false;
+  }
   if (orderUsesInstapayGraph(g) && !isPaymentStatusCapturedForFulfillment(g.payment_status)) {
     return false;
   }
@@ -176,6 +216,9 @@ export function workflowDisabledReason(
   }
   if (action === "create_fulfillment") {
     if (canCreateFulfillment(g)) return null;
+    if (codConfirmationBlocksFulfillment(g)) {
+      return "COD order must be confirmed before dispatch.";
+    }
     if (orderUsesInstapayGraph(g) && !isPaymentStatusCapturedForFulfillment(g.payment_status)) {
       return "Waiting on InstaPay capture before fulfillment.";
     }

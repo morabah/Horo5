@@ -6,14 +6,14 @@ import { fetchStorefrontCatalogServer, logStorefrontFetchError } from "@/lib/sto
 const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ?? "";
 
 export const metadata: Metadata = {
-  title: "Gifts | HORO Egypt",
+  title: "Gifts that feel personal | HORO Egypt",
   description:
-    "Shop gift-ready HORO graphic tees by recipient and occasion, with COD and 14-day exchange in Egypt.",
+    "Artist-made T-shirts for people, moments, and feelings, with size help, COD, delivery, and exchange support in Egypt.",
   alternates: site ? { canonical: `${site}/gifts` } : undefined,
   openGraph: {
-    title: "Gifts | HORO Egypt",
+    title: "Gifts that feel personal | HORO Egypt",
     description:
-      "Shop gift-ready HORO graphic tees by recipient and occasion, with COD and 14-day exchange in Egypt.",
+      "Artist-made T-shirts for people, moments, and feelings, with size help, COD, delivery, and exchange support in Egypt.",
     url: site ? `${site}/gifts` : undefined,
     type: "website",
   },
@@ -29,5 +29,5 @@ export default async function Page() {
     .sort((left, right) => (left.sortOrder ?? 0) - (right.sortOrder ?? 0))
     .slice(0, 4);
 
-  return <ShopByOccasionPage initialOccasions={giftOccasions} mode="gifts" />;
+  return <ShopByOccasionPage initialOccasions={giftOccasions} initialProducts={catalog?.products ?? []} mode="gifts" />;
 }

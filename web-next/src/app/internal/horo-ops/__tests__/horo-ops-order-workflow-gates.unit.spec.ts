@@ -31,6 +31,7 @@ describe("horo-ops-order-workflow-gates", () => {
       payment_status: "captured",
       fulfillment_status: "not_fulfilled",
       status: "pending",
+      metadata: { codConfirmationStatus: "confirmed" },
       payment_collections: [
         {
           payments: [{ status: "captured", provider_id: "pp_system_default" }],
@@ -48,6 +49,7 @@ describe("horo-ops-order-workflow-gates", () => {
       payment_status: "captured",
       fulfillment_status: "fulfilled",
       status: "pending",
+      metadata: { codConfirmationStatus: "confirmed" },
       payment_collections: [
         {
           payments: [{ status: "captured", provider_id: "pp_system_default" }],
@@ -78,5 +80,23 @@ describe("horo-ops-order-workflow-gates", () => {
     expect(canCapturePayment(g)).toBe(true);
     expect(canCreateFulfillment(g)).toBe(false);
     expect(resolveNextOpsAction(g)).toBe("capture_payment");
+  });
+
+  it("COD pending confirmation blocks fulfillment", () => {
+    const g = graph({
+      payment_status: "captured",
+      fulfillment_status: "not_fulfilled",
+      status: "pending",
+      metadata: { codConfirmationStatus: "pending" },
+      payment_collections: [
+        {
+          payments: [{ status: "captured", provider_id: "pp_system_default" }],
+        },
+      ],
+      items: [{ id: "li1" }],
+    });
+    expect(canCapturePayment(g)).toBe(false);
+    expect(canCreateFulfillment(g)).toBe(false);
+    expect(resolveNextOpsAction(g)).toBe(null);
   });
 });

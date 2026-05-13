@@ -5,6 +5,7 @@ import type {
   ShopifyCartLine,
   ShopifyCollection,
   ShopifyImage,
+  ShopifyMetafield,
   ShopifyProduct,
   ShopifyProductVariant,
   ShopifyUserError,
@@ -55,6 +56,29 @@ const PRODUCT_FIELDS = `
       }
     }
   }
+  metafields(identifiers: [
+    { namespace: "custom", key: "story" },
+    { namespace: "custom", key: "story_description" },
+    { namespace: "custom", key: "feels_like" },
+    { namespace: "custom", key: "works_for" },
+    { namespace: "custom", key: "fit_label" },
+    { namespace: "custom", key: "size_table_key" },
+    { namespace: "custom", key: "giftable" },
+    { namespace: "custom", key: "gift_occasion_tags" },
+    { namespace: "custom", key: "buyer_route" },
+    { namespace: "custom", key: "primary_audience" },
+    { namespace: "custom", key: "artist_display" },
+    { namespace: "custom", key: "care_instructions" },
+    { namespace: "custom", key: "material" },
+    { namespace: "custom", key: "whatsapp_help_url" },
+    { namespace: "custom", key: "delivery_note" },
+    { namespace: "custom", key: "exchange_note" }
+  ]) {
+    namespace
+    key
+    type
+    value
+  }
 `;
 
 type ProductsQueryResponse = {
@@ -87,9 +111,10 @@ type ShopifyConnection<TNode> = {
   nodes: TNode[];
 };
 
-type ShopifyProductConnectionNode = Omit<ShopifyProduct, "images" | "variants"> & {
+type ShopifyProductConnectionNode = Omit<ShopifyProduct, "images" | "variants" | "metafields"> & {
   images: ShopifyConnection<ShopifyImage>;
   variants: ShopifyConnection<ShopifyProductVariant>;
+  metafields: Array<ShopifyMetafield | null>;
 };
 
 type ShopifyCartConnectionNode = Omit<ShopifyCart, "lines"> & {
@@ -153,6 +178,7 @@ function normalizeProduct(product: ShopifyProductConnectionNode): ShopifyProduct
     ...product,
     images: product.images.nodes,
     variants: product.variants.nodes,
+    metafields: product.metafields.filter((field): field is ShopifyMetafield => Boolean(field)),
   };
 }
 

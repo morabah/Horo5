@@ -121,6 +121,13 @@
   block-size: 100%;
 }
 
+.product-purchase-context__gift-note {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  color: rgba(var(--color-foreground), 0.75);
+}
+
 /* Placeholder (editor only) */
 .product-purchase-context__placeholder {
   text-align: center;

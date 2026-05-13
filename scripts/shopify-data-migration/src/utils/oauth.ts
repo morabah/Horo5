@@ -31,28 +31,30 @@ interface TokenResult {
 export async function getAccessTokenViaOAuth(config: OAuthConfig): Promise<TokenResult> {
   const domain = config.storeDomain.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
-  // Start local server to capture callback on fixed port
-  const port = 3000;
+  // Start local server to capture callback on a random available port
   const server = http.createServer();
 
+  let port: number;
   try {
     await new Promise<void>((resolve, reject) => {
-      server.listen(port, '127.0.0.1', () => {
+      server.listen(0, '127.0.0.1', () => {
+        const address = server.address();
+        if (address && typeof address === 'object') {
+          port = address.port;
+        } else {
+          reject(new Error('Failed to get server address'));
+        }
         resolve();
       });
       server.on('error', (err: NodeJS.ErrnoException) => {
-        if (err.code === 'EADDRINUSE') {
-          reject(new Error(`Port ${port} is already in use. Close any process on port ${port} and try again.`));
-        } else {
-          reject(err);
-        }
+        reject(err);
       });
     });
   } catch (err) {
     throw err;
   }
 
-  const redirectUri = `http://127.0.0.1:${port}/callback`;
+  const redirectUri = `http://127.0.0.1:${port!}/callback`;
 
   // Build authorization URL
   const authUrl = new URL(`https://${domain}/admin/oauth/authorize`);

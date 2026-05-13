@@ -74,6 +74,27 @@ export type WearerStory = {
   rating?: 1 | 2 | 3 | 4 | 5;
 };
 
+export type ReviewProof = {
+  id: string;
+  rating: number;
+  body: string;
+  locale: string;
+  photoUrl?: string | null;
+  videoUrl?: string | null;
+  instagramHandle?: string | null;
+  permissionToRepost: boolean;
+  fitFeedback?: string | null;
+  giftFeedback?: string | null;
+  ugcType: 'review' | 'photo' | 'video' | 'delivery_reaction';
+  source: 'post_delivery_whatsapp' | 'website' | 'manual_admin' | 'instagram';
+  createdAt?: string | null;
+};
+
+export type ReviewsSummary = {
+  count: number;
+  averageRating: number;
+};
+
 export type ProductMediaGalleryTag =
   | 'proof_fabric'
   | 'proof_print'
@@ -165,6 +186,21 @@ export type ProductArtistDisplay = {
   avatarUrl?: string;
 };
 
+export type ProductBuyerRoute =
+  | 'feeling'
+  | 'moment'
+  | 'gift'
+  | 'personality'
+  | 'artist_drop'
+  | 'world';
+
+export type ProductPrimaryAudience =
+  | '25-40'
+  | '18-24'
+  | 'gift-buyer'
+  | 'artist-aware'
+  | '40-plus';
+
 export type StockStatusKey = 'in_stock' | 'low_stock' | 'sold_out' | 'preorder';
 
 export type ProductVariantRecord = {
@@ -191,12 +227,19 @@ export type FeelingBrowseAssignment = {
 };
 
 export type Product = {
+  id?: string;
   apparelCategoryPath?: string;
   slug: string;
   name: string;
   /** Prefer for PDP when set (from `metadata.artist`). */
   artistDisplay?: ProductArtistDisplay;
   artistSlug: string;
+  buyerRoute?: ProductBuyerRoute;
+  primaryAudience?: ProductPrimaryAudience;
+  firstWedgeEligible?: boolean;
+  giftable?: boolean;
+  giftOccasionTags?: string[];
+  careInstructions?: string;
   primaryFeelingSlug?: string;
   /** From Medusa catalog: false = omit from /feelings browse when category taxonomy is incomplete (strict mode). */
   feelingBrowseEligible?: boolean;
@@ -281,6 +324,10 @@ export type Product = {
   artistStorySlides?: { src: string; labelEn: string; labelAr: string; descriptionEn: string; descriptionAr: string }[];
   /** Runtime-configurable trust/service bullets surfaced on PDP and merchandising entry points. */
   trustBadges?: readonly string[];
+  /** Approved real customer reviews only. Empty/undefined means show no review placeholder. */
+  reviewsSummary?: ReviewsSummary;
+  /** Approved UGC/review media only; permissionToRepost controls public media display. */
+  reviewProof?: readonly ReviewProof[];
   /** Merchandising: complementary product slugs for “Style it with”. */
   complementarySlugs?: string[];
   /** Merchandising: co-purchase suggestions (1–2 slugs) for “Frequently bought together”. */

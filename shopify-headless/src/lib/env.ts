@@ -10,6 +10,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_GTM_ID: z.string().optional(),
   NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().optional(),
   NEXT_PUBLIC_META_PIXEL_ID: z.string().optional(),
+  NEXT_PUBLIC_WHATSAPP_URL: z.string().url().optional(),
 });
 
 const parsed = envSchema.parse(process.env);

@@ -10,6 +10,13 @@ export type ShopifyMoney = {
   currencyCode: string;
 };
 
+export type ShopifyMetafield = {
+  namespace: string;
+  key: string;
+  type: string;
+  value: string;
+};
+
 export type ShopifyProductVariant = {
   id: string;
   title: string;
@@ -31,6 +38,7 @@ export type ShopifyProduct = {
     maxVariantPrice: ShopifyMoney;
   };
   variants: ShopifyProductVariant[];
+  metafields: ShopifyMetafield[];
 };
 
 export type ShopifyCollection = {

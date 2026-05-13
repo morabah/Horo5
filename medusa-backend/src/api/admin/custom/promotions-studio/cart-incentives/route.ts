@@ -191,7 +191,28 @@ async function findGiftWrapProduct(req: MedusaRequest, handleOrId: string | null
   try {
     const productModule = req.scope.resolve(Modules.PRODUCT) as {
       listProducts: (filters: Record<string, unknown>, config?: Record<string, unknown>) => Promise<ProductRow[]>
+      listAndCountProductVariants: (
+        filters: Record<string, unknown>,
+        config?: Record<string, unknown>
+      ) => Promise<[Array<{ product_id?: string }>, number]>
     }
+
+    // v2.15.1 enhancement: support SKU search for gift-wrap product lookup
+    if (handleOrId) {
+      const variants = await productModule.listAndCountProductVariants(
+        { sku: handleOrId },
+        { take: 1 }
+      )
+      const variantProductId = variants[0]?.[0]?.product_id
+      if (variantProductId) {
+        const products = await productModule.listProducts(
+          { id: [variantProductId] },
+          { take: 1 }
+        )
+        if (products[0]) return products[0]
+      }
+    }
+
     const byHandle = handleOrId && !handleOrId.startsWith("prod_")
       ? handleOrId
       : GIFT_WRAP_HANDLE
