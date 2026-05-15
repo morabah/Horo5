@@ -1182,6 +1182,7 @@ export function ProductDetail({
           onNotifyEmailChange={(email: string) => { setNotifyEmail(email); setNotifyError(false); }}
           onNotifySubmit={handleNotifySubmit}
           whatsappSupportUrl={whatsappSupportUrl}
+          preferredDefaultSize={preferredDefaultSize}
           wishlisted={isWishlisted(product.slug)}
           onWishlistToggle={() => {
             const currently = isWishlisted(product.slug);

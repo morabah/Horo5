@@ -59,6 +59,7 @@ export const storefrontProductSchema = z.looseObject({
     firstWedgeEligible: z.boolean().optional(),
     giftable: z.boolean().optional(),
     giftOccasionTags: z.array(z.string()).optional(),
+    giftTrustCopy: z.string().optional(),
     careInstructions: z.string().optional(),
     capsuleSlugs: z.array(z.string()).optional(),
     complementarySlugs: z.array(z.string()).optional(),

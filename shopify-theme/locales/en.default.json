@@ -563,7 +563,7 @@
       "artist_made": "Artist-made design",
       "printed_in_egypt": "Printed in Egypt",
       "cod": "COD available",
-      "exchange": "14-day exchange — terms apply",
+      "exchange": "14-day easy exchange",
       "whatsapp": "WhatsApp support"
     },
     "primary_routes": {
@@ -846,6 +846,7 @@
       "order_confirmation_title": "Order confirmed",
       "order_confirmation_body": "Your order is being prepared. We'll update you when it ships.",
       "order_confirmation_cta": "Continue shopping",
+      "order_whatsapp_track": "Track on WhatsApp",
       "privacy_title": "Privacy Policy",
       "privacy_intro": "This summary explains what information HORO uses to run the storefront and support each order.",
       "terms_title": "Terms of Service",

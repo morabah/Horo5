@@ -9,6 +9,7 @@ import type {
   RuntimeCatalog,
   Subfeeling,
 } from "../../data/catalog-types";
+import { normalizeMedia } from "../medusa/normalize-storefront-product";
 
 const baseUrl =
   typeof window !== "undefined" &&
@@ -190,7 +191,7 @@ function normalizeProduct(product: StorefrontProductResponse): Product {
     frequentlyBoughtWithSlugs: product.frequentlyBoughtWithSlugs,
     garmentColors: product.garmentColors,
     inventoryHintBySize: product.inventoryHintBySize as Product["inventoryHintBySize"],
-    media: product.media,
+    media: normalizeMedia(product.media),
     merchandisingBadge: product.merchandisingBadge,
     promoLabel: product.promoLabel,
     promoStartsAt: product.promoStartsAt,

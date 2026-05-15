@@ -13,6 +13,50 @@ const PUBLIC_STOREFRONT_CACHE_MAX_AGE = parseInt(
   10
 ) || 60
 
+const RATE_LIMIT_WINDOW_MS = parseInt(
+  process.env.HORO_RATE_LIMIT_WINDOW_MS || "60000",
+  10
+) || 60000
+
+const RATE_LIMIT_MAX_REQUESTS = parseInt(
+  process.env.HORO_RATE_LIMIT_MAX_REQUESTS || "120",
+  10
+) || 120
+
+type RateLimitEntry = { count: number; resetAt: number }
+const rateLimitMap = new Map<string, RateLimitEntry>()
+
+function getClientIp(req: MedusaRequest): string {
+  const forwarded = String(req.headers["x-forwarded-for"] || "").split(",")[0]?.trim()
+  if (forwarded) return forwarded
+  const realIp = String(req.headers["x-real-ip"] || "").trim()
+  if (realIp) return realIp
+  return (req as unknown as Record<string, string>).ip || "unknown"
+}
+
+function rateLimit(req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) {
+  const ip = getClientIp(req)
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
+    next()
+    return
+  }
+
+  entry.count += 1
+  if (entry.count > RATE_LIMIT_MAX_REQUESTS) {
+    res.status(429).json({
+      message: "Too many requests. Please try again later.",
+      retry_after: Math.ceil((entry.resetAt - now) / 1000),
+    })
+    return
+  }
+
+  next()
+}
+
 /**
  * Sets Cache-Control on safe, public storefront GET responses.
  * Allows CDN / edge caching without exposing private data.
@@ -127,10 +171,14 @@ export default defineMiddlewares({
   routes: [
     {
       matcher: /^\/storefront(\/|$)/,
-      middlewares: [storefrontCors, storefrontCacheControl, httpRequestTiming],
+      middlewares: [rateLimit, storefrontCors, storefrontCacheControl, httpRequestTiming],
     },
     {
-      matcher: /^\/(store|admin|store-media|integrations)(\/|$)/,
+      matcher: /^\/store(\/|$)/,
+      middlewares: [rateLimit, httpRequestTiming],
+    },
+    {
+      matcher: /^\/(admin|store-media|integrations)(\/|$)/,
       middlewares: [httpRequestTiming],
     },
     {

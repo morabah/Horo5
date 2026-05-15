@@ -31,6 +31,8 @@ export type LastOrderSnapshot = {
   whatsappOptIn?: boolean;
   /** From Medusa `order.metadata.horo_ops_handling` when set by internal ops. */
   horoOpsHandling?: 'pending' | 'received' | 'collected';
+  /** From Medusa `order.metadata.codConfirmationStatus` when set by COD confirmation subscriber. */
+  codConfirmationStatus?: 'pending' | 'confirmed' | 'failed' | 'unreachable' | 'not_required';
 };
 
 export function saveLastOrder(snapshot: LastOrderSnapshot): void {

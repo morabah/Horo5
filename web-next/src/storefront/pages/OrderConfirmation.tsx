@@ -10,7 +10,7 @@ import { PostPurchaseEmailPreview } from '../components/PostPurchaseEmailPreview
 import { ReferralCard } from '../components/ReferralCard';
 import { ShareYourFit } from '../components/ShareYourFit';
 import { TeeImage } from '../components/TeeImage';
-import { trackPurchase } from '../analytics/events';
+import { trackPurchase, trackCodConfirmed } from '../analytics/events';
 import { getCartLineViews } from '../cart/view';
 import { loadLastOrder, saveLastOrder, sessionSnapshotBelongsToOrder, type LastOrderSnapshot } from '../cart/lastOrder';
 import { buildHoroCustomerOrderRef } from '../lib/horo-order-ref';
@@ -106,6 +106,11 @@ function createSnapshotFromOrder(args: {
     rawHoroHandling === 'pending' || rawHoroHandling === 'received' || rawHoroHandling === 'collected'
       ? rawHoroHandling
       : undefined;
+  const rawCodStatus = orderMeta?.codConfirmationStatus;
+  const codConfirmationStatus =
+    rawCodStatus === 'pending' || rawCodStatus === 'confirmed' || rawCodStatus === 'failed' || rawCodStatus === 'unreachable' || rawCodStatus === 'not_required'
+      ? rawCodStatus
+      : undefined;
   const contactName = [order.shipping_address?.first_name, order.shipping_address?.last_name]
     .filter(Boolean)
     .join(' ')
@@ -134,6 +139,7 @@ function createSnapshotFromOrder(args: {
     shippingCity: order.shipping_address?.city ?? fallback?.shippingCity,
     whatsappOptIn: resolveWhatsappOptInFromOrder(order, fallback),
     horoOpsHandling,
+    codConfirmationStatus,
   };
 }
 
@@ -205,6 +211,13 @@ export function OrderConfirmation() {
     });
   }, [order]);
 
+  useEffect(() => {
+    if (!order) return;
+    if (order.paymentMethod === 'cod' && order.codConfirmationStatus === 'confirmed' && order.medusaOrderId) {
+      trackCodConfirmed(order.medusaOrderId, 'whatsapp');
+    }
+  }, [order]);
+
   /** Prefer session/API snapshot (`HORO-…`) over the raw `order_id` query param (ULID). */
   const customerFacingOrderId =
     order?.orderId && !isMedusaInternalOrderId(order.orderId) ? order.orderId : null;
@@ -233,8 +246,8 @@ export function OrderConfirmation() {
       : null;
   const whatsappOrderRef = customerFacingOrderId ?? internalOrderRef;
   const whatsappOrderUrl =
-    order?.whatsappOptIn && order?.contactPhone && whatsappOrderRef
-      ? withSupportMessage(whatsappBaseUrl, `Track order #${whatsappOrderRef}`)
+    whatsappBaseUrl && whatsappOrderRef
+      ? withSupportMessage(whatsappBaseUrl, `Order #${whatsappOrderRef}`)
       : null;
   const canReferenceWhatsapp = Boolean(whatsappOrderUrl);
   const hasOrderSummary = lineViews.length > 0;

@@ -78,7 +78,16 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           {
             key: "Content-Security-Policy",
-            value: "script-src 'self' 'unsafe-eval' 'unsafe-inline' https: http:;",
+            value:
+              "default-src 'self'; " +
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net https://www.clarity.ms; " +
+              "connect-src 'self' https://*.googletagmanager.com https://*.facebook.com https://*.clarity.ms https://us.i.posthog.com; " +
+              "img-src 'self' data: blob: https:; " +
+              "style-src 'self' 'unsafe-inline'; " +
+              "font-src 'self'; " +
+              "frame-src 'self'; " +
+              "object-src 'none'; " +
+              "base-uri 'self';",
           },
         ],
       },

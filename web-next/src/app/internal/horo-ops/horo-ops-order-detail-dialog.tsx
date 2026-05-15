@@ -27,6 +27,19 @@ export type OpsOrderSummaryRow = {
     codConfirmedBy?: "whatsapp" | "manual_admin" | null;
     codConfirmationAttempts: number;
   };
+  order_quality_score?: number;
+  score_breakdown?: Array<{ key: string; score: 1 | 3 | 5; reason: string }>;
+  contribution_margin_egp?: number;
+  contribution_margin_breakdown?: {
+    sellingPriceEgp: number;
+    blankCostEgp: number;
+    printCostEgp: number;
+    packagingCostEgp: number;
+    shippingSubsidyEgp: number;
+    paymentFeeEgp: number;
+    estimatedCpaEgp: number;
+    rtoAllowanceEgp: number;
+  };
 };
 
 export const MEDUSA_ORDER_STATUS_OPTIONS = [
@@ -428,6 +441,22 @@ export function HoroOpsOrderDetailDialog({ open, orderId, summary, initialGraph,
               <p>
                 <span className="text-neutral-500">SLA day (UTC):</span> {summary.sla_deadline_day_utc || "—"}
               </p>
+              {typeof summary.order_quality_score === "number" ? (
+                <p>
+                  <span className="text-neutral-500">Quality score:</span>{" "}
+                  <span className={summary.order_quality_score >= 4 ? "text-emerald-600" : summary.order_quality_score >= 2.5 ? "text-amber-600" : "text-red-600"}>
+                    {summary.order_quality_score.toFixed(1)}
+                  </span>
+                </p>
+              ) : null}
+              {typeof summary.contribution_margin_egp === "number" ? (
+                <p>
+                  <span className="text-neutral-500">Margin:</span>{" "}
+                  <span className={summary.contribution_margin_egp >= 0 ? "text-emerald-600" : "text-red-600"}>
+                    {Math.round(summary.contribution_margin_egp).toLocaleString()} EGP
+                  </span>
+                </p>
+              ) : null}
             </div>
           ) : null}
 

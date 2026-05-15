@@ -220,6 +220,7 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
       { label: "Buyer route", state: drop.buyerRoute ? (firstWedgeWarning ? "Warning" : "Ready") : "Missing" },
       { label: "Primary audience", state: drop.primaryAudience ? "Ready" : "Missing" },
       { label: "Gift tags if giftable", state: giftTagsRequired ? ((drop.giftOccasionTags ?? []).length ? "Ready" : "Missing") : "Ready" },
+      { label: "Gift trust copy", state: giftTagsRequired ? (drop.giftTrustCopy?.trim() ? "Ready" : "Missing") : "Ready" },
     ]
   }, [drop])
   const subfeelings = useMemo(() => {
@@ -653,7 +654,7 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
 
           <section className="rounded-md border border-ui-border-base p-5">
             <Heading level="h2" className="mb-4">
-              V1.4 Launch Readiness
+              V1.5.2 Launch Readiness
             </Heading>
             <div className="grid gap-5">
               <div className="rounded-md border border-ui-border-base p-4">
@@ -838,7 +839,18 @@ export function DropForm({ initialDrop, mode }: DropFormProps) {
                       placeholder="gift occasion slug"
                     />
                   </Field>
+                  <Field label="Gift trust copy" error={issueFor(issues, "giftTrustCopy")} className="md:col-span-2">
+                    <Textarea
+                      rows={2}
+                      value={drop.giftTrustCopy ?? ""}
+                      onChange={(event) => update({ giftTrustCopy: event.target.value || null })}
+                      placeholder="e.g. Gift packaging is being tested. Current orders include standard HORO packaging."
+                    />
+                  </Field>
                 </div>
+                <Text size="xsmall" className="mt-2 text-ui-fg-muted">
+                  Product World vs Story World: gift copy must be honest about packaging status. Do not claim gift wrapping unless configured.
+                </Text>
               </div>
             </div>
           </section>

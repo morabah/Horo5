@@ -30,7 +30,7 @@ export const HOME_PRIMARY_ROUTES = [
   },
   {
     key: 'gift',
-    href: '',
+    href: '/gifts',
     accent: '#D4A44E',
   },
 ] as const;

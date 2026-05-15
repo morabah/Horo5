@@ -203,6 +203,15 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/pdp-waitlist",
     },
+    {
+      resolve: "./src/modules/whatsapp-script",
+    },
+    {
+      resolve: "./src/modules/objection-log",
+    },
+    {
+      resolve: "./src/modules/validation-register",
+    },
   ],
   plugins: [
     {

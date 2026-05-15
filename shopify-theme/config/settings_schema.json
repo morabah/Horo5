@@ -1570,7 +1570,7 @@
         "type": "text",
         "id": "horo_trust_badge_4",
         "label": "Trust badge 4",
-        "default": "14-day exchange — terms apply"
+        "default": "14-day easy exchange"
       },
       {
         "type": "text",
@@ -1601,6 +1601,13 @@
         "id": "horo_instapay_instructions",
         "label": "Instapay transfer instructions",
         "default": "Transfer the order total via Instapay to 01XXXXXXXX. Use your order number as the reference."
+      },
+      {
+        "type": "text",
+        "id": "horo_whatsapp_support_url",
+        "label": "WhatsApp support URL",
+        "default": "https://wa.me/201XXXXXXXXX",
+        "info": "Used on order confirmation and product pages for WhatsApp deep-links."
       }
     ]
   },

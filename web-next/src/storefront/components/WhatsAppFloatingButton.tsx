@@ -1,6 +1,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { trackWhatsAppClick } from '../analytics/events';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 
 function buildWhatsAppUrl(baseUrl: string, message: string): string {
@@ -56,11 +57,20 @@ export function WhatsAppFloatingButton() {
   const message = getContextMessage(pathname);
   const href = buildWhatsAppUrl(baseUrl, message);
 
+  const purpose: Parameters<typeof trackWhatsAppClick>[0] = pathname.startsWith('/products/')
+    ? 'size_help'
+    : pathname.startsWith('/checkout/success')
+      ? 'order_tracking'
+      : pathname === '/checkout'
+        ? 'support'
+        : 'general';
+
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
+      onClick={() => trackWhatsAppClick(purpose, `fab_${pathname}`)}
       className="whatsapp-fab"
       aria-label="Chat with us on WhatsApp"
     >

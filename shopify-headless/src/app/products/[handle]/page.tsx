@@ -111,7 +111,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   }));
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 md:px-8">
+    <main className="mx-auto w-full max-w-6xl px-4 py-10 pb-28 md:px-8 md:pb-10">
       <ProductViewTracker
         productId={product.id}
         handle={product.handle}
@@ -228,6 +228,22 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           {careInstructions ? <p className="mt-2 text-sm text-black/70">{careInstructions}</p> : null}
         </div>
       </section>
+      {defaultVariant ? (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur md:hidden">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{product.title}</p>
+              <p className="text-sm text-black/65">
+                {formatMoney(
+                  product.priceRange.minVariantPrice.amount,
+                  product.priceRange.minVariantPrice.currencyCode
+                )}
+              </p>
+            </div>
+            <AddToCartButton merchandiseId={defaultVariant.id} className="shrink-0 px-5 py-3" />
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

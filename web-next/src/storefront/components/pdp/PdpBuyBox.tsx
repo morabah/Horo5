@@ -4,6 +4,7 @@ import { useDictionary } from '../../i18n/ui-locale';
 import Link from 'next/link';
 import { type FormEvent, type RefObject } from 'react';
 
+import { trackWhatsAppClick } from '../../analytics/events';
 import type { Product, ProductSizeKey, Feeling, StockStatusKey } from '../../data/catalog-types';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
@@ -86,6 +87,8 @@ type PdpBuyBoxProps = {
   onNotifySubmit: (e: FormEvent) => void;
   // WhatsApp
   whatsappSupportUrl: string | null;
+  // Size confidence
+  preferredDefaultSize: string | null;
   // Wishlist
   wishlisted: boolean;
   onWishlistToggle: () => void;
@@ -136,6 +139,7 @@ export function PdpBuyBox({
   onNotifyEmailChange,
   onNotifySubmit,
   whatsappSupportUrl,
+  preferredDefaultSize,
   wishlisted,
   onWishlistToggle,
 }: PdpBuyBoxProps) {
@@ -322,6 +326,21 @@ export function PdpBuyBox({
           onOpenSizeGuide={onOpenSizeGuide}
         />
 
+        {/* Size confidence + gift hint */}
+        {preferredDefaultSize ? (
+          <p className="font-body text-sm text-warm-charcoal">
+            {copy.sizeConfidenceHint.replace('{size}', preferredDefaultSize)}
+          </p>
+        ) : null}
+        <p className="font-body text-sm">
+          <Link
+            href="/gifts"
+            className="text-deep-teal underline underline-offset-4 transition-colors hover:text-obsidian"
+          >
+            {copy.buyingAsGiftLink}
+          </Link>
+        </p>
+
         {/* Primary CTA */}
         <div ref={mainCtaRef} className="space-y-3">
           <div className="flex items-stretch gap-3">
@@ -391,6 +410,7 @@ export function PdpBuyBox({
               href={whatsappSupportUrl}
               target="_blank"
               rel="noreferrer"
+              onClick={() => trackWhatsAppClick('size_help', 'pdp_buy_box')}
               className="flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-stone/60 bg-white/80 px-4 py-3 font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian hover:bg-white"
             >
               <IconWhatsApp />

@@ -43,7 +43,7 @@ import {
   type SubfeelingTaxonomySeed,
 } from "./data/feelings-taxonomy-data"
 import { egyptProducts, EGYPT_PRODUCT_PRICE_EGP } from "./data/egypt-products"
-import { getLegacyProductMedia } from "./data/legacy-product-media"
+import { getLegacyProductMedia, type LegacyProductMedia } from "./data/legacy-product-media"
 import { EGYPT_REGION_NAME, getEgyptRegionPaymentProviders } from "./lib/egypt-checkout"
 import { merchEvents } from "./data/merch-events"
 import { MERCH_EVENT_MODULE } from "../modules/merch-event"
@@ -59,7 +59,7 @@ type HomepageSectionWriteService = HomepageSectionModuleService & {
 }
 
 type ProductMedia = {
-  gallery: string[]
+  gallery: Array<string | { url: string; tag?: string }>
   main: string
 }
 
@@ -219,7 +219,11 @@ function productMediaFromExistingRow(row: ExistingProductSeedRow): ProductMedia 
   const media = meta?.media as { main?: unknown; gallery?: unknown } | undefined
   if (media && typeof media.main === "string" && media.main.length > 0) {
     const galleryRaw = Array.isArray(media.gallery) ? media.gallery : []
-    const gallery = galleryRaw.filter((u): u is string => typeof u === "string" && u.length > 0)
+    const gallery = galleryRaw.filter((entry): entry is string | { url: string; tag?: string } => {
+      if (typeof entry === "string" && entry.length > 0) return true
+      if (entry && typeof entry === "object" && "url" in entry && typeof entry.url === "string" && entry.url.length > 0) return true
+      return false
+    })
     return { main: media.main, gallery }
   }
   const main = row.thumbnail
@@ -471,7 +475,7 @@ function artistMetadataForSeedProduct(product: LegacyProduct, avatarBySlug: Map<
 function metadataFromProduct(
   product: LegacyProduct,
   legacyProducts: LegacyProduct[],
-  media: ProductMedia,
+  media: LegacyProductMedia,
   uploadedMedia: ProductMedia,
   artistAvatarBySlug: Map<string, string>
 ) {
@@ -1218,13 +1222,19 @@ export default async function seedEgyptCatalog({ container }: ExecArgs) {
         main: await uploadStorefrontAsset(legacyMedia.main),
       }
 
-      for (const viewSrc of legacyMedia.gallery) {
-        uploadedMedia.gallery.push(await uploadStorefrontAsset(viewSrc))
+      for (const view of legacyMedia.gallery) {
+        const viewUrl = typeof view === 'string' ? view : view.url
+        const uploadedUrl = await uploadStorefrontAsset(viewUrl)
+        uploadedMedia.gallery.push(
+          typeof view === 'string' ? uploadedUrl : { url: uploadedUrl, tag: view.tag },
+        )
       }
     }
 
     const sizeValues = (product.availableSizes ?? [...DEFAULT_SIZES]) as readonly ProductSizeKey[]
-    const allImages = Array.from(new Set(uploadedMedia.gallery)).map((url) => ({ url }))
+    const allImages = Array.from(
+      new Set(uploadedMedia.gallery.map((entry) => (typeof entry === 'string' ? entry : entry.url))),
+    ).map((url) => ({ url }))
 
     productsInput.push({
       title: product.name,

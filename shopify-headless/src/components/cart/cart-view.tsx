@@ -68,6 +68,9 @@ export function CartView() {
         <p className="text-2xl font-bold">
           {formatMoney(cart.cost.subtotalAmount.amount, cart.cost.subtotalAmount.currencyCode)}
         </p>
+        <div className="mt-4 rounded-xl border border-emerald-900/15 bg-emerald-50 p-3 text-sm leading-6 text-emerald-950">
+          Cash on Delivery can be selected in Shopify checkout when available. We confirm COD orders by WhatsApp before dispatch.
+        </div>
         <button
           type="button"
           className="mt-4 w-full rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/80"

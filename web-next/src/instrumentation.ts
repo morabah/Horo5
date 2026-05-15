@@ -37,4 +37,12 @@ export async function register() {
   } else if (!/^https?:\/\//i.test(site)) {
     console.warn("[web-next] NEXT_PUBLIC_SITE_URL should be an absolute http(s) URL.");
   }
+
+  // Global unhandled error reporter (server-side only)
+  process.on("uncaughtException", (err) => {
+    console.error("[instrumentation] uncaughtException:", err);
+  });
+  process.on("unhandledRejection", (reason) => {
+    console.error("[instrumentation] unhandledRejection:", reason);
+  });
 }

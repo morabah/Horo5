@@ -12,6 +12,7 @@ type OpsHealthPayload = {
     paymentProviders: HealthCardData
     promotions: HealthCardData
     parity: HealthCardData
+    orderQuality: HealthCardData
   }
 }
 
@@ -57,7 +58,7 @@ export default function OpsHealthPage() {
             </Badge>
           </div>
           <Text size="small" className="mt-1 max-w-3xl text-ui-fg-subtle">
-            S3, payment providers, promotions, and catalog parity signals.
+            S3, payment providers, promotions, catalog parity, and weekly order-quality signals.
           </Text>
         </div>
         <div className="flex gap-2">

@@ -1,4 +1,4 @@
-import type { Product, ProductSizeKey, ProductVariantRecord } from '@/storefront/data/catalog-types';
+import type { Product, ProductMediaGalleryTag, ProductSizeKey, ProductVariantRecord } from '@/storefront/data/catalog-types';
 
 /** Medusa storefront product JSON (camelCase DTO from `/storefront/*`). */
 export type StorefrontProductApi = {
@@ -114,6 +114,23 @@ function normalizeVariantMap(variants: StorefrontVariantApi | undefined): Produc
   );
 }
 
+const VALID_GALLERY_TAGS: ProductMediaGalleryTag[] = ['proof_fabric', 'proof_print', 'proof_wash', 'lifestyle', 'flat_lay'];
+
+export function normalizeMedia(media: Product['media'] | undefined): Product['media'] {
+  if (!media) return undefined;
+  const gallery = (media.gallery ?? []).map((item) => {
+    if (typeof item === 'string') return item;
+    const tag = item.tag && VALID_GALLERY_TAGS.includes(item.tag as ProductMediaGalleryTag)
+      ? (item.tag as ProductMediaGalleryTag)
+      : undefined;
+    return { url: item.url, ...(tag ? { tag } : {}) };
+  });
+  return {
+    ...media,
+    gallery: gallery.length > 0 ? gallery : undefined,
+  };
+}
+
 function normalizeVariantsByColor(raw: StorefrontProductApi['variantsByColor']): Product['variantsByColor'] {
   if (!raw) return undefined;
   const out: Record<string, ProductVariantRecord[]> = {};
@@ -155,7 +172,7 @@ export function normalizeStorefrontProductApi(product: StorefrontProductApi): Pr
     launchAt: product.launchAt,
     sunsetAt: product.sunsetAt,
     updatedAt: product.updatedAt,
-    media: product.media,
+    media: normalizeMedia(product.media),
     merchandisingBadge: product.merchandisingBadge,
     promoLabel: product.promoLabel,
     promoStartsAt: product.promoStartsAt,

@@ -21,7 +21,7 @@ import {
   type Occasion,
   type Product,
 } from '../data/site';
-import { trackOccasionsHubView } from '../analytics/funnel';
+import { trackGiftsHubView, trackOccasionsHubView } from '../analytics/funnel';
 
 function getOccasionHeroTiles(occasions: Occasion[]) {
   return occasions
@@ -78,10 +78,10 @@ export function ShopByOccasion({ initialOccasions, initialProducts, mode = 'occa
   const isGiftsHub = mode === 'gifts';
   const hubLabel = isGiftsHub ? (isArabic ? 'هدايا' : 'Gifts') : copy.shell.shopByMoment;
   const hubTitle = isGiftsHub
-    ? (isArabic ? 'هدايا بتحس إنها شخصية' : 'Gifts that feel personal')
+    ? (isArabic ? 'هدية فيها معنى، مش حاجة والسلام' : 'A gift that feels like the person.')
     : (PAGE_HEROES.occasions.title[locale as 'en' | 'ar'] ?? copy.occasion.hubTitle);
   const hubEyebrow = isGiftsHub
-    ? (isArabic ? 'تيشيرتات فنانين للناس واللحظات والمشاعر' : 'Artist-made T-shirts for people, moments, and feelings')
+    ? (isArabic ? 'تيشيرتات فنانين بنختارها بالإحساس واللحظة والشخصية' : 'Artist-made T-shirts chosen by feeling, moment, or personality')
     : (PAGE_HEROES.occasions.eyebrow?.[locale as 'en' | 'ar'] ?? copy.occasion.hubEyebrow);
   const gridEyebrow = isGiftsHub
     ? (isArabic ? 'هدايا حسب المناسبة' : 'Gift by Occasion')
@@ -98,6 +98,7 @@ export function ShopByOccasion({ initialOccasions, initialProducts, mode = 'occa
       .filter(productHasRealImage)
       .filter((product) => {
         if (product.giftable === true) return true;
+        if (product.buyerRoute === 'gift') return true;
         if ((product.giftOccasionTags ?? []).length > 0) return true;
         return product.occasionSlugs.some((slug) => giftOccasionSlugs.has(slug));
       })
@@ -109,8 +110,12 @@ export function ShopByOccasion({ initialOccasions, initialProducts, mode = 'occa
   }, [giftProducts]);
 
   useEffect(() => {
-    if (occasions.length > 0) trackOccasionsHubView(occasions.length);
-  }, [occasions.length]);
+    if (isGiftsHub) {
+      if (giftProducts.length > 0) trackGiftsHubView(giftProducts.length);
+    } else if (occasions.length > 0) {
+      trackOccasionsHubView(occasions.length);
+    }
+  }, [isGiftsHub, giftProducts.length, occasions.length]);
 
   if (occasions.length === 0 && (!isGiftsHub || giftProducts.length === 0)) {
     return (
@@ -323,6 +328,26 @@ export function ShopByOccasion({ initialOccasions, initialProducts, mode = 'occa
                 {isArabic
                   ? 'الدفع عند الاستلام متاح حيث ينطبق، والاستبدال خلال 14 يوم حسب سياسة الاستبدال.'
                   : 'COD is available where eligible, and exchange is supported for 14 days under the exchange policy.'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone/30 bg-white/65 p-6 md:col-span-2">
+              <h2 className="font-headline text-lg font-semibold text-obsidian">
+                {isArabic ? 'منتج واضح وصدق' : 'Honest product proof'}
+              </h2>
+              <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
+                {isArabic
+                  ? 'كل قطعة لها صور منتج حقيقية (تفاصيل، طباعة، مقاس) وصور فنية (ليف ستايل، فلات لي).'
+                  : 'Every piece has real product photos (detail, print, fit) and artistic photos (lifestyle, flat-lay).'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone/30 bg-white/65 p-6 md:col-span-2">
+              <h2 className="font-headline text-lg font-semibold text-obsidian">
+                {isArabic ? 'تغليف الهدية' : 'Gift packaging'}
+              </h2>
+              <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
+                {isArabic
+                  ? 'تغليف الهدايا قيد الاختبار حالياً. الطلبات الحالية تشمل التغليف القياسي لـ HORO.'
+                  : 'Gift packaging is being tested. Current orders include standard HORO packaging.'}
               </p>
             </div>
           </section>

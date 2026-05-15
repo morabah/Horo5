@@ -143,6 +143,13 @@ type DashboardJson = {
     title: string;
     missing: string[];
   }>;
+  /** V1.5.2 readiness includes giftTrustCopy and stricter giftable validation. Falls back to V1.4 if absent. */
+  productsMissingV152Readiness?: Array<{
+    id: string;
+    handle: string;
+    title: string;
+    missing: string[];
+  }>;
 };
 
 type LookupMatch = Record<string, unknown>;
@@ -286,7 +293,7 @@ function V14DashboardSignals({ dashboard }: { dashboard: DashboardJson | null })
   const cod = dashboard?.codConfirmation;
   const firstWedge = dashboard?.firstWedge;
   const quality = dashboard?.quality;
-  const missing = dashboard?.productsMissingV14Readiness ?? [];
+  const missing = dashboard?.productsMissingV152Readiness ?? dashboard?.productsMissingV14Readiness ?? [];
 
   return (
     <div className="grid gap-4 xl:grid-cols-2">
@@ -331,7 +338,7 @@ function V14DashboardSignals({ dashboard }: { dashboard: DashboardJson | null })
         </div>
       </SectionCard>
 
-      <SectionCard title="Products missing V1.4 readiness" subtitle="Published products that still miss proof or governance fields" badge={`${missing.length}`}>
+      <SectionCard title="Products missing V1.5.2 readiness" subtitle="Published products that still miss proof, governance, or gift trust fields" badge={`${missing.length}`}>
         {missing.length === 0 ? (
           <EmptyState title="No readiness gaps found in loaded products" hint="This checks published product metadata and proof image tags." />
         ) : (

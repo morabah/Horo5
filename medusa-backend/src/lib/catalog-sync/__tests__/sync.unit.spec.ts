@@ -150,7 +150,7 @@ describe("buildMarkdownReport", () => {
         { rowNumber: 3, handle: "foo", field: "price", message: "Missing price" },
       ],
       scaffoldResults: [
-        { rowNumber: 5, handle: "bar", status: "added", message: "Created" },
+        { rowNumber: 5, handle: "bar", status: "added", message: "Created", dropDir: "/tmp/drops/bar" },
       ],
       importHandles: ["bar"],
       stockMap: { bar: { M: 10 } },

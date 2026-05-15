@@ -109,6 +109,7 @@ export type UpsertDropPayload = {
   firstWedgeEligible?: boolean
   giftable?: boolean
   giftOccasionTags?: string[]
+  giftTrustCopy?: string | null
   images?: DropImageInput[]
   imagesByTag?: DropImagesByTag
   stockPerSize?: Partial<Record<ProductSizeKey, number>>

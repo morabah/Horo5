@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { trackGiftRouteClick } from '../analytics/events';
 import { HOME_PRIMARY_ROUTES } from '../data/homeContent';
 import {
   getFeelingCollectionVisual,
@@ -52,8 +53,7 @@ function getRouteVisual(routeKey: (typeof HOME_PRIMARY_ROUTES)[number]['key']) {
 }
 
 function getGiftHref(): string {
-  const giftOccasion = byHomepageOrder(getOccasions().filter((o) => o.isGiftOccasion))[0];
-  return giftOccasion ? `/occasions/${giftOccasion.slug}` : '/occasions';
+  return HOME_PRIMARY_ROUTES.find((route) => route.key === 'gift')?.href || '/gifts';
 }
 
 export function HomePrimaryRoutes() {
@@ -81,6 +81,7 @@ export function HomePrimaryRoutes() {
               <Link
                 key={route.key}
                 href={href}
+                onClick={isGift ? () => trackGiftRouteClick('home_primary_routes') : undefined}
                 className={`home-route-card group relative isolate flex min-h-[132px] overflow-hidden rounded-[18px] border border-stone/55 p-5 shadow-[0_18px_44px_-30px_rgba(26,26,26,0.2)] transition-transform duration-300 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:min-h-[190px] md:p-6 ${
                   imageSrc ? 'bg-obsidian text-white' : 'bg-white/82 text-obsidian'
                 }`}

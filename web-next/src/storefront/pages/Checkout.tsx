@@ -1984,6 +1984,7 @@ export function Checkout({
                       onOptimisticLineQtyChange={handleOptimisticSummaryLineQtyChange}
                       className="rounded-2xl border border-stone/35 bg-white p-4 shadow-sm"
                       onLineChangeQueued={scheduleCheckoutLineRefresh}
+                      selectedPaymentKind={selectedPaymentMethod?.kind}
                     />
                   </div>
                 ) : null}
@@ -2414,6 +2415,7 @@ export function Checkout({
                 freeShippingLabel={freeShippingLabel}
                 onOptimisticLineQtyChange={handleOptimisticSummaryLineQtyChange}
                 onLineChangeQueued={scheduleCheckoutLineRefresh}
+                selectedPaymentKind={selectedPaymentMethod?.kind}
               />
             </div>
           </div>
@@ -2470,6 +2472,7 @@ function OrderSummary({
   onOptimisticLineQtyChange,
   onLineChangeQueued,
   className,
+  selectedPaymentKind,
 }: {
   cart: MedusaCart | null;
   shipping: number;
@@ -2483,6 +2486,7 @@ function OrderSummary({
   onOptimisticLineQtyChange?: (line: CartLineView, qty: number) => void;
   onLineChangeQueued: () => void;
   className?: string;
+  selectedPaymentKind?: CheckoutPaymentMethodKind | null;
 }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -2684,6 +2688,11 @@ function OrderSummary({
           )}
         </span>
       </p>
+      {selectedPaymentKind === 'cod' ? (
+        <p className="mt-3 rounded-lg border border-deep-teal/20 bg-deep-teal/5 px-3 py-2 font-body text-xs text-obsidian">
+          {copy.checkout.codReassurance}
+        </p>
+      ) : null}
       <p className="mt-4 flex justify-between border-t border-stone pt-4 font-semibold text-obsidian">
         <span>{isArabic ? 'الإجمالي' : 'Total'}</span>
         <span>{formatEgp(total)}</span>

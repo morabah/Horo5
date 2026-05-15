@@ -52,6 +52,7 @@ export function buildPostHogOrderCompletedPayload(order: OrderConfirmationInput)
     const productHandle = cleanString(line.product_handle)
     const itemName = cleanString(line.product_title) || cleanString(line.title) || cleanString(line.variant_title) || "Item"
     const size = sizeFromVariantTitle(line.variant_title)
+    const meta = line.metadata ?? {}
     return {
       item_id: productHandle || itemName,
       item_name: itemName,
@@ -59,6 +60,11 @@ export function buildPostHogOrderCompletedPayload(order: OrderConfirmationInput)
       ...(size ? { item_variant: size } : cleanString(line.variant_title) ? { item_variant: cleanString(line.variant_title) } : {}),
       price: unitPriceFromLine(line, quantity),
       quantity,
+      ...(cleanString(meta.buyer_route as string) ? { buyer_route: meta.buyer_route as string } : {}),
+      ...(cleanString(meta.primary_audience as string) ? { primary_audience: meta.primary_audience as string } : {}),
+      ...(meta.giftable === true ? { gift_intent: true } : {}),
+      ...(Array.isArray(meta.gift_occasion_tags) && meta.gift_occasion_tags.length > 0 ? { gift_occasion_tags: meta.gift_occasion_tags } : {}),
+      ...(meta.first_wedge_eligible === true ? { first_wedge_eligible: true } : {}),
     }
   })
   const itemCount = items.reduce((total, item) => total + item.quantity, 0)

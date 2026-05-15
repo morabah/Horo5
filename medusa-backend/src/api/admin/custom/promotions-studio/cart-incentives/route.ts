@@ -3,11 +3,14 @@ import { Modules } from "@medusajs/framework/utils"
 import { createPromotionsWorkflow, deletePromotionsWorkflow, updateProductsWorkflow, updatePromotionsWorkflow, updateStoresWorkflow } from "@medusajs/medusa/core-flows"
 
 import { BUNDLE_CODE_PREFIX, FREE_SHIPPING_CODE_PREFIX, GIFT_WRAP_HANDLE } from "../../../../../lib/shared/constants"
+import {
+  buildBundlePromotionConfig,
+  cleanPromoLabel,
+  describeUnknownError,
+} from "../../../../../lib/promotions-studio/cart-incentives"
 import { retrieveStorefrontIncentivesPayload } from "../../../../../lib/storefront/incentives"
 import { runUpdateIncentiveThreshold } from "../../../../../scripts/seed-incentives"
 import { assertTaxonomyAdminWrite } from "../../taxonomy-auth"
-
-type LocalizedLabel = string | { en?: string; ar?: string }
 
 type StoreRow = {
   id: string
@@ -31,20 +34,7 @@ type ProductRow = {
   metadata?: Record<string, unknown> | null
 }
 
-function cleanLabel(value: unknown): LocalizedLabel | null {
-  if (typeof value === "string") {
-    const trimmed = value.trim()
-    return trimmed ? trimmed : null
-  }
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    const raw = value as Record<string, unknown>
-    const en = typeof raw.en === "string" && raw.en.trim() ? raw.en.trim() : undefined
-    const ar = typeof raw.ar === "string" && raw.ar.trim() ? raw.ar.trim() : undefined
-    if (!en && !ar) return null
-    return { ...(en ? { en } : {}), ...(ar ? { ar } : {}) }
-  }
-  return null
-}
+const cleanLabel = cleanPromoLabel
 
 function positiveInteger(value: unknown): number | null {
   const parsed = Number(value)
@@ -125,20 +115,7 @@ async function upsertBundlePromotion(req: MedusaRequest, body: Record<string, un
     return
   }
 
-  const requireQuantity = positiveInteger(body.requireQuantity) ?? 2
-  const applyToQuantity = positiveInteger(body.applyToQuantity) ?? 1
-  const applicationKind = body.applicationKind === "fixed" ? "fixed" : "percentage"
-  const applicationValue = positiveInteger(body.applicationValue) ?? (applicationKind === "fixed" ? 100 : 100)
-  const code = `${BUNDLE_CODE_PREFIX}_${requireQuantity}_${applyToQuantity}_${applicationKind.toUpperCase()}_${applicationValue}`
-  const applicationMethod = {
-    type: applicationKind as "fixed" | "percentage",
-    target_type: "items" as const,
-    allocation: "each" as const,
-    value: applicationValue,
-    currency_code: "egp",
-    buy_rules_min_quantity: requireQuantity,
-    apply_to_quantity: applyToQuantity,
-  }
+  const { code, applicationMethod } = buildBundlePromotionConfig(body)
 
   // Check if an exact match already exists and is active — skip recreation
   const exactMatch = existing.find((promotion) => promotion.code === code && promotion.status === "active")
@@ -324,7 +301,7 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
           freeShippingLabel: cleanLabel(freeShipping.label) ?? undefined,
         })
       } catch (err) {
-        throw new Error(`Failed to update free shipping: ${err instanceof Error ? err.message : String(err)}`)
+        throw new Error(`Failed to update free shipping: ${describeUnknownError(err)}`)
       }
     }
 
@@ -332,7 +309,7 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
       try {
         await upsertBundlePromotion(req, bundle)
       } catch (err) {
-        throw new Error(`Failed to update bundle: ${err instanceof Error ? err.message : String(err)}`)
+        throw new Error(`Failed to update bundle: ${describeUnknownError(err)}`)
       }
     }
 
@@ -340,13 +317,13 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
       try {
         await updateGiftWrap(req, giftWrap)
       } catch (err) {
-        throw new Error(`Failed to update gift wrap: ${err instanceof Error ? err.message : String(err)}`)
+        throw new Error(`Failed to update gift wrap: ${describeUnknownError(err)}`)
       }
     }
 
     res.status(200).json(await retrieveCartIncentivesState(req))
   } catch (error) {
     console.error("[promotions-studio] PUT cart-incentives failed:", error)
-    res.status(500).json({ message: error instanceof Error ? error.message : String(error) })
+    res.status(500).json({ message: describeUnknownError(error) })
   }
 }

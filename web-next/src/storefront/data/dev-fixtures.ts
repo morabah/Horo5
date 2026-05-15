@@ -356,7 +356,7 @@ export const products: Product[] = [
     artistSlug: 'omar-hassan',
     feelingSlug: 'warm-romantic',
     priceEgp: 799,
-    story: 'When the universe shifts in your favor.',
+    story: 'When the stars line up with who you are.',
     merchandisingBadge: 'Bestseller',
   },
   {

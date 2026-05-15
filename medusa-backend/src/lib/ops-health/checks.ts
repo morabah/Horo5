@@ -14,6 +14,7 @@ import type MerchEventModuleService from "../../modules/merch-event/service"
 import { OCCASION_MODULE } from "../../modules/occasion"
 import type OccasionModuleService from "../../modules/occasion/service"
 import { EGYPT_REGION_NAME, getEgyptRegionPaymentProviders } from "../../scripts/lib/egypt-checkout"
+import { readCodConfirmationMetadata } from "../cod-confirmation"
 import { createS3Client, resolveS3ConfigFromEnv, storeMediaPublicPath } from "../s3-env"
 import { FEELINGS_ROOT_HANDLE } from "../storefront/feeling-category-metadata"
 
@@ -68,6 +69,7 @@ export type OpsHealthPayload = {
     paymentProviders: HealthCheckResult
     promotions: HealthCheckResult
     parity: HealthCheckResult
+    orderQuality: HealthCheckResult
   }
 }
 
@@ -461,6 +463,64 @@ export async function checkParity(container: MedusaContainer): Promise<HealthChe
   }
 }
 
+export async function checkOrderQuality(container: MedusaContainer): Promise<HealthCheckResult> {
+  const query = container.resolve<Query>(ContainerRegistrationKeys.QUERY)
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  const { data } = await query.graph({
+    entity: "order",
+    fields: ["id", "display_id", "metadata", "status", "total", "created_at"],
+    pagination: { take: 500, order: { created_at: "DESC" } },
+  })
+  const rows = ((data || []) as Array<Record<string, unknown>>).filter((row) => {
+    const createdAt = typeof row.created_at === "string" ? Date.parse(row.created_at) : NaN
+    return Number.isFinite(createdAt) ? createdAt >= since.getTime() : true
+  })
+
+  const qualityScores = rows
+    .map((row) => {
+      const metadata = row.metadata && typeof row.metadata === "object" && !Array.isArray(row.metadata)
+        ? (row.metadata as Record<string, unknown>)
+        : {}
+      const score = metadata.quality_score
+      return typeof score === "number" && Number.isFinite(score) ? score : null
+    })
+    .filter((score): score is number => score != null)
+  const averageQuality =
+    qualityScores.length > 0
+      ? Math.round((qualityScores.reduce((sum, score) => sum + score, 0) / qualityScores.length) * 10) / 10
+      : null
+  const codCounts = rows.reduce<Record<string, number>>((acc, row) => {
+    const status = readCodConfirmationMetadata(row).codConfirmationStatus
+    acc[status] = (acc[status] ?? 0) + 1
+    return acc
+  }, {})
+  const lowQualityCount = qualityScores.filter((score) => score < 3).length
+  const pendingCodCount = codCounts.pending ?? 0
+  const status: HealthStatus =
+    rows.length === 0
+      ? "warn"
+      : lowQualityCount > 0 || pendingCodCount > 0
+        ? "warn"
+        : "ok"
+
+  return {
+    status,
+    title: "Order Quality",
+    summary:
+      rows.length === 0
+        ? "No orders in the last 7 days."
+        : `${rows.length} order(s) in 7 days; average quality ${averageQuality ?? "not scored"}; ${pendingCodCount} pending COD confirmation(s).`,
+    details: {
+      windowDays: 7,
+      orderCount: rows.length,
+      scoredOrderCount: qualityScores.length,
+      averageQuality,
+      lowQualityCount,
+      codCounts,
+    },
+  }
+}
+
 async function settle<T>(fn: () => Promise<HealthCheckResult<T>>, title: string): Promise<HealthCheckResult<T>> {
   try {
     return await fn()
@@ -474,11 +534,12 @@ async function settle<T>(fn: () => Promise<HealthCheckResult<T>>, title: string)
 }
 
 export async function getOpsHealth(container: MedusaContainer): Promise<OpsHealthPayload> {
-  const [s3, paymentProviders, promotions, parity] = await Promise.all([
+  const [s3, paymentProviders, promotions, parity, orderQuality] = await Promise.all([
     settle(() => checkS3Health(), "S3"),
     settle(() => checkPaymentProviders(container), "Payment Providers"),
     settle(() => checkPromotions(container), "Promotions"),
     settle(() => checkParity(container), "Parity Snapshot"),
+    settle(() => checkOrderQuality(container), "Order Quality"),
   ])
 
   return {
@@ -488,6 +549,7 @@ export async function getOpsHealth(container: MedusaContainer): Promise<OpsHealt
       paymentProviders,
       promotions,
       parity,
+      orderQuality,
     },
   }
 }

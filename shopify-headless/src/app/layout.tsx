@@ -4,6 +4,7 @@ import { AnalyticsTracker } from "@/components/analytics/tracker";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { StoreFooter } from "@/components/store-footer";
 import { StoreHeader } from "@/components/store-header";
+import { WhatsAppFloatingButton } from "@/components/whatsapp-floating-button";
 import { env, siteUrl } from "@/lib/env";
 import "./globals.css";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
         <CartProvider>
           <StoreHeader />
           <div className="flex-1">{children}</div>
+          <WhatsAppFloatingButton />
           <StoreFooter />
         </CartProvider>
       </body>

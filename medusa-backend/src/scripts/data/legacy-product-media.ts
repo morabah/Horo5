@@ -1,5 +1,10 @@
+export type LegacyProductMediaItem = {
+  url: string
+  tag?: 'proof_fabric' | 'proof_print' | 'proof_wash' | 'lifestyle' | 'flat_lay'
+}
+
 export type LegacyProductMedia = {
-  gallery: string[]
+  gallery: Array<string | LegacyProductMediaItem>
   main: string
 }
 
@@ -52,7 +57,12 @@ function legacyGallery(
       options.lifestyle ?? proofCards.washTest,
       options.weightScale ?? proofCards.weightScale,
       options.washTest ?? proofCards.washTest,
-    ]),
+    ]).map((src) => {
+      if (src === proofCards.fabricTag) return { url: src, tag: 'proof_fabric' as const }
+      if (src === proofCards.macroDetail) return { url: src, tag: 'proof_print' as const }
+      if (src === proofCards.washTest) return { url: src, tag: 'proof_wash' as const }
+      return src
+    }),
     main: frontOnBody,
   }
 }

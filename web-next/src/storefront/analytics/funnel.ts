@@ -118,6 +118,16 @@ export function trackOccasionsHubView(occasionCount: number) {
   trackBrowsePageViewOnce('occasions_hub', { occasion_count: occasionCount });
 }
 
+/** Gifts hub — `/gifts` */
+export function trackGiftsHubView(giftProductCount: number) {
+  trackBrowsePageViewOnce('gifts_hub', {
+    gift_product_count: giftProductCount,
+    buyer_route: 'gift',
+    asset_type: 'gift_page',
+    content_job: 'desire',
+  });
+}
+
 /** Shop All — `/products` */
 export function trackShopAllView(productCount: number) {
   trackBrowsePageViewOnce('shop_all', { product_count: productCount });

@@ -35,6 +35,7 @@ function publishReadyDrop(overrides: Partial<UpsertDropPayload> = {}): UpsertDro
     firstWedgeEligible: true,
     giftable: true,
     giftOccasionTags: ["birthday"],
+    giftTrustCopy: "Gift packaging is being tested. Current orders include standard HORO packaging.",
     ...overrides,
   }
 }
@@ -132,6 +133,31 @@ describe("drop validators", () => {
         }),
       ]))
     }
+  })
+
+  it("fails giftable published drops without giftTrustCopy", () => {
+    const issues = validateDropPayload(publishReadyDrop({ giftTrustCopy: "" }))
+
+    expect(issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: "giftTrustCopy", message: "Giftable products must have gift trust copy before publishing." }),
+    ]))
+  })
+
+  it("fails giftable published drops with non-gift buyer route when not first-wedge eligible", () => {
+    const issues = validateDropPayload(
+      publishReadyDrop({ buyerRoute: "personality", firstWedgeEligible: false })
+    )
+
+    expect(issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        field: "giftable",
+        message: "Giftable products must use buyer route 'gift' or be first-wedge eligible.",
+      }),
+    ]))
+  })
+
+  it("passes giftable published drops with buyer route 'gift'", () => {
+    expect(validateDropPayload(publishReadyDrop({ buyerRoute: "gift" }))).toEqual([])
   })
 
   it("validates stock quantities against selected sizes", () => {

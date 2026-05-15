@@ -163,6 +163,56 @@ Staff use the **Next.js** app (not Medusa Admin UI): open **`/internal/horo-ops`
 
 Medusa exposes a paged summary at **`GET /store/custom/horo-ops/dashboard?skip=&take=`** (same auth as lookup). Aggregates such as **due soon**, **alarms**, and **money collected** are computed **only over the loaded page** of orders (see `meta.note` in the JSON). Tune SLA and windows with **`HORO_OPS_*`** env vars in `.env.template`.
 
+### WhatsApp script templates (admin module)
+
+`src/modules/whatsapp-script` stores versioned message templates for outbound WhatsApp flows:
+
+| Purpose | Use case |
+|--------|----------|
+| `opening` | First-touch welcome message |
+| `cod_confirmation` | "We will confirm your order before dispatch" |
+| `gift_help` | Gift-size or recipient guidance |
+| `exchange` | Exchange-policy reminder |
+| `ugc_request` | Post-delivery "share your fit" ask |
+
+Admin API: `GET /admin/custom/whatsapp-scripts` (list active), `POST /admin/custom/whatsapp-scripts` (create new version).
+
+Run migration after registering the module:
+
+```bash
+npx medusa db:generate whatsapp_script
+npx medusa db:migrate
+```
+
+### Order quality score (auto-persisted)
+
+On every `order.placed`, the subscriber `src/subscribers/order-quality-score-persist.ts` computes a 1–5 quality score from:
+- source quality (organic vs paid vs unknown)
+- COD confirmation state
+- product route clarity (gift / feeling / occasion)
+- gift-intent signal
+- contribution margin
+
+The score and breakdown are written to `order.metadata.quality_score` and surfaced in the ops dashboard.
+
+### Price-as-hypothesis flag
+
+Toggle whether a product price is still a hypothesis (unvalidated) or validated:
+
+```bash
+# Set status
+curl -X PATCH "http://localhost:9000/admin/custom/products/price-status" \
+  -H "Authorization: Bearer <admin_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"productIds": ["prod_..."], "priceStatus": "hypothesis"}'
+
+# Read status
+curl "http://localhost:9000/admin/custom/products/price-status?ids=prod_...,prod_..." \
+  -H "Authorization: Bearer <admin_token>"
+```
+
+The storefront can read `product.metadata.price_status` to badge unvalidated prices.
+
 ## 4) Local is the source of truth (remote must match)
 
 Treat **your machine + local Postgres** as canonical. **Railway** should run the **same git revision**, **equivalent env**, **the same schema** (migrations), **data produced by the same seed scripts**, and **media** that resolves the same way.
@@ -186,6 +236,8 @@ npm run parity:snapshot:local
 npx @railway/cli run npm run parity:snapshot:remote
 npm run parity:check
 ```
+
+Run this sequence before every release window. Do not cut a release if `parity:check` fails unless the mismatch is explicitly understood and documented.
 
 This writes **`.parity/local.json`** and **`.parity/railway.json`** (ignored by git), compares the **`snapshot`** block ( **`meta`** is ignored), and exits **`0`** only when both match. On failure it prints counts, product handles, and category handles that exist on only one side.
 

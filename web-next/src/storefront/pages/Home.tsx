@@ -38,7 +38,7 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
  * Default homepage section list.
  *
  * Keep the launch-mode storefront short and shop-led (audit P1):
- * hero · trust ribbon · founding drop grid · feeling quiz · feeling grid · latest drop · gift block.
+ * hero · trust ribbon · primary routes · founding drop grid · feeling quiz · feeling grid · latest drop · gift block.
  *
  * Operators can override the order or re-enable additional sections from the
  * homepage_section module. `store.metadata.homepage.sectionsEnabled` remains a
@@ -47,6 +47,7 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
 const HOME_DEFAULT_SECTIONS: readonly string[] = [
   'hero',
   'trust_ribbon',
+  'primary_routes',
   'founding_drop',
   'feeling_quiz',
   'feeling_grid',
@@ -62,7 +63,7 @@ const HOME_SECTION_COMPONENTS: Record<string, HomeSectionRenderer> = {
   primary_routes: () => <HomePrimaryRoutes />,
   founding_drop: ({ initialProducts, section }) => <HomeStartHere products={initialProducts} section={section} />,
   featured_piece: () => <HomeFeaturedPiece />,
-  behind_the_piece: () => <HomeBehindThePiece />,
+  behind_the_piece: () => <HomeBehindThePiece artists={getArtists()} />,
   feeling_grid: ({ section }) => <HomeFeelingCards section={section} />,
   feeling_quiz: () => <HomeFeelingQuiz />,
   occasion_grid: () => <HomeOccasionCards />,

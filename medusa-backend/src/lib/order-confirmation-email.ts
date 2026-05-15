@@ -39,6 +39,7 @@ export type OrderLineLike = {
   unit_price?: number | string | null
   total?: number | string | null
   product_handle?: string | null
+  metadata?: Record<string, unknown> | null
 }
 
 export type AddressLike = {

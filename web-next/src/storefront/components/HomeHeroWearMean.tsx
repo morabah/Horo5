@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
+import { trackHeroCtaClick } from '../analytics/events';
+
 import { PAGE_HEROES } from '../content/page-heroes';
 import {
   pickLocalizedStorefrontText,
@@ -17,6 +19,71 @@ const HERO_BLUR_DATA_URL =
 const HERO_NAV_OFFSET = 'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
+type HeroPayloadCta = {
+  label?: { en?: string; ar?: string } | string;
+  href?: string;
+};
+
+type HeroPayloadVariant = {
+  key?: string;
+  title?: { en?: string; ar?: string } | string;
+  headline?: { en?: string; ar?: string } | string;
+  body?: { en?: string; ar?: string } | string;
+  subtitle?: { en?: string; ar?: string } | string;
+  primaryCta?: HeroPayloadCta;
+  secondaryCta?: HeroPayloadCta;
+  tertiaryCta?: HeroPayloadCta;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function asHeroPayloadCta(value: unknown): HeroPayloadCta | null {
+  if (!isRecord(value)) return null;
+  const label = typeof value.label === 'string' || isRecord(value.label) ? value.label : undefined;
+  const href = typeof value.href === 'string' ? value.href : undefined;
+  return label || href ? { label, href } : null;
+}
+
+function localizedPayloadText(
+  value: HeroPayloadVariant['title'] | undefined,
+  locale: 'en' | 'ar',
+): string | undefined {
+  if (!value) return undefined;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed || undefined;
+  }
+  const localized = value[locale]?.trim() || value.en?.trim() || value.ar?.trim();
+  return localized || undefined;
+}
+
+function payloadString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function selectHeroVariant(payload: Record<string, unknown> | null): {
+  key: string;
+  variant: HeroPayloadVariant | null;
+} {
+  const selectedKey =
+    payloadString(payload?.selectedVariant) ||
+    payloadString(payload?.variant) ||
+    'default';
+  const variants = Array.isArray(payload?.heroVariants) ? payload.heroVariants : [];
+  const variant =
+    variants
+      .filter(isRecord)
+      .map((entry) => entry as HeroPayloadVariant)
+      .find((entry) => (entry.key || 'default') === selectedKey) ?? null;
+  return { key: selectedKey, variant };
+}
+
+function safeTestId(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'default';
+}
+
 export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -26,6 +93,10 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     v ? v[locale as 'en' | 'ar'] : undefined;
   const fromSection = (value: Parameters<typeof pickLocalizedStorefrontText>[0]) =>
     pickLocalizedStorefrontText(value, locale as 'en' | 'ar');
+  const sectionPayload = isRecord(section?.payload) ? section.payload : null;
+  const { key: heroVariant, variant: payloadVariant } = selectHeroVariant(sectionPayload);
+  const ctaFromVariant = (key: 'primaryCta' | 'secondaryCta' | 'tertiaryCta') =>
+    asHeroPayloadCta(payloadVariant?.[key] ?? sectionPayload?.[key]);
 
   const priceRange = (() => {
     // Match the same "featured" merchandising slice users see first on home.
@@ -40,12 +111,34 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
       ? `من ${formatEgp(priceRange)}`
       : `From ${formatEgp(priceRange)}`
     : null;
-  const title = fromSection(section?.title) ?? t(config.title) ?? 'Wear What You Feel';
-  const promiseLine = subtitleBase ?? copy.home.heroPromiseLine;
-  const primaryCtaLabel = fromSection(section?.primaryCta?.label) ?? t(config.primaryCta?.label) ?? copy.home.heroPrimaryCta;
-  const primaryHref = section?.primaryCta?.href ?? config.primaryCta?.href ?? '/products';
-  const secondaryCtaLabel = fromSection(section?.secondaryCta?.label) ?? t(config.secondaryCta?.label) ?? copy.home.heroSecondaryCta;
-  const secondaryHref = section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/feelings';
+  const primaryPayloadCta = ctaFromVariant('primaryCta');
+  const secondaryPayloadCta = ctaFromVariant('secondaryCta');
+  const tertiaryPayloadCta = ctaFromVariant('tertiaryCta');
+  const title =
+    localizedPayloadText(payloadVariant?.title ?? payloadVariant?.headline, locale as 'en' | 'ar') ??
+    fromSection(section?.title) ??
+    t(config.title) ??
+    'Wear What You Feel';
+  const promiseLine =
+    localizedPayloadText(payloadVariant?.body ?? payloadVariant?.subtitle, locale as 'en' | 'ar') ??
+    subtitleBase ??
+    copy.home.heroPromiseLine;
+  const primaryCtaLabel =
+    localizedPayloadText(primaryPayloadCta?.label, locale as 'en' | 'ar') ??
+    fromSection(section?.primaryCta?.label) ??
+    t(config.primaryCta?.label) ??
+    copy.home.heroPrimaryCta;
+  const primaryHref = primaryPayloadCta?.href ?? section?.primaryCta?.href ?? config.primaryCta?.href ?? '/products';
+  const secondaryCtaLabel =
+    localizedPayloadText(secondaryPayloadCta?.label, locale as 'en' | 'ar') ??
+    fromSection(section?.secondaryCta?.label) ??
+    t(config.secondaryCta?.label) ??
+    copy.home.heroSecondaryCta;
+  const secondaryHref = secondaryPayloadCta?.href ?? section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/feelings';
+  const tertiaryCtaLabel =
+    localizedPayloadText(tertiaryPayloadCta?.label, locale as 'en' | 'ar') ??
+    copy.home.heroGiftCta;
+  const tertiaryHref = tertiaryPayloadCta?.href ?? '/gifts';
   const heroImageSrc = section?.image?.src ?? config.desktopImage?.src ?? '/images/heroes/home-hero.png';
   const heroImageAlt =
     fromSection(section?.image?.alt) ??
@@ -56,6 +149,8 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     <section
       id="home-hero"
       aria-labelledby="home-hero-heading"
+      data-test-id={`home-hero-${safeTestId(heroVariant)}`}
+      data-hero-variant={heroVariant}
       className={`home-hero-wear-feel relative isolate flex min-h-svh w-full flex-col overflow-hidden ${HERO_NAV_OFFSET}`}
     >
       <Image
@@ -102,16 +197,25 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
               href={primaryHref}
+              onClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}
               className="font-body inline-flex min-h-14 items-center justify-center rounded-md bg-[#f5f0e6] px-7 py-3 text-[14px] font-semibold text-[#2a2d26] transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {primaryCtaLabel}
             </Link>
             <Link
               href={secondaryHref}
+              onClick={() => trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant)}
               className="font-body inline-flex min-h-11 items-center text-[14px] font-medium text-[#f5f0e6]/85 underline decoration-[#f5f0e6]/40 underline-offset-4 transition-colors duration-200 hover:text-[#f5f0e6] hover:decoration-[#f5f0e6]/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
             >
               {secondaryCtaLabel}
               <span aria-hidden className="ml-1.5">→</span>
+            </Link>
+            <Link
+              href={tertiaryHref}
+              onClick={() => trackHeroCtaClick(tertiaryCtaLabel, tertiaryHref, heroVariant)}
+              className="font-body inline-flex min-h-11 items-center rounded-md border border-[#f5f0e6]/45 px-5 py-2.5 text-[14px] font-medium text-[#f5f0e6] transition-colors duration-200 hover:border-[#f5f0e6]/85 hover:bg-[#f5f0e6]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
+            >
+              {tertiaryCtaLabel}
             </Link>
           </div>
         </div>

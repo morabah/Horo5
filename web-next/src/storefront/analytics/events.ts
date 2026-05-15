@@ -1,11 +1,20 @@
 import { capturePostHogEvent } from '@/lib/posthog-client';
 import type { CartLine } from '../cart/types';
 import { getFeeling, getOccasion, getProduct, type Product, type ProductSizeKey } from '../data/site';
-import { HYPOTHESIS_PRIMARY_SEGMENT } from './hypothesisContext';
+import {
+  HYPOTHESIS_PRIMARY_SEGMENT,
+  deriveBuyerRoute,
+  deriveFirstWedgeEligible,
+  deriveGiftIntent,
+  deriveHypothesisSegment,
+  DEFAULT_CONTENT_JOB_BY_EVENT,
+} from './hypothesisContext';
 
 type AnalyticsItemContext = {
   occasionSlug?: string;
   size?: ProductSizeKey;
+  contentJob?: string;
+  assetType?: string;
 };
 
 const RECENT_EVENT_WINDOW_MS = 1200;
@@ -52,15 +61,29 @@ export function buildAnalyticsItem(product: Product, quantity: number, context: 
     ...(context.size ? { item_variant: context.size } : {}),
     price: product.priceEgp,
     quantity,
+    buyer_route: deriveBuyerRoute(product),
+    primary_audience: deriveHypothesisSegment(product),
+    gift_intent: deriveGiftIntent(product),
+    first_wedge_eligible: deriveFirstWedgeEligible(product),
+    content_job: context.contentJob ?? 'desire',
+    asset_type: context.assetType ?? 'pdp',
   };
 }
 
-function capturePostHogCommerceEvent(eventName: PostHogCommerceEventName, properties: Record<string, unknown>) {
+function capturePostHogCommerceEvent(
+  eventName: PostHogCommerceEventName,
+  properties: Record<string, unknown>,
+  product?: Product | null,
+) {
   if (typeof window === 'undefined') return;
+  const segment = product ? deriveHypothesisSegment(product) : HYPOTHESIS_PRIMARY_SEGMENT;
+  const contentJob = DEFAULT_CONTENT_JOB_BY_EVENT[eventName] ?? 'desire';
   capturePostHogEvent(eventName, {
     ...properties,
     commerce_event: eventName,
-    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    hypothesis_segment: segment,
+    content_job: (properties.content_job as string | undefined) ?? contentJob,
+    ...(product ? { asset_type: 'pdp', buyer_route: deriveBuyerRoute(product) } : {}),
   });
 }
 
@@ -176,18 +199,14 @@ export function createPurchasePayload(payload: {
   };
 }
 
-export function trackViewItem(product: Product) {
+export function trackViewItem(product: Product, assetType?: string) {
   if (typeof window === 'undefined') return;
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
   if (shouldSuppressDuplicateEvent('view_item', product.slug)) return;
   const payload = createViewItemPayload(product);
 
-  capturePostHogCommerceEvent('commerce_product_viewed', {
-    ...payload,
-    product_slug: product.slug,
-    product_name: product.name,
-  });
+  capturePostHogCommerceEvent('commerce_product_viewed', payload, product);
 
   if (window.gtag && gaId) {
     window.gtag('event', 'view_item', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
@@ -214,7 +233,7 @@ export function trackAddToCart(product: Product, quantity: number, size: Product
     size,
     quantity,
     item_count: quantity,
-  });
+  }, product);
   if (window.gtag && gaId) {
     window.gtag('event', 'add_to_cart', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
@@ -241,7 +260,7 @@ export function trackSizeSelected(product: Product, size: ProductSizeKey, source
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
   const payload = createSizeSelectedPayload(product, size, source);
 
-  capturePostHogCommerceEvent('commerce_size_selected', payload);
+  capturePostHogCommerceEvent('commerce_size_selected', payload, product);
 
   if (window.gtag && gaId) {
     window.gtag('event', 'size_selected', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
@@ -376,7 +395,7 @@ export function trackWishlistAdd(product: Product) {
     product_slug: product.slug,
     product_name: product.name,
     items: [buildAnalyticsItem(product, 1)],
-  });
+  }, product);
   if (window.gtag && gaId) {
     window.gtag('event', 'add_to_wishlist', {
       currency: 'EGP',
@@ -396,7 +415,7 @@ export function trackWishlistRemove(product: Product) {
     product_slug: product.slug,
     product_name: product.name,
     items: [buildAnalyticsItem(product, 1)],
-  });
+  }, product);
   if (window.gtag && gaId) {
     window.gtag('event', 'remove_from_wishlist', {
       currency: 'EGP',
@@ -420,6 +439,121 @@ export type SearchZeroResultsPayload = {
   scope_feeling?: string;
   scope_occasion?: string;
 };
+
+/** Hero CTA clicked — primary, secondary, or tertiary (Drop · Feeling · Gift) */
+export function trackHeroCtaClick(ctaLabel: string, ctaHref: string, variant?: string) {
+  if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
+
+  capturePostHogEvent('hero_cta_click', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    cta_label: ctaLabel,
+    cta_href: ctaHref,
+    hero_variant: variant ?? 'default',
+  });
+
+  if (window.gtag && gaId) {
+    window.gtag('event', 'hero_cta_click', {
+      cta_label: ctaLabel,
+      cta_href: ctaHref,
+      hero_variant: variant ?? 'default',
+      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    });
+  }
+  if (window.fbq && pixelId) {
+    window.fbq('trackCustom', 'HeroCtaClick', {
+      cta_label: ctaLabel,
+      hero_variant: variant ?? 'default',
+    });
+  }
+}
+
+/** Gift route clicked from home primary routes */
+export function trackGiftRouteClick(source: string) {
+  if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
+
+  capturePostHogEvent('gift_route_click', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    buyer_route: 'gift',
+    source,
+    content_job: 'desire',
+    asset_type: 'home',
+  });
+
+  if (window.gtag && gaId) {
+    window.gtag('event', 'gift_route_click', {
+      buyer_route: 'gift',
+      source,
+      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    });
+  }
+  if (window.fbq && pixelId) {
+    window.fbq('trackCustom', 'GiftRouteClick', {
+      buyer_route: 'gift',
+      source,
+    });
+  }
+}
+
+/** WhatsApp support button clicked (size help, support, order tracking) */
+export function trackWhatsAppClick(purpose: 'size_help' | 'support' | 'order_tracking' | 'general', location: string) {
+  if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
+
+  capturePostHogEvent('whatsapp_clicked', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    whatsapp_purpose: purpose,
+    location,
+    content_job: 'trust',
+  });
+
+  if (window.gtag && gaId) {
+    window.gtag('event', 'whatsapp_clicked', {
+      whatsapp_purpose: purpose,
+      location,
+      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    });
+  }
+  if (window.fbq && pixelId) {
+    window.fbq('trackCustom', 'WhatsAppClicked', {
+      whatsapp_purpose: purpose,
+      location,
+    });
+  }
+}
+
+/** COD order confirmed by admin / WhatsApp — tracked on order confirmation page */
+export function trackCodConfirmed(orderId: string, confirmationMethod: 'whatsapp' | 'manual_admin') {
+  if (typeof window === 'undefined') return;
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
+
+  capturePostHogEvent('cod_confirmed', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    order_id: orderId,
+    confirmation_method: confirmationMethod,
+    payment_method: 'cod',
+    content_job: 'action',
+  });
+
+  if (window.gtag && gaId) {
+    window.gtag('event', 'cod_confirmed', {
+      order_id: orderId,
+      confirmation_method: confirmationMethod,
+      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    });
+  }
+  if (window.fbq && pixelId) {
+    window.fbq('trackCustom', 'CODConfirmed', {
+      order_id: orderId,
+      confirmation_method: confirmationMethod,
+    });
+  }
+}
 
 /** GA4 custom event when a debounced search returns zero designs, vibes, and occasions. */
 export function trackSearchZeroResults(payload: SearchZeroResultsPayload) {

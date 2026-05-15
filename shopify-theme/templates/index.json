@@ -12,6 +12,8 @@
         "button_style_secondary": false,
         "button_label_secondary": "Browse by feeling",
         "button_link_secondary": "/pages/feelings",
+        "button_label_tertiary": "Shop Gifts",
+        "button_link_tertiary": "/pages/gifts-hub",
         "desktop_content_position": "center-center",
         "mobile_content_alignment": "center",
         "color_scheme": "scheme-3",
@@ -22,7 +24,7 @@
         "split_word_2": "What",
         "split_word_3": "You Feel",
         "show_hero_ribbon": true,
-        "hero_ribbon_text": "COD available · 14-day exchange — terms apply · Printed in Egypt",
+        "hero_ribbon_text": "COD available · 14-day easy exchange · Printed in Egypt",
         "hero_cta_position_mobile": "center",
         "hero_cta_position_desktop": "bottom-left",
         "padding_top": 0,
@@ -81,6 +83,48 @@
         "badge_2",
         "badge_3",
         "badge_4"
+      ]
+    },
+    "home_primary_routes": {
+      "type": "home-primary-routes",
+      "settings": {
+        "heading": "",
+        "heading_size": "h1",
+        "subheading": "",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "route_feeling": {
+          "type": "route",
+          "settings": {
+            "label": "Shop by Feeling",
+            "short_text": "Find the mood you wear",
+            "link": "/pages/feelings"
+          }
+        },
+        "route_occasion": {
+          "type": "route",
+          "settings": {
+            "label": "Shop by Occasion",
+            "short_text": "Dress for the moment",
+            "link": "/pages/occasions"
+          }
+        },
+        "route_gift": {
+          "type": "route",
+          "settings": {
+            "label": "Gift by Meaning",
+            "short_text": "Say it without saying it",
+            "link": "/pages/gifts-hub"
+          }
+        }
+      },
+      "block_order": [
+        "route_feeling",
+        "route_occasion",
+        "route_gift"
       ]
     },
     "home_founding_drop": {
@@ -154,41 +198,108 @@
         "padding_bottom": 36
       }
     },
-    "gift_block": {
-      "type": "rich-text",
+    "home_why_horo": {
+      "type": "home-why-horo",
+      "settings": {
+        "heading": "Why HORO",
+        "heading_size": "h1",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
       "blocks": {
-        "heading": {
-          "type": "heading",
+        "reason_1": {
+          "type": "reason",
           "settings": {
-            "heading": "For the person on your mind",
-            "heading_size": "h1"
+            "icon": "pen",
+            "title": "Artist-made designs",
+            "body": "Every tee starts with a real artist, not a stock library."
           }
         },
-        "text": {
-          "type": "text",
+        "reason_2": {
+          "type": "reason",
           "settings": {
-            "text": "<p>Choose a design that says something personal without needing a long message.</p>"
+            "icon": "map-pin",
+            "title": "Printed in Egypt",
+            "body": "Produced locally so quality and turnaround stay tight."
           }
         },
-        "button": {
-          "type": "button",
+        "reason_3": {
+          "type": "reason",
           "settings": {
-            "button_label": "Shop gift-ready pieces",
-            "button_link": "/pages/gifts",
-            "button_style_secondary": false
+            "icon": "refresh",
+            "title": "COD & 14-day exchange",
+            "body": "Pay when it arrives. Exchange easily if the fit is off."
           }
         }
       },
       "block_order": [
-        "heading",
-        "text",
-        "button"
-      ],
+        "reason_1",
+        "reason_2",
+        "reason_3"
+      ]
+    },
+    "home_behind_the_piece": {
+      "type": "home-behind-the-piece",
       "settings": {
-        "desktop_content_position": "center",
-        "content_alignment": "center",
+        "eyebrow": "Behind the piece",
+        "heading": "How buying works",
+        "heading_size": "h1",
         "color_scheme": "scheme-2",
-        "full_width": true,
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "step_1": {
+          "type": "card",
+          "settings": {
+            "title": "Choose",
+            "body": "Browse by mood, occasion, or gift intent - not just a product grid."
+          }
+        },
+        "step_2": {
+          "type": "card",
+          "settings": {
+            "title": "Size",
+            "body": "Check the fit note and ask on WhatsApp if you are between sizes."
+          }
+        },
+        "step_3": {
+          "type": "card",
+          "settings": {
+            "title": "Confirm",
+            "body": "Pay on delivery or by card. We confirm COD orders by WhatsApp before dispatch."
+          }
+        },
+        "step_4": {
+          "type": "card",
+          "settings": {
+            "title": "Receive",
+            "body": "Your tee arrives with clear delivery updates and support if anything is unclear."
+          }
+        },
+        "step_5": {
+          "type": "card",
+          "settings": {
+            "title": "Exchange if needed",
+            "body": "If the fit is off, use the 14-day easy exchange path."
+          }
+        }
+      },
+      "block_order": [
+        "step_1",
+        "step_2",
+        "step_3",
+        "step_4",
+        "step_5"
+      ]
+    },
+    "horo_gift_cohorts": {
+      "type": "horo-gift-cohorts",
+      "settings": {
+        "heading": "For the person on your mind",
+        "heading_size": "h1",
+        "color_scheme": "scheme-2",
         "padding_top": 40,
         "padding_bottom": 40
       }
@@ -197,10 +308,13 @@
   "order": [
     "home_hero",
     "the_proof",
+    "home_primary_routes",
     "home_founding_drop",
     "horo_feeling_quiz",
     "feeling_grid",
     "latest_drop",
-    "gift_block"
+    "home_why_horo",
+    "home_behind_the_piece",
+    "horo_gift_cohorts"
   ]
 }

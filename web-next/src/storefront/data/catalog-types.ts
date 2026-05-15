@@ -57,6 +57,8 @@ export type Artist = {
   name: string;
   slug: string;
   style: string;
+  /** Process media (sketches, studio shots, work-in-progress) for behind-the-piece reactivation. */
+  processMedia?: Array<{ src: string; captionEn: string; captionAr: string }>;
 };
 
 export type ProductSizeKey = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
@@ -239,6 +241,7 @@ export type Product = {
   firstWedgeEligible?: boolean;
   giftable?: boolean;
   giftOccasionTags?: string[];
+  giftTrustCopy?: string;
   careInstructions?: string;
   primaryFeelingSlug?: string;
   /** From Medusa catalog: false = omit from /feelings browse when category taxonomy is incomplete (strict mode). */

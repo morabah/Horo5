@@ -105,6 +105,15 @@
           {{ section.settings.button_label_secondary | escape }}
         </a>
       {%- endif -%}
+      {%- if section.settings.button_label_tertiary != blank -%}
+        <a
+          {% if section.settings.button_link_tertiary != blank %}href="{{ section.settings.button_link_tertiary }}"{% endif %}
+          class="home-hero__cta button button--tertiary"
+          {% if section.settings.button_link_tertiary == blank %}aria-disabled="true"{% endif %}
+        >
+          {{ section.settings.button_label_tertiary | escape }}
+        </a>
+      {%- endif -%}
     </div>
   </div>
 
@@ -188,6 +197,17 @@
       "label": "Secondary button link"
     },
     {
+      "type": "text",
+      "id": "button_label_tertiary",
+      "label": "Tertiary button label",
+      "default": "Shop Gifts"
+    },
+    {
+      "type": "url",
+      "id": "button_link_tertiary",
+      "label": "Tertiary button link"
+    },
+    {
       "type": "select",
       "id": "desktop_content_position",
       "options": [
@@ -266,7 +286,7 @@
     {
       "type": "text",
       "id": "hero_ribbon_text",
-      "default": "COD available · 14-day exchange — terms apply · Printed in Egypt",
+      "default": "COD available · 14-day easy exchange · Printed in Egypt",
       "label": "Hero ribbon text"
     },
     {

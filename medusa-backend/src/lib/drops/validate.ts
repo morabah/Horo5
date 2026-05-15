@@ -311,6 +311,21 @@ export function validateDropPayload(payload: UpsertDropPayload): DropValidationI
     if (payload.giftable === true && !(payload.giftOccasionTags ?? []).length) {
       pushIssue(issues, "giftOccasionTags", "Giftable products need at least one gift occasion tag.")
     }
+    if (payload.giftable === true && !payload.giftTrustCopy?.trim()) {
+      pushIssue(issues, "giftTrustCopy", "Giftable products must have gift trust copy before publishing.")
+    }
+    if (
+      payload.giftable === true &&
+      payload.buyerRoute &&
+      payload.buyerRoute !== "gift" &&
+      payload.firstWedgeEligible !== true
+    ) {
+      pushIssue(
+        issues,
+        "giftable",
+        "Giftable products must use buyer route 'gift' or be first-wedge eligible."
+      )
+    }
   }
 
   if (payload.firstWedgeEligible === true && payload.buyerRoute && !FIRST_WEDGE_BUYER_ROUTES.has(payload.buyerRoute)) {
