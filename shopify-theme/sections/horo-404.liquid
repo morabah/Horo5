@@ -33,20 +33,131 @@
   }
 {%- endstyle -%}
 
+{%- liquid
+  assign feelings_url = routes.root_url | append: 'pages/feelings'
+
+  assign eyebrow = section.settings.eyebrow | strip
+  if eyebrow == blank
+    assign eyebrow = 'templates.404.subtext' | t
+  endif
+
+  assign title = section.settings.title | strip
+  if title == blank
+    assign title = 'templates.404.title' | t
+  endif
+
+  assign body = section.settings.body | strip
+  if body == blank
+    assign body = 'horo.404.body' | t
+  endif
+
+  assign primary_label = section.settings.primary_label | strip
+  if primary_label == blank
+    assign primary_label = 'horo.404.back_home' | t
+  endif
+
+  assign secondary_label = section.settings.secondary_label | strip
+  if secondary_label == blank
+    assign secondary_label = 'horo.404.search' | t
+  endif
+
+  assign tertiary_label = section.settings.tertiary_label | strip
+  if tertiary_label == blank
+    assign tertiary_label = 'horo.nav.feelings' | t
+  endif
+
+  assign primary_url = section.settings.primary_url | default: routes.root_url
+  assign secondary_url = section.settings.secondary_url | default: routes.search_url
+  assign tertiary_url = section.settings.tertiary_url | default: feelings_url
+-%}
+
 <div class="horo-404 page-width">
-  {%- assign feelings_url = routes.root_url | append: 'pages/feelings' -%}
-  <p class="horo-404__eyebrow">{{ 'templates.404.subtext' | t }}</p>
-  <h1 class="horo-404__title">{{ 'templates.404.title' | t }}</h1>
-  <p class="horo-404__body">{{ 'horo.404.body' | t }}</p>
+  <p class="horo-404__eyebrow">{{ eyebrow | escape }}</p>
+  <h1 class="horo-404__title">{{ title | escape }}</h1>
+  <p class="horo-404__body">{{ body | escape }}</p>
   <div class="horo-404__actions">
-    <a href="{{ routes.root_url }}" class="button button--primary">
-      {{ 'horo.404.back_home' | t }}
+    <a href="{{ primary_url }}" class="button button--primary">
+      {{ primary_label | escape }}
     </a>
-    <a href="{{ routes.search_url }}" class="button button--secondary">
-      {{ 'horo.404.search' | t }}
+    <a href="{{ secondary_url }}" class="button button--secondary">
+      {{ secondary_label | escape }}
     </a>
-    <a href="{{ feelings_url }}" class="button button--secondary">
-      {{ 'horo.nav.feelings' | t }}
+    <a href="{{ tertiary_url }}" class="button button--secondary">
+      {{ tertiary_label | escape }}
     </a>
   </div>
 </div>
+
+{% schema %}
+{
+  "name": "HORO 404 page",
+  "tag": "section",
+  "class": "section-horo-404",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Copy"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow override",
+      "info": "Leave blank to use theme translations."
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title override",
+      "info": "Leave blank to use theme translations."
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body override",
+      "info": "Leave blank to use theme translations."
+    },
+    {
+      "type": "header",
+      "content": "Actions"
+    },
+    {
+      "type": "text",
+      "id": "primary_label",
+      "label": "Primary label override",
+      "info": "Defaults to Back home."
+    },
+    {
+      "type": "url",
+      "id": "primary_url",
+      "label": "Primary link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_label",
+      "label": "Secondary label override",
+      "info": "Defaults to Search HORO."
+    },
+    {
+      "type": "url",
+      "id": "secondary_url",
+      "label": "Secondary link"
+    },
+    {
+      "type": "text",
+      "id": "tertiary_label",
+      "label": "Tertiary label override",
+      "info": "Defaults to Feelings."
+    },
+    {
+      "type": "url",
+      "id": "tertiary_url",
+      "label": "Tertiary link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO 404 page"
+    }
+  ]
+}
+{% endschema %}
