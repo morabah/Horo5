@@ -39,7 +39,15 @@
     {%- endif -%}
 
     <div class="cross-sell__grid" data-cross-sell-grid>
-      {%- assign fallback_products = product.metafields.custom.pair_with_products.value | default: nil -%}
+      {%- liquid
+        assign fallback_products = product.metafields.custom.customers_also_bought_products.value
+        if fallback_products == blank
+          assign fallback_products = product.metafields.custom.complementary_products.value
+        endif
+        if fallback_products == blank
+          assign fallback_products = product.metafields.custom.pair_with_products.value
+        endif
+      -%}
       {%- if fallback_products != blank -%}
         {%- for fp in fallback_products limit: limit -%}
           {%- render 'card-product',

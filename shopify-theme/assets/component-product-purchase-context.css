@@ -41,6 +41,14 @@
   border: 1px solid rgba(var(--color-button), 0.2);
 }
 
+.product-purchase-context__pill--tag {
+  background: transparent;
+  color: rgba(var(--color-foreground), 0.85);
+  border: 1px solid rgba(var(--color-foreground), 0.18);
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
 /* Fit note */
 .product-purchase-context__fit-note {
   margin: 0;

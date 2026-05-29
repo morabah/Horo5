@@ -9,7 +9,7 @@
 -%}
 
 {%- if feeling != blank -%}
-  {%- assign all_subfeelings = shop.metaobjects.subfeeling.values -%}
+  {%- assign all_subfeelings = shop.metaobjects.subfeeling.values | sort: 'sort_order' -%}
   {%- assign subfeeling_count = 0 -%}
 
   {%- for subfeeling in all_subfeelings -%}

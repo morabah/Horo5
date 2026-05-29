@@ -1,12 +1,12 @@
 {{ 'component-size-guide.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
-  assign size_fit_note = product.metafields.custom.size_fit_note.value | default: product.metafields.custom.fit_note.value | default: product.metafields.custom.fit_label.value
+  assign fit_copy = product.metafields.custom.fit_note.value | default: product.metafields.custom.fit_label.value | default: product.metafields.custom.size_fit_note.value
   assign size_table_metaobject = product.metafields.custom.size_table.value
 
   assign has_content = false
 
-  if size_fit_note != blank and size_fit_note != empty
+  if fit_copy != blank and fit_copy != empty
     assign has_content = true
   endif
 
@@ -51,8 +51,8 @@
             </h2>
           {%- endif -%}
 
-          {%- if size_fit_note != blank and size_fit_note != empty -%}
-            <p class="size-guide__note">{{ size_fit_note | escape }}</p>
+          {%- if fit_copy != blank and fit_copy != empty -%}
+            <p class="size-guide__note">{{ fit_copy | escape }}</p>
           {%- elsif section.settings.fallback_fit_note != blank and section.settings.fallback_fit_note != empty -%}
             <p class="size-guide__note">{{ section.settings.fallback_fit_note | escape }}</p>
           {%- endif -%}
@@ -107,7 +107,7 @@
       {%- elsif request.design_mode -%}
         <div class="size-guide__placeholder">
           <p>
-            Add <code>custom.size_fit_note</code>, <code>custom.fit_note</code>, and/or <code>custom.size_table</code> product metafields, or enter fallback content below, to populate this size guide.
+            Add <code>custom.fit_note</code> / <code>custom.fit_label</code> / <code>custom.size_fit_note</code> (canonical fit chain), and/or <code>custom.size_table</code>, or enter fallback content below, to populate this size guide.
           </p>
         </div>
       {%- endif -%}
@@ -142,7 +142,7 @@
       "type": "text",
       "id": "fallback_fit_note",
       "label": "Fallback fit note",
-      "info": "Shown if the product has no size_fit_note metafield."
+      "info": "Shown if the product has no fit_note / fit_label / size_fit_note metafield (canonical fit chain)."
     },
     {
       "type": "richtext",

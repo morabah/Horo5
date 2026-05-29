@@ -16,7 +16,13 @@
 {%- endstyle -%}
 
 {%- liquid
-  assign companion_products = product.metafields.custom.pair_with_products.value
+  assign companion_products = product.metafields.custom.frequently_bought_with_products.value
+  if companion_products == blank
+    assign companion_products = product.metafields.custom.pair_with_products.value
+  endif
+  if companion_products == blank
+    assign companion_products = product.metafields.custom.complementary_products.value
+  endif
   assign has_companions = false
   if companion_products != blank
     assign has_companions = true

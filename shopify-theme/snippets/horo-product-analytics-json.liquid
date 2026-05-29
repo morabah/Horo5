@@ -11,6 +11,10 @@
   assign trust_raw = product.metafields.custom.trust_chips.value
   assign works_raw = product.metafields.custom.works_for.value
   assign feels_raw = product.metafields.custom.feels_like.value
+  assign pdp_tags_raw = product.metafields.custom.pdp_tag_labels.value
+  assign fbt_raw = product.metafields.custom.frequently_bought_with_products.value
+  assign complementary_raw = product.metafields.custom.complementary_products.value
+  assign cab_raw = product.metafields.custom.customers_also_bought_products.value
   assign pair_raw = product.metafields.custom.pair_with_products.value
 
   assign feeling_title = ''
@@ -26,6 +30,8 @@
     assign subfeeling_title = subfeeling_obj.title | default: subfeeling_obj.name | default: subfeeling_obj.display_name
     assign subfeeling_slug = subfeeling_obj.slug | default: subfeeling_obj.handle
   endif
+
+  assign line_slug = subfeeling_slug
 
   assign artist_name = ''
   if artist_obj != blank
@@ -43,6 +49,11 @@
   assign occasion_titles = '' | split: ','
   if occasions_raw != blank
     assign occasion_titles = occasions_raw | map: 'title'
+  endif
+
+  assign pdp_tag_labels = '' | split: ','
+  if pdp_tags_raw != blank
+    assign pdp_tag_labels = pdp_tags_raw
   endif
 
   assign trust_list = '' | split: ','
@@ -65,6 +76,60 @@
     assign pair_handles = pair_raw | map: 'handle'
   endif
 
+  assign fbt_handles = '' | split: ','
+  if fbt_raw != blank
+    assign fbt_handles = fbt_raw | map: 'handle'
+  endif
+
+  assign complementary_handles = '' | split: ','
+  if complementary_raw != blank
+    assign complementary_handles = complementary_raw | map: 'handle'
+  endif
+
+  assign cab_handles = '' | split: ','
+  if cab_raw != blank
+    assign cab_handles = cab_raw | map: 'handle'
+  endif
+
+  assign stock_note = product.metafields.custom.stock_note.value | default: product.metafields.custom.low_stock_message.value
+
+  assign promo_show_countdown = product.metafields.custom.promo_show_countdown.value
+  if promo_show_countdown == blank
+    assign promo_show_countdown_bool = true
+  elsif promo_show_countdown == false or promo_show_countdown == 'false'
+    assign promo_show_countdown_bool = false
+  else
+    assign promo_show_countdown_bool = true
+  endif
+
+  assign available_sizes = '' | split: '|'
+  assign available_sizes_meta = product.metafields.custom.available_sizes.value
+  if available_sizes_meta != blank
+    assign available_sizes = available_sizes_meta
+  else
+    for option in product.options_with_values
+      assign option_name_down = option.name | downcase
+      if option_name_down == 'size'
+        assign available_sizes = option.values
+        break
+      endif
+    endfor
+  endif
+
+  assign garment_colors = '' | split: '|'
+  assign garment_colors_meta = product.metafields.custom.garment_colors.value
+  if garment_colors_meta != blank
+    assign garment_colors = garment_colors_meta
+  else
+    for option in product.options_with_values
+      assign option_name_down = option.name | downcase
+      if option_name_down == 'color'
+        assign garment_colors = option.values
+        break
+      endif
+    endfor
+  endif
+
   assign inventory_qty = variant.inventory_quantity | default: 0
 -%}
 window.HoroCurrentProductHandle = {{ product.handle | json }};
@@ -83,7 +148,9 @@ window.HoroCurrentProductData = {
   "feelingSlug": {{ feeling_slug | json }},
   "subfeeling": {{ subfeeling_title | json }},
   "subfeelingSlug": {{ subfeeling_slug | json }},
+  "lineSlug": {{ line_slug | json }},
   "occasions": {{ occasion_titles | json }},
+  "pdpTagLabels": {{ pdp_tag_labels | json }},
   "artist": {{ artist_name | json }},
   "giftable": {{ giftable_bool | json }},
   "fitLabel": {{ fit_label | json }},
@@ -93,7 +160,17 @@ window.HoroCurrentProductData = {
   "buyerRoute": {{ product.metafields.custom.buyer_route.value | json }},
   "primaryAudience": {{ product.metafields.custom.primary_audience.value | json }},
   "promoLabel": {{ product.metafields.custom.promo_label.value | json }},
+  "promoStartsAt": {{ product.metafields.custom.promo_starts_at.value | json }},
+  "promoEndsAt": {{ product.metafields.custom.promo_ends_at.value | json }},
+  "promoShowCountdown": {{ promo_show_countdown_bool | json }},
+  "merchandisingBadge": {{ product.metafields.custom.merchandising_badge.value | json }},
+  "stockNote": {{ stock_note | json }},
+  "garmentColors": {{ garment_colors | json }},
+  "availableSizes": {{ available_sizes | json }},
   "pairWithProductHandles": {{ pair_handles | json }},
+  "frequentlyBoughtWithProductHandles": {{ fbt_handles | json }},
+  "complementaryProductHandles": {{ complementary_handles | json }},
+  "customersAlsoBoughtProductHandles": {{ cab_handles | json }},
   "selectedVariantId": {{ variant.id | json }},
   "available": {{ variant.available | json }},
   "inventoryQuantity": {{ inventory_qty | json }},

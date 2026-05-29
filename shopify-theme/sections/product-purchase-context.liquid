@@ -10,6 +10,16 @@
   assign gift_occasion_tags = product.metafields.custom.gift_occasion_tags.value
   assign trust_chips = product.metafields.custom.trust_chips.value
   assign features = product.metafields.custom.features.value
+  assign pdp_tag_labels = product.metafields.custom.pdp_tag_labels.value
+
+  assign pdp_tag_labels_count = 0
+  if pdp_tag_labels != blank
+    for tag_label in pdp_tag_labels
+      if tag_label != blank
+        assign pdp_tag_labels_count = pdp_tag_labels_count | plus: 1
+      endif
+    endfor
+  endif
 
   assign has_feeling = false
   if feeling_metaobject != blank
@@ -70,7 +80,7 @@
   endif
 
   assign has_content = false
-  if has_feeling or has_subfeeling or has_fit_note or has_low_stock or has_whatsapp or is_giftable or trust_chips_count > 0 or features_count > 0
+  if has_feeling or has_subfeeling or pdp_tag_labels_count > 0 or has_fit_note or has_low_stock or has_whatsapp or is_giftable or trust_chips_count > 0 or features_count > 0
     assign has_content = true
   endif
 -%}
@@ -97,7 +107,7 @@
     <div class="page-width">
       {%- if has_content -%}
         <div class="product-purchase-context__wrapper">
-          {%- if has_feeling or has_subfeeling -%}
+          {%- if has_feeling or has_subfeeling or pdp_tag_labels_count > 0 -%}
             <div class="product-purchase-context__pills" role="group" aria-label="{{ 'horo.pdp.feeling_group_label' | t }}">
               {%- if has_feeling -%}
                 <span class="product-purchase-context__pill product-purchase-context__pill--feeling">
@@ -108,6 +118,15 @@
                 <span class="product-purchase-context__pill product-purchase-context__pill--subfeeling">
                   {{ subfeeling_metaobject.title | default: subfeeling_metaobject.name | default: subfeeling_metaobject.display_name | escape }}
                 </span>
+              {%- endif -%}
+              {%- if pdp_tag_labels_count > 0 -%}
+                {%- for tag_label in pdp_tag_labels -%}
+                  {%- if tag_label != blank -%}
+                    <span class="product-purchase-context__pill product-purchase-context__pill--tag">
+                      {{- tag_label | escape -}}
+                    </span>
+                  {%- endif -%}
+                {%- endfor -%}
               {%- endif -%}
             </div>
           {%- endif -%}
@@ -177,7 +196,7 @@
         <div class="product-purchase-context__placeholder">
           <p>
             Add product metafields to populate this section:<br>
-            <code>custom.feeling</code>, <code>custom.subfeeling</code>, <code>custom.fit_note</code>,
+            <code>custom.feeling</code>, <code>custom.subfeeling</code>, <code>custom.pdp_tag_labels</code>, <code>custom.fit_note</code>,
             <code>custom.fit_label</code>, <code>custom.size_fit_note</code>,
             <code>custom.low_stock_message</code>, <code>custom.whatsapp_help_url</code>,
             <code>custom.trust_chips</code>, <code>custom.features</code>

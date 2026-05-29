@@ -32,8 +32,9 @@ Canonical source for Shopify theme metafields, metaobjects, theme settings, coll
 | Key | Shopify Admin type | Req | Used in theme | Medusa / web-next | Notes |
 |-----|-------------------|-----|---------------|-------------------|-------|
 | `feeling` | Metaobject → `feeling` | Yes (V1 PDP) | purchase-context, cards, analytics, collections | `primaryFeelingSlug` | Single reference |
-| `subfeeling` | Metaobject → `subfeeling` | No | purchase-context, cards, analytics | `primarySubfeelingSlug` | |
-| `occasions` | List metaobject → `occasion` | No | analytics | `occasionSlugs[]` | |
+| `subfeeling` | Metaobject → `subfeeling` | No | purchase-context, cards, analytics | `primarySubfeelingSlug` / `lineSlug` | Primary thematic line on PDP |
+| `pdp_tag_labels` | List single line | No | purchase-context chips, analytics | `pdpTagLabels[]` | **Not** derived from `occasions`; Shopify equivalent of Medusa category-derived PDP tags |
+| `occasions` | List metaobject → `occasion` | No | analytics | `occasionSlugs[]` | Do not use as PDP hero chips when `pdp_tag_labels` is set |
 | `artist` | Metaobject → `artist` | No | artist card, cards, analytics | `artistSlug` / `artistDisplay` | |
 | `story` | Rich text or multi-line | No | story, accordions (fallback) | `story` | Short emotional line |
 | `story_description` | Rich text or multi-line | No | story, accordions | `storyDescription` | Long body |
@@ -62,9 +63,16 @@ Canonical source for Shopify theme metafields, metaobjects, theme settings, coll
 | `promo_starts_at` / `promo_ends_at` | Date/time | No | promo-countdown | `launchAt` / `sunsetAt` | |
 | `promo_label_ar` | Single line | No | promo-countdown | — | |
 | `promo_savings_egp` | Number | No | promo-countdown | — | |
-| `promo_show_countdown` | Boolean | No | promo-countdown | — | |
+| `promo_show_countdown` | Boolean | No | promo-countdown, analytics | `promoShowCountdown` | Defaults to `true` in analytics when unset |
+| `merchandising_badge` | Single line | No | cards (future), analytics | `merchandisingBadge` | e.g. Bestseller, New, Limited |
 | `whatsapp_help_url` | URL | No | purchase-context | — | Falls back to `settings.horo_whatsapp_support_url` |
-| `pair_with_products` | List product refs | No | pair-with, cross-sell | complementarySlugs | Controlled merchandising |
+| `complementary_products` | List product refs | No | cross-sell | `complementarySlugs[]` | Style-with / visual pairing |
+| `frequently_bought_with_products` | List product refs | No | pair-with | `frequentlyBoughtWithSlugs[]` | Bundle / FBT intent |
+| `customers_also_bought_products` | List product refs | No | cross-sell | `customersAlsoBoughtSlugs[]` | Social-proof recommendations |
+| `pair_with_products` | List product refs | No | pair-with, cross-sell fallback | legacy pair-with | General fallback when intent-specific lists are empty |
+| `stock_note` | Single line | No | analytics | `stockNote` | Scarcity line; analytics falls back to `low_stock_message` |
+| `garment_colors` | List single line | No | analytics, search | `garmentColors[]` | Display color labels; else inferred from `Color` variant option |
+| `available_sizes` | List single line | No | analytics, search | `availableSizes[]` | Optional override; else inferred from `Size` variant option |
 | `proof_gallery` | List metaobject → `proof_item` | No | proof strip | `proofGallery` | Preferred over alt tags |
 | `review_proof` | List metaobject → `ugc_proof` | No | seen-on-you | `reviewProof` | Legacy: `horo_ugc` file list |
 | `low_stock_message` | Single line | No | purchase-context | — | |
@@ -88,7 +96,58 @@ Canonical source for Shopify theme metafields, metaobjects, theme settings, coll
 | WhatsApp URL | `whatsapp_help_url` → `settings.horo_whatsapp_support_url` |
 | UGC gallery | `review_proof` → `horo_ugc` (legacy) |
 
-### 2.4 `horo-product-field.liquid` (scalar only)
+### 2.4 Cross-sell intent resolution
+
+| Section | Metafield priority (first non-empty wins) |
+|---------|-------------------------------------------|
+| `product-pair-with` | `frequently_bought_with_products` → `pair_with_products` → `complementary_products` |
+| `horo-cross-sell` | `customers_also_bought_products` → `complementary_products` → `pair_with_products` |
+
+Do not merge buckets in Liquid — each web-next/Medusa intent stays separate in Admin.
+
+### 2.5 `feelingBrowseAssignments` (multi-placement browse)
+
+Medusa exposes multiple feeling/subfeeling placements via `feelingBrowseAssignments[]` (from categories under the feelings tree).
+
+**Shopify equivalent:** product **collection membership**, not a metafield list.
+
+- `custom.feeling` + `custom.subfeeling` = **primary** PDP/card/analytics identity only.
+- For multi-placement products, add the product to every relevant collection, e.g.:
+  - `/collections/feeling-mood`
+  - `/collections/feeling-mood-calm`
+  - `/collections/feeling-zodiac`
+- Collection membership controls browse eligibility; metafields control hero chips and analytics primary slugs.
+
+### 2.6 `physicalAttributes` (limitations)
+
+Medusa builds `physicalAttributes` from product/variant shipping fields (weight, dimensions, HS code, MID, origin, material).
+
+**Shopify theme does not mirror this as a DTO.** Use customer-facing metafields instead:
+
+| Medusa / web-next | Shopify |
+|-------------------|---------|
+| `physicalAttributes.material` | `custom.materials` (accordion) |
+| dimensions | `custom.dimensions_note` |
+| care | `custom.care_instructions` |
+| weight (shipping) | Native Shopify variant weight only — do not show HS/MID/origin on PDP unless you add explicit metafields and copy |
+
+### 2.7 Analytics payload (`horo-product-analytics-json.liquid`)
+
+Emits `window.HoroCurrentProductData` with `| json` on every value. Key parity fields:
+
+| Field | Source |
+|-------|--------|
+| `lineSlug` | `subfeeling` slug (same as Medusa `lineSlug` / `primarySubfeelingSlug`) |
+| `pdpTagLabels` | `custom.pdp_tag_labels` |
+| `promoStartsAt` / `promoEndsAt` | `custom.promo_starts_at` / `promo_ends_at` |
+| `promoShowCountdown` | `custom.promo_show_countdown` (default `true` when blank) |
+| `merchandisingBadge` | `custom.merchandising_badge` |
+| `stockNote` | `custom.stock_note` → `custom.low_stock_message` |
+| `garmentColors` | `custom.garment_colors` → `Color` option values |
+| `availableSizes` | `custom.available_sizes` → `Size` option values |
+| `frequentlyBoughtWithProductHandles` / `complementaryProductHandles` / `customersAlsoBoughtProductHandles` | respective product-list metafields |
+
+### 2.8 `horo-product-field.liquid` (scalar only)
 
 Allowed `field` keys only:
 
@@ -229,6 +288,8 @@ Rich text and lists must be read in sections or dedicated snippets — not throu
 
 **Rule:** Every feeling/occasion metaobject should have `collection_url` or a linked collection matching the handle pattern.
 
+**Multi-placement products:** assign the product to all relevant feeling/subfeeling collections (see §2.5). Subfeeling nav sorts by `subfeeling.sort_order` ascending (`collection-subfeeling-nav.liquid`).
+
 ---
 
 ## 5. Hub pages (Online Store → Pages)
@@ -289,14 +350,23 @@ Redirects must use `/pages/gifts-hub`, not `/pages/gifts`.
 | web-next / Medusa concept | Shopify |
 |---------------------------|---------|
 | `StorefrontProductDTO.feeling` / slugs | `custom.feeling` |
-| `subfeeling` | `custom.subfeeling` |
+| `subfeeling` / `lineSlug` | `custom.subfeeling` |
+| `pdpTagLabels[]` | `custom.pdp_tag_labels` |
+| `feelingBrowseAssignments[]` | product collection membership (§2.5) |
 | `occasions[]` | `custom.occasions` |
 | `artist` | `custom.artist` |
 | `story` / `storyDescription` | `custom.story` / `story_description` |
 | `fitLabel` | fit chain |
 | `trustBadges` | `custom.trust_chips` |
 | `giftable` | `custom.giftable` |
-| `pairWith` / cross-sell | `custom.pair_with_products` |
+| `complementarySlugs[]` | `custom.complementary_products` |
+| `frequentlyBoughtWithSlugs[]` | `custom.frequently_bought_with_products` |
+| `customersAlsoBoughtSlugs[]` | `custom.customers_also_bought_products` |
+| legacy pair-with | `custom.pair_with_products` |
+| `merchandisingBadge` / `stockNote` | `custom.merchandising_badge` / `custom.stock_note` |
+| `garmentColors[]` / `availableSizes[]` | metafield or variant options |
+| `promoStartsAt` / `promoEndsAt` / `promoShowCountdown` | promo timing metafields |
+| `physicalAttributes` | §2.6 (partial; manual metafields only) |
 | `proofGallery` | `custom.proof_gallery` |
 | `reviewProof` | `custom.review_proof` |
 
@@ -312,6 +382,9 @@ Redirects must use `/pages/gifts-hub`, not `/pages/gifts`.
 - [ ] Set `horo_gift_wrap_product` in theme settings
 - [ ] Configure Search & Discovery using `data/search-synonyms.json`
 - [ ] Publish products with required `feeling` + `fit_label` (or fit chain)
+- [ ] Set `custom.pdp_tag_labels` per product (category-style PDP chips; not occasions)
+- [ ] Configure cross-sell intent lists (`frequently_bought_with_products`, `complementary_products`, `customers_also_bought_products`) where merchandised
+- [ ] Add multi-placement products to all relevant feeling/subfeeling collections
 - [ ] Verify EN/AR in theme editor
 - [ ] Test checkout: COD, shipping, discounts match PDP/cart copy
 - [ ] Enable `horo_incentives_live` only after incentive rules verified
