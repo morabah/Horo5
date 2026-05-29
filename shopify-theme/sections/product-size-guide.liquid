@@ -73,7 +73,7 @@
                   <tbody>
                     {%- for row in size_table_metaobject.rows -%}
                       <tr>
-                        <td>{{ row.size_label | default: '' | escape }}</td>
+                        <td>{{ row.size_label | default: row.size | default: '' | escape }}</td>
                         <td>{{ row.chest | default: '' | escape }}</td>
                         <td>{{ row.length | default: '' | escape }}</td>
                         <td>{{ row.shoulder | default: '' | escape }}</td>

@@ -51,6 +51,18 @@
   color: var(--color-warm-charcoal, #5c5550);
 }
 
+.product-proof-strip__caption {
+  display: block;
+  margin-block-start: 0.4rem;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--color-warm-charcoal, #5c5550);
+  opacity: 0.85;
+}
+
 .product-proof-strip__placeholder {
   padding: 2.4rem;
   text-align: center;

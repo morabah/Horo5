@@ -13,6 +13,7 @@
   assign feeling_obj = card_product.metafields.custom.feeling.value
   assign subfeeling_obj = card_product.metafields.custom.subfeeling.value
   assign artist_obj = card_product.metafields.custom.artist.value
+  assign artist_display_text = card_product.metafields.custom.artist_display.value
   assign trust_chips = card_product.metafields.custom.trust_chips.value
   assign giftable_val = card_product.metafields.custom.giftable.value
   assign fit_chip = card_product.metafields.custom.fit_note.value | default: card_product.metafields.custom.fit_label.value | default: card_product.metafields.custom.size_fit_note.value
@@ -37,6 +38,9 @@
   assign artist_name = ''
   if artist_obj != blank
     assign artist_name = artist_obj.name | default: artist_obj.display_name
+  endif
+  if artist_name == blank
+    assign artist_name = artist_display_text
   endif
 
   assign trust_cue = ''

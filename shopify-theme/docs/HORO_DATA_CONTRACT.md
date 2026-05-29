@@ -36,6 +36,7 @@ Canonical source for Shopify theme metafields, metaobjects, theme settings, coll
 | `pdp_tag_labels` | List single line | No | purchase-context chips, analytics | `pdpTagLabels[]` | **Not** derived from `occasions`; Shopify equivalent of Medusa category-derived PDP tags |
 | `occasions` | List metaobject → `occasion` | No | analytics | `occasionSlugs[]` | Do not use as PDP hero chips when `pdp_tag_labels` is set |
 | `artist` | Metaobject → `artist` | No | artist card, cards, analytics | `artistSlug` / `artistDisplay` | |
+| `artist_display` | Single line | No | artist card, cards, analytics (name fallback) | `artistDisplay.name` | Fallback when `artist` metaobject is unset: `artist.name` → `artist.display_name` → `artist_display` |
 | `story` | Rich text or multi-line | No | story, accordions (fallback) | `story` | Short emotional line |
 | `story_description` | Rich text or multi-line | No | story, accordions | `storyDescription` | Long body |
 | `design_story` | Rich text | No | accordions | — | **Deprecated**; fallback only |
@@ -76,9 +77,8 @@ Canonical source for Shopify theme metafields, metaobjects, theme settings, coll
 | `proof_gallery` | List metaobject → `proof_item` | No | proof strip | `proofGallery` | Preferred over alt tags |
 | `review_proof` | List metaobject → `ugc_proof` | No | seen-on-you | `reviewProof` | Legacy: `horo_ugc` file list |
 | `low_stock_message` | Single line | No | purchase-context | — | |
-| `delivery_note` | Single line | No | delivery section | — | |
-| `exchange_note` | Single line | No | delivery section | — | |
-| `artist_display` | Single line | No | fallback credit | `artistDisplay.name` | |
+| `delivery_note` | Single line | No | delivery section (product note below cards) | — | |
+| `exchange_note` | Single line | No | delivery section (product note below cards) | — | |
 | `launch_at` / `sunset_at` | Date/time | No | future use | — | |
 
 ### 2.2 `product.metafields.descriptors`
@@ -95,6 +95,9 @@ Canonical source for Shopify theme metafields, metaobjects, theme settings, coll
 | Design story (accordions) | `story_description` → `story` → `design_story` (deprecated) |
 | WhatsApp URL | `whatsapp_help_url` → `settings.horo_whatsapp_support_url` |
 | UGC gallery | `review_proof` → `horo_ugc` (legacy) |
+| Artist display name | `artist.name` → `artist.display_name` → `artist_display` |
+| UGC caption | `body` → `caption` |
+| Feeling / occasion collection URL | `collection_url` → `collection` reference `.url` → handle convention `feeling-{slug}` / `occasion-{slug}` |
 
 ### 2.4 Cross-sell intent resolution
 
@@ -182,8 +185,8 @@ Rich text and lists must be read in sections or dedicated snippets — not throu
 | `card_image` | File | Rec | Cards |
 | `hero_image` | File | No | PLP hero |
 | `accent_color` | Color | No | Hero accent bar |
-| `collection` | Collection ref | No | Preferred URL source |
-| `collection_url` | URL | No | Overrides handle convention |
+| `collection` | Collection ref | Rec | URL when `collection_url` is blank |
+| `collection_url` | URL | No | Overrides `collection` reference and handle convention |
 | `seo_title` / `seo_description` | Single line | No | SEO |
 
 **Example entries:** `mood`, `zodiac`, `career`, `fiction`, `trends` → collections `feeling-mood`, `feeling-zodiac`, …
@@ -217,7 +220,8 @@ Rich text and lists must be read in sections or dedicated snippets — not throu
 | `tagline` | Single line | No | Hero |
 | `card_image` / `hero_image` | File | No | |
 | `accent_color` | Color | No | |
-| `collection_url` | URL | No | |
+| `collection` | Collection ref | Rec | URL when `collection_url` is blank |
+| `collection_url` | URL | No | Overrides `collection` reference and handle convention |
 | `is_gift_occasion` | Boolean | No | Gift flows |
 | `price_hint` | Single line | No | Occasion hero |
 
@@ -228,7 +232,7 @@ Rich text and lists must be read in sections or dedicated snippets — not throu
 | `name` | Single line | Yes | PDP artist card |
 | `display_name` | Single line | No | Fallback |
 | `style` | Single line | No | Artist card |
-| `bio` | Rich text | No | Artist page |
+| `bio` | Multi-line text | No | Artist card (`escape`; not rich text) |
 | `avatar` | File | No | |
 | `portfolio_url` | URL | No | |
 | `active` | Boolean | No | Spotlight |
@@ -239,7 +243,32 @@ Rich text and lists must be read in sections or dedicated snippets — not throu
 | Field | Admin type | Req | Theme usage |
 |-------|------------|-----|-------------|
 | `title` | Single line | Yes | Admin label |
-| `rows` or `content` | JSON / rich text | Yes | Rendered in size guide (per theme section schema) |
+| `rows` | JSON | No | Structured table in `product-size-guide` when `rows` is non-empty |
+| `content` | Rich text | No | Fallback RTE block when `rows` is empty |
+
+**`rows` JSON shape** (array of objects; theme reads `size_label` with fallback to `size`):
+
+```json
+[
+  {
+    "size_label": "S",
+    "chest": "50 cm",
+    "length": "68 cm",
+    "shoulder": "45 cm",
+    "sleeve": "21 cm"
+  },
+  {
+    "size_label": "M",
+    "size": "M",
+    "chest": "52 cm",
+    "length": "70 cm",
+    "shoulder": "46 cm",
+    "sleeve": "22 cm"
+  }
+]
+```
+
+Column keys used by the theme: `size_label` (or `size`), `chest`, `length`, `shoulder`, `sleeve`. Missing keys render as empty cells.
 
 ### 3.6 `proof_item` (metaobject type for `proof_gallery` list)
 
@@ -247,8 +276,8 @@ Rich text and lists must be read in sections or dedicated snippets — not throu
 |-------|------------|-----|-------------|
 | `image` | File | Yes | Proof strip — **only** this field is passed to `image_url` |
 | `tag` | Single line | Rec | `proof_fabric`, `proof_print`, `proof_wash`, `lifestyle`, `flat_lay` |
-| `label` | Single line | No | Caption under image |
-| `caption` | Single line | No | Longer caption |
+| `label` | Single line | No | Short label under image |
+| `caption` | Single line | No | Longer caption below label |
 | `sort_order` | Integer | No | Display order |
 
 ### 3.7 `ugc_proof` (entries in `review_proof` list)
@@ -258,10 +287,10 @@ Rich text and lists must be read in sections or dedicated snippets — not throu
 | `product` | Product ref | No | Filter global entries |
 | `image` | File | Yes | Seen-on-you |
 | `video_url` | URL | No | |
-| `body` | Multi-line | No | Caption |
-| `rating` | Number | No | |
-| `instagram_handle` | Single line | No | |
-| `permission_to_repost` | Boolean | Rec | Legal |
+| `body` | Multi-line | No | Caption (`body` → `caption` fallback) |
+| `rating` | Number | No | Seen-on-you meta line (optional) |
+| `instagram_handle` | Single line | No | Seen-on-you meta line (optional) |
+| `permission_to_repost` | Boolean | Rec | Hide when `false` (legal) |
 | `ugc_type` | Single line | No | |
 | `source` | Single line | No | |
 | `sort_order` | Integer | No | |

@@ -5,9 +5,16 @@
   assign ugc_count = 0
   if ugc_items != blank
     for item in ugc_items
-      unless item.active == false
-        assign ugc_count = ugc_count | plus: 1
-      endunless
+      if item.active == false
+        continue
+      endif
+      if item.permission_to_repost == false
+        continue
+      endif
+      if item.image == blank
+        continue
+      endif
+      assign ugc_count = ugc_count | plus: 1
     endfor
   endif
 -%}
@@ -41,30 +48,45 @@
       {%- if ugc_count > 0 -%}
         <ul class="seen-on-you__grid" role="list">
           {%- for item in ugc_items -%}
-            {%- unless item.active == false -%}
-            {%- assign ugc_image = item.image | default: item -%}
-            {%- assign ugc_caption = item.caption | default: '' -%}
+            {%- if item.active == false -%}
+              {%- continue -%}
+            {%- endif -%}
+            {%- if item.permission_to_repost == false -%}
+              {%- continue -%}
+            {%- endif -%}
+            {%- assign ugc_image = item.image -%}
+            {%- if ugc_image == blank -%}
+              {%- continue -%}
+            {%- endif -%}
+            {%- assign ugc_caption = item.body | default: item.caption | default: '' -%}
             {%- assign ugc_alt = ugc_caption | default: product.title | default: 'HORO customer photo' -%}
             <li class="seen-on-you__item" role="listitem">
               <div class="seen-on-you__media">
-                {%- if ugc_image != blank -%}
-                  {{
-                    ugc_image
-                    | image_url: width: 800
-                    | image_tag:
-                      loading: 'lazy',
-                      widths: '200, 400, 600, 800',
-                      sizes: '(min-width: 750px) 25vw, 50vw',
-                      alt: ugc_alt,
-                      class: 'seen-on-you__image'
-                  }}
-                {%- endif -%}
+                {{
+                  ugc_image
+                  | image_url: width: 800
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '200, 400, 600, 800',
+                    sizes: '(min-width: 750px) 25vw, 50vw',
+                    alt: ugc_alt,
+                    class: 'seen-on-you__image'
+                }}
               </div>
+              {%- if item.instagram_handle != blank or item.rating != blank -%}
+                <p class="seen-on-you__meta">
+                  {%- if item.rating != blank -%}
+                    <span class="seen-on-you__rating">{{ item.rating | escape }}</span>
+                  {%- endif -%}
+                  {%- if item.instagram_handle != blank -%}
+                    <span class="seen-on-you__handle">@{{ item.instagram_handle | remove: '@' | escape }}</span>
+                  {%- endif -%}
+                </p>
+              {%- endif -%}
               {%- if ugc_caption != blank -%}
                 <p class="seen-on-you__caption">{{ ugc_caption | escape }}</p>
               {%- endif -%}
             </li>
-            {%- endunless -%}
           {%- endfor -%}
         </ul>
       {%- elsif request.design_mode -%}

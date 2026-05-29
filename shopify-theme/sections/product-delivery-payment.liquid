@@ -8,9 +8,15 @@
       assign visible_count = visible_count | plus: 1
     endif
   endfor
+  assign delivery_note = product.metafields.custom.delivery_note.value
+  assign exchange_note = product.metafields.custom.exchange_note.value
+  assign has_product_notes = false
+  if delivery_note != blank or exchange_note != blank
+    assign has_product_notes = true
+  endif
 -%}
 
-{%- if visible_count > 0 or request.design_mode -%}
+{%- if visible_count > 0 or has_product_notes or request.design_mode -%}
   {%- style -%}
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -34,13 +40,14 @@
     class="horo-section delivery-payment color-{{ section.settings.color_scheme }} gradient DeliveryPayment-{{ section.id }} section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
   >
     <div class="page-width">
-      {%- if visible_count > 0 -%}
+      {%- if visible_count > 0 or has_product_notes -%}
         {%- if section.settings.heading != blank -%}
           <h2 class="delivery-payment__heading {{ section.settings.heading_size }}">
             {{ section.settings.heading | escape }}
           </h2>
         {%- endif -%}
 
+        {%- if visible_count > 0 -%}
         <ul class="delivery-payment__grid" role="list">
           {%- for i in (1..5) -%}
             {%- liquid
@@ -77,6 +84,18 @@
             {%- endif -%}
           {%- endfor -%}
         </ul>
+        {%- endif -%}
+
+        {%- if has_product_notes -%}
+          <div class="delivery-payment__product-notes">
+            {%- if delivery_note != blank -%}
+              <p class="delivery-payment__product-note">{{ delivery_note | escape }}</p>
+            {%- endif -%}
+            {%- if exchange_note != blank -%}
+              <p class="delivery-payment__product-note">{{ exchange_note | escape }}</p>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
 
       {%- elsif request.design_mode -%}
         <div class="delivery-payment__placeholder">

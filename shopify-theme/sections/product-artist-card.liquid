@@ -2,12 +2,21 @@
 
 {%- liquid
   assign artist = product.metafields.custom.artist.value
-  if artist == blank
-    assign artist = nil
+  assign artist_display_text = product.metafields.custom.artist_display.value
+  assign artist_name = ''
+  if artist != blank
+    assign artist_name = artist.name | default: artist.display_name
+  endif
+  if artist_name == blank
+    assign artist_name = artist_display_text
+  endif
+  assign show_artist_section = false
+  if artist != blank or artist_display_text != blank
+    assign show_artist_section = true
   endif
 -%}
 
-{%- if artist != blank or request.design_mode -%}
+{%- if show_artist_section or request.design_mode -%}
   {%- style -%}
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -27,9 +36,8 @@
     class="horo-section artist-card color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
   >
     <div class="page-width">
-      {%- if artist != blank -%}
+      {%- if artist_name != blank -%}
         {%- liquid
-          assign artist_name = artist.name | default: artist.display_name | default: ''
           assign initials = artist_name | truncate: 2, '' | upcase
         -%}
 
@@ -42,7 +50,8 @@
 
           <div class="artist-card__card">
             <div class="artist-card__media">
-              {%- if artist.avatar != blank or artist.avatar_image != blank -%}
+              {%- if artist != blank -%}
+                {%- if artist.avatar != blank or artist.avatar_image != blank -%}
                 {{
                   artist.avatar | default: artist.avatar_image
                   | image_url: width: 500
@@ -53,6 +62,11 @@
                     alt: artist_name,
                     class: 'artist-card__image'
                 }}
+                {%- else -%}
+                  <div class="artist-card__fallback" aria-hidden="true">
+                    <span>{{ initials }}</span>
+                  </div>
+                {%- endif -%}
               {%- else -%}
                 <div class="artist-card__fallback" aria-hidden="true">
                   <span>{{ initials }}</span>
@@ -61,30 +75,30 @@
             </div>
 
             <div class="artist-card__content">
-              {%- if artist_name != blank -%}
-                <h3 class="artist-card__name h4">{{ artist_name | escape }}</h3>
-              {%- endif -%}
+              <h3 class="artist-card__name h4">{{ artist_name | escape }}</h3>
 
-              {%- if artist.style != blank -%}
-                <p class="artist-card__style">{{ artist.style | escape }}</p>
-              {%- endif -%}
+              {%- if artist != blank -%}
+                {%- if artist.style != blank -%}
+                  <p class="artist-card__style">{{ artist.style | escape }}</p>
+                {%- endif -%}
 
-              {%- if artist.bio != blank -%}
-                <p class="artist-card__bio">{{ artist.bio | escape }}</p>
-              {%- elsif artist.short_bio != blank -%}
-                <p class="artist-card__bio">{{ artist.short_bio | escape }}</p>
-              {%- endif -%}
+                {%- if artist.bio != blank -%}
+                  <p class="artist-card__bio">{{ artist.bio | escape }}</p>
+                {%- elsif artist.short_bio != blank -%}
+                  <p class="artist-card__bio">{{ artist.short_bio | escape }}</p>
+                {%- endif -%}
 
-              {%- if artist.portfolio_url != blank or artist.profile_url != blank -%}
-                <a
-                  href="{{ artist.portfolio_url | default: artist.profile_url }}"
-                  class="artist-card__link link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View profile
-                  <span aria-hidden="true"> &rarr;</span>
-                </a>
+                {%- if artist.portfolio_url != blank or artist.profile_url != blank -%}
+                  <a
+                    href="{{ artist.portfolio_url | default: artist.profile_url }}"
+                    class="artist-card__link link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View profile
+                    <span aria-hidden="true"> &rarr;</span>
+                  </a>
+                {%- endif -%}
               {%- endif -%}
             </div>
           </div>
@@ -93,7 +107,7 @@
       {%- elsif request.design_mode -%}
         <div class="artist-card__placeholder">
           <p>
-            Add a <code>custom.artist</code> metaobject_reference product metafield to populate this artist card.
+            Add <code>custom.artist</code> and/or <code>custom.artist_display</code> to populate this artist card.
           </p>
         </div>
       {%- endif -%}

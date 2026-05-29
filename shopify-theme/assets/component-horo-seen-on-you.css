@@ -39,6 +39,19 @@
   transform: scale(1.04);
 }
 
+.seen-on-you__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem 1rem;
+  margin-block: 0.6rem 0 0;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: rgb(var(--color-foreground));
+  opacity: 0.65;
+  text-align: center;
+}
+
 .seen-on-you__caption {
   margin-block: 0.8rem 0 0;
   font-size: 1.3rem;

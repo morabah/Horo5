@@ -14,6 +14,7 @@
   {%- for proof_item in proof_gallery -%}
     {%- assign proof_image = proof_item.image -%}
     {%- assign proof_label = proof_item.label | default: proof_item.tag | replace: '_', ' ' | capitalize -%}
+    {%- assign proof_caption = proof_item.caption -%}
     {%- if proof_image != blank -%}
       {%- assign rendered_any = true -%}
       {%- assign proof_alt = proof_label | default: 'Product detail' | append: ' for ' | append: product.title -%}
@@ -32,6 +33,9 @@
         </div>
         {%- if proof_label != blank -%}
           <span class="product-proof-strip__label">{{ proof_label | escape }}</span>
+        {%- endif -%}
+        {%- if proof_caption != blank -%}
+          <span class="product-proof-strip__caption">{{ proof_caption | escape }}</span>
         {%- endif -%}
       </li>
     {%- endif -%}

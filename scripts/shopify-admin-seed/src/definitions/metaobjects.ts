@@ -33,7 +33,13 @@ const _feeling: MetaobjectDef = {
     { key: 'card_image', name: 'Card image', type: 'file_reference' },
     { key: 'hero_image', name: 'Hero image', type: 'file_reference' },
     { key: 'accent_color', name: 'Accent color', type: 'color' },
-    { key: 'collection_url', name: 'Collection URL', type: 'url', description: 'e.g. /collections/feeling-mood' },
+    {
+      key: 'collection',
+      name: 'Collection',
+      type: 'collection_reference',
+      description: 'Preferred collection link; collection_url overrides when set',
+    },
+    { key: 'collection_url', name: 'Collection URL', type: 'url', description: 'Overrides collection reference when set' },
   ],
 };
 
@@ -75,7 +81,13 @@ const _occasion: MetaobjectDef = {
     { key: 'card_image', name: 'Card image', type: 'file_reference' },
     { key: 'hero_image', name: 'Hero image', type: 'file_reference' },
     { key: 'accent_color', name: 'Accent color', type: 'color' },
-    { key: 'collection_url', name: 'Collection URL', type: 'url' },
+    {
+      key: 'collection',
+      name: 'Collection',
+      type: 'collection_reference',
+      description: 'Preferred collection link; collection_url overrides when set',
+    },
+    { key: 'collection_url', name: 'Collection URL', type: 'url', description: 'Overrides collection reference when set' },
     { key: 'is_gift_occasion', name: 'Is gift occasion', type: 'boolean', required: true },
     { key: 'price_hint', name: 'Price hint', type: 'single_line_text_field' },
   ],
@@ -103,7 +115,13 @@ const _sizeTable: MetaobjectDef = {
     { key: 'title', name: 'Title', type: 'single_line_text_field', required: true, description: 'Admin label e.g. HORO Regular T-Shirt Size Table' },
     { key: 'name', name: 'Name', type: 'single_line_text_field', description: 'Legacy alias for title' },
     { key: 'content', name: 'Content', type: 'rich_text_field', description: 'Rich text size table (recommended for launch)' },
-    { key: 'rows', name: 'Rows', type: 'json', description: 'Optional JSON rows for structured table render' },
+    {
+      key: 'rows',
+      name: 'Rows',
+      type: 'json',
+      description:
+        'Array of { size_label, chest, length, shoulder, sleeve } — size_label may alias as size',
+    },
     { key: 'unit_system', name: 'Unit system', type: 'single_line_text_field' },
     { key: 'note', name: 'Note', type: 'multi_line_text_field' },
   ],
