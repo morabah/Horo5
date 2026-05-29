@@ -17,17 +17,24 @@
 <div class="horo-section gifts-hub-trust color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
   <div class="page-width">
     {%- if section.settings.heading != blank -%}
-      <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+      <h2 class="h2">
+        {%- render 'horo-locale-or-setting', setting: section.settings.heading, locale_key: 'horo.gifts_hub.trust_heading' -%}
+      </h2>
     {%- endif -%}
     {%- if section.settings.text != blank -%}
-      <p class="gifts-hub-trust__text">{{ section.settings.text | escape }}</p>
+      <p class="gifts-hub-trust__text">
+        {%- render 'horo-locale-or-setting', setting: section.settings.text, locale_key: 'horo.gifts_hub.trust_text' -%}
+      </p>
     {%- endif -%}
     <ul class="trust-strip__list" role="list">
       {%- for i in (1..4) -%}
         {%- assign label_key = 'badge_' | append: i | append: '_label' -%}
+        {%- assign locale_key = 'horo.gifts_hub.trust_badge_' | append: i -%}
         {%- if section.settings[label_key] != blank -%}
           <li class="trust-strip__item" role="listitem">
-            <span class="trust-strip__label">{{ section.settings[label_key] | escape }}</span>
+            <span class="trust-strip__label">
+              {%- render 'horo-locale-or-setting', setting: section.settings[label_key], locale_key: locale_key -%}
+            </span>
           </li>
         {%- endif -%}
       {%- endfor -%}
@@ -35,14 +42,16 @@
     {%- if section.settings.size_help_label != blank -%}
       <p class="gifts-hub-trust__size-help">
         {%- if section.settings.size_help_link != blank -%}
-          <a href="{{ section.settings.size_help_link }}">{{ section.settings.size_help_label | escape }}</a>
+          <a href="{{ section.settings.size_help_link }}">
+            {%- render 'horo-locale-or-setting', setting: section.settings.size_help_label, locale_key: 'horo.gifts_hub.size_help_label' -%}
+          </a>
         {%- else -%}
-          {{ section.settings.size_help_label | escape }}
+          {%- render 'horo-locale-or-setting', setting: section.settings.size_help_label, locale_key: 'horo.gifts_hub.size_help_label' -%}
         {%- endif -%}
         {%- if section.settings.whatsapp_url != blank -%}
           ·
           <a href="{{ section.settings.whatsapp_url }}" rel="noopener noreferrer" target="_blank">
-            {{ section.settings.whatsapp_label | default: 'WhatsApp size help' | escape }}
+            {%- render 'horo-locale-or-setting', setting: section.settings.whatsapp_label, locale_key: 'horo.gifts_hub.whatsapp_label' -%}
           </a>
         {%- endif -%}
       </p>
@@ -102,7 +111,7 @@
       "type": "url",
       "id": "size_help_link",
       "label": "Size help link",
-      "info": "Link to a product with size guide or FAQ"
+      "info": "Prefer /pages/size-guide — not a single product URL"
     },
     {
       "type": "url",

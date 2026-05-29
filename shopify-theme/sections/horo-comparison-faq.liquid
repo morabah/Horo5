@@ -19,10 +19,20 @@
   class="horo-section horo-comparison-faq color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
 >
   <div class="page-width">
-    <h1 class="h0">{{ section.settings.heading | default: page.title | escape }}</h1>
+    {%- liquid
+      assign comparison_heading = section.settings.heading
+      if comparison_heading == blank
+        assign comparison_heading = page.title
+      endif
+    -%}
+    <h1 class="h0">
+      {%- render 'horo-locale-or-setting', setting: comparison_heading, locale_key: 'horo.comparison_faq.heading' -%}
+    </h1>
 
     {%- if section.settings.intro != blank -%}
-      <p class="horo-comparison-faq__intro">{{ section.settings.intro | escape }}</p>
+      <p class="horo-comparison-faq__intro">
+        {%- render 'horo-locale-or-setting', setting: section.settings.intro, locale_key: 'horo.comparison_faq.intro' -%}
+      </p>
     {%- endif -%}
 
     {%- if section.blocks.size > 0 -%}
@@ -30,18 +40,36 @@
         <table class="horo-comparison-faq__table">
           <thead>
             <tr>
-              <th scope="col">{{ section.settings.col_buyer | default: 'You might think' | escape }}</th>
-              <th scope="col">{{ section.settings.col_horo | default: 'Why HORO is different' | escape }}</th>
-              <th scope="col">{{ section.settings.col_proof | default: 'Proof' | escape }}</th>
+              <th scope="col">
+                {%- render 'horo-locale-or-setting', setting: section.settings.col_buyer, locale_key: 'horo.comparison_faq.col_buyer' -%}
+              </th>
+              <th scope="col">
+                {%- render 'horo-locale-or-setting', setting: section.settings.col_horo, locale_key: 'horo.comparison_faq.col_horo' -%}
+              </th>
+              <th scope="col">
+                {%- render 'horo-locale-or-setting', setting: section.settings.col_proof, locale_key: 'horo.comparison_faq.col_proof' -%}
+              </th>
             </tr>
           </thead>
           <tbody>
             {%- for block in section.blocks -%}
               {%- if block.type == 'comparison_row' -%}
+                {%- liquid
+                  assign row_prefix = 'horo.comparison_faq.rows.' | append: block.id
+                  assign row_buyer_key = row_prefix | append: '.buyer'
+                  assign row_horo_key = row_prefix | append: '.horo'
+                  assign row_proof_key = row_prefix | append: '.proof'
+                -%}
                 <tr {{ block.shopify_attributes }}>
-                  <th scope="row">{{ block.settings.buyer_comparison | escape }}</th>
-                  <td>{{ block.settings.horo_answer | escape }}</td>
-                  <td class="horo-comparison-faq__proof">{{ block.settings.proof | escape }}</td>
+                  <th scope="row">
+                    {%- render 'horo-locale-or-setting', setting: block.settings.buyer_comparison, locale_key: row_buyer_key -%}
+                  </th>
+                  <td>
+                    {%- render 'horo-locale-or-setting', setting: block.settings.horo_answer, locale_key: row_horo_key -%}
+                  </td>
+                  <td class="horo-comparison-faq__proof">
+                    {%- render 'horo-locale-or-setting', setting: block.settings.proof, locale_key: row_proof_key -%}
+                  </td>
                 </tr>
               {%- endif -%}
             {%- endfor -%}
@@ -55,11 +83,11 @@
     {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
       <div class="horo-comparison-faq__cta">
         <a href="{{ section.settings.cta_link }}" class="button">
-          {{ section.settings.cta_label | escape }}
+          {%- render 'horo-locale-or-setting', setting: section.settings.cta_label, locale_key: 'horo.comparison_faq.cta_primary' -%}
         </a>
         {%- if section.settings.secondary_label != blank and section.settings.secondary_link != blank -%}
           <a href="{{ section.settings.secondary_link }}" class="button button--secondary">
-            {{ section.settings.secondary_label | escape }}
+            {%- render 'horo-locale-or-setting', setting: section.settings.secondary_label, locale_key: 'horo.comparison_faq.cta_secondary' -%}
           </a>
         {%- endif -%}
       </div>

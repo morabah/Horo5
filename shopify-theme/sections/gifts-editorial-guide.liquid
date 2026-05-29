@@ -19,17 +19,23 @@
     <div class="page-width section-{{ section.id }}-padding">
       <div class="gifts-editorial-guide">
         {%- if section.settings.eyebrow != blank -%}
-          <span class="gifts-editorial-guide__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+          <span class="gifts-editorial-guide__eyebrow">
+            {%- render 'horo-locale-or-setting', setting: section.settings.eyebrow, locale_key: 'horo.gifts_hub.editorial_eyebrow' -%}
+          </span>
         {%- endif -%}
         {%- if section.settings.heading != blank -%}
-          <h2 class="gifts-editorial-guide__heading">{{ section.settings.heading | escape }}</h2>
+          <h2 class="gifts-editorial-guide__heading">
+            {%- render 'horo-locale-or-setting', setting: section.settings.heading, locale_key: 'horo.gifts_hub.editorial_heading' -%}
+          </h2>
         {%- endif -%}
         {%- if section.settings.text != blank -%}
-          <p class="gifts-editorial-guide__text">{{ section.settings.text | escape }}</p>
+          <p class="gifts-editorial-guide__text">
+            {%- render 'horo-locale-or-setting', setting: section.settings.text, locale_key: 'horo.gifts_hub.editorial_text' -%}
+          </p>
         {%- endif -%}
         {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
           <a href="{{ section.settings.cta_link }}" class="button">
-            {{ section.settings.cta_label | escape }}
+            {%- render 'horo-locale-or-setting', setting: section.settings.cta_label, locale_key: 'horo.gifts_hub.editorial_cta' -%}
           </a>
         {%- endif -%}
       </div>

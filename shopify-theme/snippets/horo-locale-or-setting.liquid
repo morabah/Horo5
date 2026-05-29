@@ -1,0 +1,15 @@
+{%- comment -%}
+  Prefer Arabic locale string when request.locale is ar; else use merchant setting.
+  @param setting {string} - English text from section/block settings
+  @param locale_key {string} - Translation key under horo.* (e.g. comparison_faq.heading)
+{%- endcomment -%}
+{%- if request.locale.iso_code == 'ar' and locale_key != blank -%}
+  {%- assign translated = locale_key | t -%}
+  {%- if translated != locale_key and translated != blank -%}
+    {{- translated -}}
+  {%- else -%}
+    {{- setting -}}
+  {%- endif -%}
+{%- else -%}
+  {{- setting -}}
+{%- endif -%}

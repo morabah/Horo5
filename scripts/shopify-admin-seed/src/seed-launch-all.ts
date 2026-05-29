@@ -64,7 +64,9 @@ async function main(): Promise<void> {
   if (patchCode !== 0) {
     logger.warn('patch:theme-local failed — set HORO settings in Admin → Theme → Customize');
   } else {
-    logger.info('Push theme: cd ../../shopify-theme && shopify theme push --theme elegant-textures --allow-live\n');
+    logger.info(
+      'Push theme (after theme check + QA): cd ../../shopify-theme && shopify theme check && shopify theme push --theme $SHOPIFY_THEME_ID --only config/settings_data.json\n'
+    );
   }
 
   logger.success('\n========== Done ==========');

@@ -47,7 +47,10 @@ async function main(): Promise<void> {
 
   fs.writeFileSync(SETTINGS_PATH, `${JSON.stringify(data, null, 2)}\n`);
   logger.success(`Updated presets.${presetName} in shopify-theme/config/settings_data.json`);
-  logger.info('Next: cd ../../shopify-theme && shopify theme push --theme elegant-textures --allow-live');
+  logger.info(
+    'Next: cd ../../shopify-theme && shopify theme check && shopify theme push --theme $SHOPIFY_THEME_ID --only config/settings_data.json'
+  );
+  logger.info('Set SHOPIFY_THEME_ID from `shopify theme list` (Dawn 15.4.1 + HORO). Omit --allow-live until Theme Check + manual QA pass.');
 }
 
 main().catch((err) => {

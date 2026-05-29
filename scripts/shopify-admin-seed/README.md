@@ -142,13 +142,18 @@ Creates feelings, subfeelings, occasions, linked collections (`custom.feeling` /
 
 ```bash
 npm run automate:launch
-# or step-by-step:
-npm run seed:launch-all
 npm run patch:theme-local
-cd ../../shopify-theme && shopify theme push --theme elegant-textures --allow-live --only config/settings_data.json
+# Theme deploy (Path A: Dawn 15.4.1 + HORO — set ID from `shopify theme list`)
+export SHOPIFY_THEME_ID=your_theme_numeric_id
+cd ../../shopify-theme
+shopify theme check
+shopify theme push --theme "$SHOPIFY_THEME_ID" --only config/settings_data.json
+# Add --allow-live only after Theme Check + manual QA (comparison, gifts hub, PDP, cart, mobile).
 ```
 
-Runs **content** (taxonomy + collections + pages) then **catalog** (size table, artist, 3 launch products with variants/SKUs/inventory, all product metafields, collection membership), **local theme settings** (`horo_gift_wrap_product`, trust/delivery copy, `horo_incentives_live=false`), then `verify:full`.
+Runs **content** (taxonomy + collections + pages) then **catalog** (size table, artist, 3 launch products as **DRAFT** by default, metafields, collection membership), **local theme settings**, then `verify:full`.
+
+**Product publish rule:** seeded launch SKUs are `DRAFT` until photos and proof assets exist. Publish in Admin (or `SHOPIFY_LAUNCH_PRODUCT_STATUS=ACTIVE` for a controlled override only when ready).
 
 **OAuth token cache:** after first browser login, token is saved to `.shopify-oauth-token.json` (gitignored). Re-authorize with `SHOPIFY_FORCE_OAUTH=1 npm run seed:launch-content`.
 
@@ -168,7 +173,7 @@ Until `write_content` is approved, create the three pages in **Admin → Pages**
 | `seed:launch-catalog` | Size table, artist, 3 products, metafields, collections, theme settings |
 | `seed:launch-all` | Both + verify |
 
-**Still manual:** product photos, publishing collections to Online Store (if OAuth lacks publications scope), checkout/payment/policy audit.
+**Still manual:** product photos + proof assets before setting products ACTIVE, publishing collections to Online Store (if OAuth lacks publications scope), Arabic QA on comparison/gift pages, checkout/payment/policy audit, `shopify theme check` + mobile Lighthouse.
 
 Uses REST for product variants and theme `settings_data.json`; GraphQL for metafields and collections.
 

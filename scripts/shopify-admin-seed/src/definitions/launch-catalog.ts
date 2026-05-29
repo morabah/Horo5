@@ -1,6 +1,11 @@
 /**
  * Launch catalog: size table, artist, products, metafield payloads, collection membership.
+ *
+ * Products default to DRAFT — do not set ACTIVE until photos, proof assets, and QA are complete.
+ * Override for a one-off publish test: SHOPIFY_LAUNCH_PRODUCT_STATUS=ACTIVE
  */
+export const DEFAULT_LAUNCH_PRODUCT_STATUS: 'ACTIVE' | 'DRAFT' =
+  process.env.SHOPIFY_LAUNCH_PRODUCT_STATUS === 'ACTIVE' ? 'ACTIVE' : 'DRAFT';
 
 export const SIZE_TABLE_HANDLE = 'horo-regular-t-shirt';
 export const ARTIST_HANDLE = 'horo-studio';
@@ -70,7 +75,7 @@ export const PRODUCT_SEEDS: ProductLaunchSeed[] = [
       'black',
       'graphic-tee',
     ],
-    status: 'ACTIVE',
+    status: DEFAULT_LAUNCH_PRODUCT_STATUS,
     variants: SIZES,
     feelingSlug: 'mood',
     subfeelingSlug: 'calm',
@@ -98,7 +103,7 @@ export const PRODUCT_SEEDS: ProductLaunchSeed[] = [
     title: 'Aries Zodiac Graphic T-Shirt',
     descriptionHtml: '<p>Bold Aries energy on soft cotton. Printed in Egypt.</p>',
     tags: ['feeling:zodiac', 'feeling:aries', 'zodiac', 'graphic-tee', 'black'],
-    status: 'ACTIVE',
+    status: DEFAULT_LAUNCH_PRODUCT_STATUS,
     variants: SIZES.map((v) => ({
       ...v,
       sku: v.sku.replace('MOOD-CALM', 'ZODIAC-ARIES'),
@@ -122,7 +127,7 @@ export const PRODUCT_SEEDS: ProductLaunchSeed[] = [
     title: 'Calm Inside — Gift Edition T-Shirt',
     descriptionHtml: '<p>Meaningful gift-ready tee with calm inside design. Printed in Egypt.</p>',
     tags: ['feeling:mood', 'giftable', 'gift', 'graphic-tee'],
-    status: 'ACTIVE',
+    status: DEFAULT_LAUNCH_PRODUCT_STATUS,
     variants: SIZES.map((v) => ({
       ...v,
       sku: v.sku.replace('MOOD-CALM', 'GIFT-CALM'),

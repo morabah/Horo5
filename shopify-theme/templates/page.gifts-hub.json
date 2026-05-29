@@ -94,7 +94,7 @@
         "badge_3_label": "14-day exchange — see policy",
         "badge_4_label": "WhatsApp size help before dispatch",
         "size_help_label": "See size guide on any product page",
-        "size_help_link": "shopify://products/calm-inside-graphic-tee",
+        "size_help_link": "/pages/size-guide",
         "whatsapp_label": "Ask on WhatsApp",
         "color_scheme": "scheme-2",
         "padding_top": 28,

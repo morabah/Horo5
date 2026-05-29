@@ -154,17 +154,25 @@ async function main(): Promise<void> {
     mainTheme = await client.resolveMainTheme();
     logger.info(`MAIN theme: ${mainTheme.name} (${mainTheme.numericId})`);
   } catch {
-    const numericId = process.env.SHOPIFY_THEME_ID?.trim() || '158878826729';
-    mainTheme = {
-      gid: `gid://shopify/OnlineStoreTheme/${numericId}`,
-      numericId,
-      name: process.env.SHOPIFY_THEME_NAME?.trim() || 'elegant-textures',
-    };
-    logger.warn(
-      `Could not query themes (approve read_themes on Partner app) — using SHOPIFY_THEME_ID=${numericId}`
-    );
+    const numericId = process.env.SHOPIFY_THEME_ID?.trim();
+    if (!numericId) {
+      mainTheme = { gid: '', numericId: '', name: 'unset' };
+      logger.warn(
+        'Theme API unavailable and SHOPIFY_THEME_ID not set — skipping theme settings patch. Set ID from `shopify theme list` (Dawn 15.4.1 + HORO).'
+      );
+    } else {
+      mainTheme = {
+        gid: `gid://shopify/OnlineStoreTheme/${numericId}`,
+        numericId,
+        name: process.env.SHOPIFY_THEME_NAME?.trim() || 'HORO (Dawn)',
+      };
+      logger.warn(`Theme API unavailable — using SHOPIFY_THEME_ID=${numericId}`);
+    }
   }
   logger.info(dryRun ? '\n--- Launch catalog seed (DRY RUN) ---\n' : '\n--- Launch catalog seed ---\n');
+  logger.info(
+    `Launch products status: ${process.env.SHOPIFY_LAUNCH_PRODUCT_STATUS === 'ACTIVE' ? 'ACTIVE (override)' : 'DRAFT (default — publish after photos/proof QA)'}`
+  );
 
   const sizeTableId = await ensureSizeTable(client);
   const artistId = await ensureArtist(client);
@@ -248,7 +256,7 @@ async function main(): Promise<void> {
     logger.success(`product ${seed.handle}: added to ${seed.collectionHandles.length} collections`);
   }
 
-  if (!dryRun) {
+  if (!dryRun && mainTheme.gid) {
     const giftWrap = await client.getProductByHandle(GIFT_WRAP_HANDLE);
     if (giftWrap) {
       const patch: Record<string, string | boolean> = { ...THEME_SETTINGS_PATCH };

@@ -38,12 +38,14 @@
     <div class="page-width">
       {%- if section.settings.heading != blank -%}
         <h2 class="gift-cohorts__heading {{ section.settings.heading_size }}">
-          {{ section.settings.heading | escape }}
+          {%- render 'horo-locale-or-setting', setting: section.settings.heading, locale_key: 'horo.gifts_hub.cohorts_heading' -%}
         </h2>
       {%- endif -%}
 
       {%- if section.settings.subheading != blank -%}
-        <p class="gift-cohorts__subheading">{{ section.settings.subheading | escape }}</p>
+        <p class="gift-cohorts__subheading">
+          {%- render 'horo-locale-or-setting', setting: section.settings.subheading, locale_key: 'horo.gifts_hub.cohorts_subheading' -%}
+        </p>
       {%- endif -%}
 
       <ul class="gift-cohorts__grid" role="list">

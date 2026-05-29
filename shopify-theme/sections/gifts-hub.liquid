@@ -32,15 +32,15 @@
   <div class="page-width section-{{ section.id }}-padding">
     <h1 class="home-occasion-grid__heading {{ section.settings.heading_size }}">
       {%- if section.settings.heading != blank -%}
-        {{ section.settings.heading }}
+        {%- render 'horo-locale-or-setting', setting: section.settings.heading, locale_key: 'horo.gifts_hub.occasions_heading' -%}
       {%- else -%}
-        {{ page.title | escape }}
+        {%- render 'horo-locale-or-setting', setting: page.title, locale_key: 'horo.gifts_hub.heading' -%}
       {%- endif -%}
     </h1>
 
     {%- if section.settings.subheading != blank -%}
       <p class="home-occasion-grid__subheading">
-        {{ section.settings.subheading }}
+        {%- render 'horo-locale-or-setting', setting: section.settings.subheading, locale_key: 'horo.gifts_hub.occasions_subheading' -%}
       </p>
     {%- endif -%}
 

@@ -656,7 +656,60 @@
     },
     "gifts_hub": {
       "heading": "Gift by Meaning",
-      "subheading": "Say it without saying it."
+      "subheading": "Say it without saying it.",
+      "editorial_eyebrow": "Gifts",
+      "editorial_heading": "Give something they will actually wear",
+      "editorial_text": "HORO gifts start with a feeling — for her, for him, for a birthday, Eid, or graduation. Pick by person and occasion, then confirm size on WhatsApp if you are unsure.",
+      "editorial_cta": "Browse gift-ready designs",
+      "occasions_heading": "Shop by gift occasion",
+      "occasions_subheading": "Each occasion collection is curated for meaningful gifting.",
+      "cohorts_heading": "Who is it for?",
+      "cohorts_subheading": "Start with the person on your mind, then choose the occasion.",
+      "products_heading": "Gift-ready designs",
+      "trust_heading": "Gift with confidence",
+      "trust_text": "Delivery windows are on each product page. COD and exchange apply when shown at checkout and per policy.",
+      "trust_badge_1": "Recipient & occasion guidance",
+      "trust_badge_2": "COD when shown at checkout",
+      "trust_badge_3": "14-day exchange — see policy",
+      "trust_badge_4": "WhatsApp size help before dispatch",
+      "size_help_label": "See size guide",
+      "whatsapp_label": "Ask on WhatsApp"
+    },
+    "comparison_faq": {
+      "heading": "Why HORO, not a normal printed T-shirt?",
+      "intro": "HORO is artist-made wearable art — not cheap print, not upload-anything custom, and not generic gift-shop merch.",
+      "col_buyer": "You might think",
+      "col_horo": "Why HORO is different",
+      "col_proof": "Proof on site",
+      "cta_primary": "Shop the founding drop",
+      "cta_secondary": "Shop gifts",
+      "rows": {
+        "row_cheap": {
+          "buyer": "Cheap printed tee",
+          "horo": "Artist-made, story-led, and more meaningful to wear or gift.",
+          "proof": "Artist card, print close-up, story on PDP"
+        },
+        "row_custom": {
+          "buyer": "Custom print shop",
+          "horo": "Curated art with a consistent HORO world — not upload-anything printing.",
+          "proof": "Artist brief, licensed artwork, cohesive collections"
+        },
+        "row_fashion": {
+          "buyer": "Fashion / hype brand",
+          "horo": "Less hype, more meaning — built for gifting and everyday wear.",
+          "proof": "Gift route, size help, exchange policy, PDP proof ladder"
+        },
+        "row_gift": {
+          "buyer": "Generic gift shop",
+          "horo": "Useful like clothing, personal like a message — they wear the feeling.",
+          "proof": "Gifts hub, occasion tags, delivery + COD clarity"
+        },
+        "row_marketplace": {
+          "buyer": "Marketplace seller",
+          "horo": "Proof, service, and trust you can verify before you buy.",
+          "proof": "UGC, WhatsApp help, COD when shown at checkout"
+        }
+      }
     },
     "size_guide_page": {
       "heading": "Size Guide",
