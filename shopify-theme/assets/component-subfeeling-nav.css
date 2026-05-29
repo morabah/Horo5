@@ -37,6 +37,12 @@
   background: rgba(var(--color-foreground), 0.08);
 }
 
+.subfeeling-nav__pill--active {
+  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  border-color: rgb(var(--color-foreground));
+}
+
 .subfeeling-nav__pill--inactive {
   opacity: 0.5;
   cursor: default;

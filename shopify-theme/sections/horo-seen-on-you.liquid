@@ -1,11 +1,13 @@
 {{ 'component-horo-seen-on-you.css' | asset_url | stylesheet_tag }}
 
 {%- liquid
-  assign ugc_items = product.metafields.custom.horo_ugc.value
+  assign ugc_items = product.metafields.custom.review_proof.value | default: product.metafields.custom.horo_ugc.value
   assign ugc_count = 0
   if ugc_items != blank
     for item in ugc_items
-      assign ugc_count = ugc_count | plus: 1
+      unless item.active == false
+        assign ugc_count = ugc_count | plus: 1
+      endunless
     endfor
   endif
 -%}
@@ -39,6 +41,7 @@
       {%- if ugc_count > 0 -%}
         <ul class="seen-on-you__grid" role="list">
           {%- for item in ugc_items -%}
+            {%- unless item.active == false -%}
             {%- assign ugc_image = item.image | default: item -%}
             {%- assign ugc_caption = item.caption | default: '' -%}
             {%- assign ugc_alt = ugc_caption | default: product.title | default: 'HORO customer photo' -%}
@@ -61,12 +64,13 @@
                 <p class="seen-on-you__caption">{{ ugc_caption | escape }}</p>
               {%- endif -%}
             </li>
+            {%- endunless -%}
           {%- endfor -%}
         </ul>
       {%- elsif request.design_mode -%}
         <div class="seen-on-you__placeholder">
           <p>
-            Add a <code>custom.horo_ugc</code> product metafield (list of file references with optional captions) to populate this gallery.
+            Add <code>custom.review_proof</code> or <code>custom.horo_ugc</code> to populate this gallery.
           </p>
         </div>
       {%- endif -%}

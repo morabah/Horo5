@@ -1,25 +1,10 @@
 {
   "sections": {
-    "banner": {
-      "type": "main-collection-banner",
+    "horo_header": {
+      "type": "collection-horo-header",
       "settings": {
         "show_collection_description": true,
-        "show_collection_image": false,
         "color_scheme": "scheme-1"
-      }
-    },
-    "feeling_hero": {
-      "type": "collection-feeling-hero",
-      "settings": {
-        "padding_top": 0,
-        "padding_bottom": 0
-      }
-    },
-    "occasion_hero": {
-      "type": "collection-occasion-hero",
-      "settings": {
-        "padding_top": 0,
-        "padding_bottom": 0
       }
     },
     "subfeeling_nav": {
@@ -98,9 +83,7 @@
     }
   },
   "order": [
-    "banner",
-    "feeling_hero",
-    "occasion_hero",
+    "horo_header",
     "subfeeling_nav",
     "editorial_proof",
     "product-grid",

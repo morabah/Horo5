@@ -178,9 +178,39 @@
       "trustReturnsLine": "استبدال خلال ١٤ يوم",
       "accordionProductDetails": "تفاصيل المنتج والمقاس",
       "accordionDesignStory": "قصة التصميم",
-      "accordionShipping": "الشحن والاستبدال"
+      "accordionShipping": "الشحن والاستبدال",
+      "accordion_materials": "الخامات والطباعة",
+      "accordion_care": "تعليمات العناية",
+      "fit_label": "المقاس:",
+      "feeling_group_label": "إحساس المنتج",
+      "features_label": "المميزات",
+      "trust_label": "إشارات الثقة",
+      "whatsapp_size_help": "محتاج مساعدة في المقاس؟ تواصل معنا على واتساب",
+      "whatsapp_aria": "تواصل معنا على واتساب",
+      "whatsapp_prefill": "أهلاً فريق HORO، محتاج مساعدة في اختيار المقاس لـ ",
+      "gift_note": "بتشتريها هدية؟ اسألنا عن المقاس قبل الطلب.",
+      "default_trust_cotton": "تيشيرت قطن",
+      "default_trust_printed": "مطبوع في مصر",
+      "default_trust_cod": "الدفع عند الاستلام",
+      "default_trust_exchange": "استبدال خلال ١٤ يوم"
+    },
+    "product_card": {
+      "gift_ready": "مناسب كهدية",
+      "printed_in_egypt": "مطبوع في مصر",
+      "sold_out": "نفذ",
+      "low_stock": "كمية محدودة"
+    },
+    "collection": {
+      "design_count": "{{ count }} تصميم",
+      "empty_collection": "مفيش تصاميم في المجموعة دي لسه",
+      "all_feeling": "كل {{ feeling }}"
     },
     "cart": {
+      "reassurance_heading": "قبل ما تكمل الدفع",
+      "reassurance_cod": "الدفع عند الاستلام لما يظهر عند الدفع للمناطق المتاحة.",
+      "reassurance_whatsapp_confirm": "بنأكد طلبات الدفع عند الاستلام على واتساب قبل الشحن.",
+      "reassurance_exchange": "استبدال خلال ١٤ يوم حسب السياسة وحالة المنتج.",
+      "reassurance_size_help": "محتاج مساعدة في المقاس؟ تواصل على واتساب قبل الطلب.",
       "trust_explainer_heading": "اللي هتحصله",
       "free_shipping_progress_before": "أضف {{ amount }} عشان توصل للشحن المجاني.",
       "free_shipping_progress_after": "وصلت للشحن المجاني",

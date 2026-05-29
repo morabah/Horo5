@@ -158,3 +158,31 @@
 .horo-product-card .card__inner {
   --ratio-percent: 125%;
 }
+
+.horo-product-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.8rem;
+  margin-block: 0.4rem 0.8rem;
+  align-items: center;
+}
+
+.horo-product-card__badge {
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.horo-product-card__chip,
+.horo-product-card__artist,
+.horo-product-card__trust {
+  font-size: 1.2rem;
+  opacity: 0.85;
+}
+
+.horo-product-card__stock {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgb(var(--color-button));
+}

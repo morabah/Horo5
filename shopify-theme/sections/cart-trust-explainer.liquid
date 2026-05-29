@@ -21,6 +21,8 @@
         <h2 class="cart-trust-explainer__heading">{{ section.settings.heading | escape }}</h2>
       {%- endif -%}
 
+      {% render 'horo-cart-reassurance' %}
+
       {%- if section.blocks.size > 0 -%}
         <ul class="cart-trust-explainer__grid" role="list">
           {%- for block in section.blocks -%}

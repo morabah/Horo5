@@ -710,9 +710,39 @@
       "trustReturnsLine": "14-day hassle-free returns",
       "accordionProductDetails": "Product Details & Fit",
       "accordionDesignStory": "The Design Story",
-      "accordionShipping": "Shipping & Returns"
+      "accordionShipping": "Shipping & Returns",
+      "accordion_materials": "Materials & print",
+      "accordion_care": "Care instructions",
+      "fit_label": "Fit:",
+      "feeling_group_label": "Product feeling",
+      "features_label": "Features",
+      "trust_label": "Trust signals",
+      "whatsapp_size_help": "Need help with size? Ask us on WhatsApp",
+      "whatsapp_aria": "Get help on WhatsApp",
+      "whatsapp_prefill": "Hi HORO team, I need help choosing a size for ",
+      "gift_note": "Buying it as a gift? Ask us for size help before ordering.",
+      "default_trust_cotton": "Cotton T-shirt",
+      "default_trust_printed": "Printed in Egypt",
+      "default_trust_cod": "COD available",
+      "default_trust_exchange": "14-day easy exchange"
+    },
+    "product_card": {
+      "gift_ready": "Gift-ready",
+      "printed_in_egypt": "Printed in Egypt",
+      "sold_out": "Sold out",
+      "low_stock": "Low stock"
+    },
+    "collection": {
+      "design_count": "{{ count }} designs",
+      "empty_collection": "No designs in this collection yet",
+      "all_feeling": "All {{ feeling }}"
     },
     "cart": {
+      "reassurance_heading": "Before you checkout",
+      "reassurance_cod": "Cash on Delivery when shown at checkout for eligible areas.",
+      "reassurance_whatsapp_confirm": "We confirm COD orders by WhatsApp before dispatch.",
+      "reassurance_exchange": "14-day exchange per policy and product condition.",
+      "reassurance_size_help": "Need size help? WhatsApp us before ordering.",
       "trust_explainer_heading": "What to expect",
       "free_shipping_progress_before": "Add {{ amount }} more to reach the free-shipping threshold.",
       "free_shipping_progress_after": "Free shipping reached",

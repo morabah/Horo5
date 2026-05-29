@@ -82,6 +82,51 @@
       "term": "giza",
       "type": "expansion",
       "synonyms": ["cairo", "egypt"]
+    },
+    {
+      "term": "mood",
+      "type": "expansion",
+      "synonyms": ["feeling", "emotion", "مزاج"]
+    },
+    {
+      "term": "zodiac",
+      "type": "expansion",
+      "synonyms": ["sign", "astrology", "برج", "feeling:zodiac"]
+    },
+    {
+      "term": "career",
+      "type": "expansion",
+      "synonyms": ["work", "job", "شغل"]
+    },
+    {
+      "term": "gift",
+      "type": "expansion",
+      "synonyms": ["present", "هدية", "giftable"]
+    },
+    {
+      "term": "calm",
+      "type": "expansion",
+      "synonyms": ["peaceful", "هادي", "feeling-mood"]
+    },
+    {
+      "term": "bold",
+      "type": "expansion",
+      "synonyms": ["loud", "جريء"]
+    },
+    {
+      "term": "romantic",
+      "type": "expansion",
+      "synonyms": ["love", "رومانسي"]
+    },
+    {
+      "term": "مزاج",
+      "type": "expansion",
+      "synonyms": ["mood", "feeling"]
+    },
+    {
+      "term": "برج",
+      "type": "expansion",
+      "synonyms": ["zodiac", "sign"]
     }
   ],
   "redirects": [

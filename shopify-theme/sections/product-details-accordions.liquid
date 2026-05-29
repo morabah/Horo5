@@ -2,7 +2,7 @@
 
 {%- liquid
   assign materials = product.metafields.custom.materials.value
-  assign design_story = product.metafields.custom.design_story.value
+  assign design_story = product.metafields.custom.story_description.value | default: product.metafields.custom.story.value | default: product.metafields.custom.design_story.value
   assign care_instructions = product.metafields.custom.care_instructions.value
   assign dimensions_note = product.metafields.custom.dimensions_note.value
   assign shipping_returns_note = product.metafields.custom.shipping_returns_note.value
@@ -81,7 +81,7 @@
             {%- if has_fit -%}
               <details class="product-details-accordions__item">
                 <summary class="product-details-accordions__summary">
-                  <span>Product details & fit</span>
+                  <span>{{ 'horo.pdp.accordionProductDetails' | t }}</span>
                   <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 4.5L6 9L10.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </summary>
                 <div class="product-details-accordions__content rte">
@@ -93,7 +93,7 @@
             {%- if has_design_story -%}
               <details class="product-details-accordions__item">
                 <summary class="product-details-accordions__summary">
-                  <span>Design story</span>
+                  <span>{{ 'horo.pdp.accordionDesignStory' | t }}</span>
                   <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 4.5L6 9L10.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </summary>
                 <div class="product-details-accordions__content rte">
@@ -105,7 +105,7 @@
             {%- if has_materials -%}
               <details class="product-details-accordions__item">
                 <summary class="product-details-accordions__summary">
-                  <span>Materials & print</span>
+                  <span>{{ 'horo.pdp.accordion_materials' | t | default: 'Materials & print' }}</span>
                   <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 4.5L6 9L10.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </summary>
                 <div class="product-details-accordions__content rte">
@@ -117,7 +117,7 @@
             {%- if has_care -%}
               <details class="product-details-accordions__item">
                 <summary class="product-details-accordions__summary">
-                  <span>Care instructions</span>
+                  <span>{{ 'horo.pdp.accordion_care' | t | default: 'Care instructions' }}</span>
                   <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 4.5L6 9L10.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </summary>
                 <div class="product-details-accordions__content rte">
@@ -129,7 +129,7 @@
             {%- if has_shipping -%}
               <details class="product-details-accordions__item">
                 <summary class="product-details-accordions__summary">
-                  <span>Shipping & returns</span>
+                  <span>{{ 'horo.pdp.accordionShipping' | t }}</span>
                   <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 4.5L6 9L10.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </summary>
                 <div class="product-details-accordions__content rte">

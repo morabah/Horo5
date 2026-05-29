@@ -1,7 +1,7 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "Dawn",
+    "theme_name": "HORO (Dawn 15.4.1)",
     "theme_version": "15.4.1",
     "theme_author": "Shopify",
     "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
@@ -1676,6 +1676,13 @@
           }
         ],
         "default": "auto"
+      },
+      {
+        "type": "checkbox",
+        "id": "horo_incentives_live",
+        "label": "Show cart incentive messages (free shipping / bundle)",
+        "info": "Enable only after matching Shopify shipping and discount rules are configured and tested at checkout.",
+        "default": false
       }
     ]
   }

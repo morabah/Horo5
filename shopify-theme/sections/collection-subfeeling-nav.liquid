@@ -33,7 +33,30 @@
       class="horo-section subfeeling-nav color-{{ section.settings.color_scheme }} gradient{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
       aria-label="Filter by subfeeling"
     >
+      {%- liquid
+        assign parent_collection_url = feeling.collection_url | default: feeling.collection.value.url
+        if parent_collection_url == blank and feeling_handle != blank
+          assign parent_collection_url = routes.collections_url | append: '/feeling-' | append: feeling_handle
+        endif
+        assign parent_feeling_label = feeling.title | default: feeling.name | default: feeling.display_name
+        assign expected_parent_handle = 'feeling-' | append: feeling_handle
+        assign is_parent_collection = false
+        if collection.handle == expected_parent_handle
+          assign is_parent_collection = true
+        endif
+      -%}
       <ul class="subfeeling-nav__list" role="list">
+        {%- if parent_collection_url != blank -%}
+          <li class="subfeeling-nav__item" role="listitem">
+            <a
+              href="{{ parent_collection_url }}"
+              class="subfeeling-nav__pill{% if is_parent_collection %} subfeeling-nav__pill--active{% endif %}"
+              {% if is_parent_collection %}aria-current="page"{% endif %}
+            >
+              {{ 'horo.collection.all_feeling' | t: feeling: parent_feeling_label }}
+            </a>
+          </li>
+        {%- endif -%}
         {%- for subfeeling in all_subfeelings -%}
           {%- liquid
             assign subfeeling_parent_handle = ''
@@ -62,9 +85,11 @@
                   {{ subfeeling_title | escape }}
                 </a>
               {%- elsif subfeeling_handle != blank -%}
+                {%- assign sub_collection_handle = 'feeling-' | append: feeling_handle | append: '-' | append: subfeeling_handle -%}
                 <a
                   href="{{ routes.collections_url }}/feeling-{{ feeling_handle }}-{{ subfeeling_handle }}"
-                  class="subfeeling-nav__pill"
+                  class="subfeeling-nav__pill{% if collection.handle == sub_collection_handle %} subfeeling-nav__pill--active{% endif %}"
+                  {% if collection.handle == sub_collection_handle %}aria-current="page"{% endif %}
                 >
                   {{ subfeeling_title | escape }}
                 </a>

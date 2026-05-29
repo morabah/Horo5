@@ -17,7 +17,7 @@
   }
 {%- endstyle -%}
 
-{%- if section.settings.enable_free_shipping_progress -%}
+{%- if settings.horo_incentives_live and section.settings.enable_free_shipping_progress -%}
   {%- assign threshold_cents = section.settings.threshold_egp | times: 100 -%}
   {%- assign total_cents = cart.total_price -%}
   {%- assign remaining_cents = threshold_cents | minus: total_cents -%}

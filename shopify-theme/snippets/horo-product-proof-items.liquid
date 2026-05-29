@@ -1,0 +1,66 @@
+{%- comment -%}
+  Renders proof strip list items for a product (HORO data contract).
+  1. custom.proof_gallery metaobject list
+  2. Else media alt-tag scan
+  Accepts: product (required)
+{%- endcomment -%}
+{%- liquid
+  assign proof_tags = 'proof_fabric,proof_print,proof_wash,lifestyle,flat_lay' | split: ','
+  assign proof_gallery = product.metafields.custom.proof_gallery.value
+  assign rendered_any = false
+-%}
+
+{%- if proof_gallery != blank -%}
+  {%- for proof_item in proof_gallery -%}
+    {%- assign proof_image = proof_item.image | default: proof_item -%}
+    {%- assign proof_label = proof_item.label | default: proof_item.tag | replace: '_', ' ' | capitalize -%}
+    {%- if proof_image != blank -%}
+      {%- assign rendered_any = true -%}
+      {%- assign proof_alt = proof_label | default: 'Product detail' | append: ' for ' | append: product.title -%}
+      <li class="product-proof-strip__item" role="listitem">
+        <div class="product-proof-strip__media">
+          {{
+            proof_image
+            | image_url: width: 600
+            | image_tag:
+              loading: 'lazy',
+              widths: '200, 400, 600',
+              sizes: '(min-width: 750px) 200px, 33vw',
+              alt: proof_alt,
+              class: 'product-proof-strip__image'
+          }}
+        </div>
+        {%- if proof_label != blank -%}
+          <span class="product-proof-strip__label">{{ proof_label | escape }}</span>
+        {%- endif -%}
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- else -%}
+  {%- for media in product.media -%}
+    {%- assign alt_lower = media.alt | downcase -%}
+    {%- for tag in proof_tags -%}
+      {%- if alt_lower contains tag -%}
+        {%- assign rendered_any = true -%}
+        {%- assign tag_label = tag | replace: '_', ' ' | capitalize -%}
+        {%- assign proof_alt = tag_label | append: ' detail for ' | append: product.title -%}
+        <li class="product-proof-strip__item" role="listitem">
+          <div class="product-proof-strip__media">
+            {{
+              media
+              | image_url: width: 600
+              | image_tag:
+                loading: 'lazy',
+                widths: '200, 400, 600',
+                sizes: '(min-width: 750px) 200px, 33vw',
+                alt: proof_alt,
+                class: 'product-proof-strip__image'
+            }}
+          </div>
+          <span class="product-proof-strip__label">{{ tag_label | escape }}</span>
+        </li>
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endfor -%}
+{%- endif -%}

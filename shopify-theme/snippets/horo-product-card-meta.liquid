@@ -1,0 +1,79 @@
+{%- comment -%}
+  HORO product card meta row (badges, chips, artist, stock).
+  Accepts: card_product (required)
+{%- endcomment -%}
+{%- if card_product == blank or card_product == empty -%}
+  {%- assign card_product = product -%}
+{%- endif -%}
+{%- if card_product and card_product != empty -%}
+{%- liquid
+
+  assign promo_label = card_product.metafields.custom.promo_label.value
+  assign feeling_obj = card_product.metafields.custom.feeling.value
+  assign subfeeling_obj = card_product.metafields.custom.subfeeling.value
+  assign artist_obj = card_product.metafields.custom.artist.value
+  assign trust_chips = card_product.metafields.custom.trust_chips.value
+  assign giftable_val = card_product.metafields.custom.giftable.value
+  assign fit_chip = card_product.metafields.custom.fit_note.value | default: card_product.metafields.custom.fit_label.value | default: card_product.metafields.custom.size_fit_note.value
+
+  assign main_badge = promo_label
+  if main_badge == blank and feeling_obj != blank
+    assign main_badge = feeling_obj.title | default: feeling_obj.name | default: feeling_obj.display_name
+  endif
+
+  assign secondary_chip = ''
+  if subfeeling_obj != blank
+    assign secondary_chip = subfeeling_obj.title | default: subfeeling_obj.name | default: subfeeling_obj.display_name
+  elsif fit_chip != blank
+    assign secondary_chip = fit_chip
+  elsif giftable_val == true or giftable_val == 'true'
+    assign secondary_chip = 'horo.product_card.gift_ready' | t
+  endif
+
+  assign artist_name = ''
+  if artist_obj != blank
+    assign artist_name = artist_obj.name | default: artist_obj.display_name
+  endif
+
+  assign trust_cue = ''
+  if trust_chips != blank
+    for chip in trust_chips
+      if chip != blank
+        assign trust_cue = chip
+        break
+      endif
+    endfor
+  endif
+  if trust_cue == blank
+    assign trust_cue = 'horo.product_card.printed_in_egypt' | t
+  endif
+
+  assign variant = card_product.selected_or_first_available_variant
+  assign stock_label = ''
+  unless variant.available
+    assign stock_label = 'horo.product_card.sold_out' | t
+  endunless
+  if stock_label == blank and variant.inventory_management == 'shopify' and variant.inventory_quantity > 0 and variant.inventory_quantity <= 5
+    assign stock_label = 'horo.product_card.low_stock' | t
+  endif
+-%}
+{%- if main_badge != blank or secondary_chip != blank or artist_name != blank or trust_cue != blank or stock_label != blank -%}
+  <div class="horo-product-card__meta">
+    {%- if main_badge != blank -%}
+      <span class="horo-product-card__badge">{{ main_badge | escape }}</span>
+    {%- endif -%}
+    {%- if secondary_chip != blank -%}
+      <span class="horo-product-card__chip">{{ secondary_chip | escape }}</span>
+    {%- endif -%}
+    {%- if artist_name != blank -%}
+      <span class="horo-product-card__artist">{{ artist_name | escape }}</span>
+    {%- endif -%}
+    {%- if trust_cue != blank -%}
+      <span class="horo-product-card__trust">{{ trust_cue | escape }}</span>
+    {%- endif -%}
+    {%- if stock_label != blank -%}
+      <span class="horo-product-card__stock">{{ stock_label | escape }}</span>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+{%- endif -%}

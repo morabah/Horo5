@@ -1,0 +1,72 @@
+{%- comment -%}
+  Scalar product field resolver (HORO data contract).
+  Accepts: product (required), field (required string key).
+  Outputs plain text only — no HTML. Blank when unset.
+  Do NOT use for lists, metaobject refs, product lists, or JSON.
+{%- endcomment -%}
+{%- liquid
+  assign field_key = field | default: '' | strip
+  assign output = ''
+
+  case field_key
+    when 'fit_label'
+      assign output = product.metafields.custom.fit_note.value | default: product.metafields.custom.fit_label.value | default: product.metafields.custom.size_fit_note.value
+    when 'buyer_route'
+      assign output = product.metafields.custom.buyer_route.value
+    when 'primary_audience'
+      assign output = product.metafields.custom.primary_audience.value
+    when 'promo_label'
+      assign output = product.metafields.custom.promo_label.value
+    when 'story'
+      assign output = product.metafields.custom.story.value
+    when 'story_description'
+      assign output = product.metafields.custom.story_description.value
+    when 'design_story'
+      assign output = product.metafields.custom.design_story.value | default: product.metafields.custom.story.value
+    when 'emotional_hook'
+      assign output = product.metafields.custom.emotional_hook.value
+    when 'wearer_story'
+      assign output = product.metafields.custom.wearer_story.value
+    when 'design_prompt'
+      assign output = product.metafields.custom.design_prompt.value
+    when 'materials'
+      assign output = product.metafields.custom.materials.value
+    when 'care_instructions'
+      assign output = product.metafields.custom.care_instructions.value
+    when 'dimensions_note'
+      assign output = product.metafields.custom.dimensions_note.value
+    when 'shipping_returns_note'
+      assign output = product.metafields.custom.shipping_returns_note.value
+    when 'low_stock_message'
+      assign output = product.metafields.custom.low_stock_message.value
+    when 'delivery_note'
+      assign output = product.metafields.custom.delivery_note.value
+    when 'exchange_note'
+      assign output = product.metafields.custom.exchange_note.value
+    when 'feeling_title'
+      assign feeling_obj = product.metafields.custom.feeling.value
+      if feeling_obj != blank
+        assign output = feeling_obj.title | default: feeling_obj.name | default: feeling_obj.display_name
+      endif
+    when 'feeling_slug'
+      assign feeling_obj = product.metafields.custom.feeling.value
+      if feeling_obj != blank
+        assign output = feeling_obj.slug | default: feeling_obj.handle
+      endif
+    when 'subfeeling_title'
+      assign sub_obj = product.metafields.custom.subfeeling.value
+      if sub_obj != blank
+        assign output = sub_obj.title | default: sub_obj.name | default: sub_obj.display_name
+      endif
+    when 'subfeeling_slug'
+      assign sub_obj = product.metafields.custom.subfeeling.value
+      if sub_obj != blank
+        assign output = sub_obj.slug | default: sub_obj.handle
+      endif
+    when 'artist_name'
+      assign artist_obj = product.metafields.custom.artist.value
+      if artist_obj != blank
+        assign output = artist_obj.name | default: artist_obj.display_name
+      endif
+  endcase
+-%}{{- output -}}

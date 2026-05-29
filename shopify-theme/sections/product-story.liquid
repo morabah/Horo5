@@ -3,13 +3,12 @@
 {%- liquid
   assign story = product.metafields.custom.story.value
   assign story_description = product.metafields.custom.story_description.value
+  assign emotional_hook = product.metafields.custom.emotional_hook.value
+  assign wearer_story = product.metafields.custom.wearer_story.value
+  assign design_prompt = product.metafields.custom.design_prompt.value
   assign has_story = false
 
-  if story != blank and story != empty
-    assign has_story = true
-  endif
-
-  if story_description != blank and story_description != empty
+  if story != blank or story_description != blank or emotional_hook != blank or wearer_story != blank or design_prompt != blank
     assign has_story = true
   endif
 -%}
@@ -36,7 +35,9 @@
     <div class="page-width">
       {%- if has_story -%}
         <div class="product-story__wrapper">
-          {%- if section.settings.heading != blank -%}
+          {%- if emotional_hook != blank -%}
+            <p class="product-story__hook">{{ emotional_hook | escape }}</p>
+          {%- elsif section.settings.heading != blank -%}
             <h2 class="product-story__heading {{ section.settings.heading_size }}">
               {{ section.settings.heading | escape }}
             </h2>
@@ -46,6 +47,14 @@
             <div class="product-story__body rte">
               {{ story }}
             </div>
+          {%- endif -%}
+
+          {%- if wearer_story != blank -%}
+            <div class="product-story__wearer rte">{{ wearer_story }}</div>
+          {%- endif -%}
+
+          {%- if design_prompt != blank -%}
+            <p class="product-story__design-prompt caption">{{ design_prompt | escape }}</p>
           {%- endif -%}
 
           {%- if story_description != blank and story_description != empty -%}

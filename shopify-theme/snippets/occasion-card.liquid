@@ -3,7 +3,10 @@
   assign occasion = card
   assign occasion_handle = occasion.handle | default: occasion.slug | default: ''
   assign occasion_label = occasion.title | default: occasion.name | default: occasion.display_name | default: 'Occasion'
-  assign card_url = routes.collections_url | append: '/occasion-' | append: occasion_handle
+  assign card_url = occasion.collection_url | default: occasion.collection.value.url
+  if card_url == blank and occasion_handle != blank
+    assign card_url = routes.collections_url | append: '/occasion-' | append: occasion_handle
+  endif
   assign image_width = 1100
 -%}
 

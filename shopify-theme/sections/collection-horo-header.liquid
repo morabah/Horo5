@@ -1,0 +1,170 @@
+{{ 'component-collection-hero.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign feeling = collection.metafields.custom.feeling.value
+  assign occasion = collection.metafields.custom.occasion.value
+  assign hero_mode = 'default'
+  if feeling != blank
+    assign hero_mode = 'feeling'
+  elsif occasion != blank
+    assign hero_mode = 'occasion'
+  endif
+-%}
+
+{%- if hero_mode == 'feeling' -%}
+  {%- liquid
+    if feeling.hero_image != blank
+      assign hero_image = feeling.hero_image
+    elsif feeling.card_image != blank
+      assign hero_image = feeling.card_image
+    endif
+    assign accent_color = feeling.accent_color | default: false
+    assign hero_title = feeling.title | default: feeling.name | default: feeling.display_name
+    assign hero_alt = hero_title | default: collection.title
+    assign hero_tagline = feeling.tagline
+    assign hero_blurb = feeling.description | default: feeling.blurb
+    if hero_blurb == blank
+      assign hero_blurb = collection.description
+    endif
+    assign hero_manifesto = feeling.manifesto
+  -%}
+{%- elsif hero_mode == 'occasion' -%}
+  {%- liquid
+    if occasion.hero_image != blank
+      assign hero_image = occasion.hero_image
+    elsif occasion.card_image != blank
+      assign hero_image = occasion.card_image
+    endif
+    assign accent_color = occasion.accent_color | default: false
+    assign hero_title = occasion.title | default: occasion.name | default: occasion.display_name
+    assign hero_alt = hero_title | default: collection.title
+    assign hero_tagline = occasion.tagline
+    assign hero_blurb = occasion.description | default: occasion.blurb
+    assign hero_manifesto = blank
+    assign price_hint = occasion.price_hint
+  -%}
+{%- endif -%}
+
+{%- if hero_mode != 'default' -%}
+  {%- style -%}
+    {%- if accent_color -%}
+      .CollectionHoroHeader-{{ section.id }} {
+        --collection-hero-accent: {{ accent_color }};
+      }
+    {%- endif -%}
+  {%- endstyle -%}
+
+  {%- render 'horo-breadcrumb' -%}
+
+  <div
+    id="CollectionHoroHeader-{{ section.id }}"
+    class="horo-section collection-hero CollectionHoroHeader-{{ section.id }}{% if hero_image != blank %} collection-hero--has-image{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+  >
+    {%- if hero_image != blank -%}
+      <div class="collection-hero__media">
+        {{
+          hero_image
+          | image_url: width: 3840
+          | image_tag:
+            loading: 'eager',
+            fetchpriority: 'high',
+            widths: '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840',
+            sizes: '100vw',
+            alt: hero_alt,
+            class: 'collection-hero__image'
+        }}
+      </div>
+      <div class="collection-hero__overlay"></div>
+    {%- endif -%}
+
+    <div class="page-width collection-hero__content">
+      <div class="collection-hero__text">
+        {%- if collection.products_count > 0 -%}
+          <p class="collection-hero__count">
+            {{ 'horo.collection.design_count' | t: count: collection.products_count }}
+          </p>
+        {%- elsif request.design_mode -%}
+          <p class="collection-hero__count">{{ 'horo.collection.empty_collection' | t }}</p>
+        {%- endif -%}
+        {%- if hero_tagline != blank -%}
+          <p class="collection-hero__tagline">{{ hero_tagline | escape }}</p>
+        {%- endif -%}
+        <h1 class="collection-hero__title h0">{{ hero_title | escape }}</h1>
+        {%- if hero_blurb != blank -%}
+          <p class="collection-hero__blurb">{{ hero_blurb | strip_html | truncatewords: 40 }}</p>
+        {%- endif -%}
+        {%- if hero_manifesto != blank -%}
+          <p class="collection-hero__manifesto">{{ hero_manifesto | strip_html | truncatewords: 30 }}</p>
+        {%- endif -%}
+        {%- if hero_mode == 'occasion' and price_hint != blank -%}
+          <p class="collection-hero__price-hint">{{ price_hint | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+          <a href="{{ section.settings.cta_link }}" class="button button--secondary collection-hero__cta">
+            {{ section.settings.cta_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+
+    {%- if accent_color -%}
+      <div class="collection-hero__accent-bar" aria-hidden="true"></div>
+    {%- endif -%}
+  </div>
+{%- else -%}
+  {%- render 'horo-breadcrumb' -%}
+  <div class="collection-hero color-{{ section.settings.color_scheme }} gradient">
+    <div class="collection-hero__inner page-width {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
+      <div class="collection-hero__text-wrapper">
+        <h1 class="collection-hero__title">
+          <span class="visually-hidden">{{ 'sections.collection_template.title' | t }}: </span>
+          {{- collection.title | escape -}}
+        </h1>
+        {%- if section.settings.show_collection_description and collection.description != blank -%}
+          <div class="collection-hero__description rte">{{ collection.description }}</div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "HORO Collection Header",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Renders feeling hero, occasion hero, or default collection title based on collection metafields."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_description",
+      "label": "Show description on default collections",
+      "default": true
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme (default banner)",
+      "default": "scheme-1"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Optional CTA label (feeling/occasion)"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Optional CTA link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Collection Header"
+    }
+  ]
+}
+{% endschema %}

@@ -3,7 +3,10 @@
   assign feeling = card
   assign feeling_handle = feeling.handle | default: feeling.slug | default: ''
   assign feeling_label = feeling.title | default: feeling.name | default: feeling.display_name | default: 'Feeling'
-  assign card_url = routes.collections_url | append: '/feeling-' | append: feeling_handle
+  assign card_url = feeling.collection_url | default: feeling.collection.value.url
+  if card_url == blank and feeling_handle != blank
+    assign card_url = routes.collections_url | append: '/feeling-' | append: feeling_handle
+  endif
   assign image_width = 1100
 -%}
 

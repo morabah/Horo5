@@ -27,7 +27,7 @@
     "cart_bundle_nudge": {
       "type": "cart-bundle-nudge",
       "settings": {
-        "enable_bundle_message": true,
+        "enable_bundle_message": false,
         "required_quantity": 3,
         "discount_egp": 100,
         "eligible_collection": "",
@@ -46,7 +46,7 @@
     "cart_free_shipping_progress": {
       "type": "cart-free-shipping-progress",
       "settings": {
-        "enable_free_shipping_progress": true,
+        "enable_free_shipping_progress": false,
         "threshold_egp": 1500,
         "heading_before": "Free shipping progress",
         "message_before": "Add [amount] more to reach the free-shipping threshold.",

@@ -39,7 +39,7 @@
   endfor
   assign remaining_items = section.settings.required_quantity | minus: eligible_quantity
   assign show_bundle_nudge = false
-  if section.settings.enable_bundle_message and eligible_quantity >= 2 and remaining_items > 0 and gift_wrap_in_cart == false
+  if settings.horo_incentives_live and section.settings.enable_bundle_message and eligible_quantity >= 2 and remaining_items > 0 and gift_wrap_in_cart == false
     assign show_bundle_nudge = true
   endif
 -%}

@@ -1,0 +1,44 @@
+{
+  "sections": {
+    "feelings_hub": {
+      "type": "feelings-hub",
+      "settings": {
+        "heading": "",
+        "heading_size": "h0",
+        "subheading": "Every design starts with a feeling. Start with yours.",
+        "columns_desktop": 3,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "editorial_guide": {
+      "type": "feelings-editorial-guide",
+      "settings": {
+        "eyebrow": "Shop by feeling",
+        "heading": "Start with what you feel",
+        "text": "HORO organizes designs by feeling, sign, attitude, and moment so you can choose from meaning first, not just product type.",
+        "cta_label": "Shop all products",
+        "cta_link": "/collections/all",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "related_routes": {
+      "type": "collection-related-routes",
+      "settings": {
+        "heading": "More ways to shop",
+        "color_scheme": "scheme-1",
+        "padding_top": 20,
+        "padding_bottom": 36
+      }
+    }
+  },
+  "order": [
+    "feelings_hub",
+    "editorial_guide",
+    "related_routes"
+  ]
+}

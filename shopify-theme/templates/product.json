@@ -46,42 +46,6 @@
         "description": {
           "type": "description"
         },
-        "collapsible-row-0": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "Product Details & Fit",
-            "icon": "ruler",
-            "content": "",
-            "page": ""
-          }
-        },
-        "collapsible-row-1": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "The Design Story",
-            "icon": "heart",
-            "content": "",
-            "page": ""
-          }
-        },
-        "collapsible-row-2": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "Shipping & Returns",
-            "icon": "truck",
-            "content": "",
-            "page": ""
-          }
-        },
-        "collapsible-row-3": {
-          "type": "collapsible_tab",
-          "settings": {
-            "heading": "Size guide",
-            "icon": "ruler",
-            "content": "",
-            "page": ""
-          }
-        },
         "share": {
           "type": "share",
           "settings": {
@@ -98,10 +62,6 @@
         "quantity_selector",
         "buy_buttons",
         "description",
-        "collapsible-row-0",
-        "collapsible-row-1",
-        "collapsible-row-2",
-        "collapsible-row-3",
         "share"
       ],
       "settings": {
@@ -372,17 +332,15 @@
     "product_purchase_context",
     "product_trust_strip",
     "product_proof_strip",
-    "product_details_accordions",
     "product_story",
-    "horo_seen_on_you",
-    "product_artist_card",
+    "product_details_accordions",
     "product_size_guide",
+    "product_artist_card",
+    "horo_seen_on_you",
     "product_delivery_payment",
     "product_pair_with",
-    "horo_recently_viewed",
-    "related-products",
     "horo_cross_sell",
-    "horo_trust_ribbon",
+    "horo_recently_viewed",
     "horo_share_your_fit"
   ]
 }

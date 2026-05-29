@@ -1,5 +1,4 @@
 {{ 'component-horo-cross-sell.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'horo-cross-sell.js' | asset_url }}" defer></script>
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -40,11 +39,6 @@
     {%- endif -%}
 
     <div class="cross-sell__grid" data-cross-sell-grid>
-      {%- comment -%}
-        Products are fetched client-side via /recommendations/products.json.
-        Static SSR fallback below uses collection or manually selected products.
-      {%- endcomment -%}
-
       {%- assign fallback_products = product.metafields.custom.pair_with_products.value | default: nil -%}
       {%- if fallback_products != blank -%}
         {%- for fp in fallback_products limit: limit -%}

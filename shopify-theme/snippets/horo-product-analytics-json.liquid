@@ -1,0 +1,101 @@
+{%- comment -%}
+  Emits window.HoroCurrentProductData assignment body (valid JSON via | json filter).
+  Accepts: product (required)
+{%- endcomment -%}
+{%- liquid
+  assign variant = product.selected_or_first_available_variant
+  assign feeling_obj = product.metafields.custom.feeling.value
+  assign subfeeling_obj = product.metafields.custom.subfeeling.value
+  assign artist_obj = product.metafields.custom.artist.value
+  assign occasions_raw = product.metafields.custom.occasions.value
+  assign trust_raw = product.metafields.custom.trust_chips.value
+  assign works_raw = product.metafields.custom.works_for.value
+  assign feels_raw = product.metafields.custom.feels_like.value
+  assign pair_raw = product.metafields.custom.pair_with_products.value
+
+  assign feeling_title = ''
+  assign feeling_slug = ''
+  if feeling_obj != blank
+    assign feeling_title = feeling_obj.title | default: feeling_obj.name | default: feeling_obj.display_name
+    assign feeling_slug = feeling_obj.slug | default: feeling_obj.handle
+  endif
+
+  assign subfeeling_title = ''
+  assign subfeeling_slug = ''
+  if subfeeling_obj != blank
+    assign subfeeling_title = subfeeling_obj.title | default: subfeeling_obj.name | default: subfeeling_obj.display_name
+    assign subfeeling_slug = subfeeling_obj.slug | default: subfeeling_obj.handle
+  endif
+
+  assign artist_name = ''
+  if artist_obj != blank
+    assign artist_name = artist_obj.name | default: artist_obj.display_name
+  endif
+
+  assign fit_label = product.metafields.custom.fit_note.value | default: product.metafields.custom.fit_label.value | default: product.metafields.custom.size_fit_note.value
+
+  assign giftable_val = product.metafields.custom.giftable.value
+  assign giftable_bool = false
+  if giftable_val == true or giftable_val == 'true'
+    assign giftable_bool = true
+  endif
+
+  assign occasion_titles = '' | split: ','
+  if occasions_raw != blank
+    assign occasion_titles = occasions_raw | map: 'title'
+  endif
+
+  assign trust_list = '' | split: ','
+  if trust_raw != blank
+    assign trust_list = trust_raw
+  endif
+
+  assign works_list = '' | split: ','
+  if works_raw != blank
+    assign works_list = works_raw
+  endif
+
+  assign feels_list = '' | split: ','
+  if feels_raw != blank
+    assign feels_list = feels_raw
+  endif
+
+  assign pair_handles = '' | split: ','
+  if pair_raw != blank
+    assign pair_handles = pair_raw | map: 'handle'
+  endif
+
+  assign inventory_qty = variant.inventory_quantity | default: 0
+-%}
+window.HoroCurrentProductHandle = {{ product.handle | json }};
+window.HoroCurrencySymbol = {{ cart.currency.symbol | default: '' | json }};
+window.HoroCurrentProductData = {
+  "id": {{ product.id | json }},
+  "title": {{ product.title | json }},
+  "handle": {{ product.handle | json }},
+  "vendor": {{ product.vendor | json }},
+  "price": {{ variant.price | divided_by: 100.0 | json }},
+  "compare_at_price": {{ variant.compare_at_price | divided_by: 100.0 | json }},
+  "variant_title": {{ variant.title | json }},
+  "currency": {{ cart.currency.iso_code | json }},
+  "url": {{ product.url | json }},
+  "feeling": {{ feeling_title | json }},
+  "feelingSlug": {{ feeling_slug | json }},
+  "subfeeling": {{ subfeeling_title | json }},
+  "subfeelingSlug": {{ subfeeling_slug | json }},
+  "occasions": {{ occasion_titles | json }},
+  "artist": {{ artist_name | json }},
+  "giftable": {{ giftable_bool | json }},
+  "fitLabel": {{ fit_label | json }},
+  "trustChips": {{ trust_list | json }},
+  "worksFor": {{ works_list | json }},
+  "feelsLike": {{ feels_list | json }},
+  "buyerRoute": {{ product.metafields.custom.buyer_route.value | json }},
+  "primaryAudience": {{ product.metafields.custom.primary_audience.value | json }},
+  "promoLabel": {{ product.metafields.custom.promo_label.value | json }},
+  "pairWithProductHandles": {{ pair_handles | json }},
+  "selectedVariantId": {{ variant.id | json }},
+  "available": {{ variant.available | json }},
+  "inventoryQuantity": {{ inventory_qty | json }},
+  "category": {{ feeling_title | json }}
+};

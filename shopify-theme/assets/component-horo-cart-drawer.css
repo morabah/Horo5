@@ -134,3 +134,28 @@
     border-end-end-radius: 0;
   }
 }
+
+.horo-cart-drawer-extras {
+  padding: 1.6rem 2rem;
+  border-block-start: 1px solid rgba(196, 184, 171, 0.3);
+}
+
+.horo-cart-reassurance {
+  margin-block-end: 1.6rem;
+  font-size: 1.3rem;
+  line-height: 1.5;
+}
+
+.horo-cart-reassurance__heading {
+  font-weight: 600;
+  margin-block-end: 0.8rem;
+}
+
+.horo-cart-reassurance__list {
+  margin: 0 0 1rem;
+  padding-inline-start: 1.2rem;
+}
+
+.gift-wrap__wrapper--drawer {
+  margin-block-start: 1.2rem;
+}

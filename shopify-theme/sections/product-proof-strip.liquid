@@ -1,22 +1,8 @@
 {{ 'component-product-proof-strip.css' | asset_url | stylesheet_tag }}
 
-{%- liquid
-  assign proof_tags = 'proof_fabric,proof_print,proof_wash,lifestyle,flat_lay' | split: ','
-  assign proof_images = ''
-  assign proof_count = 0
-
-  for media in product.media
-    assign alt_lower = media.alt | downcase
-    for tag in proof_tags
-      if alt_lower contains tag
-        assign proof_count = proof_count | plus: 1
-        assign tag_label = tag | replace: '_', ' ' | capitalize
-        assign proof_images = proof_images | append: media.id | append: ':' | append: tag_label | append: ','
-        break
-      endif
-    endfor
-  endfor
--%}
+{%- capture proof_items_markup -%}
+  {%- render 'horo-product-proof-items', product: product -%}
+{%- endcapture -%}
 
 {%- style -%}
   .section-{{ section.id }}-padding {
@@ -32,7 +18,7 @@
   }
 {%- endstyle -%}
 
-{%- if proof_count > 0 -%}
+{%- if proof_items_markup != blank -%}
   <div
     id="ProofStrip-{{ section.id }}"
     class="horo-section product-proof-strip color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
@@ -45,41 +31,14 @@
       {%- endif -%}
 
       <ul class="product-proof-strip__list" role="list">
-        {%- assign proof_list = proof_images | split: ',' -%}
-        {%- for proof_item in proof_list -%}
-          {%- assign parts = proof_item | split: ':' -%}
-          {%- assign media_id = parts[0] | plus: 0 -%}
-          {%- assign label = parts[1] -%}
-          {%- for media in product.media -%}
-            {%- if media.id == media_id -%}
-              {%- assign proof_alt = label | append: ' detail for ' | append: product.title -%}
-              <li class="product-proof-strip__item" role="listitem">
-                <div class="product-proof-strip__media">
-                  {{
-                    media
-                    | image_url: width: 600
-                    | image_tag:
-                      loading: 'lazy',
-                      widths: '200, 400, 600',
-                      sizes: '(min-width: 750px) 200px, 33vw',
-                      alt: proof_alt,
-                      class: 'product-proof-strip__image'
-                  }}
-                </div>
-                {%- if label != blank -%}
-                  <span class="product-proof-strip__label">{{ label | escape }}</span>
-                {%- endif -%}
-              </li>
-            {%- endif -%}
-          {%- endfor -%}
-        {%- endfor -%}
+        {{ proof_items_markup }}
       </ul>
     </div>
   </div>
 {%- elsif request.design_mode -%}
   <div class="product-proof-strip__placeholder page-width section-{{ section.id }}-padding">
     <p>
-      No proof-tagged images found. Add alt text containing one of these tags to product media:
+      Add <code>custom.proof_gallery</code> metaobjects or product media alt text with tags:
       <code>proof_fabric</code>, <code>proof_print</code>, <code>proof_wash</code>, <code>lifestyle</code>, <code>flat_lay</code>.
     </p>
   </div>

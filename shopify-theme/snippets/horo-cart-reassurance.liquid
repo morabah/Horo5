@@ -1,0 +1,33 @@
+{%- comment -%}
+  Pre-checkout reassurance for cart drawer and cart page.
+{%- endcomment -%}
+<div class="horo-cart-reassurance">
+  <p class="horo-cart-reassurance__heading">{{ 'horo.cart.reassurance_heading' | t }}</p>
+  <ul class="horo-cart-reassurance__list" role="list">
+    <li>{{ 'horo.cart.reassurance_cod' | t }}</li>
+    <li>{{ 'horo.cart.reassurance_whatsapp_confirm' | t }}</li>
+    <li>{{ 'horo.cart.reassurance_exchange' | t }}</li>
+    {%- if settings.horo_delivery_cairo != blank -%}
+      <li>{{ settings.horo_delivery_cairo | escape }}</li>
+    {%- endif -%}
+    {%- if settings.horo_delivery_alex != blank -%}
+      <li>{{ settings.horo_delivery_alex | escape }}</li>
+    {%- endif -%}
+    {%- if settings.horo_delivery_other != blank -%}
+      <li>{{ settings.horo_delivery_other | escape }}</li>
+    {%- endif -%}
+  </ul>
+  {%- if settings.horo_whatsapp_support_url != blank -%}
+    <a
+      href="{{ settings.horo_whatsapp_support_url }}"
+      class="horo-cart-reassurance__whatsapp link"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {{ 'horo.cart.reassurance_size_help' | t }}
+    </a>
+  {%- endif -%}
+  {%- if settings.horo_instapay_instructions != blank -%}
+    <p class="horo-cart-reassurance__instapay caption">{{ settings.horo_instapay_instructions | escape }}</p>
+  {%- endif -%}
+</div>

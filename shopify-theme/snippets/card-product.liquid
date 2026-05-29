@@ -41,14 +41,6 @@
       assign ratio = 1
     endif
 
-    assign horo_chip = ''
-    if card_product.metafields.custom.subfeeling != blank
-      assign horo_chip = card_product.metafields.custom.subfeeling.value.title | default: card_product.metafields.custom.subfeeling.value.name | default: card_product.metafields.custom.subfeeling.value.display_name | default: card_product.metafields.custom.subfeeling.value
-    elsif card_product.metafields.custom.fit_note != blank
-      assign horo_chip = card_product.metafields.custom.fit_note.value
-    else
-      assign horo_chip = 'Cotton T-shirt'
-    endif
   -%}
   <div class="card-wrapper product-card-wrapper underline-links-hover horo-product-card">
     <div
@@ -173,12 +165,7 @@
               {{ card_product.title | escape }}
             </a>
           </h3>
-          {%- if horo_chip != blank -%}
-            <span class="horo-product-card__chip">{{ horo_chip | escape }}</span>
-          {%- endif -%}
-          {%- if card_product.metafields.custom.artist != blank -%}
-            <p class="horo-product-card__artist">{{ card_product.metafields.custom.artist.value.name | default: card_product.metafields.custom.artist.value.display_name | default: card_product.metafields.custom.artist.value | escape }}</p>
-          {%- endif -%}
+          {% render 'horo-product-card-meta', card_product: card_product %}
           <div class="card-information">
             {%- if show_vendor -%}
               <span class="visually-hidden">{{ 'accessibility.vendor' | t }}</span>

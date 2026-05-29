@@ -1,0 +1,51 @@
+{%- comment -%}
+  Gift wrap upsell + reassurance inside cart drawer.
+{%- endcomment -%}
+{{ 'component-gift-wrap.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'gift-wrap.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign gift_wrap_product = settings.horo_gift_wrap_product
+  assign gift_wrap_variant = nil
+  if gift_wrap_product != blank and gift_wrap_product.variants.size > 0
+    assign gift_wrap_variant = gift_wrap_product.variants | where: 'available', true | first
+  endif
+
+  assign gift_wrap_in_cart = false
+  assign eligible_item_quantity = 0
+  if gift_wrap_product != blank
+    for item in cart.items
+      if item.product.handle == gift_wrap_product.handle
+        assign gift_wrap_in_cart = true
+      else
+        assign eligible_item_quantity = eligible_item_quantity | plus: item.quantity
+      endif
+    endfor
+  endif
+
+  assign show_gift_wrap = false
+  if gift_wrap_product != blank and gift_wrap_variant != blank
+    if eligible_item_quantity >= 1 or gift_wrap_in_cart
+      assign show_gift_wrap = true
+    endif
+  endif
+-%}
+
+<div id="horo-cart-drawer-extras" class="horo-cart-drawer-extras">
+  {% render 'horo-cart-reassurance' %}
+
+  {%- if show_gift_wrap -%}
+    <div class="gift-wrap__wrapper gift-wrap__wrapper--drawer">
+      {% render 'gift-wrap-upsell',
+        gift_wrap_product: gift_wrap_product,
+        gift_wrap_variant: gift_wrap_variant,
+        in_cart: gift_wrap_in_cart,
+        label: settings.horo_gift_wrap_label,
+        price_hint: settings.horo_gift_wrap_price_hint,
+        section_id: 'cart-drawer-gift-wrap',
+        context: 'cart',
+        show_preview: true
+      %}
+    </div>
+  {%- endif -%}
+</div>

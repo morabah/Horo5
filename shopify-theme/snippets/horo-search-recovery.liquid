@@ -9,6 +9,26 @@
 
   {%- assign feelings_url = routes.root_url | append: 'pages/feelings' -%}
   {%- assign occasions_url = routes.root_url | append: 'pages/occasions' -%}
+  <div class="horo-search-recovery__chips" role="list">
+    {%- assign intent_terms = 'Mood,Zodiac,Career,Gift,Oversized,Calm,Bold,Romantic' | split: ',' -%}
+    {%- for term in intent_terms -%}
+      <a
+        href="{{ routes.search_url }}?q={{ term | strip | url_encode }}"
+        class="horo-search-recovery__chip"
+        role="listitem"
+      >
+        {{ term | strip }}
+      </a>
+    {%- endfor -%}
+    <a href="{{ routes.search_url }}?q=%D9%85%D8%B2%D8%A7%D8%AC" class="horo-search-recovery__chip" role="listitem">مزاج</a>
+    <a href="{{ routes.search_url }}?q=%D8%A8%D8%B1%D8%AC" class="horo-search-recovery__chip" role="listitem">برج</a>
+    <a href="{{ routes.search_url }}?q=%D9%87%D8%AF%D9%8A%D8%A9" class="horo-search-recovery__chip" role="listitem">هدية</a>
+    <a href="{{ routes.search_url }}?q=%D8%B4%D8%BA%D9%84" class="horo-search-recovery__chip" role="listitem">شغل</a>
+    <a href="{{ routes.search_url }}?q=%D8%B1%D9%88%D9%85%D8%A7%D9%86%D8%B3%D9%8A" class="horo-search-recovery__chip" role="listitem">رومانسي</a>
+    <a href="{{ routes.search_url }}?q=%D9%87%D8%A7%D8%AF%D9%8A" class="horo-search-recovery__chip" role="listitem">هادي</a>
+    <a href="{{ routes.search_url }}?q=%D8%AC%D8%B1%D9%8A%D8%A1" class="horo-search-recovery__chip" role="listitem">جريء</a>
+  </div>
+
   <div class="horo-search-recovery__routes">
     <a href="{{ feelings_url }}" class="horo-search-recovery__route cta-clay">
       <span class="horo-search-recovery__label">{{ 'horo.search_recovery.try_feeling' | t }}</span>
