@@ -9,6 +9,7 @@
 {%- liquid
 
   assign promo_label = card_product.metafields.custom.promo_label.value
+  assign merchandising_badge = card_product.metafields.custom.merchandising_badge.value
   assign feeling_obj = card_product.metafields.custom.feeling.value
   assign subfeeling_obj = card_product.metafields.custom.subfeeling.value
   assign artist_obj = card_product.metafields.custom.artist.value
@@ -17,6 +18,9 @@
   assign fit_chip = card_product.metafields.custom.fit_note.value | default: card_product.metafields.custom.fit_label.value | default: card_product.metafields.custom.size_fit_note.value
 
   assign main_badge = promo_label
+  if main_badge == blank and merchandising_badge != blank
+    assign main_badge = merchandising_badge
+  endif
   if main_badge == blank and feeling_obj != blank
     assign main_badge = feeling_obj.title | default: feeling_obj.name | default: feeling_obj.display_name
   endif

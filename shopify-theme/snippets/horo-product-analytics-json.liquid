@@ -46,10 +46,36 @@
     assign giftable_bool = true
   endif
 
-  assign occasion_titles = '' | split: ','
+  assign occasion_slugs_csv = ''
+  assign occasion_labels_csv = ''
   if occasions_raw != blank
-    assign occasion_titles = occasions_raw | map: 'title'
+    for occasion in occasions_raw
+      assign occ_slug = occasion.slug | default: occasion.handle | default: ''
+      assign occ_label = occasion.title | default: occasion.name | default: occasion.display_name | default: ''
+      if occ_slug != blank
+        assign slug_token = '||' | append: occ_slug | append: '||'
+        unless occasion_slugs_csv contains slug_token
+          if occasion_slugs_csv == blank
+            assign occasion_slugs_csv = occ_slug
+          else
+            assign occasion_slugs_csv = occasion_slugs_csv | append: '||' | append: occ_slug
+          endif
+        endunless
+      endif
+      if occ_label != blank
+        assign label_token = '||' | append: occ_label | append: '||'
+        unless occasion_labels_csv contains label_token
+          if occasion_labels_csv == blank
+            assign occasion_labels_csv = occ_label
+          else
+            assign occasion_labels_csv = occasion_labels_csv | append: '||' | append: occ_label
+          endif
+        endunless
+      endif
+    endfor
   endif
+  assign occasion_slugs = occasion_slugs_csv | split: '||'
+  assign occasion_labels = occasion_labels_csv | split: '||'
 
   assign pdp_tag_labels = '' | split: ','
   if pdp_tags_raw != blank
@@ -107,13 +133,43 @@
   if available_sizes_meta != blank
     assign available_sizes = available_sizes_meta
   else
-    for option in product.options_with_values
-      assign option_name_down = option.name | downcase
+    assign size_option_position = 0
+    for option in product.options
+      assign option_name_down = option | downcase
       if option_name_down == 'size'
-        assign available_sizes = option.values
+        assign size_option_position = forloop.index
         break
       endif
     endfor
+    if size_option_position > 0
+      assign available_sizes_csv = ''
+      for variant in product.variants
+        unless variant.available
+          continue
+        endunless
+        assign size_val = ''
+        if size_option_position == 1
+          assign size_val = variant.option1
+        elsif size_option_position == 2
+          assign size_val = variant.option2
+        else
+          assign size_val = variant.option3
+        endif
+        if size_val != blank
+          assign size_token = '||' | append: size_val | append: '||'
+          unless available_sizes_csv contains size_token
+            if available_sizes_csv == blank
+              assign available_sizes_csv = size_val
+            else
+              assign available_sizes_csv = available_sizes_csv | append: '||' | append: size_val
+            endif
+          endunless
+        endif
+      endfor
+      if available_sizes_csv != blank
+        assign available_sizes = available_sizes_csv | split: '||'
+      endif
+    endif
   endif
 
   assign garment_colors = '' | split: '|'
@@ -130,7 +186,15 @@
     endfor
   endif
 
-  assign inventory_qty = variant.inventory_quantity | default: 0
+  assign inventory_tracked = false
+  if variant.inventory_management == 'shopify'
+    assign inventory_tracked = true
+  endif
+
+  assign inventory_qty = nil
+  if inventory_tracked
+    assign inventory_qty = variant.inventory_quantity
+  endif
 -%}
 window.HoroCurrentProductHandle = {{ product.handle | json }};
 window.HoroCurrencySymbol = {{ cart.currency.symbol | default: '' | json }};
@@ -149,7 +213,9 @@ window.HoroCurrentProductData = {
   "subfeeling": {{ subfeeling_title | json }},
   "subfeelingSlug": {{ subfeeling_slug | json }},
   "lineSlug": {{ line_slug | json }},
-  "occasions": {{ occasion_titles | json }},
+  "occasionSlugs": {{ occasion_slugs | json }},
+  "occasionLabels": {{ occasion_labels | json }},
+  "occasions": {{ occasion_labels | json }},
   "pdpTagLabels": {{ pdp_tag_labels | json }},
   "artist": {{ artist_name | json }},
   "giftable": {{ giftable_bool | json }},
@@ -173,6 +239,7 @@ window.HoroCurrentProductData = {
   "customersAlsoBoughtProductHandles": {{ cab_handles | json }},
   "selectedVariantId": {{ variant.id | json }},
   "available": {{ variant.available | json }},
+  "inventoryTracked": {{ inventory_tracked | json }},
   "inventoryQuantity": {{ inventory_qty | json }},
   "category": {{ feeling_title | json }}
 };

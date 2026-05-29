@@ -1,71 +1,73 @@
 {{ 'component-horo-cross-sell.css' | asset_url | stylesheet_tag }}
 
-{%- style -%}
-  .section-{{ section.id }}-padding {
-    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-  }
-
-  @media screen and (min-width: 750px) {
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top }}px;
-      padding-bottom: {{ section.settings.padding_bottom }}px;
-    }
-  }
-{%- endstyle -%}
-
 {%- liquid
   assign limit = section.settings.products_to_show | default: 4
   assign intent = section.settings.intent | default: 'related'
+
+  assign fallback_products = product.metafields.custom.customers_also_bought_products.value
+  if fallback_products == blank
+    assign fallback_products = product.metafields.custom.complementary_products.value
+  endif
+  if fallback_products == blank
+    assign fallback_products = product.metafields.custom.pair_with_products.value
+  endif
+
+  assign has_block_products = false
+  for block in section.blocks
+    if block.settings.product != blank
+      assign has_block_products = true
+      break
+    endif
+  endfor
+
+  assign show_cross_sell = false
+  if fallback_products != blank or has_block_products
+    assign show_cross_sell = true
+  endif
+  if request.design_mode
+    assign show_cross_sell = true
+  endif
 -%}
 
-<div
-  id="CrossSell-{{ section.id }}"
-  class="horo-section cross-sell color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-  data-cross-sell
-  data-product-id="{{ product.id }}"
-  data-limit="{{ limit }}"
-  data-intent="{{ intent }}"
->
-  <div class="page-width">
-    {%- if section.settings.heading != blank -%}
-      <h2 class="cross-sell__heading {{ section.settings.heading_size }}">
-        {{ section.settings.heading | escape }}
-      </h2>
-    {%- endif -%}
+{%- if show_cross_sell -%}
+  {%- style -%}
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+    }
 
-    {%- if section.settings.subheading != blank -%}
-      <p class="cross-sell__subheading">{{ section.settings.subheading | escape }}</p>
-    {%- endif -%}
+    @media screen and (min-width: 750px) {
+      .section-{{ section.id }}-padding {
+        padding-top: {{ section.settings.padding_top }}px;
+        padding-bottom: {{ section.settings.padding_bottom }}px;
+      }
+    }
+  {%- endstyle -%}
 
-    <div class="cross-sell__grid" data-cross-sell-grid>
-      {%- liquid
-        assign fallback_products = product.metafields.custom.customers_also_bought_products.value
-        if fallback_products == blank
-          assign fallback_products = product.metafields.custom.complementary_products.value
-        endif
-        if fallback_products == blank
-          assign fallback_products = product.metafields.custom.pair_with_products.value
-        endif
-      -%}
-      {%- if fallback_products != blank -%}
-        {%- for fp in fallback_products limit: limit -%}
-          {%- render 'card-product',
-            card_product: fp,
-            media_aspect_ratio: section.settings.image_ratio,
-            image_shape: section.settings.image_shape,
-            show_secondary_image: section.settings.show_secondary_image,
-            show_vendor: section.settings.show_vendor,
-            show_rating: section.settings.show_rating,
-            quick_add: section.settings.enable_quick_add,
-            section_id: section.id
-          -%}
-        {%- endfor -%}
-      {%- elsif section.blocks.size > 0 -%}
-        {%- for block in section.blocks limit: limit -%}
-          {%- if block.settings.product != blank -%}
+  <div
+    id="CrossSell-{{ section.id }}"
+    class="horo-section cross-sell color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    data-cross-sell
+    data-product-id="{{ product.id }}"
+    data-limit="{{ limit }}"
+    data-intent="{{ intent }}"
+  >
+    <div class="page-width">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="cross-sell__heading {{ section.settings.heading_size }}">
+          {{ section.settings.heading | escape }}
+        </h2>
+      {%- endif -%}
+
+      {%- if section.settings.subheading != blank -%}
+        <p class="cross-sell__subheading">{{ section.settings.subheading | escape }}</p>
+      {%- endif -%}
+
+      <div class="cross-sell__grid" data-cross-sell-grid>
+        {%- if fallback_products != blank -%}
+          {%- for fp in fallback_products limit: limit -%}
             {%- render 'card-product',
-              card_product: block.settings.product,
+              card_product: fp,
               media_aspect_ratio: section.settings.image_ratio,
               image_shape: section.settings.image_shape,
               show_secondary_image: section.settings.show_secondary_image,
@@ -74,18 +76,31 @@
               quick_add: section.settings.enable_quick_add,
               section_id: section.id
             -%}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- else -%}
-        {%- if request.design_mode -%}
+          {%- endfor -%}
+        {%- elsif has_block_products -%}
+          {%- for block in section.blocks limit: limit -%}
+            {%- if block.settings.product != blank -%}
+              {%- render 'card-product',
+                card_product: block.settings.product,
+                media_aspect_ratio: section.settings.image_ratio,
+                image_shape: section.settings.image_shape,
+                show_secondary_image: section.settings.show_secondary_image,
+                show_vendor: section.settings.show_vendor,
+                show_rating: section.settings.show_rating,
+                quick_add: section.settings.enable_quick_add,
+                section_id: section.id
+              -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- elsif request.design_mode -%}
           <p class="cross-sell__placeholder">
-            Set <code>custom.pair_with_products</code> product metafield or add product blocks to display cross-sell items.
+            Set <code>custom.customers_also_bought_products</code>, <code>custom.complementary_products</code>, or <code>custom.pair_with_products</code>, or add product blocks to display cross-sell items.
           </p>
         {%- endif -%}
-      {%- endif -%}
+      </div>
     </div>
   </div>
-</div>
+{%- endif -%}
 
 {% schema %}
 {

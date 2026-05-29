@@ -144,7 +144,9 @@ Emits `window.HoroCurrentProductData` with `| json` on every value. Key parity f
 | `merchandisingBadge` | `custom.merchandising_badge` |
 | `stockNote` | `custom.stock_note` → `custom.low_stock_message` |
 | `garmentColors` | `custom.garment_colors` → `Color` option values |
-| `availableSizes` | `custom.available_sizes` → `Size` option values |
+| `availableSizes` | `custom.available_sizes` → in-stock variant `Size` values (not all defined option values) |
+| `occasionSlugs` / `occasionLabels` | `custom.occasions` metaobject list |
+| `inventoryTracked` / `inventoryQuantity` | selected variant; `null` quantity when not Shopify-tracked |
 | `frequentlyBoughtWithProductHandles` / `complementaryProductHandles` / `customersAlsoBoughtProductHandles` | respective product-list metafields |
 
 ### 2.8 `horo-product-field.liquid` (scalar only)
