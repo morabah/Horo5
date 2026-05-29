@@ -7,8 +7,23 @@
 }
 
 .home-why-horo__heading {
-  margin: 0 0 2.4rem;
+  margin: 0 0 1.2rem;
   color: var(--color-ink, #1a1a1a);
+  text-align: center;
+}
+
+.home-why-horo__subheading {
+  margin: 0 auto 2.4rem;
+  max-width: 36rem;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  opacity: 0.9;
+}
+
+.home-why-horo__cta {
+  margin-top: 2rem;
+  text-align: center;
 }
 
 .home-why-horo__grid {

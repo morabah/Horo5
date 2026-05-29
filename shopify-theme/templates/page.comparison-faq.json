@@ -1,0 +1,62 @@
+{
+  "sections": {
+    "comparison": {
+      "type": "horo-comparison-faq",
+      "settings": {
+        "heading": "Why HORO, not a normal printed T-shirt?",
+        "intro": "HORO is artist-made wearable art — not cheap print, not upload-anything custom, and not generic gift-shop merch.",
+        "cta_label": "Shop the founding drop",
+        "cta_link": "/collections/founding-drop",
+        "secondary_label": "Shop gifts",
+        "secondary_link": "/pages/gifts-hub",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "row_cheap": {
+          "type": "comparison_row",
+          "settings": {
+            "buyer_comparison": "Cheap printed tee",
+            "horo_answer": "Artist-made, story-led, and more meaningful to wear or gift.",
+            "proof": "Artist card, print close-up, story on PDP"
+          }
+        },
+        "row_custom": {
+          "type": "comparison_row",
+          "settings": {
+            "buyer_comparison": "Custom print shop",
+            "horo_answer": "Curated art with a consistent HORO world — not upload-anything printing.",
+            "proof": "Artist brief, licensed artwork, cohesive collections"
+          }
+        },
+        "row_fashion": {
+          "type": "comparison_row",
+          "settings": {
+            "buyer_comparison": "Fashion / hype brand",
+            "horo_answer": "Less hype, more meaning — built for gifting and everyday wear.",
+            "proof": "Gift route, size help, exchange policy, PDP proof ladder"
+          }
+        },
+        "row_gift": {
+          "type": "comparison_row",
+          "settings": {
+            "buyer_comparison": "Generic gift shop",
+            "horo_answer": "Useful like clothing, personal like a message — they wear the feeling.",
+            "proof": "Gifts hub, occasion tags, delivery + COD clarity"
+          }
+        },
+        "row_marketplace": {
+          "type": "comparison_row",
+          "settings": {
+            "buyer_comparison": "Marketplace seller",
+            "horo_answer": "Proof, service, and trust you can verify before you buy.",
+            "proof": "UGC, WhatsApp help, COD when shown at checkout"
+          }
+        }
+      },
+      "block_order": ["row_cheap", "row_custom", "row_fashion", "row_gift", "row_marketplace"]
+    }
+  },
+  "order": ["comparison"]
+}

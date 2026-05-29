@@ -23,6 +23,7 @@ const _feeling: MetaobjectDef = {
   name: 'Feeling',
   fieldDefinitions: [
     { key: 'title', name: 'Title', type: 'single_line_text_field', required: true },
+    { key: 'name', name: 'Name', type: 'single_line_text_field', description: 'Fallback for title in cards' },
     { key: 'slug', name: 'Slug', type: 'single_line_text_field', required: true },
     { key: 'active', name: 'Active', type: 'boolean', required: true },
     { key: 'sort_order', name: 'Sort order', type: 'number_integer' },
@@ -40,6 +41,8 @@ const _feeling: MetaobjectDef = {
       description: 'Preferred collection link; collection_url overrides when set',
     },
     { key: 'collection_url', name: 'Collection URL', type: 'url', description: 'Overrides collection reference when set' },
+    { key: 'seo_title', name: 'SEO title', type: 'single_line_text_field' },
+    { key: 'seo_description', name: 'SEO description', type: 'single_line_text_field' },
   ],
 };
 
@@ -58,6 +61,7 @@ const _subfeeling: MetaobjectDef = {
       required: true,
       validations: [{ name: 'metaobject_definition_id', value: 'feeling' }],
     },
+    { key: 'feeling_slug', name: 'Feeling slug', type: 'single_line_text_field', description: 'Legacy parent key when reference is unset' },
     { key: 'description', name: 'Description', type: 'multi_line_text_field' },
     { key: 'blurb', name: 'Blurb', type: 'multi_line_text_field' },
     { key: 'hero_image', name: 'Hero image', type: 'file_reference' },
@@ -98,6 +102,7 @@ const _artist: MetaobjectDef = {
   name: 'Artist',
   fieldDefinitions: [
     { key: 'name', name: 'Name', type: 'single_line_text_field', required: true },
+    { key: 'display_name', name: 'Display name', type: 'single_line_text_field', description: 'Fallback for name on artist card' },
     { key: 'slug', name: 'Slug', type: 'single_line_text_field' },
     { key: 'style', name: 'Style', type: 'single_line_text_field' },
     { key: 'bio', name: 'Bio', type: 'multi_line_text_field', description: 'Use rich text in Admin if preferred; multi-line matches existing store' },

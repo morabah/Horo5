@@ -1,0 +1,147 @@
+{{ 'component-product-trust-strip.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="horo-section gifts-hub-trust color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+  <div class="page-width">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="h2">{{ section.settings.heading | escape }}</h2>
+    {%- endif -%}
+    {%- if section.settings.text != blank -%}
+      <p class="gifts-hub-trust__text">{{ section.settings.text | escape }}</p>
+    {%- endif -%}
+    <ul class="trust-strip__list" role="list">
+      {%- for i in (1..4) -%}
+        {%- assign label_key = 'badge_' | append: i | append: '_label' -%}
+        {%- if section.settings[label_key] != blank -%}
+          <li class="trust-strip__item" role="listitem">
+            <span class="trust-strip__label">{{ section.settings[label_key] | escape }}</span>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+    {%- if section.settings.size_help_label != blank -%}
+      <p class="gifts-hub-trust__size-help">
+        {%- if section.settings.size_help_link != blank -%}
+          <a href="{{ section.settings.size_help_link }}">{{ section.settings.size_help_label | escape }}</a>
+        {%- else -%}
+          {{ section.settings.size_help_label | escape }}
+        {%- endif -%}
+        {%- if section.settings.whatsapp_url != blank -%}
+          ·
+          <a href="{{ section.settings.whatsapp_url }}" rel="noopener noreferrer" target="_blank">
+            {{ section.settings.whatsapp_label | default: 'WhatsApp size help' | escape }}
+          </a>
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "HORO Gifts trust strip",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Gift with confidence"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "default": "Choose by recipient and occasion. We help with sizing on WhatsApp before dispatch."
+    },
+    {
+      "type": "text",
+      "id": "badge_1_label",
+      "label": "Badge 1",
+      "default": "Meaningful, giftable art tees"
+    },
+    {
+      "type": "text",
+      "id": "badge_2_label",
+      "label": "Badge 2",
+      "default": "COD when shown at checkout"
+    },
+    {
+      "type": "text",
+      "id": "badge_3_label",
+      "label": "Badge 3",
+      "default": "14-day exchange — see policy"
+    },
+    {
+      "type": "text",
+      "id": "badge_4_label",
+      "label": "Badge 4",
+      "default": "Delivery windows on PDP"
+    },
+    {
+      "type": "text",
+      "id": "size_help_label",
+      "label": "Size help link text",
+      "default": "How to choose a size"
+    },
+    {
+      "type": "url",
+      "id": "size_help_link",
+      "label": "Size help link",
+      "info": "Link to a product with size guide or FAQ"
+    },
+    {
+      "type": "url",
+      "id": "whatsapp_url",
+      "label": "WhatsApp URL"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_label",
+      "label": "WhatsApp link label",
+      "default": "Ask on WhatsApp"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-2",
+      "label": "Color scheme"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 28
+    }
+  ],
+  "presets": [{ "name": "HORO Gifts trust strip" }]
+}
+{% endschema %}

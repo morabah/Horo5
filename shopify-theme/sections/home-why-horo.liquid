@@ -24,6 +24,9 @@
         {{ section.settings.heading }}
       </h2>
     {%- endif -%}
+    {%- if section.settings.subheading != blank -%}
+      <p class="home-why-horo__subheading">{{ section.settings.subheading | escape }}</p>
+    {%- endif -%}
 
     {%- if section.blocks.size > 0 -%}
       <div class="home-why-horo__grid">
@@ -63,6 +66,14 @@
         <p>Add blocks to display the Why HORO section.</p>
       </div>
     {%- endif -%}
+
+    {%- if section.settings.cta_label != blank and section.settings.cta_link != blank -%}
+      <p class="home-why-horo__cta">
+        <a href="{{ section.settings.cta_link }}" class="button button--secondary">
+          {{ section.settings.cta_label | escape }}
+        </a>
+      </p>
+    {%- endif -%}
   </div>
 </div>
 
@@ -88,6 +99,24 @@
       ],
       "default": "h1",
       "label": "Heading size"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Not cheap print, not upload-anything custom, not generic gift-shop merch."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Why HORO vs other options"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link",
+      "default": "/pages/comparison-faq"
     },
     {
       "type": "color_scheme",

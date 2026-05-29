@@ -63,7 +63,7 @@ export const DICTIONARY = {
       "trustBadges": {
         "artistMade": "Artist-made designs",
         "printedEgypt": "Printed in Egypt",
-        "codAvailable": "COD available",
+        "codAvailable": "COD when shown at checkout",
         "exchange14d": "14-day exchange",
         "whatsappSupport": "WhatsApp support"
       },
@@ -80,7 +80,7 @@ export const DICTIONARY = {
       "feelingsCta": "See all feelings",
       "occasionsTitle": "For the Moment",
       "occasionsCta": "Shop the moment",
-      "whyHoroTitle": "Why HORO",
+      "whyHoroTitle": "Why HORO, not a normal printed T-shirt?",
       "giftHeadline": "Meaningful pieces for meaningful moments",
       "feelsLikeLabel": "Feels like",
       "worksForLabel": "Works for",
@@ -110,8 +110,8 @@ export const DICTIONARY = {
           "body": "Every product page shows measurements and a fit note. Less guessing, fewer exchanges, easier decisions."
         },
         "codAndExchange": {
-          "title": "COD & 14-Day Exchange",
-          "body": "Pay at your doorstep. If the fit is off, exchange within 14 days when unworn and in original packaging."
+          "title": "Safe to buy",
+          "body": "COD when shown at checkout. 14-day exchange — see policy for eligible items and condition."
         },
         "realProofOnly": {
           "title": "Real Proof Only",

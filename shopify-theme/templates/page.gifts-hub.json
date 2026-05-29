@@ -1,34 +1,112 @@
 {
   "sections": {
-    "gifts_hub": {
-      "type": "gifts-hub",
-      "settings": {
-        "heading": "",
-        "heading_size": "h0",
-        "subheading": "Say it without saying it",
-        "columns_desktop": 3,
-        "columns_mobile": "2",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
     "editorial_guide": {
       "type": "gifts-editorial-guide",
       "settings": {
         "eyebrow": "Gifts",
-        "heading": "Send something with meaning",
-        "text": "HORO designs work as gifts because they start with a feeling.",
-        "cta_label": "Shop all products",
-        "cta_link": "/collections/all",
+        "heading": "Give something they will actually wear",
+        "text": "HORO gifts start with a feeling — for her, for him, for a birthday, Eid, or graduation. Pick by person and occasion, then confirm size on WhatsApp if you are unsure.",
+        "cta_label": "Browse gift-ready designs",
+        "cta_link": "/collections/occasion-gift",
         "color_scheme": "scheme-1",
         "padding_top": 36,
+        "padding_bottom": 24
+      }
+    },
+    "gift_cohorts": {
+      "type": "horo-gift-cohorts",
+      "settings": {
+        "heading": "Who is it for?",
+        "heading_size": "h1",
+        "subheading": "Start with the person on your mind, then choose the occasion.",
+        "color_scheme": "scheme-1",
+        "padding_top": 12,
+        "padding_bottom": 28
+      },
+      "blocks": {
+        "for_her": {
+          "type": "cohort",
+          "settings": {
+            "title": "For her",
+            "subtitle": "Calm, joy, zodiac",
+            "collection_handle": "occasion-gift"
+          }
+        },
+        "for_him": {
+          "type": "cohort",
+          "settings": {
+            "title": "For him",
+            "subtitle": "Career, zodiac, mood",
+            "collection_handle": "feeling-zodiac"
+          }
+        },
+        "for_friend": {
+          "type": "cohort",
+          "settings": {
+            "title": "For a friend",
+            "subtitle": "Birthday & graduation",
+            "collection_handle": "occasion-birthday"
+          }
+        }
+      },
+      "block_order": ["for_her", "for_him", "for_friend"]
+    },
+    "gifts_hub": {
+      "type": "gifts-hub",
+      "settings": {
+        "heading": "Shop by gift occasion",
+        "heading_size": "h1",
+        "subheading": "Each occasion collection is curated for meaningful gifting.",
+        "columns_desktop": 3,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "padding_top": 12,
+        "padding_bottom": 28
+      }
+    },
+    "gift_products": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Gift-ready designs",
+        "heading_size": "h1",
+        "description": "Tees marked giftable with occasion tags and size help on every PDP.",
+        "show_description": true,
+        "description_style": "body",
+        "collection": "occasion-gift",
+        "products_to_show": 6,
+        "columns_desktop": 3,
+        "color_scheme": "scheme-1",
+        "image_ratio": "adapt",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": false,
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "gift_trust": {
+      "type": "gifts-hub-trust",
+      "settings": {
+        "heading": "Gift with confidence",
+        "text": "Delivery windows are on each product page. COD and exchange apply when shown at checkout and per policy.",
+        "badge_1_label": "Recipient & occasion guidance above",
+        "badge_2_label": "COD when shown at checkout",
+        "badge_3_label": "14-day exchange — see policy",
+        "badge_4_label": "WhatsApp size help before dispatch",
+        "size_help_label": "See size guide on any product page",
+        "size_help_link": "shopify://products/calm-inside-graphic-tee",
+        "whatsapp_label": "Ask on WhatsApp",
+        "color_scheme": "scheme-2",
+        "padding_top": 28,
         "padding_bottom": 36
       }
     }
   },
   "order": [
+    "editorial_guide",
+    "gift_cohorts",
     "gifts_hub",
-    "editorial_guide"
+    "gift_products",
+    "gift_trust"
   ]
 }

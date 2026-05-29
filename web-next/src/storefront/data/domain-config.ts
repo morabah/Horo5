@@ -45,7 +45,7 @@ export const PDP_SCHEMA = {
     { label: 'Secure checkout', icon: 'Lock' as const },
   ],
   /** Persistent PDP trust line (Guidelines §8.3) */
-  trustStripItems: ['Artist-made design', 'Licensed art', 'Free exchange 14d', 'COD available'] as const,
+  trustStripItems: ['Artist-made design', 'Licensed art', '14-day exchange — see policy', 'COD when shown at checkout'] as const,
   /** StoryBrand micro-plan strip */
   storyPlanSteps: ['Find your feeling', 'Pick your design', 'It arrives at your door'] as const,
   /** Gallery image indices (0-based) for the “See it styled” grid */
@@ -65,13 +65,13 @@ export function fillPdpCopyTemplate(template: string, vars: Record<string, strin
 }
 
 export const CART_SCHEMA = {
-  trustStripItems: ['Free exchange 14d', 'COD available', 'Artist-made design'] as const,
+  trustStripItems: ['14-day exchange — see policy', 'COD when shown at checkout', 'Artist-made design'] as const,
 
 } as const;
 
 export const MINI_CART_SCHEMA = {
 
-  trustItems: ['Free exchange 14d', 'COD available', 'Secure checkout'] as const,
+  trustItems: ['14-day exchange — see policy', 'COD when shown at checkout', 'Secure checkout'] as const,
   trustItemsAr: ['استبدال مجاني ١٤ يوم', 'الدفع عند الاستلام', 'دفع آمن'] as const,
 } as const;
 

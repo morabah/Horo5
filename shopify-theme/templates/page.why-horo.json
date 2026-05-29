@@ -1,0 +1,46 @@
+{
+  "sections": {
+    "comparison": {
+      "type": "horo-comparison-faq",
+      "settings": {
+        "heading": "Why HORO?",
+        "intro": "We are not selling an expensive printed tee. We sell artist-made meaning you can wear, gift, and keep.",
+        "cta_label": "Shop by feeling",
+        "cta_link": "/pages/feelings",
+        "secondary_label": "Full comparison FAQ",
+        "secondary_link": "/pages/comparison-faq",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "row_cheap": {
+          "type": "comparison_row",
+          "settings": {
+            "buyer_comparison": "Cheap printed tee",
+            "horo_answer": "Artist-made, story-led, and more meaningful to wear or gift.",
+            "proof": "Artist process, print close-up, story on PDP"
+          }
+        },
+        "row_custom": {
+          "type": "comparison_row",
+          "settings": {
+            "buyer_comparison": "Custom print shop",
+            "horo_answer": "Curated art — not upload-anything printing.",
+            "proof": "Licensed artwork, consistent HORO style"
+          }
+        },
+        "row_gift": {
+          "type": "comparison_row",
+          "settings": {
+            "buyer_comparison": "Generic gift",
+            "horo_answer": "Personal like a message, useful like a tee they will actually wear.",
+            "proof": "Gift hub, size help, delivery timing"
+          }
+        }
+      },
+      "block_order": ["row_cheap", "row_custom", "row_gift"]
+    }
+  },
+  "order": ["comparison"]
+}

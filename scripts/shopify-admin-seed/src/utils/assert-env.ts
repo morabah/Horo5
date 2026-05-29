@@ -74,7 +74,7 @@ export function getOAuthConfig(): OAuthEnv {
   const clientSecret = process.env.SHOPIFY_CLIENT_SECRET?.trim() || '';
   const scopes =
     process.env.SHOPIFY_SCOPES?.trim() ||
-    'read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_products,write_products';
+    'read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_products,write_products,read_content,write_content,read_publications,write_publications,read_themes,write_themes';
   const apiVersion = process.env.SHOPIFY_API_VERSION?.trim() || '2025-04';
 
   if (!storeDomain) {

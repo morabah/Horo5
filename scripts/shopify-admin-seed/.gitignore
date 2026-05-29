@@ -2,5 +2,6 @@ node_modules/
 dist/
 .env
 .env.local
+.shopify-oauth-token.json
 output/seed-report.json
 output/seed-report.md

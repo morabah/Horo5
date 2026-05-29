@@ -124,6 +124,54 @@ npx tsx src/index.ts --apply --verbose
 | `--verbose` | Detailed logging |
 | `--help` | Show help |
 
+### Seed launch content (collections, metaobjects, pages)
+
+After definitions exist, seed taxonomy entries and collections:
+
+```bash
+npm run seed:launch-content
+npm run seed:launch-content:dry   # preview only
+npm run verify:full               # definitions + content counts
+```
+
+Creates feelings, subfeelings, occasions, linked collections (`custom.feeling` / `custom.occasion`), and pages (`feelings`, `occasions`, `gifts-hub`). Idempotent — safe to re-run.
+
+**OAuth scopes:** include `read_content`, `write_content` (pages) and `read_publications`, `write_publications` (publish collections to Online Store). Re-authorize the Partner app after updating `SHOPIFY_SCOPES` in `.env`.
+
+### Full launch automation (everything)
+
+```bash
+npm run automate:launch
+# or step-by-step:
+npm run seed:launch-all
+npm run patch:theme-local
+cd ../../shopify-theme && shopify theme push --theme elegant-textures --allow-live --only config/settings_data.json
+```
+
+Runs **content** (taxonomy + collections + pages) then **catalog** (size table, artist, 3 launch products with variants/SKUs/inventory, all product metafields, collection membership), **local theme settings** (`horo_gift_wrap_product`, trust/delivery copy, `horo_incentives_live=false`), then `verify:full`.
+
+**OAuth token cache:** after first browser login, token is saved to `.shopify-oauth-token.json` (gitignored). Re-authorize with `SHOPIFY_FORCE_OAUTH=1 npm run seed:launch-content`.
+
+**Partner app scopes (merchant approval required):** In [Partners](https://partners.shopify.com) → Apps → your app → **API access**, enable and get merchant approval for:
+
+| Scope | Enables |
+|-------|---------|
+| `write_content` / `read_content` | Hub pages (`feelings`, `occasions`, `gifts-hub`) |
+| `read_publications` / `write_publications` | Publish collections to Online Store via API |
+| `read_themes` / `write_themes` | Patch `settings_data.json` via Admin API (optional if you use `patch:theme-local` + `shopify theme push`) |
+
+Until `write_content` is approved, create the three pages in **Admin → Pages** with templates `feelings`, `occasions`, `gifts-hub` (handles must match).
+
+| Script | What it does |
+|--------|----------------|
+| `seed:launch-content` | Feelings, subfeelings, occasions, collections, pages |
+| `seed:launch-catalog` | Size table, artist, 3 products, metafields, collections, theme settings |
+| `seed:launch-all` | Both + verify |
+
+**Still manual:** product photos, publishing collections to Online Store (if OAuth lacks publications scope), checkout/payment/policy audit.
+
+Uses REST for product variants and theme `settings_data.json`; GraphQL for metafields and collections.
+
 ## Idempotency
 
 The script is fully idempotent:
