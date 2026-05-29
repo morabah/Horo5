@@ -1,8 +1,7 @@
 {%- comment -%}
   Gift wrap upsell + reassurance inside cart drawer.
+  gift-wrap.js loads from cart-drawer.liquid (not here) so Ajax drawer refresh keeps handlers.
 {%- endcomment -%}
-{{ 'component-gift-wrap.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'gift-wrap.js' | asset_url }}" defer></script>
 
 {%- liquid
   assign gift_wrap_product = settings.horo_gift_wrap_product

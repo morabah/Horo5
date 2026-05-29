@@ -57,6 +57,7 @@
     },
     "product_story": {
       "heading": "القصة",
+      "full_story": "القصة كاملة",
       "read_more": "اقرأ القصة كاملة",
       "read_less": "اقرأ أقل"
     },
@@ -181,6 +182,7 @@
       "accordionShipping": "الشحن والاستبدال",
       "accordion_materials": "الخامات والطباعة",
       "accordion_care": "تعليمات العناية",
+      "accordion_dimensions": "الأبعاد والوزن",
       "fit_label": "المقاس:",
       "feeling_group_label": "إحساس المنتج",
       "features_label": "المميزات",

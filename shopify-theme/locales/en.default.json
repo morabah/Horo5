@@ -589,6 +589,7 @@
     },
     "product_story": {
       "heading": "The Story",
+      "full_story": "Full story",
       "read_more": "Read the full story",
       "read_less": "Read less"
     },
@@ -713,6 +714,7 @@
       "accordionShipping": "Shipping & Returns",
       "accordion_materials": "Materials & print",
       "accordion_care": "Care instructions",
+      "accordion_dimensions": "Dimensions & weight",
       "fit_label": "Fit:",
       "feeling_group_label": "Product feeling",
       "features_label": "Features",

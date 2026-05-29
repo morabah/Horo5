@@ -2,7 +2,9 @@
   Scalar product field resolver (HORO data contract).
   Accepts: product (required), field (required string key).
   Outputs plain text only — no HTML. Blank when unset.
-  Do NOT use for lists, metaobject refs, product lists, or JSON.
+
+  Allowed keys only (see docs/HORO_DATA_CONTRACT.md §2.4).
+  Do NOT use for rich text, lists, metaobject refs, product lists, or JSON.
 {%- endcomment -%}
 {%- liquid
   assign field_key = field | default: '' | strip
@@ -17,32 +19,8 @@
       assign output = product.metafields.custom.primary_audience.value
     when 'promo_label'
       assign output = product.metafields.custom.promo_label.value
-    when 'story'
-      assign output = product.metafields.custom.story.value
-    when 'story_description'
-      assign output = product.metafields.custom.story_description.value
-    when 'design_story'
-      assign output = product.metafields.custom.design_story.value | default: product.metafields.custom.story.value
-    when 'emotional_hook'
-      assign output = product.metafields.custom.emotional_hook.value
-    when 'wearer_story'
-      assign output = product.metafields.custom.wearer_story.value
-    when 'design_prompt'
-      assign output = product.metafields.custom.design_prompt.value
-    when 'materials'
-      assign output = product.metafields.custom.materials.value
-    when 'care_instructions'
-      assign output = product.metafields.custom.care_instructions.value
-    when 'dimensions_note'
-      assign output = product.metafields.custom.dimensions_note.value
-    when 'shipping_returns_note'
-      assign output = product.metafields.custom.shipping_returns_note.value
     when 'low_stock_message'
       assign output = product.metafields.custom.low_stock_message.value
-    when 'delivery_note'
-      assign output = product.metafields.custom.delivery_note.value
-    when 'exchange_note'
-      assign output = product.metafields.custom.exchange_note.value
     when 'feeling_title'
       assign feeling_obj = product.metafields.custom.feeling.value
       if feeling_obj != blank

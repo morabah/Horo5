@@ -144,7 +144,7 @@
     },
     {
       "query": "gift",
-      "redirect_to": "/pages/gifts"
+      "redirect_to": "/pages/gifts-hub"
     }
   ]
 }

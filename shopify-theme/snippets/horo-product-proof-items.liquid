@@ -12,7 +12,7 @@
 
 {%- if proof_gallery != blank -%}
   {%- for proof_item in proof_gallery -%}
-    {%- assign proof_image = proof_item.image | default: proof_item -%}
+    {%- assign proof_image = proof_item.image -%}
     {%- assign proof_label = proof_item.label | default: proof_item.tag | replace: '_', ' ' | capitalize -%}
     {%- if proof_image != blank -%}
       {%- assign rendered_any = true -%}
