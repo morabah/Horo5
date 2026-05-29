@@ -29,7 +29,11 @@
           </p>
         {%- else -%}
           <input type="hidden" name="contact[tags]" value="share-fit">
-          <input type="hidden" name="contact[product]" value="{{ product.title | escape }}">
+          {%- if product != blank -%}
+            <input type="hidden" name="contact[product]" value="{{ product.title | escape }}">
+          {%- elsif order != blank -%}
+            <input type="hidden" name="contact[order]" value="{{ order.name | escape }}">
+          {%- endif -%}
           
           <div class="field">
             <input class="field__input" autocomplete="name" type="text" id="ShareFitName" name="contact[name]" value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}" placeholder="Name">

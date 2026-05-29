@@ -49,7 +49,14 @@
 
         {%- if settings.horo_whatsapp_support_url != blank -%}
           {%- assign wa_message = 'Hi HORO team, I want to track my order: ' | append: order.name -%}
-          {%- assign wa_url = settings.horo_whatsapp_support_url | append: '?text=' | append: wa_message | url_encode -%}
+          {%- assign wa_message_encoded = wa_message | url_encode -%}
+          {%- if settings.horo_whatsapp_support_url contains 'text=' -%}
+            {%- assign wa_url = settings.horo_whatsapp_support_url -%}
+          {%- elsif settings.horo_whatsapp_support_url contains '?' -%}
+            {%- assign wa_url = settings.horo_whatsapp_support_url | append: '&text=' | append: wa_message_encoded -%}
+          {%- else -%}
+            {%- assign wa_url = settings.horo_whatsapp_support_url | append: '?text=' | append: wa_message_encoded -%}
+          {%- endif -%}
           <p class="horo-order-surface__support" style="margin-top: 1.2rem;">
             <a
               href="{{- wa_url -}}"

@@ -66,5 +66,8 @@ export function normalizeOrderPaidWebhook(params: {
     createdAt: payload.created_at ?? null,
     processedAt: payload.processed_at ?? null,
     recordedAt: new Date().toISOString(),
+    reviewRequestNeeded: true,
+    reviewRequestChannel: "whatsapp_or_email",
+    reviewRequestStatus: "pending",
   };
 }

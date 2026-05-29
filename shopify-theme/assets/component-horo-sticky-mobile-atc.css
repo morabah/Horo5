@@ -45,8 +45,27 @@
     color: rgba(var(--color-foreground), 0.7);
   }
 
+  .horo-sticky-mobile-atc__wa {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    inline-size: 4.4rem;
+    block-size: 4.4rem;
+    border: 1px solid rgba(var(--color-foreground), 0.16);
+    border-radius: 999px;
+    color: rgb(var(--color-foreground));
+    background: rgba(var(--color-background), 0.96);
+    text-decoration: none;
+  }
+
+  .horo-sticky-mobile-atc__wa svg {
+    inline-size: 2rem;
+    block-size: 2rem;
+  }
+
   .horo-sticky-mobile-atc__btn {
     flex-shrink: 0;
-    min-inline-size: 10rem;
+    min-inline-size: 9.5rem;
   }
 }

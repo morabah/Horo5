@@ -40,12 +40,15 @@ describe("order quality score", () => {
         source: "organic",
         codConfirmationStatus: "confirmed",
         isGiftOrder: true,
+        sizeConfidence: "high",
+        ugcPotential: true,
         packagingCostEgp: 20,
         shippingSubsidyEgp: 50,
         paymentFeeEgp: 15,
         estimatedCpaEgp: 0,
         rtoAllowanceEgp: 20,
       },
+      shipping_address: { city: "Cairo", province: "Cairo" },
       payment_collections: [{ payment_sessions: [{ provider_id: "pp_system_default" }] }],
       items: [
         {
@@ -81,6 +84,9 @@ describe("order quality score", () => {
       "low_source_quality",
       "low_cod_confirmation",
       "low_product_route_quality",
+      "low_delivery_area_quality",
+      "low_size_confidence",
+      "low_ugc_potential",
     ]))
   })
 })

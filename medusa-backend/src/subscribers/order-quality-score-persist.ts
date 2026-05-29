@@ -2,10 +2,17 @@ import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { updateOrderWorkflow } from "@medusajs/medusa/core-flows"
 
+import { ORDER_OPS_ACTION_GRAPH_FIELDS } from "../lib/horo-ops-order-query-fields"
 import { calculateOrderQualityScore } from "../lib/order-quality-score"
 import { asRecord } from "../lib/shared/type-guards"
 
 type OrderPlacedPayload = { id?: string }
+
+const ORDER_QUALITY_GRAPH_FIELDS = [
+  ...ORDER_OPS_ACTION_GRAPH_FIELDS,
+  "items.item.product.*",
+  "items.item.variant.*",
+] as const
 
 export default async function orderQualityScorePersistHandler({
   event: { data },
@@ -23,7 +30,7 @@ export default async function orderQualityScorePersistHandler({
   try {
     const { data: rows } = await query.graph({
       entity: "order",
-      fields: ["id", "metadata"],
+      fields: [...ORDER_QUALITY_GRAPH_FIELDS] as string[],
       filters: { id: orderId },
       pagination: { take: 1 },
     })

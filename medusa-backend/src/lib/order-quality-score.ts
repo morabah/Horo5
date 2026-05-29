@@ -22,6 +22,17 @@ function stringValue(value: unknown): string {
   return typeof value === "string" ? value.trim().toLowerCase() : ""
 }
 
+function firstStringValue(values: unknown[]): string {
+  return values.map(stringValue).find(Boolean) ?? ""
+}
+
+function truthySignal(value: unknown): boolean {
+  if (value === true) return true
+  if (typeof value === "number") return value > 0
+  const raw = stringValue(value)
+  return ["1", "true", "yes", "high", "confirmed", "opted_in"].includes(raw)
+}
+
 function orderMetadata(order: Record<string, unknown>): Record<string, unknown> {
   return isRecord(order.metadata) ? order.metadata : {}
 }
@@ -102,6 +113,112 @@ function giftIntentQuality(order: Record<string, unknown>): OrderQualityFactor {
   return { key: "gift_or_self_intent", score: 3, reason: "unknown gift intent" }
 }
 
+function deliveryAreaQuality(order: Record<string, unknown>): OrderQualityFactor {
+  const meta = orderMetadata(order)
+  const address: Record<string, unknown> = isRecord(order.shipping_address)
+    ? order.shipping_address
+    : isRecord(order.shippingAddress)
+      ? order.shippingAddress
+      : {}
+  const risk = firstStringValue([meta.rtoRisk, meta.rto_risk, meta.deliveryRisk, meta.delivery_risk, meta.areaRisk])
+
+  if (/high|remote|rto|unreachable|unclear/.test(risk)) {
+    return { key: "delivery_area_quality", score: 1, reason: risk }
+  }
+  if (/medium|manual|verify/.test(risk)) {
+    return { key: "delivery_area_quality", score: 3, reason: risk }
+  }
+
+  const area = firstStringValue([
+    meta.deliveryArea,
+    meta.delivery_area,
+    meta.shippingCity,
+    meta.shipping_city,
+    address.city,
+    address.province,
+    address.address_1,
+  ])
+  if (area) {
+    return { key: "delivery_area_quality", score: 5, reason: area }
+  }
+  return { key: "delivery_area_quality", score: 1, reason: "missing delivery area" }
+}
+
+function sizeConfidenceQuality(order: Record<string, unknown>): OrderQualityFactor {
+  const meta = orderMetadata(order)
+  const confidenceRaw = meta.sizeConfidence ?? meta.size_confidence ?? meta.sizeConfidenceScore ?? meta.size_confidence_score
+
+  if (typeof confidenceRaw === "number" && Number.isFinite(confidenceRaw)) {
+    if (confidenceRaw >= 4 || confidenceRaw >= 0.75) {
+      return { key: "size_confidence", score: 5, reason: String(confidenceRaw) }
+    }
+    if (confidenceRaw > 0) {
+      return { key: "size_confidence", score: 3, reason: String(confidenceRaw) }
+    }
+  }
+
+  const confidence = stringValue(confidenceRaw)
+  if (/high|confident|confirmed|recommended|helped|true|yes/.test(confidence)) {
+    return { key: "size_confidence", score: 5, reason: confidence }
+  }
+  if (/medium|selected|ok|standard|usual/.test(confidence)) {
+    return { key: "size_confidence", score: 3, reason: confidence }
+  }
+  if (/low|unclear|unknown|help_needed|not_sure/.test(confidence)) {
+    return { key: "size_confidence", score: 1, reason: confidence }
+  }
+
+  const itemMetas = collectItemMetadata(order)
+  const hasSizeSignal = itemMetas.some((itemMeta) =>
+    Boolean(
+      firstStringValue([
+        itemMeta.selectedSize,
+        itemMeta.selected_size,
+        itemMeta.recommendedSize,
+        itemMeta.recommended_size,
+        itemMeta.preferredDefaultSize,
+        itemMeta.preferred_default_size,
+        itemMeta.size,
+      ]),
+    ),
+  )
+  if (hasSizeSignal) {
+    return { key: "size_confidence", score: 3, reason: "selected size present" }
+  }
+
+  return { key: "size_confidence", score: 1, reason: "missing size signal" }
+}
+
+function ugcPotentialQuality(order: Record<string, unknown>): OrderQualityFactor {
+  const meta = orderMetadata(order)
+  const itemMetas = collectItemMetadata(order)
+
+  if (
+    truthySignal(meta.ugcPotential) ||
+    truthySignal(meta.ugc_potential) ||
+    truthySignal(meta.shareIntent) ||
+    truthySignal(meta.share_intent) ||
+    itemMetas.some((itemMeta) => truthySignal(itemMeta.ugcPotential) || truthySignal(itemMeta.ugc_potential))
+  ) {
+    return { key: "ugc_potential", score: 5, reason: "explicit UGC/share signal" }
+  }
+
+  if (truthySignal(meta.whatsapp_opt_in) || truthySignal(meta.marketing_opt_in)) {
+    return { key: "ugc_potential", score: 3, reason: "contact opt-in" }
+  }
+
+  if (
+    itemMetas.some((itemMeta) =>
+      itemMeta.giftable === true ||
+      (Array.isArray(itemMeta.giftOccasionTags) && itemMeta.giftOccasionTags.length > 0),
+    )
+  ) {
+    return { key: "ugc_potential", score: 3, reason: "giftable product" }
+  }
+
+  return { key: "ugc_potential", score: 1, reason: "no UGC signal" }
+}
+
 function marginQuality(margin: ContributionMarginResult): OrderQualityFactor {
   if (margin.warnings.includes("missing_cost_data")) {
     return { key: "margin", score: 1, reason: "unknown" }
@@ -122,6 +239,9 @@ export function calculateOrderQualityScore(order: Record<string, unknown>): Orde
     codQuality(order),
     productRouteQuality(order),
     giftIntentQuality(order),
+    deliveryAreaQuality(order),
+    sizeConfidenceQuality(order),
+    ugcPotentialQuality(order),
     marginQuality(contributionMargin),
   ]
   const orderQualityScore =

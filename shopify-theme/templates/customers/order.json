@@ -11,10 +11,21 @@
     },
     "main": {
       "type": "main-order"
+    },
+    "horo_share_your_fit": {
+      "type": "horo-share-your-fit",
+      "settings": {
+        "heading": "Share your fit",
+        "subheading": "After your order arrives, send us a photo link if you want HORO to feature your look with permission.",
+        "heading_size": "h1",
+        "padding_top": 24,
+        "padding_bottom": 36
+      }
     }
   },
   "order": [
     "horo_order_surface",
-    "main"
+    "main",
+    "horo_share_your_fit"
   ]
 }

@@ -20,6 +20,9 @@ export type StoredOrderEvent = {
   createdAt: string | null;
   processedAt: string | null;
   recordedAt: string;
+  reviewRequestNeeded: boolean;
+  reviewRequestChannel: "whatsapp_or_email";
+  reviewRequestStatus: "pending";
 };
 
 function resolveStorePath(): string {

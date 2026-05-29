@@ -243,6 +243,71 @@ export async function sendWhatsAppOrderConfirmationTemplate(args: {
   return { ok: true, messageId, raw: parsed }
 }
 
+export function buildWhatsAppTextMessagePayload(args: {
+  toDigits: string
+  text: string
+}): Record<string, unknown> {
+  return {
+    messaging_product: "whatsapp",
+    to: args.toDigits,
+    type: "text",
+    text: {
+      preview_url: false,
+      body: args.text,
+    },
+  }
+}
+
+export async function sendWhatsAppTextMessage(args: {
+  graphVersion: string
+  phoneNumberId: string
+  accessToken: string
+  toDigits: string
+  text: string
+}): Promise<{ ok: true; messageId: string; raw: unknown } | { ok: false; error: string; raw?: unknown }> {
+  const version = args.graphVersion.trim().replace(/^\/+/, "")
+  const url = `https://graph.facebook.com/${version}/${encodeURIComponent(args.phoneNumberId)}/messages`
+  const payload = buildWhatsAppTextMessagePayload({
+    toDigits: args.toDigits,
+    text: args.text,
+  })
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${args.accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  })
+
+  const text = await res.text()
+  let parsed: unknown
+  try {
+    parsed = text ? JSON.parse(text) : null
+  } catch {
+    return { ok: false, error: text || `HTTP ${res.status}` }
+  }
+
+  if (!res.ok) {
+    return {
+      ok: false,
+      error: typeof parsed === "object" && parsed !== null && "error" in parsed
+        ? JSON.stringify((parsed as { error: unknown }).error)
+        : JSON.stringify(parsed),
+      raw: parsed,
+    }
+  }
+
+  const msgArr = (parsed as { messages?: Array<{ id?: string }> }).messages
+  const messageId = msgArr?.[0]?.id
+  if (!messageId) {
+    return { ok: false, error: "Missing messages[0].id in Graph response", raw: parsed }
+  }
+
+  return { ok: true, messageId, raw: parsed }
+}
+
 export type WhatsAppStatusEvent = {
   id?: string
   status?: string

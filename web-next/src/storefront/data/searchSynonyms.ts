@@ -17,7 +17,6 @@ export const ADDITIONAL_COMMON_QUERY_EXPANSIONS: Record<string, string[]> = {
   'تي شيرت': ['graphic tee', 't shirt', 'tee'],
   سويتشيرت: ['graphic tee', 'hoodie', 'heavyweight'],
   oversized: ['oversized', 'relaxed unisex fit', 'quiet revolt'],
-  astrology: ['soft quiet', 'warm romantic'],
   space: ['playful offbeat', 'soft quiet'],
   office: ['grounded everyday', 'work', 'professional'],
   street: ['bold electric', 'streetwear', 'viral'],
@@ -26,7 +25,7 @@ export const ADDITIONAL_COMMON_QUERY_EXPANSIONS: Record<string, string[]> = {
 /** Merged into feeling alias map by slug (must match canonical feeling slugs in Medusa). */
 export const ADDITIONAL_FEELING_ALIASES: Record<string, string[]> = {
   mood: ['heartfelt', 'sensitive', 'vulnerable', 'emotions', 'قلب', 'مشاعري'],
-  zodiac: ['stars', 'moon', 'romantic', 'gift', 'حب', 'هدية'],
+  zodiac: ['symbol', 'symbols', 'personality', 'stars', 'moon', 'romantic', 'gift', 'رمز', 'شخصية', 'حب', 'هدية'],
   fiction: ['sci fi', 'scifi', 'novel', 'game', 'fiction', 'ألعاب', 'رواية'],
   career: ['job', 'linkedin', 'promotion', 'career', 'ترقية', 'شغلي'],
   trends: ['tiktok', 'instagram', 'hypebeast', 'trends', 'انستجرام'],

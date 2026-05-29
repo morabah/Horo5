@@ -6,6 +6,7 @@ import { StoreFooter } from "@/components/store-footer";
 import { StoreHeader } from "@/components/store-header";
 import { WhatsAppFloatingButton } from "@/components/whatsapp-floating-button";
 import { env, siteUrl } from "@/lib/env";
+import { dirForLocale, getDefaultLocale } from "@/lib/i18n/locale";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -34,9 +35,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = getDefaultLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
+      dir={dirForLocale(locale)}
       className="h-full antialiased"
     >
       <body className="min-h-full flex flex-col bg-[#FAFAF9] text-[#101012]">
@@ -46,7 +49,7 @@ export default function RootLayout({
           metaPixelId={env.NEXT_PUBLIC_META_PIXEL_ID}
         />
         <CartProvider>
-          <StoreHeader />
+          <StoreHeader locale={locale} />
           <div className="flex-1">{children}</div>
           <WhatsAppFloatingButton />
           <StoreFooter />

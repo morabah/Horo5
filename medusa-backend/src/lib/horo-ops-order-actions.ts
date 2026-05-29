@@ -3,12 +3,18 @@ import {
   capturePaymentWorkflow,
   createOrderFulfillmentWorkflow,
   markOrderFulfillmentAsDeliveredWorkflow,
+  updateOrderWorkflow,
 } from "@medusajs/medusa/core-flows"
 
 import { coerceMoneyAmount } from "./egp-amount"
 import { canDispatchCodOrder } from "./cod-confirmation"
 import { isPaymentCaptured } from "./horo-ops-classify"
 import { ORDER_OPS_ACTION_GRAPH_FIELDS } from "./horo-ops-order-query-fields"
+import {
+  buildPendingUgcRequestMetadata,
+  deliveredAtFromOrder,
+  readMetadata,
+} from "./post-delivery-ugc"
 
 export type HoroOpsOrderActionKind = "capture_payment" | "create_fulfillment" | "mark_fulfillment_delivered"
 
@@ -258,6 +264,18 @@ export async function executeHoroOpsOrderAction(args: {
         input: {
           orderId: args.orderId,
           fulfillmentId: fid,
+        } as never,
+      })
+      const deliveredAt = deliveredAtFromOrder(row)
+      const nextMetadata = buildPendingUgcRequestMetadata({
+        existingMetadata: readMetadata(row.metadata),
+        deliveredAt,
+      })
+      await updateOrderWorkflow(args.scope as never).run({
+        input: {
+          id: args.orderId,
+          user_id: args.actorUserId,
+          metadata: nextMetadata,
         } as never,
       })
       break

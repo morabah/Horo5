@@ -5,7 +5,7 @@
   assign subfeeling_metaobject = product.metafields.custom.subfeeling.value
   assign fit_note = product.metafields.custom.fit_note.value | default: product.metafields.custom.fit_label.value | default: product.metafields.custom.size_fit_note.value
   assign low_stock_message = product.metafields.custom.low_stock_message.value
-  assign whatsapp_url = product.metafields.custom.whatsapp_help_url.value
+  assign whatsapp_base_url = product.metafields.custom.whatsapp_help_url.value | default: settings.horo_whatsapp_support_url
   assign giftable = product.metafields.custom.giftable.value
   assign gift_occasion_tags = product.metafields.custom.gift_occasion_tags.value
   assign trust_chips = product.metafields.custom.trust_chips.value
@@ -32,8 +32,17 @@
   endif
 
   assign has_whatsapp = false
-  if whatsapp_url != blank
+  if whatsapp_base_url != blank
     assign has_whatsapp = true
+    assign whatsapp_message = 'Hi HORO team, I need help choosing a size for ' | append: product.title
+    assign whatsapp_message_encoded = whatsapp_message | url_encode
+    if whatsapp_base_url contains 'text='
+      assign whatsapp_url = whatsapp_base_url
+    elsif whatsapp_base_url contains '?'
+      assign whatsapp_url = whatsapp_base_url | append: '&text=' | append: whatsapp_message_encoded
+    else
+      assign whatsapp_url = whatsapp_base_url | append: '?text=' | append: whatsapp_message_encoded
+    endif
   endif
 
   assign is_giftable = false

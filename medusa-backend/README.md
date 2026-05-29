@@ -191,9 +191,23 @@ On every `order.placed`, the subscriber `src/subscribers/order-quality-score-per
 - COD confirmation state
 - product route clarity (gift / feeling / occasion)
 - gift-intent signal
+- delivery-area clarity / RTO risk
+- size-confidence signal
+- UGC/share potential
 - contribution margin
 
 The score and breakdown are written to `order.metadata.quality_score` and surfaced in the ops dashboard.
+
+### Post-delivery UGC request loop
+
+When an order is marked delivered through HORO ops, or when Medusa emits `order.fulfillment_delivered`, the backend schedules a post-delivery UGC ask by writing `order.metadata.ugc_request_*`.
+
+The scheduled job `src/jobs/post-delivery-ugc-request.ts` runs daily and sends due WhatsApp asks when `WHATSAPP_ACCESS_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` are configured, and due email asks when `RESEND_API_KEY` / `ORDER_CONFIRMATION_FROM` are configured. Tune the delay and scan size with:
+
+```bash
+HORO_UGC_REQUEST_DELAY_DAYS=3
+HORO_UGC_REQUEST_JOB_TAKE=250
+```
 
 ### Price-as-hypothesis flag
 
