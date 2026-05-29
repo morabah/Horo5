@@ -669,7 +669,10 @@
       "filter_by_line": "Filter by line",
       "all": "All",
       "sort_by": "Sort by",
-      "products_count": "{{ count }} products"
+      "products_count": "{{ count }} products",
+      "design_count": "{{ count }} designs",
+      "empty_collection": "No designs in this collection yet",
+      "all_feeling": "All {{ feeling }}"
     },
     "accessibility": {
       "skip_to_content": "Skip to content",
@@ -733,11 +736,6 @@
       "printed_in_egypt": "Printed in Egypt",
       "sold_out": "Sold out",
       "low_stock": "Low stock"
-    },
-    "collection": {
-      "design_count": "{{ count }} designs",
-      "empty_collection": "No designs in this collection yet",
-      "all_feeling": "All {{ feeling }}"
     },
     "cart": {
       "reassurance_heading": "Before you checkout",

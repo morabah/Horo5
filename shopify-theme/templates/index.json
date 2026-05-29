@@ -146,36 +146,6 @@
         "padding_bottom": 36
       }
     },
-    "horo_feeling_quiz": {
-      "type": "horo-feeling-quiz",
-      "settings": {
-        "heading": "What are you feeling?",
-        "subheading": "Answer a few questions and we'll match you to a collection.",
-        "heading_size": "h0",
-        "result_heading": "We found your feeling",
-        "result_cta": "Shop this feeling",
-        "color_scheme": "scheme-1",
-        "padding_top": 60,
-        "padding_bottom": 60
-      },
-      "blocks": {
-        "question_1": {
-          "type": "question",
-          "settings": {
-            "question": "Pick a vibe for today:",
-            "option_1_label": "Bold and loud",
-            "option_1_value": "emotions",
-            "option_2_label": "Quiet and reflective",
-            "option_2_value": "fiction",
-            "option_3_label": "Grounded and real",
-            "option_3_value": "career"
-          }
-        }
-      },
-      "block_order": [
-        "question_1"
-      ]
-    },
     "feeling_grid": {
       "type": "home-feeling-grid",
       "settings": {
@@ -199,15 +169,6 @@
         "columns_mobile": "2",
         "color_scheme": "scheme-1",
         "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "latest_drop": {
-      "type": "home-drop-strip",
-      "settings": {
-        "heading_size": "h1",
-        "color_scheme": "scheme-1",
-        "padding_top": 28,
         "padding_bottom": 36
       }
     },

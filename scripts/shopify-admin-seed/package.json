@@ -9,6 +9,10 @@
     "seed:definitions:dry": "tsx src/index.ts",
     "seed:definitions:all": "tsx src/index.ts --apply --include-drops",
     "check": "tsx src/index.ts --check",
+    "sync:metaobject-fields": "tsx src/sync-metaobject-fields.ts",
+    "sync:metaobject-storefront-access": "tsx src/sync-metaobject-storefront-access.ts",
+    "verify:launch": "tsx src/verify-launch-custom-data.ts",
+    "verify:product-list": "tsx src/verify-user-product-definitions.ts",
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {

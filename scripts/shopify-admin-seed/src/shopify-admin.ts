@@ -144,6 +144,50 @@ export class ShopifyAdminClient {
   /**
    * Create a metaobject definition.
    */
+  async updateMetaobjectDefinitionAccess(
+    definitionId: string,
+    storefront: 'PUBLIC_READ' | 'NONE' = 'PUBLIC_READ'
+  ): Promise<void> {
+    const mutation = `
+      mutation UpdateMetaobjectAccess($id: ID!, $definition: MetaobjectDefinitionUpdateInput!) {
+        metaobjectDefinitionUpdate(id: $id, definition: $definition) {
+          metaobjectDefinition {
+            id
+            access {
+              admin
+              storefront
+            }
+          }
+          userErrors {
+            field
+            message
+            code
+          }
+        }
+      }
+    `;
+
+    const res = await this.request<{
+      metaobjectDefinitionUpdate: {
+        metaobjectDefinition: { id: string; access: { admin: string; storefront: string } } | null;
+        userErrors: Array<{ field: string; message: string; code: string }>;
+      };
+    }>(mutation, {
+      id: definitionId,
+      definition: {
+        access: {
+          storefront,
+        },
+      },
+    });
+
+    const result = res.data?.metaobjectDefinitionUpdate;
+    if (result?.userErrors && result.userErrors.length > 0) {
+      const errors = result.userErrors.map((e) => `${e.field}: ${e.message}`).join('; ');
+      throw new Error(`metaobjectDefinitionUpdate error: ${errors}`);
+    }
+  }
+
   async createMetaobjectDefinition(definition: {
     type: string;
     name: string;
@@ -178,7 +222,14 @@ export class ShopifyAdminClient {
         metaobjectDefinition: { id: string; type: string; name: string } | null;
         userErrors: Array<{ field: string; message: string; code: string }>;
       };
-    }>(mutation, { definition });
+    }>(mutation, {
+      definition: {
+        ...definition,
+        access: {
+          storefront: 'PUBLIC_READ',
+        },
+      },
+    });
 
     const result = res.data?.metaobjectDefinitionCreate;
 
@@ -270,5 +321,57 @@ export class ShopifyAdminClient {
     }
 
     return result?.createdDefinition ?? null;
+  }
+
+  /**
+   * Append field definitions to an existing metaobject definition.
+   */
+  async addMetaobjectFieldDefinitions(
+    definitionId: string,
+    fields: Array<{ key: string; name: string; type: string; description?: string; required?: boolean }>
+  ): Promise<void> {
+    const mutation = `
+      mutation AddMetaobjectFields($id: ID!, $definition: MetaobjectDefinitionUpdateInput!) {
+        metaobjectDefinitionUpdate(id: $id, definition: $definition) {
+          metaobjectDefinition {
+            id
+            fieldDefinitions {
+              key
+            }
+          }
+          userErrors {
+            field
+            message
+            code
+          }
+        }
+      }
+    `;
+
+    const res = await this.request<{
+      metaobjectDefinitionUpdate: {
+        metaobjectDefinition: { id: string } | null;
+        userErrors: Array<{ field: string; message: string; code: string }>;
+      };
+    }>(mutation, {
+      id: definitionId,
+      definition: {
+        fieldDefinitions: fields.map((field) => ({
+          create: {
+            key: field.key,
+            name: field.name,
+            type: field.type,
+            description: field.description,
+            required: field.required,
+          },
+        })),
+      },
+    });
+
+    const result = res.data?.metaobjectDefinitionUpdate;
+    if (result?.userErrors && result.userErrors.length > 0) {
+      const errors = result.userErrors.map((e) => `${e.field}: ${e.message}`).join('; ');
+      throw new Error(`metaobjectDefinitionUpdate error: ${errors}`);
+    }
   }
 }

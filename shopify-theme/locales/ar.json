@@ -137,7 +137,10 @@
       "filter_by_line": "فلتر بالخط",
       "all": "الكل",
       "sort_by": "ترتيب حسب",
-      "products_count": "{{ count }} منتج"
+      "products_count": "{{ count }} منتج",
+      "design_count": "{{ count }} تصميم",
+      "empty_collection": "مفيش تصاميم في المجموعة دي لسه",
+      "all_feeling": "كل {{ feeling }}"
     },
     "accessibility": {
       "skip_to_content": "تخطى للمحتوى",
@@ -201,11 +204,6 @@
       "printed_in_egypt": "مطبوع في مصر",
       "sold_out": "نفذ",
       "low_stock": "كمية محدودة"
-    },
-    "collection": {
-      "design_count": "{{ count }} تصميم",
-      "empty_collection": "مفيش تصاميم في المجموعة دي لسه",
-      "all_feeling": "كل {{ feeling }}"
     },
     "cart": {
       "reassurance_heading": "قبل ما تكمل الدفع",

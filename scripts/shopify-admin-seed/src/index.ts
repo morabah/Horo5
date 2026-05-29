@@ -265,6 +265,8 @@ function buildMetafieldValidations(
       artist: 'artist',
       size_table: 'size_table',
       occasion: 'occasion',
+      proof_gallery: 'proof_item',
+      review_proof: 'ugc_proof',
     };
     const targetType = keyToType[key];
     if (targetType && metaobjectIds.has(targetType)) {
@@ -508,6 +510,8 @@ async function main(): Promise<void> {
   logger.section('Processing product metafield definitions');
   const pmResult = await seedMetafields(client, PRODUCT_METAFIELDS, existingProductMetafields, 'PRODUCT', args.check || !args.apply, metaobjectIds);
   totalResult = mergeResults(totalResult, pmResult);
+
+  // descriptors.subtitle is a Shopify standard product metafield — do not create via API.
 
   // ── Phase 4: Collection metafields ──
   logger.section('Processing collection metafield definitions');
