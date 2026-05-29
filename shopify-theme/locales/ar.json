@@ -165,8 +165,8 @@
       "trust_strip": {
         "artist_made": "تصميم فنان",
         "licensed_art": "رسومات مرخصة",
-        "free_exchange_14d": "استبدال مجاني ١٤ يوم",
-        "cod_available": "الدفع عند الاستلام متاح"
+        "free_exchange_14d": "استبدال خلال ١٤ يوم — راجع السياسة",
+        "cod_available": "الدفع عند الاستلام عند ظهوره عند الدفع"
       },
       "size_guide_link": "دليل المقاسات",
       "view_piece": "شوف القطعة",
@@ -196,8 +196,8 @@
       "gift_note": "بتشتريها هدية؟ اسألنا عن المقاس قبل الطلب.",
       "default_trust_cotton": "تيشيرت قطن",
       "default_trust_printed": "مطبوع في مصر",
-      "default_trust_cod": "الدفع عند الاستلام",
-      "default_trust_exchange": "استبدال خلال ١٤ يوم"
+      "default_trust_cod": "الدفع عند الاستلام عند ظهوره عند الدفع",
+      "default_trust_exchange": "استبدال خلال ١٤ يوم — راجع السياسة"
     },
     "product_card": {
       "gift_ready": "مناسب كهدية",

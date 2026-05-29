@@ -562,8 +562,8 @@
     "trust_ribbon": {
       "artist_made": "Artist-made design",
       "printed_in_egypt": "Printed in Egypt",
-      "cod": "COD available",
-      "exchange": "14-day easy exchange",
+      "cod": "COD when shown at checkout",
+      "exchange": "14-day exchange — see policy",
       "whatsapp": "WhatsApp support"
     },
     "primary_routes": {
@@ -697,8 +697,8 @@
       "trust_strip": {
         "artist_made": "Artist-made design",
         "licensed_art": "Licensed art",
-        "free_exchange_14d": "Free exchange 14 days",
-        "cod_available": "Cash on Delivery available"
+        "free_exchange_14d": "14-day exchange — see policy",
+        "cod_available": "COD available when shown at checkout"
       },
       "size_guide_link": "Size guide",
       "view_piece": "View piece",
@@ -728,8 +728,8 @@
       "gift_note": "Buying it as a gift? Ask us for size help before ordering.",
       "default_trust_cotton": "Cotton T-shirt",
       "default_trust_printed": "Printed in Egypt",
-      "default_trust_cod": "COD available",
-      "default_trust_exchange": "14-day easy exchange"
+      "default_trust_cod": "COD when shown at checkout",
+      "default_trust_exchange": "14-day exchange — see policy"
     },
     "product_card": {
       "gift_ready": "Gift-ready",

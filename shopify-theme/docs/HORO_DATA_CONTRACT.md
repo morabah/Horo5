@@ -422,6 +422,41 @@ Redirects must use `/pages/gifts-hub`, not `/pages/gifts`.
 
 ---
 
-## 11. Ops outside theme
+## 11. Pre-launch validation (Shopify)
+
+Run before publishing the live theme:
+
+```bash
+cd shopify-theme
+shopify theme check
+shopify theme push --unpublished
+# (Shopify CLI has no --dry-run; use an unpublished theme push to validate upload, then push live.)
+```
+
+From `scripts/shopify-admin-seed/`:
+
+```bash
+npm run verify:launch
+```
+
+**Commercial copy:** PDP trust strip, purchase-context default chips, and global trust badges use conditional COD/exchange wording (checkout-gated COD; exchange references policy). Align Shopify payment, shipping, and discount settings with storefront copy before launch.
+
+**Admin data (manual):**
+
+- `feeling.collection` or `feeling.collection_url` on each feeling entry
+- `occasion.collection` or `occasion.collection_url` on each occasion entry
+- `product.custom.feeling` on launch SKUs
+- `product.custom.pdp_tag_labels` for PDP chips
+- `product.custom.size_table` → valid `size_table` metaobject
+- UGC: `image`, `active`, `permission_to_repost != false`
+- Theme settings: `horo_gift_wrap_product` set; `horo_incentives_live` **off** until shipping/discount rules are verified
+
+**QA matrix:** mood product, zodiac product, giftable product — PDP, collection PLP, subfeeling nav, cart drawer, gift wrap, checkout copy, Arabic/RTL, mobile Lighthouse.
+
+**Scripts:** Keep global JS in `theme.liquid` minimal (analytics, wishlist, cart drawer). Load pair-with, promo countdown, cross-sell, and gift-wrap only on routes that need them.
+
+---
+
+## 12. Ops outside theme
 
 Post-delivery UGC requests (Shopify Flow, WhatsApp, Medusa jobs) are **not** implemented in the theme. Theme only displays `review_proof` / `horo_ugc` content configured in Admin.

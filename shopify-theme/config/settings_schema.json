@@ -1564,13 +1564,13 @@
         "type": "text",
         "id": "horo_trust_badge_3",
         "label": "Trust badge 3",
-        "default": "COD available"
+        "default": "COD when shown at checkout"
       },
       {
         "type": "text",
         "id": "horo_trust_badge_4",
         "label": "Trust badge 4",
-        "default": "14-day easy exchange"
+        "default": "14-day exchange — see policy"
       },
       {
         "type": "text",

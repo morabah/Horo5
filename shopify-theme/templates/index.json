@@ -6,7 +6,7 @@
         "overlay_opacity": 30,
         "heading": "Wear What You Feel",
         "heading_size": "h0",
-        "subheading": "Artist-made tees · Printed in Egypt · COD",
+        "subheading": "Artist-made tees · Printed in Egypt · COD when shown at checkout",
         "button_label": "Shop the Founding Drop",
         "button_link": "/collections/founding-drop",
         "button_style_secondary": false,
@@ -24,7 +24,7 @@
         "split_word_2": "What",
         "split_word_3": "You Feel",
         "show_hero_ribbon": true,
-        "hero_ribbon_text": "COD available · 14-day easy exchange · Printed in Egypt",
+        "hero_ribbon_text": "COD when shown at checkout · 14-day exchange — see policy · Printed in Egypt",
         "hero_cta_position_mobile": "center",
         "hero_cta_position_desktop": "bottom-left",
         "padding_top": 0,
@@ -64,7 +64,7 @@
           "settings": {
             "show_badge": true,
             "icon": "exchange",
-            "label": "14-day exchange",
+            "label": "14-day exchange — see policy",
             "subtext": ""
           }
         },
@@ -73,7 +73,7 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "COD available",
+            "label": "COD when shown at checkout",
             "subtext": ""
           }
         }
@@ -256,7 +256,7 @@
           "type": "card",
           "settings": {
             "title": "Exchange if needed",
-            "body": "If the fit is off, use the 14-day easy exchange path."
+            "body": "If the fit is off, use the 14-day exchange path — see policy."
           }
         }
       },
