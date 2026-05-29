@@ -69,7 +69,7 @@
       "settings": {
         "title": "Gift-ready designs",
         "heading_size": "h1",
-        "description": "Tees marked giftable with occasion tags and size help on every PDP.",
+        "description": "<p>Tees marked giftable with occasion tags and size help on every PDP.</p>",
         "show_description": true,
         "description_style": "body",
         "collection": "occasion-gift",
