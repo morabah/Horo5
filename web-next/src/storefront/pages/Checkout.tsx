@@ -96,6 +96,11 @@ import type {
 } from '../lib/medusa/types';
 import { useStableNow } from '../runtime/render-time';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
+import {
+  checkoutStickyCostLine,
+  governorateShippingBasisCopy,
+  shippingCalculatedAfterAddressCopy,
+} from '../data/commerce-copy';
 import { formatEgp } from '../utils/formatPrice';
 import { addCheckoutCartLinesInParallelBatches } from '../lib/checkout-cart-rebuild';
 import { getInstapayPublicPayoutLines } from '../lib/instapay-public';
@@ -298,8 +303,8 @@ function buildCheckoutPaymentMethods(
         kind,
         label: isArabic ? 'الدفع عند الاستلام' : 'Cash on delivery (COD)',
         description: isArabic
-          ? 'ادفع عند الاستلام — لا تحتاج تحويل بنكي. استبدال مجاني خلال 14 يوماً.'
-          : 'Pay when it arrives — no bank transfer needed. Free 14-day exchange.',
+          ? 'ادفع عند الاستلام. الاستبدال حسب السياسة.'
+          : 'Pay when it arrives. Exchange applies according to policy.',
       };
     }
 
@@ -1089,13 +1094,6 @@ export function Checkout({
   }
 
   useEffect(() => {
-    if (city.trim()) return;
-    if (!governorateOptions.some((option) => option.value === 'Cairo')) return;
-    setCity('Cairo');
-    setProvince('Cairo');
-  }, [city, governorateOptions]);
-
-  useEffect(() => {
     setPaymentStepComplete(false);
   }, [cartId]);
 
@@ -1868,6 +1866,17 @@ export function Checkout({
       shippingCost === 0 &&
       !shippingUsedDisplayFallback,
   );
+  const checkoutGovernorateBasisLabel =
+    selectedGovernorateOption?.label ?? checkoutCart?.shipping_address?.city?.trim() ?? null;
+  const shippingBasisCopy = governorateShippingBasisCopy(isArabic, checkoutGovernorateBasisLabel);
+  const mobileStickyCostLine = checkoutStickyCostLine(isArabic, {
+    shippingPending: shippingSummaryPending,
+    freeShippingUnlocked,
+    shippingEgp: displayShippingCost,
+    giftWrapEgp: giftWrapLineEgp,
+    merchandiseSubtotalEgp: merchandiseSubtotalEgp + giftWrapLineEgp,
+    formatMoney: formatEgp,
+  });
   const submitDisabled =
     savingInfo || placingOrder || preparingPayment || paymentVerifying || noPaymentProvidersAfterShipping;
   return (
@@ -1967,6 +1976,7 @@ export function Checkout({
                     <p className="mt-1 text-sm text-clay">
                       {mobileLineCountLabel} · {formatEgp(orderTotal)}
                     </p>
+                    <p className="mt-0.5 text-xs text-clay">{mobileStickyCostLine}</p>
                     {freeShippingThresholdEgp && freeShippingThresholdEgp > 0 ? (
                       <p className="mt-0.5 text-xs text-deep-teal">
                         {freeShippingUnlocked
@@ -1989,6 +1999,7 @@ export function Checkout({
                       originalShippingEgp={originalShippingEgp}
                       cartId={cartId}
                       shippingPending={shippingSummaryPending}
+                      shippingBasisCopy={shippingBasisCopy}
                       freeShippingUnlocked={freeShippingUnlocked}
                       freeShippingThresholdEgp={freeShippingThresholdEgp}
                       freeShippingLabel={freeShippingLabel}
@@ -2193,6 +2204,7 @@ export function Checkout({
 
               <section className="mt-8 rounded-2xl border border-stone/30 bg-white p-5 shadow-sm">
                 <h2 className="font-headline text-lg font-semibold text-obsidian">{copy.checkout.headingShippingMethod}</h2>
+                <p className="mt-2 font-body text-xs text-clay">{shippingBasisCopy}</p>
                 <div className={`${radioCardClass(true)} mt-4`}>
                   <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-obsidian" aria-hidden />
                   <span className="font-body text-sm text-obsidian">
@@ -2454,6 +2466,7 @@ export function Checkout({
                 originalShippingEgp={originalShippingEgp}
                 cartId={cartId}
                 shippingPending={shippingSummaryPending}
+                shippingBasisCopy={shippingBasisCopy}
                 freeShippingUnlocked={freeShippingUnlocked}
                 freeShippingThresholdEgp={freeShippingThresholdEgp}
                 freeShippingLabel={freeShippingLabel}
@@ -2474,6 +2487,7 @@ export function Checkout({
             <div className="min-w-0">
               <p className="font-headline text-lg font-semibold text-obsidian">{formatEgp(orderTotal)}</p>
               <p className="truncate text-xs text-warm-charcoal">{mobileLineCountLabel}</p>
+              <p className="text-xs text-clay">{mobileStickyCostLine}</p>
             </div>
             <div
               onClick={() => {
@@ -2511,6 +2525,7 @@ function OrderSummary({
   originalShippingEgp,
   cartId,
   shippingPending,
+  shippingBasisCopy,
   freeShippingUnlocked,
   freeShippingThresholdEgp,
   freeShippingLabel,
@@ -2525,6 +2540,7 @@ function OrderSummary({
   originalShippingEgp: number;
   cartId: string | null;
   shippingPending?: boolean;
+  shippingBasisCopy?: string;
   freeShippingUnlocked: boolean;
   freeShippingThresholdEgp: number | null;
   freeShippingLabel: string | null;
@@ -2707,14 +2723,16 @@ function OrderSummary({
           <span>{formatEgp(giftWrapLineEgp)}</span>
         </p>
       ) : null}
+      {shippingBasisCopy ? (
+        <p className="mt-3 font-body text-xs text-clay">{shippingBasisCopy}</p>
+      ) : null}
       <p className="mt-2 flex justify-between text-sm text-clay">
         <span>{isArabic ? 'الشحن' : 'Shipping'}</span>
         <span className="text-right">
           {shippingPending ? (
-            <span
-              className="inline-block h-4 w-16 animate-pulse rounded bg-stone/70 align-middle"
-              aria-label={isArabic ? 'جاري تحميل الشحن' : 'Loading shipping'}
-            />
+            <span className="font-body text-sm text-warm-charcoal">
+              {shippingCalculatedAfterAddressCopy(isArabic)}
+            </span>
           ) : freeShippingUnlocked ? (
             <span className="inline-flex items-baseline gap-1.5">
               {originalShippingEgp > 0 ? (
@@ -2729,7 +2747,9 @@ function OrderSummary({
           ) : cart?.shipping_methods?.length ? (
             formatEgp(0)
           ) : (
-            '—'
+            <span className="font-body text-sm text-warm-charcoal">
+              {shippingCalculatedAfterAddressCopy(isArabic)}
+            </span>
           )}
         </span>
       </p>

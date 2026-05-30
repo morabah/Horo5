@@ -37,6 +37,7 @@ import {
   type StorefrontIncentivesClient,
 } from '../lib/storefront/incentives-client';
 import { fetchStorefrontSettingsClient } from '../lib/storefront/settings-client';
+import { governorateShippingBasisCopy } from '../data/commerce-copy';
 import { estimateShippingEgpForGovernorate } from '../lib/shipping-estimate';
 import type { StorefrontSettingsPayload } from '@/lib/storefront-server';
 
@@ -168,6 +169,7 @@ function CartSummary({
   governorateOptions,
   previewGovernorate,
   onPreviewGovernorateChange,
+  shippingBasisCopy,
 }: {
   itemCount: number;
   subtotalEgp: number;
@@ -186,6 +188,7 @@ function CartSummary({
   governorateOptions: { value: string; label: string }[];
   previewGovernorate: string;
   onPreviewGovernorateChange: (code: string) => void;
+  shippingBasisCopy: string;
 }) {
   const dict = useDictionary();
   const copy = dict.cart;
@@ -223,12 +226,14 @@ function CartSummary({
             onChange={(event) => onPreviewGovernorateChange(event.target.value)}
             className="min-h-11 w-full rounded-lg border border-stone/50 bg-white px-3 font-body text-sm text-obsidian focus-visible:border-deep-teal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-deep-teal/25"
           >
+            <option value="">{locale === 'ar' ? 'اختر المحافظة' : 'Select governorate'}</option>
             {governorateOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
+          <p className="mt-2 font-body text-xs text-clay">{shippingBasisCopy}</p>
         </div>
       ) : null}
 
@@ -309,7 +314,9 @@ function CartSummary({
               );
             })() : null}
             {shippingRow.mode === 'copy' ? (
-              <span className="font-body text-sm text-warm-charcoal">{copy.shippingConfirmedAtCheckout}</span>
+              <span className="font-body text-sm text-warm-charcoal">
+                {showGovernoratePreview ? shippingBasisCopy : copy.shippingConfirmedAtCheckout}
+              </span>
             ) : null}
           </span>
         </p>
@@ -576,7 +583,7 @@ export function Cart({
   const [shippingFetch, setShippingFetch] = useState<CartShippingFetchState>({ kind: 'inactive' });
   const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
   const [storefrontSettings, setStorefrontSettings] = useState<StorefrontSettingsPayload | null>(null);
-  const [previewGovernorate, setPreviewGovernorate] = useState('cairo');
+  const [previewGovernorate, setPreviewGovernorate] = useState('');
 
   /* Fetch incentives after mount (per repo hydration baseline: server render uses null). */
   useEffect(() => {
@@ -588,8 +595,6 @@ export function Cart({
     void fetchStorefrontSettingsClient().then((data) => {
       if (cancelled) return;
       setStorefrontSettings(data);
-      const first = data?.checkout?.governorates?.[0]?.code;
-      if (first) setPreviewGovernorate(first);
     });
     return () => {
       cancelled = true;
@@ -686,6 +691,13 @@ export function Cart({
       };
     }
     if (shippingFetch.kind === 'pending_cart_id') {
+      if (!previewGovernorate.trim()) {
+        return {
+          shippingRow: { mode: 'copy' as const },
+          estimatedOrderTotal: base,
+          originalShippingEgp: 0,
+        };
+      }
       const previewEgp = estimateShippingEgpForGovernorate(
         previewGovernorate,
         storefrontSettings?.delivery,
@@ -731,7 +743,20 @@ export function Cart({
     };
   }, [shippingFetch, displaySubtotalEgp, displayGiftWrapEgp, freeShippingUnlocked, previewGovernorate, storefrontSettings?.delivery]);
 
-  const showGovernoratePreview = shippingFetch.kind === 'pending_cart_id' && lineViews.length > 0;
+  const showGovernoratePreview = lineViews.length > 0 && governorateOptions.length > 0;
+
+  const cartGovernorateBasisLabel = useMemo(() => {
+    const fromPreview = governorateOptions.find((option) => option.value === previewGovernorate)?.label;
+    if (fromPreview) return fromPreview;
+    if (shippingFetch.kind === 'ok') {
+      const city = shippingFetch.cart.shipping_address?.city?.trim();
+      if (!city) return null;
+      return governorateOptions.find((option) => option.value === city || option.label === city)?.label ?? city;
+    }
+    return null;
+  }, [governorateOptions, previewGovernorate, shippingFetch]);
+
+  const shippingBasisCopy = governorateShippingBasisCopy(locale === 'ar', cartGovernorateBasisLabel);
 
   const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && displayGiftWrapEgp === 0);
 
@@ -1083,6 +1108,7 @@ export function Cart({
             governorateOptions={governorateOptions}
             previewGovernorate={previewGovernorate}
             onPreviewGovernorateChange={setPreviewGovernorate}
+            shippingBasisCopy={shippingBasisCopy}
           />
         </div>
 
