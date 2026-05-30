@@ -249,7 +249,7 @@
           "type": "card",
           "settings": {
             "title": "Confirm",
-            "body": "Pay on delivery or by card. We confirm COD orders by WhatsApp before dispatch."
+            "body": "Payment methods appear at checkout. COD when shown at checkout; we confirm COD orders by WhatsApp before dispatch."
           }
         },
         "step_4": {

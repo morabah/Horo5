@@ -556,7 +556,7 @@
     },
     "home_hero": {
       "title": "Wear What You Feel",
-      "subtitle": "Artist-made tees · Printed in Egypt · COD",
+      "subtitle": "Artist-made tees · Printed in Egypt · COD when shown at checkout",
       "cta": "Shop the Founding Drop"
     },
     "trust_ribbon": {
@@ -605,7 +605,7 @@
       "other_cities": "Other cities",
       "business_days": "business days",
       "payment_methods": "Payment methods",
-      "cod": "Cash on Delivery",
+      "cod": "COD when shown at checkout",
       "card": "Card (Visa / Mastercard)",
       "instapay": "Instapay bank transfer"
     },
@@ -806,7 +806,7 @@
       "cost_preview_shipping_choose": "Choose governorate",
       "cost_preview_shipping_free": "Free (estimate)",
       "cost_preview_total_plus_shipping": "Subtotal + shipping",
-      "cost_preview_checkout_note": "Final shipping is confirmed at checkout.",
+      "cost_preview_checkout_note": "Final shipping, taxes if applicable, and payment methods are confirmed at checkout.",
       "reassurance_size_help": "Need size help? WhatsApp us before ordering.",
       "trust_explainer_heading": "What to expect",
       "free_shipping_progress_before": "Add {{ amount }} more to reach the free-shipping threshold.",
@@ -879,8 +879,8 @@
       "why_hor_block_personal_body": "Browse by feeling, moment, or gift intent — not just a grid of thumbnails. The right piece finds you.",
       "why_hor_block_fit_title": "Clear Fit Details",
       "why_hor_block_fit_body": "Every product page shows measurements and a fit note. Less guessing, fewer exchanges, easier decisions.",
-      "why_hor_block_cod_title": "COD & 14-Day Exchange",
-      "why_hor_block_cod_body": "Pay at your doorstep. If the fit is off, exchange within 14 days when unworn and in original packaging.",
+      "why_hor_block_cod_title": "COD & exchange — see policy",
+      "why_hor_block_cod_body": "COD when shown at checkout. Exchange applies according to policy when unworn and in original packaging.",
       "why_hor_block_proof_title": "Real Proof Only",
       "why_hor_block_proof_body": "Reviews appear only when real. Until then, we show artwork, print, and packaging proof — not fake ratings or bought praise.",
       "behind_piece_eyebrow": "Behind the piece",

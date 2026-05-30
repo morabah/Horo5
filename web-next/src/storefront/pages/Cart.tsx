@@ -37,7 +37,7 @@ import {
   type StorefrontIncentivesClient,
 } from '../lib/storefront/incentives-client';
 import { fetchStorefrontSettingsClient } from '../lib/storefront/settings-client';
-import { governorateShippingBasisCopy } from '../data/commerce-copy';
+import { cartCostPreviewCheckoutNote, governorateShippingBasisCopy } from '../data/commerce-copy';
 import { estimateShippingEgpForGovernorate } from '../lib/shipping-estimate';
 import type { StorefrontSettingsPayload } from '@/lib/storefront-server';
 
@@ -210,9 +210,7 @@ function CartSummary({
       </h2>
       <p className="cart-summary-note">{shippingNote}</p>
       <p className="font-body mt-1 text-xs text-clay">
-        {locale === 'ar'
-          ? 'تُعرض هذه الأرقام كمعاينة سريعة. يتم تثبيت قيمة الشحن النهائية بعد حفظ العنوان في الدفع.'
-          : 'These numbers are a fast preview. Final shipping is locked after your address is saved in checkout.'}
+        {cartCostPreviewCheckoutNote(locale === 'ar')}
       </p>
 
       {showGovernoratePreview && governorateOptions.length > 0 ? (

@@ -126,7 +126,7 @@
         "color_scheme": "scheme-1",
         "show_card_1": true,
         "card_1_icon": "cash",
-        "card_1_title": "Cash on Delivery",
+        "card_1_title": "Payment at checkout",
         "card_1_body": "COD when shown at checkout",
         "show_card_2": true,
         "card_2_icon": "bank",

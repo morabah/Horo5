@@ -1,4 +1,5 @@
 import {
+  cartCostPreviewCheckoutNote,
   checkoutStickyCostLine,
   governorateShippingBasisCopy,
   pdpCodTrustCopy,
@@ -8,6 +9,11 @@ import {
 } from "../commerce-copy"
 
 describe("commerce-copy", () => {
+  it("cartCostPreviewCheckoutNote mentions payment and tax", () => {
+    expect(cartCostPreviewCheckoutNote(false)).toContain("payment methods")
+    expect(cartCostPreviewCheckoutNote(true)).toContain("الدفع")
+  })
+
   it("uses hedged PDP and recovery copy", () => {
     expect(pdpCodTrustCopy(false)).toContain("when shown at checkout")
     expect(pdpExchangeTrustCopy(false)).toContain("according to policy")

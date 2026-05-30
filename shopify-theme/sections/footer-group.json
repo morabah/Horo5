@@ -33,7 +33,7 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "Cash on delivery available",
+            "label": "COD when shown at checkout",
             "subtext": ""
           }
         },
@@ -42,7 +42,7 @@
           "settings": {
             "show_badge": true,
             "icon": "exchange",
-            "label": "14-day easy exchange",
+            "label": "14-day exchange — see policy",
             "subtext": ""
           }
         },

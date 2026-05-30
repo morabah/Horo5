@@ -8,9 +8,16 @@ export function pdpExchangeTrustCopy(isArabic: boolean): string {
   return isArabic ? "الاستبدال حسب السياسة" : "Exchange applies according to policy"
 }
 
+/** Cart / checkout preview footnote — shipping, tax, and payment truth. */
+export function cartCostPreviewCheckoutNote(isArabic: boolean): string {
+  return isArabic
+    ? "يتم تأكيد الشحن النهائي والضرائب إن وُجدت وطرق الدفع عند إتمام الدفع."
+    : "Final shipping, taxes if applicable, and payment methods are confirmed at checkout."
+}
+
 export function recoveryBodyCopy(isArabic: boolean): string {
   return isArabic
-    ? "كمّل الطلب — الدفع عند الاستلام متاح عند ظهوره في الدفع. الاستبدال حسب السياسة."
+    ? "كمّل الطلب — الدفع عند الاستلام عند ظهوره في الدفع. الاستبدال حسب السياسة."
     : "Finish checkout — COD is available when shown at checkout. Exchange applies according to policy."
 }
 

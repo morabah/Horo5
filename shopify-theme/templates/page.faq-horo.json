@@ -26,7 +26,7 @@
           "settings": {
             "show": true,
             "question": "Can I pay cash on delivery?",
-            "answer": "<p>Cash on delivery (COD) is available. Online payment options may also appear depending on the current storefront setup.</p>"
+            "answer": "<p>COD when shown at checkout. Online payment options may also appear depending on your address and enabled payment methods.</p>"
           }
         },
         "faq-2": {
