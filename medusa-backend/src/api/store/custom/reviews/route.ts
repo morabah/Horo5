@@ -1,11 +1,21 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
+import { allowReviewSubmission } from "../../../../lib/review-submission-rate-limit"
+import {
+  isValidReviewEmail,
+  isValidReviewPhotoUrl,
+  sanitizeInstagramHandle,
+} from "../../../../lib/review-submission-guard"
 import { PRODUCT_REVIEW_MODULE } from "../../../../modules/product-review"
 import type ProductReviewModuleService from "../../../../modules/product-review/service"
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
+  if (!allowReviewSubmission(req)) {
+    res.status(429).json({ ok: false, error: "Too many requests. Please try again later." })
+    return
+  }
+
   const body = (req.body || {}) as Record<string, unknown>
   const productId = typeof body.product_id === "string" ? body.product_id.trim() : ""
   const reviewBody = typeof body.body === "string" ? body.body.trim() : ""
@@ -32,8 +42,30 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     return
   }
 
-  if (customerEmail && !EMAIL_RE.test(customerEmail)) {
+  if (customerEmail && !isValidReviewEmail(customerEmail)) {
     res.status(400).json({ ok: false, error: "Invalid email." })
+    return
+  }
+
+  if (photoUrl && !isValidReviewPhotoUrl(photoUrl)) {
+    res.status(400).json({ ok: false, error: "photo_url must be a public https URL." })
+    return
+  }
+
+  const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
+  try {
+    const { data: products } = await query.graph({
+      entity: "product",
+      fields: ["id"],
+      filters: { id: productId },
+      pagination: { take: 1 },
+    })
+    if (!products?.[0]) {
+      res.status(404).json({ ok: false, error: "Product not found." })
+      return
+    }
+  } catch {
+    res.status(503).json({ ok: false, error: "Could not validate product." })
     return
   }
 
@@ -41,12 +73,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   const created = await service.createProductReviews({
     product_id: productId,
-    rating: 5,
-    body: reviewBody || (photoUrl ? "UGC photo submission" : ""),
+    rating: 0,
+    body: reviewBody || (photoUrl ? "UGC photo submission (pending)" : ""),
     locale,
     status: "pending",
     photo_url: photoUrl,
-    instagram_handle: instagramHandle,
+    instagram_handle: sanitizeInstagramHandle(instagramHandle),
     permission_to_repost: permissionToRepost,
     fit_feedback: fitFeedback,
     gift_feedback: giftFeedback,

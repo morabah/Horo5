@@ -84,6 +84,18 @@ export function ShareYourFit({ primaryProductSlug, contactEmail }: ShareYourFitP
     }
     const trimmedPhoto = photoUrl.trim();
     const trimmedFit = fitFeedback.trim();
+    if (trimmedPhoto) {
+      try {
+        const parsed = new URL(trimmedPhoto);
+        if (parsed.protocol !== 'https:') {
+          setSubmitError(isArabic ? 'رابط الصورة يجب أن يكون https.' : 'Photo link must use https.');
+          return;
+        }
+      } catch {
+        setSubmitError(isArabic ? 'رابط الصورة غير صالح.' : 'Invalid photo URL.');
+        return;
+      }
+    }
     if (!trimmedPhoto && !trimmedFit) {
       setSubmitError(isArabic ? 'أضف رابط صورة أو ملاحظة عن المقاس.' : 'Add a photo link or fit note.');
       return;

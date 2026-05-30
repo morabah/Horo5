@@ -902,7 +902,9 @@
       "copy": "Copy",
       "copy_coupon": "Copy coupon code",
       "coupon_label": "Your code:",
-      "email_label": "Leave your email and we'll send your cart details.",
+      "email_label": "One reminder about your visit",
+      "email_purpose": "We will send a single email if you leave — no other marketing messages.",
+      "email_consent": "I agree to receive one cart reminder email.",
       "email_placeholder": "Your email",
       "email_submit": "Save",
       "email_success": "Saved! Check your inbox soon."

@@ -1,7 +1,8 @@
 import type { MedusaContainer } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
-import { sendAbandonedCartReminderResend } from "../lib/abandoned-cart-email"
+import { MAX_REMINDERS_PER_LEAD } from "../lib/abandoned-cart-guard"
+import { buildUnsubscribeUrl, sendAbandonedCartReminderResend } from "../lib/abandoned-cart-email"
 import { STOREFRONT_ABANDONED_CART_MODULE } from "../modules/storefront-abandoned-cart"
 import type StorefrontAbandonedCartModuleService from "../modules/storefront-abandoned-cart/service"
 
@@ -18,6 +19,10 @@ type AbandonedRow = {
   locale?: string | null
   cart_value_egp?: number | null
   created_at?: string | Date | null
+  last_captured_at?: string | Date | null
+  reminder_count?: number | null
+  suppressed_at?: string | Date | null
+  consent_given?: boolean | null
 }
 
 function delayMs(): number {
@@ -32,6 +37,13 @@ function storeUrl(): string | null {
     process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
     process.env.MEDUSA_STOREFRONT_URL?.trim()
   return raw || null
+}
+
+function captureTime(row: AbandonedRow): number {
+  const raw = row.last_captured_at ?? row.created_at
+  if (!raw) return 0
+  const t = new Date(raw).getTime()
+  return Number.isNaN(t) ? 0 : t
 }
 
 export default async function abandonedCartReminderJob(container: MedusaContainer) {
@@ -51,7 +63,7 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
     STOREFRONT_ABANDONED_CART_MODULE,
   )
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
-  const cutoff = new Date(Date.now() - delayMs())
+  const cutoff = Date.now() - delayMs()
 
   const pending = await service.listStorefrontAbandonedCarts(
     { reminder_sent_at: null },
@@ -59,9 +71,10 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
   )
 
   const due = (pending as AbandonedRow[]).filter((row) => {
-    if (!row.created_at) return false
-    const created = new Date(row.created_at)
-    return !Number.isNaN(created.getTime()) && created.getTime() <= cutoff.getTime()
+    if (row.suppressed_at || row.consent_given === false) return false
+    if ((row.reminder_count ?? 0) >= MAX_REMINDERS_PER_LEAD) return false
+    const captured = captureTime(row)
+    return captured > 0 && captured <= cutoff
   })
 
   if (!due.length) {
@@ -70,6 +83,8 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
   }
 
   let sent = 0
+  let skipped = 0
+
   for (const row of due) {
     if (row.cart_id) {
       try {
@@ -86,16 +101,20 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
             id: row.id,
             reminder_sent_at: new Date(),
           })
+          skipped += 1
           continue
         }
       } catch (e) {
         logger.warn(
-          `[abandoned-cart-reminder] cart ${row.cart_id} lookup failed: ${e instanceof Error ? e.message : String(e)}`,
+          `[abandoned-cart-reminder] cart ${row.cart_id} lookup failed; will retry later: ${e instanceof Error ? e.message : String(e)}`,
         )
+        skipped += 1
+        continue
       }
     }
 
     const locale = row.locale === "ar" ? "ar" : "en"
+    const unsubscribeUrl = buildUnsubscribeUrl(site, row.email)
     const result = await sendAbandonedCartReminderResend({
       apiKey,
       from,
@@ -103,12 +122,15 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
       locale,
       storeUrl: site,
       cartValueEgp: row.cart_value_egp,
+      cartId: row.cart_id,
+      unsubscribeUrl,
     })
 
     if (result.ok) {
       await service.updateStorefrontAbandonedCarts({
         id: row.id,
         reminder_sent_at: new Date(),
+        reminder_count: (row.reminder_count ?? 0) + 1,
       })
       sent += 1
     } else {
@@ -118,7 +140,9 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
     }
   }
 
-  logger.info(`[abandoned-cart-reminder] Sent ${sent}/${due.length} reminder(s).`)
+  logger.info(
+    `[abandoned-cart-reminder] Sent ${sent}, skipped ${skipped}, due ${due.length}.`,
+  )
 }
 
 export const config = {

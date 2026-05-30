@@ -70,6 +70,11 @@
       {%- if capture_email and api_base != blank -%}
         <div class="horo-exit-intent__email" data-exit-intent-email-form>
           <p class="horo-exit-intent__email-label">{{ 'horo.exit_intent.email_label' | t }}</p>
+          <p class="horo-exit-intent__email-purpose">{{ 'horo.exit_intent.email_purpose' | t }}</p>
+          <label class="horo-exit-intent__consent">
+            <input type="checkbox" data-exit-intent-consent value="1">
+            <span>{{ 'horo.exit_intent.email_consent' | t }}</span>
+          </label>
           <div class="horo-exit-intent__email-row">
             <input
               type="email"

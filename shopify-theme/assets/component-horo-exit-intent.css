@@ -130,6 +130,27 @@
   opacity: 0.85;
 }
 
+.horo-exit-intent__email-purpose {
+  margin: 0 0 0.8rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  opacity: 0.75;
+}
+
+.horo-exit-intent__consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.horo-exit-intent__consent input {
+  margin-top: 0.2rem;
+}
+
 .horo-exit-intent__email-row {
   display: flex;
   flex-wrap: wrap;

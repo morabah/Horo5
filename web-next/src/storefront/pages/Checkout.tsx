@@ -13,7 +13,7 @@ import {
 import { cartLineIdentityKey, type CartLine } from '../cart/types';
 import { loadMedusaCartId, persistMedusaCartId } from '../cart/cart-storage';
 import { formatCartStockMessage } from '../cart/stock';
-import { ExitIntentModal } from '../components/ExitIntentModal';
+import { CheckoutRecoveryBar } from '../components/CheckoutRecoveryBar';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -2500,7 +2500,7 @@ export function Checkout({
           </div>
         </div>
       </div>
-      <ExitIntentModal surface="checkout" cartValueEgp={subtotalEgp + giftWrapEgp} cartId={cartId} />
+      <CheckoutRecoveryBar cartId={cartId} cartValueEgp={subtotalEgp + giftWrapEgp} />
     </div>
   );
 }

@@ -4,7 +4,9 @@ export async function submitAbandonedCartLead(payload: {
   surface: 'cart' | 'checkout' | 'plp';
   locale: 'en' | 'ar';
   cartValueEgp?: number;
+  marketingConsent: boolean;
 }): Promise<boolean> {
+  if (!payload.marketingConsent) return false;
   try {
     const res = await fetch('/api/abandoned-cart', {
       method: 'POST',
@@ -15,6 +17,7 @@ export async function submitAbandonedCartLead(payload: {
         surface: payload.surface,
         locale: payload.locale,
         cart_value_egp: payload.cartValueEgp,
+        marketing_consent: true,
       }),
     });
     return res.ok;

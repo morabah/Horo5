@@ -58,6 +58,7 @@
 
     var emailForm = modal.querySelector('[data-exit-intent-email-form]');
     var emailInput = modal.querySelector('[data-exit-intent-email-input]');
+    var emailConsent = modal.querySelector('[data-exit-intent-consent]');
     var emailSubmit = modal.querySelector('[data-exit-intent-email-submit]');
     var emailSuccess = modal.querySelector('[data-exit-intent-email-success]');
     var emailError = modal.querySelector('[data-exit-intent-email-error]');
@@ -80,6 +81,14 @@
         }
         return;
       }
+      if (!emailConsent || !emailConsent.checked) {
+        if (emailError) {
+          emailError.textContent =
+            locale === 'ar' ? 'وافق على التذكير للمتابعة.' : 'Please agree to the reminder email.';
+          emailError.hidden = false;
+        }
+        return;
+      }
       if (emailError) emailError.hidden = true;
       fetch(apiBase + '/api/abandoned-cart', {
         method: 'POST',
@@ -88,6 +97,7 @@
           email: email,
           surface: surface,
           locale: locale,
+          marketing_consent: true,
         }),
       })
         .then(function (res) {

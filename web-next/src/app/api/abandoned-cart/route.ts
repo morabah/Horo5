@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { allowAbandonCaptureFromIp, clientIpFromRequest } from "@/lib/abandoned-cart-rate-limit";
 import { medusaBackendBaseUrl, medusaPublishableKey } from "@/lib/horo-ops-medusa-fetch";
 import {
   storefrontPublicApiCorsHeaders,
@@ -15,6 +16,7 @@ const BodySchema = z.object({
   surface: z.enum(["cart", "checkout", "plp"]).default("cart"),
   locale: z.enum(["en", "ar"]).default("en"),
   cart_value_egp: z.number().finite().nonnegative().optional(),
+  marketing_consent: z.literal(true),
 });
 
 export async function OPTIONS(request: NextRequest) {
@@ -30,6 +32,13 @@ export async function POST(request: NextRequest) {
     return withStorefrontPublicApiCors(
       request,
       NextResponse.json({ ok: false, error: "Invalid request body" }, { status: 400 }),
+    );
+  }
+
+  if (!allowAbandonCaptureFromIp(clientIpFromRequest(request))) {
+    return withStorefrontPublicApiCors(
+      request,
+      NextResponse.json({ ok: false, error: "Too many requests." }, { status: 429 }),
     );
   }
 

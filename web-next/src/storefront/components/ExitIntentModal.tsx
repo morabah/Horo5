@@ -9,6 +9,7 @@ import { HYPOTHESIS_PRIMARY_SEGMENT } from '../analytics/hypothesisContext';
 import { trackExitIntentShown } from '../analytics/events';
 import { submitAbandonedCartLead } from '../lib/abandoned-cart-client';
 import { EXIT_INTENT_FLAG, isEnabled } from '../utils/featureFlags';
+import { ABANDON_EMAIL_CONSENT_LABEL, recoveryBodyCopy } from '../data/commerce-copy';
 
 const ABANDON_EMAIL_KEY = 'horo_abandon_email_saved';
 
@@ -66,7 +67,9 @@ export function ExitIntentModal({ surface = 'cart', cartValueEgp, cartId }: Exit
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [email, setEmail] = useState('');
+  const [consent, setConsent] = useState(false);
   const [emailSaved, setEmailSaved] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const flagEnabled = isEnabled(EXIT_INTENT_FLAG);
 
   const handleDismiss = useCallback(() => {
@@ -76,23 +79,35 @@ export function ExitIntentModal({ surface = 'cart', cartValueEgp, cartId }: Exit
   }, [surface]);
 
   const handleEmailSubmit = useCallback(() => {
-    if (!isValidEmail(email)) return;
+    if (!isValidEmail(email) || !consent) {
+      setSubmitError(
+        isArabic ? 'أدخل بريداً صالحاً ووافق على التذكير.' : 'Enter a valid email and agree to the reminder.',
+      );
+      return;
+    }
     const trimmed = email.trim();
-    saveAbandonEmail(trimmed);
-    setEmailSaved(true);
-    capturePostHogEvent('cart_abandon_email_saved', {
-      hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
-      cart_value_egp: cartValueEgp ?? 0,
-      surface,
-    });
+    setSubmitError(null);
     void submitAbandonedCartLead({
       email: trimmed,
       cartId: cartId ?? null,
       surface,
       locale: isArabic ? 'ar' : 'en',
       cartValueEgp: cartValueEgp,
+      marketingConsent: true,
+    }).then((ok) => {
+      if (!ok) {
+        setSubmitError(isArabic ? 'تعذّر الحفظ. حاول مرة أخرى.' : 'Could not save. Try again.');
+        return;
+      }
+      saveAbandonEmail(trimmed);
+      setEmailSaved(true);
+      capturePostHogEvent('cart_abandon_email_saved', {
+        hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+        cart_value_egp: cartValueEgp ?? 0,
+        surface,
+      });
     });
-  }, [cartId, cartValueEgp, email, isArabic, surface]);
+  }, [cartId, cartValueEgp, consent, email, isArabic, surface]);
 
   useEffect(() => {
     if (!flagEnabled || hasShownExitIntent(surface) || dismissed) return;
@@ -114,47 +129,26 @@ export function ExitIntentModal({ surface = 'cart', cartValueEgp, cartId }: Exit
     if (saved) setEmail(saved);
   }, []);
 
-  if (!flagEnabled || !open) return null;
+  if (surface === 'checkout' || !flagEnabled || !open) return null;
 
   const title =
-    surface === 'checkout'
+    surface === 'plp'
       ? isArabic
-        ? 'لا تترك الطلب الآن'
-        : "Don't leave checkout yet"
-      : surface === 'plp'
-        ? isArabic
-          ? 'قبل ما تمشي'
-          : 'Before you go'
-        : isArabic
-          ? 'لا تغادر بعد!'
-          : "Wait — don't go yet!";
+        ? 'قبل ما تمشي'
+        : 'Before you go'
+      : isArabic
+        ? 'لا تغادر بعد!'
+        : "Wait — don't go yet!";
 
   const body =
-    surface === 'checkout'
+    surface === 'plp'
       ? isArabic
-        ? 'أكمل الدفع — الدفع عند الاستلام متاح والاستبدال خلال 14 يوماً.'
-        : 'Finish checkout — COD is available and 14-day exchange applies.'
-      : surface === 'plp'
-        ? isArabic
-          ? 'احفظ بريدك ونرسللك القطع اللي شوفتها.'
-          : "Save your email and we'll send the pieces you browsed."
-        : isArabic
-          ? 'اكمل طلبك الآن — الشحن سريع والاستبدال مجاني لمدة 14 يوم.'
-          : 'Complete your order now — fast delivery and free 14-day exchange.';
+        ? 'احفظ بريدك ونرسللك تذكيراً واحداً عن القطع اللي شوفتها.'
+        : "Save your email and we'll send one reminder about what you browsed."
+      : recoveryBodyCopy(isArabic);
 
-  const primaryHref = surface === 'checkout' ? '/checkout' : surface === 'plp' ? '/cart' : '/checkout';
-  const primaryLabel =
-    surface === 'checkout'
-      ? isArabic
-        ? 'اكمل الدفع →'
-        : 'Complete checkout →'
-      : surface === 'plp'
-        ? isArabic
-          ? 'افتح السلة →'
-          : 'View your bag →'
-        : isArabic
-          ? 'اكمل الطلب →'
-          : 'Complete checkout →';
+  const primaryHref = surface === 'plp' ? '/cart' : '/cart';
+  const primaryLabel = isArabic ? 'افتح السلة →' : 'View your bag →';
 
   const whatsappUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
     ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
@@ -220,33 +214,51 @@ export function ExitIntentModal({ surface = 'cart', cartValueEgp, cartId }: Exit
 
           <div className="rounded-xl border border-stone/30 bg-papyrus/60 p-4">
             <p className="font-body text-sm text-warm-charcoal">
-              {isArabic ? 'سيب بريدك ونرسللك تفاصيل السلة.' : "Leave your email and we'll send your cart details."}
+              {isArabic
+                ? 'تذكير واحد بالبريد عن هذه السلة — بدون رسائل ترويجية أخرى.'
+                : 'One email reminder about this cart — no other marketing emails.'}
             </p>
             {emailSaved ? (
-              <p className="mt-2 text-sm font-medium text-deep-teal">
-                {isArabic ? 'تم الحفظ! نشوفك قريب.' : 'Saved! See you soon.'}
+              <p className="mt-2 text-sm font-medium text-deep-teal" role="status">
+                {isArabic ? 'تم الحفظ!' : 'Saved!'}
               </p>
             ) : (
-              <div className="mt-2 flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={isArabic ? 'بريدك الإلكتروني' : 'Your email'}
-                  className="min-h-10 flex-1 rounded-lg border border-stone bg-white px-3 text-sm text-obsidian placeholder:text-clay focus-visible:border-deep-teal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-deep-teal/25"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleEmailSubmit();
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleEmailSubmit}
-                  disabled={!isValidEmail(email)}
-                  className="inline-flex min-h-10 items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white transition-colors hover:bg-deep-teal/90 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {isArabic ? 'حفظ' : 'Save'}
-                </button>
-              </div>
+              <>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={isArabic ? 'بريدك الإلكتروني' : 'Your email'}
+                    className="min-h-10 flex-1 rounded-lg border border-stone bg-white px-3 text-sm text-obsidian placeholder:text-clay focus-visible:border-deep-teal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-deep-teal/25"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleEmailSubmit();
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleEmailSubmit}
+                    disabled={!isValidEmail(email) || !consent}
+                    className="inline-flex min-h-10 items-center justify-center rounded-lg bg-deep-teal px-4 text-sm font-semibold text-white transition-colors hover:bg-deep-teal/90 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {isArabic ? 'حفظ' : 'Save'}
+                  </button>
+                </div>
+                <label className="mt-3 flex items-start gap-2 font-body text-xs text-warm-charcoal">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 h-4 w-4"
+                  />
+                  {isArabic ? ABANDON_EMAIL_CONSENT_LABEL.ar : ABANDON_EMAIL_CONSENT_LABEL.en}
+                </label>
+                {submitError ? (
+                  <p className="mt-2 font-body text-xs text-ember" role="alert">
+                    {submitError}
+                  </p>
+                ) : null}
+              </>
             )}
           </div>
 
