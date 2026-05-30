@@ -1,0 +1,122 @@
+{%- comment -%}
+  Display-only cart cost breakdown (subtotal, gift wrap, estimated shipping, estimated total).
+  Renders in cart drawer and main cart footer. Shopify checkout confirms final shipping.
+{%- endcomment -%}
+{%- unless cart == empty -%}
+  {%- liquid
+    assign preview_context = context | default: 'drawer'
+    assign gw_product = settings.horo_gift_wrap_product
+    assign gw_handle = ''
+    if gw_product != blank
+      assign gw_handle = gw_product.handle
+    endif
+
+    assign merch_cents = 0
+    assign gift_cents = 0
+    for item in cart.items
+      if gw_handle != '' and item.product.handle == gw_handle
+        assign gift_cents = gift_cents | plus: item.final_line_price
+      else
+        assign merch_cents = merch_cents | plus: item.final_line_price
+      endif
+    endfor
+
+    assign cairo_egp = settings.horo_shipping_cairo_egp | default: 60 | plus: 0
+    assign alex_egp = settings.horo_shipping_alex_egp | default: 80 | plus: 0
+    assign other_egp = settings.horo_shipping_other_egp | default: 100 | plus: 0
+
+    assign incentives_live = false
+    if settings.horo_incentives_live
+      assign incentives_live = true
+    endif
+    assign fs_threshold_egp = settings.horo_free_shipping_threshold_egp | default: 0 | plus: 0
+
+    assign estimate_note = settings.horo_shipping_estimate_note
+    if estimate_note == blank
+      assign estimate_note = 'horo.cart.cost_preview_checkout_note' | t
+    endif
+
+  -%}
+
+  {{ 'component-horo-cart-cost-preview.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'horo-cart-cost-preview.js' | asset_url }}" defer="defer"></script>
+
+  <div
+    class="horo-cart-cost-preview horo-cart-cost-preview--{{ preview_context }}"
+    data-horo-cart-cost-preview
+    data-locale="{{ request.locale.iso_code | default: 'en' }}"
+    data-label-choose="{{ 'horo.cart.cost_preview_choose_governorate' | t | escape }}"
+    data-label-basis-prefix="{{ 'horo.cart.cost_preview_basis_prefix' | t | escape }}"
+    data-label-shipping-choose="{{ 'horo.cart.cost_preview_shipping_choose' | t | escape }}"
+    data-label-shipping-free="{{ 'horo.cart.cost_preview_shipping_free' | t | escape }}"
+    data-label-total-plus="{{ 'horo.cart.cost_preview_total_plus_shipping' | t | escape }}"
+    data-label-gov-cairo="{{ 'horo.cart.cost_preview_gov_cairo_giza' | t | escape }}"
+    data-label-gov-alex="{{ 'horo.cart.cost_preview_gov_alex' | t | escape }}"
+    data-label-gov-other="{{ 'horo.cart.cost_preview_gov_other' | t | escape }}"
+    data-merch-cents="{{ merch_cents }}"
+    data-gift-cents="{{ gift_cents }}"
+    data-shipping-cairo="{{ cairo_egp }}"
+    data-shipping-alex="{{ alex_egp }}"
+    data-shipping-other="{{ other_egp }}"
+    data-incentives-live="{% if incentives_live %}true{% else %}false{% endif %}"
+    data-free-shipping-threshold-egp="{{ fs_threshold_egp }}"
+    role="region"
+    aria-label="{{ 'horo.cart.orderSummaryHeading' | t }}"
+  >
+    {%- if incentives_live and fs_threshold_egp > 0 -%}
+      <div
+        class="horo-cart-cost-preview__freeship"
+        data-horo-cost-freeship
+        data-threshold-cents="{{ fs_threshold_egp | times: 100 }}"
+        hidden
+      >
+        <p class="horo-cart-cost-preview__freeship-msg" data-horo-cost-freeship-msg></p>
+      </div>
+    {%- endif -%}
+
+    <label class="horo-cart-cost-preview__gov-label" for="horo-cost-gov-{{ preview_context }}">
+      {{ 'horo.cart.cost_preview_governorate_label' | t }}
+    </label>
+    <select
+      id="horo-cost-gov-{{ preview_context }}"
+      class="horo-cart-cost-preview__gov-select"
+      data-horo-cost-governorate
+    >
+      <option value="">{{ 'horo.cart.cost_preview_choose_governorate' | t }}</option>
+      <option value="cairo_giza">{{ 'horo.cart.cost_preview_gov_cairo_giza' | t }}</option>
+      <option value="alexandria">{{ 'horo.cart.cost_preview_gov_alex' | t }}</option>
+      <option value="other">{{ 'horo.cart.cost_preview_gov_other' | t }}</option>
+    </select>
+
+    <p class="horo-cart-cost-preview__basis" data-horo-cost-basis>
+      {{ 'horo.cart.cost_preview_choose_governorate' | t }}
+    </p>
+
+    <dl class="horo-cart-cost-preview__rows">
+      <div class="horo-cart-cost-preview__row">
+        <dt>{{ 'horo.cart.subtotalLabel' | t }}</dt>
+        <dd data-horo-cost-subtotal>{{ merch_cents | money }}</dd>
+      </div>
+      <div
+        class="horo-cart-cost-preview__row horo-cart-cost-preview__row--gift"
+        data-horo-cost-gift-row
+        {% if gift_cents == 0 %}
+          hidden
+        {% endif %}
+      >
+        <dt>{{ 'horo.cart.gift_wrap_label' | t }}</dt>
+        <dd data-horo-cost-gift>{{ gift_cents | money }}</dd>
+      </div>
+      <div class="horo-cart-cost-preview__row">
+        <dt>{{ 'horo.cart.shippingLabel' | t }}</dt>
+        <dd data-horo-cost-shipping>{{ 'horo.cart.cost_preview_shipping_choose' | t }}</dd>
+      </div>
+      <div class="horo-cart-cost-preview__row horo-cart-cost-preview__row--total">
+        <dt>{{ 'horo.cart.totalLabel' | t }}</dt>
+        <dd data-horo-cost-total>{{ 'horo.cart.cost_preview_total_plus_shipping' | t }}</dd>
+      </div>
+    </dl>
+
+    <p class="horo-cart-cost-preview__note">{{ estimate_note | escape }}</p>
+  </div>
+{%- endunless -%}

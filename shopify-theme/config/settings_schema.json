@@ -1564,7 +1564,7 @@
         "type": "text",
         "id": "horo_trust_badge_3",
         "label": "Trust badge 3",
-        "default": "Cash on delivery (COD) available"
+        "default": "COD when shown at checkout"
       },
       {
         "type": "text",
@@ -1608,6 +1608,46 @@
         "label": "WhatsApp support URL",
         "default": "https://wa.me/201XXXXXXXXX",
         "info": "Used on order confirmation and product pages for WhatsApp deep-links."
+      }
+    ]
+  },
+  {
+    "name": "HORO Cart shipping estimates",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Display-only shipping estimates for cart drawer and cart page. Shopify checkout remains the source of truth for final shipping."
+      },
+      {
+        "type": "number",
+        "id": "horo_shipping_cairo_egp",
+        "label": "Estimated shipping — Cairo & Giza (EGP)",
+        "default": 60
+      },
+      {
+        "type": "number",
+        "id": "horo_shipping_alex_egp",
+        "label": "Estimated shipping — Alexandria (EGP)",
+        "default": 80
+      },
+      {
+        "type": "number",
+        "id": "horo_shipping_other_egp",
+        "label": "Estimated shipping — other governorates (EGP)",
+        "default": 100
+      },
+      {
+        "type": "textarea",
+        "id": "horo_shipping_estimate_note",
+        "label": "Shipping estimate footnote (optional)",
+        "info": "Leave blank to use the default “final shipping confirmed at checkout” translation."
+      },
+      {
+        "type": "number",
+        "id": "horo_free_shipping_threshold_egp",
+        "label": "Free shipping threshold (EGP, optional)",
+        "info": "Used in the cost preview only when “Show cart incentive messages” is enabled and a matching Shopify shipping rule exists.",
+        "default": 0
       }
     ]
   },

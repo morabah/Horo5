@@ -5,8 +5,10 @@
   <p class="horo-cart-reassurance__heading">{{ 'horo.cart.reassurance_heading' | t }}</p>
   <ul class="horo-cart-reassurance__list" role="list">
     <li>{{ 'horo.cart.reassurance_cod' | t }}</li>
+    <li>{{ 'horo.cart.reassurance_payment_methods' | t }}</li>
     <li>{{ 'horo.cart.reassurance_whatsapp_confirm' | t }}</li>
     <li>{{ 'horo.cart.reassurance_exchange' | t }}</li>
+    <li>{{ 'horo.cart.reassurance_shipping_note' | t }}</li>
     {%- if settings.horo_delivery_cairo != blank -%}
       <li>{{ settings.horo_delivery_cairo | escape }}</li>
     {%- endif -%}

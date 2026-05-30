@@ -37,13 +37,16 @@
         </cart-note>
       {%- endif -%}
 
-      <div class="cart__blocks">
+      <div class="cart__blocks{% if cart != empty %} main-cart-footer--horo-cost{% endif %}">
         {% for block in section.blocks %}
           {%- case block.type -%}
             {%- when '@app' -%}
               {% render block %}
             {%- when 'subtotal' -%}
               <div class="js-contents" {{ block.shopify_attributes }}>
+                {%- if cart != empty -%}
+                  {% render 'horo-cart-cost-preview', context: 'page' %}
+                {%- endif -%}
                 <div>
                   {%- if cart.cart_level_discount_applications.size > 0 -%}
                     <ul class="discounts list-unstyled" role="list" aria-label="{{ 'customer.order.discount' | t }}">

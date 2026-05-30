@@ -562,7 +562,7 @@
     "trust_ribbon": {
       "artist_made": "Artist-made design",
       "printed_in_egypt": "Printed in Egypt",
-      "cod": "Cash on delivery (COD) available",
+      "cod": "COD when shown at checkout",
       "exchange": "14-day exchange — see policy",
       "whatsapp": "WhatsApp support"
     },
@@ -667,9 +667,9 @@
       "cohorts_subheading": "Start with the person on your mind, then choose the occasion.",
       "products_heading": "Gift-ready designs",
       "trust_heading": "Gift with confidence",
-      "trust_text": "Delivery windows are on each product page. Cash on delivery (COD) available; exchange per policy.",
+      "trust_text": "Delivery windows are on each product page. COD when shown at checkout; exchange per policy.",
       "trust_badge_1": "Recipient & occasion guidance",
-      "trust_badge_2": "Cash on delivery (COD) available",
+      "trust_badge_2": "COD when shown at checkout",
       "trust_badge_3": "14-day exchange — see policy",
       "trust_badge_4": "WhatsApp size help before dispatch",
       "size_help_label": "See size guide",
@@ -707,7 +707,7 @@
         "row_marketplace": {
           "buyer": "Marketplace seller",
           "horo": "Proof, service, and trust you can verify before you buy.",
-          "proof": "UGC, WhatsApp help, Cash on delivery (COD) available"
+          "proof": "UGC, WhatsApp help, COD when shown at checkout"
         }
       }
     },
@@ -751,7 +751,7 @@
         "artist_made": "Artist-made design",
         "licensed_art": "Licensed art",
         "free_exchange_14d": "14-day exchange — see policy",
-        "cod_available": "Cash on delivery (COD) available"
+        "cod_available": "COD when shown at checkout"
       },
       "size_guide_link": "Size guide",
       "view_piece": "View piece",
@@ -759,12 +759,12 @@
       "sold_out": "Sold out",
       "select_size": "Select size",
       "addBtnCTA": "Add to Bag",
-      "shippingLine": "Express shipping · 14-day hassle-free returns · Secure checkout",
+      "shippingLine": "Express shipping · Exchange per policy · Secure checkout",
       "sizeGuideLabel": "Size guide",
       "selectSizePrompt": "Choose Size",
       "storyCardHeading": "For the one who…",
       "illustratedByLabel": "Illustrated by",
-      "trustReturnsLine": "14-day hassle-free returns",
+      "trustReturnsLine": "14-day exchange — see policy",
       "accordionProductDetails": "Product Details & Fit",
       "accordionDesignStory": "The Design Story",
       "accordionShipping": "Shipping & Returns",
@@ -781,8 +781,8 @@
       "gift_note": "Buying it as a gift? Ask us for size help before ordering.",
       "default_trust_cotton": "Cotton T-shirt",
       "default_trust_printed": "Printed in Egypt",
-      "default_trust_cod": "Cash on delivery (COD) available",
-      "default_trust_exchange": "14-day exchange — see policy"
+      "default_trust_cod": "COD when shown at checkout",
+      "default_trust_exchange": "Exchange applies according to policy"
     },
     "product_card": {
       "gift_ready": "Gift-ready",
@@ -792,9 +792,21 @@
     },
     "cart": {
       "reassurance_heading": "Before you checkout",
-      "reassurance_cod": "Cash on delivery (COD) available",
+      "reassurance_cod": "COD when shown at checkout",
+      "reassurance_payment_methods": "Payment methods shown at checkout",
       "reassurance_whatsapp_confirm": "We confirm COD orders by WhatsApp before dispatch.",
-      "reassurance_exchange": "14-day exchange per policy and product condition.",
+      "reassurance_exchange": "Exchange applies according to policy.",
+      "reassurance_shipping_note": "Final shipping confirmed at checkout.",
+      "cost_preview_governorate_label": "Governorate (shipping estimate)",
+      "cost_preview_choose_governorate": "Choose governorate to calculate shipping",
+      "cost_preview_gov_cairo_giza": "Cairo & Giza",
+      "cost_preview_gov_alex": "Alexandria",
+      "cost_preview_gov_other": "Other governorates",
+      "cost_preview_basis_prefix": "Shipping estimate based on:",
+      "cost_preview_shipping_choose": "Choose governorate",
+      "cost_preview_shipping_free": "Free (estimate)",
+      "cost_preview_total_plus_shipping": "Subtotal + shipping",
+      "cost_preview_checkout_note": "Final shipping is confirmed at checkout.",
       "reassurance_size_help": "Need size help? WhatsApp us before ordering.",
       "trust_explainer_heading": "What to expect",
       "free_shipping_progress_before": "Add {{ amount }} more to reach the free-shipping threshold.",

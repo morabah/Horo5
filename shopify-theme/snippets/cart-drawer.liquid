@@ -505,7 +505,8 @@
         <!-- Start blocks -->
         <!-- Subtotals -->
 
-        <div class="cart-drawer__footer" {{ block.shopify_attributes }}>
+        <div class="cart-drawer__footer cart-drawer__footer--horo-cost" {{ block.shopify_attributes }}>
+          {% render 'horo-cart-cost-preview', context: 'drawer' %}
           <div>
             {%- if cart.cart_level_discount_applications.size > 0 -%}
               <ul class="discounts list-unstyled" role="list" aria-label="{{ 'customer.order.discount' | t }}">

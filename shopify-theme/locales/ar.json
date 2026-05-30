@@ -135,9 +135,9 @@
       "cohorts_subheading": "ابدأ بالشخص اللي في بالك، وبعدين اختار المناسبة.",
       "products_heading": "تصاميم جاهزة للإهداء",
       "trust_heading": "اهدي وإنت مطمئن",
-      "trust_text": "مواعيد التوصيل على كل صفحة منتج. الدفع عند الاستلام (COD) متاح؛ الاستبدال حسب السياسة.",
+      "trust_text": "مواعيد التوصيل على كل صفحة منتج. الدفع عند الاستلام عند ظهوره في الدفع؛ الاستبدال حسب السياسة.",
       "trust_badge_1": "إرشاد للمستلم والمناسبة",
-      "trust_badge_2": "الدفع عند الاستلام (COD) متاح",
+      "trust_badge_2": "الدفع عند الاستلام عند ظهوره في الدفع",
       "trust_badge_3": "استبدال ١٤ يوم — راجع السياسة",
       "trust_badge_4": "مساعدة المقاس على واتساب قبل الشحن",
       "size_help_label": "دليل المقاسات",
@@ -175,7 +175,7 @@
         "row_marketplace": {
           "buyer": "بائع ماركت بليس",
           "horo": "إثبات وخدمة وثقة تقدر تتأكد منها قبل الشراء.",
-          "proof": "تجارب العملاء، واتساب، الدفع عند الاستلام (COD) متاح"
+          "proof": "تجارب العملاء، واتساب، الدفع عند الاستلام عند ظهوره في الدفع"
         }
       }
     },
@@ -219,7 +219,7 @@
         "artist_made": "تصميم فنان",
         "licensed_art": "رسومات مرخصة",
         "free_exchange_14d": "استبدال خلال ١٤ يوم — راجع السياسة",
-        "cod_available": "الدفع عند الاستلام (COD) متاح"
+        "cod_available": "الدفع عند الاستلام عند ظهوره في الدفع"
       },
       "size_guide_link": "دليل المقاسات",
       "view_piece": "شوف القطعة",
@@ -227,12 +227,12 @@
       "sold_out": "نفذت الكمية",
       "select_size": "اختار المقاس",
       "addBtnCTA": "أضف للسلة",
-      "shippingLine": "شحن سريع · استبدال خلال ١٤ يوم · دفع آمن",
+      "shippingLine": "شحن سريع · الاستبدال حسب السياسة · دفع آمن",
       "sizeGuideLabel": "دليل المقاسات",
       "selectSizePrompt": "اختار المقاس",
       "storyCardHeading": "للشخص اللي…",
       "illustratedByLabel": "رسم",
-      "trustReturnsLine": "استبدال خلال ١٤ يوم",
+      "trustReturnsLine": "استبدال ١٤ يوم — راجع السياسة",
       "accordionProductDetails": "تفاصيل المنتج والمقاس",
       "accordionDesignStory": "قصة التصميم",
       "accordionShipping": "الشحن والاستبدال",
@@ -249,8 +249,8 @@
       "gift_note": "بتشتريها هدية؟ اسألنا عن المقاس قبل الطلب.",
       "default_trust_cotton": "تيشيرت قطن",
       "default_trust_printed": "مطبوع في مصر",
-      "default_trust_cod": "الدفع عند الاستلام (COD) متاح",
-      "default_trust_exchange": "استبدال خلال ١٤ يوم — راجع السياسة"
+      "default_trust_cod": "الدفع عند الاستلام عند ظهوره في الدفع",
+      "default_trust_exchange": "الاستبدال حسب السياسة"
     },
     "product_card": {
       "gift_ready": "مناسب كهدية",
@@ -260,9 +260,21 @@
     },
     "cart": {
       "reassurance_heading": "قبل ما تكمل الدفع",
-      "reassurance_cod": "الدفع عند الاستلام (COD) متاح",
+      "reassurance_cod": "الدفع عند الاستلام عند ظهوره في الدفع",
+      "reassurance_payment_methods": "طرق الدفع تظهر في صفحة الدفع",
       "reassurance_whatsapp_confirm": "بنأكد طلبات الدفع عند الاستلام على واتساب قبل الشحن.",
-      "reassurance_exchange": "استبدال خلال ١٤ يوم حسب السياسة وحالة المنتج.",
+      "reassurance_exchange": "الاستبدال حسب السياسة.",
+      "reassurance_shipping_note": "يتم تأكيد الشحن النهائي في الدفع.",
+      "cost_preview_governorate_label": "المحافظة (تقدير الشحن)",
+      "cost_preview_choose_governorate": "اختر المحافظة لحساب الشحن",
+      "cost_preview_gov_cairo_giza": "القاهرة والجيزة",
+      "cost_preview_gov_alex": "الإسكندرية",
+      "cost_preview_gov_other": "محافظات أخرى",
+      "cost_preview_basis_prefix": "تقدير الشحن بناءً على:",
+      "cost_preview_shipping_choose": "اختر المحافظة",
+      "cost_preview_shipping_free": "مجاني (تقدير)",
+      "cost_preview_total_plus_shipping": "المجموع الفرعي + الشحن",
+      "cost_preview_checkout_note": "يتم تأكيد الشحن النهائي في الدفع.",
       "reassurance_size_help": "محتاج مساعدة في المقاس؟ تواصل على واتساب قبل الطلب.",
       "trust_explainer_heading": "اللي هتحصله",
       "free_shipping_progress_before": "أضف {{ amount }} عشان توصل للشحن المجاني.",

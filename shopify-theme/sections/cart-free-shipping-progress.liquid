@@ -18,7 +18,12 @@
 {%- endstyle -%}
 
 {%- if settings.horo_incentives_live and section.settings.enable_free_shipping_progress -%}
-  {%- assign threshold_cents = section.settings.threshold_egp | times: 100 -%}
+  {%- assign threshold_egp = section.settings.threshold_egp | plus: 0 -%}
+  {%- if threshold_egp == 0 -%}
+    {%- assign threshold_egp = settings.horo_free_shipping_threshold_egp | default: 0 | plus: 0 -%}
+  {%- endif -%}
+  {%- if threshold_egp > 0 -%}
+  {%- assign threshold_cents = threshold_egp | times: 100 -%}
   {%- assign total_cents = cart.total_price -%}
   {%- assign remaining_cents = threshold_cents | minus: total_cents -%}
 
@@ -71,6 +76,7 @@
       </div>
     </div>
   </div>
+  {%- endif -%}
 {%- elsif request.design_mode -%}
   <div class="color-{{ section.settings.color_scheme }} gradient">
     <div class="page-width section-{{ section.id }}-padding">
