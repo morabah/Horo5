@@ -105,12 +105,3 @@
   line-height: 1.45;
 }
 
-.cart-drawer__footer--horo-cost .totals,
-.cart-drawer__footer--horo-cost .tax-note {
-  display: none;
-}
-
-.main-cart-footer--horo-cost .totals,
-.main-cart-footer--horo-cost .tax-note {
-  display: none;
-}
