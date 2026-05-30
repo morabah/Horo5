@@ -1688,8 +1688,8 @@
         "type": "text",
         "id": "horo_storefront_api_base",
         "label": "Headless storefront API base (wishlist sync)",
-        "info": "e.g. https://horo.eg — must list this Shopify origin in STOREFRONT_PUBLIC_API_CORS_ORIGINS on web-next. Leave blank for localStorage-only wishlist.",
-        "default": ""
+        "info": "e.g. https://horo.eg — must list this Shopify origin in STOREFRONT_PUBLIC_API_CORS_ORIGINS on web-next. Clear to use localStorage-only wishlist.",
+        "default": "https://horo.eg"
       },
       {
         "type": "text",
