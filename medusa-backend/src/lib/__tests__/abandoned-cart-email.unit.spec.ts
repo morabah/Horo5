@@ -17,6 +17,18 @@ describe("buildAbandonedCartReminderHtml", () => {
     expect(html).toContain("EGP 1200")
   })
 
+  it("renders cart line previews when provided", () => {
+    const html = buildAbandonedCartReminderHtml({
+      locale: "en",
+      storeUrl: "https://horo.eg",
+      ctaUrl: "https://horo.eg/cart",
+      lines: [{ title: "Cairo Nights Tee", quantity: 2, thumbnailUrl: "https://cdn.example/tee.jpg" }],
+    })
+    expect(html).toContain("Cairo Nights Tee")
+    expect(html).toContain("× 2")
+    expect(html).toContain("https://cdn.example/tee.jpg")
+  })
+
   it("renders Arabic conditional copy", () => {
     const html = buildAbandonedCartReminderHtml({
       locale: "ar",

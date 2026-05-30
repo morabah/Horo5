@@ -95,7 +95,6 @@ export function MerchProductCard({
   const savingsPct = savingsEgp > 0 && compareAtPriceEgp
     ? Math.round((savingsEgp / compareAtPriceEgp) * 100)
     : 0;
-  const showFitBadge = Boolean(product?.fitLabel?.trim());
   const availableSizes = useMemo(() => {
     if (!product) return [] as ProductSizeKey[];
     return productAvailableSizes(product).filter((size) =>
@@ -108,6 +107,7 @@ export function MerchProductCard({
   const [quickAddMessage, setQuickAddMessage] = useState('');
   const addedTimeoutRef = useRef<number | null>(null);
   const stockStatus = deriveProductStockStatus(product);
+  const showFitBadge = Boolean(product?.fitLabel?.trim()) && !(minimal && stockStatus);
   const quickAddAvailable = availableSizes.length > 0;
   const hoverImageSrc = product ? getProductCardHoverImageSrc(product) : null;
   const [hovering, setHovering] = useState(false);
@@ -351,7 +351,7 @@ export function MerchProductCard({
             {locale === 'ar' ? 'تغليف هدية متاح' : 'Gift wrap available'}
           </span>
         ) : null}
-        {promoLabel?.trim() ? (
+        {!minimal && promoLabel?.trim() ? (
           <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-amber-700 md:mt-1.5 md:text-[10px]">
             {promoLabel.trim()}
           </p>

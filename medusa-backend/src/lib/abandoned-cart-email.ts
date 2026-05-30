@@ -11,6 +11,12 @@ function escapeHtml(s: string): string {
     .replace(/"/g, "&quot;")
 }
 
+export type AbandonCartLinePreview = {
+  title: string
+  quantity: number
+  thumbnailUrl?: string | null
+}
+
 export type SendAbandonedCartReminderArgs = {
   apiKey: string
   from: string
@@ -20,6 +26,7 @@ export type SendAbandonedCartReminderArgs = {
   cartValueEgp?: number | null
   cartId?: string | null
   unsubscribeUrl?: string | null
+  lines?: AbandonCartLinePreview[]
 }
 
 export function buildAbandonedCartReminderHtml(args: {
@@ -28,6 +35,7 @@ export function buildAbandonedCartReminderHtml(args: {
   cartValueEgp?: number | null
   ctaUrl: string
   unsubscribeUrl?: string | null
+  lines?: AbandonCartLinePreview[]
 }): string {
   const isAr = args.locale === "ar"
   const dir = isAr ? "rtl" : "ltr"
@@ -47,11 +55,26 @@ export function buildAbandonedCartReminderHtml(args: {
       : `<p style="margin-top:24px;font-size:12px;color:#888;"><a href="${escapeHtml(args.unsubscribeUrl)}">Unsubscribe from cart reminders</a></p>`
     : ""
 
+  const lineItems =
+    args.lines && args.lines.length > 0
+      ? `<ul style="margin:0 0 20px;padding:0;list-style:none;">${args.lines
+          .slice(0, 4)
+          .map((line) => {
+            const thumb = line.thumbnailUrl?.trim()
+            const img = thumb
+              ? `<img src="${escapeHtml(thumb)}" alt="" width="48" height="48" style="object-fit:cover;border-radius:8px;margin-${isAr ? "left" : "right"}:12px;" />`
+              : ""
+            return `<li style="display:flex;align-items:center;margin-bottom:10px;font-size:14px;color:#333;">${img}<span>${escapeHtml(line.title)} × ${line.quantity}</span></li>`
+          })
+          .join("")}</ul>`
+      : ""
+
   return `<!DOCTYPE html>
 <html dir="${dir}"><body style="font-family:system-ui,-apple-system,sans-serif;background:#faf8f5;color:#1a1a1a;padding:24px;direction:${dir};">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e8e4df;text-align:${align};">
     <h1 style="font-size:20px;margin:0 0 12px;">${escapeHtml(title)}</h1>
     <p style="margin:0 0 12px;color:#444;line-height:1.6;">${escapeHtml(body)}</p>
+    ${lineItems}
     ${valueLine ? `<p style="margin:0 0 20px;font-weight:600;">${escapeHtml(valueLine)}</p>` : ""}
     <a href="${escapeHtml(args.ctaUrl)}" style="display:inline-block;padding:12px 20px;background:#e8593c;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">${escapeHtml(cta)}</a>
     ${unsub}
@@ -88,6 +111,7 @@ export async function sendAbandonedCartReminderResend(
     cartValueEgp: args.cartValueEgp,
     ctaUrl,
     unsubscribeUrl: args.unsubscribeUrl,
+    lines: args.lines,
   })
   const subject =
     args.locale === "ar" ? "سلتك على HORO لسه موجودة" : "Your HORO bag is still waiting"

@@ -56,7 +56,7 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "Cash on delivery (COD) available",
+            "label": "COD when shown at checkout",
             "subtext": ""
           }
         },

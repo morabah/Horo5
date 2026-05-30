@@ -6,6 +6,7 @@ import { type FormEvent, type RefObject } from 'react';
 
 import { trackWhatsAppClick } from '../../analytics/events';
 import type { Product, ProductSizeKey, Feeling, StockStatusKey } from '../../data/catalog-types';
+import { pdpCodTrustCopy, pdpExchangeTrustCopy } from '../../data/commerce-copy';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
 import { pickLocalizedText } from '../../lib/storefront/incentives-client';
@@ -393,14 +394,14 @@ export function PdpBuyBox({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
-              <span>{isArabic ? 'الدفع عند الاستلام' : 'Pay on Delivery (COD)'}</span>
+              <span>{pdpCodTrustCopy(isArabic)}</span>
             </span>
             <span className="text-stone">·</span>
             <span className="inline-flex items-center gap-1.5">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
                 <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
               </svg>
-              <span>{isArabic ? 'استبدال سهل ١٤ يوم' : '14-Day Easy Exchange'}</span>
+              <span>{pdpExchangeTrustCopy(isArabic)}</span>
             </span>
           </div>
 

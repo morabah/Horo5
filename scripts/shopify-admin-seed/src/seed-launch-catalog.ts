@@ -92,7 +92,7 @@ function buildProductMetafields(
   const trustChips = [
     'Premium cotton',
     'Printed in Egypt',
-    'Cash on delivery (COD) available',
+    'COD when shown at checkout',
     '14-day exchange — see policy',
   ];
 

@@ -187,7 +187,7 @@ export const THEME_SETTINGS_PATCH: Record<string, string> = {
   horo_gift_wrap_price_hint: '+ EGP 50',
   horo_trust_badge_1: 'Artist-made design',
   horo_trust_badge_2: 'Printed in Egypt',
-  horo_trust_badge_3: 'Cash on delivery (COD) available',
+  horo_trust_badge_3: 'COD when shown at checkout',
   horo_trust_badge_4: '14-day exchange — see policy',
   horo_trust_badge_5: 'WhatsApp support',
   horo_delivery_cairo: 'Cairo/Giza: 2–4 business days',

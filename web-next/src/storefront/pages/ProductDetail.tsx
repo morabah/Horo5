@@ -1223,6 +1223,8 @@ export function ProductDetail({
         </div>
       </section>
 
+      <PdpProofStrip product={product} />
+
       <PdpStoryCard storyText={storyText} tagLabels={storyTagLabels} />
 
       {productDescription && productDescription.trim().length > 400 ? (
@@ -1254,8 +1256,6 @@ export function ProductDetail({
           </div>
         </div>
       </section>
-
-      <PdpProofStrip product={product} />
 
       <section className="border-t border-stone/25 bg-papyrus">
         <div className="mx-auto max-w-[820px] px-4 py-14 md:px-12 md:py-16">

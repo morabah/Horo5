@@ -103,6 +103,7 @@ function ShopAllProductCard({
       artistCredit={product.artistCredit}
       onQuickView={onQuickView}
       eager={eager}
+      variant="minimal"
     />
   );
 }

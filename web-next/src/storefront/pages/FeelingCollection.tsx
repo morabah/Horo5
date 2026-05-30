@@ -31,6 +31,8 @@ import {
   imgUrl,
   resolveProductImageSrcForDisplay,
 } from '../data/images';
+import { parseSearchSizeFilter } from '../search/view';
+import { defaultCatalogSizeKeys, productHasCatalogSize } from '../utils/productSizes';
 import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
@@ -159,7 +161,7 @@ export function FeelingCollection({
   const params = useParams<{ slug?: string; subfeelingSlug?: string }>();
   const slug = initialSlug || params.slug || '';
   const subfeelingSlug = initialSubfeelingSlug || params.subfeelingSlug || '';
-  const [searchParams] = useAppSearchParams();
+  const [searchParams, setSearchParams] = useAppSearchParams();
   const lineFromQuery = searchParams.get('line')?.trim() || '';
   const lineParam = subfeelingSlug || lineFromQuery;
   const copy = useDictionary();
@@ -182,6 +184,15 @@ export function FeelingCollection({
     { value: '800-899', label: copy.search.between800And899Label },
     { value: '900+', label: copy.search.over900Label },
   ];
+
+  const sizeFilter = parseSearchSizeFilter(searchParams.get('size'));
+  const SIZE_FILTER_OPTIONS = useMemo(
+    () => [
+      { value: 'all' as const, label: copy.search.allSizesLabel },
+      ...defaultCatalogSizeKeys().map((size) => ({ value: size, label: size })),
+    ],
+    [copy.search.allSizesLabel],
+  );
 
   const [sortKey, setSortKey] = useState<ProductSortKey>('featured');
   const [priceFilter, setPriceFilter] = useState<PriceFilter>('all');
@@ -215,7 +226,11 @@ export function FeelingCollection({
   }, [isMobile]);
 
   const sorted = useMemo(() => sortProductList(baseList, sortKey), [baseList, sortKey]);
-  const list = useMemo(() => filterByPrice(sorted, priceFilter), [sorted, priceFilter]);
+  const sized = useMemo(() => {
+    if (sizeFilter === 'all') return sorted;
+    return sorted.filter((product) => productHasCatalogSize(product, sizeFilter));
+  }, [sorted, sizeFilter]);
+  const list = useMemo(() => filterByPrice(sized, priceFilter), [sized, priceFilter]);
 
   const others = sortActiveFeelings(getFeelings()).filter((f) => f.slug !== slug).slice(0, 4);
 
@@ -278,6 +293,24 @@ export function FeelingCollection({
     return () => panel.removeEventListener('keydown', onKeyDown);
   }, [mobileFiltersOpen]);
 
+  const hasActiveFilters =
+    sortKey !== 'featured' || priceFilter !== 'all' || sizeFilter !== 'all' || Boolean(lineParam);
+
+  const updateSizeParam = useCallback(
+    (value: string) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (!value || value === 'all') next.delete('size');
+          else next.set('size', value);
+          return next;
+        },
+        { replace: true },
+      );
+    },
+    [setSearchParams],
+  );
+
   if (!feeling) {
     return (
       <div className="container py-12">
@@ -298,7 +331,6 @@ export function FeelingCollection({
     `Browse all products assigned to ${feeling.name} in Medusa.`;
   const designCountLabel = baseList.length >= DESIGN_COUNT_MIN ? `${baseList.length} designs` : 'Curated selection';
   const collectionTrustLabel = firstCollectionTrustLabel(baseList);
-  const hasActiveFilters = sortKey !== 'featured' || priceFilter !== 'all' || Boolean(lineParam);
   const heroTitle = activeLine ? `${feeling.name} / ${activeLine.name}` : feeling.name;
   const heroVisualSrc = activeLineVisual?.src || feelingVisuals.hero.src;
   const proofVisualSrc = activeLineVisual?.src || feelingVisuals.proof.src;
@@ -456,6 +488,27 @@ export function FeelingCollection({
 
                 {desktopFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">
+                  <label htmlFor="vibe-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {copy.search.sizeFilterLabel}
+                  </label>
+                  <div className="relative inline-block min-w-0">
+                    <select
+                      id="vibe-size"
+                      value={sizeFilter}
+                      onChange={(e) => updateSizeParam(e.target.value)}
+                      className="min-h-10 w-full appearance-none border-b border-stone/40 bg-transparent py-0 pl-2 pr-8 text-[13px] text-obsidian transition-colors hover:border-obsidian focus-visible:outline-none"
+                    >
+                      {SIZE_FILTER_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+                ) : null}
+
+                {desktopFiltersOpen ? (
+                <div className="flex min-w-[13rem] flex-col gap-2">
                   <label htmlFor="vibe-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     Price
                   </label>
@@ -504,6 +557,7 @@ export function FeelingCollection({
                   eyebrow={categoryEyebrowForFeelingProduct(feeling.name, slug, activeLine, p)}
                   artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
                   onQuickView={setQuickViewSlug}
+                  variant="minimal"
                 />
               );
             })}
@@ -679,6 +733,25 @@ export function FeelingCollection({
                 </div>
 
                 <div className="flex flex-col gap-2">
+                  <label htmlFor="mobile-vibe-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {copy.search.sizeFilterLabel}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="mobile-vibe-size"
+                      value={sizeFilter}
+                      onChange={(e) => updateSizeParam(e.target.value)}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      {SIZE_FILTER_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-vibe-price" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                     Price
                   </label>
@@ -713,6 +786,7 @@ export function FeelingCollection({
                     onClick={() => {
                       setSortKey('featured');
                       setPriceFilter('all');
+                      updateSizeParam('all');
                     }}
                     className="font-label inline-flex min-h-11 items-center justify-center rounded-sm border border-stone bg-white px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                   >

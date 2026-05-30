@@ -178,6 +178,38 @@ function verifyThemeRepoFiles(): number {
     }
   }
 
+  const costPreviewSnippet = path.join(REPO_ROOT, 'shopify-theme/snippets/horo-cart-cost-preview.liquid');
+  const cartDrawer = path.join(REPO_ROOT, 'shopify-theme/snippets/cart-drawer.liquid');
+  const cartFooter = path.join(REPO_ROOT, 'shopify-theme/sections/main-cart-footer.liquid');
+  if (fs.existsSync(costPreviewSnippet)) {
+    console.log('✓ snippets/horo-cart-cost-preview.liquid present');
+    const drawerSrc = fs.existsSync(cartDrawer) ? fs.readFileSync(cartDrawer, 'utf8') : '';
+    const footerSrc = fs.existsSync(cartFooter) ? fs.readFileSync(cartFooter, 'utf8') : '';
+    if (drawerSrc.includes("horo-cart-cost-preview")) {
+      console.log('✓ cart-drawer.liquid renders horo-cart-cost-preview');
+    } else {
+      console.log('✗ cart-drawer.liquid missing horo-cart-cost-preview render');
+      code = 1;
+    }
+    if (footerSrc.includes("horo-cart-cost-preview")) {
+      console.log('✓ main-cart-footer.liquid renders horo-cart-cost-preview');
+    } else {
+      console.log('✗ main-cart-footer.liquid missing horo-cart-cost-preview render');
+      code = 1;
+    }
+  } else {
+    console.log('✗ MISSING snippets/horo-cart-cost-preview.liquid');
+    code = 1;
+  }
+
+  const dataContract = path.join(REPO_ROOT, 'shopify-theme/docs/HORO_DATA_CONTRACT.md');
+  if (fs.existsSync(dataContract)) {
+    console.log('✓ shopify-theme/docs/HORO_DATA_CONTRACT.md present');
+  } else {
+    console.log('✗ MISSING shopify-theme/docs/HORO_DATA_CONTRACT.md');
+    code = 1;
+  }
+
   return code;
 }
 
@@ -249,6 +281,10 @@ async function main(): Promise<void> {
           totalInventory
           media(first: 12) { nodes { id } }
           trustChips: metafield(namespace: "custom", key: "trust_chips") { value }
+          sizeTable: metafield(namespace: "custom", key: "size_table") { value }
+          proofGallery: metafield(namespace: "custom", key: "proof_gallery") { value }
+          story: metafield(namespace: "custom", key: "story") { value }
+          fitNote: metafield(namespace: "custom", key: "fit_note") { value }
         }
       }
       ugcProofs: metaobjects(type: "ugc_proof", first: 12) { nodes { id handle } }
@@ -280,6 +316,10 @@ async function main(): Promise<void> {
         totalInventory: number;
         media: { nodes: Array<{ id: string }> };
         trustChips: { value: string | null } | null;
+        sizeTable: { value: string | null } | null;
+        proofGallery: { value: string | null } | null;
+        story: { value: string | null } | null;
+        fitNote: { value: string | null } | null;
       }>;
     };
     ugcProofs: { nodes: Array<{ id: string; handle: string }> };
@@ -374,6 +414,19 @@ async function main(): Promise<void> {
       console.log(`✓ ${p.handle}: confident COD in trust_chips`);
     } else if (chips.length === 0) {
       console.log(`⚠ ${p.handle}: trust_chips empty — run seed:launch-catalog`);
+    }
+    if (!p.sizeTable?.value?.trim()) {
+      console.log(`✗ ${p.handle}: missing custom.size_table`);
+      exitCode = 1;
+    }
+    if (!p.story?.value?.trim()) {
+      console.log(`⚠ ${p.handle}: missing custom.story`);
+    }
+    if (!p.fitNote?.value?.trim()) {
+      console.log(`⚠ ${p.handle}: missing custom.fit_note`);
+    }
+    if (!p.proofGallery?.value?.trim()) {
+      console.log(`⚠ ${p.handle}: missing custom.proof_gallery — add fabric/print proof per HORO_PRODUCT_MEDIA_GATE`);
     }
   }
 

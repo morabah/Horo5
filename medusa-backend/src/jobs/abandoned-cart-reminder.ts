@@ -2,14 +2,25 @@ import type { MedusaContainer } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 import { MAX_REMINDERS_PER_LEAD } from "../lib/abandoned-cart-guard"
-import { buildUnsubscribeUrl, sendAbandonedCartReminderResend } from "../lib/abandoned-cart-email"
+import {
+  buildUnsubscribeUrl,
+  sendAbandonedCartReminderResend,
+  type AbandonCartLinePreview,
+} from "../lib/abandoned-cart-email"
 import { STOREFRONT_ABANDONED_CART_MODULE } from "../modules/storefront-abandoned-cart"
 import type StorefrontAbandonedCartModuleService from "../modules/storefront-abandoned-cart/service"
+
+type QueryCartItem = {
+  id?: string
+  quantity?: number
+  title?: string | null
+  thumbnail?: string | null
+}
 
 type QueryCart = {
   id: string
   completed_at?: string | null
-  items?: Array<{ id?: string } | null> | null
+  items?: Array<QueryCartItem | null> | null
 }
 
 type AbandonedRow = {
@@ -90,7 +101,7 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
       try {
         const { data: carts } = await query.graph({
           entity: "cart",
-          fields: ["id", "completed_at", "items.id"],
+          fields: ["id", "completed_at", "items.id", "items.quantity", "items.title", "items.thumbnail"],
           filters: { id: row.cart_id },
           pagination: { take: 1 },
         })
@@ -115,6 +126,29 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
 
     const locale = row.locale === "ar" ? "ar" : "en"
     const unsubscribeUrl = buildUnsubscribeUrl(site, row.email)
+    let lines: AbandonCartLinePreview[] | undefined
+    if (row.cart_id) {
+      try {
+        const { data: carts } = await query.graph({
+          entity: "cart",
+          fields: ["items.title", "items.quantity", "items.thumbnail"],
+          filters: { id: row.cart_id },
+          pagination: { take: 1 },
+        })
+        const cartForLines = (carts?.[0] as QueryCart | undefined) ?? null
+        const preview = (cartForLines?.items ?? [])
+          .filter(Boolean)
+          .map((item) => ({
+            title: String(item?.title ?? "").trim() || "Item",
+            quantity: Math.max(1, Number(item?.quantity) || 1),
+            thumbnailUrl: item?.thumbnail ?? null,
+          }))
+          .filter((item) => item.title)
+        if (preview.length) lines = preview
+      } catch {
+        /* omit lines if cart fetch fails */
+      }
+    }
     const result = await sendAbandonedCartReminderResend({
       apiKey,
       from,
@@ -124,6 +158,7 @@ export default async function abandonedCartReminderJob(container: MedusaContaine
       cartValueEgp: row.cart_value_egp,
       cartId: row.cart_id,
       unsubscribeUrl,
+      lines,
     })
 
     if (result.ok) {

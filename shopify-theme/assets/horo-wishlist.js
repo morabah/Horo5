@@ -192,6 +192,7 @@
       const isActive = Wishlist.has(handle);
       btn.classList.toggle('horo-wishlist-btn--active', isActive);
       btn.setAttribute('aria-pressed', String(isActive));
+      btn.setAttribute('aria-label', isActive ? 'Remove from wishlist' : 'Add to wishlist');
     });
   }
 
@@ -208,6 +209,7 @@
 
     btn.classList.toggle('horo-wishlist-btn--active', added);
     btn.setAttribute('aria-pressed', String(added));
+    btn.setAttribute('aria-label', added ? 'Remove from wishlist' : 'Add to wishlist');
 
     // Optional: micro-animation
     if (added) {

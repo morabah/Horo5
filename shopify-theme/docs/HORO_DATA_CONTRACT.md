@@ -22,6 +22,10 @@ Canonical source for Shopify theme metafields, metaobjects, theme settings, coll
 | `horo_trust_badge_1` … `horo_trust_badge_5` | Text | No | Global trust copy |
 | `horo_delivery_cairo` / `alex` / `other` | Text | No | Delivery estimates |
 | `horo_instapay_instructions` | Text | No | Qualified Instapay copy |
+| `horo_shipping_cairo_egp` / `horo_shipping_alex_egp` / `horo_shipping_other_egp` | Number | Recommended | Cart drawer / `/cart` cost preview estimates only — align with live Shopify shipping rates |
+| `horo_shipping_estimate_note` | Text | No | Disclaimer under cost preview |
+| `horo_free_shipping_threshold_egp` | Number | No | Shown only when `horo_incentives_live` is on and a matching free-shipping rule exists |
+| `horo_storefront_api_base` | URL | For wishlist / abandon | web-next origin for `horo-wishlist.js` and exit-intent capture |
 
 ---
 
@@ -437,9 +441,17 @@ From `scripts/shopify-admin-seed/`:
 
 ```bash
 npm run verify:launch
+npm run verify:full   # ACTIVE product media, metafields, trust_chips, cart cost preview hooks
 ```
 
-**Commercial copy:** PDP trust strip, purchase-context default chips, and global trust badges use conditional COD/exchange wording (checkout-gated COD; exchange references policy). Align Shopify payment, shipping, and discount settings with storefront copy before launch.
+**Product media gate:** [`doc/HORO_PRODUCT_MEDIA_GATE.md`](../../doc/HORO_PRODUCT_MEDIA_GATE.md) — minimum image slots per ACTIVE SKU (enforced in `verify:full`).
+
+**Commercial copy (canonical strings):**
+
+- COD (EN): `COD when shown at checkout` · (AR): `الدفع عند الاستلام عند ظهوره في الدفع`
+- Exchange: `14-day exchange — see policy` / `Exchange applies according to policy`
+
+**Commercial copy (theme behavior):** PDP trust strip, purchase-context default chips, and global trust badges use conditional COD/exchange wording (checkout-gated COD; exchange references policy). Align Shopify payment, shipping, and discount settings with storefront copy before launch.
 
 **Admin data (manual):**
 

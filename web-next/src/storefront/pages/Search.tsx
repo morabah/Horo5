@@ -1199,6 +1199,9 @@ const urlQuery = params.get('q') ?? '';
                 <Link className="btn btn-secondary text-sm" href="/occasions">
                   {copy.search.shopByOccasionCta}
                 </Link>
+                <Link className="btn btn-secondary text-sm" href="/gifts">
+                  {copy.search.shopGiftsCta}
+                </Link>
                 <Link className="btn btn-ghost" href="/products">
                   {copy.search.browseAllDesignsCta}
                 </Link>

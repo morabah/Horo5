@@ -1,5 +1,13 @@
 /** Conditional recovery copy — aligned with PDP/cart trust chips. */
 
+export function pdpCodTrustCopy(isArabic: boolean): string {
+  return isArabic ? "الدفع عند الاستلام عند ظهوره في الدفع" : "COD when shown at checkout"
+}
+
+export function pdpExchangeTrustCopy(isArabic: boolean): string {
+  return isArabic ? "الاستبدال حسب السياسة" : "Exchange applies according to policy"
+}
+
 export function recoveryBodyCopy(isArabic: boolean): string {
   return isArabic
     ? "كمّل الطلب — الدفع عند الاستلام متاح عند ظهوره في الدفع. الاستبدال حسب السياسة."

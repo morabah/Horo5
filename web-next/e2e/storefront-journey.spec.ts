@@ -266,6 +266,21 @@ test.describe("storefront journey", () => {
     await expect(secondQty).toHaveText("3", { timeout: 1000 })
   })
 
+  test("mobile viewport: shop all and cart shell", async ({ page }) => {
+    test.skip(!catalogJson, "Set NEXT_PUBLIC_MEDUSA_BACKEND_URL + NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and run Medusa")
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto("/products", { waitUntil: "domcontentloaded" })
+    await expectMainShell(page)
+
+    const seeded = pickSeededCart()
+    test.skip(!seeded, "No in-stock variant for mobile cart seed")
+    await seedBrowserCart(page, [seeded.first])
+    await page.goto("/cart", { waitUntil: "domcontentloaded" })
+    await expectMainShell(page)
+    await expect(page.getByTestId("cart-shipping-basis")).toBeVisible({ timeout: 30_000 })
+  })
+
   test("Arabic locale query keeps shell (uiLocale=ar)", async ({ page }) => {
     test.skip(!catalogJson, "Set NEXT_PUBLIC_MEDUSA_BACKEND_URL + NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY and run Medusa")
 

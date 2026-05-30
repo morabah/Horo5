@@ -63,7 +63,7 @@ export const DICTIONARY = {
       "trustBadges": {
         "artistMade": "Artist-made designs",
         "printedEgypt": "Printed in Egypt",
-        "codAvailable": "Cash on delivery (COD) available",
+        "codAvailable": "COD when shown at checkout",
         "exchange14d": "14-day exchange",
         "whatsappSupport": "WhatsApp support"
       },
@@ -111,7 +111,7 @@ export const DICTIONARY = {
         },
         "codAndExchange": {
           "title": "Safe to buy",
-          "body": "Cash on delivery (COD) available. 14-day exchange — see policy for eligible items and condition."
+          "body": "COD when shown at checkout. Exchange applies according to policy for eligible items and condition."
         },
         "realProofOnly": {
           "title": "Real Proof Only",
@@ -271,6 +271,7 @@ export const DICTIONARY = {
       "noResultsForQuery": "No results for “{query}”",
       "zeroResultsSuggestionsHeading": "Try these instead",
       "shopByOccasionCta": "Browse occasions",
+      "shopGiftsCta": "Shop gifts",
       "sizeFilterLabel": "Size in stock",
       "allSizesLabel": "All sizes",
       "artistLabel": "Artist",
@@ -916,17 +917,18 @@ export const DICTIONARY = {
       "resultsFallback": "Browse everything — or try a popular search below.",
       "scopedResultsFallback": "Browse designs in {scope} — or try a popular search below.",
       "resultsForQuery": "{count} results for “{query}”",
-      "noResultsForQuery": "No results for “{query}”",
-      "zeroResultsSuggestionsHeading": "Try these instead",
-      "shopByOccasionCta": "Browse occasions",
-      "sizeFilterLabel": "Size in stock",
-      "allSizesLabel": "All sizes",
-      "artistLabel": "Artist",
-      "allArtistsLabel": "All artists",
-      "occasionFilterLabel": "Occasion",
-      "allOccasionsFilterLabel": "All occasions",
-      "colorLabel": "Tee color",
-      "allColorsLabel": "All colors"
+      "noResultsForQuery": "لا نتائج لـ «{query}»",
+      "zeroResultsSuggestionsHeading": "جرّب هذه البدائل",
+      "shopByOccasionCta": "تسوّق حسب المناسبة",
+      "shopGiftsCta": "تسوّق الهدايا",
+      "sizeFilterLabel": "المقاس المتاح",
+      "allSizesLabel": "كل المقاسات",
+      "artistLabel": "الفنان",
+      "allArtistsLabel": "كل الفنانين",
+      "occasionFilterLabel": "المناسبة",
+      "allOccasionsFilterLabel": "كل المناسبات",
+      "colorLabel": "لون التيشيرت",
+      "allColorsLabel": "كل الألوان"
     },
     "checkout": {
       "secureData": "بياناتك آمنة معنا.",

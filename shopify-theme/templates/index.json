@@ -24,7 +24,7 @@
         "split_word_2": "What",
         "split_word_3": "You Feel",
         "show_hero_ribbon": true,
-        "hero_ribbon_text": "Cash on delivery (COD) available · 14-day exchange — see policy · Printed in Egypt",
+        "hero_ribbon_text": "COD when shown at checkout · 14-day exchange — see policy · Printed in Egypt",
         "hero_cta_position_mobile": "center",
         "hero_cta_position_desktop": "bottom-left",
         "padding_top": 0,
@@ -73,7 +73,7 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "Cash on delivery (COD) available",
+            "label": "COD when shown at checkout",
             "subtext": ""
           }
         }
@@ -190,7 +190,7 @@
           "settings": {
             "icon": "refresh",
             "title": "Safe to buy",
-            "body": "Cash on delivery (COD) available. 14-day exchange — see policy."
+            "body": "COD when shown at checkout. 14-day exchange — see policy."
           }
         }
       },

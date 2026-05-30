@@ -233,7 +233,9 @@ function CartSummary({
               </option>
             ))}
           </select>
-          <p className="mt-2 font-body text-xs text-clay">{shippingBasisCopy}</p>
+          <p className="mt-2 font-body text-xs text-clay" data-testid="cart-shipping-basis">
+            {shippingBasisCopy}
+          </p>
         </div>
       ) : null}
 
