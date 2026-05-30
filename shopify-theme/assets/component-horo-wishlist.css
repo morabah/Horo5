@@ -51,6 +51,11 @@
   z-index: 5;
 }
 
+/* .card__media stays position:absolute (Dawn); it still anchors overlay buttons. */
+.horo-product-card .card__media > .horo-wishlist-btn--overlay {
+  z-index: 3;
+}
+
 .horo-wishlist-btn--pulse {
   animation: horoWishlistPulse 400ms ease;
 }

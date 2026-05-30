@@ -148,6 +148,15 @@
         "padding_bottom": 36
       }
     },
+    "product_gift_wrap_upsell": {
+      "type": "product-gift-wrap-upsell",
+      "settings": {
+        "show_preview_image": true,
+        "color_scheme": "scheme-1",
+        "padding_top": 16,
+        "padding_bottom": 20
+      }
+    },
     "product_size_guide": {
       "type": "product-size-guide",
       "settings": {
@@ -273,13 +282,14 @@
     "main",
     "product_purchase_context",
     "product_trust_strip",
-    "product_proof_strip",
+    "product_delivery_payment",
+    "product_gift_wrap_upsell",
     "product_size_guide",
+    "product_proof_strip",
     "product_details_accordions",
     "product_story",
     "product_artist_card",
     "horo_seen_on_you",
-    "product_delivery_payment",
     "product_pair_with",
     "horo_cross_sell",
     "horo_recently_viewed",

@@ -6,7 +6,7 @@
         "overlay_opacity": 30,
         "heading": "Wear What You Feel",
         "heading_size": "h0",
-        "subheading": "Artist-made T-shirts for moods, moments, and meaningful gifts.",
+        "subheading": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
         "button_label": "Shop by Feeling",
         "button_link": "/pages/feelings",
         "button_style_secondary": false,
@@ -110,7 +110,7 @@
           "type": "route",
           "settings": {
             "label": "Shop by Feeling",
-            "short_text": "Find the mood you wear",
+            "short_text": "Find the feeling you wear",
             "link": "/pages/feelings"
           }
         },
@@ -235,7 +235,7 @@
           "type": "card",
           "settings": {
             "title": "Choose",
-            "body": "Browse by mood, occasion, or gift intent - not just a product grid."
+            "body": "Browse by feeling, occasion, or gift intent - not just a product grid."
           }
         },
         "step_2": {
@@ -280,7 +280,7 @@
       "settings": {
         "heading": "Shop by Feeling",
         "heading_size": "h1",
-        "subheading": "Find the mood you wear",
+        "subheading": "Find the feeling you wear",
         "columns_desktop": 3,
         "columns_mobile": "2",
         "color_scheme": "scheme-1",

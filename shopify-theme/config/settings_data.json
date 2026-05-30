@@ -50,11 +50,11 @@
         },
         "scheme-5": {
           "settings": {
-            "background": "#B77A67",
+            "background": "#7A1F2B",
             "background_gradient": "",
             "text": "#FFFFFF",
             "button": "#FFFFFF",
-            "button_label": "#B77A67",
+            "button_label": "#7A1F2B",
             "secondary_button_label": "#FFFFFF",
             "shadow": "#1F1C1A"
           }

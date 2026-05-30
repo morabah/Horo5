@@ -33,11 +33,51 @@
           "type": "faq_item",
           "settings": {
             "show": true,
+            "question": "How do I choose my size?",
+            "answer": "<p>Use the size guide on each product page before checkout. If you are between sizes or buying as a gift, ask on WhatsApp with height, usual size, and preferred fit.</p>"
+          }
+        },
+        "faq-3": {
+          "type": "faq_item",
+          "settings": {
+            "show": true,
+            "question": "Will the print and fabric last?",
+            "answer": "<p>Product pages show print, fabric, fit, and care proof when assets are available. Wash inside out on cold, avoid bleach, and iron away from the print.</p>"
+          }
+        },
+        "faq-4": {
+          "type": "faq_item",
+          "settings": {
+            "show": true,
+            "question": "When will it arrive?",
+            "answer": "<p>Delivery timing depends on your governorate and is confirmed at checkout. Cairo/Giza orders usually show the fastest estimate when local delivery is available.</p>"
+          }
+        },
+        "faq-5": {
+          "type": "faq_item",
+          "settings": {
+            "show": true,
             "question": "Can I exchange my size?",
             "answer": "<p>Eligible size exchanges are supported within 14 days of delivery. Review the Delivery & Returns page for the current policy details.</p>"
           }
         },
-        "faq-3": {
+        "faq-6": {
+          "type": "faq_item",
+          "settings": {
+            "show": true,
+            "question": "Can I return instead of exchange?",
+            "answer": "<p>Return or exchange eligibility follows the current Delivery & Returns policy. Keep the item unworn, unwashed, and in its original packaging until you confirm the fit.</p>"
+          }
+        },
+        "faq-7": {
+          "type": "faq_item",
+          "settings": {
+            "show": true,
+            "question": "Is it gift-worthy?",
+            "answer": "<p>Gift-ready pieces include occasion context, size help, and gift-wrap options when available. If you are unsure about size or timing, ask on WhatsApp before ordering.</p>"
+          }
+        },
+        "faq-8": {
           "type": "faq_item",
           "settings": {
             "show": true,
@@ -50,7 +90,12 @@
         "faq-0",
         "faq-1",
         "faq-2",
-        "faq-3"
+        "faq-3",
+        "faq-4",
+        "faq-5",
+        "faq-6",
+        "faq-7",
+        "faq-8"
       ]
     }
   },

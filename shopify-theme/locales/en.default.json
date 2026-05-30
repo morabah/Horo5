@@ -568,7 +568,7 @@
     },
     "primary_routes": {
       "feelings_title": "Shop by Feeling",
-      "feelings_subtitle": "Find the mood you wear",
+      "feelings_subtitle": "Find the feeling you wear",
       "occasions_title": "Shop by Occasion",
       "occasions_subtitle": "Dress for the moment",
       "gifts_title": "Gift by Meaning",
@@ -861,10 +861,10 @@
       "popular_searches": "Popular searches"
     },
     "home": {
-      "hero_promise_line": "Artist-made T-shirts for moods, moments, and meaningful gifts.",
+      "hero_promise_line": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
       "hero_primary_cta": "Shop by Feeling",
       "hero_secondary_cta": "Find a Gift",
-      "hero_subheading": "Artist-made T-shirts for moods, moments, and meaningful gifts.",
+      "hero_subheading": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
       "plan_eyebrow": "Simple plan",
       "plan_title": "How it works",
       "feelings_title": "Shop by Feeling",

@@ -1479,9 +1479,15 @@
       },
       {
         "type": "color",
+        "id": "horo_color_burgundy",
+        "label": "Brand anchor (Burgundy)",
+        "default": "#7A1F2B"
+      },
+      {
+        "type": "color",
         "id": "horo_color_ember",
-        "label": "CTA / Accent (Ember)",
-        "default": "#E8593C"
+        "label": "CTA / Accent (Burgundy)",
+        "default": "#7A1F2B"
       },
       {
         "type": "color",
@@ -1524,20 +1530,20 @@
         "id": "horo_heading_font",
         "label": "Heading font stack",
         "options": [
-          { "value": "Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif", "label": "Avenir Next (brand spec)" },
-          { "value": "Segoe UI, Helvetica Neue, Arial, sans-serif", "label": "Segoe UI (system fallback)" }
+          { "value": "Space Grotesk, Inter, Arial, Helvetica, sans-serif", "label": "Space Grotesk (V1.6)" },
+          { "value": "Inter, Arial, Helvetica, sans-serif", "label": "Inter fallback" }
         ],
-        "default": "Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif"
+        "default": "Space Grotesk, Inter, Arial, Helvetica, sans-serif"
       },
       {
         "type": "select",
         "id": "horo_body_font",
         "label": "Body font stack",
         "options": [
-          { "value": "Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif", "label": "Avenir Next (brand spec)" },
-          { "value": "Segoe UI, Helvetica Neue, Arial, sans-serif", "label": "Segoe UI (system fallback)" }
+          { "value": "Inter, Arial, Helvetica, sans-serif", "label": "Inter (V1.6)" },
+          { "value": "Arial, Helvetica, sans-serif", "label": "System fallback" }
         ],
-        "default": "Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif"
+        "default": "Inter, Arial, Helvetica, sans-serif"
       }
     ]
   },

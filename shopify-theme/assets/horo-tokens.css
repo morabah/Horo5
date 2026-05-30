@@ -9,11 +9,12 @@
   --color-chalk: #f4efe7;
   --color-linen: #e6ddd1;
   --color-ink: #1f1c1a;
+  --color-burgundy: #7a1f2b;
   --color-warm-charcoal: #4b4641;
   --color-dusk-plum: #6a5b76;
   --color-moon-gold: #c5a15c;
   --color-clay-action: #b77a67;
-  --color-cta-primary: #e8593c;
+  --color-cta-primary: #7a1f2b;
   --color-cta-on-primary: #ffffff;
   --color-moss: #7d8771;
   --color-river: #556f73;
@@ -22,7 +23,7 @@
   --color-outline: #6b5540;
   --color-secondary-fixed: #e8dfd4;
   --color-ember: #b77a67;
-  --color-primary: #b77a67;
+  --color-primary: #7a1f2b;
   --color-surface: #f4efe7;
   --color-on-surface: #1f1c1a;
   --color-secondary: #4b4641;
@@ -52,11 +53,13 @@
   --color-mint-frost: #e8ede6;
 
   /* === Typography === */
-  --font-headline: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-body: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-label: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-wordmark: Georgia, 'Times New Roman', serif;
-  --font-pdp-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-body: Inter, Arial, Helvetica, sans-serif;
+  --font-label: Inter, Arial, Helvetica, sans-serif;
+  --font-wordmark: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-pdp-serif: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-heading-family: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-body-family: Inter, Arial, Helvetica, sans-serif;
 
   /* === Radius Scale === */
   --radius-sm: 0.125rem;
@@ -67,23 +70,23 @@
 
 /* === Arabic font override === */
 :lang(ar) {
-  --font-headline: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-body: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-label: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-body: Inter, Arial, Helvetica, sans-serif;
+  --font-label: Inter, Arial, Helvetica, sans-serif;
 }
 
 /* Primary CTA — Ember token (parity with web-next .btn-primary) */
 .button--primary,
 .cart__checkout-button.button,
 .product-form__submit.button--primary {
-  background-color: var(--color-cta-primary, #e8593c);
+  background-color: var(--color-cta-primary, #7a1f2b);
   color: var(--color-cta-on-primary, #ffffff);
-  border-color: color-mix(in srgb, var(--color-cta-primary, #e8593c) 88%, #1f1c1a);
+  border-color: color-mix(in srgb, var(--color-cta-primary, #7a1f2b) 88%, #1f1c1a);
 }
 
 .button--primary:hover,
 .cart__checkout-button.button:hover,
 .product-form__submit.button--primary:hover {
-  background-color: color-mix(in srgb, var(--color-cta-primary, #e8593c) 92%, #1f1c1a);
+  background-color: color-mix(in srgb, var(--color-cta-primary, #7a1f2b) 92%, #1f1c1a);
   color: var(--color-cta-on-primary, #ffffff);
 }

@@ -270,7 +270,8 @@
 
       const media = wrapper.querySelector('.card__media');
       if (media) {
-        media.style.position = 'relative';
+        // Keep Dawn's `position: absolute` on .card__media — switching to relative
+        // collapses the media box and leaves the product image pinned left with empty space.
         btn.classList.add('horo-wishlist-btn--overlay');
         media.appendChild(btn);
       } else {

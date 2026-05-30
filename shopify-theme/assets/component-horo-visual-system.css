@@ -246,6 +246,7 @@
   --horo-chalk: #f4efe7;
   --horo-linen: #e6ddd1;
   --horo-ink: #1f1c1a;
+  --horo-burgundy: #7a1f2b;
   --horo-warm-charcoal: #4b4641;
   --horo-dusk-plum: #6a5b76;
   --horo-moon-gold: #c5a15c;
@@ -254,9 +255,9 @@
   --horo-river: #556f73;
   --horo-stone: #d4ccc0;
 
-  --font-horo-headline: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-horo-body: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-horo-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-horo-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-horo-body: Inter, Arial, Helvetica, sans-serif;
+  --font-horo-serif: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
 }
 
 /* --- Glassmorphism nav (sticky header) --- */

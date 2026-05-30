@@ -3596,12 +3596,12 @@ details-disclosure > details {
   }
 }
 
-/* ===== HORO: Arabic font + RTL adjustments ===== */
+/* ===== HORO: Arabic RTL adjustments ===== */
 /* Only appended — no Dawn rules modified above this line */
 
 :lang(ar) {
-  --font-body-family: 'Cairo', var(--font-body-family);
-  --font-heading-family: 'Cairo', var(--font-heading-family);
+  --font-body-family: Inter, Arial, Helvetica, sans-serif;
+  --font-heading-family: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
 }
 
 /* HORO custom sections RTL adjustments using logical properties */
@@ -3748,7 +3748,7 @@ body {
 
 /* === HORO Arabic / RTL overrides === */
 :lang(ar) {
-  font-family: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-family: Inter, Arial, Helvetica, sans-serif;
 }
 
 :lang(ar) body {
@@ -3757,5 +3757,5 @@ body {
 
 :lang(ar) .font-pdp-serif,
 :lang(ar) .font-wordmark {
-  font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  font-family: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
 }
