@@ -6,14 +6,14 @@
         "overlay_opacity": 30,
         "heading": "Wear What You Feel",
         "heading_size": "h0",
-        "subheading": "Artist-made tees · Printed in Egypt · COD when shown at checkout",
-        "button_label": "Shop the Founding Drop",
-        "button_link": "/collections/founding-drop",
+        "subheading": "Artist-made T-shirts for moods, moments, and meaningful gifts.",
+        "button_label": "Shop by Feeling",
+        "button_link": "/pages/feelings",
         "button_style_secondary": false,
-        "button_label_secondary": "Browse by feeling",
-        "button_link_secondary": "/pages/feelings",
-        "button_label_tertiary": "Shop Gifts",
-        "button_link_tertiary": "/pages/gifts-hub",
+        "button_label_secondary": "Find a Gift",
+        "button_link_secondary": "/pages/gifts-hub",
+        "button_label_tertiary": "",
+        "button_link_tertiary": "",
         "desktop_content_position": "center-center",
         "mobile_content_alignment": "center",
         "color_scheme": "scheme-3",
@@ -24,7 +24,7 @@
         "split_word_2": "What",
         "split_word_3": "You Feel",
         "show_hero_ribbon": true,
-        "hero_ribbon_text": "COD when shown at checkout · 14-day exchange — see policy · Printed in Egypt",
+        "hero_ribbon_text": "Cash on delivery (COD) available · 14-day exchange — see policy · Printed in Egypt",
         "hero_cta_position_mobile": "center",
         "hero_cta_position_desktop": "bottom-left",
         "padding_top": 0,
@@ -73,7 +73,7 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "COD when shown at checkout",
+            "label": "Cash on delivery (COD) available",
             "subtext": ""
           }
         }
@@ -84,6 +84,16 @@
         "badge_3",
         "badge_4"
       ]
+    },
+    "horo_feeling_quiz": {
+      "type": "horo-feeling-quiz",
+      "settings": {
+        "heading": "Not sure where to start?",
+        "subheading": "Answer two quick questions and we'll point you to a feeling.",
+        "color_scheme": "scheme-1",
+        "padding_top": 24,
+        "padding_bottom": 24
+      }
     },
     "home_primary_routes": {
       "type": "home-primary-routes",
@@ -104,27 +114,27 @@
             "link": "/pages/feelings"
           }
         },
-        "route_occasion": {
+        "route_gift": {
+          "type": "route",
+          "settings": {
+            "label": "Find a Gift",
+            "short_text": "Meaningful tees for someone you care about",
+            "link": "/pages/gifts-hub"
+          }
+        },
+        "route_occasions": {
           "type": "route",
           "settings": {
             "label": "Shop by Occasion",
             "short_text": "Dress for the moment",
             "link": "/pages/occasions"
           }
-        },
-        "route_gift": {
-          "type": "route",
-          "settings": {
-            "label": "Gift by Meaning",
-            "short_text": "Say it without saying it",
-            "link": "/pages/gifts-hub"
-          }
         }
       },
       "block_order": [
         "route_feeling",
-        "route_occasion",
-        "route_gift"
+        "route_gift",
+        "route_occasions"
       ]
     },
     "home_founding_drop": {
@@ -133,40 +143,14 @@
         "eyebrow": "FOUNDING DROP",
         "heading": "The first HORO pieces",
         "heading_size": "h1",
-        "subheading": "",
-        "collection": "all",
+        "subheading": "Shop the founding drop — three artist-made tees to start with.",
+        "collection": "founding-drop",
         "product_limit": 6,
         "columns_desktop": 3,
         "image_ratio": "adapt",
         "show_secondary_image": true,
         "show_vendor": false,
         "show_rating": false,
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "feeling_grid": {
-      "type": "home-feeling-grid",
-      "settings": {
-        "heading": "Shop by Feeling",
-        "heading_size": "h1",
-        "subheading": "Find the mood you wear",
-        "columns_desktop": 3,
-        "columns_mobile": "2",
-        "color_scheme": "scheme-1",
-        "padding_top": 36,
-        "padding_bottom": 36
-      }
-    },
-    "occasion_grid": {
-      "type": "home-occasion-grid",
-      "settings": {
-        "heading": "Shop by Occasion",
-        "heading_size": "h1",
-        "subheading": "Dress for the moment",
-        "columns_desktop": 3,
-        "columns_mobile": "2",
         "color_scheme": "scheme-1",
         "padding_top": 36,
         "padding_bottom": 36
@@ -206,7 +190,7 @@
           "settings": {
             "icon": "refresh",
             "title": "Safe to buy",
-            "body": "COD when shown at checkout. 14-day exchange — see policy."
+            "body": "Cash on delivery (COD) available. 14-day exchange — see policy."
           }
         }
       },
@@ -215,6 +199,26 @@
         "reason_2",
         "reason_3"
       ]
+    },
+    "horo_gift_cohorts": {
+      "type": "horo-gift-cohorts",
+      "settings": {
+        "heading": "For the person on your mind",
+        "heading_size": "h1",
+        "color_scheme": "scheme-2",
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
+    },
+    "home_seen_on_you": {
+      "type": "horo-home-seen-on-you",
+      "settings": {
+        "heading": "Seen on you",
+        "heading_size": "h1",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
     },
     "home_behind_the_piece": {
       "type": "home-behind-the-piece",
@@ -271,26 +275,44 @@
         "step_5"
       ]
     },
-    "horo_gift_cohorts": {
-      "type": "horo-gift-cohorts",
+    "feeling_grid": {
+      "type": "home-feeling-grid",
       "settings": {
-        "heading": "For the person on your mind",
+        "heading": "Shop by Feeling",
         "heading_size": "h1",
-        "color_scheme": "scheme-2",
-        "padding_top": 40,
-        "padding_bottom": 40
+        "subheading": "Find the mood you wear",
+        "columns_desktop": 3,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
+      }
+    },
+    "occasion_grid": {
+      "type": "home-occasion-grid",
+      "settings": {
+        "heading": "Shop by Occasion",
+        "heading_size": "h1",
+        "subheading": "Dress for the moment",
+        "columns_desktop": 3,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "padding_top": 36,
+        "padding_bottom": 36
       }
     }
   },
   "order": [
     "home_hero",
     "the_proof",
+    "horo_feeling_quiz",
     "home_primary_routes",
     "home_founding_drop",
-    "feeling_grid",
-    "occasion_grid",
     "home_why_horo",
+    "horo_gift_cohorts",
+    "home_seen_on_you",
     "home_behind_the_piece",
-    "horo_gift_cohorts"
+    "feeling_grid",
+    "occasion_grid"
   ]
 }

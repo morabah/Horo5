@@ -1,10 +1,16 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useUiLocale } from '../i18n/ui-locale';
+import { getProduct } from '../data/site';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, withSupportMessage } from '../data/domain-config';
 import { capturePostHogEvent } from '@/lib/posthog-client';
 import { HYPOTHESIS_PRIMARY_SEGMENT } from '../analytics/hypothesisContext';
+
+type ShareYourFitProps = {
+  primaryProductSlug?: string | null;
+  contactEmail?: string | null;
+};
 
 const SHARE_YOUR_FIT_KEY = 'horo-share-fit-cta-seen';
 
@@ -24,11 +30,24 @@ function markShareCTASeen() {
   }
 }
 
-export function ShareYourFit() {
+export function ShareYourFit({ primaryProductSlug, contactEmail }: ShareYourFitProps = {}) {
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const [dismissed, setDismissed] = useState(hasSeenShareCTA());
   const [copied, setCopied] = useState(false);
+  const [ugcOpen, setUgcOpen] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [instagramHandle, setInstagramHandle] = useState('');
+  const [fitFeedback, setFitFeedback] = useState('');
+  const [permission, setPermission] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const productId = useMemo(() => {
+    if (!primaryProductSlug) return null;
+    return getProduct(primaryProductSlug)?.id ?? null;
+  }, [primaryProductSlug]);
 
   const handleDismiss = useCallback(() => {
     setDismissed(true);
@@ -55,6 +74,53 @@ export function ShareYourFit() {
       });
     }
   }, [isArabic]);
+
+  const handleSubmitUgc = useCallback(async () => {
+    if (!productId) {
+      setSubmitError(
+        isArabic ? 'تعذّر ربط الطلب بالمنتج. تواصل معنا على واتساب.' : 'Could not link to your product. Contact us on WhatsApp.',
+      );
+      return;
+    }
+    const trimmedPhoto = photoUrl.trim();
+    const trimmedFit = fitFeedback.trim();
+    if (!trimmedPhoto && !trimmedFit) {
+      setSubmitError(isArabic ? 'أضف رابط صورة أو ملاحظة عن المقاس.' : 'Add a photo link or fit note.');
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch('/api/storefront-reviews', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          product_id: productId,
+          locale: isArabic ? 'ar' : 'en',
+          email: contactEmail?.trim() || undefined,
+          photo_url: trimmedPhoto || undefined,
+          instagram_handle: instagramHandle.trim() || undefined,
+          fit_feedback: trimmedFit || undefined,
+          permission_to_repost: permission,
+          ugc_type: trimmedPhoto ? 'photo' : 'review',
+        }),
+      });
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+        setSubmitError(payload?.error ?? (isArabic ? 'تعذّر الإرسال. حاول مرة أخرى.' : 'Could not submit. Try again.'));
+        return;
+      }
+      setSubmitSuccess(true);
+      capturePostHogEvent('share_your_fit_ugc_submitted', {
+        hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+        has_photo: Boolean(trimmedPhoto),
+      });
+    } catch {
+      setSubmitError(isArabic ? 'تعذّر الإرسال. حاول مرة أخرى.' : 'Could not submit. Try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [contactEmail, fitFeedback, instagramHandle, isArabic, permission, photoUrl, productId]);
 
   const whatsappUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
     ? withSupportMessage(
@@ -133,7 +199,104 @@ export function ShareYourFit() {
             {isArabic ? 'شارك عبر واتساب' : 'Share via WhatsApp'}
           </a>
         ) : null}
+        {primaryProductSlug ? (
+          <button
+            type="button"
+            onClick={() => setUgcOpen((open) => !open)}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-dusk-violet/40 bg-white px-5 py-2.5 font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-dusk-violet transition-colors hover:border-dusk-violet"
+          >
+            {ugcOpen
+              ? isArabic
+                ? 'إخفاء النموذج'
+                : 'Hide form'
+              : isArabic
+                ? 'أرسل صورتك'
+                : 'Send your photo'}
+          </button>
+        ) : null}
       </div>
+
+      {ugcOpen && primaryProductSlug ? (
+        <div className="mt-5 space-y-3 border-t border-dusk-violet/15 pt-5">
+          {submitSuccess ? (
+            <p className="font-body text-sm text-deep-teal" role="status">
+              {isArabic
+                ? 'شكراً! سنراجع الصورة وقد نعرضها في "شوهناك".'
+                : 'Thanks! We will review your photo and may feature it in Seen on you.'}
+            </p>
+          ) : (
+            <>
+              <p className="font-body text-xs text-clay">
+                {isArabic
+                  ? 'ارفعي الصورة على إنستجرام أو Drive والصقي الرابط هنا (أو اكتبي ملاحظة عن المقاس).'
+                  : 'Upload to Instagram or Drive and paste the link (or share a fit note).'}
+              </p>
+              <label className="block">
+                <span className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-label">
+                  {isArabic ? 'رابط الصورة' : 'Photo URL'}
+                </span>
+                <input
+                  type="url"
+                  value={photoUrl}
+                  onChange={(event) => setPhotoUrl(event.target.value)}
+                  className="mt-1 min-h-11 w-full rounded-lg border border-stone/60 bg-white px-3 text-sm text-obsidian"
+                  placeholder="https://"
+                  autoComplete="off"
+                />
+              </label>
+              <label className="block">
+                <span className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-label">
+                  {isArabic ? 'إنستجرام (اختياري)' : 'Instagram (optional)'}
+                </span>
+                <input
+                  type="text"
+                  value={instagramHandle}
+                  onChange={(event) => setInstagramHandle(event.target.value)}
+                  className="mt-1 min-h-11 w-full rounded-lg border border-stone/60 bg-white px-3 text-sm text-obsidian"
+                  placeholder="@username"
+                  autoComplete="off"
+                />
+              </label>
+              <label className="block">
+                <span className="font-label text-[10px] font-semibold uppercase tracking-[0.16em] text-label">
+                  {isArabic ? 'ملاحظة المقاس' : 'Fit note'}
+                </span>
+                <textarea
+                  value={fitFeedback}
+                  onChange={(event) => setFitFeedback(event.target.value)}
+                  rows={2}
+                  className="mt-1 w-full rounded-lg border border-stone/60 bg-white px-3 py-2 text-sm text-obsidian"
+                  placeholder={isArabic ? 'المقاس كان…' : 'The size felt…'}
+                />
+              </label>
+              <label className="flex items-start gap-2 font-body text-xs text-warm-charcoal">
+                <input
+                  type="checkbox"
+                  checked={permission}
+                  onChange={(event) => setPermission(event.target.checked)}
+                  className="mt-0.5 h-4 w-4"
+                />
+                {isArabic
+                  ? 'أوافق على عرض الصورة في الموقع ووسائل HORO'
+                  : 'I allow HORO to feature this on the site and social channels'}
+              </label>
+              {submitError ? (
+                <p className="font-body text-sm text-ember" role="alert">
+                  {submitError}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                disabled={submitting}
+                onClick={() => void handleSubmitUgc()}
+                className="btn btn-primary min-h-11 px-5 text-sm disabled:opacity-60"
+              >
+                {submitting ? (isArabic ? 'جاري الإرسال…' : 'Sending…') : isArabic ? 'إرسال' : 'Submit'}
+              </button>
+            </>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

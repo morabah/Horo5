@@ -9,6 +9,7 @@ import { MerchProductCard } from '../components/MerchProductCard';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { PageHero } from '../components/PageHero';
 import { PAGE_HEROES } from '../content/page-heroes';
+import { ExitIntentModal } from '../components/ExitIntentModal';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { SkeletonGrid } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
@@ -32,7 +33,7 @@ import {
   type SearchSortKey,
 } from '../search/view';
 import { defaultCatalogSizeKeys } from '../utils/productSizes';
-import { setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
+import { getProduct, getSubfeeling, setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
 import { trackShopAllView } from '../analytics/funnel';
 
 const FOCUSABLE_SELECTOR =
@@ -253,7 +254,36 @@ const priceOptions = useMemo(() => {
     return getSearchResults(queryParams);
   }, [feelingFilter, filterArtist, filterColor, filterOccasion, medusaBrowsePool, medusaBrowseStatus, priceBands, priceFilter, sizeFilter, sortKey]);
 
-  const visibleCount = results.designMatches.length;
+  const lineFilter = params.get('line') ?? 'all';
+  const filteredDesignMatches = useMemo(() => {
+    if (lineFilter === 'all') return results.designMatches;
+    return results.designMatches.filter((card) => {
+      const product = getProduct(card.slug);
+      if (!product) return false;
+      return (product.primarySubfeelingSlug ?? product.lineSlug) === lineFilter;
+    });
+  }, [lineFilter, results.designMatches]);
+
+  const PLP_PAGE_SIZE = 24;
+  const pageFromUrl = Math.max(1, Number.parseInt(params.get('page') ?? '1', 10) || 1);
+  const totalPages = Math.max(1, Math.ceil(filteredDesignMatches.length / PLP_PAGE_SIZE));
+  const currentPage = Math.min(pageFromUrl, totalPages);
+  const pagedDesignMatches = useMemo(
+    () => filteredDesignMatches.slice((currentPage - 1) * PLP_PAGE_SIZE, currentPage * PLP_PAGE_SIZE),
+    [currentPage, filteredDesignMatches],
+  );
+
+  const setPage = useCallback(
+    (nextPage: number) => {
+      const next = new URLSearchParams(params.toString());
+      if (nextPage <= 1) next.delete('page');
+      else next.set('page', String(nextPage));
+      setParams(next);
+    },
+    [params, setParams],
+  );
+
+  const visibleCount = filteredDesignMatches.length;
   const totalCount = results.baseDesigns.length;
 
   useEffect(() => {
@@ -262,10 +292,24 @@ const priceOptions = useMemo(() => {
 
   const designSingularLabel = isArabic ? 'تصميم' : copy.search.designSingular;
   const designPluralLabel = isArabic ? 'تصاميم' : copy.search.designPlural;
+  const lineOptions = useMemo(() => {
+    const slugs = new Set<string>();
+    for (const card of results.designMatches) {
+      const product = getProduct(card.slug);
+      const slug = product?.primarySubfeelingSlug ?? product?.lineSlug;
+      if (slug) slugs.add(slug);
+    }
+    return Array.from(slugs)
+      .map((slug) => getSubfeeling(slug))
+      .filter((line): line is NonNullable<typeof line> => Boolean(line))
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  }, [results.designMatches]);
+
   const hasActiveFilters =
     sortKey !== 'featured' ||
     priceFilter !== 'all' ||
     sizeFilter !== 'all' ||
+    lineFilter !== 'all' ||
     feelingFilter !== 'all' ||
     filterArtist !== 'all' ||
     filterOccasion !== 'all' ||
@@ -310,6 +354,7 @@ const priceOptions = useMemo(() => {
       next.delete('fArtist');
       next.delete('fOccasion');
       next.delete('fColor');
+      next.delete('line');
       return next;
     });
   }, [setParams]);
@@ -554,6 +599,30 @@ const priceOptions = useMemo(() => {
                 </div>
               </div>
 
+              {lineOptions.length > 1 ? (
+                <div className="flex min-w-[13rem] flex-col gap-2">
+                  <label htmlFor="shop-all-line" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                    {isArabic ? 'الخط' : 'Line'}
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="shop-all-line"
+                      value={lineFilter}
+                      onChange={(event) => updateParams({ line: event.target.value })}
+                      className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                    >
+                      <option value="all">{isArabic ? 'كل الخطوط' : 'All lines'}</option>
+                      {lineOptions.map((option) => (
+                        <option key={option.slug} value={option.slug}>
+                          {option.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronIcon />
+                  </div>
+                </div>
+              ) : null}
+
               <div className="flex min-w-[13rem] flex-col gap-2">
                 <label htmlFor="shop-all-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
                   {copy.search.sizeFilterLabel}
@@ -675,9 +744,10 @@ const priceOptions = useMemo(() => {
 
           {useMedusaServerBrowse && medusaBrowseStatus === 'loading' && results.designMatches.length === 0 ? (
             <SkeletonGrid count={6} />
-          ) : results.designMatches.length > 0 ? (
+          ) : filteredDesignMatches.length > 0 ? (
+            <>
             <div className="vibe-product-grid">
-              {results.designMatches.map((product, index) => (
+              {pagedDesignMatches.map((product, index) => (
                 <ShopAllProductCard
                   key={product.slug}
                   product={product}
@@ -686,6 +756,30 @@ const priceOptions = useMemo(() => {
                 />
               ))}
             </div>
+            {totalPages > 1 ? (
+              <nav className="mt-10 flex flex-wrap items-center justify-center gap-3" aria-label={isArabic ? 'صفحات' : 'Pagination'}>
+                <button
+                  type="button"
+                  className="btn btn-secondary min-h-11"
+                  disabled={currentPage <= 1}
+                  onClick={() => setPage(currentPage - 1)}
+                >
+                  {isArabic ? 'السابق' : 'Previous'}
+                </button>
+                <span className="font-body text-sm text-warm-charcoal">
+                  {isArabic ? `صفحة ${currentPage} من ${totalPages}` : `Page ${currentPage} of ${totalPages}`}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-secondary min-h-11"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setPage(currentPage + 1)}
+                >
+                  {isArabic ? 'التالي' : 'Next'}
+                </button>
+              </nav>
+            ) : null}
+            </>
           ) : (
             <div className="card-glass rounded-[18px] border border-stone/70 px-6 py-10 text-center">
               <h2 className="font-headline text-[1.45rem] font-semibold tracking-tight text-obsidian">
@@ -783,6 +877,30 @@ const priceOptions = useMemo(() => {
                     <ChevronIcon />
                   </div>
                 </div>
+
+                {lineOptions.length > 1 ? (
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="mobile-shop-all-line" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
+                      {isArabic ? 'الخط' : 'Line'}
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="mobile-shop-all-line"
+                        value={lineFilter}
+                        onChange={(event) => updateParams({ line: event.target.value })}
+                        className="min-h-12 w-full appearance-none rounded-sm border border-stone bg-white py-0 pl-4 pr-10 text-sm text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                      >
+                        <option value="all">{isArabic ? 'كل الخطوط' : 'All lines'}</option>
+                        {lineOptions.map((option) => (
+                          <option key={option.slug} value={option.slug}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronIcon />
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="flex flex-col gap-2">
                   <label htmlFor="mobile-shop-all-size" className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-label">
@@ -925,6 +1043,8 @@ const priceOptions = useMemo(() => {
       {quickViewSlug ? (
         <ProductQuickView open productSlug={quickViewSlug} onClose={() => setQuickViewSlug(null)} />
       ) : null}
+
+      <ExitIntentModal surface="plp" />
     </div>
   );
 }

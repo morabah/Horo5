@@ -118,6 +118,46 @@
   min-width: 20rem;
 }
 
+.horo-exit-intent__email {
+  margin: 0 0 2rem;
+  text-align: start;
+}
+
+.horo-exit-intent__email-label {
+  margin: 0 0 0.8rem;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.horo-exit-intent__email-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: center;
+}
+
+.horo-exit-intent__email-input {
+  flex: 1 1 14rem;
+  min-height: 4.4rem;
+  padding: 0 1.2rem;
+  border: 1px solid rgba(var(--color-foreground), 0.2);
+  border-radius: 0.6rem;
+  font-size: 1.4rem;
+}
+
+.horo-exit-intent__email-success {
+  margin: 0.8rem 0 0;
+  font-size: 1.3rem;
+  color: rgb(var(--color-link));
+}
+
+.horo-exit-intent__email-error {
+  margin: 0.8rem 0 0;
+  font-size: 1.3rem;
+  color: #c0392b;
+}
+
 @media screen and (max-width: 749px) {
   .horo-exit-intent__panel {
     padding: 2.4rem 2rem;

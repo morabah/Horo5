@@ -3,10 +3,21 @@
  * Verify HORO Custom Data against the full launch Admin checklist (definitions + optional content counts).
  */
 import 'dotenv/config';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { CORE_METAOBJECTS } from './definitions/metaobjects.js';
 import { PRODUCT_METAFIELDS } from './definitions/product-metafields.js';
 import { ensureAccessToken } from './utils/shopify-auth.js';
 import { ShopifyAdminClient } from './shopify-admin.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(__dirname, '../../..');
+const MIN_LAUNCH_PRODUCTS = 4;
+const MIN_PRODUCT_MEDIA = 4;
+const MIN_UGC_PROOF = 4;
+const HEDGED_COD_RE = /when shown at checkout/i;
 
 /** Product metafields required for launch (namespace custom). */
 const MUST_HAVE_PRODUCT_KEYS = [
@@ -120,6 +131,56 @@ const FEELING_HANDLES = ['feeling-mood', 'feeling-zodiac', 'feeling-career', 'fe
 const OCCASION_HANDLES = ['occasion-birthday', 'occasion-eid', 'occasion-graduation', 'occasion-gift'];
 const PAGE_HANDLES = ['feelings', 'occasions', 'gifts-hub', 'comparison-faq', 'why-horo'];
 
+function parseTrustChips(raw: string | null | undefined): string[] {
+  if (!raw?.trim()) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function verifyThemeRepoFiles(): number {
+  let code = 0;
+  const indexPath = path.join(REPO_ROOT, 'shopify-theme/templates/index.json');
+  if (!fs.existsSync(indexPath)) {
+    console.log('✗ MISSING shopify-theme/templates/index.json');
+    return 1;
+  }
+  const index = JSON.parse(fs.readFileSync(indexPath, 'utf8')) as {
+    sections?: Record<string, unknown>;
+    order?: string[];
+  };
+  const hasSeenOnYou =
+    Boolean(index.sections?.home_seen_on_you) &&
+    Array.isArray(index.order) &&
+    index.order.includes('home_seen_on_you');
+  if (hasSeenOnYou) {
+    console.log('✓ theme index.json includes home_seen_on_you section');
+  } else {
+    console.log('✗ theme index.json missing home_seen_on_you in sections/order');
+    code = 1;
+  }
+
+  const settingsPath = path.join(REPO_ROOT, 'shopify-theme/config/settings_data.json');
+  if (fs.existsSync(settingsPath)) {
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8')) as {
+      current?: string;
+      presets?: Record<string, Record<string, unknown>>;
+    };
+    const preset = settings.presets?.[settings.current || 'Default'] ?? {};
+    const apiBase = String(preset.horo_storefront_api_base ?? '').trim();
+    if (apiBase) {
+      console.log(`✓ theme preset horo_storefront_api_base: ${apiBase}`);
+    } else {
+      console.log('⚠ theme preset horo_storefront_api_base unset (wishlist sync + exit email need this)');
+    }
+  }
+
+  return code;
+}
+
 async function main(): Promise<void> {
   const env = await ensureAccessToken();
   const client = new ShopifyAdminClient({ ...env, quiet: true });
@@ -179,9 +240,18 @@ async function main(): Promise<void> {
       occasions: metaobjects(type: "occasion", first: 20) { nodes { id handle } }
       artists: metaobjects(type: "artist", first: 20) { nodes { id handle } }
       sizeTables: metaobjects(type: "size_table", first: 10) { nodes { id handle } }
-      products: products(first: 10, query: "status:active OR status:draft") {
-        nodes { id title handle status totalInventory }
+      products: products(first: 20, query: "status:active") {
+        nodes {
+          id
+          title
+          handle
+          status
+          totalInventory
+          media(first: 12) { nodes { id } }
+          trustChips: metafield(namespace: "custom", key: "trust_chips") { value }
+        }
       }
+      ugcProofs: metaobjects(type: "ugc_proof", first: 12) { nodes { id handle } }
       collections(first: 50) { nodes { id handle title productsCount { count } } }
     }
   `;
@@ -202,7 +272,17 @@ async function main(): Promise<void> {
     occasions: { nodes: unknown[] };
     artists: { nodes: unknown[] };
     sizeTables: { nodes: unknown[] };
-    products: { nodes: Array<{ title: string; handle: string; status: string; totalInventory: number }> };
+    products: {
+      nodes: Array<{
+        title: string;
+        handle: string;
+        status: string;
+        totalInventory: number;
+        media: { nodes: Array<{ id: string }> };
+        trustChips: { value: string | null } | null;
+      }>;
+    };
+    ugcProofs: { nodes: Array<{ id: string; handle: string }> };
     collections: { nodes: Array<{ handle: string; productsCount: { count: number } }> };
   }>(contentQuery);
 
@@ -222,6 +302,17 @@ async function main(): Promise<void> {
   auditContent('Artist entries', d.artists.nodes.length, 0);
   auditContent('Size table entries', d.sizeTables.nodes.length, 0);
   auditContent('Products (active/draft)', d.products.nodes.length);
+
+  const founding = d.collections.nodes.find((x) => x.handle === 'founding-drop');
+  if (founding) {
+    console.log(`✓ collection founding-drop (${founding.productsCount.count} products)`);
+    if (founding.productsCount.count === 0) {
+      console.log('  ⚠ founding-drop has no products — run seed:launch-catalog or add launch SKUs in Admin');
+    }
+  } else {
+    console.log('✗ MISSING collection handle: founding-drop (homepage hero CTA)');
+    exitCode = 1;
+  }
 
   for (const handle of FEELING_HANDLES) {
     const c = d.collections.nodes.find((x) => x.handle === handle);
@@ -257,8 +348,51 @@ async function main(): Promise<void> {
     }
   }
 
-  console.log('\n=== 4. Not verified via API (do in Admin) ===\n');
-  console.log('  • Theme settings: horo_gift_wrap_product, horo_incentives_live=OFF, trust badges, WhatsApp URL');
+  console.log('\n=== 4. Launch product QC (active products) ===\n');
+  const activeProducts = d.products.nodes.filter((p) => p.status === 'ACTIVE');
+  if (activeProducts.length >= MIN_LAUNCH_PRODUCTS) {
+    console.log(`✓ Active products: ${activeProducts.length} (≥ ${MIN_LAUNCH_PRODUCTS})`);
+  } else {
+    console.log(`✗ Active products: ${activeProducts.length} (need ≥ ${MIN_LAUNCH_PRODUCTS})`);
+    exitCode = 1;
+  }
+
+  for (const p of activeProducts) {
+    const mediaCount = p.media?.nodes?.length ?? 0;
+    if (mediaCount >= MIN_PRODUCT_MEDIA) {
+      console.log(`✓ ${p.handle}: ${mediaCount} media`);
+    } else {
+      console.log(`✗ ${p.handle}: ${mediaCount} media (need ≥ ${MIN_PRODUCT_MEDIA})`);
+      exitCode = 1;
+    }
+    const chips = parseTrustChips(p.trustChips?.value ?? null);
+    const hedged = chips.find((c) => HEDGED_COD_RE.test(c));
+    if (hedged) {
+      console.log(`✗ ${p.handle}: hedged COD in trust_chips: "${hedged}"`);
+      exitCode = 1;
+    } else if (chips.some((c) => /cash on delivery/i.test(c))) {
+      console.log(`✓ ${p.handle}: confident COD in trust_chips`);
+    } else if (chips.length === 0) {
+      console.log(`⚠ ${p.handle}: trust_chips empty — run seed:launch-catalog`);
+    }
+  }
+
+  const ugcCount = d.ugcProofs?.nodes?.length ?? 0;
+  if (ugcCount >= MIN_UGC_PROOF) {
+    console.log(`✓ ugc_proof entries: ${ugcCount} (Seen on you)`);
+  } else {
+    console.log(
+      `⚠ ugc_proof entries: ${ugcCount} (theme may use static assets; target ≥ ${MIN_UGC_PROOF} for CMS-driven gallery)`,
+    );
+  }
+
+  console.log('\n=== 5. Theme repo (local) ===\n');
+  exitCode = Math.max(exitCode, verifyThemeRepoFiles());
+
+  console.log('\n=== 6. Not verified via API (do in Admin) ===\n');
+  console.log('  • Theme settings: horo_gift_wrap_product, horo_storefront_api_base, horo_incentives_live=OFF, exit intent enabled');
+  console.log('  • web-next: STOREFRONT_PUBLIC_API_CORS_ORIGINS includes Shopify shop origin');
+  console.log('  • Medusa: migrate storefront_abandoned_cart + STOREFRONT_URL + Resend for abandon reminders');
   console.log('  • Payments / shipping / policies vs storefront copy');
   console.log('  • Product metafield VALUES on master SKU');
   console.log('  • Collection membership (multi-placement)');

@@ -153,16 +153,41 @@ export const PRODUCT_SEEDS: ProductLaunchSeed[] = [
     merchandisingBadge: 'Gift pick',
     garmentColors: ['Black'],
   },
+  {
+    handle: 'fiction-hero-tee',
+    title: 'Fiction Hero Graphic T-Shirt',
+    descriptionHtml: '<p>Story-first graphic tee for readers and dreamers. Printed in Egypt.</p>',
+    tags: ['feeling:fiction', 'graphic-tee', 'black'],
+    status: DEFAULT_LAUNCH_PRODUCT_STATUS,
+    variants: SIZES.map((v) => ({
+      ...v,
+      sku: v.sku.replace('MOOD-CALM', 'FICTION-HERO'),
+    })),
+    feelingSlug: 'fiction',
+    subfeelingSlug: 'hero',
+    pdpTagLabels: ['Fiction', 'Hero', 'Graphic T-shirt'],
+    giftable: true,
+    giftOccasionTags: ['Birthday'],
+    buyerRoute: 'feeling',
+    primaryAudience: '22-35',
+    worksFor: ['Daily wear', 'Gift'],
+    feelsLike: ['Imaginative', 'Bold'],
+    occasionSlugs: ['birthday', 'gift'],
+    collectionHandles: ['feeling-fiction', 'occasion-gift'],
+    merchandisingBadge: 'New',
+    garmentColors: ['Black'],
+  },
 ];
 
 export const GIFT_WRAP_HANDLE = 'gift-wrap';
+export const FOUNDING_DROP_HANDLE = 'founding-drop';
 
 export const THEME_SETTINGS_PATCH: Record<string, string> = {
   horo_gift_wrap_label: 'Add gift wrap',
   horo_gift_wrap_price_hint: '+ EGP 50',
   horo_trust_badge_1: 'Artist-made design',
   horo_trust_badge_2: 'Printed in Egypt',
-  horo_trust_badge_3: 'COD when shown at checkout',
+  horo_trust_badge_3: 'Cash on delivery (COD) available',
   horo_trust_badge_4: '14-day exchange — see policy',
   horo_trust_badge_5: 'WhatsApp support',
   horo_delivery_cairo: 'Cairo/Giza: 2–4 business days',

@@ -38,21 +38,29 @@ export const homeHeroWearFeel = {
 /**
  * Named slot paths for layouts — all point at the brand vector until real product/lifestyle photography exists.
  */
+/** Interim per-slot proof art until lifestyle photography ships (WS-A). */
 export const tee = {
-  whiteFront: heroVectorizedV2,
-  womanSmile: heroVectorizedV2,
-  womanStreet: heroVectorizedV2,
-  manCasual: heroVectorizedV2,
-  womanUrban: heroVectorizedV2,
-  walkingStreet: heroVectorizedV2,
-  yellowTee: heroVectorizedV2,
-  relaxedFit: heroVectorizedV2,
-  studioTee: heroVectorizedV2,
-  friendsTees: heroVectorizedV2,
-  flatLayStyle: heroVectorizedV2,
-  outdoorTee: heroVectorizedV2,
-  streetPose: heroVectorizedV2,
+  whiteFront: '/images/proof/back-fit-card.svg',
+  womanSmile: '/images/proof/macro-detail-card.svg',
+  womanStreet: '/images/proof/fabric-tag-card.svg',
+  manCasual: '/images/proof/weight-scale-card.svg',
+  womanUrban: '/images/proof/wash-test-card.svg',
+  walkingStreet: '/images/proof/back-fit-card.svg',
+  yellowTee: '/images/proof/macro-detail-card.svg',
+  relaxedFit: '/images/proof/fabric-tag-card.svg',
+  studioTee: '/images/proof/weight-scale-card.svg',
+  friendsTees: '/images/proof/wash-test-card.svg',
+  flatLayStyle: '/images/proof/macro-detail-card.svg',
+  outdoorTee: '/images/proof/back-fit-card.svg',
+  streetPose: '/images/proof/fabric-tag-card.svg',
 } as const;
+
+const INTERIM_PRODUCT_CARD_FALLBACKS = Object.values(tee);
+
+function interimCardImageForSlug(slug: string): string {
+  const hash = [...slug].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return INTERIM_PRODUCT_CARD_FALLBACKS[hash % INTERIM_PRODUCT_CARD_FALLBACKS.length] ?? tee.studioTee;
+}
 
 export type StorefrontImageSlot = {
   src: string;
@@ -585,15 +593,30 @@ export function getProductMedia(slug: string): ProductMedia {
 }
 
 export function getProductCardImageSrc(product: Product): string {
-  return (
-    firstNonEmptyString(
-      product.media?.card,
-      product.media?.main,
-      ...galleryItemsToSrcList(product.media?.gallery),
-      product.thumbnail,
-      FALLBACK_PRODUCT_GALLERY[0],
-    ) ?? FALLBACK_PRODUCT_GALLERY[0]
+  const primary = firstNonEmptyString(
+    product.media?.card,
+    product.media?.main,
+    ...galleryItemsToSrcList(product.media?.gallery),
+    product.thumbnail,
   );
+  if (primary && primary !== FALLBACK_PRODUCT_GALLERY[0] && primary !== heroVectorizedV2) {
+    return primary;
+  }
+  const feelingSlug = product.primaryFeelingSlug ?? product.feelingSlug;
+  const feelingProof = feelingSlug ? STOREFRONT_IMAGE_SLOTS.feelings[feelingSlug]?.proof?.src : undefined;
+  if (feelingProof && feelingProof !== heroVectorizedV2) {
+    return feelingProof;
+  }
+  return interimCardImageForSlug(product.slug);
+}
+
+/** Secondary PLP hover image when gallery has a second slot (P2). */
+export function getProductCardHoverImageSrc(product: Product): string | null {
+  const gallery = galleryItemsToSrcList(product.media?.gallery);
+  const secondary = gallery[1];
+  if (!secondary || secondary === heroVectorizedV2) return null;
+  const primary = getProductCardImageSrc(product);
+  return secondary !== primary ? secondary : null;
 }
 
 export function getProductComparisonImageSrc(product: Product): string {

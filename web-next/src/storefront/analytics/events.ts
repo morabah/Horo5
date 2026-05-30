@@ -567,3 +567,40 @@ export function trackSearchZeroResults(payload: SearchZeroResultsPayload) {
     window.gtag('event', 'search_zero_results', { ...payload, hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT });
   }
 }
+
+export function trackComparisonFaqView() {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('comparison_faq_view', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    content_job: 'trust',
+  });
+}
+
+export function trackExitIntentShown(surface: 'cart' | 'checkout' | 'plp', cartValueEgp = 0) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('exit_intent_shown', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    surface,
+    cart_value_egp: cartValueEgp,
+    content_job: 'recovery',
+  });
+}
+
+export function trackShippingEstimateView(surface: 'cart' | 'mini_cart' | 'pdp') {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('shipping_estimate_view', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    surface,
+    content_job: 'action',
+  });
+}
+
+export function trackGiftWrapToggle(enabled: boolean, surface: 'cart' | 'mini_cart' | 'pdp') {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('gift_wrap_toggle', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    enabled,
+    surface,
+    content_job: 'action',
+  });
+}

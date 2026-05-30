@@ -56,6 +56,12 @@
     <script src="{{ 'horo-scroll-reveal.js' | asset_url }}" defer="defer"></script>
 
     {%- comment -%}HORO: wishlist + recently viewed + analytics{%- endcomment -%}
+    <script>
+      window.__HORO_WISHLIST_CONFIG__ = {
+        apiBase: {{ settings.horo_storefront_api_base | json }},
+        apiPath: {{ settings.horo_wishlist_api_path | default: '/api/wishlist' | json }}
+      };
+    </script>
     <script src="{{ 'horo-wishlist.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'horo-recently-viewed.js' | asset_url }}" defer="defer"></script>
     <script src="{{ 'horo-analytics.js' | asset_url }}" defer="defer"></script>

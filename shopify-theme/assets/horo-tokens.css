@@ -13,6 +13,8 @@
   --color-dusk-plum: #6a5b76;
   --color-moon-gold: #c5a15c;
   --color-clay-action: #b77a67;
+  --color-cta-primary: #e8593c;
+  --color-cta-on-primary: #ffffff;
   --color-moss: #7d8771;
   --color-river: #556f73;
 
@@ -68,4 +70,20 @@
   --font-headline: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --font-body: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   --font-label: 'Cairo', 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Primary CTA — Ember token (parity with web-next .btn-primary) */
+.button--primary,
+.cart__checkout-button.button,
+.product-form__submit.button--primary {
+  background-color: var(--color-cta-primary, #e8593c);
+  color: var(--color-cta-on-primary, #ffffff);
+  border-color: color-mix(in srgb, var(--color-cta-primary, #e8593c) 88%, #1f1c1a);
+}
+
+.button--primary:hover,
+.cart__checkout-button.button:hover,
+.product-form__submit.button--primary:hover {
+  background-color: color-mix(in srgb, var(--color-cta-primary, #e8593c) 92%, #1f1c1a);
+  color: var(--color-cta-on-primary, #ffffff);
 }

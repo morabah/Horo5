@@ -1,4 +1,4 @@
-/* ===== HORO: Primary Routes (3-card navigation) ===== */
+/* ===== HORO: Primary Routes (2–3 card navigation) ===== */
 
 .home-primary-routes {
   text-align: start;
@@ -28,6 +28,14 @@
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .home-primary-routes__grid--count-2 {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 88rem;
+    margin-inline: auto;
+  }
 }
 
 .home-primary-routes__card {

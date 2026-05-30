@@ -17,6 +17,9 @@
   --color-dusk-plum: #6a5b76;
   --color-moon-gold: #c5a15c;
   --color-clay-action: #b77a67;
+  /** Primary commerce CTA (brand bible Ember) — do not alias --color-ember / --color-clay-action */
+  --color-cta-primary: #e8593c;
+  --color-cta-on-primary: #ffffff;
   --color-moss: #7d8771;
   --color-river: #556f73;
 

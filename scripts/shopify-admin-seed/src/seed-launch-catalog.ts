@@ -5,12 +5,14 @@
 import 'dotenv/config';
 import {
   ARTIST_HANDLE,
+  FOUNDING_DROP_HANDLE,
   GIFT_WRAP_HANDLE,
   PRODUCT_SEEDS,
   SIZE_TABLE_HANDLE,
   SIZE_TABLE_ROWS,
   THEME_SETTINGS_PATCH,
 } from './definitions/launch-catalog.js';
+import { FOUNDING_DROP_COLLECTION } from './definitions/launch-content.js';
 import { listValue, mf, richTextFromPlain } from './lib/metafield-helpers.js';
 import { ensureAccessToken } from './utils/shopify-auth.js';
 import * as logger from './utils/logger.js';
@@ -90,7 +92,7 @@ function buildProductMetafields(
   const trustChips = [
     'Premium cotton',
     'Printed in Egypt',
-    'COD when shown at checkout',
+    'Cash on delivery (COD) available',
     '14-day exchange — see policy',
   ];
 
@@ -254,6 +256,37 @@ async function main(): Promise<void> {
       }
     }
     logger.success(`product ${seed.handle}: added to ${seed.collectionHandles.length} collections`);
+  }
+
+  if (!dryRun && allProductGids.length > 0) {
+    let foundingCol = await client.getCollectionByHandle(FOUNDING_DROP_HANDLE);
+    if (!foundingCol) {
+      const created = await client.createCollection({
+        title: FOUNDING_DROP_COLLECTION.title,
+        handle: FOUNDING_DROP_COLLECTION.handle,
+        descriptionHtml: FOUNDING_DROP_COLLECTION.descriptionHtml,
+      });
+      if (created) {
+        foundingCol = { id: created.id, handle: created.handle, title: FOUNDING_DROP_COLLECTION.title };
+        await client.publishToOnlineStore(created.id);
+        logger.success(`collection ${FOUNDING_DROP_HANDLE}: created`);
+      }
+    } else {
+      logger.info(`collection ${FOUNDING_DROP_HANDLE}: exists`);
+    }
+    if (foundingCol) {
+      try {
+        await client.addProductsToCollection(foundingCol.id, allProductGids, {
+          collectionLegacyId: foundingCol.legacyId,
+          productLegacyIds,
+        });
+        logger.success(`collection ${FOUNDING_DROP_HANDLE}: ${allProductGids.length} launch products linked`);
+      } catch (err) {
+        logger.warn(
+          `collection ${FOUNDING_DROP_HANDLE}: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    }
   }
 
   if (!dryRun && mainTheme.gid) {

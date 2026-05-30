@@ -34,6 +34,14 @@ export interface CollectionSeed {
   descriptionHtml?: string;
 }
 
+/** Homepage hero + founding-drop section — must exist on Shopify. */
+export const FOUNDING_DROP_COLLECTION: CollectionSeed = {
+  handle: 'founding-drop',
+  title: 'Founding Drop',
+  descriptionHtml:
+    '<p>The first HORO artist-made tees — calm, zodiac, and gift-ready pieces from the launch drop.</p>',
+};
+
 export interface PageSeed {
   handle: string;
   title: string;
@@ -88,6 +96,8 @@ export function allCollectionSeeds(): CollectionSeed[] {
       descriptionHtml: `<p>Gift-ready HORO picks for <strong>${o.title}</strong>.</p>`,
     });
   }
+
+  map.set(FOUNDING_DROP_COLLECTION.handle, FOUNDING_DROP_COLLECTION);
 
   return [...map.values()];
 }

@@ -595,7 +595,10 @@ export function OrderConfirmation() {
         <LoyaltyVIPBadge />
         <PostPurchaseEmailPreview />
         <ReferralCard />
-        <ShareYourFit />
+        <ShareYourFit
+          primaryProductSlug={order?.lines[0]?.productSlug ?? null}
+          contactEmail={order?.contactEmail ?? null}
+        />
 
         <section className="mb-8 rounded-2xl border border-stone/45 bg-white/75 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">

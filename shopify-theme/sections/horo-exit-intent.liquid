@@ -9,6 +9,8 @@
   assign coupon_code = section.settings.coupon_code
   assign once_per_session = section.settings.once_per_session
   assign delay_seconds = section.settings.delay_seconds
+  assign capture_email = section.settings.capture_email
+  assign api_base = settings.horo_storefront_api_base | strip
 -%}
 
 {%- if enabled -%}
@@ -18,6 +20,10 @@
     data-exit-intent
     data-once-per-session="{{ once_per_session }}"
     data-delay-seconds="{{ delay_seconds }}"
+    data-capture-email="{{ capture_email }}"
+    data-abandon-api-base="{{ api_base | escape }}"
+    data-locale="{{ request.locale.iso_code | default: 'en' }}"
+    data-surface="{% if template.name == 'cart' %}cart{% elsif template.name == 'collection' or template.name == 'search' %}plp{% else %}plp{% endif %}"
     role="dialog"
     aria-modal="true"
     aria-labelledby="ExitIntentHeading"
@@ -61,6 +67,28 @@
         </div>
       {%- endif -%}
 
+      {%- if capture_email and api_base != blank -%}
+        <div class="horo-exit-intent__email" data-exit-intent-email-form>
+          <p class="horo-exit-intent__email-label">{{ 'horo.exit_intent.email_label' | t }}</p>
+          <div class="horo-exit-intent__email-row">
+            <input
+              type="email"
+              class="horo-exit-intent__email-input"
+              data-exit-intent-email-input
+              autocomplete="email"
+              placeholder="{{ 'horo.exit_intent.email_placeholder' | t }}"
+            >
+            <button type="button" class="button button--secondary" data-exit-intent-email-submit>
+              {{ 'horo.exit_intent.email_submit' | t }}
+            </button>
+          </div>
+          <p class="horo-exit-intent__email-success" data-exit-intent-email-success hidden>
+            {{ 'horo.exit_intent.email_success' | t }}
+          </p>
+          <p class="horo-exit-intent__email-error" data-exit-intent-email-error hidden role="alert"></p>
+        </div>
+      {%- endif -%}
+
       {%- if cta_label != blank -%}
         <a
           href="{{ section.settings.cta_url | default: routes.all_products_collection_url }}"
@@ -85,6 +113,13 @@
       "default": false,
       "label": "Enable exit intent modal",
       "info": "Shows a modal when the user moves their cursor toward the browser close button (desktop) or triggers beforeunload (mobile)."
+    },
+    {
+      "type": "checkbox",
+      "id": "capture_email",
+      "default": true,
+      "label": "Capture email for cart recovery",
+      "info": "Posts to headless /api/abandoned-cart when Theme settings → HORO Chrome → Headless storefront API base is set and CORS allows this shop origin."
     },
     {
       "type": "text",

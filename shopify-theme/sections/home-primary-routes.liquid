@@ -24,7 +24,7 @@
       </p>
     {%- endif -%}
 
-    <ul class="home-primary-routes__grid" role="list">
+    <ul class="home-primary-routes__grid home-primary-routes__grid--count-{{ card_count }}" role="list">
       {%- for block in section.blocks -%}
         <li
           class="home-primary-routes__card{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
@@ -182,16 +182,8 @@
         {
           "type": "route",
           "settings": {
-            "label": "Shop by Occasion",
-            "short_text": "Dress for the moment",
-            "link": ""
-          }
-        },
-        {
-          "type": "route",
-          "settings": {
-            "label": "Gift by Meaning",
-            "short_text": "Say it without saying it",
+            "label": "Find a Gift",
+            "short_text": "Meaningful tees for someone you care about",
             "link": ""
           }
         }

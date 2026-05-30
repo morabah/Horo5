@@ -7,8 +7,10 @@ import { MerchProductCard } from '../components/MerchProductCard';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { useWishlist } from '../hooks/useWishlist';
-import { getArtist, getFeeling, getProduct, productHasRealImage, setRuntimeCatalog, type RuntimeCatalog } from '../data/site';
+import { getArtist, getFeeling, getProduct, setRuntimeCatalog, type RuntimeCatalog } from '../data/site';
+import { NotifyWhenAvailableButton } from '../components/NotifyWhenAvailableButton';
 import { getProductCardImageSrc } from '../data/images';
+import { productAvailableSizes } from '../utils/productSizes';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 type WishlistProps = {
@@ -30,7 +32,7 @@ export function Wishlist({ initialCatalog }: WishlistProps) {
     return slugs
       .map((slug) => getProduct(slug))
       .filter((p): p is NonNullable<typeof p> => Boolean(p))
-      .filter((p) => p.slug && p.name?.trim() && p.priceEgp != null && productHasRealImage(p));
+      .filter((p) => p.slug && p.name?.trim() && p.priceEgp != null);
   }, [slugs]);
 
   return (
@@ -72,23 +74,33 @@ export function Wishlist({ initialCatalog }: WishlistProps) {
                   p.artistDisplay?.name?.trim() || getArtist(p.artistSlug)?.name?.trim();
                 const eyebrow = feeling?.name;
                 const main = getProductCardImageSrc(p);
+                const inStock = productAvailableSizes(p).length > 0;
 
                 return (
-                  <MerchProductCard
-                    key={p.slug}
-                    slug={p.slug}
-                    name={p.name}
-                    compareAtPriceEgp={p.originalPriceEgp ?? undefined}
-                    priceEgp={p.priceEgp}
-                    imageSrc={main}
-                    imageAlt={`HORO "${p.name}" graphic tee`}
-                    promoLabel={p.promoLabel}
-                    promoEndsAt={p.promoEndsAt}
-                    promoShowCountdown={p.promoShowCountdown}
-                    eyebrow={eyebrow}
-                    artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
-                    onQuickView={setQuickViewSlug}
-                  />
+                  <div key={p.slug} className="flex flex-col gap-2">
+                    <MerchProductCard
+                      slug={p.slug}
+                      name={p.name}
+                      compareAtPriceEgp={p.originalPriceEgp ?? undefined}
+                      priceEgp={p.priceEgp}
+                      imageSrc={main}
+                      imageAlt={`HORO "${p.name}" graphic tee`}
+                      promoLabel={p.promoLabel}
+                      promoEndsAt={p.promoEndsAt}
+                      promoShowCountdown={p.promoShowCountdown}
+                      eyebrow={eyebrow}
+                      artistCredit={artistName ? `Illustrated by ${artistName}` : undefined}
+                      onQuickView={setQuickViewSlug}
+                    />
+                    {!inStock && p.id ? (
+                      <NotifyWhenAvailableButton
+                        productId={p.id}
+                        productSlug={p.slug}
+                        productName={p.name}
+                        className="font-label inline-flex min-h-11 w-full items-center justify-center rounded-full border border-stone/60 bg-white px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian"
+                      />
+                    ) : null}
+                  </div>
                 );
               })}
             </div>

@@ -13,7 +13,9 @@ import { productAvailableSizes } from '../utils/productSizes';
 import { deriveProductStockStatus } from '../utils/productStock';
 import { StockStatusChip } from './StockStatusChip';
 import { QuickViewTrigger } from './QuickViewTrigger';
+import { NotifyWhenAvailableButton } from './NotifyWhenAvailableButton';
 import { TeeImageFrame } from './TeeImage';
+import { getProductCardHoverImageSrc } from '../data/images';
 import { formatEgp } from '../utils/formatPrice';
 import { pickLocalizedText } from '../lib/storefront/incentives-client';
 
@@ -107,6 +109,9 @@ export function MerchProductCard({
   const addedTimeoutRef = useRef<number | null>(null);
   const stockStatus = deriveProductStockStatus(product);
   const quickAddAvailable = availableSizes.length > 0;
+  const hoverImageSrc = product ? getProductCardHoverImageSrc(product) : null;
+  const [hovering, setHovering] = useState(false);
+  const displayImageSrc = hovering && hoverImageSrc ? hoverImageSrc : imageSrc;
   const quickAddLabel = locale === 'ar' ? 'إضافة سريعة' : 'Quick add';
   const chooseSizeLabel = locale === 'ar' ? 'اختر المقاس' : 'Choose size';
   const addedLabel = locale === 'ar' ? 'أُضيف' : 'Added';
@@ -172,7 +177,11 @@ export function MerchProductCard({
   return (
     <article
       className={['group merch-card-lift flex flex-col', className].filter(Boolean).join(' ')}
-      onMouseLeave={() => setQuickAddOpen(false)}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => {
+        setHovering(false);
+        setQuickAddOpen(false);
+      }}
       {...(dataReveal ? { 'data-reveal': dataReveal } : {})}
     >
       <div className="relative mb-4 w-full">
@@ -190,7 +199,7 @@ export function MerchProductCard({
             }
           >
             <TeeImageFrame
-              src={imageSrc}
+              src={displayImageSrc}
               alt={imageAlt}
               w={560}
               aspectRatio="4/5"
@@ -290,23 +299,20 @@ export function MerchProductCard({
                 {addedFeedback ? addedLabel : quickAddLabel}
               </button>
             ) : (
-              <a
-                href={isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl) ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl : '#'}
-                target="_blank"
-                rel="noreferrer"
-                className="font-label inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/90 px-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                aria-label={`${locale === 'ar' ? 'أبلغني لما يتاح' : 'Notify me'}: ${name}`}
+              <Link
+                href={`/products/${slug}`}
+                className="font-label pointer-events-auto inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/90 px-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm"
+                onClick={(e) => e.stopPropagation()}
               >
-                {locale === 'ar' ? 'أبلغني' : 'Notify me'}
-              </a>
+                {copy.home.viewPiece}
+              </Link>
             )}
           </div>
         </div>
       </div>
 
-      {/* Mobile: single compact CTA */}
-      <div className="mb-3 md:hidden">
-        {quickAddAvailable ? (
+      {quickAddAvailable ? (
+        <div className="mb-3 md:hidden">
           <Link
             href={`/products/${slug}`}
             className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
@@ -314,17 +320,8 @@ export function MerchProductCard({
           >
             {copy.home.viewPiece}
           </Link>
-        ) : (
-          <a
-            href={isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl) ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl : '#'}
-            target="_blank"
-            rel="noreferrer"
-            className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
-          >
-            {locale === 'ar' ? 'أبلغني' : 'Notify me'}
-          </a>
-        )}
-      </div>
+        </div>
+      ) : null}
 
       <div className="flex min-h-0 flex-1 flex-col text-left">
         <Link
@@ -351,7 +348,7 @@ export function MerchProductCard({
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <polyline points="20 6 9 17 4 12" />
             </svg>
-            {locale === 'ar' ? 'تغليف هدية متاح' : 'Gift wrap included'}
+            {locale === 'ar' ? 'تغليف هدية متاح' : 'Gift wrap available'}
           </span>
         ) : null}
         {promoLabel?.trim() ? (
@@ -388,6 +385,27 @@ export function MerchProductCard({
                 ? `وفر ${formatEgp(savingsEgp)}${savingsPct ? ` (${savingsPct}%)` : ''}`
                 : `Save ${formatEgp(savingsEgp)}${savingsPct ? ` (${savingsPct}%)` : ''}`}
             </p>
+          ) : null}
+          {!quickAddAvailable ? (
+            <div className="mt-2.5" onClick={(e) => e.stopPropagation()}>
+              {product?.id ? (
+                <NotifyWhenAvailableButton
+                  productId={product.id}
+                  productSlug={slug}
+                  productName={name}
+                  compact
+                  className="font-label inline-flex min-h-11 w-full items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian"
+                />
+              ) : (
+                <Link
+                  href={`/products/${slug}#notify`}
+                  className="font-label inline-flex min-h-11 w-full items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian"
+                  onClick={onProductClick}
+                >
+                  {locale === 'ar' ? 'أبلغني عند التوفر' : 'Notify when available'}
+                </Link>
+              )}
+            </div>
           ) : null}
         </div>
       </div>

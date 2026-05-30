@@ -40,7 +40,16 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  const uiLocale = request.nextUrl.searchParams.get("uiLocale");
+  if (uiLocale === "en" || uiLocale === "ar") {
+    response.cookies.set("horo-ui-locale", uiLocale, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
+  }
+  return response;
 }
 
 export const config = {

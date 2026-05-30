@@ -88,9 +88,9 @@
       "type": "gifts-hub-trust",
       "settings": {
         "heading": "Gift with confidence",
-        "text": "Delivery windows are on each product page. COD and exchange apply when shown at checkout and per policy.",
+        "text": "Delivery windows are on each product page. Cash on delivery (COD) available; exchange per policy.",
         "badge_1_label": "Recipient & occasion guidance above",
-        "badge_2_label": "COD when shown at checkout",
+        "badge_2_label": "Cash on delivery (COD) available",
         "badge_3_label": "14-day exchange — see policy",
         "badge_4_label": "WhatsApp size help before dispatch",
         "size_help_label": "See size guide on any product page",

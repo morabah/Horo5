@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">HORO back fit proof card</title>
+  <desc id="desc">A product proof panel showing the back view fit check for a HORO graphic tee.</desc>
+  <rect width="1200" height="1500" fill="#fee5e2"/>
+  <rect x="84" y="84" width="1032" height="1332" rx="48" fill="#fffaf3" stroke="#d4cfc5" stroke-width="8"/>
+  <rect x="148" y="140" width="904" height="84" rx="20" fill="#1a1a1a"/>
+  <text x="196" y="193" fill="#fee5e2" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="42" font-weight="600" letter-spacing="8">BACK FIT CHECK</text>
+  <g transform="translate(245 298)">
+    <path d="M265 54 352 0l86 54 86 137v511c0 41-33 74-74 74H252c-41 0-74-33-74-74V191Z" fill="#1a1a1a"/>
+    <path d="M324 79h55c18 0 33 15 33 33v63H291v-63c0-18 15-33 33-33Z" fill="#fee5e2"/>
+    <path d="M264 54 217 132l91 62m130-140 47 78-91 62" fill="none" stroke="#c75f76" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M241 305h221m-221 128h221m-221 129h221" fill="none" stroke="#816a4f" stroke-width="10" stroke-linecap="round" opacity=".45"/>
+  </g>
+  <g fill="#2c2a26" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif">
+    <text x="168" y="1210" font-size="34" font-weight="600" letter-spacing="2">What this panel stands in for</text>
+    <text x="168" y="1278" font-size="28">Shoulder line, hem length, and how the relaxed fit sits from behind.</text>
+    <text x="168" y="1330" font-size="28">Swap for the real back-on-body shot when the full proof set is photographed.</text>
+  </g>
+</svg>

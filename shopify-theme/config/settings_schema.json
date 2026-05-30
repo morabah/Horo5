@@ -1564,7 +1564,7 @@
         "type": "text",
         "id": "horo_trust_badge_3",
         "label": "Trust badge 3",
-        "default": "COD when shown at checkout"
+        "default": "Cash on delivery (COD) available"
       },
       {
         "type": "text",
@@ -1683,6 +1683,19 @@
         "label": "Show cart incentive messages (free shipping / bundle)",
         "info": "Enable only after matching Shopify shipping and discount rules are configured and tested at checkout.",
         "default": false
+      },
+      {
+        "type": "text",
+        "id": "horo_storefront_api_base",
+        "label": "Headless storefront API base (wishlist sync)",
+        "info": "e.g. https://horo.eg — must list this Shopify origin in STOREFRONT_PUBLIC_API_CORS_ORIGINS on web-next. Leave blank for localStorage-only wishlist.",
+        "default": ""
+      },
+      {
+        "type": "text",
+        "id": "horo_wishlist_api_path",
+        "label": "Wishlist API path",
+        "default": "/api/wishlist"
       }
     ]
   }

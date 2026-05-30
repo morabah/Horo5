@@ -76,12 +76,13 @@
 }
 
 .btn-primary {
-  background: var(--ember);
-  color: var(--obsidian);
+  background: var(--color-cta-primary, #e8593c);
+  color: var(--color-cta-on-primary, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--color-cta-primary, #e8593c) 88%, #1f1c1a);
 }
 
 .btn-primary:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.06);
 }
 
 .btn-primary:disabled {

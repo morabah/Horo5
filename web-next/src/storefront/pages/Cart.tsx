@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { trackCartViewed } from '../analytics/events';
+import { trackCartViewed, trackGiftWrapToggle, trackShippingEstimateView } from '../analytics/events';
 import { TeeImageFrame } from '../components/TeeImage';
 import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
@@ -36,6 +36,9 @@ import {
   pickLocalizedText,
   type StorefrontIncentivesClient,
 } from '../lib/storefront/incentives-client';
+import { fetchStorefrontSettingsClient } from '../lib/storefront/settings-client';
+import { estimateShippingEgpForGovernorate } from '../lib/shipping-estimate';
+import type { StorefrontSettingsPayload } from '@/lib/storefront-server';
 
 type CartShippingFetchState =
   | { kind: 'inactive' }
@@ -161,6 +164,10 @@ function CartSummary({
   locale,
   cartService,
   incentives,
+  showGovernoratePreview,
+  governorateOptions,
+  previewGovernorate,
+  onPreviewGovernorateChange,
 }: {
   itemCount: number;
   subtotalEgp: number;
@@ -175,6 +182,10 @@ function CartSummary({
   cartService: { shippingExplainerArabic: string; estimatedDeliveryCheckoutNoteArabic: string };
   /** Operator-controlled free-shipping incentive used for the progress bar. */
   incentives: StorefrontIncentivesClient | null;
+  showGovernoratePreview: boolean;
+  governorateOptions: { value: string; label: string }[];
+  previewGovernorate: string;
+  onPreviewGovernorateChange: (code: string) => void;
 }) {
   const dict = useDictionary();
   const copy = dict.cart;
@@ -200,6 +211,26 @@ function CartSummary({
           ? 'تُعرض هذه الأرقام كمعاينة سريعة. يتم تثبيت قيمة الشحن النهائية بعد حفظ العنوان في الدفع.'
           : 'These numbers are a fast preview. Final shipping is locked after your address is saved in checkout.'}
       </p>
+
+      {showGovernoratePreview && governorateOptions.length > 0 ? (
+        <div className="mt-4">
+          <label htmlFor="cart-governorate-preview" className="font-label mb-1 block text-[10px] font-semibold uppercase tracking-[0.16em] text-label">
+            {locale === 'ar' ? 'المحافظة (تقدير الشحن)' : 'Governorate (shipping estimate)'}
+          </label>
+          <select
+            id="cart-governorate-preview"
+            value={previewGovernorate}
+            onChange={(event) => onPreviewGovernorateChange(event.target.value)}
+            className="min-h-11 w-full rounded-lg border border-stone/50 bg-white px-3 font-body text-sm text-obsidian focus-visible:border-deep-teal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-deep-teal/25"
+          >
+            {governorateOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
 
       {/*
         Audit S8: free-shipping progress on the full cart page (mirrors mini-cart drawer).
@@ -544,6 +575,8 @@ export function Cart({
   }, [displayItems]);
   const [shippingFetch, setShippingFetch] = useState<CartShippingFetchState>({ kind: 'inactive' });
   const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
+  const [storefrontSettings, setStorefrontSettings] = useState<StorefrontSettingsPayload | null>(null);
+  const [previewGovernorate, setPreviewGovernorate] = useState('cairo');
 
   /* Fetch incentives after mount (per repo hydration baseline: server render uses null). */
   useEffect(() => {
@@ -552,10 +585,31 @@ export function Cart({
       if (cancelled) return;
       setIncentives(data);
     });
+    void fetchStorefrontSettingsClient().then((data) => {
+      if (cancelled) return;
+      setStorefrontSettings(data);
+      const first = data?.checkout?.governorates?.[0]?.code;
+      if (first) setPreviewGovernorate(first);
+    });
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const governorateOptions = useMemo(() => {
+    const list = storefrontSettings?.checkout?.governorates ?? [];
+    if (list.length === 0) {
+      return [
+        { value: 'cairo', label: locale === 'ar' ? 'القاهرة' : 'Cairo' },
+        { value: 'giza', label: locale === 'ar' ? 'الجيزة' : 'Giza' },
+        { value: 'alexandria', label: locale === 'ar' ? 'الإسكندرية' : 'Alexandria' },
+      ];
+    }
+    return list.map((row) => ({
+      value: row.code,
+      label: pickLocalizedText(row.name, locale === 'ar' ? 'ar' : 'en') || row.code,
+    }));
+  }, [locale, storefrontSettings?.checkout?.governorates]);
 
   useEffect(() => {
     if (!storageReady) {
@@ -597,6 +651,12 @@ export function Cart({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageReady, items.length, medusaCartId, giftWrapEgp]);
 
+  useEffect(() => {
+    if (shippingFetch.kind === 'ok') {
+      trackShippingEstimateView('cart');
+    }
+  }, [shippingFetch.kind]);
+
   const freeShippingUnlocked =
     !!incentives?.freeShipping &&
     incentives.freeShipping.thresholdEgp > 0 &&
@@ -618,10 +678,21 @@ export function Cart({
         originalShippingEgp: original,
       };
     }
-    if (shippingFetch.kind === 'inactive' || shippingFetch.kind === 'pending_cart_id') {
+    if (shippingFetch.kind === 'inactive') {
       return {
-        shippingRow: { mode: 'loading' as const },
-        estimatedOrderTotal: null as number | null,
+        shippingRow: { mode: 'copy' as const },
+        estimatedOrderTotal: base,
+        originalShippingEgp: 0,
+      };
+    }
+    if (shippingFetch.kind === 'pending_cart_id') {
+      const previewEgp = estimateShippingEgpForGovernorate(
+        previewGovernorate,
+        storefrontSettings?.delivery,
+      );
+      return {
+        shippingRow: { mode: 'amount' as const, egp: previewEgp },
+        estimatedOrderTotal: base + previewEgp,
         originalShippingEgp: 0,
       };
     }
@@ -658,7 +729,9 @@ export function Cart({
       estimatedOrderTotal: base + quoteEgp,
       originalShippingEgp: 0,
     };
-  }, [shippingFetch, displaySubtotalEgp, displayGiftWrapEgp, freeShippingUnlocked]);
+  }, [shippingFetch, displaySubtotalEgp, displayGiftWrapEgp, freeShippingUnlocked, previewGovernorate, storefrontSettings?.delivery]);
+
+  const showGovernoratePreview = shippingFetch.kind === 'pending_cart_id' && lineViews.length > 0;
 
   const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && displayGiftWrapEgp === 0);
 
@@ -756,6 +829,7 @@ export function Cart({
     setGiftUpsellDismissed(false);
     try {
       await addGiftWrap();
+      trackGiftWrapToggle(true, 'cart');
       setStatusMessage(copy.giftWrapAdded);
     } catch {
       setStatusMessage(locale === 'ar' ? 'تعذر إضافة التغليف الهدايا حالياً' : 'Gift wrap unavailable right now');
@@ -768,6 +842,7 @@ export function Cart({
 
   const handleRemoveGiftWrap = () => {
     removeGiftWrap();
+    trackGiftWrapToggle(false, 'cart');
     if (displayGiftWrapEgp > 0) {
       setStatusMessage(copy.giftWrapRemoved);
     }
@@ -1004,10 +1079,14 @@ export function Cart({
             locale={locale}
             cartService={shellCopy.cartService}
             incentives={incentives}
+            showGovernoratePreview={showGovernoratePreview}
+            governorateOptions={governorateOptions}
+            previewGovernorate={previewGovernorate}
+            onPreviewGovernorateChange={setPreviewGovernorate}
           />
         </div>
 
-        <ExitIntentModal cartValueEgp={displaySubtotalEgp} />
+        <ExitIntentModal surface="cart" cartValueEgp={displaySubtotalEgp} cartId={medusaCartId} />
       </div>
     </div>
   );

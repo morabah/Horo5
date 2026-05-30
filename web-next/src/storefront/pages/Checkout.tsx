@@ -13,6 +13,7 @@ import {
 import { cartLineIdentityKey, type CartLine } from '../cart/types';
 import { loadMedusaCartId, persistMedusaCartId } from '../cart/cart-storage';
 import { formatCartStockMessage } from '../cart/stock';
+import { ExitIntentModal } from '../components/ExitIntentModal';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { TeeImage } from '../components/TeeImage';
 import { Skeleton } from '../components/ui/Skeleton';
@@ -566,6 +567,7 @@ export function Checkout({
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentVerifying, setPaymentVerifying] = useState(false);
   const [paymobPendingNeedsAction, setPaymobPendingNeedsAction] = useState(false);
+  const [paymentSetupTimedOut, setPaymentSetupTimedOut] = useState(false);
   const completionLockRef = useRef<string | null>(null);
   /** Reused across retries so Medusa can dedupe concurrent complete requests. */
   const completionIdempotencyKeyRef = useRef<string | null>(null);
@@ -1096,6 +1098,15 @@ export function Checkout({
   useEffect(() => {
     setPaymentStepComplete(false);
   }, [cartId]);
+
+  useEffect(() => {
+    if (!mounted || paymentMethods.length > 0) {
+      setPaymentSetupTimedOut(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setPaymentSetupTimedOut(true), 12_000);
+    return () => window.clearTimeout(timer);
+  }, [mounted, paymentMethods.length, cartId]);
 
   useEffect(() => {
     if (!paymentVerifying) {
@@ -2244,14 +2255,47 @@ export function Checkout({
                     </p>
                   </div>
                 ) : !(dependencyAddressSaved && dependencyShippingAttached && dependencyProvidersLoaded) ? (
-                  <div className="mt-4 flex items-center gap-3 rounded-xl border border-stone/30 bg-papyrus/60 p-4" role="status">
-                    <span
-                      className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-stone/40 border-t-deep-teal"
-                      aria-hidden
-                    />
-                    <p className="font-body text-sm text-warm-charcoal">
-                      {isArabic ? 'جاري تجهيز خيارات الدفع…' : 'Setting up your payment options…'}
-                    </p>
+                  <div className="mt-4 space-y-3 rounded-xl border border-stone/30 bg-papyrus/60 p-4" role="status">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="inline-block h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-stone/40 border-t-deep-teal"
+                        aria-hidden
+                      />
+                      <p className="font-body text-sm text-warm-charcoal">
+                        {isArabic ? 'جاري تجهيز خيارات الدفع…' : 'Setting up your payment options…'}
+                      </p>
+                    </div>
+                    {paymentSetupTimedOut ? (
+                      <div className="space-y-2 border-t border-stone/25 pt-3">
+                        <p className="font-body text-sm text-warm-charcoal">
+                          {isArabic
+                            ? 'استغرق التحميل وقتاً أطول. جرّب مرة أخرى أو أكمل عبر واتساب.'
+                            : 'This is taking longer than usual. Retry or complete your order on WhatsApp.'}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-secondary min-h-11 px-4 text-sm"
+                            onClick={() => {
+                              setPaymentSetupTimedOut(false);
+                              prefetchPaymentProvidersOnBlur();
+                            }}
+                          >
+                            {isArabic ? 'إعادة المحاولة' : 'Retry'}
+                          </button>
+                          {isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl) ? (
+                            <a
+                              href={HORO_SUPPORT_CHANNELS.whatsappSupportUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="btn btn-ghost min-h-11 px-4 text-sm"
+                            >
+                              {isArabic ? 'واتساب' : 'WhatsApp'}
+                            </a>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
                 {paymentVerifying ? (
@@ -2456,6 +2500,7 @@ export function Checkout({
           </div>
         </div>
       </div>
+      <ExitIntentModal surface="checkout" cartValueEgp={subtotalEgp + giftWrapEgp} cartId={cartId} />
     </div>
   );
 }

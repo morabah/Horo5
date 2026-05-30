@@ -1,5 +1,9 @@
+import { cookies } from "next/headers";
+
 import "./globals.css";
 import { RootProviders } from "./root-providers";
+import type { UiLocale } from "@/storefront/i18n/ui-locale";
+import { UI_LOCALE_COOKIE_KEY } from "@/storefront/i18n/ui-locale";
 
 // Root: minimal i18n so `not-found` and other root-only trees work. Catalog + full providers
 // live in route-group layouts so `/checkout` can skip the heavy `/storefront/catalog` fetch.
@@ -21,15 +25,19 @@ function getMedusaPreconnectOrigin(): string | null {
   }
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const medusaOrigin = getMedusaPreconnectOrigin();
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get(UI_LOCALE_COOKIE_KEY)?.value;
+  const initialLocale: UiLocale = cookieLocale === "ar" ? "ar" : "en";
+  const htmlDir = initialLocale === "ar" ? "rtl" : "ltr";
 
   return (
-    <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang={initialLocale} dir={htmlDir} className="h-full antialiased" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         {medusaOrigin ? (
           <>
@@ -39,7 +47,7 @@ export default function RootLayout({
         ) : null}
       </head>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <RootProviders>{children}</RootProviders>
+        <RootProviders initialLocale={initialLocale}>{children}</RootProviders>
       </body>
     </html>
   );

@@ -77,6 +77,14 @@ export function Footer() {
             <li>
               <Link
                 className="font-body text-sm text-stone transition-colors hover:text-papyrus"
+                href="/comparison"
+              >
+                {locale === 'ar' ? 'لماذا HORO؟' : 'Why HORO'}
+              </Link>
+            </li>
+            <li>
+              <Link
+                className="font-body text-sm text-stone transition-colors hover:text-papyrus"
                 href="/exchange"
               >
                 {copy.shell.deliveryReturns}

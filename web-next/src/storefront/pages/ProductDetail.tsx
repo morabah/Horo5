@@ -68,7 +68,7 @@ const ArtistStudioBlock = dynamic(
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
 import { humanizeArtistSlugForDisplay } from '../utils/humanizeArtistSlug';
-import { notifyRestockSignup } from '../utils/pdpNotifyRestock';
+import { notifyRestockSignup, submitPdpNotify } from '../utils/pdpNotifyRestock';
 import {
   HORO_SUPPORT_CHANNELS,
   PDP_SCHEMA,
@@ -108,6 +108,7 @@ import {
   PdpGiftReadyCard,
   PdpRelatedProducts,
 } from '../components/pdp';
+import { PdpFreeShipProgress } from '../components/pdp/PdpFreeShipProgress';
 
 
 const EMPTY_PRODUCT_LIST: Product[] = [];
@@ -917,8 +918,19 @@ export function ProductDetail({
     }
 
     if (!selectedSize || !sizeDef?.disabled) return;
-    notifyRestockSignup({ productSlug: product.slug, size: selectedSize, email });
-    setNotifySuccess(true);
+    if (product.id) {
+      void submitPdpNotify({
+        productId: product.id,
+        productSlug: product.slug,
+        email,
+        locale,
+      }).then((ok) => {
+        if (ok) setNotifySuccess(true);
+      });
+    } else {
+      notifyRestockSignup({ productSlug: product.slug, size: selectedSize, email, locale });
+      setNotifySuccess(true);
+    }
   }
 
   function handleSizeSelect(size: ProductSizeKey, isSelected: boolean) {
@@ -1134,6 +1146,7 @@ export function ProductDetail({
           onOpenLightbox={() => setLightboxOpen(true)}
           onBlurForMain={blurForProductMain}
         />
+        <div className="min-w-0">
         <PdpBuyBox
           product={product}
           feeling={feeling}
@@ -1191,6 +1204,8 @@ export function ProductDetail({
             toggleWishlist(product.slug);
           }}
         />
+        <PdpFreeShipProgress subtotalEgp={displayPriceEgp} />
+        </div>
       </section>
 
       <PdpTrustStrip />

@@ -6,7 +6,8 @@ import { DICTIONARY } from './dictionary';
 export type UiLocale = 'en' | 'ar';
 export type UiDirection = 'ltr' | 'rtl';
 
-const UI_LOCALE_STORAGE_KEY = 'horo-ui-locale';
+export const UI_LOCALE_STORAGE_KEY = 'horo-ui-locale';
+export const UI_LOCALE_COOKIE_KEY = 'horo-ui-locale';
 const UI_LOCALE_QUERY_KEY = 'uiLocale';
 
 type UiLocaleContextValue = {
@@ -39,12 +40,25 @@ function resolveInitialLocale(): UiLocale {
   return 'en';
 }
 
-export function UiLocaleProvider({ children }: PropsWithChildren) {
-  const [locale, setLocaleState] = useState<UiLocale>('en');
+type UiLocaleProviderProps = PropsWithChildren<{
+  /** Server-read cookie so first paint matches user preference (fixes EN flash). */
+  initialLocale?: UiLocale;
+}>;
+
+function persistLocaleCookie(locale: UiLocale) {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${UI_LOCALE_COOKIE_KEY}=${locale};path=/;max-age=31536000;SameSite=Lax`;
+}
+
+export function UiLocaleProvider({ children, initialLocale = 'en' }: UiLocaleProviderProps) {
+  const [locale, setLocaleState] = useState<UiLocale>(initialLocale);
 
   useEffect(() => {
-    setLocaleState(resolveInitialLocale());
-  }, []);
+    const resolved = resolveInitialLocale();
+    if (resolved !== initialLocale) {
+      setLocaleState(resolved);
+    }
+  }, [initialLocale]);
 
   const setLocale = (nextLocale: UiLocale) => {
     setLocaleState(nextLocale);
@@ -67,6 +81,7 @@ export function UiLocaleProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     document.documentElement.lang = locale;
     document.documentElement.dir = getDirection(locale);
+    persistLocaleCookie(locale);
     try {
       window.localStorage.setItem(UI_LOCALE_STORAGE_KEY, locale);
     } catch {

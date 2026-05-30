@@ -63,7 +63,7 @@ export const DICTIONARY = {
       "trustBadges": {
         "artistMade": "Artist-made designs",
         "printedEgypt": "Printed in Egypt",
-        "codAvailable": "COD when shown at checkout",
+        "codAvailable": "Cash on delivery (COD) available",
         "exchange14d": "14-day exchange",
         "whatsappSupport": "WhatsApp support"
       },
@@ -111,7 +111,7 @@ export const DICTIONARY = {
         },
         "codAndExchange": {
           "title": "Safe to buy",
-          "body": "COD when shown at checkout. 14-day exchange — see policy for eligible items and condition."
+          "body": "Cash on delivery (COD) available. 14-day exchange — see policy for eligible items and condition."
         },
         "realProofOnly": {
           "title": "Real Proof Only",
@@ -196,7 +196,7 @@ export const DICTIONARY = {
           {
             "title": "Can I pay cash on delivery?",
             "body": [
-              "Cash on delivery is available when shown at checkout. Online payment options may also appear depending on the current storefront setup."
+              "Cash on delivery (COD) is available. Online payment options may also appear depending on the current storefront setup."
             ]
           },
           {

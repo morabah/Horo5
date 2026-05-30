@@ -1,5 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 
+import { getProduct } from '../data/site';
+import { fetchServerWishlistSlugs, syncWishlistSlugToServer } from '../lib/wishlist-client';
+
 const STORAGE_KEY = 'horo-wishlist-v1';
 const MAX_ITEMS = 50;
 
@@ -52,7 +55,14 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [slugs, setSlugs] = useState<string[]>([]);
 
   useEffect(() => {
-    setSlugs(loadSlugs());
+    const local = loadSlugs();
+    setSlugs(local);
+    void fetchServerWishlistSlugs().then((remote) => {
+      if (!remote?.length) return;
+      const merged = [...new Set([...remote, ...local])].slice(0, MAX_ITEMS);
+      saveSlugs(merged);
+      setSlugs(merged);
+    });
   }, []);
 
   const has = useCallback((slug: string) => slugs.includes(slug), [slugs]);
@@ -60,10 +70,11 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const toggle = useCallback((slug: string) => {
     setSlugs((prev) => {
       const base = prev.length > 0 ? prev : loadSlugs();
-      const next = base.includes(slug)
-        ? base.filter((s) => s !== slug)
-        : [slug, ...base].slice(0, MAX_ITEMS);
+      const adding = !base.includes(slug);
+      const next = adding ? [slug, ...base].slice(0, MAX_ITEMS) : base.filter((s) => s !== slug);
       saveSlugs(next);
+      const product = getProduct(slug);
+      void syncWishlistSlugToServer(slug, product?.id, adding);
       return next;
     });
   }, []);
@@ -74,6 +85,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       if (base.includes(slug)) return base;
       const next = [slug, ...base].slice(0, MAX_ITEMS);
       saveSlugs(next);
+      const product = getProduct(slug);
+      void syncWishlistSlugToServer(slug, product?.id, true);
       return next;
     });
   }, []);
@@ -82,6 +95,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setSlugs((prev) => {
       const next = prev.filter((s) => s !== slug);
       saveSlugs(next);
+      const product = getProduct(slug);
+      void syncWishlistSlugToServer(slug, product?.id, false);
       return next;
     });
   }, []);

@@ -1,5 +1,5 @@
+import nextDynamic from "next/dynamic";
 import { cookies } from "next/headers";
-import { Checkout } from "@/storefront/pages/Checkout";
 import { RouterContextProvider } from "@/lib/router-context";
 import {
   fetchStorefrontCartServer,
@@ -9,6 +9,17 @@ import {
 import { MEDUSA_CART_ID_COOKIE } from "@/storefront/cart/types";
 
 export const dynamic = "force-dynamic";
+
+const Checkout = nextDynamic(
+  () => import("@/storefront/pages/Checkout").then((module) => module.Checkout),
+  {
+    loading: () => (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center font-body text-sm text-clay" role="status">
+        Loading checkout…
+      </div>
+    ),
+  },
+);
 
 export default async function Page() {
   const cookieStore = await cookies();

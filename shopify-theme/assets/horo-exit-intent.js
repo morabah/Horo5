@@ -56,6 +56,77 @@
       });
     });
 
+    var emailForm = modal.querySelector('[data-exit-intent-email-form]');
+    var emailInput = modal.querySelector('[data-exit-intent-email-input]');
+    var emailSubmit = modal.querySelector('[data-exit-intent-email-submit]');
+    var emailSuccess = modal.querySelector('[data-exit-intent-email-success]');
+    var emailError = modal.querySelector('[data-exit-intent-email-error]');
+    var captureEmail = modal.getAttribute('data-capture-email') === 'true';
+    var apiBase = (modal.getAttribute('data-abandon-api-base') || '').replace(/\/$/, '');
+    var surface = modal.getAttribute('data-surface') || 'plp';
+    var locale = modal.getAttribute('data-locale') === 'ar' ? 'ar' : 'en';
+
+    function isValidEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+    }
+
+    function submitAbandonEmail() {
+      if (!emailInput || !apiBase) return;
+      var email = emailInput.value.trim();
+      if (!isValidEmail(email)) {
+        if (emailError) {
+          emailError.textContent = locale === 'ar' ? 'أدخل بريداً صالحاً.' : 'Enter a valid email.';
+          emailError.hidden = false;
+        }
+        return;
+      }
+      if (emailError) emailError.hidden = true;
+      fetch(apiBase + '/api/abandoned-cart', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+          surface: surface,
+          locale: locale,
+        }),
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          if (emailSuccess) emailSuccess.hidden = false;
+          if (emailForm) {
+            var row = emailForm.querySelector('.horo-exit-intent__email-row');
+            if (row) row.hidden = true;
+          }
+          if (window.dataLayer) {
+            window.dataLayer.push({ event: 'cart_abandon_email_saved', surface: surface });
+          }
+        })
+        .catch(function () {
+          if (emailError) {
+            emailError.textContent =
+              locale === 'ar' ? 'تعذّر الحفظ. حاول مرة أخرى.' : 'Could not save. Try again.';
+            emailError.hidden = false;
+          }
+        });
+    }
+
+    if (captureEmail && emailSubmit && apiBase) {
+      emailSubmit.addEventListener('click', function (e) {
+        e.preventDefault();
+        submitAbandonEmail();
+      });
+      if (emailInput) {
+        emailInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            submitAbandonEmail();
+          }
+        });
+      }
+    } else if (emailForm) {
+      emailForm.hidden = true;
+    }
+
     if (copyButton && couponCode) {
       copyButton.addEventListener('click', function () {
         var code = couponCode.getAttribute('data-coupon');

@@ -562,7 +562,7 @@
     "trust_ribbon": {
       "artist_made": "Artist-made design",
       "printed_in_egypt": "Printed in Egypt",
-      "cod": "COD when shown at checkout",
+      "cod": "Cash on delivery (COD) available",
       "exchange": "14-day exchange — see policy",
       "whatsapp": "WhatsApp support"
     },
@@ -667,9 +667,9 @@
       "cohorts_subheading": "Start with the person on your mind, then choose the occasion.",
       "products_heading": "Gift-ready designs",
       "trust_heading": "Gift with confidence",
-      "trust_text": "Delivery windows are on each product page. COD and exchange apply when shown at checkout and per policy.",
+      "trust_text": "Delivery windows are on each product page. Cash on delivery (COD) available; exchange per policy.",
       "trust_badge_1": "Recipient & occasion guidance",
-      "trust_badge_2": "COD when shown at checkout",
+      "trust_badge_2": "Cash on delivery (COD) available",
       "trust_badge_3": "14-day exchange — see policy",
       "trust_badge_4": "WhatsApp size help before dispatch",
       "size_help_label": "See size guide",
@@ -707,7 +707,7 @@
         "row_marketplace": {
           "buyer": "Marketplace seller",
           "horo": "Proof, service, and trust you can verify before you buy.",
-          "proof": "UGC, WhatsApp help, COD when shown at checkout"
+          "proof": "UGC, WhatsApp help, Cash on delivery (COD) available"
         }
       }
     },
@@ -751,7 +751,7 @@
         "artist_made": "Artist-made design",
         "licensed_art": "Licensed art",
         "free_exchange_14d": "14-day exchange — see policy",
-        "cod_available": "COD when shown at checkout"
+        "cod_available": "Cash on delivery (COD) available"
       },
       "size_guide_link": "Size guide",
       "view_piece": "View piece",
@@ -781,7 +781,7 @@
       "gift_note": "Buying it as a gift? Ask us for size help before ordering.",
       "default_trust_cotton": "Cotton T-shirt",
       "default_trust_printed": "Printed in Egypt",
-      "default_trust_cod": "COD when shown at checkout",
+      "default_trust_cod": "Cash on delivery (COD) available",
       "default_trust_exchange": "14-day exchange — see policy"
     },
     "product_card": {
@@ -792,7 +792,7 @@
     },
     "cart": {
       "reassurance_heading": "Before you checkout",
-      "reassurance_cod": "Cash on Delivery when shown at checkout for eligible areas.",
+      "reassurance_cod": "Cash on delivery (COD) available",
       "reassurance_whatsapp_confirm": "We confirm COD orders by WhatsApp before dispatch.",
       "reassurance_exchange": "14-day exchange per policy and product condition.",
       "reassurance_size_help": "Need size help? WhatsApp us before ordering.",
@@ -849,9 +849,10 @@
       "popular_searches": "Popular searches"
     },
     "home": {
-      "hero_promise_line": "Artist-made tees · Printed in Egypt · COD",
-      "hero_primary_cta": "Shop the Founding Drop",
-      "hero_secondary_cta": "Browse by feeling",
+      "hero_promise_line": "Artist-made T-shirts for moods, moments, and meaningful gifts.",
+      "hero_primary_cta": "Shop by Feeling",
+      "hero_secondary_cta": "Find a Gift",
+      "hero_subheading": "Artist-made T-shirts for moods, moments, and meaningful gifts.",
       "plan_eyebrow": "Simple plan",
       "plan_title": "How it works",
       "feelings_title": "Shop by Feeling",
@@ -900,7 +901,11 @@
     "exit_intent": {
       "copy": "Copy",
       "copy_coupon": "Copy coupon code",
-      "coupon_label": "Your code:"
+      "coupon_label": "Your code:",
+      "email_label": "Leave your email and we'll send your cart details.",
+      "email_placeholder": "Your email",
+      "email_submit": "Save",
+      "email_success": "Saved! Check your inbox soon."
     },
     "feeling_quiz": {
       "restart": "Take the quiz again"

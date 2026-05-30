@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">HORO wash-test proof card</title>
+  <desc id="desc">A proof panel representing the before and after wash-test check for a HORO tee.</desc>
+  <rect width="1200" height="1500" fill="#f5f0e8"/>
+  <rect x="92" y="92" width="1016" height="1316" rx="52" fill="#fffaf3" stroke="#d4cfc5" stroke-width="8"/>
+  <text x="144" y="194" fill="#1a1a1a" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="42" font-weight="600" letter-spacing="8">3X WASH CHECK</text>
+  <g transform="translate(146 338)">
+    <rect x="0" y="0" width="390" height="540" rx="28" fill="#1a1a1a"/>
+    <rect x="518" y="0" width="390" height="540" rx="28" fill="#1a1a1a"/>
+    <path d="M120 78h150l48 42v275c0 41-33 74-74 74H120c-41 0-74-33-74-74V120Z" fill="#f5f0e8"/>
+    <path d="M638 78h150l48 42v275c0 41-33 74-74 74H638c-41 0-74-33-74-74V120Z" fill="#f5f0e8"/>
+    <circle cx="182" cy="244" r="68" fill="#e8593c" fill-opacity=".22"/>
+    <circle cx="700" cy="244" r="68" fill="#e8593c" fill-opacity=".16"/>
+    <path d="M114 166c23-34 52-58 96-58 40 0 67 14 92 39-38 8-72 22-103 42-25 17-48 35-73 60-4-27-3-56 7-83 5-14 10-23 21-34Z" fill="#1a1a1a"/>
+    <path d="M632 166c23-34 52-58 96-58 40 0 67 14 92 39-38 8-72 22-103 42-25 17-48 35-73 60-4-27-3-56 7-83 5-14 10-23 21-34Z" fill="#1a1a1a"/>
+    <text x="195" y="602" fill="#f5f0e8" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="600" text-anchor="middle" letter-spacing="3">BEFORE</text>
+    <text x="713" y="602" fill="#f5f0e8" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="34" font-weight="600" text-anchor="middle" letter-spacing="3">AFTER 3 WASHES</text>
+  </g>
+  <g fill="#2c2a26" font-family="Avenir Next, Segoe UI, Helvetica Neue, Arial, sans-serif">
+    <text x="144" y="1224" font-size="34" font-weight="600" letter-spacing="2">What this panel is replacing</text>
+    <text x="144" y="1290" font-size="28">The side-by-side photographed wash test required for launch proof.</text>
+    <text x="144" y="1344" font-size="28">Keep this card only until the real before/after comparison is shot.</text>
+  </g>
+</svg>

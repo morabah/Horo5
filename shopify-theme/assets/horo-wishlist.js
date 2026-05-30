@@ -10,9 +10,75 @@
 
   const STORAGE_KEY = 'horo-wishlist-v1';
   const LEGACY_KEY = 'horo_wishlist_v1';
+  const CLIENT_KEY = 'horo-wishlist-client-id';
   const EVENT_WISHLIST_CHANGE = 'horo:wishlist:change';
+  const MAX_ITEMS = 50;
+
+  function getWishlistApiUrl() {
+    const cfg = window.__HORO_WISHLIST_CONFIG__ || {};
+    const base = typeof cfg.apiBase === 'string' ? cfg.apiBase.trim().replace(/\/$/, '') : '';
+    const path = typeof cfg.apiPath === 'string' && cfg.apiPath ? cfg.apiPath : '/api/wishlist';
+    if (!base) return null;
+    return base + (path.startsWith('/') ? path : '/' + path);
+  }
+
+  function getWishlistClientId() {
+    try {
+      let id = localStorage.getItem(CLIENT_KEY);
+      if (!id) {
+        id =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : 'wl-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+        localStorage.setItem(CLIENT_KEY, id);
+      }
+      return id;
+    } catch {
+      return '';
+    }
+  }
+
+  function fetchServerHandles() {
+    const apiUrl = getWishlistApiUrl();
+    const clientId = getWishlistClientId();
+    if (!apiUrl || !clientId) return Promise.resolve(null);
+
+    return fetch(apiUrl, {
+      method: 'GET',
+      headers: { 'x-horo-wishlist-client': clientId },
+      cache: 'no-store',
+    })
+      .then(function (res) {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then(function (data) {
+        return data && Array.isArray(data.slugs) ? data.slugs : [];
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  function syncHandleToServer(handle, add) {
+    const apiUrl = getWishlistApiUrl();
+    const clientId = getWishlistClientId();
+    if (!apiUrl || !clientId || !handle) return;
+
+    fetch(apiUrl, {
+      method: add ? 'POST' : 'DELETE',
+      headers: {
+        'content-type': 'application/json',
+        'x-horo-wishlist-client': clientId,
+      },
+      body: JSON.stringify({ product_slug: handle }),
+    }).catch(function () {
+      /* localStorage remains source of truth offline */
+    });
+  }
   const SELECTOR_CARD_LINK = '.card__information a[href*="/products/"], .card-product a[href*="/products/"], a.card-product__link[href*="/products/"]';
-  const SELECTOR_CARD_WRAPPER = '.card-wrapper, .product-card-wrapper, .card';
+  /** Outer product card only — do not include `.card` (nested) or each product gets two hearts. */
+  const SELECTOR_CARD_WRAPPER = '.card-wrapper, .product-card-wrapper';
 
   function readStorage() {
     try {
@@ -76,14 +142,16 @@
     add(handle) {
       const handles = readStorage();
       if (!handles.includes(handle)) {
-        handles.push(handle);
-        return writeStorage(handles);
+        const next = [handle].concat(handles).slice(0, MAX_ITEMS);
+        syncHandleToServer(handle, true);
+        return writeStorage(next);
       }
       return handles;
     },
 
     remove(handle) {
       const handles = readStorage().filter((h) => h !== handle);
+      syncHandleToServer(handle, false);
       return writeStorage(handles);
     },
 
@@ -156,15 +224,26 @@
     }
   });
 
-  // Inject wishlist buttons into product cards
+  function removeDuplicateWishlistButtons() {
+    document.querySelectorAll(SELECTOR_CARD_WRAPPER).forEach((wrapper) => {
+      const buttons = wrapper.querySelectorAll('[data-horo-wishlist-btn]');
+      for (let i = 1; i < buttons.length; i += 1) {
+        buttons[i].remove();
+      }
+    });
+  }
+
+  // Inject wishlist buttons into product cards (one per card-wrapper)
   function injectCardButtons() {
     const cards = document.querySelectorAll(SELECTOR_CARD_WRAPPER);
-    cards.forEach((card) => {
-      // Skip if already injected
-      if (card.querySelector('[data-horo-wishlist-btn]')) return;
+    cards.forEach((wrapper) => {
+      if (wrapper.dataset.horoWishlistCard === 'true') return;
+      if (wrapper.querySelector('[data-horo-wishlist-btn]')) {
+        wrapper.dataset.horoWishlistCard = 'true';
+        return;
+      }
 
-      // Find product link to extract handle
-      const link = card.querySelector('a[href*="/products/"]');
+      const link = wrapper.querySelector('a[href*="/products/"]');
       if (!link) return;
 
       const match = link.getAttribute('href').match(/\/products\/([^?/]+)/);
@@ -187,16 +266,23 @@
         </svg>
       `;
 
-      // Append to card media area if present, otherwise to card root
-      const media = card.querySelector('.card__media, .card-media, .media');
+      const media = wrapper.querySelector('.card__media');
       if (media) {
         media.style.position = 'relative';
         btn.classList.add('horo-wishlist-btn--overlay');
         media.appendChild(btn);
       } else {
-        card.appendChild(btn);
+        const inner = wrapper.querySelector('.card');
+        const target = inner || wrapper;
+        target.style.position = 'relative';
+        btn.classList.add('horo-wishlist-btn--overlay');
+        target.appendChild(btn);
       }
+
+      wrapper.dataset.horoWishlistCard = 'true';
     });
+
+    removeDuplicateWishlistButtons();
   }
 
   // Inject wishlist icon into header (next to cart)
@@ -224,6 +310,30 @@
     } else {
       headerIcons.appendChild(el);
     }
+  }
+
+  function injectSoldOutNotify() {
+    document.querySelectorAll(SELECTOR_CARD_WRAPPER).forEach((wrapper) => {
+      if (wrapper.querySelector('[data-horo-notify-btn]')) return;
+      if (!wrapper.querySelector('.price--sold-out, .badge--sold-out')) return;
+
+      const link = wrapper.querySelector('a[href*="/products/"]');
+      if (!link) return;
+
+      const notify = document.createElement('a');
+      notify.href = `${link.getAttribute('href').split('#')[0]}#notify`;
+      notify.className = 'horo-notify-btn button button--secondary';
+      notify.dataset.horoNotifyBtn = 'true';
+      notify.textContent = 'Notify me';
+      notify.setAttribute('aria-label', 'Notify when available');
+
+      const info = wrapper.querySelector('.card__information, .card-information');
+      if (info) {
+        info.appendChild(notify);
+      } else {
+        wrapper.appendChild(notify);
+      }
+    });
   }
 
   // Inject savings chip on product cards
@@ -260,13 +370,31 @@
   }
 
   // Run injection after DOM ready and on section re-renders
+  function hydrateFromServer() {
+    fetchServerHandles().then(function (remote) {
+      if (!remote || !remote.length) return;
+      const local = readStorage();
+      const merged = [];
+      remote.forEach(function (slug) {
+        if (merged.indexOf(slug) === -1) merged.push(slug);
+      });
+      local.forEach(function (slug) {
+        if (merged.indexOf(slug) === -1) merged.push(slug);
+      });
+      writeStorage(merged.slice(0, MAX_ITEMS));
+      refreshButtonStates();
+    });
+  }
+
   function init() {
     migrateLegacyKey();
     injectHeaderWishlist();
     injectCardButtons();
     injectSavingsChips();
+    injectSoldOutNotify();
     refreshButtonStates();
     updateHeaderBadge(readStorage().length);
+    hydrateFromServer();
   }
 
   // Auto-init on DOM ready

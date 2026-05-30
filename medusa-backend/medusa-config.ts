@@ -212,6 +212,12 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/validation-register",
     },
+    {
+      resolve: "./src/modules/storefront-wishlist",
+    },
+    {
+      resolve: "./src/modules/storefront-abandoned-cart",
+    },
   ],
   plugins: [
     {
