@@ -412,7 +412,7 @@
 
 .home-founding-card__media img,
 .home-founding-card__media [data-nimg] {
-  object-fit: contain !important;
+  object-fit: cover !important;
   transform: scale(1.06);
   transform-origin: center center;
 }

@@ -7,9 +7,6 @@
   assign sorted_feelings = shop.metaobjects.feeling.values | sort: 'sort_order'
   assign tiles_shown = 0
   assign require_products = true
-  if template.name == 'index'
-    assign require_products = false
-  endif
 -%}
 
 <ul class="home-feeling-pastel-grid" role="list">
