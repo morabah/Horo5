@@ -50,7 +50,40 @@ function buildImageRemotePatterns(): NonNullable<NonNullable<NextConfig["images"
   return patterns;
 }
 
+function buildConnectSrc() {
+  const sources = new Set([
+    "'self'",
+    "https://*.googletagmanager.com",
+    "https://*.facebook.com",
+    "https://*.clarity.ms",
+    "https://us.i.posthog.com",
+    "https://*.i.posthog.com",
+  ]);
+  const medusa = (
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+    process.env.MEDUSA_BACKEND_URL ||
+    ""
+  ).trim();
+
+  const localMedusaOrigins =
+    process.env.NODE_ENV === "production" ? [] : ["http://localhost:9000", "http://127.0.0.1:9000"];
+
+  for (const raw of [medusa, ...localMedusaOrigins]) {
+    if (!raw) continue;
+    try {
+      sources.add(new URL(raw).origin);
+    } catch {
+      // ignore invalid URL
+    }
+  }
+
+  return Array.from(sources).join(" ");
+}
+
+const connectSrc = buildConnectSrc();
+
 const nextConfig: NextConfig = {
+  devIndicators: false,
   images: {
     remotePatterns: buildImageRemotePatterns(),
   },
@@ -81,7 +114,7 @@ const nextConfig: NextConfig = {
             value:
               "default-src 'self'; " +
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net https://www.clarity.ms; " +
-              "connect-src 'self' https://*.googletagmanager.com https://*.facebook.com https://*.clarity.ms https://us.i.posthog.com; " +
+              `connect-src ${connectSrc}; ` +
               "img-src 'self' data: blob: https:; " +
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
               "font-src 'self' https://fonts.gstatic.com; " +

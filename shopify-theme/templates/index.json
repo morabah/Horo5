@@ -7,8 +7,8 @@
         "heading": "Wear What You Feel",
         "heading_size": "h0",
         "subheading": "Artist-made passion wear for feelings, identity, and meaningful gifts.",
-        "button_label": "Shop by Feeling",
-        "button_link": "/pages/feelings",
+        "button_label": "Shop the Founding Drop",
+        "button_link": "/collections/founding-drop",
         "button_style_secondary": false,
         "button_label_secondary": "Find a Gift",
         "button_link_secondary": "/pages/gifts-hub",
@@ -24,7 +24,7 @@
         "split_word_2": "What",
         "split_word_3": "You Feel",
         "show_hero_ribbon": true,
-        "hero_ribbon_text": "Payment options shown at checkout · 14-day exchange — see policy · Printed in Egypt",
+        "hero_ribbon_text": "Artist-made designs · Printed in Egypt · Payment options shown at checkout · 14-day exchange — see policy",
         "hero_cta_position_mobile": "center",
         "hero_cta_position_desktop": "bottom-left",
         "padding_top": 0,
@@ -34,19 +34,19 @@
     "the_proof": {
       "type": "horo-trust-ribbon",
       "settings": {
-        "heading": "The Proof",
-        "heading_size": "h0",
+        "heading": "",
+        "heading_size": "h2",
         "color_scheme": "scheme-2",
-        "padding_top": 36,
-        "padding_bottom": 36
+        "padding_top": 12,
+        "padding_bottom": 12
       },
       "blocks": {
         "badge_1": {
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "leaf",
-            "label": "Premium cotton",
+            "icon": "artist",
+            "label": "Artist-made designs",
             "subtext": ""
           }
         },
@@ -54,12 +54,21 @@
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "artist",
-            "label": "Licensed artwork",
+            "icon": "print",
+            "label": "Printed in Egypt",
             "subtext": ""
           }
         },
         "badge_3": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "cash",
+            "label": "Payment options shown at checkout",
+            "subtext": ""
+          }
+        },
+        "badge_4": {
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
@@ -68,12 +77,12 @@
             "subtext": ""
           }
         },
-        "badge_4": {
+        "badge_5": {
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "cash",
-            "label": "Payment options shown at checkout",
+            "icon": "whatsapp",
+            "label": "WhatsApp size help",
             "subtext": ""
           }
         }
@@ -82,7 +91,8 @@
         "badge_1",
         "badge_2",
         "badge_3",
-        "badge_4"
+        "badge_4",
+        "badge_5"
       ]
     },
     "horo_feeling_quiz": {
@@ -140,13 +150,13 @@
     "home_founding_drop": {
       "type": "home-founding-drop",
       "settings": {
-        "eyebrow": "FOUNDING DROP",
-        "heading": "The first HORO pieces",
+        "eyebrow": "THE FOUNDING DROP",
+        "heading": "Our first 5 pieces. Limited quantities.",
         "heading_size": "h1",
-        "subheading": "Shop the founding drop — three artist-made tees to start with.",
+        "subheading": "",
         "collection": "founding-drop",
-        "product_limit": 6,
-        "columns_desktop": 3,
+        "product_limit": 5,
+        "columns_desktop": 5,
         "image_ratio": "adapt",
         "show_secondary_image": true,
         "show_vendor": false,
@@ -159,10 +169,10 @@
     "home_why_horo": {
       "type": "home-why-horo",
       "settings": {
-        "heading": "Why HORO, not a normal printed T-shirt?",
-        "subheading": "Artist-made meaning you can wear or gift — not cheap print, not upload-anything custom, not generic gift-shop merch.",
-        "cta_label": "See the comparison",
-        "cta_link": "/pages/comparison-faq",
+        "heading": "Ritual. Rhythm. Connection.",
+        "subheading": "HORO is a wearable-art brand born in Egypt. We turn emotions into art and art into pieces you live in. Every design is a ritual. Every wear is a reminder. We are the canvas. You are the story.",
+        "cta_label": "Read our story",
+        "cta_link": "/pages/about-horo",
         "heading_size": "h1",
         "color_scheme": "scheme-1",
         "padding_top": 36,
@@ -173,24 +183,24 @@
           "type": "reason",
           "settings": {
             "icon": "pen",
-            "title": "Artist-made designs",
-            "body": "Every tee starts with a real artist, not a stock library."
+            "title": "Art that speaks feelings",
+            "body": "Original illustrations for real emotions."
           }
         },
         "reason_2": {
           "type": "reason",
           "settings": {
-            "icon": "map-pin",
-            "title": "Printed in Egypt",
-            "body": "Produced locally so quality and turnaround stay tight."
+            "icon": "heart",
+            "title": "Made with intention",
+            "body": "Mindful materials. Responsible production."
           }
         },
         "reason_3": {
           "type": "reason",
           "settings": {
-            "icon": "refresh",
-            "title": "Safe to buy",
-            "body": "Payment options shown at checkout. 14-day exchange — see policy."
+            "icon": "shield",
+            "title": "For every version of you",
+            "body": "Pieces that move with your moments — not one generic graphic for everyone."
           }
         }
       },
@@ -203,12 +213,44 @@
     "horo_gift_cohorts": {
       "type": "horo-gift-cohorts",
       "settings": {
-        "heading": "For the person on your mind",
+        "heading": "More than a gift.",
         "heading_size": "h1",
+        "subheading": "It's a feeling they'll wear.",
         "color_scheme": "scheme-2",
-        "padding_top": 40,
-        "padding_bottom": 40
-      }
+        "padding_top": 36,
+        "padding_bottom": 36
+      },
+      "blocks": {
+        "gift_birthdays": {
+          "type": "cohort",
+          "settings": {
+            "title": "For birthdays",
+            "subtitle": "A feeling they can wear",
+            "collection_handle": "occasion-birthday"
+          }
+        },
+        "gift_someone": {
+          "type": "cohort",
+          "settings": {
+            "title": "For someone close",
+            "subtitle": "Chosen with intention",
+            "collection_handle": "occasion-gift"
+          }
+        },
+        "gift_zodiac": {
+          "type": "cohort",
+          "settings": {
+            "title": "For their sign",
+            "subtitle": "Personality-led pieces",
+            "collection_handle": "feeling-zodiac"
+          }
+        }
+      },
+      "block_order": [
+        "gift_birthdays",
+        "gift_someone",
+        "gift_zodiac"
+      ]
     },
     "home_seen_on_you": {
       "type": "horo-home-seen-on-you",
@@ -280,7 +322,7 @@
       "settings": {
         "heading": "Shop by Feeling",
         "heading_size": "h1",
-        "subheading": "Start with the feeling, then choose the piece",
+        "subheading": "Start with your rhythm, then choose the piece.",
         "columns_desktop": 3,
         "columns_mobile": "2",
         "color_scheme": "scheme-1",
@@ -305,14 +347,9 @@
   "order": [
     "home_hero",
     "the_proof",
-    "horo_feeling_quiz",
-    "home_primary_routes",
     "home_founding_drop",
-    "home_why_horo",
-    "horo_gift_cohorts",
-    "home_seen_on_you",
-    "home_behind_the_piece",
     "feeling_grid",
-    "occasion_grid"
+    "horo_gift_cohorts",
+    "home_why_horo"
   ]
 }

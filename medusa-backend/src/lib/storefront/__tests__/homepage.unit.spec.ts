@@ -1,4 +1,5 @@
 import { buildHomepageSection } from "../homepage"
+import { DEFAULT_HOMEPAGE_SECTIONS } from "../../homepage-sections/defaults"
 
 describe("storefront homepage sections", () => {
   it("projects localized copy, CTA, image, payload, and ordering fields", () => {
@@ -26,5 +27,21 @@ describe("storefront homepage sections", () => {
       sortOrder: 10,
       active: true,
     })
+  })
+
+  it("keeps the seeded active homepage aligned with the compact web-next homepage", () => {
+    const activeKeys = DEFAULT_HOMEPAGE_SECTIONS
+      .filter((section) => section.active !== false)
+      .sort((left, right) => left.sort_order - right.sort_order)
+      .map((section) => section.key)
+
+    expect(activeKeys).toEqual([
+      "hero",
+      "trust_ribbon",
+      "founding_drop",
+      "feeling_grid",
+      "gift_block",
+      "why_horo",
+    ])
   })
 })
