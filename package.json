@@ -3,7 +3,9 @@
   "private": true,
   "description": "Monorepo root. Only `next` here so Vercel detects the framework and `npm ci` hoists one React tree; do not add react/react-dom here — that duplicates web-next and breaks TypeScript resolution.",
   "scripts": {
-    "build": "npm run build --prefix web-next && rm -rf .next && ln -s web-next/.next .next"
+    "build": "npm run build --prefix web-next && rm -rf .next && ln -s web-next/.next .next",
+    "check:v1-6-visual": "node scripts/check-horo-v1-6-visual-compliance.mjs",
+    "check:v1-9": "node scripts/check-horo-v19-compliance.mjs"
   },
   "dependencies": {
     "next": "16.2.3",

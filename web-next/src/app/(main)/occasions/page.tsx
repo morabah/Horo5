@@ -8,12 +8,12 @@ const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ?? "";
 export const metadata: Metadata = {
   title: "Shop by moment | HORO Egypt",
   description:
-    "Browse HORO graphic tees by occasion — gifts, milestones, and everyday streetwear with COD and exchange in Egypt.",
+    "Browse HORO graphic tees by occasion — gifts, milestones, and everyday streetwear with payment options at checkout and exchange in Egypt.",
   alternates: site ? { canonical: `${site}/occasions` } : undefined,
   openGraph: {
     title: "Shop by moment | HORO Egypt",
     description:
-      "Browse HORO graphic tees by occasion — gifts, milestones, and everyday streetwear with COD and exchange in Egypt.",
+      "Browse HORO graphic tees by occasion — gifts, milestones, and everyday streetwear with payment options at checkout and exchange in Egypt.",
     url: site ? `${site}/occasions` : undefined,
     type: "website",
   },

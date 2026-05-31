@@ -31,8 +31,8 @@ function defaultTrustStripItems() {
   return [
     { key: "artist_made", label: { en: "Artist-made designs", ar: "تصاميم فنانين" } },
     { key: "printed_egypt", label: { en: "Printed in Egypt", ar: "مطبوع في مصر" } },
-    { key: "cod", label: { en: "COD available", ar: "دفع عند الاستلام" } },
-    { key: "exchange", label: { en: "14-day easy exchange", ar: "استبدال سهل ١٤ يوم" } },
+    { key: "payment_at_checkout", label: { en: "Payment options shown at checkout", ar: "طرق الدفع بتظهر في صفحة الدفع" } },
+    { key: "exchange", label: { en: "14-day exchange — see policy", ar: "استبدال خلال ١٤ يوم — راجع السياسة" } },
   ]
 }
 

@@ -123,6 +123,11 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     localizedPayloadText(payloadVariant?.body ?? payloadVariant?.subtitle, locale as 'en' | 'ar') ??
     subtitleBase ??
     copy.home.heroPromiseLine;
+  const rhythmLine =
+    (locale === 'ar'
+      ? payloadString(sectionPayload?.soundbite_ar)
+      : payloadString(sectionPayload?.soundbite_en)) ??
+    copy.home.heroRhythmLine;
   const primaryCtaLabel =
     localizedPayloadText(primaryPayloadCta?.label, locale as 'en' | 'ar') ??
     fromSection(section?.primaryCta?.label) ??
@@ -180,7 +185,7 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
         {config.titleLayout === 'mantra-grid' ? (
           <div className="pointer-events-none absolute inset-x-0 top-[max(4.1rem,calc(env(safe-area-inset-top,0px)+3.55rem))] z-20 px-4 md:hidden">
             <div className="mx-auto w-full max-w-[92vw]">
-              <p className="grid grid-cols-2 gap-x-16 gap-y-1 font-headline text-[clamp(1.75rem,9.5vw,2.8rem)] font-semibold uppercase leading-[0.88] tracking-tight text-[#f5f0e6] drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
+              <p className="grid grid-cols-2 gap-x-16 gap-y-1 font-headline text-[clamp(1.75rem,9.5vw,2.8rem)] font-semibold uppercase leading-[0.88] tracking-tight text-horo-breath drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
                 <span className="block text-left">WEAR</span>
                 <span className="block text-right">WHAT</span>
                 <span className="block text-left">YOU</span>
@@ -190,22 +195,25 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
           </div>
         ) : null}
         <div className="w-full max-w-[92vw] text-left sm:max-w-[80vw] md:max-w-[min(48ch,40vw)]">
-          <p className="font-body text-[clamp(1.12rem,1.7vw,2.05rem)] font-medium leading-[1.18] text-[#f5f0e6] drop-shadow-[0_4px_18px_rgba(0,0,0,0.4)]">
+          <p className="font-body text-[clamp(1.12rem,1.7vw,2.05rem)] font-medium leading-[1.18] text-horo-breath drop-shadow-[0_4px_18px_rgba(0,0,0,0.4)]">
             <span>{promiseLine}</span>
-            {priceToken ? <span className="text-[0.86em] font-medium text-[#f5f0e6]/88"> · {priceToken}</span> : null}
+            {priceToken ? <span className="text-[0.86em] font-medium text-horo-breath/88"> · {priceToken}</span> : null}
+          </p>
+          <p className="mt-2 font-label text-[13px] font-medium uppercase tracking-[0.18em] text-horo-breath/85">
+            {rhythmLine}
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
               href={primaryHref}
               onClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}
-              className="font-body inline-flex min-h-14 items-center justify-center rounded-md bg-[#f5f0e6] px-7 py-3 text-[14px] font-semibold text-[#2a2d26] transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
+              className="font-body inline-flex min-h-14 items-center justify-center rounded-md bg-horo-breath px-7 py-3 text-[14px] font-semibold text-horo-root transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-breath"
             >
               {primaryCtaLabel}
             </Link>
             <Link
               href={secondaryHref}
               onClick={() => trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant)}
-              className="font-body inline-flex min-h-11 items-center text-[14px] font-medium text-[#f5f0e6]/85 underline decoration-[#f5f0e6]/40 underline-offset-4 transition-colors duration-200 hover:text-[#f5f0e6] hover:decoration-[#f5f0e6]/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
+              className="font-body inline-flex min-h-11 items-center text-[14px] font-medium text-horo-breath/85 underline decoration-horo-breath/40 underline-offset-4 transition-colors duration-200 hover:text-horo-breath hover:decoration-horo-breath/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-breath"
             >
               {secondaryCtaLabel}
               <span aria-hidden className="ml-1.5">→</span>
@@ -213,7 +221,7 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
             <Link
               href={tertiaryHref}
               onClick={() => trackHeroCtaClick(tertiaryCtaLabel, tertiaryHref, heroVariant)}
-              className="font-body inline-flex min-h-11 items-center rounded-md border border-[#f5f0e6]/45 px-5 py-2.5 text-[14px] font-medium text-[#f5f0e6] transition-colors duration-200 hover:border-[#f5f0e6]/85 hover:bg-[#f5f0e6]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f5f0e6]"
+              className="font-body inline-flex min-h-11 items-center rounded-md border border-horo-breath/45 px-5 py-2.5 text-[14px] font-medium text-horo-breath transition-colors duration-200 hover:border-horo-breath/85 hover:bg-horo-breath/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-breath"
             >
               {tertiaryCtaLabel}
             </Link>

@@ -8,12 +8,12 @@ const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ?? "";
 export const metadata: Metadata = {
   title: "Gifts that feel personal | HORO Egypt",
   description:
-    "Artist-made T-shirts for people, moments, and feelings, with size help, COD, delivery, and exchange support in Egypt.",
+    "Artist-made T-shirts for people, moments, and feelings, with size help, payment options at checkout, delivery, and exchange support in Egypt.",
   alternates: site ? { canonical: `${site}/gifts` } : undefined,
   openGraph: {
     title: "Gifts that feel personal | HORO Egypt",
     description:
-      "Artist-made T-shirts for people, moments, and feelings, with size help, COD, delivery, and exchange support in Egypt.",
+      "Artist-made T-shirts for people, moments, and feelings, with size help, payment options at checkout, delivery, and exchange support in Egypt.",
     url: site ? `${site}/gifts` : undefined,
     type: "website",
   },

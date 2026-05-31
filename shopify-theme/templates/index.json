@@ -6,7 +6,7 @@
         "overlay_opacity": 30,
         "heading": "Wear What You Feel",
         "heading_size": "h0",
-        "subheading": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
+        "subheading": "Artist-made passion wear for feelings, identity, and meaningful gifts.",
         "button_label": "Shop by Feeling",
         "button_link": "/pages/feelings",
         "button_style_secondary": false,
@@ -24,7 +24,7 @@
         "split_word_2": "What",
         "split_word_3": "You Feel",
         "show_hero_ribbon": true,
-        "hero_ribbon_text": "COD when shown at checkout · 14-day exchange — see policy · Printed in Egypt",
+        "hero_ribbon_text": "Payment options shown at checkout · 14-day exchange — see policy · Printed in Egypt",
         "hero_cta_position_mobile": "center",
         "hero_cta_position_desktop": "bottom-left",
         "padding_top": 0,
@@ -73,7 +73,7 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "COD when shown at checkout",
+            "label": "Payment options shown at checkout",
             "subtext": ""
           }
         }
@@ -110,7 +110,7 @@
           "type": "route",
           "settings": {
             "label": "Shop by Feeling",
-            "short_text": "Find the feeling you wear",
+            "short_text": "Start with the feeling, then choose the piece",
             "link": "/pages/feelings"
           }
         },
@@ -190,7 +190,7 @@
           "settings": {
             "icon": "refresh",
             "title": "Safe to buy",
-            "body": "COD when shown at checkout. 14-day exchange — see policy."
+            "body": "Payment options shown at checkout. 14-day exchange — see policy."
           }
         }
       },
@@ -280,7 +280,7 @@
       "settings": {
         "heading": "Shop by Feeling",
         "heading_size": "h1",
-        "subheading": "Find the feeling you wear",
+        "subheading": "Start with the feeling, then choose the piece",
         "columns_desktop": 3,
         "columns_mobile": "2",
         "color_scheme": "scheme-1",

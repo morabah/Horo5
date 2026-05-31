@@ -1481,13 +1481,13 @@
         "type": "color",
         "id": "horo_color_burgundy",
         "label": "Brand anchor (Burgundy)",
-        "default": "#7A1F2B"
+        "default": "#8C2340"
       },
       {
         "type": "color",
         "id": "horo_color_ember",
         "label": "CTA / Accent (Burgundy)",
-        "default": "#7A1F2B"
+        "default": "#8C2340"
       },
       {
         "type": "color",
@@ -1570,7 +1570,7 @@
         "type": "text",
         "id": "horo_trust_badge_3",
         "label": "Trust badge 3",
-        "default": "COD when shown at checkout"
+        "default": "Payment options shown at checkout"
       },
       {
         "type": "text",

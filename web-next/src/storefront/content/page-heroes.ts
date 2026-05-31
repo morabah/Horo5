@@ -1,3 +1,5 @@
+import { HORO_V19_HERO_SUBTITLE, HORO_V19_SOUNDBITES } from '../brand/horo-v19';
+
 export type LocalizedText = {
   en: string;
   ar: string;
@@ -43,11 +45,14 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
 
   home: {
     pageKey: "home",
-    title: { en: "WEAR WHAT YOU FEEL", ar: "ارتدِ ما تشعر به" },
+    title: {
+      en: "WEAR WHAT YOU FEEL",
+      ar: HORO_V19_SOUNDBITES.primary.ar,
+    },
     titleLayout: "mantra-grid",
     subtitle: {
-      en: "Artist-made tees · Printed in Egypt · COD",
-      ar: "تيشيرتات فنانين · مطبوعة في مصر · الدفع عند الاستلام",
+      en: HORO_V19_HERO_SUBTITLE.en,
+      ar: HORO_V19_HERO_SUBTITLE.ar,
     },
     primaryCta: {
       label: { en: "Shop the Founding Drop", ar: "تسوّق الإطلاق الأول" },
@@ -59,7 +64,10 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
     },
     desktopImage: {
       src: "/images/heroes/home-hero.png",
-      alt: { en: "Model wearing HORO graphic tee — Wear What You Feel", ar: "عارض يرتدي تيشيرت هورو — ارتدِ ما تشعر به" },
+      alt: {
+        en: "Model wearing HORO graphic tee — Wear What You Feel",
+        ar: `عارض يرتدي تيشيرت هورو — ${HORO_V19_SOUNDBITES.primary.ar}`,
+      },
     },
     focalPoint: "center",
     theme: "dark",
@@ -159,7 +167,7 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
     eyebrow: { en: "Our story", ar: "قصتنا" },
     title: { en: "Our story", ar: "عن HORO" },
     subtitle: {
-      en: "Artist-made graphic tees printed in Egypt — made for moods, moments, and gifts that feel personal.",
+      en: "Artist-made graphic tees printed in Egypt — made for feelings, identity, and gifts that feel personal.",
       ar: "HORO بتصنع قطع فنية قابلة للبس، للناس اللي عايزة لبسها يعبّر عن إحساس حقيقي.",
     },
     primaryCta: {

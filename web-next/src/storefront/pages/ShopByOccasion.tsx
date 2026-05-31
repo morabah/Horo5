@@ -327,7 +327,7 @@ export function ShopByOccasion({ initialOccasions, initialProducts, mode = 'occa
               <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
                 {isArabic
                   ? 'الدفع عند الاستلام متاح حيث ينطبق، والاستبدال خلال 14 يوم حسب سياسة الاستبدال.'
-                  : 'COD is available where eligible, and exchange is supported for 14 days under the exchange policy.'}
+                  : 'Payment options, including COD when available, are shown at checkout. Exchange is supported for 14 days under the exchange policy.'}
               </p>
             </div>
             <div className="rounded-2xl border border-stone/30 bg-white/65 p-6 md:col-span-2">

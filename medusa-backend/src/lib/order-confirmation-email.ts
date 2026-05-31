@@ -235,11 +235,11 @@ export function buildOrderConfirmationHtml(order: OrderConfirmationInput): strin
       : ""
 
   return `<!DOCTYPE html>
-<html><body style="font-family:system-ui,-apple-system,sans-serif;background:#faf8f5;color:#1a1a1a;padding:24px;">
+<html><body style="font-family:Inter,Arial,Helvetica,sans-serif;background:#FEE5E2;color:#4F111F;padding:24px;">
   <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e8e4df;">
-    <h1 style="font-size:20px;margin:0 0 8px;">Thank you — order confirmed</h1>
+    <h1 style="font-family:'Space Grotesk',Inter,Arial,Helvetica,sans-serif;font-size:20px;margin:0 0 8px;">Thank you — order confirmed</h1>
     <p style="margin:0 0 16px;color:#444;">Order <strong>${escapeHtml(display)}</strong>${created ? ` · ${escapeHtml(created)}` : ""}</p>
-    ${trackUrl ? `<p style="margin:0 0 20px;"><a href="${escapeHtml(trackUrl)}" style="color:#0d5c5c;">View order summary</a></p>` : ""}
+    ${trackUrl ? `<p style="margin:0 0 20px;"><a href="${escapeHtml(trackUrl)}" style="color:#8C2340;">View order summary</a></p>` : ""}
     ${
       order.estimated_delivery_window
         ? `<p style="margin:0 0 20px;padding:12px 14px;background:#f0f7f6;border-radius:8px;border:1px solid #d4e8e4;font-size:14px;line-height:1.45;"><strong>Estimated delivery (standard):</strong> ${escapeHtml(order.estimated_delivery_window)}<br/><span style="font-size:12px;color:#555;">Business days from your order time (Egypt). Weekend days are skipped; public holidays are not deducted.</span></p>`
@@ -263,6 +263,13 @@ export function buildOrderConfirmationHtml(order: OrderConfirmationInput): strin
 
     ${formatAddress("Ship to", order.shipping_address)}
     ${formatAddress("Bill to", order.billing_address)}
+
+    <h2 style="margin:24px 0 8px;font-size:15px;">Care and next step</h2>
+    <ul style="margin:0;padding-left:18px;line-height:1.55;font-size:14px;">
+      <li>Wash inside out on cold and avoid ironing directly on the print.</li>
+      <li>Keep the item unworn, unwashed, and in its original packaging until size and fit are confirmed.</li>
+      <li>After delivery, reply with a review or fit photo if you want us to request repost permission.</li>
+    </ul>
 
     <p style="margin-top:28px;font-size:13px;color:#666;">Questions? Reply to this email or contact us from the site.</p>
   </div>

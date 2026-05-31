@@ -7,7 +7,7 @@ export const HOME_TRUST_BADGES = [
     key: 'printedEgypt',
   },
   {
-    key: 'codAvailable',
+    key: 'paymentAtCheckout',
   },
   {
     key: 'exchange14d',
@@ -21,7 +21,7 @@ export const HOME_PRIMARY_ROUTES = [
   {
     key: 'feeling',
     href: '/feelings',
-    accent: '#B77A67',
+    accent: '#8C2340',
   },
   {
     key: 'occasion',

@@ -18,7 +18,7 @@ export function cartCostPreviewCheckoutNote(isArabic: boolean): string {
 export function recoveryBodyCopy(isArabic: boolean): string {
   return isArabic
     ? "كمّل الطلب — الدفع عند الاستلام عند ظهوره في الدفع. الاستبدال حسب السياسة."
-    : "Finish checkout — COD is available when shown at checkout. Exchange applies according to policy."
+    : "Finish checkout — payment options shown at checkout. Exchange applies according to policy."
 }
 
 export const ABANDON_EMAIL_CONSENT_LABEL = {

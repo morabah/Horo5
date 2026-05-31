@@ -9,8 +9,8 @@
   <rect x="158" y="474" width="286" height="16" rx="8" fill="#816A4F" fill-opacity="0.72"/>
   <rect x="158" y="508" width="174" height="14" rx="7" fill="#816A4F" fill-opacity="0.45"/>
   <rect x="618" y="188" width="186" height="286" rx="24" fill="#EAD8C2"/>
-  <rect x="690" y="188" width="44" height="286" fill="#E8593C"/>
-  <rect x="618" y="302" width="186" height="58" fill="#E8593C"/>
+  <rect x="690" y="188" width="44" height="286" fill="#8C2340"/>
+  <rect x="618" y="302" width="186" height="58" fill="#8C2340"/>
   <path d="M711 188C680 212 664 240 664 270C664 311 687 338 734 360C773 379 792 402 792 430C792 446 787 460 778 474" stroke="#D4A24E" stroke-width="20" stroke-linecap="round"/>
   <rect x="596" y="510" width="230" height="22" rx="11" fill="#1A1A1A"/>
   <rect x="640" y="548" width="140" height="16" rx="8" fill="#816A4F" fill-opacity="0.56"/>

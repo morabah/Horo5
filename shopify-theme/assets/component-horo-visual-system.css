@@ -8,14 +8,14 @@
 
 /* --- Brand color tokens (scoped to HORO sections) --- */
 :root {
-  --horo-obsidian: #1f1c1a;
-  --horo-papyrus: #f4efe7;
-  --horo-linen: #e6ddd1;
-  --horo-clay: #4b4641;
-  --horo-warm-charcoal: #4b4641;
+  --horo-obsidian: #4F111F;
+  --horo-papyrus: #FEE5E2;
+  --horo-linen: #FFF7F5;
+  --horo-clay: #4F111F;
+  --horo-warm-charcoal: #4F111F;
   --horo-deep-teal: #556f73;
-  --horo-stone: #d4ccc0;
-  --horo-ember: #b77a67;
+  --horo-stone: #E8C9C6;
+  --horo-ember: #8C2340;
   --horo-amber-700: #b45309;
   --horo-white: #ffffff;
 }
@@ -243,17 +243,17 @@
 
 /* --- Web-next aligned brand tokens --- */
 :root {
-  --horo-chalk: #f4efe7;
-  --horo-linen: #e6ddd1;
-  --horo-ink: #1f1c1a;
-  --horo-burgundy: #7a1f2b;
-  --horo-warm-charcoal: #4b4641;
+  --horo-chalk: #FEE5E2;
+  --horo-linen: #FFF7F5;
+  --horo-ink: #4F111F;
+  --horo-burgundy: #4F111F;
+  --horo-warm-charcoal: #4F111F;
   --horo-dusk-plum: #6a5b76;
   --horo-moon-gold: #c5a15c;
-  --horo-clay-action: #b77a67;
+  --horo-clay-action: #8C2340;
   --horo-moss: #7d8771;
   --horo-river: #556f73;
-  --horo-stone: #d4ccc0;
+  --horo-stone: #E8C9C6;
 
   --font-horo-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
   --font-horo-body: Inter, Arial, Helvetica, sans-serif;
@@ -263,7 +263,7 @@
 /* --- Glassmorphism nav (sticky header) --- */
 .glass-nav {
   padding-top: env(safe-area-inset-top, 0px);
-  background: rgba(244, 239, 231, 0.9);
+  background: rgba(254, 229, 226, 0.9);
   backdrop-filter: blur(12px) saturate(1.02);
   -webkit-backdrop-filter: blur(12px) saturate(1.02);
   border-bottom: 1px solid rgba(212, 204, 192, 0.3);

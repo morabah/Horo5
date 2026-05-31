@@ -83,8 +83,8 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net https://www.clarity.ms; " +
               "connect-src 'self' https://*.googletagmanager.com https://*.facebook.com https://*.clarity.ms https://us.i.posthog.com; " +
               "img-src 'self' data: blob: https:; " +
-              "style-src 'self' 'unsafe-inline'; " +
-              "font-src 'self'; " +
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+              "font-src 'self' https://fonts.gstatic.com; " +
               "frame-src 'self'; " +
               "object-src 'none'; " +
               "base-uri 'self';",

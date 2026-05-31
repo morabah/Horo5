@@ -37,13 +37,13 @@ const COMPARISON_ROWS_EN: ComparisonRow[] = [
     id: 'gift',
     buyer: 'Generic gift shop',
     horo: 'Useful like clothing, personal like a message — they wear the feeling.',
-    proof: 'Gifts hub, occasion tags, delivery + COD clarity',
+    proof: 'Gifts hub, occasion tags, delivery clarity, payment options at checkout',
   },
   {
     id: 'marketplace',
     buyer: 'Marketplace seller',
     horo: 'Proof, service, and trust you can verify before you buy.',
-    proof: 'UGC, WhatsApp help, cash on delivery (COD)',
+    proof: 'UGC, WhatsApp help, payment options at checkout',
   },
 ];
 
@@ -70,7 +70,7 @@ const COMPARISON_ROWS_AR: ComparisonRow[] = [
     id: 'gift',
     buyer: 'محل هدايا عادي',
     horo: 'مفيد كملابس، شخصي كرسالة — يلبس الإحساس.',
-    proof: 'صفحة الهدايا، مناسبات، توصيل و COD',
+    proof: 'صفحة الهدايا، مناسبات، توصيل وطرق الدفع في صفحة الدفع',
   },
   {
     id: 'marketplace',

@@ -1,43 +1,50 @@
 /**
- * HORO Design Tokens
- * Ported from web-next/src/storefront/index.css:7-68
+ * HORO Design Tokens — V1.9 Root / Breath / Pulse
+ * Ported from web-next/src/storefront/index.css
  * Load after Dawn's base.css so HORO tokens override where needed.
  */
 
 :root {
-  /* === Brand Palette === */
-  --color-chalk: #f4efe7;
-  --color-linen: #e6ddd1;
-  --color-ink: #1f1c1a;
-  --color-burgundy: #7a1f2b;
-  --color-warm-charcoal: #4b4641;
+  /* === V1.9 Brand Palette === */
+  --color-horo-root: #4F111F;
+  --color-horo-breath: #FEE5E2;
+  --color-horo-pulse: #8C2340;
+  --color-horo-soft: #FFF7F5;
+  --color-horo-white: #FFFFFF;
+
+  /* === Brand Palette (legacy aliases → V1.9) === */
+  --color-chalk: #FEE5E2;
+  --color-linen: #FFF7F5;
+  --color-ink: #4F111F;
+  --color-burgundy: #4F111F;
+  --color-warm-charcoal: #4F111F;
   --color-dusk-plum: #6a5b76;
   --color-moon-gold: #c5a15c;
-  --color-clay-action: #b77a67;
-  --color-cta-primary: #7a1f2b;
-  --color-cta-on-primary: #ffffff;
+  --color-clay-action: #8C2340;
+  --color-cta-primary: #8C2340;
+  --color-cta-on-primary: #FFFFFF;
   --color-moss: #7d8771;
   --color-river: #556f73;
 
   /* === Semantic Aliases === */
   --color-outline: #6b5540;
   --color-secondary-fixed: #e8dfd4;
-  --color-ember: #b77a67;
-  --color-primary: #7a1f2b;
-  --color-surface: #f4efe7;
-  --color-on-surface: #1f1c1a;
-  --color-secondary: #4b4641;
-  --color-outline-variant: #d4ccc0;
-  --color-surface-container-high: #e6ddd1;
-  --color-surface-container: #ebe3d8;
+  --color-ember: #8C2340;
+  --color-primary: #8C2340;
+  --color-surface: #FEE5E2;
+  --color-on-surface: #4F111F;
+  --color-secondary: #4F111F;
+  --color-outline-variant: #E8C9C6;
+  --color-surface-container-high: #FFF7F5;
+  --color-surface-container: #FFF7F5;
 
-  /* === Legacy v2.6 Neutrals === */
-  --color-papyrus: #f4efe7;
-  --color-clean-white: #ffffff;
-  --color-obsidian: #1f1c1a;
-  --color-stone: #d4ccc0;
-  --color-clay: #4b4641;
-  --color-label: #4b4641;
+  /* === Legacy neutrals (mapped to V1.9) === */
+  --color-papyrus: #FEE5E2;
+  --color-clean-white: #FFFFFF;
+  --color-obsidian: #4F111F;
+  --color-stone: #E8C9C6;
+  --color-clay: #4F111F;
+  --color-label: #4F111F;
   --color-desert-sand: #c5a15c;
   --color-deep-teal: #556f73;
   --color-dusk-violet: #6a5b76;
@@ -46,7 +53,7 @@
   --color-kohl-gold-dark: #8a7349;
 
   /* === Matte UI Tints === */
-  --color-glass-white: #f4efe7;
+  --color-glass-white: #FEE5E2;
   --color-frost-blue: #e8e4df;
   --color-soft-violet: #ebe5ef;
   --color-warm-glow: #f2ebe0;
@@ -68,25 +75,23 @@
   --radius-full: 0.75rem;
 }
 
-/* === Arabic font override === */
 :lang(ar) {
   --font-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
   --font-body: Inter, Arial, Helvetica, sans-serif;
   --font-label: Inter, Arial, Helvetica, sans-serif;
 }
 
-/* Primary CTA — Ember token (parity with web-next .btn-primary) */
 .button--primary,
 .cart__checkout-button.button,
 .product-form__submit.button--primary {
-  background-color: var(--color-cta-primary, #7a1f2b);
+  background-color: var(--color-cta-primary, #8C2340);
   color: var(--color-cta-on-primary, #ffffff);
-  border-color: color-mix(in srgb, var(--color-cta-primary, #7a1f2b) 88%, #1f1c1a);
+  border-color: color-mix(in srgb, var(--color-cta-primary, #8C2340) 88%, #4F111F);
 }
 
 .button--primary:hover,
 .cart__checkout-button.button:hover,
 .product-form__submit.button--primary:hover {
-  background-color: color-mix(in srgb, var(--color-cta-primary, #7a1f2b) 92%, #1f1c1a);
+  background-color: color-mix(in srgb, var(--color-cta-primary, #8C2340) 92%, #4F111F);
   color: var(--color-cta-on-primary, #ffffff);
 }

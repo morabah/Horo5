@@ -234,7 +234,7 @@ export default function StoreSettingsPage() {
                   type="text"
                   value={settings.defaultTrustBadges.join(", ")}
                   disabled={mutation.isPending}
-                  placeholder="premium cotton, Free exchange 14d, COD available"
+                  placeholder="premium cotton, Free exchange 14d, Payment options at checkout"
                   onChange={(event) => {
                     const raw = event.target.value
                     const defaultTrustBadges = raw

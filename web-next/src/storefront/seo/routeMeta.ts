@@ -80,7 +80,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       '/about',
       'About HORO Egypt | Graphic Tees & Streetwear',
-      'Meet HORO Egypt, where original illustration becomes graphic tees with clear product proof, COD-friendly checkout, and exchange-ready shopping in Egypt.',
+      'Meet HORO Egypt — artist-made passion wear with clear product proof, payment options at checkout, and exchange-ready shopping in Egypt.',
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },
@@ -93,7 +93,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       '/feelings',
       'Shop Graphic Tees by Feeling | HORO Egypt',
-      'Shop HORO artist-made graphic tees by feeling and moment — soft, bold, warm, grounded, and playful edits with COD and 14-day exchange in Egypt.',
+      'Shop HORO artist-made passion wear by feeling — payment options shown at checkout and 14-day exchange per policy in Egypt.',
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },
@@ -108,7 +108,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       `/feelings/${v.slug}`,
       `${v.name} Graphic Tees | HORO Egypt`,
-      `Shop ${v.name.toLowerCase()} graphic tees from HORO Egypt. ${v.tagline} COD and 14-day exchange available in Egypt.`,
+      `Shop ${v.name.toLowerCase()} graphic tees from HORO Egypt. ${v.tagline} Payment options shown at checkout; 14-day exchange per policy in Egypt.`,
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },
@@ -122,7 +122,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       '/occasions',
       'Shop Graphic Tees by Occasion | HORO Egypt',
-      'Shop gift-ready HORO graphic tees by occasion in Egypt. Find birthday, graduation, Eid, Ramadan, and everyday streetwear picks with COD and 14-day exchange.',
+      'Shop gift-ready HORO passion wear by occasion in Egypt. Birthday, graduation, Eid, Ramadan, and everyday picks — payment options at checkout and 14-day exchange per policy.',
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },
@@ -137,7 +137,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       `/occasions/${o.slug}`,
       `${o.name} Graphic Tees | HORO Egypt`,
-      `Shop ${o.name} graphic tees and gift-ready streetwear from HORO Egypt. ${o.blurb} COD and 14-day exchange available in Egypt.`,
+      `Shop ${o.name} graphic tees and gift-ready streetwear from HORO Egypt. ${o.blurb} Payment options shown at checkout; 14-day exchange per policy in Egypt.`,
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },
@@ -155,7 +155,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       `/products/${p.slug}`,
       `${p.name} Graphic Tee | HORO Egypt`,
-      `Shop ${p.name}, a ${fitLabel} from HORO Egypt${feeling ? ` — ${feeling.name}` : ''}. ${p.priceEgp} EGP streetwear with COD and 14-day exchange in Egypt.`,
+      `Shop ${p.name}, a ${fitLabel} from HORO Egypt${feeling ? ` — ${feeling.name}` : ''}. ${p.priceEgp} EGP — COD when shown at checkout; 14-day exchange per policy in Egypt.`,
       {
         ogType: 'product',
         structuredData: buildBreadcrumb([
@@ -177,7 +177,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
   if (normalizedPathname === '/checkout') {
     return nonIndexablePage(
       'Checkout | HORO Egypt',
-      'Complete your HORO order with delivery details, COD, and payment choices for Egypt.',
+      'Complete your HORO order with delivery details and payment options shown at checkout for Egypt.',
       { canonicalPath: '/checkout' },
     );
   }
@@ -231,7 +231,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       '/terms',
       'Terms of Service | HORO Egypt',
-      'Review the terms for browsing, ordering, delivery, COD, and exchange on HORO Egypt.',
+      'Review the terms for browsing, ordering, delivery, payment options at checkout, and exchange on HORO Egypt.',
       {
         structuredData: buildBreadcrumb([
           { name: 'Home', path: '/' },

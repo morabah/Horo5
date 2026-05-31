@@ -70,13 +70,13 @@ export function buildAbandonedCartReminderHtml(args: {
       : ""
 
   return `<!DOCTYPE html>
-<html dir="${dir}"><body style="font-family:system-ui,-apple-system,sans-serif;background:#faf8f5;color:#1a1a1a;padding:24px;direction:${dir};">
+<html dir="${dir}"><body style="font-family:Inter, Arial, Helvetica, sans-serif;background:#FEE5E2;color:#4F111F;padding:24px;direction:${dir};">
   <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e8e4df;text-align:${align};">
-    <h1 style="font-size:20px;margin:0 0 12px;">${escapeHtml(title)}</h1>
+    <h1 style="font-family:'Space Grotesk', Inter, Arial, Helvetica, sans-serif;font-size:20px;margin:0 0 12px;">${escapeHtml(title)}</h1>
     <p style="margin:0 0 12px;color:#444;line-height:1.6;">${escapeHtml(body)}</p>
     ${lineItems}
     ${valueLine ? `<p style="margin:0 0 20px;font-weight:600;">${escapeHtml(valueLine)}</p>` : ""}
-    <a href="${escapeHtml(args.ctaUrl)}" style="display:inline-block;padding:12px 20px;background:#e8593c;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">${escapeHtml(cta)}</a>
+    <a href="${escapeHtml(args.ctaUrl)}" style="display:inline-block;padding:12px 20px;background:#8C2340;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">${escapeHtml(cta)}</a>
     ${unsub}
   </div>
 </body></html>`

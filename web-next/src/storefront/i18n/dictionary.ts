@@ -1,3 +1,5 @@
+import { HORO_V19_SOUNDBITES, HORO_V19_TRUST_COPY } from '../brand/horo-v19';
+
 export const DICTIONARY = {
   "en": {
     "shell": {
@@ -35,7 +37,9 @@ export const DICTIONARY = {
     },
     "home": {
       "heroCta": "Browse designs",
-      "heroPromiseLine": "Artist-made tees · Printed in Egypt · COD",
+      "heroPromiseLine": HORO_V19_SOUNDBITES.promise.en,
+      "heroRhythmLine": HORO_V19_SOUNDBITES.rhythm.en,
+      "heroCanvasLine": HORO_V19_SOUNDBITES.canvas.en,
       "heroPrimaryCta": "Shop the Founding Drop",
       "heroSecondaryCta": "Browse by feeling",
       "heroGiftCta": "Shop gifts",
@@ -61,14 +65,15 @@ export const DICTIONARY = {
       "recentCta": "Browse all designs",
       "viewPiece": "View piece",
       "trustBadges": {
-        "artistMade": "Artist-made designs",
-        "printedEgypt": "Printed in Egypt",
-        "codAvailable": "COD when shown at checkout",
-        "exchange14d": "14-day exchange",
-        "whatsappSupport": "WhatsApp support"
+        "artistMade": HORO_V19_TRUST_COPY.artistMade.en,
+        "printedEgypt": HORO_V19_TRUST_COPY.printedEgypt.en,
+        "paymentAtCheckout": HORO_V19_TRUST_COPY.paymentAtCheckout.en,
+        "codAvailable": HORO_V19_TRUST_COPY.paymentAtCheckout.en,
+        "exchange14d": HORO_V19_TRUST_COPY.exchangePolicy.en,
+        "whatsappSupport": HORO_V19_TRUST_COPY.whatsappSupport.en
       },
       "routesFeelingLabel": "Shop by Feeling",
-      "routesFeelingBlurb": "Start with the mood, then choose the tee that fits it.",
+      "routesFeelingBlurb": "Start with the feeling, then choose the tee that fits it.",
       "routesOccasionLabel": "Shop by Moment",
       "routesOccasionBlurb": "Find the piece for a birthday, milestone, or everyday moment.",
       "routesGiftLabel": "Shop Gifts",
@@ -196,13 +201,43 @@ export const DICTIONARY = {
           {
             "title": "Can I pay cash on delivery?",
             "body": [
-              "Cash on delivery (COD) is available. Online payment options may also appear depending on the current storefront setup."
+              "Payment options, including COD when available, are shown at checkout."
+            ]
+          },
+          {
+            "title": "How do I choose my size?",
+            "body": [
+              "Use the size guide on each product page before checkout. If you are between sizes or buying as a gift, ask on WhatsApp with height, usual size, and preferred fit."
+            ]
+          },
+          {
+            "title": "Will the print and fabric last?",
+            "body": [
+              "Product pages show print, fabric, fit, and care proof when assets are available. Wash inside out on cold, avoid bleach, and iron away from the print."
+            ]
+          },
+          {
+            "title": "When will it arrive?",
+            "body": [
+              "Delivery timing depends on your governorate and is confirmed at checkout. Cairo/Giza orders usually show the fastest estimate when local delivery is available."
             ]
           },
           {
             "title": "Can I exchange my size?",
             "body": [
               "Eligible size exchanges are supported within 14 days of delivery. Review the Delivery & Returns page for the current policy details."
+            ]
+          },
+          {
+            "title": "Can I return instead of exchange?",
+            "body": [
+              "Return or exchange eligibility follows the current Delivery & Returns policy. Keep the item unworn, unwashed, and in its original packaging until you confirm the fit."
+            ]
+          },
+          {
+            "title": "Is it gift-worthy?",
+            "body": [
+              "Gift-ready pieces include occasion context, size help, and gift-wrap options when available. If you are unsure about size or timing, ask on WhatsApp before ordering."
             ]
           },
           {
@@ -684,7 +719,9 @@ export const DICTIONARY = {
     },
     "home": {
       "heroCta": "تصفح التصاميم",
-      "heroPromiseLine": "تيشيرتات فنانين · مطبوعة في مصر · الدفع عند الاستلام",
+      "heroPromiseLine": HORO_V19_SOUNDBITES.promise.ar,
+      "heroRhythmLine": HORO_V19_SOUNDBITES.rhythm.ar,
+      "heroCanvasLine": HORO_V19_SOUNDBITES.canvas.ar,
       "heroPrimaryCta": "تسوّق الإطلاق الأول",
       "heroSecondaryCta": "تصفح حسب الشعور",
       "heroGiftCta": "تسوّق الهدايا",
@@ -710,11 +747,12 @@ export const DICTIONARY = {
       "recentCta": "تصفّح كل التصاميم",
       "viewPiece": "عرض القطعة",
       "trustBadges": {
-        "artistMade": "تصاميم فنانين",
-        "printedEgypt": "مطبوع في مصر",
-        "codAvailable": "دفع عند الاستلام",
-        "exchange14d": "استبدال ١٤ يوم",
-        "whatsappSupport": "دعم واتساب"
+        "artistMade": HORO_V19_TRUST_COPY.artistMade.ar,
+        "printedEgypt": HORO_V19_TRUST_COPY.printedEgypt.ar,
+        "paymentAtCheckout": HORO_V19_TRUST_COPY.paymentAtCheckout.ar,
+        "codAvailable": HORO_V19_TRUST_COPY.paymentAtCheckout.ar,
+        "exchange14d": HORO_V19_TRUST_COPY.exchangePolicy.ar,
+        "whatsappSupport": HORO_V19_TRUST_COPY.whatsappSupport.ar
       },
       "routesFeelingLabel": "تسوّق حسب الشعور",
       "routesFeelingBlurb": "ابدأ بالمزاج، ثم اختر التيشيرت الذي يشبهه.",
@@ -845,13 +883,43 @@ export const DICTIONARY = {
           {
             "title": "هل الدفع عند الاستلام متاح؟",
             "body": [
-              "الدفع عند الاستلام متاح عندما يظهر في خطوة الدفع. قد تظهر طرق دفع إلكترونية أيضاً حسب إعدادات المتجر الحالية."
+              "طرق الدفع، ومنها الدفع عند الاستلام عند توفره، بتظهر في صفحة الدفع."
+            ]
+          },
+          {
+            "title": "كيف أختار المقاس؟",
+            "body": [
+              "استخدم دليل المقاسات في كل صفحة منتج قبل الدفع. لو بين مقاسين أو تشتريها هدية، ابعت لنا على واتساب الطول والمقاس المعتاد والفت المفضل."
+            ]
+          },
+          {
+            "title": "هل الطباعة والخامة متينة؟",
+            "body": [
+              "صفحات المنتج تعرض دليل الطباعة والخامة والفت والعناية عندما تكون الأصول متاحة. اغسل القطعة مقلوبة بماء بارد، وتجنب المبيض، ولا تكوي فوق الطباعة."
+            ]
+          },
+          {
+            "title": "متى يصل الطلب؟",
+            "body": [
+              "وقت التوصيل يعتمد على المحافظة ويتم تأكيده في الدفع. طلبات القاهرة والجيزة عادة تظهر لها أسرع تقدير عندما يكون التوصيل المحلي متاحاً."
             ]
           },
           {
             "title": "هل يمكن استبدال المقاس؟",
             "body": [
               "ندعم استبدال المقاس المؤهل خلال 14 يوماً من التسليم. راجع صفحة التوصيل والاستبدال للتفاصيل الحالية."
+            ]
+          },
+          {
+            "title": "هل يمكن الإرجاع بدلاً من الاستبدال؟",
+            "body": [
+              "أهلية الإرجاع أو الاستبدال تتبع سياسة التوصيل والاستبدال الحالية. احتفظ بالقطعة غير ملبوسة وغير مغسولة وبتغليفها الأصلي حتى تتأكد من المقاس."
+            ]
+          },
+          {
+            "title": "هل تصلح كهدية؟",
+            "body": [
+              "القطع الجاهزة للهدايا تعرض سياق المناسبة، مساعدة المقاس، وخيار تغليف الهدية عند توفره. لو غير متأكد من المقاس أو وقت التوصيل، اسألنا على واتساب قبل الطلب."
             ]
           },
           {

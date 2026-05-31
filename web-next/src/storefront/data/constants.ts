@@ -32,5 +32,5 @@ export const BRAND_TRUST_POINTS = [
   { icon: 'layers', title: 'Artist-made design', sub: 'Original illustration by Egyptian artists — credited on every piece' },
   { icon: 'verified', title: 'Original Licensed Design', sub: 'Clearly credited and properly sourced' },
   { icon: 'history', title: 'Free Exchange 14 Days', sub: 'Less sizing stress, easier decisions' },
-  { icon: 'payments', title: 'COD when shown at checkout', sub: 'Payment methods confirmed at checkout' },
+  { icon: 'payments', title: 'Payment options shown at checkout', sub: 'Payment methods confirmed at checkout' },
 ] as const;

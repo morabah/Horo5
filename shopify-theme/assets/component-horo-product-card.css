@@ -68,7 +68,7 @@
 }
 
 .horo-product-card .card__heading a:hover {
-  color: var(--horo-clay-action, #b77a67);
+  color: var(--horo-clay-action, #8C2340);
 }
 
 .horo-product-card .card-information {
@@ -84,7 +84,7 @@
 }
 
 .horo-product-card .price .price-item--sale {
-  color: var(--horo-clay-action, #b77a67);
+  color: var(--horo-clay-action, #8C2340);
 }
 
 /* HORO chip / badge inside card content */

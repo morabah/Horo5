@@ -1,28 +1,34 @@
-/* Legacy tokens + components for non–Tailwind pages (PDP, cart, etc.) — Brand Guidelines v2.6 §3 */
+/* Legacy tokens + components for non–Tailwind pages — HORO V1.9 with legacy aliases */
 :root {
-  --papyrus: #f4efe7;
+  --horo-root: #4F111F;
+  --horo-breath: #FEE5E2;
+  --horo-pulse: #8C2340;
+  --horo-soft: #FFF7F5;
+
+  --papyrus: var(--horo-breath);
   --white: #ffffff;
-  --obsidian: #1f1c1a;
-  --warm-charcoal: #4b4641;
-  --clay-earth: #4b4641;
-  --label-brown: #4b4641;
+  --obsidian: var(--horo-root);
+  --burgundy: var(--horo-pulse);
+  --warm-charcoal: var(--horo-root);
+  --clay-earth: var(--horo-root);
+  --label-brown: var(--horo-root);
   --deep-teal: #556f73;
   --dusk-violet: #6a5b76;
   --kohl-gold-dark: #8a7349;
   --nile-dark: #556f73;
-  --stone: #d4ccc0;
+  --stone: #e8c9c6;
   --desert-sand: #c5a15c;
-  --ember: #b77a67;
+  --ember: var(--horo-pulse);
   --kohl-gold-bright: #c5a15c;
 
-  --glass-white: rgba(244, 239, 231, 0.94);
+  --glass-white: rgba(254, 229, 226, 0.94);
   --frost-blue: rgba(232, 228, 223, 0.9);
   --soft-violet: rgba(235, 229, 239, 0.92);
   --warm-glow: rgba(242, 235, 224, 0.95);
   --mint-frost: rgba(232, 237, 230, 0.92);
 
-  --font-heading: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-body: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-heading: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-body: Inter, Arial, Helvetica, sans-serif;
 
   --radius-card: 16px;
   --blur-nav: 16px;
@@ -76,9 +82,9 @@
 }
 
 .btn-primary {
-  background: var(--color-cta-primary, #e8593c);
+  background: var(--color-cta-primary, #8C2340);
   color: var(--color-cta-on-primary, #ffffff);
-  border: 1px solid color-mix(in srgb, var(--color-cta-primary, #e8593c) 88%, #1f1c1a);
+  border: 1px solid color-mix(in srgb, var(--color-cta-primary, #8C2340) 88%, #4F111F);
 }
 
 .btn-primary:hover {

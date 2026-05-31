@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { ABOUT_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
+import { BRAND_COPY } from '../data/brand';
 import { PAGE_HEROES } from '../content/page-heroes';
 import { aboutBridgeAlt, aboutBridgeImage, imgUrl } from '../data/images';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
@@ -50,26 +51,19 @@ export function About() {
                 <h1 className="font-headline text-[clamp(2.2rem,5vw,4.3rem)] font-semibold leading-[0.94] tracking-tight text-white">{t(config.title) ?? 'Our story'}</h1>
                 <div className="mt-5 space-y-6 font-body text-[1.02rem] leading-relaxed text-white/88 md:text-[1.08rem]">
                   <p>
-                    HORO was created for people who do not want to disappear into places, routines, or clothes that do not feel like them.
+                    {BRAND_COPY.aboutLead}
                   </p>
                   <p>
-                    We believe what you wear can carry more than style. It can carry a mood, a memory, a thought, or a part of yourself that words do not always reach.
+                    {BRAND_COPY.aboutSupport}
                   </p>
                   <p>
-                    Each HORO piece begins as a feeling, then becomes artist-made wearable art. A face, a color, a line, or a symbol is chosen not only for how it looks, but for what it holds. Confidence. Softness. Mystery. Joy. Nostalgia. Rebellion. Calm. A version of yourself still becoming clear.
-                  </p>
-                  <p>
-                    HORO moves with personal rhythm — the rhythm of changing moods, daily rituals, new seasons, and quiet transformations. It is made for the days you feel bold, romantic, strange, peaceful, playful, distant, or impossible to explain.
-                  </p>
-                  <p>
-                    And because feelings are rarely ours alone, every piece can become a signal. A way to find your circle — people who recognize the same mood, even when they wear it differently.
-                  </p>
-                  <p>
-                    We do not design around trends only.
-                    We design around feeling, meaning, and the personal rhythm behind what people choose to wear.
+                    HORO moves with personal rhythm — ritual, connection, and the circle of people who recognize the same feeling, even when they wear it differently. {BRAND_COPY.brandIdea} is the invitation: choose passion wear that matches what you feel.
                   </p>
                   <p className="text-[1.15rem] text-secondary-fixed md:text-[1.22rem]">
-                    Wear What You Feel.
+                    {BRAND_COPY.mantra}.
+                  </p>
+                  <p className="font-headline text-[1.05rem] italic text-white/90 md:text-[1.12rem]">
+                    {BRAND_COPY.canvasLine}
                   </p>
                 </div>
 

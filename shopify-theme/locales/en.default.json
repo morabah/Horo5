@@ -534,7 +534,9 @@
   "horo": {
     "brand": {
       "mantra": "Wear What You Feel",
-      "tagline": "Wearable illustration for identity-led expression"
+      "tagline": "Artist-made passion wear for feelings, identity, and meaningful gifts",
+      "soundbite": "Find Your Rhythm",
+      "canvas_line": "We are the canvas. You are the story."
     },
     "nav": {
       "feelings": "Feelings",
@@ -556,19 +558,20 @@
     },
     "home_hero": {
       "title": "Wear What You Feel",
-      "subtitle": "Artist-made tees · Printed in Egypt · COD when shown at checkout",
+      "subtitle": "Artist-made passion wear for feelings, identity, and meaningful gifts.",
       "cta": "Shop the Founding Drop"
     },
     "trust_ribbon": {
       "artist_made": "Artist-made design",
       "printed_in_egypt": "Printed in Egypt",
-      "cod": "COD when shown at checkout",
+      "payment": "Payment options shown at checkout",
+      "cod": "Payment options shown at checkout",
       "exchange": "14-day exchange — see policy",
       "whatsapp": "WhatsApp support"
     },
     "primary_routes": {
       "feelings_title": "Shop by Feeling",
-      "feelings_subtitle": "Find the feeling you wear",
+      "feelings_subtitle": "Start with the feeling, then choose the piece",
       "occasions_title": "Shop by Occasion",
       "occasions_subtitle": "Dress for the moment",
       "gifts_title": "Gift by Meaning",
@@ -667,9 +670,9 @@
       "cohorts_subheading": "Start with the person on your mind, then choose the occasion.",
       "products_heading": "Gift-ready designs",
       "trust_heading": "Gift with confidence",
-      "trust_text": "Delivery windows are on each product page. COD when shown at checkout; exchange per policy.",
+      "trust_text": "Delivery windows are on each product page. Payment options shown at checkout; exchange per policy.",
       "trust_badge_1": "Recipient & occasion guidance",
-      "trust_badge_2": "COD when shown at checkout",
+      "trust_badge_2": "Payment options shown at checkout",
       "trust_badge_3": "14-day exchange — see policy",
       "trust_badge_4": "WhatsApp size help before dispatch",
       "size_help_label": "See size guide",
@@ -792,7 +795,7 @@
     },
     "cart": {
       "reassurance_heading": "Before you checkout",
-      "reassurance_cod": "COD when shown at checkout",
+      "reassurance_cod": "Final payment methods confirmed at checkout",
       "reassurance_payment_methods": "Payment methods shown at checkout",
       "reassurance_whatsapp_confirm": "We confirm COD orders by WhatsApp before dispatch.",
       "reassurance_exchange": "Exchange applies according to policy.",

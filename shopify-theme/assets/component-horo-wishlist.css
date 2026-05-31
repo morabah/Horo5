@@ -25,7 +25,7 @@
 
 .horo-wishlist-btn:hover {
   background: #ffffff;
-  border-color: var(--horo-clay-action, #b77a67);
+  border-color: var(--horo-clay-action, #8C2340);
   transform: scale(1.08);
 }
 
@@ -34,8 +34,8 @@
 }
 
 .horo-wishlist-btn--active {
-  background: var(--horo-clay-action, #b77a67);
-  border-color: var(--horo-clay-action, #b77a67);
+  background: var(--horo-clay-action, #8C2340);
+  border-color: var(--horo-clay-action, #8C2340);
   color: #ffffff;
 }
 
@@ -74,7 +74,7 @@
   padding: 0.2rem 0.6rem;
   margin-inline-start: 0.4rem;
   border-radius: 0.4rem;
-  background: var(--horo-clay-action, #b77a67);
+  background: var(--horo-clay-action, #8C2340);
   color: #ffffff;
   font-family: var(--font-body-family);
   font-size: 1rem;
@@ -96,7 +96,7 @@
   height: 1.6rem;
   padding: 0 0.3rem;
   border-radius: 999px;
-  background: var(--horo-clay-action, #b77a67);
+  background: var(--horo-clay-action, #8C2340);
   color: #ffffff;
   font-size: 1.0rem;
   font-weight: 700;
@@ -121,7 +121,7 @@
   height: 1.8rem;
   padding: 0 0.4rem;
   border-radius: 999px;
-  background: var(--horo-clay-action, #b77a67);
+  background: var(--horo-clay-action, #8C2340);
   color: #ffffff;
   font-size: 1rem;
   font-weight: 600;

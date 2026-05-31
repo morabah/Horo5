@@ -606,7 +606,7 @@ export function buildOccasionMetadata(occasion: Occasion): Metadata {
   const title = `${occasion.name} | HORO Egypt`;
   const description =
     occasion.blurb ||
-    `Shop ${occasion.name} graphic tees from HORO Egypt — gift-ready streetwear with COD and 14-day exchange.`;
+    `Shop ${occasion.name} graphic tees from HORO Egypt — gift-ready streetwear; payment options at checkout and 14-day exchange per policy.`;
   const canonical = siteOrigin ? `${siteOrigin}/occasions/${occasion.slug}` : `/occasions/${occasion.slug}`;
   const image = toAbsoluteUrl(occasion.heroImageSrc);
 
@@ -643,7 +643,7 @@ export function buildFeelingMetadata(feeling: Feeling, subfeeling?: Subfeeling |
     subfeeling?.blurb ||
     feeling.blurb ||
     feeling.tagline ||
-    `Shop ${feeling.name} graphic tees from HORO Egypt with COD and 14-day exchange in Egypt.`;
+    `Shop ${feeling.name} graphic tees from HORO Egypt — payment options at checkout and 14-day exchange per policy in Egypt.`;
   const path = subfeeling
     ? `/feelings/${feeling.slug}/${subfeeling.slug}`
     : `/feelings/${feeling.slug}`;
@@ -689,7 +689,7 @@ export function buildProductMetadata(
   const feeling = feelingFromCatalog(feelingSlug, catalog);
   const description =
     product.description ||
-    `${product.name} graphic tee from HORO Egypt${feeling ? `, aligned with ${feeling.name}` : ""}. ${product.priceEgp} EGP with COD and 14-day exchange in Egypt.`;
+    `${product.name} graphic tee from HORO Egypt${feeling ? `, aligned with ${feeling.name}` : ""}. ${product.priceEgp} EGP — COD when shown at checkout; 14-day exchange per policy in Egypt.`;
   const canonical = siteOrigin ? `${siteOrigin}/products/${product.slug}` : `/products/${product.slug}`;
   const image = toAbsoluteUrl(product.thumbnail || product.media?.main || undefined);
 

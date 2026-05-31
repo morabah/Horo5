@@ -17,7 +17,7 @@ describe("commerce-copy", () => {
   it("uses hedged PDP and recovery copy", () => {
     expect(pdpCodTrustCopy(false)).toContain("when shown at checkout")
     expect(pdpExchangeTrustCopy(false)).toContain("according to policy")
-    expect(recoveryBodyCopy(false)).toContain("when shown at checkout")
+    expect(recoveryBodyCopy(false)).toContain("payment options shown at checkout")
     expect(recoveryBodyCopy(true)).toContain("الاستبدال")
   })
 

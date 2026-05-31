@@ -6,13 +6,13 @@
       "color_schemes": {
         "scheme-1": {
           "settings": {
-            "background": "#F4EFE7",
+            "background": "#FEE5E2",
             "background_gradient": "",
-            "text": "#1F1C1A",
-            "button": "#1F1C1A",
-            "button_label": "#F4EFE7",
-            "secondary_button_label": "#1F1C1A",
-            "shadow": "#1F1C1A"
+            "text": "#4F111F",
+            "button": "#8C2340",
+            "button_label": "#FFFFFF",
+            "secondary_button_label": "#4F111F",
+            "shadow": "#4F111F"
           }
         },
         "scheme-2": {
@@ -39,24 +39,24 @@
         },
         "scheme-4": {
           "settings": {
-            "background": "#1F1C1A",
+            "background": "#4F111F",
             "background_gradient": "",
             "text": "#FFFFFF",
-            "button": "#FFFFFF",
-            "button_label": "#1F1C1A",
-            "secondary_button_label": "#FFFFFF",
-            "shadow": "#1F1C1A"
+            "button": "#FEE5E2",
+            "button_label": "#4F111F",
+            "secondary_button_label": "#FEE5E2",
+            "shadow": "#4F111F"
           }
         },
         "scheme-5": {
           "settings": {
-            "background": "#7A1F2B",
+            "background": "#8C2340",
             "background_gradient": "",
             "text": "#FFFFFF",
             "button": "#FFFFFF",
-            "button_label": "#7A1F2B",
+            "button_label": "#8C2340",
             "secondary_button_label": "#FFFFFF",
-            "shadow": "#1F1C1A"
+            "shadow": "#4F111F"
           }
         }
       },
@@ -188,7 +188,7 @@
       "horo_gift_wrap_price_hint": "+ EGP 50",
       "horo_trust_badge_1": "Artist-made design",
       "horo_trust_badge_2": "Printed in Egypt",
-      "horo_trust_badge_3": "COD when shown at checkout",
+      "horo_trust_badge_3": "Payment options shown at checkout",
       "horo_trust_badge_4": "14-day exchange — see policy",
       "horo_trust_badge_5": "WhatsApp support",
       "horo_delivery_cairo": "Cairo/Giza: 2–4 business days",

@@ -27,7 +27,7 @@ export const DEFAULT_APPAREL_CATEGORY_PATH = "apparel/tops/t-shirts"
 export const DEFAULT_TRUST_BADGES = [
   "premium cotton",
   "Free exchange 14d",
-  "COD available",
+  "Payment options at checkout",
 ] as const
 
 /** Default per-variant stock quantity used by inventory backfill scripts. */

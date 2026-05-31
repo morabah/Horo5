@@ -6,41 +6,46 @@
 
 @theme {
   /*
-   * HORO — Brand Guidelines v2.6 §3.3 (Chalk / Linen / Ink / Clay CTAs / restrained accents).
-   * Primary action: Clay + Ink text. Accents: Dusk Plum, Moon Gold, Moss, River (links/info).
-   * Legacy aliases: papyrus≈chalk, obsidian≈ink (Tailwind class names unchanged for smaller diff).
+   * HORO V1.9 — Root / Breath / Pulse palette with legacy alias compatibility.
+   * Space Grotesk headings, Inter UI/body.
    */
-  --color-chalk: #f4efe7;
-  --color-linen: #e6ddd1;
-  --color-ink: #1f1c1a;
-  --color-warm-charcoal: #4b4641;
+  --color-horo-root: #4F111F;
+  --color-horo-breath: #FEE5E2;
+  --color-horo-pulse: #8C2340;
+  --color-horo-soft: #FFF7F5;
+  --color-horo-white: #FFFFFF;
+
+  --color-chalk: #FEE5E2;
+  --color-linen: #FFF7F5;
+  --color-ink: #4F111F;
+  --color-burgundy: #4F111F;
+  --color-warm-charcoal: #4F111F;
   --color-dusk-plum: #6a5b76;
   --color-moon-gold: #c5a15c;
-  --color-clay-action: #b77a67;
-  /** Primary commerce CTA (brand bible Ember) — do not alias --color-ember / --color-clay-action */
-  --color-cta-primary: #e8593c;
-  --color-cta-on-primary: #ffffff;
+  --color-clay-action: #8C2340;
+  --color-cta-primary: #8C2340;
+  --color-cta-on-primary: #FFFFFF;
   --color-moss: #7d8771;
   --color-river: #556f73;
 
   --color-outline: #6b5540;
   --color-secondary-fixed: #e8dfd4;
-  --color-ember: #b77a67;
-  --color-primary: #b77a67;
-  --color-surface: #f4efe7;
-  --color-on-surface: #1f1c1a;
-  --color-secondary: #4b4641;
-  --color-outline-variant: #d4ccc0;
-  --color-surface-container-high: #e6ddd1;
-  --color-surface-container: #ebe3d8;
+  --color-ember: #8C2340;
+  --color-primary: #8C2340;
+  --color-surface: #FEE5E2;
+  --color-on-surface: #4F111F;
+  --color-secondary: #4F111F;
+  --color-outline-variant: #E8C9C6;
+  --color-surface-container-high: #FFF7F5;
+  --color-surface-container: #FFF7F5;
 
-  /* Aliased to v2.6 neutrals */
-  --color-papyrus: #f4efe7;
-  --color-clean-white: #ffffff;
-  --color-obsidian: #1f1c1a;
-  --color-stone: #d4ccc0;
-  --color-clay: #4b4641;
-  --color-label: #4b4641;
+  /* Aliased legacy neutrals → V1.9 */
+  --color-papyrus: #FEE5E2;
+  --color-clean-white: #FFFFFF;
+  --color-obsidian: #4F111F;
+  --color-stone: #E8C9C6;
+  --color-clay: #4F111F;
+  --color-label: #4F111F;
   --color-desert-sand: #c5a15c;
   --color-deep-teal: #556f73;
   --color-dusk-violet: #6a5b76;
@@ -48,21 +53,21 @@
   --color-kohl-gold-bright: #c5a15c;
   --color-kohl-gold-dark: #8a7349;
 
-  /* Matte-friendly UI tints (glass used sparingly §3.5) */
-  --color-glass-white: #f4efe7;
+  /* Matte-friendly UI tints */
+  --color-glass-white: #FEE5E2;
   --color-frost-blue: #e8e4df;
   --color-soft-violet: #ebe5ef;
   --color-warm-glow: #f2ebe0;
   --color-mint-frost: #e8ede6;
 
-  /* Typography — calm sans-led system for commerce and shell */
-  --font-headline: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --font-body: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  /* Typography — V1.6: Space Grotesk for headings/brand titles, Inter for body/UI */
+  --font-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-body: Inter, Arial, Helvetica, sans-serif;
   /* §3.3 Label: compact sans with strong uppercase rhythm */
-  --font-label: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-label: Inter, Arial, Helvetica, sans-serif;
   /* Wordmark / editorial serif fallbacks without network dependency */
-  --font-wordmark: Georgia, 'Times New Roman', serif;
-  --font-pdp-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-wordmark: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
+  --font-pdp-serif: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
 
   --radius-sm: 0.125rem;
   --radius-lg: 0.25rem;
@@ -381,7 +386,7 @@
 
   .home-hero-ambient {
     background:
-      radial-gradient(circle at 16% 20%, rgba(232, 89, 60, 0.18) 0%, transparent 20%),
+      radial-gradient(circle at 16% 20%, rgba(140, 35, 64, 0.18) 0%, transparent 20%),
       radial-gradient(circle at 76% 16%, rgba(107, 76, 138, 0.24) 0%, transparent 24%),
       radial-gradient(circle at 62% 76%, rgba(43, 117, 150, 0.16) 0%, transparent 20%),
       linear-gradient(180deg, rgba(245, 240, 232, 0.04) 0%, rgba(8, 8, 8, 0) 18%, rgba(8, 8, 8, 0.18) 100%);
@@ -420,7 +425,7 @@
     border-radius: 2rem;
     border: 1px solid rgba(255, 255, 255, 0.14);
     background:
-      radial-gradient(circle at top, rgba(232, 89, 60, 0.24) 0%, transparent 38%),
+      radial-gradient(circle at top, rgba(140, 35, 64, 0.24) 0%, transparent 38%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(13, 13, 13, 0.9) 42%, rgba(7, 7, 7, 0.98) 100%);
     box-shadow:
       0 40px 84px -34px rgba(0, 0, 0, 0.72),
@@ -643,7 +648,7 @@
 
   .hero-bleed-fallback {
     background:
-      radial-gradient(circle at 68% 24%, rgba(232, 89, 60, 0.16) 0%, transparent 20%),
+      radial-gradient(circle at 68% 24%, rgba(140, 35, 64, 0.16) 0%, transparent 20%),
       radial-gradient(circle at 52% 84%, rgba(255, 255, 255, 0.05) 0%, transparent 24%),
       #050505;
   }
@@ -658,14 +663,14 @@
 
   .hero-bleed-scrim-base {
     background:
-      radial-gradient(circle at 66% 30%, rgba(232, 89, 60, 0.12) 0%, transparent 18%),
+      radial-gradient(circle at 66% 30%, rgba(140, 35, 64, 0.12) 0%, transparent 18%),
       linear-gradient(90deg, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.1) 16%, rgba(0, 0, 0, 0.08) 84%, rgba(0, 0, 0, 0.42) 100%),
       linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, transparent 18%, transparent 72%, rgba(0, 0, 0, 0.58) 100%);
   }
 
   .hero-bleed--vector .hero-bleed-scrim-base {
     background:
-      radial-gradient(circle at 66% 31%, rgba(232, 89, 60, 0.1) 0%, transparent 18%),
+      radial-gradient(circle at 66% 31%, rgba(140, 35, 64, 0.1) 0%, transparent 18%),
       linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.06) 16%, rgba(0, 0, 0, 0.03) 84%, rgba(0, 0, 0, 0.36) 100%),
       linear-gradient(180deg, rgba(0, 0, 0, 0.24) 0%, transparent 16%, transparent 74%, rgba(0, 0, 0, 0.56) 100%);
   }
@@ -832,7 +837,7 @@
   /* ——— Feeling section — dramatic typographic glow ——— */
   .home-feeling-glow {
     background:
-      radial-gradient(ellipse 60% 50% at 50% 50%, rgba(232, 89, 60, 0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 50% at 50% 50%, rgba(140, 35, 64, 0.04) 0%, transparent 70%),
       radial-gradient(ellipse 40% 60% at 50% 45%, rgba(212, 162, 78, 0.03) 0%, transparent 60%);
   }
 
@@ -1223,7 +1228,7 @@
     min-height: 48px;
     border-radius: 12px;
     border: none;
-    background: var(--color-clay, #b77a67);
+    background: var(--color-clay-action, #8C2340);
     color: #fff;
     font-family: var(--font-label);
     font-size: 0.75rem;
@@ -1338,7 +1343,7 @@
     max-width: 480px;
     margin: 0 auto;
     padding: 0.625rem 0.875rem;
-    background: var(--color-chalk, #f4efe7);
+    background: var(--color-chalk, #FEE5E2);
     border: 1px solid color-mix(in srgb, var(--color-stone) 65%, transparent);
     border-radius: 18px;
     box-shadow: 0 -4px 24px rgba(26, 26, 26, 0.12), 0 12px 40px -12px rgba(26, 26, 26, 0.18);
@@ -1383,7 +1388,7 @@
   }
 
   .sticky-atc-size--prompt {
-    color: var(--color-ember, #e8593c);
+    color: var(--color-ember, #8C2340);
     font-weight: 500;
   }
 
@@ -1455,7 +1460,7 @@
       right: 0;
       z-index: 80;
       padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
-      background: var(--color-chalk, #f4efe7);
+      background: var(--color-chalk, #FEE5E2);
       border-top: 1px solid color-mix(in srgb, var(--color-stone) 50%, transparent);
       box-shadow: 0 -4px 16px rgba(26, 26, 26, 0.1);
     }

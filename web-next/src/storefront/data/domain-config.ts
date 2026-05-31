@@ -65,14 +65,14 @@ export function fillPdpCopyTemplate(template: string, vars: Record<string, strin
 }
 
 export const CART_SCHEMA = {
-  trustStripItems: ['14-day exchange — see policy', 'COD when shown at checkout', 'Artist-made design'] as const,
+  trustStripItems: ['14-day exchange — see policy', 'Final payment methods confirmed at checkout', 'Artist-made design'] as const,
 
 } as const;
 
 export const MINI_CART_SCHEMA = {
 
-  trustItems: ['14-day exchange — see policy', 'COD when shown at checkout', 'Secure checkout'] as const,
-  trustItemsAr: ['استبدال مجاني ١٤ يوم', 'الدفع عند الاستلام', 'دفع آمن'] as const,
+  trustItems: ['14-day exchange — see policy', 'Final payment methods confirmed at checkout', 'Secure checkout'] as const,
+  trustItemsAr: ['استبدال خلال ١٤ يوم — راجع السياسة', 'طرق الدفع النهائية بتتأكد في صفحة الدفع', 'دفع آمن'] as const,
 } as const;
 
 export const OCCASION_SCHEMA = {

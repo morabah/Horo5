@@ -210,9 +210,9 @@
 
 /* Hero-only CTA: light cream button on dark hero background */
 .home-hero .home-hero__cta.button {
-  background-color: #f4efe7;
-  color: #1f1c1a;
-  border-color: #f4efe7;
+  background-color: #FEE5E2;
+  color: #4F111F;
+  border-color: #FEE5E2;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 

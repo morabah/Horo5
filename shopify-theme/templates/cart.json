@@ -105,7 +105,7 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "COD when shown at checkout",
+            "label": "Final payment methods confirmed at checkout",
             "subtext": ""
           }
         },
