@@ -46,10 +46,10 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
   home: {
     pageKey: "home",
     title: {
-      en: "WEAR WHAT YOU FEEL",
+      en: "Wear What You Feel",
       ar: HORO_V19_SOUNDBITES.primary.ar,
     },
-    titleLayout: "mantra-grid",
+    titleLayout: "standard",
     subtitle: {
       en: HORO_V19_HERO_SUBTITLE.en,
       ar: HORO_V19_HERO_SUBTITLE.ar,
@@ -59,8 +59,8 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
       href: "/products",
     },
     secondaryCta: {
-      label: { en: "Shop by Feeling", ar: "تسوق حسب الشعور" },
-      href: "/feelings",
+      label: { en: "Find a Gift", ar: "اعثر على هدية" },
+      href: "/gifts",
     },
     desktopImage: {
       src: "/images/heroes/home-hero.png",
@@ -70,7 +70,7 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
       },
     },
     focalPoint: "center",
-    theme: "dark",
+    theme: "light",
   },
 
   shop: {

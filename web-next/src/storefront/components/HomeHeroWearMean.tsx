@@ -8,15 +8,14 @@ import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
-import { getProducts, productHasRealImage } from '../data/site';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
-import { formatEgp } from '../utils/formatPrice';
+import { BRAND_COPY } from '../data/brand';
 
 /** Tiny dark blur placeholder matching the hero's muted aesthetic. */
 const HERO_BLUR_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFklEQVR4nGMQERP6TwxmGFUoQtfgAQAHCnsNFNbySQAAAABJRU5ErkJggg==';
 
-const HERO_NAV_OFFSET = 'pt-[max(5rem,calc(env(safe-area-inset-top,0px)+4.25rem))]';
+const HERO_NAV_OFFSET = 'pt-[max(3.6rem,calc(env(safe-area-inset-top,0px)+3.6rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
 type HeroPayloadCta = {
@@ -88,6 +87,28 @@ function isLegacyHeroBody(value: string | undefined): boolean {
   return Boolean(value && /\bCODs?\b/i.test(value));
 }
 
+/** Split “Wear What You Feel” across two lines like the homepage mockup. */
+function HeroTitleDisplay({ title }: { title: string }) {
+  const normalized = title.replace(/\s+/g, ' ').trim();
+  const match = normalized.match(/^(wear what)\s+(you feels?)$/i);
+  if (match) {
+    return (
+      <>
+        <span className="block">Wear What</span>
+        <span className="block">You Feel</span>
+      </>
+    );
+  }
+  return normalized;
+}
+
+function heroPromiseWithoutRhythm(value: string) {
+  return value
+    .replace(/\s*Find your rhythm\.?\s*$/i, '')
+    .replace(/\s*Find Your Rhythm\.?\s*$/i, '')
+    .trim();
+}
+
 export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -102,32 +123,20 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
   const ctaFromVariant = (key: 'primaryCta' | 'secondaryCta' | 'tertiaryCta') =>
     asHeroPayloadCta(payloadVariant?.[key] ?? sectionPayload?.[key]);
 
-  const priceRange = (() => {
-    // Match the same "featured" merchandising slice users see first on home.
-    const products = getProducts().filter(productHasRealImage).slice(0, 8);
-    if (products.length === 0) return null;
-    return Math.min(...products.map((p) => p.priceEgp));
-  })();
-
   const sectionBody = fromSection(section?.body);
   const subtitleBase = isLegacyHeroBody(sectionBody) ? t(config.subtitle) : sectionBody ?? t(config.subtitle);
-  const priceToken = priceRange
-    ? isArabic
-      ? `من ${formatEgp(priceRange)}`
-      : `From ${formatEgp(priceRange)}`
-    : null;
   const primaryPayloadCta = ctaFromVariant('primaryCta');
   const secondaryPayloadCta = ctaFromVariant('secondaryCta');
-  const tertiaryPayloadCta = ctaFromVariant('tertiaryCta');
   const title =
     localizedPayloadText(payloadVariant?.title ?? payloadVariant?.headline, locale as 'en' | 'ar') ??
     fromSection(section?.title) ??
     t(config.title) ??
     'Wear What You Feel';
-  const promiseLine =
+  const promiseLine = heroPromiseWithoutRhythm(
     localizedPayloadText(payloadVariant?.body ?? payloadVariant?.subtitle, locale as 'en' | 'ar') ??
-    subtitleBase ??
-    copy.home.heroPromiseLine;
+      subtitleBase ??
+      copy.home.heroPromiseLine,
+  );
   const rhythmLine =
     (locale === 'ar'
       ? payloadString(sectionPayload?.soundbite_ar)
@@ -139,21 +148,26 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     t(config.primaryCta?.label) ??
     copy.home.heroPrimaryCta;
   const primaryHref = primaryPayloadCta?.href ?? section?.primaryCta?.href ?? config.primaryCta?.href ?? '/products';
-  const secondaryCtaLabel =
+  const configuredSecondaryCtaLabel =
     localizedPayloadText(secondaryPayloadCta?.label, locale as 'en' | 'ar') ??
     fromSection(section?.secondaryCta?.label) ??
     t(config.secondaryCta?.label) ??
     copy.home.heroSecondaryCta;
-  const secondaryHref = secondaryPayloadCta?.href ?? section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/feelings';
-  const tertiaryCtaLabel =
-    localizedPayloadText(tertiaryPayloadCta?.label, locale as 'en' | 'ar') ??
-    copy.home.heroGiftCta;
-  const tertiaryHref = tertiaryPayloadCta?.href ?? '/gifts';
-  const heroImageSrc = section?.image?.src ?? config.desktopImage?.src ?? '/images/heroes/home-hero.png';
+  const secondaryCtaLabel = configuredSecondaryCtaLabel;
+  const configuredSecondaryHref = secondaryPayloadCta?.href ?? section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/feelings';
+  const secondaryHref = configuredSecondaryHref;
+  const heroImageSrc = section?.image?.src ?? config.desktopImage?.src ?? '/images/homepage-reference/hero-right.png';
   const heroImageAlt =
     fromSection(section?.image?.alt) ??
     t(config.desktopImage?.alt) ??
     'Model wearing HORO graphic tee — Wear What You Feel';
+
+  const canvasLine =
+    (locale === 'ar'
+      ? payloadString(sectionPayload?.canvas_ar)
+      : payloadString(sectionPayload?.canvas_en)) ??
+    copy.home.heroCanvasLine ??
+    BRAND_COPY.canvasLine;
 
   return (
     <section
@@ -161,89 +175,51 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
       aria-labelledby="home-hero-heading"
       data-test-id={`home-hero-${safeTestId(heroVariant)}`}
       data-hero-variant={heroVariant}
-      className={`home-hero-wear-feel relative isolate flex min-h-svh w-full flex-col overflow-hidden ${HERO_NAV_OFFSET}`}
+      className={`home-hero-split ${HERO_NAV_OFFSET}`}
     >
-      <Image
-        src={heroImageSrc}
-        alt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
-        fill
-        sizes="100vw"
-        priority
-        placeholder="blur"
-        blurDataURL={HERO_BLUR_DATA_URL}
-        className="absolute inset-0 h-full w-full object-cover object-[50%_70%] md:object-[50%_50%]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(9,10,8,0.35)_0%,rgba(9,10,8,0.2)_35%,rgba(9,10,8,0.45)_100%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 z-2 h-[34%] bg-linear-to-b from-black/65 via-black/25 to-transparent md:hidden"
-      />
-
-      <h1 id="home-hero-heading" className="sr-only">
-        {title} — {promiseLine}
-      </h1>
-
-      <div className="relative z-10 flex min-h-0 flex-1 items-end justify-start px-4 pb-[max(2rem,env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-10 lg:pb-14">
-        {config.titleLayout === 'mantra-grid' ? (
-          <div className="pointer-events-none absolute inset-x-0 top-[max(4.1rem,calc(env(safe-area-inset-top,0px)+3.55rem))] z-20 px-4 md:hidden">
-            <div className="mx-auto w-full max-w-[92vw]">
-              <p className="grid grid-cols-2 gap-x-16 gap-y-1 font-headline text-[clamp(1.75rem,9.5vw,2.8rem)] font-semibold uppercase leading-[0.88] tracking-tight text-horo-breath drop-shadow-[0_6px_18px_rgba(0,0,0,0.6)]">
-                <span className="block text-left">WEAR</span>
-                <span className="block text-right">WHAT</span>
-                <span className="block text-left">YOU</span>
-                <span className="block text-right">FEEL</span>
-              </p>
-            </div>
-          </div>
-        ) : null}
-        <div className="w-full max-w-[92vw] text-left sm:max-w-[80vw] md:max-w-[min(48ch,40vw)]">
-          <p className="font-body text-[clamp(1.12rem,1.7vw,2.05rem)] font-medium leading-[1.18] text-horo-breath drop-shadow-[0_4px_18px_rgba(0,0,0,0.4)]">
-            <span>{promiseLine}</span>
-            {priceToken ? <span className="text-[0.86em] font-medium text-horo-breath/88"> · {priceToken}</span> : null}
+      <div className="mx-auto grid max-w-[1400px] lg:grid-cols-2 lg:items-stretch">
+        <div className="home-hero-split__copy order-2 md:order-1">
+          <h1 id="home-hero-heading" className="home-hero-split__title">
+            <HeroTitleDisplay title={title} />
+          </h1>
+          <p className="home-hero-split__subtitle mt-5 max-w-[560px]">
+            {promiseLine}
           </p>
-          <p className="mt-2 font-label text-[13px] font-medium uppercase tracking-[0.18em] text-horo-breath/85">
-            {rhythmLine}
-          </p>
-          <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <p className="home-hero-split__rhythm mt-4">{rhythmLine}</p>
+          <p className="home-hero-split__canvas mt-2">{canvasLine}</p>
+          <div className="home-hero-split__actions mt-8 flex flex-wrap gap-3">
             <Link
               href={primaryHref}
               onClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}
-              className="font-body inline-flex min-h-14 items-center justify-center rounded-md bg-horo-breath px-7 py-3 text-[14px] font-semibold text-horo-root transition-colors duration-200 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-breath"
+              className="home-btn home-btn--primary font-body inline-flex min-h-[42px] items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white transition-[transform,background-color] hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
             >
               {primaryCtaLabel}
             </Link>
             <Link
               href={secondaryHref}
               onClick={() => trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant)}
-              className="font-body inline-flex min-h-11 items-center text-[14px] font-medium text-horo-breath/85 underline decoration-horo-breath/40 underline-offset-4 transition-colors duration-200 hover:text-horo-breath hover:decoration-horo-breath/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-breath"
+              className="home-btn home-btn--secondary font-body inline-flex min-h-[42px] items-center justify-center rounded-[4px] border border-horo-pulse bg-transparent px-5 py-2 text-[12px] font-bold text-horo-root transition-[transform,background-color,color] hover:bg-horo-root hover:text-horo-breath focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
             >
               {secondaryCtaLabel}
-              <span aria-hidden className="ml-1.5">→</span>
-            </Link>
-            <Link
-              href={tertiaryHref}
-              onClick={() => trackHeroCtaClick(tertiaryCtaLabel, tertiaryHref, heroVariant)}
-              className="font-body inline-flex min-h-11 items-center rounded-md border border-horo-breath/45 px-5 py-2.5 text-[14px] font-medium text-horo-breath transition-colors duration-200 hover:border-horo-breath/85 hover:bg-horo-breath/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-breath"
-            >
-              {tertiaryCtaLabel}
             </Link>
           </div>
         </div>
+
+        <div className="home-hero-split__media order-1 md:order-2">
+          <Image
+            src={heroImageSrc}
+            alt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
+            fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            priority
+            placeholder="blur"
+            blurDataURL={HERO_BLUR_DATA_URL}
+            className="h-full w-full object-cover object-[50%_38%]"
+          />
+        </div>
       </div>
 
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-5 h-[22%] bg-linear-to-t from-black/50 to-transparent"
-      />
-
-      <div
-        id={HERO_BOTTOM_SENTINEL_ID}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-px"
-      />
+      <div id={HERO_BOTTOM_SENTINEL_ID} aria-hidden="true" className="h-px w-full" />
     </section>
   );
 }

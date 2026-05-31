@@ -9,7 +9,13 @@ describe("navLinks", () => {
   })
 
   it("keeps the primary navigation label model aligned with the audited IA", () => {
-    expect([...NAV_PRIMARY_ROUTE_KEYS]).toEqual(["products", "collection", "gifts", "about"])
+    expect([...NAV_PRIMARY_ROUTE_KEYS]).toEqual([
+      "products",
+      "collection",
+      "gifts",
+      "about",
+      "sizeGuide",
+    ])
   })
 
   it("keeps drawer keys as a superset of primary nav keys", () => {

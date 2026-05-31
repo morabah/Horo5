@@ -20,7 +20,7 @@ import { HomePrimaryRoutes } from '../components/HomePrimaryRoutes';
 import { HomeSeenOnYou } from '../components/HomeSeenOnYou';
 import { HomeStartHere } from '../components/HomeStartHere';
 import { HomeTrustRibbon } from '../components/HomeTrustRibbon';
-import { HomeWhyHoro } from '../components/HomeWhyHoro';
+import { HomeOurStory } from '../components/home/HomeOurStory';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import type { RuntimeCatalog, StorefrontHomepageSection } from '../data/catalog-types';
 import {
@@ -38,7 +38,7 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
  * Default homepage section list.
  *
  * Keep the launch-mode storefront short and shop-led (audit P1):
- * hero · trust ribbon · primary routes · founding drop grid · feeling quiz · feeling grid · latest drop · gift block.
+ * hero · trust ribbon · founding drop · feeling grid · gift block · our story.
  *
  * Operators can override the order or re-enable additional sections from the
  * homepage_section module. `store.metadata.homepage.sectionsEnabled` remains a
@@ -47,12 +47,10 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
 const HOME_DEFAULT_SECTIONS: readonly string[] = [
   'hero',
   'trust_ribbon',
-  'primary_routes',
   'founding_drop',
-  'feeling_quiz',
   'feeling_grid',
-  'latest_drop',
   'gift_block',
+  'our_story',
 ];
 
 type HomeSectionRenderer = (ctx: { initialProducts?: Product[]; section?: StorefrontHomepageSection }) => ReactNode;
@@ -67,7 +65,8 @@ const HOME_SECTION_COMPONENTS: Record<string, HomeSectionRenderer> = {
   feeling_grid: ({ section }) => <HomeFeelingCards section={section} />,
   feeling_quiz: () => <HomeFeelingQuiz />,
   occasion_grid: () => <HomeOccasionCards />,
-  why_horo: () => <HomeWhyHoro />,
+  why_horo: ({ section }) => <HomeOurStory section={section} />,
+  our_story: ({ section }) => <HomeOurStory section={section} />,
   gift_block: ({ section }) => <HomeGiftBlock section={section} />,
   latest_drop: () => <HomeLatestDrop />,
   pillar_surface_map: () => <PillarSurfaceMap />,

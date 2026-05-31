@@ -223,12 +223,13 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
     products: copy.shell.shopAll,
     collection: copy.shell.shopByFeeling,
     occasions: copy.shell.shopByMoment,
-    gifts: locale === 'ar' ? 'هدايا' : 'Gifts',
+    gifts: copy.shell.giftNav,
     drops: locale === 'ar' ? 'إصدارات جديدة' : 'New Drop',
     about: copy.shell.about,
+    sizeGuide: locale === 'ar' ? copy.shell.sizeGuide : 'Size & Help',
     search: copy.shell.search,
     cart: copy.shell.cart,
-  }), [copy.shell.about, copy.shell.cart, copy.shell.home, copy.shell.search, copy.shell.shopAll, copy.shell.shopByFeeling, copy.shell.shopByMoment, locale]);
+  }), [copy.shell.about, copy.shell.cart, copy.shell.giftNav, copy.shell.home, copy.shell.search, copy.shell.shopAll, copy.shell.shopByFeeling, copy.shell.shopByMoment, copy.shell.sizeGuide, locale]);
   const primaryNavItems = useMemo(() => {
     const fromSettings = navItemsFromSettings(navigation?.primary, locale);
     return fromSettings.length > 0
@@ -534,7 +535,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
             <AppIcon name={menuVisible && menuPanelOpen ? 'close' : 'menu'} className="h-6 w-6" />
           </button>
           <Link href="/" className="flex min-w-0 flex-1 justify-center" aria-label={copy.shell.home}>
-            <BrandLogo variant={logoVariant} />
+            <BrandLogo variant={logoVariant} showArabic={false} className="text-[1.15rem]" />
           </Link>
           <div className="flex shrink-0 items-center gap-1">
             <button
@@ -575,10 +576,10 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
         </div>
       </div>
 
-      <div className="mx-auto hidden max-w-[1920px] items-center gap-6 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:flex md:gap-8 md:py-4 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
+      <div className="mx-auto hidden max-w-[1920px] items-center gap-6 py-2.5 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:flex md:gap-8 md:py-2.5 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
         <div className="flex shrink-0 items-center gap-4">
           <Link href="/" className="flex shrink-0 items-center" aria-label={copy.shell.home}>
-            <BrandLogo variant={logoVariant} />
+            <BrandLogo variant={logoVariant} showArabic={false} className="text-[1.35rem]" />
           </Link>
         </div>
 
@@ -674,26 +675,13 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-2 md:gap-2 lg:gap-3">
-          <div className="hidden lg:flex">
-            <LocaleToggle
-              locale={locale}
-              setLocale={setLocale}
-              tone="dark"
-              label={copy.shell.language}
-            />
-          </div>
           <button
             type="button"
-            className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
-            aria-label={mounted && wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
+            aria-label="Wishlist"
             onClick={() => router.push('/wishlist')}
           >
-            <AppIcon name="favorite" className="h-6 w-6" />
-            {mounted && wishlistCount > 0 ? (
-              <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
-                {wishlistCount > 99 ? '99+' : wishlistCount}
-              </span>
-            ) : null}
+            <AppIcon name="person" className="h-6 w-6" />
           </button>
           <button
             type="button"

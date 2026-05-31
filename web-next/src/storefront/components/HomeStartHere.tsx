@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { HomeFoundingProductCard } from './home/HomeFoundingProductCard';
 import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
@@ -10,9 +11,7 @@ import {
   productHasRealImage,
   type Product,
 } from '../data/site';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
-import { formatEgp } from '../utils/formatPrice';
-import { TeeImageFrame } from './TeeImage';
+import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 
 const NON_COMPARISON_IMAGE_PATTERN = /(?:walking|woman_street|emotions_vibe_3|close|detail|macro|hero-model)/i;
 const COMPARISON_IMAGE_PATTERN = /(?:^|[/-])bg_(?:tee|vibe)_/i;
@@ -22,20 +21,60 @@ function hasLikelyComparisonImage(product: Product) {
   return productHasRealImage(product) && COMPARISON_IMAGE_PATTERN.test(src) && !NON_COMPARISON_IMAGE_PATTERN.test(src);
 }
 
-function resolveHomeProducts(inputProducts?: Product[]) {
-  // Medusa returns catalog products already sorted by product.metadata.catalogOrder.
-  // Preserve that order while prioritizing products with merchandising, fit, and comparison-first imagery.
-  const source = (inputProducts && inputProducts.length > 0 ? inputProducts : getProducts()).filter(productHasRealImage);
-  const comparisonSource = source.filter(hasLikelyComparisonImage);
-  const pool = comparisonSource.length >= 4 ? comparisonSource : source;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function payloadProductHandles(section: StorefrontHomepageSection | undefined) {
+  const payload = isRecord(section?.payload) ? section.payload : null;
+  const raw =
+    (Array.isArray(payload?.productHandles) && payload.productHandles) ||
+    (Array.isArray(payload?.productSlugs) && payload.productSlugs) ||
+    (Array.isArray(payload?.handles) && payload.handles) ||
+    (Array.isArray(payload?.products) && payload.products) ||
+    (Array.isArray(payload?.items) && payload.items) ||
+    [];
+
+  return raw
+    .map((item) => {
+      if (typeof item === 'string') return item.trim();
+      if (!isRecord(item)) return '';
+      const value = item.slug ?? item.handle ?? item.productHandle ?? item.productSlug;
+      return typeof value === 'string' ? value.trim() : '';
+    })
+    .filter(Boolean);
+}
+
+function payloadLimit(section: StorefrontHomepageSection | undefined) {
+  const payload = isRecord(section?.payload) ? section.payload : null;
+  const raw = payload?.limit ?? payload?.productLimit;
+  const parsed = typeof raw === 'number' || typeof raw === 'string' ? Number(raw) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? Math.min(Math.trunc(parsed), 12) : 5;
+}
+
+function resolveHomeProducts(inputProducts: Product[] | undefined, section: StorefrontHomepageSection | undefined) {
+  const source = inputProducts && inputProducts.length > 0 ? inputProducts : getProducts();
+  const productBySlug = new Map(source.map((product) => [product.slug, product] as const));
   const selected: Product[] = [];
   const seen = new Set<string>();
-  const add = (product: Product) => {
-    if (seen.has(product.slug)) return;
+  const add = (product: Product | undefined) => {
+    if (!product || seen.has(product.slug)) return;
     selected.push(product);
     seen.add(product.slug);
   };
 
+  for (const handle of payloadProductHandles(section)) {
+    add(productBySlug.get(handle));
+  }
+
+  const realImageSource = source.filter(productHasRealImage);
+  const comparisonSource = realImageSource.filter(hasLikelyComparisonImage);
+  const pool =
+    comparisonSource.length >= 4
+      ? comparisonSource
+      : realImageSource.length >= 4
+        ? realImageSource
+        : source;
   pool
     .filter((product) => product.merchandisingBadge?.trim() || product.useCase?.trim())
     .forEach(add);
@@ -44,7 +83,7 @@ function resolveHomeProducts(inputProducts?: Product[]) {
     .forEach(add);
   pool.forEach(add);
 
-  return selected.slice(0, 6);
+  return selected.slice(0, payloadLimit(section));
 }
 
 export function HomeStartHere({ products, section }: { products?: Product[]; section?: StorefrontHomepageSection }) {
@@ -53,7 +92,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
   const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
   const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
-  const featuredProducts = resolveHomeProducts(products);
+  const featuredProducts = resolveHomeProducts(products, section);
 
   if (featuredProducts.length === 0) {
     return null;
@@ -61,97 +100,39 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
 
   return (
     <section
+      id="founding-drop"
       aria-labelledby="home-start-here-title"
-      className="border-t border-stone/20 bg-papyrus px-4 py-12 sm:px-5 md:py-14 lg:px-8"
+      className="home-section border-t border-stone/15 bg-horo-white px-4 py-6 sm:px-6 md:py-7 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="font-label text-[12px] font-semibold uppercase tracking-[0.2em] text-label">
-              {sectionEyebrow ?? copy.home.startHereEyebrow}
-            </p>
-            <h2
-              id="home-start-here-title"
-              data-reveal
-              className="font-headline mt-2 text-[1.6rem] font-semibold leading-tight tracking-tight text-obsidian md:text-[1.75rem]"
-            >
+            <p className="home-section-eyebrow">{sectionEyebrow ?? copy.home.startHereEyebrow}</p>
+            <h2 id="home-start-here-title" data-reveal className="home-section-subtitle mt-2">
               {sectionTitle ?? copy.home.startHereTitle}
             </h2>
           </div>
           <Link
             href={section?.primaryCta?.href ?? '/products'}
-            className="font-body inline-flex min-h-11 w-fit items-center justify-center text-sm font-medium text-deep-teal underline-offset-4 transition-colors hover:text-obsidian hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+            className="home-section-link font-body inline-flex min-h-11 w-fit items-center justify-center text-sm font-semibold text-horo-pulse transition-colors hover:text-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
           >
-            {sectionCta ?? copy.shell.shopAll}
+            {sectionCta ?? copy.home.startHereViewAll}
+            <span aria-hidden className="ms-1">
+              →
+            </span>
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 items-stretch gap-x-4 gap-y-8 sm:gap-x-5 sm:gap-y-10 lg:grid-cols-3">
+        <div className="home-founding-grid">
           {featuredProducts.map((product, index) => {
-            const imageSrc = getProductComparisonImageSrc(product);
-            const reveal = (['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4'] as const)[index % 4];
-
+            const reveal = (['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5'] as const)[index % 5];
             return (
-              <article
+              <HomeFoundingProductCard
                 key={product.slug}
-                className={[
-                  'group flex h-full flex-col',
-                  index >= 4 ? 'hidden sm:flex' : '',
-                ].filter(Boolean).join(' ')}
+                product={product}
+                eager={index < 3}
                 data-reveal={reveal}
-              >
-                <Link
-                  href={`/products/${product.slug}`}
-                  className="block overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                  aria-label={`View ${product.name}`}
-                >
-                  <TeeImageFrame
-                    src={imageSrc}
-                    alt={`HORO "${product.name}" graphic tee`}
-                    w={640}
-                    aspectRatio="4/5"
-                    borderRadius="0.375rem"
-                    eager={index < 4}
-                    objectPosition="center 24%"
-                    frameStyle={{ marginBottom: 0 }}
-                  />
-                </Link>
-
-                <div className="mt-3 flex flex-1 flex-col">
-                  {product.fitLabel?.trim() ? (
-                    <span className="font-label mb-2 inline-flex w-fit max-w-full rounded-md border border-deep-teal/20 bg-white/82 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-deep-teal">
-                      {product.fitLabel.trim()}
-                    </span>
-                  ) : null}
-                  <Link
-                    href={`/products/${product.slug}`}
-                    className="font-headline text-[16px] font-semibold leading-snug tracking-tight text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:text-[18px]"
-                  >
-                    {product.name}
-                  </Link>
-                  <p className="font-headline mt-2 text-[16px] font-semibold text-obsidian md:text-[18px]">
-                    {formatEgp(product.priceEgp)}
-                  </p>
-                  {product.feelsLike && product.feelsLike.length > 0 ? (
-                    <p className="font-label mt-1 text-[9px] font-medium uppercase tracking-[0.16em] text-clay">
-                      {copy.home.feelsLikeLabel}: {product.feelsLike.join(' · ')}
-                    </p>
-                  ) : null}
-                  {product.worksFor && product.worksFor.length > 0 ? (
-                    <p className="font-label mt-0.5 text-[9px] font-medium uppercase tracking-[0.16em] text-clay">
-                      {copy.home.worksForLabel}: {product.worksFor.join(' · ')}
-                    </p>
-                  ) : null}
-                  <div className="mt-auto pt-4">
-                    <Link
-                      href={`/products/${product.slug}`}
-                      className="font-body inline-flex min-h-11 w-full items-center justify-center rounded-md border border-obsidian/80 bg-white px-4 py-2.5 text-sm font-semibold text-obsidian transition-colors hover:bg-obsidian hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                    >
-                      {copy.home.startHereCta}
-                    </Link>
-                  </div>
-                </div>
-              </article>
+              />
             );
           })}
         </div>

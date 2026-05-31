@@ -1,20 +1,19 @@
 /** Trust strip on home — short titles for dark factual badges */
 export const HOME_TRUST_BADGES = [
-  {
-    key: 'artistMade',
-  },
-  {
-    key: 'printedEgypt',
-  },
-  {
-    key: 'paymentAtCheckout',
-  },
-  {
-    key: 'exchange14d',
-  },
-  {
-    key: 'whatsappSupport',
-  },
+  { key: 'artistMade' },
+  { key: 'printedEgypt' },
+  { key: 'clearFitDetails' },
+  { key: 'paymentAtCheckout' },
+  { key: 'whatsappSupport' },
+] as const;
+
+/** Pastel surfaces for homepage feeling tiles (mockup-aligned). */
+export const HOME_FEELING_TILE_SURFACES = [
+  '#f4ede5',
+  '#f8eaea',
+  '#edf1ea',
+  '#eeebf5',
+  '#f7ebe4',
 ] as const;
 
 export const HOME_PRIMARY_ROUTES = [

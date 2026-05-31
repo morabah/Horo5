@@ -4,11 +4,12 @@ export const DICTIONARY = {
   "en": {
     "shell": {
       "home": "Home",
-      "shopAll": "Shop All",
+      "shopAll": "Founding Drop",
       "shopAllIntro": "Our launch collection — original art by Egyptian illustrators, printed in Egypt.",
-      "shopByFeeling": "Feelings",
+      "shopByFeeling": "Shop by Feeling",
       "shopByMoment": "Occasions",
-      "about": "About",
+      "giftNav": "Gift by Meaning",
+      "about": "Our Story",
       "search": "Search",
       "cart": "Cart",
       "menu": "Menu",
@@ -41,7 +42,7 @@ export const DICTIONARY = {
       "heroRhythmLine": HORO_V19_SOUNDBITES.rhythm.en,
       "heroCanvasLine": HORO_V19_SOUNDBITES.canvas.en,
       "heroPrimaryCta": "Shop the Founding Drop",
-      "heroSecondaryCta": "Browse by feeling",
+      "heroSecondaryCta": "Find a Gift",
       "heroGiftCta": "Shop gifts",
       "feelingsEyebrow": "The feelings",
       "feelingsTitle": "Shop by Feeling",
@@ -54,9 +55,9 @@ export const DICTIONARY = {
       "planTitle": "How it works",
       "trustEyebrow": "Why trust HORO",
       "trustTitle": "Why trust HORO",
-      "giftEyebrow": "Thoughtful gifting",
+      "giftEyebrow": "GIFT BY MEANING",
       "giftTitle": "For the person on your mind",
-      "giftCta": "Shop gift-ready pieces",
+      "giftCta": "Find the perfect gift →",
       "studioEyebrow": "Studio proof",
       "studioTitle": "Proof before public praise",
       "inviteCta": "Shop by feeling",
@@ -67,10 +68,11 @@ export const DICTIONARY = {
       "trustBadges": {
         "artistMade": HORO_V19_TRUST_COPY.artistMade.en,
         "printedEgypt": HORO_V19_TRUST_COPY.printedEgypt.en,
+        "clearFitDetails": "Clear fit details",
         "paymentAtCheckout": HORO_V19_TRUST_COPY.paymentAtCheckout.en,
         "codAvailable": HORO_V19_TRUST_COPY.paymentAtCheckout.en,
         "exchange14d": HORO_V19_TRUST_COPY.exchangePolicy.en,
-        "whatsappSupport": HORO_V19_TRUST_COPY.whatsappSupport.en
+        "whatsappSupport": "WhatsApp size help"
       },
       "routesFeelingLabel": "Shop by Feeling",
       "routesFeelingBlurb": "Start with the feeling, then choose the tee that fits it.",
@@ -79,14 +81,57 @@ export const DICTIONARY = {
       "routesGiftLabel": "Shop Gifts",
       "routesGiftBlurb": "Pieces chosen for the person on your mind.",
       "routesBrowseAll": "Prefer to browse everything? Shop All",
-      "startHereEyebrow": "FOUNDING DROP",
-      "startHereTitle": "The first HORO pieces",
+      "startHereEyebrow": "THE FOUNDING DROP",
+      "startHereTitle": "Our first 5 pieces. Limited quantities.",
+      "startHereViewAll": "View all",
       "startHereCta": "View Tee",
+      "startHereAddCta": "Add to cart",
+      "feelingsRhythmEyebrow": "START WITH YOUR RHYTHM",
+      "giftHeadline": "More than a gift.",
+      "giftHeadlineLine2": "It's a feeling they'll wear.",
+      "giftBody": "Thoughtful designs for birthdays, anniversaries, graduations, and just because.",
+      "ourStoryEyebrow": "OUR STORY",
+      "ourStoryTitle": "Ritual. Rhythm. Connection.",
+      "ourStoryBody": "HORO is a wearable-art brand born in Egypt. We turn emotions into art and art into pieces you live in. Every design is a ritual. Every wear is a reminder. We are the canvas. You are the story.",
+      "ourStoryCta": "Read our story",
+      "ourStoryPillars": {
+        "localArtists": {
+          "title": "Art that speaks feelings",
+          "body": "Original illustrations for real emotions."
+        },
+        "madeToFeelPersonal": {
+          "title": "Made with intention",
+          "body": "Mindful materials. Responsible production."
+        },
+        "realProofOnly": {
+          "title": "For every version of you",
+          "body": "Pieces that move with your moments — not one generic graphic for everyone."
+        }
+      },
+      "serviceTrust": {
+        "fitGuide": {
+          "title": "Find your fit with confidence",
+          "body": "Clear size guide and model references on every product page.",
+          "href": "/size-guide"
+        },
+        "delivery": {
+          "title": "Delivery across Egypt",
+          "body": "Reliable delivery. Track your order from our studio to your door.",
+          "href": "/faq"
+        },
+        "exchange": {
+          "title": "Easy exchanges",
+          "body": "Not the right fit? We've got you. Hassle-free size exchanges.",
+          "href": "/exchange"
+        }
+      },
       "feelingsCta": "See all feelings",
+      "footerNewsletterTitle": "STAY IN RHYTHM",
+      "footerNewsletterBody": "Get first access to drops, stories, and offers.",
+      "footerMadeIn": "Made in Egypt",
       "occasionsTitle": "For the Moment",
       "occasionsCta": "Shop the moment",
       "whyHoroTitle": "Why HORO, not a normal printed T-shirt?",
-      "giftHeadline": "Meaningful pieces for meaningful moments",
       "feelsLikeLabel": "Feels like",
       "worksForLabel": "Works for",
       "artByLabel": "Art by",
@@ -686,11 +731,12 @@ export const DICTIONARY = {
   "ar": {
     "shell": {
       "home": "الرئيسية",
-      "shopAll": "تسوّق الكل",
+      "shopAll": "الإطلاق الأول",
+      "giftNav": "هدية لها معنى",
       "shopAllIntro": "أول مجموعة إطلاق من HORO — تصاميم أصلية لفنانين مصريين، مطبوعة في مصر.",
-      "shopByFeeling": "المشاعر",
+      "shopByFeeling": "تسوّق حسب الشعور",
       "shopByMoment": "المناسبات",
-      "about": "عن HORO",
+      "about": "قصتنا",
       "search": "البحث",
       "cart": "السلة",
       "menu": "القائمة",
@@ -723,7 +769,7 @@ export const DICTIONARY = {
       "heroRhythmLine": HORO_V19_SOUNDBITES.rhythm.ar,
       "heroCanvasLine": HORO_V19_SOUNDBITES.canvas.ar,
       "heroPrimaryCta": "تسوّق الإطلاق الأول",
-      "heroSecondaryCta": "تصفح حسب الشعور",
+      "heroSecondaryCta": "اعثر على هدية",
       "heroGiftCta": "تسوّق الهدايا",
       "feelingsEyebrow": "المشاعر",
       "feelingsTitle": "تسوّق حسب الشعور",
@@ -736,9 +782,8 @@ export const DICTIONARY = {
       "planTitle": "كيف يعمل HORO",
       "trustEyebrow": "لماذا تثق في HORO",
       "trustTitle": "لماذا تثق في HORO",
-      "giftEyebrow": "هدايا بمعنى",
       "giftTitle": "للشخص الذي تفكر فيه",
-      "giftCta": "تسوّق القطع الجاهزة للهدايا",
+      "giftCta": "اعثر على الهدية المثالية →",
       "studioEyebrow": "دليل من الاستوديو",
       "studioTitle": "الدليل قبل المديح",
       "inviteCta": "تسوّق حسب الشعور",
@@ -749,10 +794,11 @@ export const DICTIONARY = {
       "trustBadges": {
         "artistMade": HORO_V19_TRUST_COPY.artistMade.ar,
         "printedEgypt": HORO_V19_TRUST_COPY.printedEgypt.ar,
+        "clearFitDetails": "تفاصيل مقاس واضحة",
         "paymentAtCheckout": HORO_V19_TRUST_COPY.paymentAtCheckout.ar,
         "codAvailable": HORO_V19_TRUST_COPY.paymentAtCheckout.ar,
         "exchange14d": HORO_V19_TRUST_COPY.exchangePolicy.ar,
-        "whatsappSupport": HORO_V19_TRUST_COPY.whatsappSupport.ar
+        "whatsappSupport": "مساعدة المقاس على واتساب"
       },
       "routesFeelingLabel": "تسوّق حسب الشعور",
       "routesFeelingBlurb": "ابدأ بالمزاج، ثم اختر التيشيرت الذي يشبهه.",
@@ -761,14 +807,58 @@ export const DICTIONARY = {
       "routesGiftLabel": "تسوّق الهدايا",
       "routesGiftBlurb": "قطع مختارة للشخص اللي في بالك.",
       "routesBrowseAll": "تفضّل تصفح كل شيء؟ تسوّق الكل",
-      "startHereEyebrow": "إطلاق أولي",
-      "startHereTitle": "أول قطع HORO",
+      "startHereEyebrow": "الإطلاق الأول",
+      "startHereTitle": "أول ٥ قطع. كميات محدودة.",
+      "startHereViewAll": "عرض الكل",
       "startHereCta": "شاهد التيشيرت",
+      "startHereAddCta": "أضف إلى السلة",
+      "feelingsRhythmEyebrow": "ابدأ بإيقاعك",
+      "giftEyebrow": "هدية لها معنى",
+      "giftHeadline": "أكثر من هدية.",
+      "giftHeadlineLine2": "إحساس هيلبسوه.",
+      "giftBody": "تصاميم مدروسة لأعياد الميلاد، التخرج، الذكرى، وكل لحظة تستحق معنى.",
+      "ourStoryEyebrow": "قصتنا",
+      "ourStoryTitle": "طقس. إيقاع. اتصال.",
+      "ourStoryBody": "هورو علامة فنية قابلة للّبس من مصر. بنحوّل المشاعر لفن والفن لقطع تعيش فيها. كل تصميم طقس. كل لبسة تذكير. إحنا القماش. إنت القصة.",
+      "ourStoryCta": "اقرأ قصتنا",
+      "ourStoryPillars": {
+        "localArtists": {
+          "title": "فن يعبّر عن المشاعر",
+          "body": "كل تصميم يبدأ برسّام مصري حقيقي — اسمه على الصفحة، مش مخفي في التفاصيل."
+        },
+        "madeToFeelPersonal": {
+          "title": "مصنوع بنية",
+          "body": "تصفّح حسب الشعور أو اللحظة أو نية الهدية — القطعة المناسبة تلاقيك قبل ما تضيع في الشبكة."
+        },
+        "realProofOnly": {
+          "title": "لكل نسخة منك",
+          "body": "قطع تتحرك مع لحظاتك — مش رسمة عامة للجميع."
+        }
+      },
+      "serviceTrust": {
+        "fitGuide": {
+          "title": "اختار مقاسك بثقة",
+          "body": "دليل مقاسات ومراجع عارضين على كل صفحة منتج.",
+          "href": "/size-guide"
+        },
+        "delivery": {
+          "title": "توصيل في مصر",
+          "body": "توصيل موثوق. تتبع طلبك من الاستوديو لحد باب بيتك.",
+          "href": "/faq"
+        },
+        "exchange": {
+          "title": "استبدال سهل",
+          "body": "المقاس مش مظبوط؟ إحنا معاك. استبدال مقاس بدون تعقيد.",
+          "href": "/exchange"
+        }
+      },
       "feelingsCta": "عرض كل المشاعر",
+      "footerNewsletterTitle": "خليك في الإيقاع",
+      "footerNewsletterBody": "أول وصول للإصدارات والقصص والعروض.",
+      "footerMadeIn": "صُنع في مصر",
       "occasionsTitle": "للحظة",
       "occasionsCta": "تسوّق اللحظة",
       "whyHoroTitle": "لماذا HORO",
-      "giftHeadline": "قطع لها معنى للحظات لها معنى",
       "feelsLikeLabel": "الإحساس",
       "worksForLabel": "مناسب لـ",
       "artByLabel": "تصميم",

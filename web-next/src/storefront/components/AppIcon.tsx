@@ -4,6 +4,7 @@ export type AppIconName =
   | 'menu'
   | 'close'
   | 'search'
+  | 'person'
   | 'shopping_bag'
   | 'straighten'
   | 'layers'
@@ -16,7 +17,10 @@ export type AppIconName =
   | 'link'
   | 'share'
   | 'content_copy'
-  | 'favorite';
+  | 'favorite'
+  | 'instagram'
+  | 'whatsapp'
+  | 'arrow_right';
 
 type AppIconProps = Omit<SVGProps<SVGSVGElement>, 'children'> & {
   name: AppIconName;
@@ -44,6 +48,13 @@ function iconPaths(name: AppIconName) {
         <>
           <circle cx="11" cy="11" r="6.5" />
           <path d="M16 16l4 4" />
+        </>
+      );
+    case 'person':
+      return (
+        <>
+          <circle cx="12" cy="7.75" r="3" />
+          <path d="M5.75 20a6.25 6.25 0 0112.5 0" />
         </>
       );
     case 'shopping_bag':
@@ -147,6 +158,28 @@ function iconPaths(name: AppIconName) {
     case 'favorite':
       return (
         <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+      );
+    case 'instagram':
+      return (
+        <>
+          <rect x="4" y="4" width="16" height="16" rx="4" />
+          <circle cx="12" cy="12" r="3.25" />
+          <path d="M16.9 7.1h.01" />
+        </>
+      );
+    case 'whatsapp':
+      return (
+        <>
+          <path d="M20.5 11.8a8.1 8.1 0 01-12 7.1L4 20l1.2-4.3A8.1 8.1 0 1112.4 20" />
+          <path d="M9.3 8.6c.25-.45.5-.45.75-.45h.55c.18 0 .45.05.68.5l.62 1.45c.1.25.08.45-.05.65l-.38.55c-.12.18-.1.35.05.55.45.72 1.08 1.33 1.85 1.8.22.13.4.16.58-.05l.62-.72c.18-.2.42-.25.66-.15l1.42.66c.28.13.45.32.42.62-.05.5-.38 1.1-.8 1.38-.38.25-1.72.58-3.8-.62-2.08-1.2-3.28-3.08-3.45-4.32-.08-.6.05-1.25.3-1.85z" />
+        </>
+      );
+    case 'arrow_right':
+      return (
+        <>
+          <path d="M5 12h14" />
+          <path d="M13 6l6 6-6 6" />
+        </>
       );
     default:
       return <circle cx="12" cy="12" r="8" />;

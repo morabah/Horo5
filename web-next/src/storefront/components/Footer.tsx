@@ -2,11 +2,13 @@ import Link from 'next/link';
 
 import { BRAND_COPY } from '../data/brand';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { NAV_ROUTE } from '../lib/navLinks';
 import { useRenderTime } from '../runtime/render-time';
+import { AppIcon } from './AppIcon';
 import { BrandLogo } from './BrandLogo';
-import { HomeTrustRibbon } from './HomeTrustRibbon';
+import { HomeFooterNewsletter } from './home/HomeFooterNewsletter';
+import { HomeServiceTrust } from './home/HomeServiceTrust';
 
 export function Footer() {
   const renderTime = useRenderTime();
@@ -19,134 +21,131 @@ export function Footer() {
   const whatsappSupportUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
     ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
     : null;
+
   return (
     <>
-      {/* Late-scroll trust reinforcement (audit P8). Rendered above the dark footer. */}
-      <HomeTrustRibbon />
-    <footer className="bg-obsidian pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 text-chalk sm:pt-32">
-      {/* Brand manifesto — cinematic closing typography */}
-      <div className="mx-auto max-w-[1400px] px-[max(1rem,env(safe-area-inset-left,0px))] sm:px-8 md:px-12 mb-16 sm:mb-24">
-        <p
-          className="footer-watermark-a11y-exempt font-headline text-[clamp(2.5rem,6vw,5rem)] font-medium leading-[1.05] tracking-tight text-clean-white/[0.08] select-none"
-          aria-hidden="true"
-        >
-          {BRAND_COPY.mantra}
-        </p>
-      </div>
-      <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-12 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] font-body sm:gap-20 sm:px-8 md:grid-cols-4 md:px-12">
-        <div className="space-y-8">
-          <Link href="/" className="inline-flex items-center" aria-label={copy.shell.home}>
-            <BrandLogo variant="light" />
-          </Link>
-          <p className="max-w-xs text-sm leading-relaxed text-stone">
-            {BRAND_COPY.footerSummary}
-          </p>
-        </div>
-        <div>
-          <h4 className="font-body mb-8 text-sm font-semibold text-primary">{copy.shell.shopHeading}</h4>
-          <ul className="space-y-4">
-            <li>
-              <Link
-                className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                href={NAV_ROUTE.products.path}
-              >
-                {copy.shell.shopAll}
-              </Link>
-            </li>
-            <li>
-              <Link
-                className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                href={NAV_ROUTE.collection.path}
-              >
-                {copy.shell.shopByFeeling}
-              </Link>
-            </li>
-            <li>
-              <Link
-                className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                href={NAV_ROUTE.gifts.path}
-              >
-                {locale === 'ar' ? 'هدايا' : 'Gifts'}
-              </Link>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-body mb-8 text-sm font-semibold text-primary">{copy.shell.helpHeading}</h4>
-          <ul className="space-y-4">
-            <li>
-              <Link
-                className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                href="/comparison"
-              >
-                {locale === 'ar' ? 'لماذا HORO؟' : 'Why HORO'}
-              </Link>
-            </li>
-            <li>
-              <Link
-                className="font-body text-sm text-stone transition-colors hover:text-papyrus"
-                href="/exchange"
-              >
-                {copy.shell.deliveryReturns}
-              </Link>
-            </li>
-            <li>
-              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" href="/size-guide">
-                {copy.shell.sizeGuide}
-              </Link>
-            </li>
-            <li>
-              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" href="/faq">
-                {copy.shell.faq}
-              </Link>
-            </li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-body mb-8 text-sm font-semibold text-primary">{copy.shell.contactHeading}</h4>
-          <ul className="space-y-4">
-            <li>
-              <Link
-                className="font-body text-sm text-chalk underline decoration-primary underline-offset-8 transition-colors"
-                href={NAV_ROUTE.about.path}
-              >
-                {copy.shell.about}
-              </Link>
-            </li>
-            {whatsappSupportUrl ? (
-              <li>
-                <a className="font-body text-sm text-stone transition-colors hover:text-papyrus" href={whatsappSupportUrl} target="_blank" rel="noreferrer">
-                  {copy.shell.contactWhatsapp}
+      <HomeServiceTrust />
+      <footer className="site-footer-mockup pb-[max(3rem,env(safe-area-inset-bottom))] pt-12 text-horo-breath sm:pt-14">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 font-body sm:px-6 md:grid-cols-5 md:gap-7 lg:px-8">
+          <div className="space-y-4 lg:col-span-1">
+            <Link href="/" className="inline-flex items-center" aria-label={copy.shell.home}>
+              <BrandLogo variant="light" showArabic={false} className="text-[1.45rem]" />
+            </Link>
+            <p className="font-headline text-sm font-semibold text-horo-breath">{BRAND_COPY.mantra}</p>
+            <p className="text-sm leading-relaxed text-horo-breath/88">{BRAND_COPY.canvasLine}</p>
+            <div className="flex flex-wrap gap-3 pt-1 text-sm">
+              {instagramUrl ? (
+                <a className="inline-flex h-6 w-6 items-center justify-center text-horo-breath/88 transition-colors hover:text-white" href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram">
+                  <AppIcon name="instagram" className="h-5 w-5" strokeWidth={1.8} />
                 </a>
-              </li>
-            ) : null}
-            {instagramUrl ? (
-              <li>
-                <a className="font-body text-sm text-stone transition-colors hover:text-papyrus" href={instagramUrl} target="_blank" rel="noreferrer">
-                  Instagram
+              ) : (
+                <span className="inline-flex h-6 w-6 items-center justify-center text-horo-breath/88" aria-hidden>
+                  <AppIcon name="instagram" className="h-5 w-5" strokeWidth={1.8} />
+                </span>
+              )}
+              {whatsappSupportUrl ? (
+                <a className="inline-flex h-6 w-6 items-center justify-center text-horo-breath/88 transition-colors hover:text-white" href={whatsappSupportUrl} target="_blank" rel="noreferrer" aria-label="WhatsApp">
+                  <AppIcon name="whatsapp" className="h-5 w-5" strokeWidth={1.8} />
                 </a>
+              ) : (
+                <span className="inline-flex h-6 w-6 items-center justify-center text-horo-breath/88" aria-hidden>
+                  <AppIcon name="whatsapp" className="h-5 w-5" strokeWidth={1.8} />
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-label mb-4 text-[0.9rem] font-semibold tracking-[0.08em]">{copy.shell.shopHeading}</h4>
+            <ul className="space-y-2.5 text-sm text-horo-breath/88">
+              <li>
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.products.path}>
+                  {copy.shell.shopAll}
+                </Link>
               </li>
-            ) : null}
-            <li>
-              <Link className="font-body text-sm text-stone transition-colors hover:text-papyrus" href="/search">
-                {copy.shell.search}
-              </Link>
-            </li>
-          </ul>
+              <li>
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.collection.path}>
+                  {copy.shell.shopByFeeling}
+                </Link>
+              </li>
+              <li>
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.gifts.path}>
+                  {copy.shell.giftNav}
+                </Link>
+              </li>
+              <li>
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.products.path}>
+                  {locale === 'ar' ? 'كل المنتجات' : 'All Products'}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-label mb-4 text-[0.9rem] font-semibold tracking-[0.08em]">{copy.shell.helpHeading}</h4>
+            <ul className="space-y-2.5 text-sm text-horo-breath/88">
+              <li>
+                <Link className="transition-colors hover:text-white" href="/size-guide">
+                  {locale === 'ar' ? copy.shell.sizeGuide : 'Size & Fit Guide'}
+                </Link>
+              </li>
+              <li>
+                <Link className="transition-colors hover:text-white" href="/faq">
+                  {locale === 'ar' ? 'الشحن والتوصيل' : 'Shipping & Delivery'}
+                </Link>
+              </li>
+              <li>
+                <Link className="transition-colors hover:text-white" href="/exchange">
+                  {copy.shell.deliveryReturns}
+                </Link>
+              </li>
+              <li>
+                <Link className="transition-colors hover:text-white" href="/faq">
+                  {copy.shell.faq}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-label mb-4 text-[0.9rem] font-semibold tracking-[0.08em]">{copy.shell.aboutHeading}</h4>
+            <ul className="space-y-2.5 text-sm text-horo-breath/88">
+              <li>
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.about.path}>
+                  {copy.shell.about}
+                </Link>
+              </li>
+              <li>
+                <Link className="transition-colors hover:text-white" href="/comparison">
+                  {locale === 'ar' ? 'المجلة' : 'The Journal'}
+                </Link>
+              </li>
+              {whatsappSupportUrl ? (
+                <li>
+                  <a className="transition-colors hover:text-white" href={whatsappSupportUrl} target="_blank" rel="noreferrer">
+                    {locale === 'ar' ? copy.shell.contactWhatsapp : 'Contact Us'}
+                  </a>
+                </li>
+              ) : null}
+            </ul>
+          </div>
+
+          <HomeFooterNewsletter />
         </div>
-      </div>
-      <div className="mx-auto mt-12 flex max-w-[1400px] flex-col items-center justify-between gap-4 border-t border-stone/25 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pt-10 font-body text-sm text-stone sm:mt-24 sm:px-8 md:mt-40 md:flex-row md:px-12 md:pt-12">
-        <div>{`© ${year} HORO Egypt. ${BRAND_COPY.footerSignoff}`}</div>
-        <div className="flex flex-wrap justify-center gap-x-12 gap-y-2">
-          <Link className="text-sm text-stone transition-colors hover:text-papyrus" href="/privacy">
-            {copy.shell.privacyPolicy}
-          </Link>
-          <Link className="text-sm text-stone transition-colors hover:text-papyrus" href="/terms">
-            {copy.shell.termsOfService}
-          </Link>
+
+        <div className="mx-auto mt-10 flex max-w-6xl flex-col items-start justify-between gap-4 border-t border-white/12 px-4 pt-6 text-sm text-horo-breath/88 sm:flex-row sm:items-center sm:px-6 lg:px-8">
+          <p>{`© ${year} HORO. ${locale === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}`}</p>
+          <div className="flex flex-wrap gap-4">
+            <Link className="transition-colors hover:text-white" href="/privacy">
+              {copy.shell.privacyPolicy}
+            </Link>
+            <Link className="transition-colors hover:text-white" href="/terms">
+              {copy.shell.termsOfService}
+            </Link>
+          </div>
+          <p>{copy.home.footerMadeIn} ♡</p>
         </div>
-      </div>
-    </footer>
+      </footer>
     </>
   );
 }
