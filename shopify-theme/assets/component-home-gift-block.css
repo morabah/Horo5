@@ -1,0 +1,10 @@
+/* Gift by Meaning banner — web-next HomeGiftBlock parity */
+
+.home-gift-banner__body {
+  margin-top: 1rem;
+  max-width: 28rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #5a5154;
+}

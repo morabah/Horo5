@@ -1,4 +1,5 @@
 {{ 'component-home-founding-drop.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
   assign collection = section.settings.collection
@@ -7,120 +8,84 @@
   if collection != blank
     assign product_count = collection.products_count
   endif
+  assign view_all_url = section.settings.view_all_link
+  if view_all_url == blank and collection != blank
+    assign view_all_url = collection.url
+  endif
 -%}
 
 {%- if product_count > 0 or request.design_mode -%}
-  {%- style -%}
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-    }
-
-    @media screen and (min-width: 750px) {
-      .section-{{ section.id }}-padding {
-        padding-top: {{ section.settings.padding_top }}px;
-        padding-bottom: {{ section.settings.padding_bottom }}px;
-      }
-    }
-  {%- endstyle -%}
-
-  <div
-    id="FoundingDrop-{{ section.id }}"
-    class="horo-section founding-drop color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  <section
+    id="founding-drop"
+    class="home-section home-section--bordered home-section--white section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    aria-labelledby="home-start-here-title-{{ section.id }}"
   >
-    <div class="page-width">
-      {%- if section.settings.eyebrow != blank -%}
-        <p class="founding-drop__eyebrow">{{ section.settings.eyebrow | escape }}</p>
-      {%- endif -%}
+    <div class="home-page__inner">
+      <div class="home-section-header">
+        <div>
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 id="home-start-here-title-{{ section.id }}" class="home-founding-drop__title">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+        </div>
+        {%- if section.settings.view_all_label != blank and view_all_url != blank -%}
+          <a href="{{ view_all_url }}" class="home-section-link">
+            {{ section.settings.view_all_label | escape }}
+            <span aria-hidden="true"> →</span>
+          </a>
+        {%- endif -%}
+      </div>
 
-      {%- if section.settings.heading != blank -%}
-        <h2 class="founding-drop__heading {{ section.settings.heading_size }}">
-          {{ section.settings.heading | escape }}
-        </h2>
-      {%- endif -%}
-
-      {%- if section.settings.subheading != blank -%}
-        <p class="founding-drop__subheading">{{ section.settings.subheading | escape }}</p>
+      {%- if product_count > 0 -%}
+        <div class="home-founding-grid">
+          {%- for product in collection.products limit: product_limit -%}
+            {% render 'horo-founding-product-card',
+              card_product: product,
+              lazy_load: forloop.index > 3,
+              section_id: section.id
+            %}
+          {%- endfor -%}
+        </div>
+      {%- elsif request.design_mode -%}
+        <p>Select the founding-drop collection in section settings.</p>
       {%- endif -%}
     </div>
-
-    {%- if product_count > 0 -%}
-      <div class="founding-drop__scroll-wrapper">
-        <ul
-          class="founding-drop__list founding-drop__list--{{ section.settings.columns_desktop }}-col-desktop"
-          role="list"
-        >
-          {%- for product in collection.products limit: product_limit -%}
-            <li class="founding-drop__item" role="listitem">
-              {%- render 'card-product',
-                card_product: product,
-                media_aspect_ratio: section.settings.image_ratio,
-                show_secondary_image: section.settings.show_secondary_image,
-                show_vendor: section.settings.show_vendor,
-                show_rating: section.settings.show_rating,
-                lazy_load: true,
-                quick_add: section.settings.quick_add,
-                section_id: section.id
-              -%}
-            </li>
-          {%- endfor -%}
-        </ul>
-      </div>
-    {%- elsif request.design_mode -%}
-      <div class="page-width">
-        <div class="founding-drop__placeholder">
-          <p>Select a collection in section settings to display the founding drop strip.</p>
-        </div>
-      </div>
-    {%- endif -%}
-
-    {%- if section.settings.button_label != blank -%}
-      <div class="page-width founding-drop__footer">
-        <a
-          {% if collection != blank %}href="{{ collection.url }}"{% endif %}
-          class="founding-drop__cta button{% if section.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
-        >
-          {{ section.settings.button_label | escape }}
-        </a>
-      </div>
-    {%- endif -%}
-  </div>
+  </section>
 {%- endif -%}
 
 {% schema %}
 {
-  "name": "HORO Founding Drop Strip",
+  "name": "HORO Founding Drop",
   "tag": "section",
   "class": "section",
   "settings": [
     {
       "type": "text",
       "id": "eyebrow",
-      "label": "Eyebrow label",
-      "default": "The First Drop",
-      "info": "Small label above the heading"
+      "label": "Eyebrow",
+      "default": "THE FOUNDING DROP"
     },
     {
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Founding Collection"
-    },
-    {
-      "type": "select",
-      "id": "heading_size",
-      "options": [
-        { "value": "h2", "label": "Small" },
-        { "value": "h1", "label": "Medium" },
-        { "value": "h0", "label": "Large" }
-      ],
-      "default": "h1",
-      "label": "Heading size"
+      "default": "Our first 5 pieces. Limited quantities."
     },
     {
       "type": "text",
-      "id": "subheading",
-      "label": "Subheading"
+      "id": "view_all_label",
+      "label": "View all link label",
+      "default": "View all"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "View all link URL",
+      "info": "Defaults to the collection URL when empty."
     },
     {
       "type": "collection",
@@ -133,99 +98,13 @@
       "min": 2,
       "max": 12,
       "step": 1,
-      "default": 6,
-      "label": "Maximum products to show"
-    },
-    {
-      "type": "range",
-      "id": "columns_desktop",
-      "min": 2,
-      "max": 5,
-      "step": 1,
-      "default": 4,
-      "label": "Desktop columns"
-    },
-    {
-      "type": "select",
-      "id": "image_ratio",
-      "options": [
-        { "value": "adapt", "label": "Adapt to image" },
-        { "value": "portrait", "label": "Portrait" },
-        { "value": "square", "label": "Square" }
-      ],
-      "default": "portrait",
-      "label": "Image ratio"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_secondary_image",
-      "default": true,
-      "label": "Show secondary image on hover"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_vendor",
-      "default": false,
-      "label": "Show vendor"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_rating",
-      "default": false,
-      "label": "Show product rating"
-    },
-    {
-      "type": "checkbox",
-      "id": "quick_add",
-      "default": true,
-      "label": "Enable quick add button"
-    },
-    {
-      "type": "text",
-      "id": "button_label",
-      "label": "Button label",
-      "default": "View full drop"
-    },
-    {
-      "type": "checkbox",
-      "id": "button_style_secondary",
-      "default": false,
-      "label": "Use secondary button style"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
-    },
-    {
-      "type": "header",
-      "content": "Spacing"
-    },
-    {
-      "type": "range",
-      "id": "padding_top",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "Padding top",
-      "default": 36
-    },
-    {
-      "type": "range",
-      "id": "padding_bottom",
-      "min": 0,
-      "max": 100,
-      "step": 4,
-      "unit": "px",
-      "label": "Padding bottom",
-      "default": 36
+      "default": 5,
+      "label": "Maximum products"
     }
   ],
   "presets": [
     {
-      "name": "HORO Founding Drop Strip"
+      "name": "HORO Founding Drop"
     }
   ]
 }

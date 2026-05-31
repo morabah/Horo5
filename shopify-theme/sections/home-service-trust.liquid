@@ -1,0 +1,160 @@
+{{ 'component-home-mockup.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<section
+  id="size-help"
+  class="home-section home-info-strip horo-section section-{{ section.id }}-padding"
+  aria-label="{{ section.settings.aria_label | default: 'Service reassurance' | escape }}"
+>
+  <div class="home-info-strip__wrap">
+    <div class="home-info-strip__grid">
+      {%- for block in section.blocks -%}
+        {%- if block.settings.title != blank -%}
+          {%- if block.settings.link != blank -%}
+            <a href="{{ block.settings.link }}" class="home-info-strip__item" {{ block.shopify_attributes }}>
+          {%- else -%}
+            <div class="home-info-strip__item" {{ block.shopify_attributes }}>
+          {%- endif -%}
+            <span class="home-info-strip__icon" aria-hidden="true">
+              {%- case block.settings.icon -%}
+                {%- when 'fit' -%}
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2 12 3.5 8 2 3.62 3.46 2 7.5l1.5 4.5L2 16.5l3.62 1.04L8 19.5l4-1.5 4 1.5 2.38-1.96L22 16.5l-1.5-4.5L22 7.5z"/></svg>
+                {%- when 'delivery' -%}
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                {%- when 'exchange' -%}
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0115-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 01-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+              {%- endcase -%}
+            </span>
+            <span>
+              <h3>{{ block.settings.title | escape }}</h3>
+              {%- if block.settings.body != blank -%}
+                <p>{{ block.settings.body | escape }}</p>
+              {%- endif -%}
+            </span>
+          {%- if block.settings.link != blank -%}
+            </a>
+          {%- else -%}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "HORO Service Trust",
+  "tag": "section",
+  "class": "section",
+  "max_blocks": 3,
+  "settings": [
+    {
+      "type": "text",
+      "id": "aria_label",
+      "label": "Accessible name",
+      "default": "Service reassurance"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 12
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Trust item",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "fit", "label": "Fit guide" },
+            { "value": "delivery", "label": "Delivery" },
+            { "value": "exchange", "label": "Exchange" }
+          ],
+          "default": "fit"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Find your fit with confidence"
+        },
+        {
+          "type": "textarea",
+          "id": "body",
+          "label": "Body",
+          "default": "Clear size guide and model references on every product page."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Service Trust",
+      "blocks": [
+        {
+          "type": "item",
+          "settings": {
+            "icon": "fit",
+            "title": "Find your fit with confidence",
+            "body": "Clear size guide and model references on every product page."
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "icon": "delivery",
+            "title": "Delivery across Egypt",
+            "body": "Reliable delivery. Track your order from our studio to your door."
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "icon": "exchange",
+            "title": "Easy exchanges",
+            "body": "Not the right fit? We've got you. Hassle-free size exchanges."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

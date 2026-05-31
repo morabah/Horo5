@@ -104,7 +104,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
       aria-labelledby="home-start-here-title"
       className="home-section border-t border-stone/15 bg-horo-white px-4 py-6 sm:px-6 md:py-7 lg:px-8"
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="home-founding-drop__inner mx-auto max-w-6xl">
         <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="home-section-eyebrow">{sectionEyebrow ?? copy.home.startHereEyebrow}</p>

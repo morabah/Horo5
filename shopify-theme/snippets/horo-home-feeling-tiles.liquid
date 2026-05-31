@@ -1,0 +1,43 @@
+{%- comment -%}
+  Pastel feeling tiles — max 5, sort_order, only feelings with products in collection.
+  Accepts: feeling_limit (number)
+{%- endcomment -%}
+{%- liquid
+  assign limit = feeling_limit | default: 5
+  assign sorted_feelings = shop.metaobjects.feeling.values | sort: 'sort_order'
+  assign tiles_shown = 0
+  assign require_products = true
+  if template.name == 'index'
+    assign require_products = false
+  endif
+-%}
+
+<ul class="home-feeling-pastel-grid" role="list">
+  {%- for feeling in sorted_feelings -%}
+    {%- if tiles_shown >= limit -%}
+      {%- break -%}
+    {%- endif -%}
+    {%- if feeling.active != false -%}
+      {%- liquid
+        assign feeling_handle = feeling.handle | default: feeling.slug | default: '' | downcase
+        assign feeling_collection = feeling.collection.value
+        if feeling_collection == blank and feeling_handle != blank
+          assign coll_handle = 'feeling-' | append: feeling_handle
+          assign feeling_collection = collections[coll_handle]
+        endif
+        assign product_count = 0
+        if feeling_collection != blank
+          assign product_count = feeling_collection.products_count
+        endif
+      -%}
+      {%- if require_products == false or product_count > 0 -%}
+        {%- render 'feeling-card-pastel', card: feeling, tile_index: tiles_shown -%}
+        {%- assign tiles_shown = tiles_shown | plus: 1 -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+</ul>
+
+{%- if tiles_shown == 0 -%}
+  {% render 'horo-home-feeling-tiles-fallback', feeling_limit: limit %}
+{%- endif -%}

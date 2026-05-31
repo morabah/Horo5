@@ -1,132 +1,62 @@
-/* ================================================================
-   HORO Founding Drop Strip
-   ================================================================ */
+/* Founding drop card CTA — matches web-next HomeFoundingProductCard */
 
-.founding-drop {
-  overflow: hidden;
+.home-founding-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center 22%;
+  transform: scale(1.06);
+  transform-origin: center center;
 }
 
-.founding-drop__eyebrow {
-  margin: 0 0 0.8rem;
-  font-family: var(--font-label);
-  font-size: 1.2rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-warm-charcoal);
+.home-founding-card__cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-horo-pulse);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-horo-pulse) 55%, transparent);
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
 }
 
-.founding-drop__heading {
-  margin: 0 0 0.8rem;
-  color: var(--color-ink);
+.home-founding-card__cta:hover {
+  background: var(--color-horo-soft);
+  border-color: var(--color-horo-pulse);
+  color: var(--color-horo-pulse);
 }
 
-.founding-drop__subheading {
-  margin: 0 0 2.4rem;
-  font-size: 1.5rem;
-  line-height: 1.5;
-  color: var(--color-warm-charcoal);
-  max-inline-size: 48rem;
+.home-founding-card__cta .loading__spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
 }
 
-.founding-drop__scroll-wrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-inline: max(1.5rem, calc((100vw - var(--page-width)) / 2));
-  padding-block: 0.4rem;
+.home-founding-card__cta-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  pointer-events: none;
 }
 
-.founding-drop__scroll-wrapper::-webkit-scrollbar {
-  display: none;
+.home-founding-card__cta--link {
+  display: inline-flex;
 }
 
-.founding-drop__list {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(16rem, 1fr);
-  gap: 1.2rem;
+.home-founding-card__form {
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.founding-drop__list--2-col-desktop {
-  grid-auto-columns: minmax(20rem, 1fr);
-}
-
-.founding-drop__list--3-col-desktop {
-  grid-auto-columns: minmax(18rem, 1fr);
-}
-
-.founding-drop__list--4-col-desktop {
-  grid-auto-columns: minmax(16rem, 1fr);
-}
-
-.founding-drop__list--5-col-desktop {
-  grid-auto-columns: minmax(14rem, 1fr);
-}
-
-.founding-drop__item {
-  min-inline-size: 0;
-}
-
-.founding-drop__item .horo-product-card .card {
-  min-inline-size: 14rem;
-}
-
-.founding-drop__footer {
-  margin-block-start: 2.4rem;
-  text-align: center;
-}
-
-.founding-drop__cta {
-  min-inline-size: 16rem;
-}
-
-.founding-drop__placeholder {
-  padding: 2.4rem;
-  text-align: center;
-  border: 1px dashed var(--color-stone);
-  border-radius: var(--radius-lg);
-  color: var(--color-warm-charcoal);
-}
-
-@media screen and (min-width: 750px) {
-  .founding-drop__list {
-    gap: 1.6rem;
-  }
-
-  .founding-drop__scroll-wrapper {
-    padding-inline: max(5rem, calc((100vw - var(--page-width)) / 2));
-  }
-}
-
-@media screen and (min-width: 990px) {
-  .founding-drop__list {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(var(--columns, 4), 1fr);
-  }
-
-  .founding-drop__list--2-col-desktop {
-    --columns: 2;
-  }
-
-  .founding-drop__list--3-col-desktop {
-    --columns: 3;
-  }
-
-  .founding-drop__list--4-col-desktop {
-    --columns: 4;
-  }
-
-  .founding-drop__list--5-col-desktop {
-    --columns: 5;
-  }
-
-  .founding-drop__scroll-wrapper {
-    overflow-x: visible;
-    padding-inline: 0;
-  }
 }

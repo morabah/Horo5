@@ -1,0 +1,113 @@
+{{ 'component-home-gift-block.css' | asset_url | stylesheet_tag }}
+
+<section
+  id="gift-by-meaning"
+  class="home-section home-section--bordered home-section--panel section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  aria-labelledby="home-gift-title-{{ section.id }}"
+>
+  <div class="home-page__inner">
+    <div class="home-gift-banner">
+      <div class="home-gift-banner__copy">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h2 id="home-gift-title-{{ section.id }}" class="home-gift-banner__title">
+          {{ section.settings.heading | escape }}
+          {%- if section.settings.heading_line_2 != blank -%}
+            <br>
+            {{ section.settings.heading_line_2 | escape }}
+          {%- endif -%}
+        </h2>
+        {%- if section.settings.body != blank -%}
+          <p class="home-gift-banner__body">{{ section.settings.body | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.button_label != blank -%}
+          <div style="margin-top: 1.25rem;">
+            <a
+              {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
+              class="home-btn home-btn--primary"
+            >
+              {{ section.settings.button_label | escape }}
+            </a>
+          </div>
+        {%- endif -%}
+      </div>
+      <div class="home-gift-banner__media">
+        {%- if section.settings.image != blank -%}
+          {{
+            section.settings.image
+            | image_url: width: 1200
+            | image_tag:
+              loading: 'lazy',
+              widths: '400, 800, 1200',
+              sizes: '(max-width: 768px) 100vw, 64vw',
+              alt: section.settings.image.alt | default: section.settings.heading
+          }}
+        {%- else -%}
+          <img
+            src="{{ 'home-gift-banner.png' | asset_url }}"
+            alt="{{ section.settings.heading | escape }}"
+            width="1200"
+            height="800"
+            loading="lazy"
+          >
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "HORO Gift by Meaning",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "GIFT BY MEANING"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading line 1",
+      "default": "More than a gift."
+    },
+    {
+      "type": "text",
+      "id": "heading_line_2",
+      "label": "Heading line 2",
+      "default": "It's a feeling they'll wear."
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Thoughtful designs for birthdays, anniversaries, graduations, and just because."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Find the perfect gift →"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Banner image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "HORO Gift by Meaning"
+    }
+  ]
+}
+{% endschema %}

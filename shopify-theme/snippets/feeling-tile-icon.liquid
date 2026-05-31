@@ -1,0 +1,28 @@
+{%- comment -%} Line icon for homepage pastel feeling tiles. Accepts: slug {%- endcomment -%}
+{%- assign feeling_slug = slug | default: 'default' | downcase -%}
+<svg class="home-feeling-pastel-tile__icon" width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  {%- case feeling_slug -%}
+    {%- when 'independence' -%}
+      <circle cx="27" cy="12" r="3"/><path d="M25 17l-4 8 6 4 5 9"/><path d="M22 25l-8 5"/><path d="M29 20l7 5"/><path d="M8 32c5-3 10-4.5 16-4.5"/><path d="M8 39c8-5 17-6.5 30-4"/>
+    {%- when 'care' -%}
+      <path d="M15 35V22c0-3 4-3 4 0v7"/><path d="M33 35V22c0-3-4-3-4 0v7"/><path d="M19 29l5 5 5-5"/><path d="M24 18c-4-5-10-1.5-7 3.5l7 7 7-7c3-5-3-8.5-7-3.5z"/>
+    {%- when 'calm' -%}
+      <circle cx="24" cy="11" r="3.5"/><path d="M18 21c3-3 9-3 12 0"/><path d="M15 34c3-4 6-6 9-6s6 2 9 6"/><path d="M13 38c7 2 15 2 22 0"/><path d="M11 30c4 2 8 3 13 3s9-1 13-3"/>
+    {%- when 'rhythm' -%}
+      <path d="M14 14c7-7 20-3 21 8 1 12-14 18-22 9-8-8-1-22 12-23 11-1 19 8 17 18-3 15-23 17-31 5-7-11 1-25 15-27"/>
+    {%- when 'boldness' -%}
+      <path d="M8 36l12-16 8 9 6-8 8 15"/><path d="M31 11v14"/><path d="M31 11l8 3-8 3"/>
+    {%- when 'mood' -%}
+      <circle cx="24" cy="14" r="4"/><path d="M12 38c2.5-6 7-9 12-9s9.5 3 12 9"/><path d="M18 24h12"/>
+    {%- when 'zodiac' -%}
+      <circle cx="24" cy="24" r="10"/><path d="M24 14v4M24 30v4M14 24h4M30 24h4"/><path d="M17.5 17.5l2.8 2.8M27.7 27.7l2.8 2.8M30.5 17.5l-2.8 2.8M20.3 27.7l-2.8 2.8"/>
+    {%- when 'trends' -%}
+      <path d="M10 34l10-14 7 8 5-7 8 13"/><path d="M30 12v10"/><path d="M30 12l7 4-7 3"/>
+    {%- when 'career' -%}
+      <rect x="10" y="16" width="28" height="20" rx="2"/><path d="M18 16v-4h12v4"/><path d="M16 26h16"/>
+    {%- when 'fiction' -%}
+      <path d="M12 12h10l4 4v22H12z"/><path d="M22 12v8h8"/><path d="M16 22h12M16 28h8"/>
+    {%- else -%}
+      <circle cx="24" cy="24" r="8"/><path d="M24 16v8l5 3"/>
+  {%- endcase -%}
+</svg>

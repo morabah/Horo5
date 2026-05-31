@@ -2,35 +2,11 @@
   "name": "HORO Header Group",
   "type": "header",
   "sections": {
-    "announcement-bar": {
-      "type": "announcement-bar",
-      "blocks": {
-        "announcement-bar-0": {
-          "type": "announcement",
-          "settings": {
-            "text": "Artist-made designs · Printed in Egypt · Payment options shown at checkout",
-            "text_alignment": "center",
-            "color_scheme": "scheme-1",
-            "link": ""
-          }
-        }
-      },
-      "block_order": [
-        "announcement-bar-0"
-      ]
-    },
-    "horo-launch-countdown": {
-      "type": "horo-launch-countdown",
-      "settings": {
-        "color_scheme": "scheme-3",
-        "padding_top": 12,
-        "padding_bottom": 12
-      }
-    },
     "horo-header": {
       "type": "horo-header",
       "settings": {
         "color_scheme": "scheme-1",
+        "use_web_next_primary_nav": true,
         "menu": "main-menu",
         "sticky_header_type": "on-scroll-up",
         "show_line_separator": true,
@@ -42,8 +18,6 @@
     }
   },
   "order": [
-    "announcement-bar",
-    "horo-launch-countdown",
     "horo-header"
   ]
 }

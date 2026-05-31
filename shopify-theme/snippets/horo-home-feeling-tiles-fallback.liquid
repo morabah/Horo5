@@ -1,0 +1,40 @@
+{%- comment -%}
+  Default homepage feeling tiles when metaobjects or collections are not seeded yet.
+  Mirrors web-next dev fixtures (mood, zodiac, trends, career, fiction).
+{%- endcomment -%}
+{%- liquid
+  assign limit = feeling_limit | default: 5
+  assign fallback_slugs = 'mood,zodiac,trends,career,fiction' | split: ','
+  assign fallback_labels = 'Mood,Zodiac,Trends,Career,Fiction' | split: ','
+  assign surfaces = '#f4ede5,#f8eaea,#edf1ea,#eeebf5,#f7ebe4' | split: ','
+-%}
+
+<ul class="home-feeling-pastel-grid" role="list">
+  {%- for slug in fallback_slugs -%}
+    {%- if forloop.index0 >= limit -%}
+      {%- break -%}
+    {%- endif -%}
+    {%- assign label = fallback_labels[forloop.index0] -%}
+    {%- assign surface_index = forloop.index0 | modulo: 5 -%}
+    {%- assign surface_color = surfaces[surface_index] -%}
+    {%- assign card_url = '/pages/feelings' -%}
+    {%- if slug != blank -%}
+      {%- assign coll_handle = 'feeling-' | append: slug -%}
+      {%- assign feeling_collection = collections[coll_handle] -%}
+      {%- if feeling_collection != blank -%}
+        {%- assign card_url = feeling_collection.url -%}
+      {%- endif -%}
+    {%- endif -%}
+    <li class="home-feeling-pastel-grid__item" role="listitem">
+      <a
+        href="{{ card_url }}"
+        class="home-feeling-pastel-tile"
+        style="background-color: {{ surface_color }};"
+        aria-label="{{ label | escape }}"
+      >
+        {% render 'feeling-tile-icon', slug: slug %}
+        <span class="home-feeling-pastel-tile__label">{{ label | escape }}</span>
+      </a>
+    </li>
+  {%- endfor -%}
+</ul>

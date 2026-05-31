@@ -14,8 +14,15 @@
 {%- endstyle -%}
 
 {%- liquid
+  if section.settings.use_web_next_primary_nav
+    assign primary_menu_linklist = blank
+  else
+    assign primary_menu_linklist = section.settings.menu
+  endif
   if section.settings.drawer_menu != blank
     assign drawer_menu_linklist = section.settings.drawer_menu
+  elsif section.settings.use_web_next_primary_nav
+    assign drawer_menu_linklist = blank
   else
     assign drawer_menu_linklist = section.settings.menu
   endif
@@ -41,7 +48,7 @@
 
       {% render 'horo-nav-links',
         context: 'primary',
-        menu: section.settings.menu,
+        menu: primary_menu_linklist,
         active_path: request.path
       %}
 
@@ -209,10 +216,18 @@
   "class": "section-header",
   "settings": [
     {
+      "type": "checkbox",
+      "id": "use_web_next_primary_nav",
+      "label": "Use web-next primary navigation labels",
+      "default": true,
+      "info": "Founding Drop, Shop by Feeling, Gift by Meaning, Our Story, Size & Help"
+    },
+    {
       "type": "link_list",
       "id": "menu",
       "default": "main-menu",
-      "label": "Primary navigation menu"
+      "label": "Primary navigation menu",
+      "info": "Used only when web-next navigation is disabled"
     },
     {
       "type": "link_list",

@@ -78,12 +78,13 @@ export function HomeFoundingProductCard({
         <TeeImageFrame
           src={imageSrc}
           alt={displayImageAlt}
-          w={560}
-          aspectRatio="1/0.98"
+          w={800}
+          aspectRatio="4/5"
           borderRadius="0"
           eager={eager}
-          objectPosition="center center"
-          frameStyle={{ marginBottom: 0 }}
+          objectPosition="center 22%"
+          frameStyle={{ marginBottom: 0, minHeight: '100%' }}
+          sizes="(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px"
         />
       </Link>
       <div className="home-founding-card__body flex flex-1 flex-col p-4 text-center sm:text-start">

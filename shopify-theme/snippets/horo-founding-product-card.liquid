@@ -1,0 +1,96 @@
+{%- comment -%}
+  HORO founding drop card — parity with web-next HomeFoundingProductCard.
+  Accepts: card_product, lazy_load (bool), section_id
+{%- endcomment -%}
+{%- liquid
+  assign lazy_load = lazy_load | default: true
+  assign selected_variant = nil
+  assign first_available = nil
+
+  for variant in card_product.variants
+    if variant.available
+      if first_available == nil
+        assign first_available = variant
+      endif
+      if variant.option1 == 'M' or variant.option2 == 'M' or variant.option3 == 'M'
+        assign selected_variant = variant
+        break
+      endif
+    endif
+  endfor
+
+  if selected_variant == nil
+    assign selected_variant = first_available | default: card_product.selected_or_first_available_variant
+  endif
+
+  assign can_add = false
+  if selected_variant and selected_variant.available
+    assign can_add = true
+  endif
+
+  assign price_display = selected_variant.price | default: card_product.price
+  assign price_amount = price_display | money_without_currency | strip
+  assign price_egp = 'EGP ' | append: price_amount
+
+  assign product_form_id = 'founding-' | append: section_id | append: '-' | append: card_product.id
+-%}
+
+<article class="home-founding-card">
+  <a href="{{ card_product.url }}" class="home-founding-card__media" aria-label="{{ card_product.title | escape }}">
+    {%- if card_product.featured_media -%}
+      {{
+        card_product.featured_media
+        | image_url: width: 800
+        | image_tag:
+          loading: lazy_load,
+          widths: '200, 400, 600, 800',
+          sizes: '(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px',
+          alt: card_product.featured_media.alt | default: card_product.title,
+          class: 'home-founding-card__image'
+      }}
+    {%- else -%}
+      {{ 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    {%- endif -%}
+  </a>
+  <div class="home-founding-card__body">
+    <a href="{{ card_product.url }}" class="home-founding-card__title">
+      {{ card_product.title | escape }}
+    </a>
+    <p class="home-founding-card__price">{{ price_egp }}</p>
+    <div class="home-founding-card__actions">
+      {%- if can_add -%}
+        <product-form data-section-id="{{ section_id }}" data-hide-errors="true">
+          {%- form 'product',
+            card_product,
+            id: product_form_id,
+            class: 'home-founding-card__form',
+            novalidate: 'novalidate',
+            data-type: 'add-to-cart-form'
+          -%}
+            <input type="hidden" name="id" value="{{ selected_variant.id }}" class="product-variant-id">
+            <button
+              type="submit"
+              name="add"
+              class="home-founding-card__cta"
+              aria-haspopup="dialog"
+              aria-label="{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}: {{ card_product.title | escape }}"
+            >
+              <span class="home-founding-card__cta-label">{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}</span>
+              <span class="home-founding-card__cta-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              </span>
+              {%- render 'loading-spinner' -%}
+            </button>
+          {%- endform -%}
+        </product-form>
+      {%- else -%}
+        <a href="{{ card_product.url }}" class="home-founding-card__cta home-founding-card__cta--link">
+          <span class="home-founding-card__cta-label">{{ 'products.product.view_full_details' | t | default: 'View piece' }}</span>
+          <span class="home-founding-card__cta-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          </span>
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+</article>

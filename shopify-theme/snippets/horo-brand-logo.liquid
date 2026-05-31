@@ -13,6 +13,10 @@
 
 {%- liquid
   assign logo_variant = variant | default: 'dark'
+  assign show_arabic_line = show_arabic
+  if show_arabic_line == nil
+    assign show_arabic_line = true
+  endif
   if logo_variant == 'light'
     assign latin_class = 'horo-wordmark--light'
     assign arabic_class = 'horo-wordmark__ar--light'
@@ -23,9 +27,11 @@
 -%}
 
 <span
-  class="horo-wordmark {{ class }}"
+  class="horo-wordmark{% if show_arabic_line == false %} horo-wordmark--latin-only{% endif %} {{ class }}"
   aria-label="{{ shop.name }}"
 >
   <span class="horo-wordmark__latin {{ latin_class }}">HORO</span>
-  <span lang="ar" dir="rtl" class="horo-wordmark__ar {{ arabic_class }}">هورو</span>
+  {%- if show_arabic_line -%}
+    <span lang="ar" dir="rtl" class="horo-wordmark__ar {{ arabic_class }}">هورو</span>
+  {%- endif -%}
 </span>

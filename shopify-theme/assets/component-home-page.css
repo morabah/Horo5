@@ -1,0 +1,178 @@
+/**
+ * HORO homepage — unified layout parity with web-next (index template).
+ * Content rail matches hero split (87.5rem / 1400px), not legacy 72rem.
+ * The hero section goes full-bleed (edge-to-edge) while all other sections
+ * cap at --home-content-max.
+ */
+
+.horo-home-page {
+  --home-content-max: min(87.5rem, calc(100vw - 2.5rem));
+}
+
+/* ===== Zero inter-section spacing (web-next uses tight stacking) ===== */
+.horo-home-page #MainContent > .shopify-section {
+  --spacing-section: 0;
+}
+
+.horo-home-page #MainContent > .shopify-section + .shopify-section {
+  margin-top: 0;
+}
+
+/* ===== Home section base padding ===== */
+.horo-home-page .home-section {
+  padding: 1.25rem clamp(1rem, 4vw, 2rem);
+}
+
+@media screen and (min-width: 640px) {
+  .horo-home-page .home-section {
+    padding: 1.5rem clamp(1.25rem, 4vw, 2rem);
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .horo-home-page .home-section {
+    padding: 1.75rem 2rem;
+  }
+}
+
+/* ===== Content width: cap at 1400px, centered ===== */
+.horo-home-page .home-page__inner,
+.horo-home-page .home-info-strip__wrap {
+  width: 100%;
+  max-width: var(--home-content-max);
+  margin-inline: auto;
+}
+
+/* ===== Section backgrounds ===== */
+.horo-home-page .home-section--white {
+  background: var(--color-horo-white, #fff);
+}
+
+.horo-home-page .home-section--soft {
+  background: var(--color-horo-soft, #fff7f5);
+}
+
+.horo-home-page .home-section--panel {
+  background: var(--color-horo-section, #fff7f5);
+}
+
+/* ===== Section headers ===== */
+.horo-home-page .home-section-header {
+  margin-bottom: 2rem;
+}
+
+@media screen and (min-width: 640px) {
+  .horo-home-page .home-section-header {
+    margin-bottom: 2.5rem;
+  }
+}
+
+.horo-home-page .home-section-header--feelings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.horo-home-page .home-section-header--feelings > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.horo-home-page .home-section-header--feelings .home-section-link {
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+/* ===== Trust bar — full width, content capped ===== */
+.horo-home-page .home-trust-bar {
+  padding: 0;
+}
+
+.horo-home-page .home-trust-bar__inner {
+  width: 100%;
+  max-width: var(--home-content-max);
+  margin-inline: auto;
+  padding-inline: 0;
+}
+
+/* ===== Dawn .page-width override =====
+   Dawn's .page-width adds 5rem side padding on desktop.
+   On the homepage, neutralise it so sections use the HORO content rail. */
+.horo-home-page #MainContent .page-width,
+.horo-home-page .page-width,
+.horo-home-page .home-section .page-width,
+.horo-home-page .horo-section .page-width {
+  max-width: var(--home-content-max);
+  padding-inline: 0;
+}
+
+/* ===== Trust icon display ===== */
+.horo-home-page .home-trust-bar__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.55rem;
+  color: var(--color-horo-pulse);
+}
+
+.horo-home-page .home-trust-bar__icon .horo-trust-icon {
+  display: block;
+}
+
+/* ===== Hero — full-bleed background, content rail like web-next max-w-[1400px] ===== */
+.horo-home-page .home-hero-split {
+  padding: 0;
+  width: 100%;
+}
+
+.horo-home-page .home-hero-split__grid {
+  width: 100%;
+  max-width: var(--home-content-max);
+  margin-inline: auto;
+}
+
+/* ===== Founding drop title ===== */
+.horo-home-page .home-founding-drop__title {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-headline);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-horo-muted, #6b6164);
+}
+
+/* ===== Zero padding helper ===== */
+.horo-home-page .section-padding-zero {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* ===== Dawn scroll-reveal override =====
+   Dawn scroll-reveal leaves sections at opacity 0.01 until JS runs — disable on homepage */
+.horo-home-page .scroll-trigger.animate--fade-in,
+.horo-home-page .scroll-trigger.animate--slide-in {
+  opacity: 1;
+  transform: none;
+  animation: none;
+}
+
+/* ===== Feeling grid empty state ===== */
+.horo-home-page .home-feeling-pastel-grid:empty {
+  display: none;
+}
+
+/* ===== Section + section spacing override =====
+   Dawn's .section + .section adds margin via --spacing-sections-desktop.
+   Zero it on the homepage for tight stacking like web-next. */
+.horo-home-page .section + .section {
+  margin-top: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .horo-home-page .section + .section {
+    margin-top: 0;
+  }
+}

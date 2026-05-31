@@ -18,7 +18,7 @@
 {%- liquid
   assign nav_active_path = active_path | default: request.path
   assign feelings_url = routes.root_url | append: 'pages/feelings'
-  assign gifts_url = routes.root_url | append: 'pages/gifts'
+  assign gifts_url = routes.root_url | append: 'pages/gifts-hub'
   assign occasions_url = routes.root_url | append: 'pages/occasions'
   assign about_url = routes.root_url | append: 'pages/about-horo'
 
@@ -41,21 +41,24 @@
   <nav class="horo-nav__primary" aria-label="{{ 'horo.shell.primary_navigation' | t | default: 'Primary navigation' }}">
     <ul class="horo-nav__list" role="list">
       {%- if nav_items == 'fallback' -%}
-        {%- assign primary_route_keys = 'products,collection,gifts,about' | split: ',' -%}
+        {%- assign primary_route_keys = 'founding_drop,collection,gifts,about,size_guide' | split: ',' -%}
         {%- for route_key in primary_route_keys -%}
           {%- case route_key -%}
-            {%- when 'products' -%}
-              {%- assign label = 'horo.nav.shop_all' | t | default: 'Shop All' -%}
-              {%- assign href = routes.all_products_collection_url -%}
+            {%- when 'founding_drop' -%}
+              {%- assign label = 'horo.nav.founding_drop' | t | default: 'Founding Drop' -%}
+              {%- assign href = '/collections/founding-drop' -%}
             {%- when 'collection' -%}
-              {%- assign label = 'horo.nav.feelings' | t | default: 'Feelings' -%}
+              {%- assign label = 'horo.nav.shop_by_feeling' | t | default: 'Shop by Feeling' -%}
               {%- assign href = feelings_url -%}
             {%- when 'gifts' -%}
-              {%- assign label = 'horo.nav.gifts' | t | default: 'Gifts' -%}
+              {%- assign label = 'horo.nav.gift_by_meaning' | t | default: 'Gift by Meaning' -%}
               {%- assign href = gifts_url -%}
             {%- when 'about' -%}
-              {%- assign label = 'horo.nav.about' | t | default: 'About' -%}
+              {%- assign label = 'horo.nav.our_story' | t | default: 'Our Story' -%}
               {%- assign href = about_url -%}
+            {%- when 'size_guide' -%}
+              {%- assign label = 'horo.nav.size_help' | t | default: 'Size & Help' -%}
+              {%- assign href = routes.root_url | append: 'pages/size-guide' -%}
           {%- endcase -%}
           {%- assign is_active = false -%}
           {%- if nav_active_path == href or nav_active_path contains href and href != routes.root_url -%}
@@ -94,26 +97,32 @@
   <nav class="horo-nav__drawer-nav" aria-label="{{ 'horo.shell.drawer_navigation' | t | default: 'Menu' }}">
     <ul class="horo-nav__drawer-list" role="list">
       {%- if nav_items == 'fallback' -%}
-        {%- assign drawer_route_keys = 'home,products,collection,gifts,occasions,about,search' | split: ',' -%}
+        {%- assign drawer_route_keys = 'home,founding_drop,collection,gifts,occasions,about,size_guide,search' | split: ',' -%}
         {%- for route_key in drawer_route_keys -%}
           {%- case route_key -%}
             {%- when 'home' -%}
               {%- assign label = 'horo.shell.home' | t | default: 'Home' -%}
               {%- assign href = routes.root_url -%}
+            {%- when 'founding_drop' -%}
+              {%- assign label = 'horo.nav.founding_drop' | t | default: 'Founding Drop' -%}
+              {%- assign href = '/collections/founding-drop' -%}
             {%- when 'products' -%}
               {%- assign label = 'horo.nav.shop_all' | t | default: 'Shop All' -%}
               {%- assign href = routes.all_products_collection_url -%}
             {%- when 'collection' -%}
-              {%- assign label = 'horo.nav.feelings' | t | default: 'Feelings' -%}
+              {%- assign label = 'horo.nav.shop_by_feeling' | t | default: 'Shop by Feeling' -%}
               {%- assign href = feelings_url -%}
             {%- when 'gifts' -%}
-              {%- assign label = 'horo.nav.gifts' | t | default: 'Gifts' -%}
+              {%- assign label = 'horo.nav.gift_by_meaning' | t | default: 'Gift by Meaning' -%}
               {%- assign href = gifts_url -%}
+            {%- when 'size_guide' -%}
+              {%- assign label = 'horo.nav.size_help' | t | default: 'Size & Help' -%}
+              {%- assign href = routes.root_url | append: 'pages/size-guide' -%}
             {%- when 'occasions' -%}
               {%- assign label = 'horo.nav.occasions' | t | default: 'Occasions' -%}
               {%- assign href = occasions_url -%}
             {%- when 'about' -%}
-              {%- assign label = 'horo.nav.about' | t | default: 'About' -%}
+              {%- assign label = 'horo.nav.our_story' | t | default: 'Our Story' -%}
               {%- assign href = about_url -%}
             {%- when 'search' -%}
               {%- assign label = 'horo.shell.search' | t | default: 'Search' -%}

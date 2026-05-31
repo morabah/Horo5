@@ -1,0 +1,151 @@
+{{ 'component-horo-site-footer.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign is_ar = false
+  if localization.language.iso_code == 'ar'
+    assign is_ar = true
+  endif
+  assign instagram_url = settings.social_instagram_link
+  assign whatsapp_url = settings.horo_whatsapp_support_url
+  assign year = 'now' | date: '%Y'
+-%}
+
+<footer class="site-footer-mockup horo-site-footer" role="contentinfo">
+  <div class="horo-site-footer__inner">
+    <div class="horo-site-footer__grid">
+      <div class="horo-site-footer__brand">
+        <a href="{{ routes.root_url }}" class="horo-site-footer__logo" aria-label="{{ shop.name | escape }}">
+          {% render 'horo-brand-logo', variant: 'light', show_arabic: false, class: 'horo-site-footer__wordmark' %}
+        </a>
+        <p class="horo-site-footer__mantra">{{ 'horo.brand.mantra' | t }}</p>
+        <p class="horo-site-footer__canvas">{{ 'horo.brand.canvas_line' | t }}</p>
+        <div class="horo-site-footer__social">
+          {%- if instagram_url != blank -%}
+            <a href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/>
+                <path d="M17.5 6.5h.01"/>
+              </svg>
+            </a>
+          {%- else -%}
+            <span aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/>
+                <path d="M17.5 6.5h.01"/>
+              </svg>
+            </span>
+          {%- endif -%}
+          {%- if whatsapp_url != blank -%}
+            <a href="{{ whatsapp_url }}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+            </a>
+          {%- else -%}
+            <span aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+            </span>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div>
+        <h4 class="horo-site-footer__col-title">{{ 'horo.footer.shop_heading' | t }}</h4>
+        <ul class="horo-site-footer__links">
+          <li><a href="{{ routes.all_products_collection_url }}">{{ 'horo.nav.shop_all' | t }}</a></li>
+          <li><a href="/pages/feelings">{{ 'horo.nav.feelings' | t }}</a></li>
+          <li><a href="/pages/gifts-hub">{{ 'horo.nav.gifts' | t }}</a></li>
+          <li><a href="{{ routes.all_products_collection_url }}">{{ 'horo.footer.all_products' | t }}</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="horo-site-footer__col-title">{{ 'horo.footer.help_heading' | t }}</h4>
+        <ul class="horo-site-footer__links">
+          <li><a href="/pages/size-guide">{{ 'horo.nav.size_guide' | t }}</a></li>
+          <li><a href="/pages/faq-horo">{{ 'horo.footer.shipping_delivery' | t }}</a></li>
+          <li><a href="/pages/exchange-policy-horo">{{ 'horo.nav.exchange' | t }}</a></li>
+          <li><a href="/pages/faq-horo">{{ 'horo.nav.faq' | t }}</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="horo-site-footer__col-title">{{ 'horo.footer.about_heading' | t }}</h4>
+        <ul class="horo-site-footer__links">
+          <li><a href="/pages/about-horo">{{ 'horo.nav.about' | t }}</a></li>
+          <li><a href="/pages/comparison-faq">{{ 'horo.footer.journal' | t }}</a></li>
+          {%- if whatsapp_url != blank -%}
+            <li>
+              <a href="{{ whatsapp_url }}" target="_blank" rel="noopener noreferrer">{{ 'horo.footer.contact' | t }}</a>
+            </li>
+          {%- endif -%}
+        </ul>
+      </div>
+
+      <div class="horo-site-footer__newsletter">
+        <h4 class="horo-site-footer__col-title">{{ 'horo.footer.newsletter_title' | t }}</h4>
+        <p class="horo-site-footer__newsletter-body">{{ 'horo.footer.newsletter_body' | t }}</p>
+        {%- form 'customer', id: 'HoroFooterNewsletter', class: 'footer-newsletter__form' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <label class="visually-hidden" for="HoroFooterNewsletter-email">
+            {%- if is_ar -%}البريد الإلكتروني{%- else -%}Email{%- endif -%}
+          </label>
+          <input
+            id="HoroFooterNewsletter-email"
+            type="email"
+            name="contact[email]"
+            value="{{ form.email }}"
+            autocomplete="email"
+            placeholder="{% if is_ar %}بريدك الإلكتروني{% else %}Enter your email{% endif %}"
+            required
+            {% if form.posted_successfully? %}disabled{% endif %}
+          >
+          <button type="submit" aria-label="{% if is_ar %}اشترك{% else %}Subscribe{% endif %}">→</button>
+        {%- endform -%}
+        {%- if form.posted_successfully? -%}
+          <p class="horo-site-footer__newsletter-status" role="status">
+            {%- if is_ar -%}تم — شكراً.{%- else -%}You're in — thank you.{%- endif -%}
+          </p>
+        {%- elsif form.errors -%}
+          <p class="horo-site-footer__newsletter-status" role="alert">
+            {%- if is_ar -%}حاول مرة أخرى.{%- else -%}Please try again.{%- endif -%}
+          </p>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="horo-site-footer__bar">
+      <p>
+        © {{ year }} HORO.
+        {%- if is_ar -%}
+          {{ 'horo.footer.rights_ar' | t }}
+        {%- else -%}
+          {{ 'horo.footer.rights' | t }}
+        {%- endif -%}
+      </p>
+      <div class="horo-site-footer__bar-links">
+        <a href="/pages/privacy-policy">{{ 'horo.footer.privacy' | t }}</a>
+        <a href="/pages/terms-of-service">{{ 'horo.footer.terms' | t }}</a>
+      </div>
+      <p>{{ 'horo.footer.made_in' | t }} ♡</p>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "HORO Site Footer",
+  "tag": "section",
+  "class": "section horo-site-footer-section",
+  "settings": [],
+  "presets": [
+    {
+      "name": "HORO Site Footer"
+    }
+  ]
+}
+{% endschema %}

@@ -64,6 +64,10 @@
   font-family: var(--font-heading-family);
 }
 
+.horo-wordmark--latin-only {
+  flex-direction: row;
+}
+
 .horo-wordmark__latin {
   font-size: 1.08rem;
   font-weight: 600;

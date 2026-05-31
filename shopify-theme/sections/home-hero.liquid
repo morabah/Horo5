@@ -7,7 +7,95 @@
   endif
   assign full_width = '100vw'
   assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
+  assign hero_layout = section.settings.hero_layout | default: 'split'
+  assign heading_normalized = section.settings.heading | downcase | strip
 -%}
+
+{%- if hero_layout == 'split' -%}
+
+  <section
+    id="home-hero"
+    class="home-hero-split home-section section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
+    aria-labelledby="home-hero-heading-{{ section.id }}"
+  >
+    <div class="home-hero-split__grid">
+      <div class="home-hero-split__copy">
+        {%- if section.settings.heading != blank -%}
+          <h1 id="home-hero-heading-{{ section.id }}" class="home-hero-split__title">
+            {%- if heading_normalized == 'wear what you feel' -%}
+              <span class="home-hero-split__title-line">Wear What</span>
+              <span class="home-hero-split__title-line">You Feel</span>
+            {%- else -%}
+              {{ section.settings.heading | escape }}
+            {%- endif -%}
+          </h1>
+        {%- endif -%}
+
+        {%- if section.settings.subheading != blank -%}
+          <p class="home-hero-split__subtitle">{{ section.settings.subheading | escape }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.rhythm_line != blank -%}
+          <p class="home-hero-split__rhythm">{{ section.settings.rhythm_line | escape }}</p>
+        {%- endif -%}
+
+        {%- if section.settings.canvas_line != blank -%}
+          <p class="home-hero-split__canvas">{{ section.settings.canvas_line | escape }}</p>
+        {%- endif -%}
+
+        <div class="home-hero-split__actions">
+          {%- if section.settings.button_label != blank -%}
+            <a
+              {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
+              class="home-btn home-btn--primary"
+              {% if section.settings.button_link == blank %}aria-disabled="true"{% endif %}
+            >
+              {{ section.settings.button_label | escape }}
+            </a>
+          {%- endif -%}
+          {%- if section.settings.button_label_secondary != blank -%}
+            <a
+              {% if section.settings.button_link_secondary != blank %}href="{{ section.settings.button_link_secondary }}"{% endif %}
+              class="home-btn home-btn--secondary"
+              {% if section.settings.button_link_secondary == blank %}aria-disabled="true"{% endif %}
+            >
+              {{ section.settings.button_label_secondary | escape }}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="home-hero-split__media">
+        {%- if section.settings.image != blank -%}
+          {%- liquid
+            assign image_height = section.settings.image.width | divided_by: section.settings.image.aspect_ratio
+          -%}
+          {{
+            section.settings.image
+            | image_url: width: 2000
+            | image_tag:
+              width: section.settings.image.width,
+              height: image_height,
+              sizes: '(max-width: 760px) 100vw, 50vw',
+              widths: widths,
+              fetchpriority: fetch_priority,
+              loading: 'eager',
+              alt: section.settings.image.alt | default: section.settings.heading
+          }}
+        {%- else -%}
+          <img
+            src="{{ 'home-hero-split.png' | asset_url }}"
+            alt="{{ section.settings.heading | escape }}"
+            width="1200"
+            height="1500"
+            loading="eager"
+            fetchpriority="{{ fetch_priority }}"
+          >
+        {%- endif -%}
+      </div>
+    </div>
+  </section>
+{%- else -%}
 
 {%- style -%}
   #HomeHero-{{ section.id }}::after {
@@ -124,6 +212,8 @@
   {%- endif -%}
 </div>
 
+{%- endif -%}
+
 {% schema %}
 {
   "name": "HORO Home Hero",
@@ -131,9 +221,31 @@
   "class": "section",
   "settings": [
     {
+      "type": "select",
+      "id": "hero_layout",
+      "label": "Layout",
+      "options": [
+        { "value": "split", "label": "Split (web homepage)" },
+        { "value": "cinematic", "label": "Cinematic full-bleed" }
+      ],
+      "default": "split"
+    },
+    {
       "type": "image_picker",
       "id": "image",
       "label": "Hero image"
+    },
+    {
+      "type": "text",
+      "id": "rhythm_line",
+      "label": "Rhythm line (split layout)",
+      "default": "Find Your Rhythm"
+    },
+    {
+      "type": "text",
+      "id": "canvas_line",
+      "label": "Canvas line (split layout)",
+      "default": "We are the canvas. You are the story."
     },
     {
       "type": "range",
@@ -165,8 +277,8 @@
     {
       "type": "text",
       "id": "subheading",
-      "label": "Subheading",
-      "default": "Artist-made T-shirts for feelings, identity, and meaningful gifts."
+      "label": "Promise line (split layout)",
+      "default": "Artist-made passion wear for feelings, identity, and meaningful gifts."
     },
     {
       "type": "text",
