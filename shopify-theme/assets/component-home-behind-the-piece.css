@@ -19,7 +19,7 @@
 .home-behind-the-piece__heading {
   margin: 0 0 0.8rem;
   max-inline-size: 32rem;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .home-behind-the-piece__body {
@@ -50,7 +50,7 @@
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.3;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .home-behind-the-piece__card-body {

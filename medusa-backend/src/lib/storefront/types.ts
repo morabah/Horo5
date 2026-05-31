@@ -25,7 +25,7 @@ export type StorefrontMediaDTO = {
   main?: string | null
   /** Base64 data URL for Next.js `placeholder="blur"` (optional; set via `product.metadata.media`). */
   blurDataUrlMain?: string | null
-  /** CSS color e.g. `#1a1a1a` for skeleton / theme hints. */
+  /** CSS color e.g. `#4F111F` for skeleton / theme hints. */
   dominantColorMain?: string | null
 }
 

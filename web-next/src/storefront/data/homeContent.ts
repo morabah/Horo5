@@ -26,12 +26,12 @@ export const HOME_PRIMARY_ROUTES = [
   {
     key: 'occasion',
     href: '/occasions',
-    accent: '#556F73',
+    accent: '#4F111F',
   },
   {
     key: 'gift',
     href: '/gifts',
-    accent: '#D4A44E',
+    accent: '#FEE5E2',
   },
 ] as const;
 

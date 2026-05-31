@@ -62,7 +62,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%);
+  background: linear-gradient(180deg, #4F111F 0%, #8C2340 100%);
 }
 
 /* Layer 3: Vignette — edge darkening */
@@ -218,7 +218,7 @@
 
 .home-hero .home-hero__cta.button:hover {
   background-color: #ffffff;
-  color: #1f1c1a;
+  color: #4F111F;
   border-color: #ffffff;
 }
 

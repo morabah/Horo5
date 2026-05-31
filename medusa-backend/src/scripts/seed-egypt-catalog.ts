@@ -430,11 +430,11 @@ async function linkLegacyProductsToApparelCategory(args: {
 }
 
 const OCCASION_ACCENT_BY_SLUG: Record<string, string> = {
-  "gift-something-real": "#C4A574",
-  "graduation-season": "#7D8771",
-  "eid-and-ramadan": "#C5A15C",
-  "birthday-pick": "#B77A67",
-  "just-because": "#556F73",
+  "gift-something-real": "#8C2340",
+  "graduation-season": "#4F111F",
+  "eid-and-ramadan": "#8C2340",
+  "birthday-pick": "#8C2340",
+  "just-because": "#4F111F",
 }
 
 function buildFeelingProductHandles(feelingSlug: string, legacyProducts: LegacyProduct[]) {

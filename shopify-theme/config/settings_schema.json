@@ -1457,73 +1457,73 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "HORO brand colors and typography. These settings are used by custom HORO sections."
+        "content": "HORO V1.9 Root / Breath / Pulse color roles and typography. Use soft/white canvas first, Breath for warm panels, Root for depth, and Pulse for CTAs/active states."
       },
       {
         "type": "color",
         "id": "horo_color_papyrus",
-        "label": "Background (Papyrus)",
-        "default": "#F5F0E8"
+        "label": "Page canvas / Soft surface",
+        "default": "#FFF7F5"
       },
       {
         "type": "color",
         "id": "horo_color_obsidian",
-        "label": "Headlines / Dark (Obsidian)",
-        "default": "#1A1A1A"
+        "label": "Root / Depth / Headlines",
+        "default": "#4F111F"
       },
       {
         "type": "color",
         "id": "horo_color_warm_charcoal",
-        "label": "Body text (Warm Charcoal)",
-        "default": "#2C2A26"
+        "label": "Root body text",
+        "default": "#4F111F"
       },
       {
         "type": "color",
         "id": "horo_color_burgundy",
-        "label": "Brand anchor (Burgundy)",
-        "default": "#8C2340"
+        "label": "Root / Brand anchor",
+        "default": "#4F111F"
       },
       {
         "type": "color",
         "id": "horo_color_ember",
-        "label": "CTA / Accent (Burgundy)",
+        "label": "Pulse / CTA / Active state",
         "default": "#8C2340"
       },
       {
         "type": "color",
         "id": "horo_color_desert_sand",
-        "label": "Borders / Hover (Desert Sand)",
-        "default": "#C4956A"
+        "label": "Breath / Warm panel",
+        "default": "#FEE5E2"
       },
       {
         "type": "color",
         "id": "horo_color_kohl_gold",
-        "label": "Badges / Quality (Kohl Gold)",
-        "default": "#D4A24E"
+        "label": "Pulse badge / quality accent",
+        "default": "#8C2340"
       },
       {
         "type": "color",
         "id": "horo_color_stone",
-        "label": "Dividers / Disabled (Stone)",
-        "default": "#D4CFC5"
+        "label": "Subtle border",
+        "default": "#E8C9C6"
       },
       {
         "type": "color",
         "id": "horo_color_clay_earth",
-        "label": "Caption text (Clay Earth)",
-        "default": "#6B5E4F"
+        "label": "Root caption text",
+        "default": "#4F111F"
       },
       {
         "type": "color",
         "id": "horo_color_dusk_violet",
-        "label": "Feeling accent: Emotions (Dusk Violet)",
-        "default": "#6B4C8A"
+        "label": "Feeling accent: Pulse",
+        "default": "#8C2340"
       },
       {
         "type": "color",
         "id": "horo_color_kohl_gold_bright",
-        "label": "Feeling accent: Zodiac (Kohl Gold Bright)",
-        "default": "#D4A24E"
+        "label": "Feeling accent: Breath",
+        "default": "#FEE5E2"
       },
       {
         "type": "select",

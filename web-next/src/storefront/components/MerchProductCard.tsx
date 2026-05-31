@@ -246,7 +246,7 @@ export function MerchProductCard({
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden
-            style={{ color: wishlisted ? '#c0392b' : 'var(--obsidian, #1a1a1a)' }}
+            style={{ color: wishlisted ? '#8C2340' : 'var(--obsidian, #4F111F)' }}
           >
             <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
           </svg>
@@ -344,7 +344,7 @@ export function MerchProductCard({
           </span>
         ) : null}
         {product && product.occasionSlugs.some((s) => getOccasions().some((o) => o.slug === s && o.isGiftOccasion)) ? (
-          <span className="font-label mt-1 inline-flex w-fit items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-amber-700 md:mt-1.5 md:text-[10px]">
+          <span className="font-label mt-1 inline-flex w-fit items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-horo-pulse md:mt-1.5 md:text-[10px]">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <polyline points="20 6 9 17 4 12" />
             </svg>
@@ -352,25 +352,25 @@ export function MerchProductCard({
           </span>
         ) : null}
         {!minimal && promoLabel?.trim() ? (
-          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-amber-700 md:mt-1.5 md:text-[10px]">
+          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-horo-pulse md:mt-1.5 md:text-[10px]">
             {promoLabel.trim()}
           </p>
         ) : null}
         <div className={`mt-auto ${minimal ? 'pt-2.5' : 'pt-3'}`}>
           <div className="flex flex-wrap items-baseline gap-2">
-            <p className={`font-headline font-semibold ${compareAtPriceEgp ? 'text-red-600' : 'text-obsidian'} ${minimal ? 'text-[1rem]' : 'text-[1.125rem]'}`}>
+            <p className={`font-headline font-semibold ${compareAtPriceEgp ? 'text-horo-pulse' : 'text-obsidian'} ${minimal ? 'text-[1rem]' : 'text-[1.125rem]'}`}>
               {formatEgp(priceEgp)}
             </p>
             {compareAtPriceEgp ? (
               <p className="font-headline text-[0.875rem] text-stone line-through">{formatEgp(compareAtPriceEgp)}</p>
             ) : null}
             {countdown && !countdown.expired ? (
-              <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 ring-1 ring-red-200">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-red-500" aria-hidden>
+              <span className="inline-flex items-center gap-1 rounded-md bg-horo-breath px-2 py-1 ring-1 ring-horo-pulse/20">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-horo-pulse" aria-hidden>
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
-                <span className="font-label text-[11px] font-semibold tabular-nums leading-none text-red-600">
+                <span className="font-label text-[11px] font-semibold tabular-nums leading-none text-horo-pulse">
                   {countdown.days > 0
                     ? `${countdown.days}d ${String(countdown.hours).padStart(2, '0')}h ${String(countdown.minutes).padStart(2, '0')}m`
                     : `${String(countdown.hours).padStart(2, '0')}:${String(countdown.minutes).padStart(2, '0')}:${String(countdown.seconds).padStart(2, '0')}`

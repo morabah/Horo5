@@ -336,7 +336,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 <div className="mt-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                   <a
                     href="#occasion-collection-products"
-                    className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-[0_18px_38px_-18px_rgba(0,0,0,0.72)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-8 py-3 text-sm font-medium uppercase tracking-[0.2em] text-white shadow-[0_18px_38px_-18px_rgba(0,0,0,0.72)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     Shop the designs
                   </a>
@@ -691,7 +691,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
                 <button
                   type="button"
                   onClick={closeMobileFilters}
-                  className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-6 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-6 py-3 text-sm font-medium uppercase tracking-[0.2em] text-white shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
                   {copy.occasion.showCountCta
                     .replace('{count}', String(list.length))

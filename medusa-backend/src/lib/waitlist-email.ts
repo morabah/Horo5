@@ -38,20 +38,20 @@ export function buildWaitlistWelcomeHtml(args: { locale: "en" | "ar"; storeUrl?:
   const shareLinks = shareUrl
     ? `<p style="margin:16px 0 0;">
       <a href="https://wa.me/?text=${encodeURIComponent(`${isAr ? "سجّلت في قائمة انتظار HORO" : "I joined the HORO waitlist"} ${shareUrl}`)}" style="display:inline-block;margin-${isAr ? "left" : "right"}:8px;padding:10px 16px;background:#25D366;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">WhatsApp</a>
-      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(isAr ? "سجّلت في قائمة انتظار HORO" : "I joined the HORO waitlist")}&url=${encodeURIComponent(shareUrl)}" style="display:inline-block;padding:10px 16px;background:#1a1a1a;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">X</a>
+      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(isAr ? "سجّلت في قائمة انتظار HORO" : "I joined the HORO waitlist")}&url=${encodeURIComponent(shareUrl)}" style="display:inline-block;padding:10px 16px;background:#4F111F;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">X</a>
     </p>`
     : ""
 
   return `<!DOCTYPE html>
-<html dir="${dir}"><body style="font-family:system-ui,-apple-system,sans-serif;background:#faf8f5;color:#1a1a1a;padding:24px;direction:${dir};">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e8e4df;text-align:${align};">
+<html dir="${dir}"><body style="font-family:Inter,Arial,Helvetica,sans-serif;background:#FFF7F5;color:#4F111F;padding:24px;direction:${dir};">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #E8C9C6;text-align:${align};">
     <h1 style="font-size:20px;margin:0 0 12px;">${escapeHtml(title)}</h1>
-    <p style="margin:0 0 20px;color:#444;line-height:1.6;">${escapeHtml(body)}</p>
-    <hr style="border:0;border-top:1px solid #e8e4df;margin:24px 0;" />
+    <p style="margin:0 0 20px;color:#4F111F;line-height:1.6;">${escapeHtml(body)}</p>
+    <hr style="border:0;border-top:1px solid #E8C9C6;margin:24px 0;" />
     <h2 style="font-size:15px;margin:0 0 8px;">${escapeHtml(share)}</h2>
-    <p style="margin:0 0 12px;color:#444;line-height:1.6;">${escapeHtml(shareBody)}</p>
+    <p style="margin:0 0 12px;color:#4F111F;line-height:1.6;">${escapeHtml(shareBody)}</p>
     ${shareLinks}
-    <p style="margin-top:28px;font-size:12px;color:#888;">${escapeHtml(footer)}</p>
+    <p style="margin-top:28px;font-size:12px;color:#8C2340;">${escapeHtml(footer)}</p>
   </div>
 </body></html>`
 }
@@ -113,36 +113,36 @@ export function buildWaitlistLaunchHtml(args: { locale: "en" | "ar"; storeUrl?: 
   const referralUrl = referralCode ? `${shopUrl}?ref=${referralCode}` : shopUrl
 
   const ctaBlock = shopUrl
-    ? `<a href="${escapeHtml(shopUrl)}" style="display:inline-block;margin:20px 0;padding:14px 28px;background:#2a2d26;color:#f5f0e6;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600;">${escapeHtml(cta)}</a>`
+    ? `<a href="${escapeHtml(shopUrl)}" style="display:inline-block;margin:20px 0;padding:14px 28px;background:#8C2340;color:#FFFFFF;border-radius:8px;text-decoration:none;font-size:15px;font-weight:600;">${escapeHtml(cta)}</a>`
     : ""
 
   const referralBlock = referralCode && referralUrl
-    ? `<hr style="border:0;border-top:1px solid #e8e4df;margin:24px 0;" />
+    ? `<hr style="border:0;border-top:1px solid #E8C9C6;margin:24px 0;" />
     <h2 style="font-size:15px;margin:0 0 8px;">${escapeHtml(referralTitle)}</h2>
-    <p style="margin:0 0 12px;color:#444;line-height:1.6;">${escapeHtml(referralBody)}</p>
-    <p style="margin:0 0 12px;font-size:13px;word-break:break-all;color:#666;">${escapeHtml(referralUrl)}</p>
+    <p style="margin:0 0 12px;color:#4F111F;line-height:1.6;">${escapeHtml(referralBody)}</p>
+    <p style="margin:0 0 12px;font-size:13px;word-break:break-all;color:#8C2340;">${escapeHtml(referralUrl)}</p>
     <p style="margin:16px 0 0;">
       <a href="https://wa.me/?text=${encodeURIComponent(`${isAr ? "HORO متاح الآن! تسوّق معي:" : "HORO is live! Shop with me:"} ${referralUrl}`)}" style="display:inline-block;margin-${isAr ? "left" : "right"}:8px;padding:10px 16px;background:#25D366;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">WhatsApp</a>
-      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(isAr ? "HORO متاح الآن! فن مصري ترتديه." : "HORO is live! Egyptian art you can wear.")}&url=${encodeURIComponent(referralUrl)}" style="display:inline-block;padding:10px 16px;background:#1a1a1a;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">X</a>
+      <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(isAr ? "HORO متاح الآن! فن مصري ترتديه." : "HORO is live! Egyptian art you can wear.")}&url=${encodeURIComponent(referralUrl)}" style="display:inline-block;padding:10px 16px;background:#4F111F;color:#fff;border-radius:6px;text-decoration:none;font-size:13px;">X</a>
     </p>`
     : ""
 
   const couponBlock = couponCode
-    ? `<hr style="border:0;border-top:1px solid #e8e4df;margin:24px 0;" />
+    ? `<hr style="border:0;border-top:1px solid #E8C9C6;margin:24px 0;" />
     <h2 style="font-size:15px;margin:0 0 8px;">${escapeHtml(couponTitle)}</h2>
-    <p style="margin:0 0 12px;color:#444;line-height:1.6;">${escapeHtml(couponBody)}</p>
-    <p style="margin:0 0 0;padding:12px 16px;background:#faf8f5;border:1px dashed #c0b8ae;border-radius:6px;font-size:18px;font-weight:600;letter-spacing:2px;text-align:center;color:#2a2d26;">${escapeHtml(couponCode)}</p>`
+    <p style="margin:0 0 12px;color:#4F111F;line-height:1.6;">${escapeHtml(couponBody)}</p>
+    <p style="margin:0 0 0;padding:12px 16px;background:#FEE5E2;border:1px dashed #8C2340;border-radius:6px;font-size:18px;font-weight:600;letter-spacing:2px;text-align:center;color:#4F111F;">${escapeHtml(couponCode)}</p>`
     : ""
 
   return `<!DOCTYPE html>
-<html dir="${dir}"><body style="font-family:system-ui,-apple-system,sans-serif;background:#faf8f5;color:#1a1a1a;padding:24px;direction:${dir};">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e8e4df;text-align:${align};">
+<html dir="${dir}"><body style="font-family:Inter,Arial,Helvetica,sans-serif;background:#FFF7F5;color:#4F111F;padding:24px;direction:${dir};">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #E8C9C6;text-align:${align};">
     <h1 style="font-size:22px;margin:0 0 12px;">${escapeHtml(title)}</h1>
-    <p style="margin:0 0 20px;color:#444;line-height:1.6;">${escapeHtml(body)}</p>
+    <p style="margin:0 0 20px;color:#4F111F;line-height:1.6;">${escapeHtml(body)}</p>
     ${ctaBlock}
     ${couponBlock}
     ${referralBlock}
-    <p style="margin-top:28px;font-size:12px;color:#888;">${escapeHtml(footer)}</p>
+    <p style="margin-top:28px;font-size:12px;color:#8C2340;">${escapeHtml(footer)}</p>
   </div>
 </body></html>`
 }

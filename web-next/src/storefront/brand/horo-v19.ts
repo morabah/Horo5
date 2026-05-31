@@ -7,6 +7,24 @@ export const HORO_V19_COLORS = {
   darkText: '#4F111F',
 } as const;
 
+export const HORO_V19_COLOR_ROLES = {
+  pageCanvas: HORO_V19_COLORS.softSurface,
+  storyPanel: HORO_V19_COLORS.breath,
+  cardSurface: HORO_V19_COLORS.white,
+  rootText: HORO_V19_COLORS.root,
+  brandDepth: HORO_V19_COLORS.root,
+  pulseAction: HORO_V19_COLORS.pulse,
+  activeState: HORO_V19_COLORS.pulse,
+  subtleBorder: '#E8C9C6',
+} as const;
+
+export const HORO_V19_PALETTE_GUIDANCE = {
+  base: 'Use softSurface and white as the dominant canvas so the site stays shoppable and calm.',
+  breath: 'Use Breath for trust ribbons, story panels, gift moments, and soft product storytelling.',
+  root: 'Use Root for typography, header/footer depth, and premium brand fields.',
+  pulse: 'Use Pulse only for primary CTAs, active states, badges, and limited drop/sale emphasis.',
+} as const;
+
 export const HORO_V19_SOUNDBITES = {
   primary: {
     en: 'Wear What You Feel',

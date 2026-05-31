@@ -14,7 +14,7 @@ const PILLARS = [
       title: 'استوديو الفنان',
       surfaces: ['صفحة الفنان على المنتج', 'شريط الصفحة الرئيسية', 'صفحة عن HORO'],
     },
-    accent: '#B77A67',
+    accent: '#8C2340',
   },
   {
     key: 'street-gallery',
@@ -26,7 +26,7 @@ const PILLARS = [
       title: 'المعرض في الشارع',
       surfaces: ['الصورة الرئيسية', 'صور المنتجات', 'معرض المستخدمين'],
     },
-    accent: '#556F73',
+    accent: '#4F111F',
   },
   {
     key: 'the-feel',
@@ -38,7 +38,7 @@ const PILLARS = [
       title: 'الإحساس',
       surfaces: ['صفحة المشاعر', 'اختبار الصفحة الرئيسية', 'اقتباس على صفحة المنتج'],
     },
-    accent: '#D4A44E',
+    accent: '#FEE5E2',
   },
   {
     key: 'horo-standard',
@@ -50,7 +50,7 @@ const PILLARS = [
       title: 'معيار HORO',
       surfaces: ['دليل المقاسات', 'صور القماش', 'التقييمات', 'شريط الثقة'],
     },
-    accent: '#53706c',
+    accent: '#8C2340',
   },
 ] as const;
 

@@ -7,6 +7,8 @@
 @theme {
   /*
    * HORO V1.9 — Root / Breath / Pulse palette with legacy alias compatibility.
+   * UX usage: soft/white canvas first, Breath for warm panels, Root for depth,
+   * Pulse for CTAs and active states. Avoid filling full pages with Breath.
    * Space Grotesk headings, Inter UI/body.
    */
   --color-horo-root: #4F111F;
@@ -14,25 +16,30 @@
   --color-horo-pulse: #8C2340;
   --color-horo-soft: #FFF7F5;
   --color-horo-white: #FFFFFF;
+  --color-horo-page: #FFF7F5;
+  --color-horo-panel: #FEE5E2;
+  --color-horo-card: #FFFFFF;
+  --color-horo-border: #E8C9C6;
+  --color-horo-focus: #8C2340;
 
   --color-chalk: #FEE5E2;
   --color-linen: #FFF7F5;
   --color-ink: #4F111F;
   --color-burgundy: #4F111F;
   --color-warm-charcoal: #4F111F;
-  --color-dusk-plum: #6a5b76;
-  --color-moon-gold: #c5a15c;
+  --color-dusk-plum: #8C2340;
+  --color-moon-gold: #FEE5E2;
   --color-clay-action: #8C2340;
   --color-cta-primary: #8C2340;
   --color-cta-on-primary: #FFFFFF;
-  --color-moss: #7d8771;
-  --color-river: #556f73;
+  --color-moss: #4F111F;
+  --color-river: #8C2340;
 
-  --color-outline: #6b5540;
-  --color-secondary-fixed: #e8dfd4;
+  --color-outline: #E8C9C6;
+  --color-secondary-fixed: #FEE5E2;
   --color-ember: #8C2340;
   --color-primary: #8C2340;
-  --color-surface: #FEE5E2;
+  --color-surface: #FFF7F5;
   --color-on-surface: #4F111F;
   --color-secondary: #4F111F;
   --color-outline-variant: #E8C9C6;
@@ -40,25 +47,25 @@
   --color-surface-container: #FFF7F5;
 
   /* Aliased legacy neutrals → V1.9 */
-  --color-papyrus: #FEE5E2;
+  --color-papyrus: #FFF7F5;
   --color-clean-white: #FFFFFF;
   --color-obsidian: #4F111F;
   --color-stone: #E8C9C6;
   --color-clay: #4F111F;
   --color-label: #4F111F;
-  --color-desert-sand: #c5a15c;
-  --color-deep-teal: #556f73;
-  --color-dusk-violet: #6a5b76;
-  --color-nile-dark: #556f73;
-  --color-kohl-gold-bright: #c5a15c;
-  --color-kohl-gold-dark: #8a7349;
+  --color-desert-sand: #FEE5E2;
+  --color-deep-teal: #8C2340;
+  --color-dusk-violet: #8C2340;
+  --color-nile-dark: #8C2340;
+  --color-kohl-gold-bright: #FEE5E2;
+  --color-kohl-gold-dark: #4F111F;
 
   /* Matte-friendly UI tints */
-  --color-glass-white: #FEE5E2;
-  --color-frost-blue: #e8e4df;
-  --color-soft-violet: #ebe5ef;
-  --color-warm-glow: #f2ebe0;
-  --color-mint-frost: #e8ede6;
+  --color-glass-white: #FFFFFF;
+  --color-frost-blue: #FFF7F5;
+  --color-soft-violet: #FEE5E2;
+  --color-warm-glow: #FEE5E2;
+  --color-mint-frost: #FFF7F5;
 
   /* Typography — V1.6: Space Grotesk for headings/brand titles, Inter for body/UI */
   --font-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
@@ -225,7 +232,7 @@
     animation-play-state: running;
   }
   :focus-visible {
-    outline: 2px solid var(--color-river);
+    outline: 2px solid var(--color-horo-focus);
     outline-offset: 2px;
   }
 }
@@ -1038,7 +1045,7 @@
     width: min(100vw, 420px);
     display: flex;
     flex-direction: column;
-    background: var(--color-chalk, #faf8f4);
+    background: var(--color-chalk, #FEE5E2);
     border-left: 1px solid color-mix(in srgb, var(--color-stone) 60%, transparent);
     box-shadow: -8px 0 40px rgba(26, 26, 26, 0.14);
     overflow-y: auto;
@@ -1073,7 +1080,7 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: var(--color-nile-dark, #2b7596);
+    background: var(--color-nile-dark, #8C2340);
     color: white;
     font-size: 0.875rem;
     font-weight: 700;
@@ -1084,7 +1091,7 @@
     font-family: var(--font-headline);
     font-size: 1.0625rem;
     font-weight: 600;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
   }
 
   .mini-cart-close {
@@ -1096,7 +1103,7 @@
     border-radius: 8px;
     border: none;
     background: transparent;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     cursor: pointer;
     transition: background 200ms;
   }
@@ -1117,7 +1124,7 @@
     border-radius: 10px;
     overflow: hidden;
     flex-shrink: 0;
-    background: var(--color-stone, #d4cfc5);
+    background: var(--color-stone, #E8C9C6);
   }
 
   .mini-cart-item-image img {
@@ -1137,7 +1144,7 @@
     font-family: var(--font-headline);
     font-weight: 600;
     font-size: 0.9375rem;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1146,7 +1153,7 @@
 
   .mini-cart-item-meta {
     font-size: 0.8125rem;
-    color: var(--color-clay, #8c7e6f);
+    color: var(--color-clay, #4F111F);
     margin: 0.25rem 0 0;
   }
 
@@ -1154,7 +1161,7 @@
     font-family: var(--font-headline);
     font-weight: 600;
     font-size: 0.9375rem;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     margin: 0.5rem 0 0;
   }
 
@@ -1167,7 +1174,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 0.875rem;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     padding: 0.75rem 0;
     border-top: 1px solid color-mix(in srgb, var(--color-stone) 40%, transparent);
     margin: 0;
@@ -1186,7 +1193,7 @@
     font-family: var(--font-body);
     font-size: 0.78125rem;
     font-weight: 600;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     margin: 0 0 0.5rem;
   }
 
@@ -1203,7 +1210,7 @@
     display: block;
     height: 100%;
     border-radius: 999px;
-    background: var(--color-deep-teal, #2d6a6f);
+    background: var(--color-deep-teal, #8C2340);
     transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
@@ -1211,7 +1218,7 @@
     margin: 0.5rem 0 0;
     font-family: var(--font-body);
     font-size: 0.6875rem;
-    color: var(--color-clay, #8c7e6f);
+    color: var(--color-clay, #4F111F);
   }
 
   .mini-cart-actions {
@@ -1241,7 +1248,7 @@
   }
 
   .mini-cart-cta-primary:hover {
-    background: color-mix(in srgb, var(--color-clay) 92%, #1a1a1a);
+    background: color-mix(in srgb, var(--color-clay) 92%, #4F111F);
     box-shadow: 0 6px 16px rgba(26, 26, 26, 0.16);
   }
 
@@ -1257,7 +1264,7 @@
     border-radius: 12px;
     border: 1px solid color-mix(in srgb, var(--color-stone) 70%, transparent);
     background: transparent;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     font-family: var(--font-label);
     font-size: 0.75rem;
     font-weight: 600;
@@ -1278,7 +1285,7 @@
     min-height: 44px;
     border: none;
     background: transparent;
-    color: var(--color-deep-teal, #2b7596);
+    color: var(--color-deep-teal, #8C2340);
     font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;
@@ -1286,7 +1293,7 @@
   }
 
   .mini-cart-cta-continue:hover {
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
   }
 
   .mini-cart-trust {
@@ -1304,7 +1311,7 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    color: var(--color-clay, #8c7e6f);
+    color: var(--color-clay, #4F111F);
     border: 1px solid color-mix(in srgb, var(--color-stone) 60%, transparent);
     border-radius: 999px;
     padding: 0.375rem 0.75rem;
@@ -1374,7 +1381,7 @@
     font-family: var(--font-headline);
     font-weight: 600;
     font-size: 0.8125rem;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1383,7 +1390,7 @@
 
   .sticky-atc-size {
     font-size: 0.6875rem;
-    color: var(--color-clay, #8c7e6f);
+    color: var(--color-clay, #4F111F);
     margin: 0.125rem 0 0;
   }
 
@@ -1415,7 +1422,7 @@
   }
 
   .sticky-atc-btn--ready {
-    background: var(--color-obsidian, #1a1a1a);
+    background: var(--color-obsidian, #4F111F);
     color: #fff;
     box-shadow: 0 4px 12px rgba(26, 26, 26, 0.18);
   }
@@ -1431,7 +1438,7 @@
 
   .sticky-atc-btn--prompt {
     background: transparent;
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     border: 1px solid color-mix(in srgb, var(--color-stone) 70%, transparent);
   }
 
@@ -1480,8 +1487,8 @@
 
   .pdp-cta-added {
     animation: pdp-cta-success 0.42s cubic-bezier(0.22, 1, 0.36, 1);
-    background: var(--color-nile-dark, #2b7596) !important;
-    border-color: var(--color-nile-dark, #2b7596) !important;
+    background: var(--color-nile-dark, #8C2340) !important;
+    border-color: var(--color-nile-dark, #8C2340) !important;
     color: white !important;
   }
 
@@ -1595,7 +1602,7 @@
     justify-content: center;
     width: 64px;
     height: 64px;
-    color: var(--color-clay, #8c7e6f);
+    color: var(--color-clay, #4F111F);
     animation: route-loading-pulse 1.6s ease-in-out infinite;
   }
 
@@ -1621,10 +1628,10 @@
     height: 44px;
     border-radius: 12px;
     border: 1px solid color-mix(in srgb, var(--color-stone) 60%, transparent);
-    background: color-mix(in srgb, var(--color-chalk, #faf8f4) 92%, transparent);
+    background: color-mix(in srgb, var(--color-chalk, #FEE5E2) 92%, transparent);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    color: var(--color-obsidian, #1a1a1a);
+    color: var(--color-obsidian, #4F111F);
     box-shadow: 0 4px 16px rgba(26, 26, 26, 0.1);
     cursor: pointer;
     opacity: 0;
@@ -1640,7 +1647,7 @@
   }
 
   .back-to-top:hover {
-    background: var(--color-chalk, #faf8f4);
+    background: var(--color-chalk, #FEE5E2);
     box-shadow: 0 6px 24px rgba(26, 26, 26, 0.16);
   }
 

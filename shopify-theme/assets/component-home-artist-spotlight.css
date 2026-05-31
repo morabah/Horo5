@@ -50,7 +50,7 @@
 
 .home-artist-spotlight__heading {
   margin: 0 0 1.2rem;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .home-artist-spotlight__body {
@@ -78,7 +78,7 @@
 }
 
 .home-artist-spotlight__cta:hover {
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
   text-decoration: underline;
 }
 

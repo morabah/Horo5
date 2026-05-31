@@ -84,7 +84,7 @@ export function PolicyPageLayout({
                   href={whatsappSupportUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-transform hover:-translate-y-0.5"
+                  className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-6 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-white shadow-sm transition-transform hover:-translate-y-0.5"
                 >
                   WhatsApp Support
                 </a>

@@ -20,7 +20,7 @@ export type FeelingTaxonomySeed = {
 export const FEELING_TAXONOMY: FeelingTaxonomySeed[] = [
   {
     slug: "mood",
-    accent: "#B77A67",
+    accent: "#8C2340",
     name: "Mood",
     blurb: "For emotional honesty, slower days, and pieces that read like a feeling before they read like a trend.",
     tagline: "For emotional honesty, slower days, and pieces that read like a feeling before they read like a trend.",
@@ -33,7 +33,7 @@ export const FEELING_TAXONOMY: FeelingTaxonomySeed[] = [
   },
   {
     slug: "zodiac",
-    accent: "#C5A15C",
+    accent: "#4F111F",
     name: "Zodiac",
     blurb: "For cosmic identity, signs, and symbolism-led stories.",
     tagline: "For cosmic identity, signs, and symbolism-led stories.",
@@ -46,7 +46,7 @@ export const FEELING_TAXONOMY: FeelingTaxonomySeed[] = [
   },
   {
     slug: "trends",
-    accent: "#556F73",
+    accent: "#8C2340",
     name: "Trends",
     blurb: "For streetwear language, visible statements, and culture-led drops.",
     tagline: "For streetwear language, visible statements, and culture-led drops.",
@@ -59,7 +59,7 @@ export const FEELING_TAXONOMY: FeelingTaxonomySeed[] = [
   },
   {
     slug: "career",
-    accent: "#7D8771",
+    accent: "#4F111F",
     name: "Career",
     blurb: "For ambition, office humor, and work-life identity.",
     tagline: "For ambition, office humor, and work-life identity.",
@@ -72,7 +72,7 @@ export const FEELING_TAXONOMY: FeelingTaxonomySeed[] = [
   },
   {
     slug: "fiction",
-    accent: "#6A5B76",
+    accent: "#8C2340",
     name: "Fiction",
     blurb: "For fandoms, story worlds, and reference-heavy graphics.",
     tagline: "For fandoms, story worlds, and reference-heavy graphics.",

@@ -84,6 +84,10 @@ function safeTestId(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'default';
 }
 
+function isLegacyHeroBody(value: string | undefined): boolean {
+  return Boolean(value && /\bCODs?\b/i.test(value));
+}
+
 export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -105,7 +109,8 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     return Math.min(...products.map((p) => p.priceEgp));
   })();
 
-  const subtitleBase = fromSection(section?.body) ?? t(config.subtitle);
+  const sectionBody = fromSection(section?.body);
+  const subtitleBase = isLegacyHeroBody(sectionBody) ? t(config.subtitle) : sectionBody ?? t(config.subtitle);
   const priceToken = priceRange
     ? isArabic
       ? `من ${formatEgp(priceRange)}`

@@ -116,9 +116,33 @@ const bannedPublicPatterns = [
   { pattern: /Wear What You Mean/i, label: "internal mantra used as public copy" },
   { pattern: /Find the mood you wear/i, label: "pre-V1.6 shop-by-feeling phrase" },
   { pattern: /Find the feeling you wear/i, label: "pre-V1.9 shop-by-feeling phrase" },
+  { pattern: /\bCODs\b/i, label: "legacy shorthand CODs copy" },
   { pattern: /#e8593c/i, label: "pre-V1.6 coral CTA color" },
   { pattern: /#7a1f2b/i, label: "pre-V1.9 burgundy anchor color" },
   { pattern: /rgba\(232,\s*89,\s*60/i, label: "pre-V1.6 coral rgba accent" },
+  { pattern: /#B77A67/i, label: "pre-V1.9 terracotta feeling accent" },
+  { pattern: /#C5A15C/i, label: "pre-V1.9 gold feeling accent" },
+  { pattern: /#556F73/i, label: "pre-V1.9 teal feeling accent" },
+  { pattern: /#7D8771/i, label: "pre-V1.9 moss feeling accent" },
+  { pattern: /#6A5B76/i, label: "pre-V1.9 violet feeling accent" },
+  { pattern: /#D4A44E/i, label: "pre-V1.9 gift gold accent" },
+  { pattern: /#C4A574/i, label: "pre-V1.9 occasion gold accent" },
+  { pattern: /#53706c/i, label: "pre-V1.9 fallback teal accent" },
+  { pattern: /#F5F0E8/i, label: "pre-V1.9 papyrus full-page background" },
+  { pattern: /#1A1A1A/i, label: "pre-V1.9 black/obsidian color" },
+  { pattern: /#2C2A26/i, label: "pre-V1.9 warm charcoal color" },
+  { pattern: /#C4956A/i, label: "pre-V1.9 desert sand color" },
+  { pattern: /#D4A24E/i, label: "pre-V1.9 kohl gold color" },
+  { pattern: /#D4CFC5/i, label: "pre-V1.9 stone color" },
+  { pattern: /#6B5E4F/i, label: "pre-V1.9 clay color" },
+  { pattern: /#6B4C8A/i, label: "pre-V1.9 dusk violet color" },
+  { pattern: /#E6DDD1/i, label: "pre-V1.9 beige Shopify scheme" },
+  { pattern: /#1F1C1A/i, label: "pre-V1.9 ink Shopify scheme" },
+  { pattern: /#242833/i, label: "pre-V1.9 slate Shopify scheme" },
+  { pattern: /#fffaf3/i, label: "pre-V1.9 cream SVG surface" },
+  { pattern: /#e8e4df/i, label: "pre-V1.9 email/token border" },
+  { pattern: /#816a4f/i, label: "pre-V1.9 brown SVG accent" },
+  { pattern: /#151514/i, label: "pre-V1.9 near-black SVG field" },
 ];
 
 for (const file of sourceRoots.flatMap(walk)) {
@@ -157,6 +181,12 @@ assertContains(
 
 assertContains(
   "web-next/src/storefront/brand/horo-v19.ts",
+  "HORO_V19_COLOR_ROLES",
+  "V1.9 brand constants file must export semantic color roles.",
+);
+
+assertContains(
+  "web-next/src/storefront/brand/horo-v19.ts",
   "Wear What You Feel",
   "public brand line must use Wear What You Feel.",
 );
@@ -191,6 +221,8 @@ for (const file of v19TokenFiles) {
   assertMatches(file, /#4[fF]111[fF]/, "must expose V1.9 Root color.");
   assertMatches(file, /#FEE5E2/i, "must expose V1.9 Breath color.");
   assertMatches(file, /#8[Cc]2340/, "must expose V1.9 Pulse color.");
+  assertMatches(file, /#FFF7F5/i, "must expose soft/white page canvas role.");
+  assertMatches(file, /horo-(page|soft)|pageCanvas|--papyrus:\s*var\(--horo-page\)/, "must name a page canvas role instead of using Breath as the whole page.");
 }
 
 assertMatches(
@@ -224,6 +256,9 @@ if (!homepageDefaults.includes("soundbite_en")) {
 }
 if (!homepageDefaults.includes("Payment options shown at checkout")) {
   fail("medusa-backend/src/lib/homepage-sections/defaults.ts: missing V1.9 payment trust copy.");
+}
+if (!homepageDefaults.includes("palette_roles")) {
+  fail("medusa-backend/src/lib/homepage-sections/defaults.ts: missing V1.9 palette role payload.");
 }
 
 for (const file of [
@@ -268,6 +303,28 @@ for (const file of [
   } catch (error) {
     fail(`${file}: invalid JSON (${error.message}).`);
   }
+}
+
+try {
+  const settings = JSON.parse(read("shopify-theme/config/settings_data.json"));
+  const schemes = settings?.presets?.Default?.color_schemes || {};
+  const expected = {
+    "scheme-1": { background: "#FFF7F5", text: "#4F111F", button: "#8C2340", button_label: "#FFFFFF" },
+    "scheme-2": { background: "#FEE5E2", text: "#4F111F", button: "#8C2340", button_label: "#FFFFFF" },
+    "scheme-3": { background: "#4F111F", text: "#FFFFFF", button: "#FEE5E2", button_label: "#4F111F" },
+    "scheme-5": { background: "#8C2340", text: "#FFFFFF", button: "#FFFFFF", button_label: "#8C2340" },
+  };
+
+  for (const [schemeName, schemeExpectations] of Object.entries(expected)) {
+    const actual = schemes[schemeName]?.settings || {};
+    for (const [key, value] of Object.entries(schemeExpectations)) {
+      if (String(actual[key]).toUpperCase() !== value) {
+        fail(`shopify-theme/config/settings_data.json: ${schemeName}.${key} must be ${value}.`);
+      }
+    }
+  }
+} catch (error) {
+  fail(`shopify-theme/config/settings_data.json: unable to validate V1.9 scheme roles (${error.message}).`);
 }
 
 if (failures.length > 0) {

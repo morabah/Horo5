@@ -689,7 +689,7 @@ export function buildProductMetadata(
   const feeling = feelingFromCatalog(feelingSlug, catalog);
   const description =
     product.description ||
-    `${product.name} graphic tee from HORO Egypt${feeling ? `, aligned with ${feeling.name}` : ""}. ${product.priceEgp} EGP — COD when shown at checkout; 14-day exchange per policy in Egypt.`;
+    `${product.name} graphic tee from HORO Egypt${feeling ? `, aligned with ${feeling.name}` : ""}. ${product.priceEgp} EGP — payment options shown at checkout; 14-day exchange per policy in Egypt.`;
   const canonical = siteOrigin ? `${siteOrigin}/products/${product.slug}` : `/products/${product.slug}`;
   const image = toAbsoluteUrl(product.thumbnail || product.media?.main || undefined);
 

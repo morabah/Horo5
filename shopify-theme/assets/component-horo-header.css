@@ -78,7 +78,7 @@
 }
 
 .horo-wordmark--dark {
-  color: var(--horo-obsidian, #1a1a1a);
+  color: var(--horo-obsidian, #4F111F);
 }
 
 .horo-wordmark__ar--dark {
@@ -86,7 +86,7 @@
 }
 
 .horo-wordmark--light {
-  color: #f5f0e8;
+  color: #FEE5E2;
 }
 
 .horo-wordmark__ar--light {
@@ -576,7 +576,7 @@
 
 /* --- Order placed hint --- */
 .horo-order-placed-hint {
-  background: #e8ede6;
+  background: #FFF7F5;
   border-bottom: 1px solid rgba(196, 184, 171, 0.35);
   padding: 0.625rem 0;
 }

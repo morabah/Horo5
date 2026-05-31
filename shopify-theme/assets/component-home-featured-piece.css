@@ -54,7 +54,7 @@
 
 .home-featured-piece__heading {
   margin: 0 0 1.2rem;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .home-featured-piece__story {
@@ -80,7 +80,7 @@
   font-family: var(--font-heading-family);
   font-size: 1.8rem;
   font-weight: 600;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .home-featured-piece__actions {

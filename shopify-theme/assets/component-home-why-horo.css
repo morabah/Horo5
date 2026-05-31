@@ -8,7 +8,7 @@
 
 .home-why-horo__heading {
   margin: 0 0 1.2rem;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
   text-align: center;
 }
 
@@ -67,7 +67,7 @@
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: -0.01em;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .home-why-horo__block-body {

@@ -36,7 +36,7 @@ export function VibeCommerceCard({
   const cover = getFeelingCollectionVisual(feeling.slug).cover;
   const coverSrc = cover.src?.trim() ? cover.src : heroVectorizedV2;
   const displayCoverSrc = resolveProductImageSrcForDisplay(coverSrc);
-  const accentColor = feeling.accent?.trim() || '#53706c';
+  const accentColor = feeling.accent?.trim() || '#8C2340';
   const bodyCopy = feeling.tagline || feeling.blurb || '';
   const ctaLabel = variant === 'see-vibe' ? DICTIONARY.en.vibes.cardSeeVibeCta : DICTIONARY.en.vibes.cardExploreCta;
   const ariaLabel = DICTIONARY.en.vibes.cardAriaTemplate

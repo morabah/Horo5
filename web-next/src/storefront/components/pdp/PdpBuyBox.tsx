@@ -225,7 +225,7 @@ export function PdpBuyBox({
 
           {/* Promo label */}
           {localizedPromoLabel?.trim() ? (
-            <p className="font-label text-[11px] font-medium uppercase tracking-[0.16em] text-amber-700">
+            <p className="font-label text-[11px] font-medium uppercase tracking-[0.16em] text-horo-pulse">
               {localizedPromoLabel.trim()}
             </p>
           ) : null}
@@ -238,16 +238,16 @@ export function PdpBuyBox({
                   {formatEgp(displayOriginalPriceEgp)}
                 </p>
               ) : null}
-              <p className={`font-headline text-[1.8rem] font-semibold leading-none md:text-[2rem] ${displayOriginalPriceEgp ? 'text-red-600' : 'text-obsidian'}`}>
+              <p className={`font-headline text-[1.8rem] font-semibold leading-none md:text-[2rem] ${displayOriginalPriceEgp ? 'text-horo-pulse' : 'text-obsidian'}`}>
                 {formatEgp(displayPriceEgp)}
               </p>
               {promoShowCountdown && promoCountdown && !promoCountdown.expired ? (
-                <span className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 ring-1 ring-red-200">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-red-500" aria-hidden>
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-horo-breath px-3 py-1.5 ring-1 ring-horo-pulse/20">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-horo-pulse" aria-hidden>
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
-                  <span className="font-label text-[13px] font-semibold tabular-nums leading-none text-red-600">
+                  <span className="font-label text-[13px] font-semibold tabular-nums leading-none text-horo-pulse">
                     {promoCountdown.days > 0
                       ? `${promoCountdown.days}d ${String(promoCountdown.hours).padStart(2, '0')}h ${String(promoCountdown.minutes).padStart(2, '0')}m`
                       : `${String(promoCountdown.hours).padStart(2, '0')}:${String(promoCountdown.minutes).padStart(2, '0')}:${String(promoCountdown.seconds).padStart(2, '0')}`}
@@ -263,7 +263,7 @@ export function PdpBuyBox({
               </p>
             ) : null}
             {promoStockUrgency ? (
-              <p className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+              <p className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-horo-pulse">
                 {promoStockUrgency}
               </p>
             ) : null}
@@ -376,7 +376,7 @@ export function PdpBuyBox({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden
-                style={{ color: wishlisted ? '#c0392b' : 'var(--obsidian, #1a1a1a)' }}
+                style={{ color: wishlisted ? '#8C2340' : 'var(--obsidian, #4F111F)' }}
               >
                 <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
               </svg>

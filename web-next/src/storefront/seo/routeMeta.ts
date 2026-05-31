@@ -155,7 +155,7 @@ export function resolveRouteMeta(pathname: string): RouteSeoMeta {
     return indexablePage(
       `/products/${p.slug}`,
       `${p.name} Graphic Tee | HORO Egypt`,
-      `Shop ${p.name}, a ${fitLabel} from HORO Egypt${feeling ? ` — ${feeling.name}` : ''}. ${p.priceEgp} EGP — COD when shown at checkout; 14-day exchange per policy in Egypt.`,
+      `Shop ${p.name}, a ${fitLabel} from HORO Egypt${feeling ? ` — ${feeling.name}` : ''}. ${p.priceEgp} EGP — payment options shown at checkout; 14-day exchange per policy in Egypt.`,
       {
         ogType: 'product',
         structuredData: buildBreadcrumb([

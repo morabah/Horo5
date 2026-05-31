@@ -9,20 +9,28 @@
 /* --- Brand color tokens (scoped to HORO sections) --- */
 :root {
   --horo-obsidian: #4F111F;
-  --horo-papyrus: #FEE5E2;
+  --horo-root: #4F111F;
+  --horo-breath: #FEE5E2;
+  --horo-pulse: #8C2340;
+  --horo-page: #FFF7F5;
+  --horo-papyrus: #FFF7F5;
   --horo-linen: #FFF7F5;
   --horo-clay: #4F111F;
   --horo-warm-charcoal: #4F111F;
-  --horo-deep-teal: #556f73;
+  --horo-deep-teal: #8C2340;
   --horo-stone: #E8C9C6;
   --horo-ember: #8C2340;
-  --horo-amber-700: #b45309;
+  --horo-amber-700: #8C2340;
   --horo-white: #ffffff;
 }
 
 /* --- Surface backgrounds --- */
 .horo-surface--papyrus {
   background-color: var(--horo-papyrus);
+}
+
+.horo-surface--breath {
+  background-color: var(--horo-breath);
 }
 
 .horo-surface--linen {
@@ -248,11 +256,11 @@
   --horo-ink: #4F111F;
   --horo-burgundy: #4F111F;
   --horo-warm-charcoal: #4F111F;
-  --horo-dusk-plum: #6a5b76;
-  --horo-moon-gold: #c5a15c;
+  --horo-dusk-plum: #8C2340;
+  --horo-moon-gold: #FEE5E2;
   --horo-clay-action: #8C2340;
-  --horo-moss: #7d8771;
-  --horo-river: #556f73;
+  --horo-moss: #4F111F;
+  --horo-river: #8C2340;
   --horo-stone: #E8C9C6;
 
   --font-horo-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
@@ -313,7 +321,7 @@
 
 /* --- Quick-view pill glass --- */
 .quick-view-pill {
-  background: rgba(248, 246, 242, 0.58);
+  background: rgba(255, 247, 245, 0.62);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.92);
@@ -324,7 +332,7 @@
 }
 
 .quick-view-pill:hover {
-  background: rgba(248, 246, 242, 0.72);
+  background: rgba(255, 247, 245, 0.78);
   transform: scale(1.02);
 }
 
@@ -334,8 +342,8 @@
 
 /* --- Matte editorial surfaces --- */
 .warm-glow-glass {
-  background: rgba(244, 239, 231, 0.92);
-  border: 1px solid rgba(212, 204, 192, 0.75);
+  background: rgba(254, 229, 226, 0.86);
+  border: 1px solid rgba(232, 201, 198, 0.78);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(31, 28, 26, 0.06);
 }
@@ -349,8 +357,8 @@
 }
 
 .home-glass-frame {
-  background: linear-gradient(180deg, #ffffff 0%, #e6ddd1 100%);
-  border: 1px solid rgba(212, 204, 192, 0.65);
+  background: linear-gradient(180deg, #ffffff 0%, #FFF7F5 100%);
+  border: 1px solid rgba(232, 201, 198, 0.65);
   box-shadow: 0 16px 40px -24px rgba(31, 28, 26, 0.12);
 }
 

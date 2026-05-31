@@ -11,6 +11,11 @@
   --color-horo-pulse: #8C2340;
   --color-horo-soft: #FFF7F5;
   --color-horo-white: #FFFFFF;
+  --color-horo-page: #FFF7F5;
+  --color-horo-panel: #FEE5E2;
+  --color-horo-card: #FFFFFF;
+  --color-horo-border: #E8C9C6;
+  --color-horo-focus: #8C2340;
 
   /* === Brand Palette (legacy aliases → V1.9) === */
   --color-chalk: #FEE5E2;
@@ -18,20 +23,20 @@
   --color-ink: #4F111F;
   --color-burgundy: #4F111F;
   --color-warm-charcoal: #4F111F;
-  --color-dusk-plum: #6a5b76;
-  --color-moon-gold: #c5a15c;
+  --color-dusk-plum: #8C2340;
+  --color-moon-gold: #FEE5E2;
   --color-clay-action: #8C2340;
   --color-cta-primary: #8C2340;
   --color-cta-on-primary: #FFFFFF;
-  --color-moss: #7d8771;
-  --color-river: #556f73;
+  --color-moss: #4F111F;
+  --color-river: #8C2340;
 
   /* === Semantic Aliases === */
-  --color-outline: #6b5540;
-  --color-secondary-fixed: #e8dfd4;
+  --color-outline: #E8C9C6;
+  --color-secondary-fixed: #FEE5E2;
   --color-ember: #8C2340;
   --color-primary: #8C2340;
-  --color-surface: #FEE5E2;
+  --color-surface: #FFF7F5;
   --color-on-surface: #4F111F;
   --color-secondary: #4F111F;
   --color-outline-variant: #E8C9C6;
@@ -39,25 +44,25 @@
   --color-surface-container: #FFF7F5;
 
   /* === Legacy neutrals (mapped to V1.9) === */
-  --color-papyrus: #FEE5E2;
+  --color-papyrus: #FFF7F5;
   --color-clean-white: #FFFFFF;
   --color-obsidian: #4F111F;
   --color-stone: #E8C9C6;
   --color-clay: #4F111F;
   --color-label: #4F111F;
-  --color-desert-sand: #c5a15c;
-  --color-deep-teal: #556f73;
-  --color-dusk-violet: #6a5b76;
-  --color-nile-dark: #556f73;
-  --color-kohl-gold-bright: #c5a15c;
-  --color-kohl-gold-dark: #8a7349;
+  --color-desert-sand: #FEE5E2;
+  --color-deep-teal: #8C2340;
+  --color-dusk-violet: #8C2340;
+  --color-nile-dark: #8C2340;
+  --color-kohl-gold-bright: #FEE5E2;
+  --color-kohl-gold-dark: #4F111F;
 
   /* === Matte UI Tints === */
-  --color-glass-white: #FEE5E2;
-  --color-frost-blue: #e8e4df;
-  --color-soft-violet: #ebe5ef;
-  --color-warm-glow: #f2ebe0;
-  --color-mint-frost: #e8ede6;
+  --color-glass-white: #FFFFFF;
+  --color-frost-blue: #FFF7F5;
+  --color-soft-violet: #FEE5E2;
+  --color-warm-glow: #FEE5E2;
+  --color-mint-frost: #FFF7F5;
 
   /* === Typography === */
   --font-headline: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
@@ -73,6 +78,10 @@
   --radius-lg: 0.25rem;
   --radius-xl: 0.5rem;
   --radius-full: 0.75rem;
+}
+
+body.gradient {
+  background: var(--color-horo-page, #FFF7F5);
 }
 
 :lang(ar) {

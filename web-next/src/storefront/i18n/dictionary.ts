@@ -116,7 +116,7 @@ export const DICTIONARY = {
         },
         "codAndExchange": {
           "title": "Safe to buy",
-          "body": "COD when shown at checkout. Exchange applies according to policy for eligible items and condition."
+          "body": "Payment options shown at checkout. Exchange applies according to policy for eligible items and condition."
         },
         "realProofOnly": {
           "title": "Real Proof Only",
@@ -201,7 +201,7 @@ export const DICTIONARY = {
           {
             "title": "Can I pay cash on delivery?",
             "body": [
-              "Payment options, including COD when available, are shown at checkout."
+              "Payment options are shown at checkout."
             ]
           },
           {
@@ -883,7 +883,7 @@ export const DICTIONARY = {
           {
             "title": "هل الدفع عند الاستلام متاح؟",
             "body": [
-              "طرق الدفع، ومنها الدفع عند الاستلام عند توفره، بتظهر في صفحة الدفع."
+              "طرق الدفع بتظهر في صفحة الدفع."
             ]
           },
           {

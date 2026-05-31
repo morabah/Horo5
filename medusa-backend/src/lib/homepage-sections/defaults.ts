@@ -30,6 +30,13 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
       canvas_en: "We are the canvas. You are the story.",
       canvas_ar: "إحنا القماش. إنت القصة.",
       story_system: "HORO V1.9 / StoryBrand 2 soundbite strategy",
+      palette_roles: {
+        page_canvas: "#FFF7F5",
+        breath_panel: "#FEE5E2",
+        root_text: "#4F111F",
+        pulse_action: "#8C2340",
+        usage: "Soft/white canvas first; Breath for trust/story/gift panels; Root for depth and text; Pulse only for CTAs, badges, and active states.",
+      },
     },
   },
   {

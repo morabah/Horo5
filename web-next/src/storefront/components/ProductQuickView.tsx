@@ -462,7 +462,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                     </p>
                     <button
                       type="button"
-                      className="font-label flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-obsidian shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                      className="font-label flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-md transition-all hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                       onClick={handleViewBag}
                     >
                       {primaryCtaLabel}
@@ -482,8 +482,8 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
                     className={`font-label flex min-h-12 w-full items-center justify-center rounded-lg px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em] shadow-md transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                       selectedSize
                         ? oosSelected
-                          ? 'bg-primary/90 text-obsidian hover:brightness-95'
-                          : 'bg-primary text-obsidian hover:brightness-95'
+                          ? 'bg-primary/90 text-white hover:brightness-95'
+                          : 'bg-primary text-white hover:brightness-95'
                         : 'cursor-not-allowed border border-white/30 bg-white/[0.14] text-white/75 shadow-none'
                     }`}
                     aria-disabled={!selectedSize}

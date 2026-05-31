@@ -338,7 +338,7 @@ export function FeelingCollection({
   const proofImageSrc = proofImageBroken || !proofVisualSrc?.trim() ? heroVectorizedV2 : proofVisualSrc;
   const heroImageAlt = activeLineVisual?.alt || feelingVisuals.hero.alt;
   const proofImageAlt = activeLineVisual?.alt || feelingVisuals.proof.alt;
-  const feelingAccent = feeling.accent?.trim() || '#53706c';
+  const feelingAccent = feeling.accent?.trim() || '#8C2340';
 
   return (
     <div className="bg-papyrus pb-16 md:pb-20">
@@ -776,7 +776,7 @@ export function FeelingCollection({
                 <button
                   type="button"
                   onClick={closeMobileFilters}
-                  className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-6 py-3 text-sm font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  className="font-label inline-flex min-h-12 items-center justify-center rounded-sm bg-primary px-6 py-3 text-sm font-medium uppercase tracking-[0.2em] text-white shadow-sm transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
                 >
                   Show {list.length} {list.length === 1 ? 'design' : 'designs'}
                 </button>

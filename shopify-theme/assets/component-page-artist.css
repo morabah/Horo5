@@ -34,7 +34,7 @@
 
 .page-artist__name {
   margin: 0 0 0.8rem;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .page-artist__style {
@@ -68,7 +68,7 @@
 }
 
 .page-artist__portfolio:hover {
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
   text-decoration: underline;
 }
 
@@ -90,7 +90,7 @@
   margin: 0 0 2rem;
   font-size: 1.8rem;
   font-weight: 600;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .page-artist__product-grid {

@@ -8,19 +8,19 @@ const COHORTS = [
     slug: 'explorer',
     en: { title: 'The Explorer', tagline: 'For the one who chases new cities and new feelings.' },
     ar: { title: 'المكتشف', tagline: 'للشخص اللي بيدور على مدن جديدة ومشاعر جديدة.' },
-    accent: '#B77A67',
+    accent: '#8C2340',
   },
   {
     slug: 'curator',
     en: { title: 'The Curator', tagline: 'For the one who notices details others miss.' },
     ar: { title: 'القائم', tagline: 'للشخص اللي بيلاحظ التفاصيل اللي الناس بتفوتها.' },
-    accent: '#556F73',
+    accent: '#4F111F',
   },
   {
     slug: 'connoisseur',
     en: { title: 'The Connoisseur', tagline: 'For the one who already has taste — and wants more.' },
     ar: { title: 'الخبير', tagline: 'للشخص اللي عنده ذوق — وعايز يزوده.' },
-    accent: '#D4A44E',
+    accent: '#FEE5E2',
   },
 ] as const;
 

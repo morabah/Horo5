@@ -13,7 +13,7 @@
   border: 1px solid rgba(212, 204, 192, 0.55);
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.88);
-  color: var(--horo-ink, #1f1c1a);
+  color: var(--horo-ink, #4F111F);
   cursor: pointer;
   transition:
     background-color 200ms ease,

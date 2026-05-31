@@ -1,31 +1,38 @@
-/* Legacy tokens + components for non–Tailwind pages — HORO V1.9 with legacy aliases */
+/* Legacy tokens + components for non–Tailwind pages — HORO V1.9 with legacy aliases.
+   UX usage: soft/white canvas first, Breath for warm panels, Root for depth,
+   Pulse for CTAs and active states. */
 :root {
   --horo-root: #4F111F;
   --horo-breath: #FEE5E2;
   --horo-pulse: #8C2340;
   --horo-soft: #FFF7F5;
+  --horo-page: #FFF7F5;
+  --horo-panel: #FEE5E2;
+  --horo-border: #E8C9C6;
+  --horo-focus: #8C2340;
 
-  --papyrus: var(--horo-breath);
+  --papyrus: var(--horo-page);
+  --breath: var(--horo-breath);
   --white: #ffffff;
   --obsidian: var(--horo-root);
   --burgundy: var(--horo-pulse);
   --warm-charcoal: var(--horo-root);
   --clay-earth: var(--horo-root);
   --label-brown: var(--horo-root);
-  --deep-teal: #556f73;
-  --dusk-violet: #6a5b76;
-  --kohl-gold-dark: #8a7349;
-  --nile-dark: #556f73;
+  --deep-teal: var(--horo-pulse);
+  --dusk-violet: var(--horo-pulse);
+  --kohl-gold-dark: var(--horo-root);
+  --nile-dark: var(--horo-pulse);
   --stone: #e8c9c6;
-  --desert-sand: #c5a15c;
+  --desert-sand: var(--horo-breath);
   --ember: var(--horo-pulse);
-  --kohl-gold-bright: #c5a15c;
+  --kohl-gold-bright: var(--horo-breath);
 
-  --glass-white: rgba(254, 229, 226, 0.94);
-  --frost-blue: rgba(232, 228, 223, 0.9);
-  --soft-violet: rgba(235, 229, 239, 0.92);
-  --warm-glow: rgba(242, 235, 224, 0.95);
-  --mint-frost: rgba(232, 237, 230, 0.92);
+  --glass-white: rgba(255, 255, 255, 0.94);
+  --frost-blue: rgba(255, 247, 245, 0.9);
+  --soft-violet: rgba(254, 229, 226, 0.92);
+  --warm-glow: rgba(254, 229, 226, 0.95);
+  --mint-frost: rgba(255, 247, 245, 0.92);
 
   --font-heading: 'Space Grotesk', Inter, Arial, Helvetica, sans-serif;
   --font-body: Inter, Arial, Helvetica, sans-serif;
@@ -108,10 +115,10 @@
 }
 
 .btn-secondary {
-  background: var(--papyrus);
+  background: var(--breath);
   color: var(--obsidian);
-  border: 1px solid rgba(212, 204, 192, 0.95);
-  box-shadow: 0 2px 10px rgba(31, 28, 26, 0.05);
+  border: 1px solid var(--horo-border);
+  box-shadow: 0 2px 10px rgba(79, 17, 31, 0.05);
 }
 
 /** Text link — underline grows from left on hover */
@@ -148,10 +155,10 @@
 }
 
 .card-glass {
-  background: color-mix(in srgb, var(--white) 92%, var(--papyrus) 8%);
-  border: 1px solid rgba(212, 204, 192, 0.85);
+  background: color-mix(in srgb, var(--white) 94%, var(--breath) 6%);
+  border: 1px solid var(--horo-border);
   border-radius: var(--radius-card);
-  box-shadow: 0 4px 18px rgba(31, 28, 26, 0.06);
+  box-shadow: 0 4px 18px rgba(79, 17, 31, 0.06);
 }
 
 .label {

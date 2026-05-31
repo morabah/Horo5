@@ -45,7 +45,7 @@ export const PDP_SCHEMA = {
     { label: 'Secure checkout', icon: 'Lock' as const },
   ],
   /** Persistent PDP trust line (Guidelines §8.3) */
-  trustStripItems: ['Artist-made design', 'Licensed art', '14-day exchange — see policy', 'COD when shown at checkout'] as const,
+  trustStripItems: ['Artist-made design', 'Licensed art', '14-day exchange — see policy', 'Payment options shown at checkout'] as const,
   /** StoryBrand micro-plan strip */
   storyPlanSteps: ['Find your feeling', 'Pick your design', 'It arrives at your door'] as const,
   /** Gallery image indices (0-based) for the “See it styled” grid */

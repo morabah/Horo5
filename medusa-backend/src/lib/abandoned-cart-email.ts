@@ -51,8 +51,8 @@ export function buildAbandonedCartReminderHtml(args: {
       : ""
   const unsub = args.unsubscribeUrl
     ? isAr
-      ? `<p style="margin-top:24px;font-size:12px;color:#888;"><a href="${escapeHtml(args.unsubscribeUrl)}">إلغاء تذكيرات السلة</a></p>`
-      : `<p style="margin-top:24px;font-size:12px;color:#888;"><a href="${escapeHtml(args.unsubscribeUrl)}">Unsubscribe from cart reminders</a></p>`
+      ? `<p style="margin-top:24px;font-size:12px;color:#8C2340;"><a href="${escapeHtml(args.unsubscribeUrl)}" style="color:#8C2340;">إلغاء تذكيرات السلة</a></p>`
+      : `<p style="margin-top:24px;font-size:12px;color:#8C2340;"><a href="${escapeHtml(args.unsubscribeUrl)}" style="color:#8C2340;">Unsubscribe from cart reminders</a></p>`
     : ""
 
   const lineItems =
@@ -64,16 +64,16 @@ export function buildAbandonedCartReminderHtml(args: {
             const img = thumb
               ? `<img src="${escapeHtml(thumb)}" alt="" width="48" height="48" style="object-fit:cover;border-radius:8px;margin-${isAr ? "left" : "right"}:12px;" />`
               : ""
-            return `<li style="display:flex;align-items:center;margin-bottom:10px;font-size:14px;color:#333;">${img}<span>${escapeHtml(line.title)} × ${line.quantity}</span></li>`
+            return `<li style="display:flex;align-items:center;margin-bottom:10px;font-size:14px;color:#4F111F;">${img}<span>${escapeHtml(line.title)} × ${line.quantity}</span></li>`
           })
           .join("")}</ul>`
       : ""
 
   return `<!DOCTYPE html>
-<html dir="${dir}"><body style="font-family:Inter, Arial, Helvetica, sans-serif;background:#FEE5E2;color:#4F111F;padding:24px;direction:${dir};">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #e8e4df;text-align:${align};">
+<html dir="${dir}"><body style="font-family:Inter, Arial, Helvetica, sans-serif;background:#FFF7F5;color:#4F111F;padding:24px;direction:${dir};">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #E8C9C6;text-align:${align};">
     <h1 style="font-family:'Space Grotesk', Inter, Arial, Helvetica, sans-serif;font-size:20px;margin:0 0 12px;">${escapeHtml(title)}</h1>
-    <p style="margin:0 0 12px;color:#444;line-height:1.6;">${escapeHtml(body)}</p>
+    <p style="margin:0 0 12px;color:#4F111F;line-height:1.6;">${escapeHtml(body)}</p>
     ${lineItems}
     ${valueLine ? `<p style="margin:0 0 20px;font-weight:600;">${escapeHtml(valueLine)}</p>` : ""}
     <a href="${escapeHtml(args.ctaUrl)}" style="display:inline-block;padding:12px 20px;background:#8C2340;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">${escapeHtml(cta)}</a>

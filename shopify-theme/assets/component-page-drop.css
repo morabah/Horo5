@@ -73,7 +73,7 @@
 
 .page-drop__name {
   margin: 0 0 1.2rem;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .page-drop__teaser {
@@ -111,7 +111,7 @@
   margin: 0 0 2rem;
   font-size: 1.8rem;
   font-weight: 600;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .page-drop__product-grid {

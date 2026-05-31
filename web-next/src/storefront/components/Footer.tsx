@@ -23,7 +23,7 @@ export function Footer() {
     <>
       {/* Late-scroll trust reinforcement (audit P8). Rendered above the dark footer. */}
       <HomeTrustRibbon />
-    <footer className="bg-obsidian pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 text-[#f5f0e8] sm:pt-32">
+    <footer className="bg-obsidian pb-[max(3rem,env(safe-area-inset-bottom))] pt-20 text-chalk sm:pt-32">
       {/* Brand manifesto — cinematic closing typography */}
       <div className="mx-auto max-w-[1400px] px-[max(1rem,env(safe-area-inset-left,0px))] sm:px-8 md:px-12 mb-16 sm:mb-24">
         <p
@@ -107,7 +107,7 @@ export function Footer() {
           <ul className="space-y-4">
             <li>
               <Link
-                className="font-body text-sm text-[#f5f0e8] underline decoration-primary underline-offset-8 transition-colors"
+                className="font-body text-sm text-chalk underline decoration-primary underline-offset-8 transition-colors"
                 href={NAV_ROUTE.about.path}
               >
                 {copy.shell.about}

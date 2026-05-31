@@ -111,7 +111,7 @@
 
 .home-drop-strip__heading {
   margin: 0 0 1.2rem;
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .home-drop-strip__teaser {
@@ -132,7 +132,7 @@
 }
 
 .home-drop-strip__card:hover .home-drop-strip__cta {
-  color: var(--color-ink, #1a1a1a);
+  color: var(--color-ink, #4F111F);
 }
 
 .home-drop-strip__arrow {
