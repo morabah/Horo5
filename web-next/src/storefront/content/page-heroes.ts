@@ -167,12 +167,12 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
     eyebrow: { en: "Our story", ar: "قصتنا" },
     title: { en: "Our story", ar: "عن HORO" },
     subtitle: {
-      en: "Artist-made graphic tees printed in Egypt — made for feelings, identity, and gifts that feel personal.",
-      ar: "HORO بتصنع قطع فنية قابلة للبس، للناس اللي عايزة لبسها يعبّر عن إحساس حقيقي.",
+      en: "Artist-made wearable art from Egypt — for feelings, identity, and meaning you can wear.",
+      ar: "فن قابل للّبس من مصر — للمشاعر، الهوية، والمعنى اللي تقدر تلبسه.",
     },
     primaryCta: {
-      label: { en: "Shop by feeling", ar: "تسوق حسب الشعور" },
-      href: "/feelings",
+      label: { en: "Shop the Founding Drop", ar: "تسوّق الإطلاق الأول" },
+      href: "/products",
     },
     desktopImage: {
       src: "/images/heroes/about-hero.svg",

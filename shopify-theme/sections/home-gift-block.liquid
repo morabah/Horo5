@@ -1,61 +1,63 @@
-{{ 'component-home-gift-block.css' | asset_url | stylesheet_tag }}
+{%- if section.settings.show_section or request.design_mode -%}
+  {{ 'component-home-gift-block.css' | asset_url | stylesheet_tag }}
 
-<section
-  id="gift-by-meaning"
-  class="home-section home-section--bordered home-section--panel section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
-  aria-labelledby="home-gift-title-{{ section.id }}"
->
-  <div class="home-page__inner">
-    <div class="home-gift-banner">
-      <div class="home-gift-banner__copy">
-        {%- if section.settings.eyebrow != blank -%}
-          <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
-        {%- endif -%}
-        <h2 id="home-gift-title-{{ section.id }}" class="home-gift-banner__title">
-          {{ section.settings.heading | escape }}
-          {%- if section.settings.heading_line_2 != blank -%}
-            <br>
-            {{ section.settings.heading_line_2 | escape }}
+  <section
+    id="gift-by-meaning"
+    class="home-section home-section--bordered home-section--panel section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    aria-labelledby="home-gift-title-{{ section.id }}"
+  >
+    <div class="home-page__inner">
+      <div class="home-gift-banner">
+        <div class="home-gift-banner__copy">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
           {%- endif -%}
-        </h2>
-        {%- if section.settings.body != blank -%}
-          <p class="home-gift-banner__body">{{ section.settings.body | escape }}</p>
-        {%- endif -%}
-        {%- if section.settings.button_label != blank -%}
-          <div style="margin-top: 1.25rem;">
-            <a
-              {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
-              class="home-btn home-btn--primary"
+          <h2 id="home-gift-title-{{ section.id }}" class="home-gift-banner__title">
+            {{ section.settings.heading | escape }}
+            {%- if section.settings.heading_line_2 != blank -%}
+              <br>
+              {{ section.settings.heading_line_2 | escape }}
+            {%- endif -%}
+          </h2>
+          {%- if section.settings.body != blank -%}
+            <p class="home-gift-banner__body">{{ section.settings.body | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.button_label != blank -%}
+            <div style="margin-top: 1.25rem;">
+              <a
+                {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
+                class="home-btn home-btn--primary"
+              >
+                {{ section.settings.button_label | escape }}
+              </a>
+            </div>
+          {%- endif -%}
+        </div>
+        <div class="home-gift-banner__media">
+          {%- if section.settings.image != blank -%}
+            {{
+              section.settings.image
+              | image_url: width: 1200
+              | image_tag:
+                loading: 'lazy',
+                widths: '400, 800, 1200',
+                sizes: '(max-width: 768px) 100vw, 64vw',
+                alt: section.settings.image.alt | default: section.settings.heading
+            }}
+          {%- else -%}
+            <img
+              src="{{ 'home-gift-banner.png' | asset_url }}"
+              alt="{{ section.settings.heading | escape }}"
+              width="1200"
+              height="800"
+              loading="lazy"
             >
-              {{ section.settings.button_label | escape }}
-            </a>
-          </div>
-        {%- endif -%}
-      </div>
-      <div class="home-gift-banner__media">
-        {%- if section.settings.image != blank -%}
-          {{
-            section.settings.image
-            | image_url: width: 1200
-            | image_tag:
-              loading: 'lazy',
-              widths: '400, 800, 1200',
-              sizes: '(max-width: 768px) 100vw, 64vw',
-              alt: section.settings.image.alt | default: section.settings.heading
-          }}
-        {%- else -%}
-          <img
-            src="{{ 'home-gift-banner.png' | asset_url }}"
-            alt="{{ section.settings.heading | escape }}"
-            width="1200"
-            height="800"
-            loading="lazy"
-          >
-        {%- endif -%}
+          {%- endif -%}
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+{%- endif -%}
 
 {% schema %}
 {
@@ -63,6 +65,13 @@
   "tag": "section",
   "class": "section",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_section",
+      "label": "Show section",
+      "default": false,
+      "info": "Keep off for launch. Enable when the gifts hub is ready to promote on the homepage."
+    },
     {
       "type": "text",
       "id": "eyebrow",
@@ -106,7 +115,10 @@
   ],
   "presets": [
     {
-      "name": "HORO Gift by Meaning"
+      "name": "HORO Gift by Meaning",
+      "settings": {
+        "show_section": false
+      }
     }
   ]
 }

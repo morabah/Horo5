@@ -19,6 +19,7 @@ import { formatEgp } from '../utils/formatPrice';
 import { formatPdpFitModelLine } from '../utils/pdpFitModels';
 import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
+import { launchProductEyebrow } from '../lib/launch-taxonomy-display';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { AppIcon } from './AppIcon';
 
@@ -322,19 +323,27 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
             <div className="space-y-5 md:pr-10">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  {feeling || fit ? (
-                    <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-kohl-gold-bright">
-                      {[feeling?.name, fit].filter(Boolean).join(' / ')}
-                    </p>
-                  ) : null}
+                  {(() => {
+                    const launchEyebrow = launchProductEyebrow(product);
+                    if (launchEyebrow) {
+                      return (
+                        <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-kohl-gold-bright">
+                          {launchEyebrow}
+                        </p>
+                      );
+                    }
+                    if (feeling || fit) {
+                      return (
+                        <p className="font-label text-[10px] font-medium uppercase tracking-[0.2em] text-kohl-gold-bright">
+                          {[feeling?.name, fit].filter(Boolean).join(' / ')}
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
                   <h2 id={titleId} className="font-headline mt-2 text-[clamp(1.9rem,3vw,3.05rem)] font-bold uppercase leading-[0.95] tracking-tight text-white">
                     {product.name}
                   </h2>
-                  {product.capsuleSlugs?.includes('zodiac') ? (
-                    <span className="font-label mt-2 inline-flex rounded-full border border-moon-gold/40 bg-moon-gold/10 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.16em] text-white">
-                      {pdpCopy.pdpZodiacCapsuleLabel}
-                    </span>
-                  ) : null}
                 </div>
                 <div className="shrink-0 pt-1 text-right">
                   <div className="flex flex-wrap items-end justify-end gap-2">

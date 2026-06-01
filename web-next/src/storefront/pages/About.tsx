@@ -50,15 +50,10 @@ export function About() {
               <div className="relative z-10 m-4 w-full rounded-[1.35rem] border border-white/65 bg-[linear-gradient(135deg,rgba(26,26,26,0.78),rgba(26,26,26,0.5))] px-5 py-5 shadow-[0_18px_48px_-28px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:m-6 sm:px-6 sm:py-6 md:px-8 md:py-8 lg:m-8">
                 <h1 className="font-headline text-[clamp(2.2rem,5vw,4.3rem)] font-semibold leading-[0.94] tracking-tight text-white">{t(config.title) ?? 'Our story'}</h1>
                 <div className="mt-5 space-y-6 font-body text-[1.02rem] leading-relaxed text-white/88 md:text-[1.08rem]">
-                  <p>
-                    {BRAND_COPY.aboutLead}
-                  </p>
-                  <p>
-                    {BRAND_COPY.aboutSupport}
-                  </p>
-                  <p>
-                    HORO moves with personal rhythm — ritual, connection, and the circle of people who recognize the same feeling, even when they wear it differently. {BRAND_COPY.brandIdea} is the invitation: choose passion wear that matches what you feel.
-                  </p>
+                  <p>{copy.about.lead ?? BRAND_COPY.aboutLead}</p>
+                  <p>{copy.about.support ?? BRAND_COPY.aboutSupport}</p>
+                  <p>{copy.about.launchDrop ?? BRAND_COPY.aboutLaunchDrop}</p>
+                  <p>{copy.about.rhythmLine ?? BRAND_COPY.brandIdea}</p>
                   <p className="text-[1.15rem] text-secondary-fixed md:text-[1.22rem]">
                     {BRAND_COPY.mantra}.
                   </p>
@@ -113,7 +108,7 @@ export function About() {
             />
             <div className="relative z-10 flex min-h-[20rem] items-end justify-center p-5 sm:min-h-[24rem] sm:p-8">
               <Link
-                href="/feelings"
+                href="/products"
                 data-reveal="stagger-1"
                 className="font-body inline-flex min-h-12 w-full max-w-sm items-center justify-center rounded-sm bg-primary px-8 py-4 text-sm font-medium text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal sm:w-auto"
               >

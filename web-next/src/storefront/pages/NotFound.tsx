@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import {  useDictionary  } from '../i18n/ui-locale';
 
 export function NotFound() {
   const copy = useDictionary();
@@ -23,11 +23,11 @@ export function NotFound() {
         <Link className="btn btn-primary" href="/">
           Back home
         </Link>
+        <Link className="btn btn-secondary text-sm" href="/products">
+          {copy.shell.shopAll}
+        </Link>
         <Link className="btn btn-secondary text-sm" href="/search">
           {copy.shell.search}
-        </Link>
-        <Link className="btn btn-secondary text-sm" href="/#shop-by-meaning">
-          {copy.shell.shopByFeeling}
         </Link>
       </div>
     </div>

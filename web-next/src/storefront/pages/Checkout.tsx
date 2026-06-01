@@ -1832,8 +1832,8 @@ export function Checkout({
               ? 'سلتك فارغة. أضف تصميماً من المتجر ثم عد هنا لإتمام طلبك.'
               : 'Your bag is empty. Add a design from the shop, then return here to complete your order.'}
           </p>
-          <Link className="btn btn-primary mt-6 inline-flex min-h-12 items-center" href="/feelings">
-            {copy.shell.shopByFeeling}
+          <Link className="btn btn-primary mt-6 inline-flex min-h-12 items-center" href="/products">
+            {copy.shell.shopAll}
           </Link>
         </div>
       </div>

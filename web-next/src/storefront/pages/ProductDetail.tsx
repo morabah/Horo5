@@ -91,6 +91,7 @@ import {
 } from '../utils/pdpFitModels';
 import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
+import { getLaunchGroup, launchProductEyebrow } from '../lib/launch-taxonomy-display';
 import {
   buildPdpDeliveryLines,
   formatDeliveryWindow,
@@ -1023,11 +1024,13 @@ export function ProductDetail({
 
   const storyTagLabels = useMemo(() => {
     const tags: string[] = [];
-    if (feeling) tags.push(feeling.name);
+    const launchEyebrow = product ? launchProductEyebrow(product) : null;
+    if (launchEyebrow) tags.push(launchEyebrow);
+    else if (feeling) tags.push(feeling.name);
     if (product?.fitLabel?.trim()) tags.push(product.fitLabel.trim());
     heroCategoryTagItems.forEach(({ label }) => tags.push(label));
     return [...new Set(tags)];
-  }, [feeling, product?.fitLabel, heroCategoryTagItems]);
+  }, [feeling, heroCategoryTagItems, product]);
 
   const storyText = useMemo(() => {
     const desc = productDescription.trim();
@@ -1079,8 +1082,8 @@ export function ProductDetail({
     return (
       <div className="bg-papyrus px-4 py-16 text-center">
         <p className="font-body text-warm-charcoal">{copy.pdpProductNotFound}</p>
-        <Link href="/feelings" className="font-label mt-4 inline-block text-deep-teal underline">
-          {shellCopy.shell.shopByFeeling}
+        <Link href="/products" className="font-label mt-4 inline-block text-deep-teal underline">
+          {shellCopy.shell.shopAll}
         </Link>
       </div>
     );
@@ -1118,7 +1121,17 @@ export function ProductDetail({
             {shellCopy.shell.home}
           </Link>
           <span className="text-clay/50" aria-hidden>/</span>
-          {feeling ? (
+          {product && getLaunchGroup(product) !== 'unknown' ? (
+            <>
+              <Link
+                href="/products"
+                className="inline-flex min-h-11 max-w-[12rem] items-center truncate rounded-sm px-1 text-clay transition-colors hover:text-obsidian"
+              >
+                {shellCopy.shell.shopAll}
+              </Link>
+              <span className="text-clay/50" aria-hidden>/</span>
+            </>
+          ) : feeling ? (
             <>
               <Link
                 href={`/feelings/${feeling.slug}`}

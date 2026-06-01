@@ -18,9 +18,11 @@ export const BRAND_COPY = {
   footerSummary:
     'Artist-made passion wear for feelings, identity, and meaningful gifts in Egypt, backed by quality print, visible proof, and clear service.',
   aboutLead:
-    'HORO exists to turn artist-made illustration into passion wear for feelings, identity, and meaningful gifts in Egypt.',
+    'HORO is a wearable-art brand from Egypt. We turn feelings, identity, and personal meaning into artist-made pieces you can live in.',
   aboutSupport:
-    'We choose the artwork carefully, show the proof clearly, and keep delivery, exchange, and gifting dependable enough for a first order.',
+    'We choose artwork with intention, print in Egypt with visible proof, and keep fit details, size help, and service dependable from first order to delivery.',
+  aboutLaunchDrop:
+    'The first HORO drop starts with Sign Capsule, Mood, and Lifestyle designs — one launch collection, many ways to wear what you feel.',
   aboutClose: HORO_V19_SOUNDBITES.primary.en,
   footerSignoff: HORO_V19_SOUNDBITES.canvas.en,
   proofLine: `${HORO_V19_TRUST_COPY.artistMade.en}, ${HORO_V19_TRUST_COPY.printedEgypt.en.toLowerCase()}, clear fit, exchange per policy.`,

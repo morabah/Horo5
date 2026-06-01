@@ -3,7 +3,7 @@ import { useDictionary } from '../../i18n/ui-locale';
 
 import Link from 'next/link';
 import type { Product, Feeling } from '../../data/catalog-types';
-import { PDP_SCHEMA, fillPdpCopyTemplate } from '../../data/domain-config';
+import { fillPdpCopyTemplate } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
 import { compareAtPrice } from '../../utils/productPricing';
 import { TeeImageFrame } from '../TeeImage';
@@ -20,11 +20,9 @@ type PdpRelatedProductsProps = {
 
 export function PdpRelatedProducts({
   products,
-  feeling,
-  shopByFeelingLabel,
   onQuickView,
 }: PdpRelatedProductsProps) {
-  const { pdp: copy } = useDictionary();
+  const { pdp: copy, shell } = useDictionary();
   if (products.length < 3) return null;
 
   return (
@@ -36,20 +34,16 @@ export function PdpRelatedProducts({
               {copy.pdpRelatedEyebrow}
             </span>
             <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
-              {fillPdpCopyTemplate(copy.pdpRelatedMoreFromTemplate, {
-                feeling: feeling?.name ?? copy.pdpRelatedFallbackFeeling,
-              })}
+              {'pdpRelatedMoreFromTitle' in copy ? copy.pdpRelatedMoreFromTitle : 'More from the Founding Drop'}
             </h2>
             <p className="mt-1.5 max-w-[40rem] font-body text-sm text-clay">{copy.relatedMoreFromSubtitle}</p>
           </div>
-          {feeling ? (
-            <Link
-              href={`/feelings/${feeling.slug}`}
-              className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
-            >
-              {shopByFeelingLabel}
-            </Link>
-          ) : null}
+          <Link
+            href="/products"
+            className="font-label inline-flex min-h-12 items-center rounded-xl border border-obsidian/80 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-obsidian transition-colors hover:bg-obsidian hover:text-white"
+          >
+            {'pdpRelatedBrowseCta' in copy ? copy.pdpRelatedBrowseCta : shell.shopAll}
+          </Link>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6">

@@ -97,6 +97,7 @@
     "home_gift_block": {
       "type": "home-gift-block",
       "settings": {
+        "show_section": false,
         "eyebrow": "GIFT READY",
         "heading": "More than a gift.",
         "heading_line_2": "",

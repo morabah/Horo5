@@ -10,6 +10,7 @@ import { pdpCodTrustCopy, pdpExchangeTrustCopy } from '../../data/commerce-copy'
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
 import { pickLocalizedText } from '../../lib/storefront/incentives-client';
+import { launchProductEyebrow } from '../../lib/launch-taxonomy-display';
 import { StockStatusChip } from '../StockStatusChip';
 import { PdpSizeSelector } from './PdpSizeSelector';
 
@@ -169,14 +170,18 @@ export function PdpBuyBox({
       ? `باقي ${lowStockCount} فقط بهذا السعر`
       : `Only ${lowStockCount} left at this price`
     : null;
+  const launchEyebrow = launchProductEyebrow(product);
 
   return (
     <aside className="md:sticky md:top-24 md:self-start">
       <div className="space-y-6 md:p-4 lg:p-6">
         <header className="space-y-4">
-          {/* Eyebrow row — feeling chip + low-emphasis meta tags (audit P7: chips out of conversion zone) */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            {feeling ? (
+            {launchEyebrow ? (
+              <p className="font-label text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet">
+                {launchEyebrow}
+              </p>
+            ) : feeling ? (
               <Link
                 href={`/feelings/${feeling.slug}`}
                 className="font-label inline-flex min-h-11 items-center rounded-full border border-dusk-violet/35 bg-dusk-violet/8 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-dusk-violet transition-colors hover:border-dusk-violet/60 hover:bg-dusk-violet/14"
@@ -184,15 +189,13 @@ export function PdpBuyBox({
                 {feeling.name}
               </Link>
             ) : null}
-            <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-clay">
-              {[
-                product.fitLabel?.trim() || 'Unisex fit',
-                ...heroCategoryTagItems.map(({ label }) => label),
-                ...(product.capsuleSlugs?.includes('zodiac') ? [copy.pdpZodiacCapsuleLabel] : []),
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </span>
+            {!launchEyebrow ? (
+              <span className="font-label text-[10px] font-medium uppercase tracking-[0.18em] text-clay">
+                {[product.fitLabel?.trim() || 'Unisex fit', ...heroCategoryTagItems.map(({ label }) => label)]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </span>
+            ) : null}
           </div>
 
           {/* Product title */}

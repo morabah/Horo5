@@ -141,7 +141,7 @@ function CartUpsell({
           </h2>
           <p className="cart-upsell-body">{bundleBody}</p>
           <div className="cart-upsell-actions">
-            <Link className="btn btn-ghost" href="/feelings">
+            <Link className="btn btn-ghost" href="/products">
               {copy.bundleUpsellCta}
             </Link>
           </div>
@@ -344,7 +344,7 @@ function CartSummary({
           type="button"
           className="btn btn-ghost"
           style={{ width: '100%' }}
-          onClick={() => router.push('/feelings')}
+          onClick={() => router.push('/products')}
         >
           {locale === 'ar' ? 'متابعة التسوق' : 'Continue shopping'}
         </button>
@@ -933,7 +933,7 @@ export function Cart({
               </h1>
               <p className="cart-page-count">{formatItemCount(0, copy.itemLabelSingular, copy.itemLabelPlural)}</p>
               <p className="cart-empty-copy">{copy.emptyBody}</p>
-              <Link className="btn btn-primary" href="/feelings">
+              <Link className="btn btn-primary" href="/products">
                 {copy.emptyCta}
               </Link>
             </div>
@@ -966,7 +966,7 @@ export function Cart({
               <button type="button" className="btn btn-primary min-h-12 px-6" onClick={handleUndoRemove}>
                 {copy.undoRemoveCta}
               </button>
-              <Link className="btn btn-ghost min-h-12 inline-flex items-center px-6" href="/feelings">
+              <Link className="btn btn-ghost min-h-12 inline-flex items-center px-6" href="/products">
                 {copy.secondaryCta}
               </Link>
             </div>
