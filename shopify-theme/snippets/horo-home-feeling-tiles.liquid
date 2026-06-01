@@ -1,74 +1,88 @@
 {%- comment -%}
-  Pastel feeling tiles — max 5, sort_order, only feelings with products in collection.
-  Fills any missing slots with the same default tiles used by web-next fixtures.
+  Launch feeling tiles — Sign Capsule / Mood / Lifestyle (max 3).
+  Prioritizes launch slugs; enriches from metaobjects when available.
   Accepts: feeling_limit (number)
 {%- endcomment -%}
 {%- liquid
-  assign limit = feeling_limit | default: 5
+  assign limit = feeling_limit | default: 3
+  assign launch_slugs = 'zodiac,mood,lifestyle' | split: ','
+  assign launch_labels = 'Sign Capsule,Mood,Lifestyle' | split: ','
+  assign surfaces = '#f8eaea,#f4ede5,#edf1ea' | split: ','
   assign sorted_feelings = shop.metaobjects.feeling.values | sort: 'sort_order'
   assign tiles_shown = 0
-  assign shown_handles = '|'
-  assign require_products = true
-  assign fallback_slugs = 'mood,zodiac,trends,career,fiction' | split: ','
-  assign fallback_labels = 'Mood,Zodiac,Trends,Career,Fiction' | split: ','
-  assign surfaces = '#f4ede5,#f8eaea,#edf1ea,#eeebf5,#f7ebe4' | split: ','
 -%}
 
 <ul class="home-feeling-pastel-grid" role="list">
-  {%- for feeling in sorted_feelings -%}
+  {%- for slug in launch_slugs -%}
     {%- if tiles_shown >= limit -%}
       {%- break -%}
     {%- endif -%}
-    {%- if feeling.active != false -%}
-      {%- liquid
-        assign feeling_handle = feeling.handle | default: feeling.slug | default: '' | downcase
+
+    {%- liquid
+      assign label = launch_labels[forloop.index0]
+      assign surface_index = tiles_shown | modulo: 3
+      assign surface_color = surfaces[surface_index]
+      assign card_url = '/collections/founding-drop'
+      assign feeling = nil
+      assign use_metaobject = false
+
+      for candidate in sorted_feelings
+        assign candidate_handle = candidate.handle | default: candidate.slug | default: '' | downcase
+        if candidate_handle == slug and candidate.active != false
+          assign feeling = candidate
+          break
+        endif
+      endfor
+
+      if feeling != blank
         assign feeling_collection = feeling.collection.value
-        if feeling_collection == blank and feeling_handle != blank
-          assign coll_handle = 'feeling-' | append: feeling_handle
+        if feeling_collection == blank
+          assign coll_handle = 'feeling-' | append: slug
           assign feeling_collection = collections[coll_handle]
         endif
         assign product_count = 0
         if feeling_collection != blank
           assign product_count = feeling_collection.products_count
         endif
-      -%}
-      {%- if require_products == false or product_count > 0 -%}
-        {%- render 'feeling-card-pastel', card: feeling, tile_index: tiles_shown -%}
-        {%- assign shown_handles = shown_handles | append: feeling_handle | append: '|' -%}
-        {%- assign tiles_shown = tiles_shown | plus: 1 -%}
-      {%- endif -%}
-    {%- endif -%}
-  {%- endfor -%}
+        if product_count > 0
+          assign use_metaobject = true
+        endif
+      endif
 
-  {%- if tiles_shown < limit -%}
-    {%- for slug in fallback_slugs -%}
-      {%- if tiles_shown >= limit -%}
-        {%- break -%}
-      {%- endif -%}
-      {%- assign shown_marker = slug | prepend: '|' | append: '|' -%}
-      {%- unless shown_handles contains shown_marker -%}
-        {%- assign label = fallback_labels[forloop.index0] -%}
-        {%- assign surface_index = tiles_shown | modulo: 5 -%}
-        {%- assign surface_color = surfaces[surface_index] -%}
-        {%- assign card_url = '/pages/feelings' -%}
-        {%- assign coll_handle = 'feeling-' | append: slug -%}
-        {%- assign feeling_collection = collections[coll_handle] -%}
-        {%- if feeling_collection != blank -%}
-          {%- assign card_url = feeling_collection.url -%}
-        {%- endif -%}
-        <li class="home-feeling-pastel-grid__item" role="listitem">
-          <a
-            href="{{ card_url }}"
-            class="home-feeling-pastel-tile"
-            style="background-color: {{ surface_color }};"
-            aria-label="{{ label | escape }}"
-          >
-            {% render 'feeling-tile-icon', slug: slug %}
-            <span class="home-feeling-pastel-tile__label">{{ label | escape }}</span>
-          </a>
-        </li>
-        {%- assign tiles_shown = tiles_shown | plus: 1 -%}
-      {%- endunless -%}
-    {%- endfor -%}
-  {%- endif -%}
+      if slug == 'zodiac'
+        assign zodiac_collection = collections['zodiac']
+        if zodiac_collection != blank
+          assign card_url = zodiac_collection.url
+        else
+          assign feeling_zodiac = collections['feeling-zodiac']
+          if feeling_zodiac != blank
+            assign card_url = feeling_zodiac.url
+          endif
+        endif
+      elsif slug == 'mood' or slug == 'lifestyle'
+        assign mood_lifestyle = collections['mood-lifestyle']
+        if mood_lifestyle != blank
+          assign card_url = mood_lifestyle.url
+        endif
+      endif
+    -%}
+
+    {%- if use_metaobject -%}
+      {%- render 'feeling-card-pastel', card: feeling, tile_index: tiles_shown -%}
+    {%- else -%}
+      <li class="home-feeling-pastel-grid__item" role="listitem">
+        <a
+          href="{{ card_url }}"
+          class="home-feeling-pastel-tile"
+          style="background-color: {{ surface_color }};"
+          aria-label="{{ label | escape }}"
+        >
+          {% render 'feeling-tile-icon', slug: slug %}
+          <span class="home-feeling-pastel-tile__label">{{ label | escape }}</span>
+        </a>
+      </li>
+    {%- endif -%}
+
+    {%- assign tiles_shown = tiles_shown | plus: 1 -%}
+  {%- endfor -%}
 </ul>

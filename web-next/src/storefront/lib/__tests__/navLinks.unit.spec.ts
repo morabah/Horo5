@@ -10,7 +10,6 @@ describe("navLinks", () => {
   it("keeps the primary navigation label model aligned with launch IA", () => {
     expect([...NAV_PRIMARY_ROUTE_KEYS]).toEqual([
       "products",
-      "zodiac",
       "about",
       "sizeGuide",
     ])

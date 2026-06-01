@@ -59,8 +59,8 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
       href: "/products",
     },
     secondaryCta: {
-      label: { en: "Find a Gift", ar: "اعثر على هدية" },
-      href: "/gifts",
+      label: { en: "Shop by Meaning", ar: "تسوّق حسب المعنى" },
+      href: "/#shop-by-meaning",
     },
     desktopImage: {
       src: "/images/heroes/home-hero.png",

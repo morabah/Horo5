@@ -111,7 +111,7 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
 
   return (
     <section
-      id="shop-by-feeling"
+      id="shop-by-meaning"
       aria-labelledby="home-feelings-title"
       className="home-section border-t border-stone/15 bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
     >

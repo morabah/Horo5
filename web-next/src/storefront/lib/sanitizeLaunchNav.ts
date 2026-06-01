@@ -38,6 +38,8 @@ function mapLegacyNavItem(item: SettingsNavItem, label: string): RenderedNavItem
   const key = item.key.trim().toLowerCase();
   const href = item.href.trim();
 
+  if (key === 'zodiac') return null;
+
   if (LAUNCH_NAV_KEYS.has(key as NavRouteKey)) {
     const route = NAV_ROUTE[key as NavRouteKey];
     return {
@@ -52,8 +54,6 @@ function mapLegacyNavItem(item: SettingsNavItem, label: string): RenderedNavItem
     case 'products':
     case 'founding_drop':
       return { key: 'products', label, href: NAV_ROUTE.products.path };
-    case 'zodiac':
-      return { key: 'zodiac', label, href: NAV_ROUTE.zodiac.path };
     case 'about':
       return { key: 'about', label, href: NAV_ROUTE.about.path };
     case 'size_guide':
@@ -64,9 +64,7 @@ function mapLegacyNavItem(item: SettingsNavItem, label: string): RenderedNavItem
     case 'search':
       return { key: 'search', label, href: NAV_ROUTE.search.path };
     case 'collection':
-      if (isZodiacNavItem(item, label)) {
-        return { key: 'zodiac', label, href: NAV_ROUTE.zodiac.path };
-      }
+      if (isZodiacNavItem(item, label)) return null;
       return null;
     case 'gifts':
     case 'occasions':

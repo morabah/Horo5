@@ -54,7 +54,7 @@ export function launchCategoryFilterLabel(category: LaunchCategoryFilter, locale
       case 'lifestyle':
         return 'نمط حياة';
       case 'zodiac':
-        return 'برج';
+        return 'كبسولة الأبراج';
       default:
         return null;
     }
@@ -67,7 +67,7 @@ export function launchCategoryFilterLabel(category: LaunchCategoryFilter, locale
     case 'lifestyle':
       return 'Lifestyle';
     case 'zodiac':
-      return 'Zodiac';
+      return 'Sign Capsule';
     default:
       return null;
   }
@@ -84,7 +84,7 @@ const DESIGN_LABELS: Record<string, string> = {
 };
 
 const GROUP_LABELS: Record<HoroLaunchGroup, string> = {
-  zodiac_capsule: 'Zodiac',
+  zodiac_capsule: 'Sign Capsule',
   mood: 'Mood',
   lifestyle: 'Lifestyle',
 };

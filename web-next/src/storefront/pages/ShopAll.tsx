@@ -33,7 +33,7 @@ import {
   type SearchSortKey,
 } from '../search/view';
 import { defaultCatalogSizeKeys } from '../utils/productSizes';
-import { getProduct, getSubfeeling, setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
+import { getProduct, getProducts, getSubfeeling, setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
 import { trackShopAllView } from '../analytics/funnel';
 import {
   launchCategoryFilterLabel,
@@ -261,25 +261,36 @@ const priceOptions = useMemo(() => {
     return getSearchResults(queryParams);
   }, [feelingFilter, filterArtist, filterColor, filterOccasion, medusaBrowsePool, medusaBrowseStatus, priceBands, priceFilter, sizeFilter, sortKey]);
 
+  const productLookup = useMemo(() => {
+    const source =
+      useMedusaServerBrowse && medusaBrowseStatus === 'ok' ? medusaBrowsePool : getProducts();
+    return new Map(source.map((product) => [product.slug, product]));
+  }, [medusaBrowsePool, medusaBrowseStatus]);
+
+  const resolveProduct = useCallback(
+    (slug: string) => productLookup.get(slug) ?? getProduct(slug),
+    [productLookup],
+  );
+
   const lineFilter = params.get('line') ?? 'all';
   const filteredDesignMatches = useMemo(() => {
     let matches = results.designMatches;
     if (lineFilter !== 'all') {
       matches = matches.filter((card) => {
-        const product = getProduct(card.slug);
+        const product = resolveProduct(card.slug);
         if (!product) return false;
         return (product.primarySubfeelingSlug ?? product.lineSlug) === lineFilter;
       });
     }
     if (categoryFilter) {
       matches = matches.filter((card) => {
-        const product = getProduct(card.slug);
+        const product = resolveProduct(card.slug);
         if (!product) return false;
         return productMatchesLaunchCategory(product, categoryFilter);
       });
     }
     return matches;
-  }, [categoryFilter, lineFilter, results.designMatches]);
+  }, [categoryFilter, lineFilter, resolveProduct, results.designMatches]);
 
   const PLP_PAGE_SIZE = 24;
   const pageFromUrl = Math.max(1, Number.parseInt(params.get('page') ?? '1', 10) || 1);
@@ -312,7 +323,7 @@ const priceOptions = useMemo(() => {
   const lineOptions = useMemo(() => {
     const slugs = new Set<string>();
     for (const card of results.designMatches) {
-      const product = getProduct(card.slug);
+      const product = resolveProduct(card.slug);
       const slug = product?.primarySubfeelingSlug ?? product?.lineSlug;
       if (slug) slugs.add(slug);
     }
@@ -320,7 +331,7 @@ const priceOptions = useMemo(() => {
       .map((slug) => getSubfeeling(slug))
       .filter((line): line is NonNullable<typeof line> => Boolean(line))
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-  }, [results.designMatches]);
+  }, [resolveProduct, results.designMatches]);
 
   const hasActiveFilters =
     sortKey !== 'featured' ||

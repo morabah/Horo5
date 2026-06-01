@@ -1,7 +1,7 @@
 import { sanitizeLaunchNav } from '../sanitizeLaunchNav';
 
 describe('sanitizeLaunchNav', () => {
-  it('maps zodiac-specific collection links and drops legacy gifts', () => {
+  it('drops zodiac nav items and legacy gifts links', () => {
     const items = sanitizeLaunchNav(
       [
         {
@@ -29,8 +29,7 @@ describe('sanitizeLaunchNav', () => {
       'en',
     );
 
-    expect(items.map((item) => item.key)).toEqual(['zodiac', 'products']);
-    expect(items[0]?.href).toBe('/feelings/zodiac');
+    expect(items.map((item) => item.key)).toEqual(['products']);
   });
 
   it('drops full feelings hub collection links', () => {

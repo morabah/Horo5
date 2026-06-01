@@ -24,7 +24,7 @@ export const HOME_PRIMARY_ROUTES = [
   },
   {
     key: 'zodiac',
-    href: '/feelings/zodiac',
+    href: '/products?category=zodiac',
     accent: '#4F111F',
   },
   {

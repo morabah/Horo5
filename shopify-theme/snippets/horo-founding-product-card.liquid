@@ -3,7 +3,15 @@
   Accepts: card_product, lazy_load (bool), section_id
 {%- endcomment -%}
 {%- liquid
-  assign lazy_load = lazy_load | default: true
+  if lazy_load == nil
+    assign lazy_load = true
+  endif
+
+  assign loading_value = 'lazy'
+  if lazy_load == false
+    assign loading_value = 'eager'
+  endif
+
   assign selected_variant = nil
   assign first_available = nil
 
@@ -33,6 +41,81 @@
   assign price_egp = 'EGP ' | append: price_amount
 
   assign product_form_id = 'founding-' | append: section_id | append: '-' | append: card_product.id
+
+  assign launch_group = card_product.metafields.custom.launch_group.value | default: ''
+  assign launch_audience = card_product.metafields.custom.launch_audience.value | default: ''
+  assign launch_design = card_product.metafields.custom.launch_design.value | default: ''
+  assign zodiac_sign = card_product.metafields.custom.zodiac_sign.value | default: ''
+
+  for tag in card_product.tags
+    assign tag_lower = tag | downcase
+    if tag_lower contains 'launch:'
+      assign launch_group = tag_lower | remove: 'launch:' | strip
+    elsif tag_lower contains 'audience:'
+      assign launch_audience = tag_lower | remove: 'audience:' | strip
+    elsif tag_lower contains 'design:'
+      assign launch_design = tag_lower | remove: 'design:' | strip
+    elsif tag_lower contains 'zodiac:'
+      assign zodiac_sign = tag_lower | remove: 'zodiac:' | strip
+    endif
+  endfor
+
+  assign eyebrow_parts = ''
+  assign design_label = launch_design
+  if zodiac_sign != blank
+    assign design_label = zodiac_sign
+  endif
+  if design_label == 'gemini'
+    assign design_label = 'Gemini'
+  elsif design_label == 'cancer'
+    assign design_label = 'Cancer'
+  elsif design_label == 'leo'
+    assign design_label = 'Leo'
+  elsif design_label == 'virgo'
+    assign design_label = 'Virgo'
+  elsif design_label == 'i-care'
+    assign design_label = 'I Care'
+  elsif design_label == 'i-dont-care'
+    assign design_label = "I Don't Care"
+  elsif design_label == 'walk-alone'
+    assign design_label = 'Walk Alone'
+  endif
+
+  assign group_label = ''
+  if launch_group == 'zodiac_capsule'
+    assign group_label = 'Sign Capsule'
+  elsif launch_group == 'mood'
+    assign group_label = 'Mood'
+  elsif launch_group == 'lifestyle'
+    assign group_label = 'Lifestyle'
+  endif
+
+  assign audience_label = ''
+  if launch_audience == 'women'
+    assign audience_label = 'Women'
+  elsif launch_audience == 'men'
+    assign audience_label = 'Men'
+  elsif launch_audience == 'unisex'
+    assign audience_label = 'Unisex'
+  endif
+
+  if design_label != blank
+    assign eyebrow_parts = design_label
+  endif
+  if group_label != blank
+    if eyebrow_parts != blank
+      assign eyebrow_parts = eyebrow_parts | append: ' · ' | append: group_label
+    else
+      assign eyebrow_parts = group_label
+    endif
+  endif
+  if audience_label != blank
+    if eyebrow_parts != blank
+      assign eyebrow_parts = eyebrow_parts | append: ' · ' | append: audience_label
+    else
+      assign eyebrow_parts = audience_label
+    endif
+  endif
 -%}
 
 <article class="home-founding-card">
@@ -42,7 +125,7 @@
         card_product.featured_media
         | image_url: width: 800
         | image_tag:
-          loading: lazy_load,
+          loading: loading_value,
           widths: '200, 400, 600, 800',
           sizes: '(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px',
           alt: card_product.featured_media.alt | default: card_product.title,
@@ -53,6 +136,9 @@
     {%- endif -%}
   </a>
   <div class="home-founding-card__body">
+    {%- if eyebrow_parts != blank -%}
+      <p class="home-founding-card__eyebrow">{{ eyebrow_parts | escape }}</p>
+    {%- endif -%}
     <a href="{{ card_product.url }}" class="home-founding-card__title">
       {{ card_product.title | escape }}
     </a>

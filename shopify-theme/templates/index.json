@@ -10,8 +10,8 @@
         "canvas_line": "We are the canvas. You are the story.",
         "button_label": "Shop the Founding Drop",
         "button_link": "/collections/founding-drop",
-        "button_label_secondary": "Find Your Zodiac",
-        "button_link_secondary": "/collections/zodiac",
+        "button_label_secondary": "Shop by Meaning",
+        "button_link_secondary": "/#shop-by-meaning",
         "button_label_tertiary": "",
         "button_link_tertiary": "",
         "show_hero_ribbon": false,
@@ -57,8 +57,8 @@
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "exchange",
-            "label": "14-day exchange — see policy"
+            "icon": "clearFitDetails",
+            "label": "Clear fit details"
           }
         },
         "badge_5": {
@@ -146,7 +146,6 @@
     "home_founding_drop",
     "the_proof",
     "feeling_grid",
-    "home_gift_block",
     "home_why_horo"
   ]
 }

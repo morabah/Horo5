@@ -1,5 +1,14 @@
 /* Founding drop card CTA — matches web-next HomeFoundingProductCard */
 
+.home-founding-card__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(79 17 31 / 0.72);
+}
+
 .home-founding-card__image {
   width: 100%;
   height: 100%;

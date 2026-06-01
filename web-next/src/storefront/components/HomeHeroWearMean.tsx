@@ -154,7 +154,7 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     t(config.secondaryCta?.label) ??
     copy.home.heroSecondaryCta;
   const secondaryCtaLabel = configuredSecondaryCtaLabel;
-  const configuredSecondaryHref = secondaryPayloadCta?.href ?? section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/feelings';
+  const configuredSecondaryHref = secondaryPayloadCta?.href ?? section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/#shop-by-meaning';
   const secondaryHref = configuredSecondaryHref;
   const heroImageSrc = section?.image?.src ?? config.desktopImage?.src ?? '/images/homepage-reference/hero-right.png';
   const heroImageAlt =

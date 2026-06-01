@@ -17,9 +17,6 @@
 
 {%- liquid
   assign nav_active_path = active_path | default: request.path
-  assign feelings_url = routes.root_url | append: 'pages/feelings'
-  assign gifts_url = routes.root_url | append: 'pages/gifts-hub'
-  assign occasions_url = routes.root_url | append: 'pages/occasions'
   assign about_url = routes.root_url | append: 'pages/about-horo'
 
   if context == 'primary'
@@ -41,15 +38,12 @@
   <nav class="horo-nav__primary" aria-label="{{ 'horo.shell.primary_navigation' | t | default: 'Primary navigation' }}">
     <ul class="horo-nav__list" role="list">
       {%- if nav_items == 'fallback' -%}
-        {%- assign primary_route_keys = 'founding_drop,zodiac,about,size_guide' | split: ',' -%}
+        {%- assign primary_route_keys = 'founding_drop,about,size_guide' | split: ',' -%}
         {%- for route_key in primary_route_keys -%}
           {%- case route_key -%}
             {%- when 'founding_drop' -%}
               {%- assign label = 'horo.nav.founding_drop' | t | default: 'Founding Drop' -%}
               {%- assign href = '/collections/founding-drop' -%}
-            {%- when 'zodiac' -%}
-              {%- assign label = 'horo.nav.zodiac' | t | default: 'Zodiac' -%}
-              {%- assign href = '/collections/zodiac' -%}
             {%- when 'about' -%}
               {%- assign label = 'horo.nav.our_story' | t | default: 'Our Story' -%}
               {%- assign href = about_url -%}
@@ -73,19 +67,38 @@
         {%- endfor -%}
       {%- else -%}
         {%- for link in nav_items -%}
-          {%- assign is_active = false -%}
-          {%- if nav_active_path == link.url or link.child_active or nav_active_path contains link.url and link.url != '/' -%}
-            {%- assign is_active = true -%}
-          {%- endif -%}
-          <li>
-            <a
-              href="{{ link.url }}"
-              class="horo-nav__link{% if is_active %} horo-nav__link--active{% endif %}"
-              {% if is_active %}aria-current="page"{% endif %}
-            >
-              {{ link.title | escape }}
-            </a>
-          </li>
+          {%- liquid
+            assign skip_link = false
+            assign link_url_lower = link.url | downcase
+            assign link_title_lower = link.title | downcase
+            if link_url_lower contains '/pages/gifts-hub' or link_url_lower contains '/pages/occasions'
+              assign skip_link = true
+            endif
+            if link_url_lower contains '/pages/feelings'
+              assign skip_link = true
+            endif
+            if link_url_lower contains '/feelings/zodiac' or link_url_lower contains '/collections/zodiac'
+              assign skip_link = true
+            endif
+            if link_title_lower == 'zodiac' or link_title_lower == 'shop by feeling'
+              assign skip_link = true
+            endif
+          -%}
+          {%- unless skip_link -%}
+            {%- assign is_active = false -%}
+            {%- if nav_active_path == link.url or link.child_active or nav_active_path contains link.url and link.url != '/' -%}
+              {%- assign is_active = true -%}
+            {%- endif -%}
+            <li>
+              <a
+                href="{{ link.url }}"
+                class="horo-nav__link{% if is_active %} horo-nav__link--active{% endif %}"
+                {% if is_active %}aria-current="page"{% endif %}
+              >
+                {{ link.title | escape }}
+              </a>
+            </li>
+          {%- endunless -%}
         {%- endfor -%}
       {%- endif -%}
     </ul>
@@ -94,7 +107,7 @@
   <nav class="horo-nav__drawer-nav" aria-label="{{ 'horo.shell.drawer_navigation' | t | default: 'Menu' }}">
     <ul class="horo-nav__drawer-list" role="list">
       {%- if nav_items == 'fallback' -%}
-        {%- assign drawer_route_keys = 'home,founding_drop,zodiac,about,size_guide,search' | split: ',' -%}
+        {%- assign drawer_route_keys = 'home,founding_drop,about,size_guide,search' | split: ',' -%}
         {%- for route_key in drawer_route_keys -%}
           {%- case route_key -%}
             {%- when 'home' -%}
@@ -103,9 +116,6 @@
             {%- when 'founding_drop' -%}
               {%- assign label = 'horo.nav.founding_drop' | t | default: 'Founding Drop' -%}
               {%- assign href = '/collections/founding-drop' -%}
-            {%- when 'zodiac' -%}
-              {%- assign label = 'horo.nav.zodiac' | t | default: 'Zodiac' -%}
-              {%- assign href = '/collections/zodiac' -%}
             {%- when 'about' -%}
               {%- assign label = 'horo.nav.our_story' | t | default: 'Our Story' -%}
               {%- assign href = about_url -%}
@@ -132,19 +142,38 @@
         {%- endfor -%}
       {%- else -%}
         {%- for link in nav_items -%}
-          {%- assign is_active = false -%}
-          {%- if nav_active_path == link.url or link.child_active or nav_active_path contains link.url and link.url != '/' -%}
-            {%- assign is_active = true -%}
-          {%- endif -%}
-          <li>
-            <a
-              href="{{ link.url }}"
-              class="horo-nav__drawer-link{% if is_active %} horo-nav__drawer-link--active{% endif %}"
-              {% if is_active %}aria-current="page"{% endif %}
-            >
-              {{ link.title | escape }}
-            </a>
-          </li>
+          {%- liquid
+            assign skip_link = false
+            assign link_url_lower = link.url | downcase
+            assign link_title_lower = link.title | downcase
+            if link_url_lower contains '/pages/gifts-hub' or link_url_lower contains '/pages/occasions'
+              assign skip_link = true
+            endif
+            if link_url_lower contains '/pages/feelings'
+              assign skip_link = true
+            endif
+            if link_url_lower contains '/feelings/zodiac' or link_url_lower contains '/collections/zodiac'
+              assign skip_link = true
+            endif
+            if link_title_lower == 'zodiac' or link_title_lower == 'shop by feeling'
+              assign skip_link = true
+            endif
+          -%}
+          {%- unless skip_link -%}
+            {%- assign is_active = false -%}
+            {%- if nav_active_path == link.url or link.child_active or nav_active_path contains link.url and link.url != '/' -%}
+              {%- assign is_active = true -%}
+            {%- endif -%}
+            <li>
+              <a
+                href="{{ link.url }}"
+                class="horo-nav__drawer-link{% if is_active %} horo-nav__drawer-link--active{% endif %}"
+                {% if is_active %}aria-current="page"{% endif %}
+              >
+                {{ link.title | escape }}
+              </a>
+            </li>
+          {%- endunless -%}
         {%- endfor -%}
       {%- endif -%}
     </ul>

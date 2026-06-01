@@ -15,14 +15,13 @@ export const NAV_ROUTE = {
   // drops: { path: '/drops', end: false },
 } as const;
 
-export const NAV_PRIMARY_ROUTE_KEYS = ['products', 'zodiac', 'about', 'sizeGuide'] as const;
+export const NAV_PRIMARY_ROUTE_KEYS = ['products', 'about', 'sizeGuide'] as const;
 
 export type NavRouteKey = keyof typeof NAV_ROUTE;
 
 export const NAV_DRAWER_ROUTE_KEYS = [
   'home',
   'products',
-  'zodiac',
   'about',
   'sizeGuide',
   'search',
@@ -31,7 +30,6 @@ export const NAV_DRAWER_ROUTE_KEYS = [
 /** Launch nav keys allowed in header/drawer during founding drop. */
 export const LAUNCH_NAV_KEYS = new Set<NavRouteKey>([
   'products',
-  'zodiac',
   'about',
   'sizeGuide',
   'home',
