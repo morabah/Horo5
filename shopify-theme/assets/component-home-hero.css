@@ -494,7 +494,7 @@
 .home-hero-split__grid {
   display: grid;
   width: 100%;
-  max-width: min(87.5rem, calc(100vw - 2.5rem));
+  max-width: var(--home-content-max, min(1400px, calc(100vw - 40px)));
   margin-inline: auto;
 }
 
@@ -519,16 +519,16 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(2rem, 4vw, 2.6rem) clamp(1.5rem, 6vw, 5.8rem);
+  padding: clamp(32px, 4vw, 42px) clamp(24px, 6vw, 93px);
 }
 
 .home-hero-split__title {
   font-family: var(--font-headline);
-  font-size: clamp(3rem, 5.4vw, 4.15rem);
+  font-size: clamp(48px, 5.4vw, 66px);
   font-weight: 800;
   line-height: 0.96;
   letter-spacing: 0;
-  color: var(--color-horo-root);
+  color: var(--color-horo-text);
   text-transform: none;
   margin: 0;
 }
@@ -539,40 +539,40 @@
 
 .home-hero-split__subtitle {
   font-family: var(--font-body);
-  font-size: clamp(1rem, 1.3vw, 1.2rem);
+  font-size: clamp(16px, 1.3vw, 19px);
   line-height: 1.42;
   color: #51484b;
-  margin: 1.25rem 0 0;
-  max-width: 35rem;
+  margin: 20px 0 0;
+  max-width: 560px;
 }
 
 .home-hero-split__rhythm {
   font-family: var(--font-body);
-  font-size: 0.98rem;
+  font-size: 16px;
   font-weight: 600;
   color: var(--color-horo-pulse);
-  margin: 1rem 0 0;
+  margin: 16px 0 0;
 }
 
 .home-hero-split__canvas {
   font-family: var(--font-label);
-  font-size: 0.7rem;
+  font-size: 11px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: #776d70;
-  margin: 0.5rem 0 0;
+  margin: 8px 0 0;
 }
 
 .home-hero-split__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 2rem;
+  gap: 12px;
+  margin-top: 32px;
 }
 
 .home-hero-split__media {
   position: relative;
-  min-height: clamp(22rem, 41.2vw, 29rem);
+  min-height: clamp(352px, 41.2vw, 464px);
   background: color-mix(in srgb, var(--color-horo-breath) 35%, var(--color-horo-white));
 }
 
@@ -589,7 +589,7 @@
   align-items: center;
   justify-content: center;
   min-height: 42px;
-  padding: 0.5rem 1.25rem;
+  padding: 8px 20px;
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 700;

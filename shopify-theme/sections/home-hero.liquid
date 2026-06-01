@@ -8,6 +8,7 @@
   assign full_width = '100vw'
   assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
   assign hero_layout = section.settings.hero_layout | default: 'split'
+  assign use_uploaded_split_image = section.settings.use_uploaded_split_image | default: false
   assign heading_normalized = section.settings.heading | downcase | strip
 -%}
 
@@ -66,7 +67,7 @@
       </div>
 
       <div class="home-hero-split__media">
-        {%- if section.settings.image != blank -%}
+        {%- if section.settings.image != blank and use_uploaded_split_image -%}
           {%- liquid
             assign image_height = section.settings.image.width | divided_by: section.settings.image.aspect_ratio
           -%}
@@ -234,6 +235,13 @@
       "type": "image_picker",
       "id": "image",
       "label": "Hero image"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_uploaded_split_image",
+      "label": "Use uploaded image in split layout",
+      "default": false,
+      "info": "Keep off to use the web-next reference hero image."
     },
     {
       "type": "text",

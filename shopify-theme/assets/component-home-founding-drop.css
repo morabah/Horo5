@@ -15,10 +15,10 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 2.25rem;
-  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  min-height: 36px;
+  padding: 8px 32px 8px 12px;
   font-family: var(--font-body);
-  font-size: 0.8rem;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-horo-pulse);
   background: transparent;
@@ -46,7 +46,7 @@
 
 .home-founding-card__cta-icon {
   position: absolute;
-  right: 0.75rem;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   display: inline-flex;

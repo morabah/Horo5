@@ -8,6 +8,8 @@
       assign icon_key = 'printedEgypt'
     when 'cash', 'paymentAtCheckout', 'codAvailable'
       assign icon_key = 'paymentAtCheckout'
+    when 'exchange', 'exchange14d'
+      assign icon_key = 'exchange14d'
     when 'whatsapp', 'whatsappSupport'
       assign icon_key = 'whatsappSupport'
     when 'fit', 'clearFitDetails'
@@ -24,6 +26,8 @@
       <path d="M17 12l7-4 7 4 7 2-4 9-5-2v19H19V21l-5 2-4-9 7-2z"/><path d="M20 11c1 2.5 2.3 3.8 4 3.8s3-1.3 4-3.8"/>
     {%- when 'paymentAtCheckout' -%}
       <rect x="8" y="14" width="32" height="22" rx="3"/><path d="M8 21h32"/><path d="M14 30h6"/><path d="M30 30h4"/>
+    {%- when 'exchange14d' -%}
+      <polyline points="38 12 38 24 26 24"/><path d="M34 31a15 15 0 1 1-3.5-15.6L38 24"/>
     {%- when 'whatsappSupport' -%}
       <path d="M39 23.5a14.5 14.5 0 01-21 13L9 39l2.5-8.4A14.5 14.5 0 1139 23.5z"/><path d="M18.5 17.5c.7-1.1 1.4-1.1 2.2-.2l1.4 2.8c.3.6.2 1.1-.2 1.6l-.7.8c1 1.9 2.5 3.3 4.5 4.3l.8-.8c.5-.5 1-.6 1.6-.3l2.8 1.3c.8.4 1 .9.5 1.7-.7 1.2-1.8 1.8-3.1 1.8-2.2 0-5.2-1.5-7.5-3.8-2.4-2.4-3.9-5.2-3.9-7.4 0-.7.2-1.3.6-1.8z"/>
   {%- endcase -%}

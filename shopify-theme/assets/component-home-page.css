@@ -1,12 +1,13 @@
 /**
  * HORO homepage — unified layout parity with web-next (index template).
- * Content rail matches hero split (87.5rem / 1400px), not legacy 72rem.
+ * Content rail matches web-next's 1400px hero rail. Dawn uses a 10px rem
+ * baseline, so homepage parity values use px instead of copied web rems.
  * The hero section goes full-bleed (edge-to-edge) while all other sections
  * cap at --home-content-max.
  */
 
 .horo-home-page {
-  --home-content-max: min(87.5rem, calc(100vw - 2.5rem));
+  --home-content-max: min(1400px, calc(100vw - 40px));
 }
 
 /* ===== Zero inter-section spacing (web-next uses tight stacking) ===== */
@@ -20,18 +21,18 @@
 
 /* ===== Home section base padding ===== */
 .horo-home-page .home-section {
-  padding: 1.25rem clamp(1rem, 4vw, 2rem);
+  padding: 20px clamp(16px, 4vw, 32px);
 }
 
 @media screen and (min-width: 640px) {
   .horo-home-page .home-section {
-    padding: 1.5rem clamp(1.25rem, 4vw, 2rem);
+    padding: 24px clamp(20px, 4vw, 32px);
   }
 }
 
 @media screen and (min-width: 768px) {
   .horo-home-page .home-section {
-    padding: 1.75rem 2rem;
+    padding: 28px 32px;
   }
 }
 
@@ -58,12 +59,12 @@
 
 /* ===== Section headers ===== */
 .horo-home-page .home-section-header {
-  margin-bottom: 2rem;
+  margin-bottom: 32px;
 }
 
 @media screen and (min-width: 640px) {
   .horo-home-page .home-section-header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 40px;
   }
 }
 
@@ -72,8 +73,8 @@
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
 .horo-home-page .home-section-header--feelings > div:first-child {
@@ -114,7 +115,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.55rem;
+  margin-bottom: 9px;
   color: var(--color-horo-pulse);
 }
 
@@ -136,12 +137,12 @@
 
 /* ===== Founding drop title ===== */
 .horo-home-page .home-founding-drop__title {
-  margin: 0.5rem 0 0;
+  margin: 8px 0 0;
   font-family: var(--font-headline);
-  font-size: 0.9rem;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
-  color: var(--color-horo-muted, #6b6164);
+  color: var(--color-horo-muted, #6f6568);
 }
 
 /* ===== Zero padding helper ===== */

@@ -49,16 +49,16 @@
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "clearFitDetails",
-            "label": "Clear fit details"
+            "icon": "cash",
+            "label": "Payment options shown at checkout"
           }
         },
         "badge_4": {
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "cash",
-            "label": "Payment options shown at checkout"
+            "icon": "exchange",
+            "label": "14-day exchange — see policy"
           }
         },
         "badge_5": {
@@ -66,7 +66,7 @@
           "settings": {
             "show_badge": true,
             "icon": "whatsapp",
-            "label": "WhatsApp size help"
+            "label": "WhatsApp size help before dispatch"
           }
         }
       },
@@ -99,8 +99,8 @@
       "settings": {
         "eyebrow": "GIFT READY",
         "heading": "More than a gift.",
-        "heading_line_2": "It's a feeling they'll wear.",
-        "body": "Thoughtful designs for birthdays, anniversaries, graduations, and just because.",
+        "heading_line_2": "",
+        "body": "It's a feeling they'll wear. Thoughtful designs for birthdays, anniversaries, graduations, and just because.",
         "button_label": "Find the perfect gift →",
         "button_link": "/pages/gifts-hub"
       }
@@ -143,8 +143,8 @@
   },
   "order": [
     "home_hero",
-    "the_proof",
     "home_founding_drop",
+    "the_proof",
     "feeling_grid",
     "home_gift_block",
     "home_why_horo"

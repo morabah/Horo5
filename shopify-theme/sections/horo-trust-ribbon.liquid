@@ -14,7 +14,7 @@
   <section
     id="TrustRibbon-{{ section.id }}"
     class="home-trust-bar section-padding-zero{% if use_mockup %} home-trust-bar--mockup{% else %} horo-trust-ribbon color-{{ section.settings.color_scheme }} gradient{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
-    aria-label="{{ 'accessibility.service_promises' | t | default: 'Service promises' }}"
+    aria-label="Service promises"
   >
     <div class="home-trust-bar__inner{% if use_mockup %} home-page__inner{% endif %}">
       {%- if visible_count > 0 -%}
@@ -76,6 +76,7 @@
             { "value": "print", "label": "Printed in Egypt" },
             { "value": "clearFitDetails", "label": "Clear fit details" },
             { "value": "cash", "label": "Payment at checkout" },
+            { "value": "exchange", "label": "14-day exchange" },
             { "value": "whatsapp", "label": "WhatsApp size help" }
           ],
           "default": "artist",
@@ -114,16 +115,16 @@
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "clearFitDetails",
-            "label": "Clear fit details"
+            "icon": "cash",
+            "label": "Payment options shown at checkout"
           }
         },
         "badge_4": {
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "cash",
-            "label": "Payment options shown at checkout"
+            "icon": "exchange",
+            "label": "14-day exchange — see policy"
           }
         },
         "badge_5": {

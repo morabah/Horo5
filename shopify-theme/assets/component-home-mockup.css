@@ -3,9 +3,9 @@
  * Requires horo-tokens.css (loaded globally in theme).
  */
 :root {
-  --color-horo-text: #4f111f;
-  --color-horo-muted: #6b6164;
-  --color-horo-section: #fff7f5;
+  --color-horo-text: #241f21;
+  --color-horo-muted: #6f6568;
+  --color-horo-section: #fbf8f7;
 }
 
 .home-btn {
@@ -13,7 +13,7 @@
   align-items: center;
   justify-content: center;
   min-height: 42px;
-  padding: 0.5rem 1.25rem;
+  padding: 8px 20px;
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 700;
@@ -53,13 +53,13 @@
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
 .home-section-link {
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-horo-pulse);
   text-decoration: none;
@@ -67,17 +67,17 @@
 
 .home-feeling-grid__all-link {
   display: none;
-  min-height: 2.75rem;
+  min-height: 44px;
   align-items: center;
 }
 
 .home-feeling-mobile-cta {
-  margin: 1.5rem 0 0;
+  margin: 24px 0 0;
 }
 
 .home-feeling-mobile-cta .home-section-link {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: 44px;
   align-items: center;
   text-decoration: underline;
   text-underline-offset: 4px;
@@ -96,8 +96,8 @@
 .home-hero-split__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 2rem;
+  gap: 12px;
+  margin-top: 32px;
 }
 
 .home-hero-split__title-line {
@@ -107,7 +107,7 @@
 .home-hero-split__grid {
   display: grid;
   width: 100%;
-  max-width: min(87.5rem, calc(100vw - 2.5rem));
+  max-width: var(--home-content-max, min(1400px, calc(100vw - 40px)));
   margin-inline: auto;
 }
 
@@ -183,24 +183,24 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 24px;
 }
 
 @media (min-width: 768px) {
   .home-gift-banner__copy {
-    padding: 2rem;
+    padding: 32px;
   }
 }
 
 .home-gift-banner__media {
   position: relative;
-  min-height: 13rem;
+  min-height: 208px;
 }
 
 .home-gift-banner__media img {
   width: 100%;
   height: 100%;
-  min-height: 13rem;
+  min-height: 208px;
   object-fit: cover;
 }
 
@@ -217,7 +217,7 @@
 
 /* ——— Homepage mockup layout (split hero, pastel feelings, story grid) ——— */
 .home-section {
-  padding-block: 2rem;
+  padding-block: 32px;
 }
 
 .home-section--bordered {
@@ -225,8 +225,8 @@
 }
 
 .home-section-title--lg {
-  font-size: clamp(1.75rem, 2.5vw, 2rem);
-  margin-top: 0.5rem;
+  font-size: clamp(28px, 2.5vw, 32px);
+  margin-top: 8px;
 }
 
 .home-feeling-pastel-grid {
@@ -241,7 +241,7 @@
 
 .home-section-eyebrow {
   font-family: var(--font-label);
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -250,7 +250,7 @@
 
 .home-section-title {
   font-family: var(--font-headline);
-  font-size: clamp(1.45rem, 2.1vw, 1.9rem);
+  font-size: clamp(23px, 2.1vw, 30px);
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: 0;
@@ -259,7 +259,7 @@
 
 .home-section-subtitle {
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
   color: var(--color-horo-muted);
@@ -279,12 +279,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(2rem, 4vw, 2.6rem) clamp(1.5rem, 6vw, 5.8rem);
+  padding: clamp(32px, 4vw, 42px) clamp(24px, 6vw, 93px);
 }
 
 .home-hero-split__title {
   font-family: var(--font-headline);
-  font-size: clamp(3rem, 5.4vw, 4.15rem);
+  font-size: clamp(48px, 5.4vw, 66px);
   font-weight: 800;
   line-height: 0.96;
   letter-spacing: 0;
@@ -294,21 +294,21 @@
 
 .home-hero-split__subtitle {
   font-family: var(--font-body);
-  font-size: clamp(1rem, 1.3vw, 1.2rem);
+  font-size: clamp(16px, 1.3vw, 19px);
   line-height: 1.42;
   color: #51484b;
 }
 
 .home-hero-split__rhythm {
   font-family: var(--font-body);
-  font-size: 0.98rem;
+  font-size: 16px;
   font-weight: 600;
   color: var(--color-horo-pulse);
 }
 
 .home-hero-split__canvas {
   font-family: var(--font-label);
-  font-size: 0.7rem;
+  font-size: 11px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: #776d70;
@@ -316,7 +316,7 @@
 
 .home-hero-split__media {
   position: relative;
-  min-height: clamp(22rem, 41.2vw, 29rem);
+  min-height: clamp(352px, 41.2vw, 464px);
   background: color-mix(in srgb, var(--color-horo-breath) 35%, var(--color-horo-white));
 }
 
@@ -337,7 +337,7 @@
 }
 
 .home-trust-bar__cell {
-  padding: 1.2rem 1rem 1.35rem;
+  padding: 19px 16px 22px;
   text-align: center;
   border-inline-end: 1px solid #f0e4e2;
 }
@@ -350,13 +350,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.55rem;
+  margin-bottom: 9px;
   color: var(--color-horo-pulse);
 }
 
 .home-trust-bar__label {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 13px;
   line-height: 1.35;
   color: #443b3e;
 }
@@ -391,13 +391,13 @@
 }
 
 .home-founding-drop__inner {
-  max-width: var(--home-content-max, min(87.5rem, calc(100vw - 2.5rem)));
+  max-width: var(--home-content-max, min(1400px, calc(100vw - 40px)));
 }
 
 .home-founding-card__media {
   display: block;
   aspect-ratio: 4 / 5;
-  min-height: clamp(13.5rem, 22vw, 18.5rem);
+  min-height: clamp(216px, 22vw, 296px);
   background: #faf7f6;
   overflow: hidden;
 }
@@ -420,20 +420,20 @@
 .home-founding-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 16px;
 }
 
 @media (min-width: 768px) {
   .home-founding-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.125rem;
+    gap: 18px;
   }
 }
 
 @media (min-width: 1024px) {
   .home-founding-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 1.125rem;
+    gap: 18px;
   }
 }
 
@@ -441,7 +441,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 0.7rem 0.75rem 0.8rem;
+  padding: 11px 12px 13px;
   text-align: center;
 }
 
@@ -452,16 +452,16 @@
 }
 
 .home-founding-card__price {
-  font-size: 0.8rem;
+  font-size: 13px;
   line-height: 1.15;
-  margin: 0.5rem 0 0;
+  margin: 8px 0 0;
   font-weight: 600;
   color: #50484b;
 }
 
 .home-founding-card__actions {
   margin-top: auto;
-  padding-top: 0.875rem;
+  padding-top: 14px;
 }
 
 .home-founding-card__add {
@@ -469,17 +469,17 @@
 }
 
 .home-gift-banner__body {
-  margin-top: 1rem;
-  max-width: 28rem;
+  margin-top: 16px;
+  max-width: 448px;
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 14px;
   line-height: 1.45;
   color: #5a5154;
 }
 
 .home-trust-bar__inner {
   width: 100%;
-  max-width: min(87.5rem, calc(100vw - 2.5rem));
+  max-width: var(--home-content-max, min(1400px, calc(100vw - 40px)));
   margin-inline: auto;
   padding-inline: 0;
 }
@@ -491,13 +491,13 @@
 .home-feeling-pastel-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 @media (min-width: 768px) {
   .home-feeling-pastel-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
+    gap: 16px;
   }
 }
 
@@ -512,9 +512,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
-  min-height: 7rem;
-  padding: 1.1rem 1rem;
+  gap: 10px;
+  min-height: 112px;
+  padding: 18px 16px;
   border-radius: 6px;
   border: 1px solid color-mix(in srgb, var(--color-horo-root) 8%, transparent);
   text-decoration: none;
@@ -537,14 +537,14 @@
 
 .home-feeling-pastel-tile__label {
   font-family: var(--font-headline);
-  font-size: 0.88rem;
+  font-size: 14px;
   font-weight: 600;
   text-align: center;
 }
 
 .home-gift-banner__title {
   font-family: var(--font-headline);
-  font-size: clamp(1.45rem, 2vw, 1.8rem);
+  font-size: clamp(23px, 2vw, 29px);
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: 0;
@@ -564,10 +564,10 @@
 
 .home-info-strip__item {
   display: grid;
-  grid-template-columns: 2.8rem minmax(0, 1fr);
-  gap: 1rem;
+  grid-template-columns: 45px minmax(0, 1fr);
+  gap: 16px;
   align-items: start;
-  padding: 1.35rem 1.5rem;
+  padding: 22px 24px;
   border-inline-end: 1px solid #f0e4e2;
   color: inherit;
   text-decoration: none;
@@ -582,9 +582,9 @@
 }
 
 .home-info-strip__item h3 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 8px;
   font-family: var(--font-headline);
-  font-size: 0.9rem;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-horo-text);
 }
@@ -592,7 +592,7 @@
 .home-info-strip__item p {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 0.8rem;
+  font-size: 13px;
   line-height: 1.35;
   color: #5b5355;
 }
