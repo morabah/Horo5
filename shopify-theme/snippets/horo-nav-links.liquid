@@ -17,7 +17,6 @@
 
 {%- liquid
   assign nav_active_path = active_path | default: request.path
-  assign about_url = routes.root_url | append: 'pages/about-horo'
 
   if context == 'primary'
     if menu != blank and menu.links.size > 0
@@ -40,37 +39,17 @@
       {%- if nav_items == 'fallback' -%}
         {%- assign primary_route_keys = 'founding_drop,about,size_guide' | split: ',' -%}
         {%- for route_key in primary_route_keys -%}
-          {%- case route_key -%}
-            {%- when 'founding_drop' -%}
-              {%- assign label = 'horo.nav.founding_drop' | t | default: 'Founding Drop' -%}
-              {%- assign href = '/collections/founding-drop' -%}
-            {%- when 'about' -%}
-              {%- assign label = 'horo.nav.our_story' | t | default: 'Our Story' -%}
-              {%- assign href = about_url -%}
-            {%- when 'size_guide' -%}
-              {%- assign label = 'horo.nav.size_help' | t | default: 'Size & Help' -%}
-              {%- assign href = routes.root_url | append: 'pages/size-guide' -%}
-          {%- endcase -%}
-          {%- assign is_active = false -%}
-          {%- if nav_active_path == href or nav_active_path contains href and href != routes.root_url -%}
-            {%- assign is_active = true -%}
-          {%- endif -%}
-          <li>
-            <a
-              href="{{ href }}"
-              class="horo-nav__link{% if is_active %} horo-nav__link--active{% endif %}"
-              {% if is_active %}aria-current="page"{% endif %}
-            >
-              {{ label | escape }}
-            </a>
-          </li>
+          {% render 'horo-nav-route-link', route_key: route_key, nav_active_path: nav_active_path, link_style: 'primary' %}
         {%- endfor -%}
       {%- else -%}
+        {%- assign shown_keys = '|' -%}
         {%- for link in nav_items -%}
           {%- liquid
             assign skip_link = false
             assign link_url_lower = link.url | downcase
             assign link_title_lower = link.title | downcase
+            assign link_route_key = ''
+
             if link_url_lower contains '/pages/gifts-hub' or link_url_lower contains '/pages/occasions'
               assign skip_link = true
             endif
@@ -83,8 +62,21 @@
             if link_title_lower == 'zodiac' or link_title_lower == 'shop by feeling'
               assign skip_link = true
             endif
+
+            unless skip_link
+              if link_url_lower contains 'founding-drop' or link_url_lower contains '/products'
+                assign link_route_key = 'founding_drop'
+              elsif link_url_lower contains 'about-horo' or link_url_lower contains '/pages/about'
+                assign link_route_key = 'about'
+              elsif link_url_lower contains 'size-guide'
+                assign link_route_key = 'size_guide'
+              endif
+            endunless
           -%}
           {%- unless skip_link -%}
+            {%- if link_route_key != blank -%}
+              {%- assign shown_keys = shown_keys | append: link_route_key | append: '|' -%}
+            {%- endif -%}
             {%- assign is_active = false -%}
             {%- if nav_active_path == link.url or link.child_active or nav_active_path contains link.url and link.url != '/' -%}
               {%- assign is_active = true -%}
@@ -100,6 +92,13 @@
             </li>
           {%- endunless -%}
         {%- endfor -%}
+        {%- assign primary_route_keys = 'founding_drop,about,size_guide' | split: ',' -%}
+        {%- for route_key in primary_route_keys -%}
+          {%- assign route_marker = route_key | prepend: '|' | append: '|' -%}
+          {%- unless shown_keys contains route_marker -%}
+            {% render 'horo-nav-route-link', route_key: route_key, nav_active_path: nav_active_path, link_style: 'primary' %}
+          {%- endunless -%}
+        {%- endfor -%}
       {%- endif -%}
     </ul>
   </nav>
@@ -109,43 +108,17 @@
       {%- if nav_items == 'fallback' -%}
         {%- assign drawer_route_keys = 'home,founding_drop,about,size_guide,search' | split: ',' -%}
         {%- for route_key in drawer_route_keys -%}
-          {%- case route_key -%}
-            {%- when 'home' -%}
-              {%- assign label = 'horo.shell.home' | t | default: 'Home' -%}
-              {%- assign href = routes.root_url -%}
-            {%- when 'founding_drop' -%}
-              {%- assign label = 'horo.nav.founding_drop' | t | default: 'Founding Drop' -%}
-              {%- assign href = '/collections/founding-drop' -%}
-            {%- when 'about' -%}
-              {%- assign label = 'horo.nav.our_story' | t | default: 'Our Story' -%}
-              {%- assign href = about_url -%}
-            {%- when 'size_guide' -%}
-              {%- assign label = 'horo.nav.size_help' | t | default: 'Size & Help' -%}
-              {%- assign href = routes.root_url | append: 'pages/size-guide' -%}
-            {%- when 'search' -%}
-              {%- assign label = 'horo.shell.search' | t | default: 'Search' -%}
-              {%- assign href = routes.search_url -%}
-          {%- endcase -%}
-          {%- assign is_active = false -%}
-          {%- if nav_active_path == href or route_key != 'home' and nav_active_path contains href and href != routes.root_url -%}
-            {%- assign is_active = true -%}
-          {%- endif -%}
-          <li>
-            <a
-              href="{{ href }}"
-              class="horo-nav__drawer-link{% if is_active %} horo-nav__drawer-link--active{% endif %}"
-              {% if is_active %}aria-current="page"{% endif %}
-            >
-              {{ label | escape }}
-            </a>
-          </li>
+          {% render 'horo-nav-route-link', route_key: route_key, nav_active_path: nav_active_path, link_style: 'drawer' %}
         {%- endfor -%}
       {%- else -%}
+        {%- assign shown_keys = '|' -%}
         {%- for link in nav_items -%}
           {%- liquid
             assign skip_link = false
             assign link_url_lower = link.url | downcase
             assign link_title_lower = link.title | downcase
+            assign link_route_key = ''
+
             if link_url_lower contains '/pages/gifts-hub' or link_url_lower contains '/pages/occasions'
               assign skip_link = true
             endif
@@ -158,8 +131,25 @@
             if link_title_lower == 'zodiac' or link_title_lower == 'shop by feeling'
               assign skip_link = true
             endif
+
+            unless skip_link
+              if link.url == routes.root_url or link_url_lower == routes.root_url or link_url_lower == '/'
+                assign link_route_key = 'home'
+              elsif link_url_lower contains 'founding-drop' or link_url_lower contains '/products'
+                assign link_route_key = 'founding_drop'
+              elsif link_url_lower contains 'about-horo' or link_url_lower contains '/pages/about'
+                assign link_route_key = 'about'
+              elsif link_url_lower contains 'size-guide'
+                assign link_route_key = 'size_guide'
+              elsif link_url_lower contains '/search' or link.url == routes.search_url
+                assign link_route_key = 'search'
+              endif
+            endunless
           -%}
           {%- unless skip_link -%}
+            {%- if link_route_key != blank -%}
+              {%- assign shown_keys = shown_keys | append: link_route_key | append: '|' -%}
+            {%- endif -%}
             {%- assign is_active = false -%}
             {%- if nav_active_path == link.url or link.child_active or nav_active_path contains link.url and link.url != '/' -%}
               {%- assign is_active = true -%}
@@ -173,6 +163,13 @@
                 {{ link.title | escape }}
               </a>
             </li>
+          {%- endunless -%}
+        {%- endfor -%}
+        {%- assign drawer_route_keys = 'home,founding_drop,about,size_guide,search' | split: ',' -%}
+        {%- for route_key in drawer_route_keys -%}
+          {%- assign route_marker = route_key | prepend: '|' | append: '|' -%}
+          {%- unless shown_keys contains route_marker -%}
+            {% render 'horo-nav-route-link', route_key: route_key, nav_active_path: nav_active_path, link_style: 'drawer' %}
           {%- endunless -%}
         {%- endfor -%}
       {%- endif -%}

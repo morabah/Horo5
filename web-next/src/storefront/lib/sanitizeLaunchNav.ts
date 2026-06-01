@@ -94,3 +94,26 @@ export function sanitizeLaunchNav(
     })
     .filter((item): item is RenderedNavItem => item !== null);
 }
+
+/** Keep sanitized settings labels while ensuring required launch nav keys are present. */
+export function mergeLaunchNavWithFallback(
+  sanitized: RenderedNavItem[],
+  requiredKeys: readonly string[],
+  fallbackForKey: (key: string) => RenderedNavItem,
+): RenderedNavItem[] {
+  const byKey = new Map<string, RenderedNavItem>();
+  for (const item of sanitized) {
+    if (!byKey.has(item.key)) byKey.set(item.key, item);
+  }
+  return requiredKeys.map((key) => byKey.get(key) ?? fallbackForKey(key));
+}
+
+/** Sanitize Medusa nav settings, then backfill any missing required launch links. */
+export function resolveLaunchNav(
+  items: SettingsNavItem[] | undefined,
+  locale: 'en' | 'ar',
+  requiredKeys: readonly string[],
+  fallbackForKey: (key: string) => RenderedNavItem,
+): RenderedNavItem[] {
+  return mergeLaunchNavWithFallback(sanitizeLaunchNav(items, locale), requiredKeys, fallbackForKey);
+}

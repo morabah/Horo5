@@ -1,0 +1,56 @@
+{%- comment -%}
+  Single launch nav link — shared by fallback nav and backfill after menu sanitization.
+  Params: route_key, nav_active_path, link_style ('primary' | 'drawer')
+{%- endcomment -%}
+{%- liquid
+  assign about_url = routes.root_url | append: 'pages/about-horo'
+  assign link_style = link_style | default: 'primary'
+
+  case route_key
+    when 'home'
+      assign label = 'horo.shell.home' | t | default: 'Home'
+      assign href = routes.root_url
+    when 'founding_drop'
+      assign label = 'horo.nav.founding_drop' | t | default: 'Founding Drop'
+      assign href = '/collections/founding-drop'
+    when 'about'
+      assign label = 'horo.nav.our_story' | t | default: 'Our Story'
+      assign href = about_url
+    when 'size_guide'
+      assign label = 'horo.nav.size_help' | t | default: 'Size & Help'
+      assign href = routes.root_url | append: 'pages/size-guide'
+    when 'search'
+      assign label = 'horo.shell.search' | t | default: 'Search'
+      assign href = routes.search_url
+  endcase
+
+  assign is_active = false
+  if nav_active_path == href
+    assign is_active = true
+  elsif route_key != 'home' and nav_active_path contains href and href != routes.root_url
+    assign is_active = true
+  endif
+
+  if link_style == 'drawer'
+    if is_active
+      assign link_class = 'horo-nav__drawer-link horo-nav__drawer-link--active'
+    else
+      assign link_class = 'horo-nav__drawer-link'
+    endif
+  else
+    if is_active
+      assign link_class = 'horo-nav__link horo-nav__link--active'
+    else
+      assign link_class = 'horo-nav__link'
+    endif
+  endif
+-%}
+<li>
+  <a
+    href="{{ href }}"
+    class="{{ link_class }}"
+    {% if is_active %}aria-current="page"{% endif %}
+  >
+    {{ label | escape }}
+  </a>
+</li>

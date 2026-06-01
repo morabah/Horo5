@@ -39,7 +39,7 @@ export const FOUNDING_DROP_COLLECTION: CollectionSeed = {
   handle: 'founding-drop',
   title: 'Founding Drop',
   descriptionHtml:
-    '<p>The first HORO drop — Zodiac, I Care, I Don’t Care, and Walk Alone.</p>',
+    '<p>The first HORO drop — Sign Capsule, I Care, I Don’t Care, and Walk Alone.</p>',
 };
 
 export const ZODIAC_COLLECTION: CollectionSeed = {

@@ -68,7 +68,13 @@
     -%}
 
     {%- if use_metaobject -%}
-      {%- render 'feeling-card-pastel', card: feeling, tile_index: tiles_shown -%}
+      {%- render 'feeling-card-pastel',
+        card: feeling,
+        tile_index: tiles_shown,
+        override_label: label,
+        override_url: card_url,
+        override_icon_slug: slug
+      -%}
     {%- else -%}
       <li class="home-feeling-pastel-grid__item" role="listitem">
         <a

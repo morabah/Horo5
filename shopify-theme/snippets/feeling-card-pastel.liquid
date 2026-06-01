@@ -1,11 +1,12 @@
 {%- liquid
   assign feeling = card
   assign feeling_handle = feeling.handle | default: feeling.slug | default: '' | downcase
-  assign feeling_label = feeling.title | default: feeling.name | default: feeling.display_name | default: 'Feeling'
-  assign card_url = feeling.collection_url | default: feeling.collection.value.url
+  assign feeling_label = override_label | default: feeling.title | default: feeling.name | default: feeling.display_name | default: 'Feeling'
+  assign card_url = override_url | default: feeling.collection_url | default: feeling.collection.value.url
   if card_url == blank and feeling_handle != blank
     assign card_url = routes.collections_url | append: '/feeling-' | append: feeling_handle
   endif
+  assign icon_slug = override_icon_slug | default: feeling_handle
   assign surfaces = '#f4ede5,#f8eaea,#edf1ea,#eeebf5,#f7ebe4' | split: ','
   assign surface_index = tile_index | modulo: 5
   assign surface_color = surfaces[surface_index]
@@ -18,7 +19,7 @@
     style="background-color: {{ surface_color }};"
     aria-label="{{ feeling_label | escape }}"
   >
-    {% render 'feeling-tile-icon', slug: feeling_handle %}
+    {% render 'feeling-tile-icon', slug: icon_slug %}
     <span class="home-feeling-pastel-tile__label">{{ feeling_label | escape }}</span>
   </a>
 </li>

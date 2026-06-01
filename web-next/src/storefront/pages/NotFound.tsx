@@ -2,7 +2,6 @@ import Link from 'next/link';
 
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
-import { NAV_ROUTE } from '../lib/navLinks';
 
 export function NotFound() {
   const copy = useDictionary();
@@ -27,7 +26,7 @@ export function NotFound() {
         <Link className="btn btn-secondary text-sm" href="/search">
           {copy.shell.search}
         </Link>
-        <Link className="btn btn-secondary text-sm" href={NAV_ROUTE.zodiac.path}>
+        <Link className="btn btn-secondary text-sm" href="/#shop-by-meaning">
           {copy.shell.shopByFeeling}
         </Link>
       </div>

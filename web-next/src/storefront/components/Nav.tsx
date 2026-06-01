@@ -8,7 +8,7 @@ import { useWishlist } from '../hooks/useWishlist';
 import { clearPlacedOrderMedusaIdHint, readPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { NAV_DRAWER_ROUTE_KEYS, NAV_PRIMARY_ROUTE_KEYS, NAV_ROUTE, type NavRouteKey } from '../lib/navLinks';
-import { sanitizeLaunchNav } from '../lib/sanitizeLaunchNav';
+import { resolveLaunchNav } from '../lib/sanitizeLaunchNav';
 import { getSearchSuggestions, type SearchSuggestion } from '../search/view';
 import { AppIcon } from './AppIcon';
 import { BrandLogo } from './BrandLogo';
@@ -200,17 +200,21 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
     cart: copy.shell.cart,
   }), [copy.shell.about, copy.shell.cart, copy.shell.home, copy.shell.search, copy.shell.shopAll, copy.shell.shopByFeeling, copy.shell.sizeGuide, locale]);
   const primaryNavItems = useMemo(() => {
-    const sanitizedSettings = sanitizeLaunchNav(navigation?.primary, locale);
-    return sanitizedSettings.length > 0
-      ? sanitizedSettings
-      : NAV_PRIMARY_ROUTE_KEYS.map((routeKey) => fallbackNavItem(routeKey, routeLabelByKey[routeKey]));
+    return resolveLaunchNav(
+      navigation?.primary,
+      locale,
+      NAV_PRIMARY_ROUTE_KEYS,
+      (key) => fallbackNavItem(key as NavRouteKey, routeLabelByKey[key as NavRouteKey]),
+    );
   }, [locale, navigation?.primary, routeLabelByKey]);
 
   const drawerNavItems = useMemo(() => {
-    const sanitizedSettings = sanitizeLaunchNav(navigation?.drawer, locale);
-    return sanitizedSettings.length > 0
-      ? sanitizedSettings
-      : NAV_DRAWER_ROUTE_KEYS.map((routeKey) => fallbackNavItem(routeKey, routeLabelByKey[routeKey]));
+    return resolveLaunchNav(
+      navigation?.drawer,
+      locale,
+      NAV_DRAWER_ROUTE_KEYS,
+      (key) => fallbackNavItem(key as NavRouteKey, routeLabelByKey[key as NavRouteKey]),
+    );
   }, [locale, navigation?.drawer, routeLabelByKey]);
 
   const closeMenu = useCallback(() => {
