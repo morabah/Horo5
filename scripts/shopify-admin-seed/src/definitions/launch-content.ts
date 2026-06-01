@@ -39,8 +39,54 @@ export const FOUNDING_DROP_COLLECTION: CollectionSeed = {
   handle: 'founding-drop',
   title: 'Founding Drop',
   descriptionHtml:
-    '<p>The first HORO artist-made tees — calm, zodiac, and gift-ready pieces from the launch drop.</p>',
+    '<p>The first HORO drop — Zodiac, I Care, I Don’t Care, and Walk Alone.</p>',
 };
+
+export const ZODIAC_COLLECTION: CollectionSeed = {
+  handle: 'zodiac',
+  title: 'Zodiac',
+  descriptionHtml: '<p>Gemini, Cancer, Leo, and Virgo — with Men and Women options.</p>',
+};
+
+export const ZODIAC_MEN_COLLECTION: CollectionSeed = {
+  handle: 'zodiac-men',
+  title: 'Zodiac — Men',
+  descriptionHtml: '<p>Gendered zodiac designs for men.</p>',
+};
+
+export const ZODIAC_WOMEN_COLLECTION: CollectionSeed = {
+  handle: 'zodiac-women',
+  title: 'Zodiac — Women',
+  descriptionHtml: '<p>Gendered zodiac designs for women.</p>',
+};
+
+export const MOOD_LIFESTYLE_COLLECTION: CollectionSeed = {
+  handle: 'mood-lifestyle',
+  title: 'Mood & Lifestyle',
+  descriptionHtml: '<p>I Care, I Don’t Care, and Walk Alone — unisex launch designs.</p>',
+};
+
+/** Shopify product metafield definitions for launch taxonomy (namespace: custom). */
+export const LAUNCH_PRODUCT_METAFIELD_DEFINITIONS = [
+  { namespace: 'custom', key: 'launch_group', name: 'Launch group', type: 'single_line_text_field' },
+  { namespace: 'custom', key: 'launch_audience', name: 'Launch audience', type: 'single_line_text_field' },
+  { namespace: 'custom', key: 'launch_design', name: 'Launch design', type: 'single_line_text_field' },
+  { namespace: 'custom', key: 'zodiac_sign', name: 'Zodiac sign', type: 'single_line_text_field' },
+] as const;
+
+/** Interim product tags when metafields are not yet populated. */
+export function launchProductTags(input: {
+  launchGroup: string;
+  launchAudience?: string;
+  launchDesign?: string;
+  zodiacSign?: string;
+}): string[] {
+  const tags = [`launch:${input.launchGroup}`];
+  if (input.launchAudience) tags.push(`audience:${input.launchAudience}`);
+  if (input.launchDesign) tags.push(`design:${input.launchDesign}`);
+  if (input.zodiacSign) tags.push(`zodiac:${input.zodiacSign}`);
+  return tags;
+}
 
 export interface PageSeed {
   handle: string;
@@ -98,6 +144,10 @@ export function allCollectionSeeds(): CollectionSeed[] {
   }
 
   map.set(FOUNDING_DROP_COLLECTION.handle, FOUNDING_DROP_COLLECTION);
+  map.set(ZODIAC_COLLECTION.handle, ZODIAC_COLLECTION);
+  map.set(ZODIAC_MEN_COLLECTION.handle, ZODIAC_MEN_COLLECTION);
+  map.set(ZODIAC_WOMEN_COLLECTION.handle, ZODIAC_WOMEN_COLLECTION);
+  map.set(MOOD_LIFESTYLE_COLLECTION.handle, MOOD_LIFESTYLE_COLLECTION);
 
   return [...map.values()];
 }

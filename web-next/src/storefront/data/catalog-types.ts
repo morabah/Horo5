@@ -228,6 +228,21 @@ export type FeelingBrowseAssignment = {
   subfeelingSlug: string;
 };
 
+export type HoroLaunchGroup = 'zodiac_capsule' | 'mood' | 'lifestyle';
+
+export type HoroLaunchAudience = 'men' | 'women' | 'unisex';
+
+export type HoroLaunchDesign =
+  | 'gemini'
+  | 'cancer'
+  | 'leo'
+  | 'virgo'
+  | 'i-care'
+  | 'i-dont-care'
+  | 'walk-alone';
+
+export type HoroZodiacSign = 'gemini' | 'cancer' | 'leo' | 'virgo';
+
 export type Product = {
   id?: string;
   apparelCategoryPath?: string;
@@ -253,6 +268,11 @@ export type Product = {
   feelingSlug: string;
   /** Thematic line: emotions, zodiac, fiction, career, trends (from Medusa metadata / handle). */
   lineSlug?: string;
+  /** Founding drop taxonomy — optional until all launch SKUs are tagged in Medusa. */
+  launchGroup?: HoroLaunchGroup;
+  launchAudience?: HoroLaunchAudience;
+  launchDesign?: HoroLaunchDesign;
+  zodiacSign?: HoroZodiacSign;
   decorationType?: 'plain' | 'graphic' | 'embroidered' | 'mixed';
   artworkSlug?: string;
   description?: string;

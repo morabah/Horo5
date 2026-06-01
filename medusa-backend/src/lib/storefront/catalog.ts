@@ -15,6 +15,12 @@ import type OccasionModuleService from "../../modules/occasion/service"
 import { PRODUCT_REVIEW_MODULE } from "../../modules/product-review"
 import type ProductReviewModuleService from "../../modules/product-review/service"
 import { FEELINGS_ROOT_HANDLE } from "./feeling-category-metadata"
+import {
+  asLaunchAudience,
+  asLaunchDesign,
+  asLaunchGroup,
+  asZodiacSign,
+} from "./launch-taxonomy"
 import type { CategoryNode, FlatCategoryRow, FeelingBrowseAssignmentRaw } from "./feeling-category-tree"
 import {
   collectFeelingBrowseAssignmentsFromFlatCategoryIds,
@@ -1196,6 +1202,10 @@ function buildProduct(
     launchAt: launchAt || undefined,
     sunsetAt: sunsetAt || undefined,
     lineSlug: primarySubfeelingSlug,
+    launchGroup: asLaunchGroup(metadata.launchGroup),
+    launchAudience: asLaunchAudience(metadata.launchAudience ?? metadata.audience),
+    launchDesign: asLaunchDesign(metadata.launchDesign),
+    zodiacSign: asZodiacSign(metadata.zodiacSign),
     media:
       mainImage || gallery.length > 0 || legacyMedia?.card
         ? {

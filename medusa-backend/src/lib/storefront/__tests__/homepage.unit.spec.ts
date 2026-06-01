@@ -40,7 +40,6 @@ describe("storefront homepage sections", () => {
       "trust_ribbon",
       "founding_drop",
       "feeling_grid",
-      "gift_block",
       "why_horo",
     ])
   })

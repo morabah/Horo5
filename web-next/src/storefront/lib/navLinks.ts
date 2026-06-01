@@ -2,18 +2,38 @@
 export const NAV_ROUTE = {
   home: { path: '/', end: true },
   products: { path: '/products', end: false },
-  collection: { path: '/feelings', end: false },
-  occasions: { path: '/occasions', end: false },
-  gifts: { path: '/gifts', end: false },
-  drops: { path: '/drops', end: false },
+  zodiac: { path: '/feelings/zodiac', end: false },
   about: { path: '/about', end: false },
   search: { path: '/search', end: false },
   cart: { path: '/cart', end: false },
   sizeGuide: { path: '/size-guide', end: false },
+
+  // Legacy/deeper browse routes kept for later restoration after the catalog grows.
+  // collection: { path: '/feelings', end: false },
+  // occasions: { path: '/occasions', end: false },
+  // gifts: { path: '/gifts', end: false },
+  // drops: { path: '/drops', end: false },
 } as const;
 
-export const NAV_PRIMARY_ROUTE_KEYS = ['products', 'collection', 'gifts', 'about', 'sizeGuide'] as const;
+export const NAV_PRIMARY_ROUTE_KEYS = ['products', 'zodiac', 'about', 'sizeGuide'] as const;
 
 export type NavRouteKey = keyof typeof NAV_ROUTE;
 
-export const NAV_DRAWER_ROUTE_KEYS = ['home', 'products', 'collection', 'gifts', 'occasions', 'about', 'sizeGuide', 'search'] as const;
+export const NAV_DRAWER_ROUTE_KEYS = [
+  'home',
+  'products',
+  'zodiac',
+  'about',
+  'sizeGuide',
+  'search',
+] as const;
+
+/** Launch nav keys allowed in header/drawer during founding drop. */
+export const LAUNCH_NAV_KEYS = new Set<NavRouteKey>([
+  'products',
+  'zodiac',
+  'about',
+  'sizeGuide',
+  'home',
+  'search',
+]);

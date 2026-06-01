@@ -1,59 +1,35 @@
 import Link from 'next/link';
 
-import { trackGiftRouteClick } from '../analytics/events';
 import { HOME_PRIMARY_ROUTES } from '../data/homeContent';
 import {
   getFeelingCollectionVisual,
-  getOccasionCollectionVisual,
   heroVectorizedV2,
   imgUrl,
 } from '../data/images';
-import { getFeelings, getOccasions } from '../data/site';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import {  useDictionary  } from '../i18n/ui-locale';
 
-function byHomepageOrder<T extends { active?: boolean; sortOrder?: number }>(items: T[]) {
-  return items
-    .filter((item) => item.active !== false)
-    .map((item, index) => ({ item, index }))
-    .sort((a, b) => (a.item.sortOrder ?? a.index) - (b.item.sortOrder ?? b.index) || a.index - b.index)
-    .map((entry) => entry.item);
-}
+const ROUTE_COPY_KEYS = {
+  founding_drop: {
+    titleKey: 'routesFoundingDropLabel' as const,
+    bodyKey: 'routesFoundingDropBlurb' as const,
+  },
+  zodiac: {
+    titleKey: 'routesZodiacLabel' as const,
+    bodyKey: 'routesZodiacBlurb' as const,
+  },
+  mood_lifestyle: {
+    titleKey: 'routesMoodLifestyleLabel' as const,
+    bodyKey: 'routesMoodLifestyleBlurb' as const,
+  },
+};
 
 function getRouteVisual(routeKey: (typeof HOME_PRIMARY_ROUTES)[number]['key']) {
-  if (routeKey === 'feeling') {
-    const feeling = byHomepageOrder(getFeelings())[0];
-    if (!feeling) return '';
-    const visual = getFeelingCollectionVisual(feeling.slug);
+  if (routeKey === 'zodiac') {
+    const visual = getFeelingCollectionVisual('zodiac');
     const src = visual.cover.src || visual.hero.src || visual.proof.src;
     return src && src !== heroVectorizedV2 ? src : '';
   }
-
-  if (routeKey === 'gift') {
-    const giftOccasion = byHomepageOrder(getOccasions().filter((o) => o.isGiftOccasion))[0];
-    if (giftOccasion) {
-      const visual = getOccasionCollectionVisual(giftOccasion.slug);
-      const src = visual.hero.src || visual.proof.src || giftOccasion.cardImageSrc;
-      if (src && src !== heroVectorizedV2) return src;
-    }
-    // Fallback: first active occasion with a valid visual
-    const fallbackOccasion = byHomepageOrder(getOccasions())[0];
-    if (fallbackOccasion) {
-      const visual = getOccasionCollectionVisual(fallbackOccasion.slug);
-      const src = visual.hero.src || visual.proof.src || fallbackOccasion.cardImageSrc;
-      if (src && src !== heroVectorizedV2) return src;
-    }
-    return '';
-  }
-
-  const occasion = byHomepageOrder(getOccasions())[0];
-  if (!occasion) return '';
-  const visual = getOccasionCollectionVisual(occasion.slug);
-  const src = visual.hero.src || visual.proof.src || occasion.cardImageSrc;
-  return src && src !== heroVectorizedV2 ? src : '';
-}
-
-function getGiftHref(): string {
-  return HOME_PRIMARY_ROUTES.find((route) => route.key === 'gift')?.href || '/gifts';
+  return '';
 }
 
 export function HomePrimaryRoutes() {
@@ -70,18 +46,15 @@ export function HomePrimaryRoutes() {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-3 md:grid-cols-3 md:gap-4">
           {HOME_PRIMARY_ROUTES.map((route) => {
-            const isFeeling = route.key === 'feeling';
-            const isGift = route.key === 'gift';
-            const title = isFeeling ? copy.home.routesFeelingLabel : isGift ? copy.home.routesGiftLabel : copy.home.routesOccasionLabel;
-            const body = isFeeling ? copy.home.routesFeelingBlurb : isGift ? copy.home.routesGiftBlurb : copy.home.routesOccasionBlurb;
+            const routeCopy = ROUTE_COPY_KEYS[route.key];
+            const title = copy.home[routeCopy.titleKey];
+            const body = copy.home[routeCopy.bodyKey];
             const imageSrc = getRouteVisual(route.key);
-            const href = isGift ? getGiftHref() : route.href;
 
             return (
               <Link
                 key={route.key}
-                href={href}
-                onClick={isGift ? () => trackGiftRouteClick('home_primary_routes') : undefined}
+                href={route.href}
                 className={`home-route-card group relative isolate flex min-h-[132px] overflow-hidden rounded-[18px] border border-stone/55 p-5 shadow-[0_18px_44px_-30px_rgba(26,26,26,0.2)] transition-transform duration-300 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal md:min-h-[190px] md:p-6 ${
                   imageSrc ? 'bg-obsidian text-white' : 'bg-white/82 text-obsidian'
                 }`}

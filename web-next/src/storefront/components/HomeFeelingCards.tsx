@@ -71,11 +71,24 @@ function getFeaturedFeelings(section: StorefrontHomepageSection | undefined, loc
   const overrides = payloadFeelingOverrides(section, locale);
   if (overrides.length > 0) {
     const selected = overrides
-      .map((override) => {
+      .map((override, overrideIndex) => {
         const entry = bySlug.get(override.slug);
-        return entry ? { ...entry, override } : null;
+        if (entry) return { ...entry, override };
+        return {
+          feeling: {
+            slug: override.slug,
+            name: override.label ?? override.slug,
+            active: true,
+            accent: '#8C2340',
+            blurb: '',
+            tagline: '',
+          },
+          index: overrideIndex,
+          count: 0,
+          override,
+        };
       })
-      .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+      .filter((entry) => Boolean(entry));
     if (selected.length > 0) return selected.slice(0, 12);
   }
   return allEntries.slice(0, 5);

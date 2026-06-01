@@ -1,12 +1,14 @@
 {%- comment -%}
   Default homepage feeling tiles when metaobjects or collections are not seeded yet.
-  Mirrors web-next dev fixtures (mood, zodiac, trends, career, fiction).
+  Launch taxonomy: Zodiac / Mood / Lifestyle (3 tiles).
+  Legacy full taxonomy kept for future restoration:
+  Lifestyle / Zodiac / Mood / Dream / Art.
 {%- endcomment -%}
 {%- liquid
-  assign limit = feeling_limit | default: 5
-  assign fallback_slugs = 'mood,zodiac,trends,career,fiction' | split: ','
-  assign fallback_labels = 'Mood,Zodiac,Trends,Career,Fiction' | split: ','
-  assign surfaces = '#f4ede5,#f8eaea,#edf1ea,#eeebf5,#f7ebe4' | split: ','
+  assign limit = feeling_limit | default: 3
+  assign fallback_slugs = 'zodiac,mood,lifestyle' | split: ','
+  assign fallback_labels = 'Zodiac,Mood,Lifestyle' | split: ','
+  assign surfaces = '#f8eaea,#f4ede5,#edf1ea' | split: ','
 -%}
 
 <ul class="home-feeling-pastel-grid" role="list">
@@ -15,14 +17,23 @@
       {%- break -%}
     {%- endif -%}
     {%- assign label = fallback_labels[forloop.index0] -%}
-    {%- assign surface_index = forloop.index0 | modulo: 5 -%}
+    {%- assign surface_index = forloop.index0 | modulo: 3 -%}
     {%- assign surface_color = surfaces[surface_index] -%}
-    {%- assign card_url = '/pages/feelings' -%}
-    {%- if slug != blank -%}
-      {%- assign coll_handle = 'feeling-' | append: slug -%}
-      {%- assign feeling_collection = collections[coll_handle] -%}
-      {%- if feeling_collection != blank -%}
-        {%- assign card_url = feeling_collection.url -%}
+    {%- assign card_url = '/collections/founding-drop' -%}
+    {%- if slug == 'zodiac' -%}
+      {%- assign zodiac_collection = collections['zodiac'] -%}
+      {%- if zodiac_collection != blank -%}
+        {%- assign card_url = zodiac_collection.url -%}
+      {%- else -%}
+        {%- assign feeling_zodiac = collections['feeling-zodiac'] -%}
+        {%- if feeling_zodiac != blank -%}
+          {%- assign card_url = feeling_zodiac.url -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- elsif slug == 'mood' or slug == 'lifestyle' -%}
+      {%- assign mood_lifestyle = collections['mood-lifestyle'] -%}
+      {%- if mood_lifestyle != blank -%}
+        {%- assign card_url = mood_lifestyle.url -%}
       {%- endif -%}
     {%- endif -%}
     <li class="home-feeling-pastel-grid__item" role="listitem">

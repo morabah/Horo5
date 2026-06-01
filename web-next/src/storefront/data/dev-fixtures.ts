@@ -225,6 +225,26 @@ export function deriveLegacySubfeelingSlug(productSlug: string, feelingSlug: str
   return DEFAULT_SUBFEELING_BY_FEELING[feelingSlug] ?? 'i-care';
 }
 
+/** Launch drop taxonomy for dev fixtures — 11 representative SKUs. */
+const LAUNCH_TAXONOMY_BY_SLUG: Partial<
+  Record<
+    string,
+    Pick<Product, 'launchGroup' | 'launchAudience' | 'launchDesign' | 'zodiacSign'>
+  >
+> = {
+  'zodiac-astral-body': { launchGroup: 'zodiac_capsule', launchAudience: 'women', launchDesign: 'gemini', zodiacSign: 'gemini' },
+  'zodiac-star-alignment': { launchGroup: 'zodiac_capsule', launchAudience: 'men', launchDesign: 'gemini', zodiacSign: 'gemini' },
+  'zodiac-lunar-pull': { launchGroup: 'zodiac_capsule', launchAudience: 'women', launchDesign: 'cancer', zodiacSign: 'cancer' },
+  'zodiac-solar-flare': { launchGroup: 'zodiac_capsule', launchAudience: 'men', launchDesign: 'cancer', zodiacSign: 'cancer' },
+  'zodiac-cosmic-dust': { launchGroup: 'zodiac_capsule', launchAudience: 'women', launchDesign: 'leo', zodiacSign: 'leo' },
+  'fiction-neon-dreams': { launchGroup: 'zodiac_capsule', launchAudience: 'men', launchDesign: 'leo', zodiacSign: 'leo' },
+  'fiction-dragon-scale': { launchGroup: 'zodiac_capsule', launchAudience: 'women', launchDesign: 'virgo', zodiacSign: 'virgo' },
+  'fiction-distant-suns': { launchGroup: 'zodiac_capsule', launchAudience: 'men', launchDesign: 'virgo', zodiacSign: 'virgo' },
+  'emotions-silent-scream': { launchGroup: 'mood', launchAudience: 'unisex', launchDesign: 'i-care' },
+  'emotions-raw-nerve': { launchGroup: 'mood', launchAudience: 'unisex', launchDesign: 'i-dont-care' },
+  'quiet-revolt': { launchGroup: 'lifestyle', launchAudience: 'unisex', launchDesign: 'walk-alone' },
+};
+
 export const products: Product[] = [
   {
     slug: 'the-weight-of-light',
@@ -525,4 +545,5 @@ export const products: Product[] = [
   primaryFeelingSlug: mapLegacyFeelingSlug(product.feelingSlug),
   primarySubfeelingSlug: deriveLegacySubfeelingSlug(product.slug, mapLegacyFeelingSlug(product.feelingSlug)),
   ...(product.slug.startsWith('zodiac-') ? { capsuleSlugs: ['zodiac'] as const } : {}),
+  ...LAUNCH_TAXONOMY_BY_SLUG[product.slug],
 }));

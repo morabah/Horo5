@@ -8,6 +8,7 @@ import { useWishlist } from '../hooks/useWishlist';
 import { clearPlacedOrderMedusaIdHint, readPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { NAV_DRAWER_ROUTE_KEYS, NAV_PRIMARY_ROUTE_KEYS, NAV_ROUTE, type NavRouteKey } from '../lib/navLinks';
+import { sanitizeLaunchNav } from '../lib/sanitizeLaunchNav';
 import { getSearchSuggestions, type SearchSuggestion } from '../search/view';
 import { AppIcon } from './AppIcon';
 import { BrandLogo } from './BrandLogo';
@@ -70,35 +71,6 @@ function usePrefersReducedMotion(): boolean {
 
 function flattenSuggestions(groups: ReturnType<typeof getSearchSuggestions>) {
   return groups.flatMap((group) => group.suggestions);
-}
-
-function localizedNavText(value: LocalizedNavText | undefined, locale: 'en' | 'ar'): string | null {
-  if (!value) return null;
-  if (typeof value === 'string') return value.trim() || null;
-  const preferred = locale === 'ar' ? value.ar : value.en;
-  const fallback = locale === 'ar' ? value.en : value.ar;
-  return (preferred || fallback || '').trim() || null;
-}
-
-function navItemsFromSettings(
-  items: SettingsNavItem[] | undefined,
-  locale: 'en' | 'ar',
-): RenderedNavItem[] {
-  return (items ?? [])
-    .filter((item) => item.active !== false && item.href.trim())
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((item) => {
-      const label = localizedNavText(item.label, locale);
-      if (!label) return null;
-      const badge = localizedNavText(item.badge, locale);
-      return {
-        key: item.key,
-        label,
-        href: item.href,
-        ...(badge ? { badge } : {}),
-      };
-    })
-    .filter((item): item is RenderedNavItem => item !== null);
 }
 
 function fallbackNavItem(routeKey: NavRouteKey, label: string): RenderedNavItem {
@@ -221,26 +193,23 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const routeLabelByKey = useMemo<Record<NavRouteKey, string>>(() => ({
     home: copy.shell.home,
     products: copy.shell.shopAll,
-    collection: copy.shell.shopByFeeling,
-    occasions: copy.shell.shopByMoment,
-    gifts: copy.shell.giftNav,
-    drops: locale === 'ar' ? 'إصدارات جديدة' : 'New Drop',
+    zodiac: copy.shell.shopByFeeling,
     about: copy.shell.about,
     sizeGuide: locale === 'ar' ? copy.shell.sizeGuide : 'Size & Help',
     search: copy.shell.search,
     cart: copy.shell.cart,
-  }), [copy.shell.about, copy.shell.cart, copy.shell.giftNav, copy.shell.home, copy.shell.search, copy.shell.shopAll, copy.shell.shopByFeeling, copy.shell.shopByMoment, copy.shell.sizeGuide, locale]);
+  }), [copy.shell.about, copy.shell.cart, copy.shell.home, copy.shell.search, copy.shell.shopAll, copy.shell.shopByFeeling, copy.shell.sizeGuide, locale]);
   const primaryNavItems = useMemo(() => {
-    const fromSettings = navItemsFromSettings(navigation?.primary, locale);
-    return fromSettings.length > 0
-      ? fromSettings
+    const sanitizedSettings = sanitizeLaunchNav(navigation?.primary, locale);
+    return sanitizedSettings.length > 0
+      ? sanitizedSettings
       : NAV_PRIMARY_ROUTE_KEYS.map((routeKey) => fallbackNavItem(routeKey, routeLabelByKey[routeKey]));
   }, [locale, navigation?.primary, routeLabelByKey]);
 
   const drawerNavItems = useMemo(() => {
-    const fromSettings = navItemsFromSettings(navigation?.drawer, locale);
-    return fromSettings.length > 0
-      ? fromSettings
+    const sanitizedSettings = sanitizeLaunchNav(navigation?.drawer, locale);
+    return sanitizedSettings.length > 0
+      ? sanitizedSettings
       : NAV_DRAWER_ROUTE_KEYS.map((routeKey) => fallbackNavItem(routeKey, routeLabelByKey[routeKey]));
   }, [locale, navigation?.drawer, routeLabelByKey]);
 

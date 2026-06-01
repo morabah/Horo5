@@ -10,8 +10,8 @@
         "canvas_line": "We are the canvas. You are the story.",
         "button_label": "Shop the Founding Drop",
         "button_link": "/collections/founding-drop",
-        "button_label_secondary": "Find a Gift",
-        "button_link_secondary": "/pages/gifts-hub",
+        "button_label_secondary": "Find Your Zodiac",
+        "button_link_secondary": "/collections/zodiac",
         "button_label_tertiary": "",
         "button_link_tertiary": "",
         "show_hero_ribbon": false,
@@ -76,11 +76,11 @@
       "type": "home-founding-drop",
       "settings": {
         "eyebrow": "THE FOUNDING DROP",
-        "heading": "Our first 5 pieces. Limited quantities.",
-        "view_all_label": "View all",
+        "heading": "The first HORO drop.",
+        "view_all_label": "See all launch designs",
         "view_all_link": "/collections/founding-drop",
         "collection": "founding-drop",
-        "product_limit": 5
+        "product_limit": 11
       }
     },
     "feeling_grid": {
@@ -88,10 +88,10 @@
       "settings": {
         "layout_style": "pastel",
         "eyebrow": "START WITH YOUR RHYTHM",
-        "heading": "Shop by Feeling",
-        "feelings_link_label": "See all feelings",
-        "feelings_link": "/pages/feelings",
-        "feeling_limit": 5
+        "heading": "Shop the launch by meaning",
+        "feelings_link_label": "See all launch designs",
+        "feelings_link": "/collections/founding-drop",
+        "feeling_limit": 3
       }
     },
     "home_gift_block": {

@@ -136,6 +136,17 @@ export type StorefrontProductDTO = {
   feelingSlug: string
   /** Thematic line under a feeling (emotions, zodiac, fiction, career, trends). */
   lineSlug?: string
+  launchGroup?: "zodiac_capsule" | "mood" | "lifestyle"
+  launchAudience?: "men" | "women" | "unisex"
+  launchDesign?:
+    | "gemini"
+    | "cancer"
+    | "leo"
+    | "virgo"
+    | "i-care"
+    | "i-dont-care"
+    | "walk-alone"
+  zodiacSign?: "gemini" | "cancer" | "leo" | "virgo"
   fitLabel?: string
   /** Preset key under `store.metadata.sizeTables` (e.g. `regular`, `oversized`). */
   sizeTableKey?: string

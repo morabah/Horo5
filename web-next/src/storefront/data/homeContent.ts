@@ -18,21 +18,31 @@ export const HOME_FEELING_TILE_SURFACES = [
 
 export const HOME_PRIMARY_ROUTES = [
   {
-    key: 'feeling',
-    href: '/feelings',
+    key: 'founding_drop',
+    href: '/products',
     accent: '#8C2340',
   },
   {
-    key: 'occasion',
-    href: '/occasions',
+    key: 'zodiac',
+    href: '/feelings/zodiac',
     accent: '#4F111F',
   },
   {
-    key: 'gift',
-    href: '/gifts',
+    key: 'mood_lifestyle',
+    href: '/products?category=mood-lifestyle',
     accent: '#FEE5E2',
   },
 ] as const;
+
+/**
+ * Legacy homepage routes kept for later restoration:
+ *
+ * export const HOME_PRIMARY_ROUTES_LEGACY = [
+ *   { key: 'feeling', href: '/feelings', accent: '#8C2340' },
+ *   { key: 'occasion', href: '/occasions', accent: '#4F111F' },
+ *   { key: 'gift', href: '/gifts', accent: '#FEE5E2' },
+ * ] as const;
+ */
 
 export const HOME_WHY_HORO_BLOCKS = [
   {

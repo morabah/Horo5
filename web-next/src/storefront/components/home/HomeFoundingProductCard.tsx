@@ -12,6 +12,7 @@ import { getProduct, type Product, type ProductSizeKey } from '../../data/site';
 import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
 import { productAvailableSizes } from '../../utils/productSizes';
 import { deriveProductStockStatus } from '../../utils/productStock';
+import { launchProductEyebrow } from '../../lib/launch-taxonomy-display';
 import { AppIcon } from '../AppIcon';
 import { TeeImageFrame } from '../TeeImage';
 
@@ -50,6 +51,7 @@ export function HomeFoundingProductCard({
   const imageSrc = getProductComparisonImageSrc(catalogProduct);
   const displayName = product.name;
   const displayPrice = product.priceEgp;
+  const launchEyebrow = launchProductEyebrow(catalogProduct);
   const displayImageAlt = `HORO "${product.name}" graphic tee`;
   const stockStatus = deriveProductStockStatus(catalogProduct);
   const quickAddSize = getPreferredQuickAddSize(catalogProduct);
@@ -94,6 +96,11 @@ export function HomeFoundingProductCard({
         >
           {displayName}
         </Link>
+        {launchEyebrow ? (
+          <p className="font-label mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-horo-pulse/85">
+            {launchEyebrow}
+          </p>
+        ) : null}
         <p className="home-founding-card__price mt-2 font-semibold text-[#50484b]">
           {formatHomeEgp(displayPrice)}
         </p>

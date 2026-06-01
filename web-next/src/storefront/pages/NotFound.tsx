@@ -27,7 +27,7 @@ export function NotFound() {
         <Link className="btn btn-secondary text-sm" href="/search">
           {copy.shell.search}
         </Link>
-        <Link className="btn btn-secondary text-sm" href={NAV_ROUTE.collection.path}>
+        <Link className="btn btn-secondary text-sm" href={NAV_ROUTE.zodiac.path}>
           {copy.shell.shopByFeeling}
         </Link>
       </div>

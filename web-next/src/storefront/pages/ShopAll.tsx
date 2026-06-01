@@ -35,6 +35,11 @@ import {
 import { defaultCatalogSizeKeys } from '../utils/productSizes';
 import { getProduct, getSubfeeling, setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
 import { trackShopAllView } from '../analytics/funnel';
+import {
+  launchCategoryFilterLabel,
+  parseLaunchCategoryFilter,
+  productMatchesLaunchCategory,
+} from '../lib/launch-taxonomy-display';
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -187,6 +192,7 @@ const priceOptions = useMemo(() => {
 
   const fallbackFacetOptions = useMemo(() => getSearchFacetOptions(), []);
   const feelingFilter = params.get('feelingFilter') ?? params.get('vibeFilter') ?? 'all';
+  const categoryFilter = parseLaunchCategoryFilter(params.get('category'));
   const rawFilterArtist = params.get('fArtist') ?? 'all';
   const rawFilterOccasion = params.get('fOccasion') ?? 'all';
   const rawFilterColor = params.get('fColor') ?? 'all';
@@ -257,13 +263,23 @@ const priceOptions = useMemo(() => {
 
   const lineFilter = params.get('line') ?? 'all';
   const filteredDesignMatches = useMemo(() => {
-    if (lineFilter === 'all') return results.designMatches;
-    return results.designMatches.filter((card) => {
-      const product = getProduct(card.slug);
-      if (!product) return false;
-      return (product.primarySubfeelingSlug ?? product.lineSlug) === lineFilter;
-    });
-  }, [lineFilter, results.designMatches]);
+    let matches = results.designMatches;
+    if (lineFilter !== 'all') {
+      matches = matches.filter((card) => {
+        const product = getProduct(card.slug);
+        if (!product) return false;
+        return (product.primarySubfeelingSlug ?? product.lineSlug) === lineFilter;
+      });
+    }
+    if (categoryFilter) {
+      matches = matches.filter((card) => {
+        const product = getProduct(card.slug);
+        if (!product) return false;
+        return productMatchesLaunchCategory(product, categoryFilter);
+      });
+    }
+    return matches;
+  }, [categoryFilter, lineFilter, results.designMatches]);
 
   const PLP_PAGE_SIZE = 24;
   const pageFromUrl = Math.max(1, Number.parseInt(params.get('page') ?? '1', 10) || 1);
@@ -312,9 +328,11 @@ const priceOptions = useMemo(() => {
     sizeFilter !== 'all' ||
     lineFilter !== 'all' ||
     feelingFilter !== 'all' ||
+    categoryFilter !== null ||
     filterArtist !== 'all' ||
     filterOccasion !== 'all' ||
     filterColor !== 'all';
+  const categoryFilterLabel = launchCategoryFilterLabel(categoryFilter, locale);
   const resultCountCopy =
     visibleCount === totalCount
       ? formatDesignCount(totalCount, designSingularLabel, designPluralLabel)
@@ -356,6 +374,7 @@ const priceOptions = useMemo(() => {
       next.delete('fOccasion');
       next.delete('fColor');
       next.delete('line');
+      next.delete('category');
       return next;
     });
   }, [setParams]);
@@ -532,6 +551,11 @@ const priceOptions = useMemo(() => {
                 >
                   {copy.search.vibeLabel}
                 </button>
+                {categoryFilterLabel ? (
+                  <span className="font-label inline-flex min-h-11 items-center rounded-full border border-obsidian bg-obsidian px-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-white">
+                    {categoryFilterLabel}
+                  </span>
+                ) : null}
               </div>
               {hasActiveFilters ? (
                 <button

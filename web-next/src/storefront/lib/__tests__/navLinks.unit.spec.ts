@@ -3,16 +3,14 @@ import { NAV_DRAWER_ROUTE_KEYS, NAV_PRIMARY_ROUTE_KEYS, NAV_ROUTE } from "../nav
 describe("navLinks", () => {
   it("exposes stable primary shop paths", () => {
     expect(NAV_ROUTE.products.path).toBe("/products")
-    expect(NAV_ROUTE.collection.path).toBe("/feelings")
-    expect(NAV_ROUTE.gifts.path).toBe("/gifts")
+    expect(NAV_ROUTE.zodiac.path).toBe("/feelings/zodiac")
     expect(NAV_ROUTE.cart.path).toBe("/cart")
   })
 
-  it("keeps the primary navigation label model aligned with the audited IA", () => {
+  it("keeps the primary navigation label model aligned with launch IA", () => {
     expect([...NAV_PRIMARY_ROUTE_KEYS]).toEqual([
       "products",
-      "collection",
-      "gifts",
+      "zodiac",
       "about",
       "sizeGuide",
     ])

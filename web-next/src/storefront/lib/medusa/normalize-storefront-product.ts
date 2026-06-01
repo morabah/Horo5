@@ -21,6 +21,10 @@ export type StorefrontProductApi = {
   description?: string;
   feelingSlug: string;
   lineSlug?: string;
+  launchGroup?: Product['launchGroup'];
+  launchAudience?: Product['launchAudience'];
+  launchDesign?: Product['launchDesign'];
+  zodiacSign?: Product['zodiacSign'];
   fitLabel?: string;
   frequentlyBoughtWithSlugs?: string[];
   garmentColors?: string[];
@@ -163,6 +167,10 @@ export function normalizeStorefrontProductApi(product: StorefrontProductApi): Pr
     description: product.description,
     feelingSlug: product.feelingSlug,
     lineSlug: product.lineSlug,
+    launchGroup: product.launchGroup,
+    launchAudience: product.launchAudience,
+    launchDesign: product.launchDesign,
+    zodiacSign: product.zodiacSign,
     fitLabel: product.fitLabel,
     frequentlyBoughtWithSlugs: product.frequentlyBoughtWithSlugs,
     garmentColors: product.garmentColors,

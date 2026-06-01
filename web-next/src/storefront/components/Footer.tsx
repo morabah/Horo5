@@ -64,13 +64,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.collection.path}>
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.zodiac.path}>
                   {copy.shell.shopByFeeling}
                 </Link>
               </li>
               <li>
-                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.gifts.path}>
-                  {copy.shell.giftNav}
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.about.path}>
+                  {copy.shell.about}
                 </Link>
               </li>
               <li>
