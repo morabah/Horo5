@@ -2,11 +2,11 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { updateCartWorkflow } from "@medusajs/medusa/core-flows"
 
-import { medusaAmountToEgp } from "../../../../../../lib/egp-amount"
+import { medusaAmountToEgp } from "../../../../../lib/egp-amount"
 import {
   getShippingGovernorate,
   shippingEgpForGovernorate,
-} from "../../../../../../lib/storefront/shipping-governorates"
+} from "../../../../../lib/storefront/shipping-governorates"
 
 type QueryCart = {
   id: string

@@ -1,3 +1,4 @@
+import { decodeHtmlEntities } from './decodeHtmlEntities';
 import { LAUNCH_NAV_KEYS, NAV_ROUTE, type NavRouteKey } from './navLinks';
 
 type LocalizedNavText = string | { en?: string; ar?: string };
@@ -21,10 +22,12 @@ export type RenderedNavItem = {
 
 function localizedNavText(value: LocalizedNavText | undefined, locale: 'en' | 'ar'): string | null {
   if (!value) return null;
-  if (typeof value === 'string') return value.trim() || null;
-  const preferred = locale === 'ar' ? value.ar : value.en;
-  const fallback = locale === 'ar' ? value.en : value.ar;
-  return (preferred || fallback || '').trim() || null;
+  const raw =
+    typeof value === 'string'
+      ? value
+      : (locale === 'ar' ? value.ar : value.en) || (locale === 'ar' ? value.en : value.ar) || '';
+  const decoded = decodeHtmlEntities(raw.trim());
+  return decoded || null;
 }
 
 function isZodiacNavItem(item: SettingsNavItem, label: string): boolean {

@@ -5,9 +5,9 @@ import { useMemo, useState } from 'react';
 
 import { useCart } from '../../cart/CartContext';
 import { formatCartStockMessage } from '../../cart/stock';
-import { trackSizeSelected } from '../../analytics/events';
+import { trackHomeProductCardClick, trackSizeSelected } from '../../analytics/events';
 import { PDP_SCHEMA } from '../../data/domain-config';
-import { getProductComparisonImageSrc } from '../../data/images';
+import { pickHomeCardImageSrc } from '../../data/images';
 import { getProduct, type Product, type ProductSizeKey } from '../../data/site';
 import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
 import { productAvailableSizes } from '../../utils/productSizes';
@@ -48,7 +48,7 @@ export function HomeFoundingProductCard({
   const { addItem, showAddToCartToast } = useCart();
   const [feedback, setFeedback] = useState<string | null>(null);
   const catalogProduct = useMemo(() => getProduct(product.slug) ?? product, [product]);
-  const imageSrc = getProductComparisonImageSrc(catalogProduct);
+  const imageSrc = pickHomeCardImageSrc(catalogProduct);
   const displayName = product.name;
   const displayPrice = product.priceEgp;
   const launchEyebrow = launchProductEyebrow(catalogProduct);
@@ -71,9 +71,10 @@ export function HomeFoundingProductCard({
   };
 
   return (
-    <article className="home-founding-card flex h-full flex-col overflow-hidden rounded-[6px] border border-[#f1e8e7] bg-white transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(79,17,31,0.06)]" data-reveal={dataReveal}>
+    <article className="home-founding-card flex h-full flex-col overflow-hidden rounded-[4px] bg-white shadow-[0_1px_0_rgba(79,17,31,0.04)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(79,17,31,0.05)]" data-reveal={dataReveal}>
       <Link
         href={`/products/${product.slug}`}
+        onClick={() => trackHomeProductCardClick(product.slug, `/products/${product.slug}`)}
         className="home-founding-card__media block bg-[#faf7f6] p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
         aria-label={displayName}
       >

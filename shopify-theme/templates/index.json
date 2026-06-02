@@ -9,12 +9,12 @@
         "rhythm_line": "",
         "canvas_line": "",
         "trust_micro": "Printed in Egypt · COD · Size exchange",
-        "button_label": "Shop Launch Designs",
+        "button_label": "Shop the Founding Drop",
         "button_link": "/collections/founding-drop",
         "button_label_secondary": "Shop by Meaning",
         "button_link_secondary": "/#shop-by-meaning",
-        "button_label_tertiary": "",
-        "button_link_tertiary": "",
+        "button_label_tertiary": "A Closer Look",
+        "button_link_tertiary": "/#editorial-feature",
         "show_hero_ribbon": false,
         "hero_ribbon_text": "",
         "enable_cinematic_mode": false,
@@ -69,12 +69,13 @@
       "type": "home-founding-drop",
       "settings": {
         "eyebrow": "THE FOUNDING DROP",
-        "heading": "The first HORO drop.",
+        "heading": "Wearable artwork for signs, moods, and personal stories.",
+        "subheading": "Our first collection of artist-made T-shirts, printed in Egypt and made to be worn, gifted, and remembered.",
         "choose_size_label": "Choose size",
-        "view_all_label": "See all launch designs",
+        "view_all_label": "Shop the Founding Drop",
         "view_all_link": "/collections/founding-drop",
         "collection": "founding-drop",
-        "product_limit": 4
+        "product_limit": 6
       }
     },
     "feeling_grid": {
@@ -82,11 +83,22 @@
       "settings": {
         "layout_style": "pastel",
         "eyebrow": "START WITH YOUR RHYTHM",
-        "heading": "Shop by meaning",
-        "subheading": "Choose the story first. Then pick the design.",
-        "feelings_link_label": "See all launch designs",
+        "heading": "Shop by Meaning",
+        "subheading": "Start with the feeling. Then choose the design.",
+        "feelings_link_label": "Shop the Founding Drop",
         "feelings_link": "/collections/founding-drop",
         "feeling_limit": 4
+      }
+    },
+    "home_editorial_feature": {
+      "type": "home-editorial-feature",
+      "settings": {
+        "anchor_id": "editorial-feature",
+        "eyebrow": "A Closer Look",
+        "heading": "Calm Inside",
+        "body": "A quiet figure, soft movement, and a visual language for people who feel deeply but speak softly. Oversized fit. Heavy cotton feel. Printed in Egypt.",
+        "button_label": "Shop the Piece",
+        "button_link": ""
       }
     },
     "home_gift_block": {
@@ -189,6 +201,7 @@
     "the_proof",
     "home_founding_drop",
     "feeling_grid",
+    "home_editorial_feature",
     "home_gift_block",
     "home_reassurance",
     "home_why_horo"

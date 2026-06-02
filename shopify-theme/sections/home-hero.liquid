@@ -67,6 +67,17 @@
               {{ section.settings.button_label_secondary | escape }}
             </a>
           {%- endif -%}
+          {%- if section.settings.button_label_tertiary != blank -%}
+            <a
+              {% if section.settings.button_link_tertiary != blank %}href="{{ section.settings.button_link_tertiary }}"{% endif %}
+              class="home-hero-split__tertiary-link"
+              {% if section.settings.button_link_tertiary == blank %}aria-disabled="true"{% endif %}
+              data-horo-home-event="home_closer_look_click"
+              data-horo-home-props='{"location":"hero"}'
+            >
+              {{ section.settings.button_label_tertiary | escape }}
+            </a>
+          {%- endif -%}
         </div>
 
         {%- if section.settings.trust_micro != blank -%}

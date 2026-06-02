@@ -102,7 +102,9 @@ export type ProductMediaGalleryTag =
   | 'proof_print'
   | 'proof_wash'
   | 'lifestyle'
-  | 'flat_lay';
+  | 'flat_lay'
+  | 'artwork_detail'
+  | 'back';
 
 export type ProductMediaGalleryItem = {
   url: string;
@@ -135,7 +137,8 @@ export type StorefrontHomepageSection = {
     | 'first_drop_circle'
     | 'proof_strip'
     | 'seen_on_you'
-    | 'artist_spotlight';
+    | 'artist_spotlight'
+    | 'editorial_feature';
   eyebrow: LocalizedStorefrontText;
   title: LocalizedStorefrontText;
   body: LocalizedStorefrontText;

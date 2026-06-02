@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 import {
   type LocalizedStorefrontText,
   pickLocalizedStorefrontText,
@@ -110,12 +112,16 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
           id: key,
           title: copy.home.ourStoryPillars[key].title,
         }));
+  const storyImageSrc = section?.image?.src?.trim();
+  const storyImageAlt =
+    pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
+    (isArabic ? 'قصة هورو' : 'HORO brand story');
 
   return (
     <section
       id="our-story"
       aria-labelledby="home-our-story-title"
-      className="home-section home-our-story border-t border-stone/15 bg-horo-soft px-4 py-7 sm:px-6 md:py-8 lg:px-8"
+      className="home-section home-our-story bg-horo-soft px-4 py-7 sm:px-6 md:py-8 lg:px-8"
     >
       <div className="home-our-story__layout mx-auto max-w-6xl">
         <div>
@@ -127,15 +133,27 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
         </div>
 
         <div className="home-our-story__side">
-          <div className="home-our-story__emblem" aria-hidden>
-            <div className="home-our-story__rings">
-              <span className="home-our-story__ring home-our-story__ring--1" />
-              <span className="home-our-story__ring home-our-story__ring--2" />
-              <span className="home-our-story__ring home-our-story__ring--3" />
-              <span className="home-our-story__dot home-our-story__dot--1" />
-              <span className="home-our-story__dot home-our-story__dot--2" />
+          {storyImageSrc ? (
+            <div className="home-our-story__photo relative mb-6 aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[4px] bg-[#faf7f6]">
+              <Image
+                src={storyImageSrc}
+                alt={storyImageAlt}
+                fill
+                sizes="(max-width: 768px) 100vw, 400px"
+                className="object-cover"
+              />
             </div>
-          </div>
+          ) : (
+            <div className="home-our-story__emblem" aria-hidden>
+              <div className="home-our-story__rings">
+                <span className="home-our-story__ring home-our-story__ring--1" />
+                <span className="home-our-story__ring home-our-story__ring--2" />
+                <span className="home-our-story__ring home-our-story__ring--3" />
+                <span className="home-our-story__dot home-our-story__dot--1" />
+                <span className="home-our-story__dot home-our-story__dot--2" />
+              </div>
+            </div>
+          )}
 
           <ul className="home-our-story__pillars" role="list">
             {pillars.map((pillar) => {

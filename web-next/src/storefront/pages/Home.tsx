@@ -7,6 +7,8 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { trackHomeScrollMilestone, trackHomeView } from '../analytics/funnel';
 import { HomeArtistSpotlight } from '../components/HomeArtistSpotlight';
 import { HomeBehindThePiece } from '../components/HomeBehindThePiece';
+import { HomeEditorialFeature } from '../components/HomeEditorialFeature';
+import { HomeServiceTrust } from '../components/home/HomeServiceTrust';
 import { HomeFeelingCards } from '../components/HomeFeelingCards';
 import { HomeFeelingQuiz } from '../components/HomeFeelingQuiz';
 import { HomeFeaturedPiece } from '../components/HomeFeaturedPiece';
@@ -49,7 +51,9 @@ const HOME_DEFAULT_SECTIONS: readonly string[] = [
   'trust_ribbon',
   'founding_drop',
   'feeling_grid',
+  'editorial_feature',
   'gift_block',
+  'proof_strip',
   'our_story',
 ];
 
@@ -63,6 +67,8 @@ const HOME_SECTION_COMPONENTS: Record<string, HomeSectionRenderer> = {
   featured_piece: () => <HomeFeaturedPiece />,
   behind_the_piece: () => <HomeBehindThePiece artists={getArtists()} />,
   feeling_grid: ({ section }) => <HomeFeelingCards section={section} />,
+  editorial_feature: ({ section }) => <HomeEditorialFeature section={section} />,
+  proof_strip: () => <HomeServiceTrust />,
   feeling_quiz: () => <HomeFeelingQuiz />,
   occasion_grid: () => <HomeOccasionCards />,
   why_horo: ({ section }) => <HomeOurStory section={section} />,

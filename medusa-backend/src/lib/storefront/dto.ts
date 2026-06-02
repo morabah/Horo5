@@ -188,6 +188,7 @@ export const storefrontHomepageSectionSchema = z.looseObject({
       "proof_strip",
       "seen_on_you",
       "artist_spotlight",
+      "editorial_feature",
     ]),
     eyebrow: storefrontLocalizedTextSchema.nullable(),
     title: storefrontLocalizedTextSchema.nullable(),

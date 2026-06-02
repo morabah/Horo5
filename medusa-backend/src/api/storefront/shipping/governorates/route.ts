@@ -1,6 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
-import { SHIPPING_GOVERNORATES } from "../../../../../lib/storefront/shipping-governorates"
+import { SHIPPING_GOVERNORATES } from "../../../../lib/storefront/shipping-governorates"
 
 function applyStorefrontCors(req: MedusaRequest, res: MedusaResponse): void {
   const origin = req.headers.origin || ""

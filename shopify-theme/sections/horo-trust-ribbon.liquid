@@ -18,7 +18,7 @@
   >
     <div class="home-trust-bar__inner{% if use_mockup %} home-page__inner{% endif %}">
       {%- if visible_count > 0 -%}
-        <ul class="home-trust-bar__grid" role="list">
+        <ul class="home-trust-bar__grid" role="list" style="--home-trust-columns: {{ visible_count }};">
           {%- for block in section.blocks -%}
             {%- if block.settings.show_badge == true -%}
               <li class="home-trust-bar__cell" role="listitem" {{ block.shopify_attributes }}>

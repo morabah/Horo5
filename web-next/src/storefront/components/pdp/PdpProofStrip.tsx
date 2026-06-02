@@ -12,6 +12,8 @@ const CAPTIONS: Record<ProductMediaGalleryTag, { en: string; ar: string }> = {
   proof_wash: { en: 'Wash proof', ar: 'اختبار الغسيل' },
   lifestyle: { en: 'Styled photo', ar: 'صورة تنسيق' },
   flat_lay: { en: 'Flat lay', ar: 'صورة مسطحة' },
+  artwork_detail: { en: 'Artwork detail', ar: 'تفاصيل التصميم' },
+  back: { en: 'Back view', ar: 'منظر خلفي' },
 };
 
 function isTaggedGalleryItem(entry: unknown): entry is ProductMediaGalleryItem {

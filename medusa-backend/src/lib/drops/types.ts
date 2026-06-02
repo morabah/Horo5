@@ -13,7 +13,10 @@ export const DEFAULT_DROP_TRUST_BADGES = DEFAULT_TRUST_BADGES
 
 export const DROP_IMAGE_TAGS = [
   "main",
+  "card",
   "lifestyle",
+  "artwork_detail",
+  "back",
   "flat_lay",
   "proof_fabric",
   "proof_print",

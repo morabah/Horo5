@@ -81,6 +81,23 @@ describe('sanitizeLaunchNav', () => {
     expect(items[1]?.label).toBe('about');
   });
 
+  it('decodes HTML entities in nav labels', () => {
+    const items = sanitizeLaunchNav(
+      [
+        {
+          key: 'size_guide',
+          label: { en: 'Size &amp; Help' },
+          href: '/size-guide',
+          active: true,
+          sortOrder: 0,
+        },
+      ],
+      'en',
+    );
+
+    expect(items[0]?.label).toBe('Size & Help');
+  });
+
   it('preserves sanitized labels for keys that remain', () => {
     const items = mergeLaunchNavWithFallback(
       [{ key: 'products', label: 'Custom Drop Label', href: '/products' }],

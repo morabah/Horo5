@@ -19,6 +19,7 @@ const HomepageSection = model
         "proof_strip",
         "seen_on_you",
         "artist_spotlight",
+        "editorial_feature",
       ])
       .default("hero"),
     eyebrow_en: model.text().nullable(),

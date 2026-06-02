@@ -6,6 +6,8 @@ export type StorefrontMediaGalleryTag =
   | "proof_wash"
   | "lifestyle"
   | "flat_lay"
+  | "artwork_detail"
+  | "back"
 
 export type StorefrontMediaGalleryItemDTO = {
   url: string

@@ -489,6 +489,28 @@ const FALLBACK_PRODUCT_GALLERY = [heroVectorizedV2, proofCards.macroDetail, proo
 const PDP_INFOGRAPHIC_IMAGE_PATTERN =
   /(proof|story-card|size-guide|weight-scale|wash-test|macro-detail|fabric-tag|_card|\/cards?\/)/i;
 
+/** Fallback when tags are missing — prefer explicit drop tags over URL guessing. */
+const BACK_LIKE_URL_PATTERN = /(?:^|[/_-])(back|rear)(?:[/_\-.]|$)/i;
+const FLAT_LAY_URL_PATTERN = /(?:^|[/_-])flat[-_]?lay(?:[/_\-.]|$)/i;
+
+function isUnsafeHomeCardUrl(src: string): boolean {
+  return BACK_LIKE_URL_PATTERN.test(src) || FLAT_LAY_URL_PATTERN.test(src);
+}
+
+function galleryUrlByTag(
+  product: Product,
+  tag: ProductMediaGalleryItem['tag'],
+): string | undefined {
+  if (!tag) return undefined;
+  for (const item of product.media?.gallery ?? []) {
+    if (typeof item === 'string') continue;
+    if (item.tag !== tag) continue;
+    const url = galleryItemSrc(item);
+    if (url && !isUnsafeHomeCardUrl(url)) return url;
+  }
+  return undefined;
+}
+
 /**
  * Unsplash-style transform params are only safe on hosts that honor them.
  * Medusa/R2/CDN URLs often break or ignore `w`/`fit` query params.
@@ -592,31 +614,55 @@ export function getProductMedia(slug: string): ProductMedia {
   };
 }
 
-export function getProductCardImageSrc(product: Product): string {
-  const primary = firstNonEmptyString(
-    product.media?.card,
-    product.media?.main,
-    ...galleryItemsToSrcList(product.media?.gallery),
-    product.thumbnail,
-  );
-  if (primary && primary !== FALLBACK_PRODUCT_GALLERY[0] && primary !== heroVectorizedV2) {
-    return primary;
+/**
+ * Homepage / PLP card image — media contract:
+ * card → main → lifestyle → artwork_detail → first safe gallery → thumbnail → feeling proof.
+ */
+export function pickHomeCardImageSrc(product: Product): string {
+  const card = product.media?.card?.trim();
+  if (card && !isUnsafeHomeCardUrl(card)) return card;
+
+  const main = product.media?.main?.trim();
+  if (main && !isUnsafeHomeCardUrl(main)) return main;
+
+  const lifestyle = galleryUrlByTag(product, 'lifestyle');
+  if (lifestyle) return lifestyle;
+
+  const artworkDetail = galleryUrlByTag(product, 'artwork_detail');
+  if (artworkDetail) return artworkDetail;
+
+  for (const item of product.media?.gallery ?? []) {
+    const url = galleryItemSrc(item);
+    if (url && !isUnsafeHomeCardUrl(url)) return url;
   }
+
+  const thumb = product.thumbnail?.trim();
+  if (thumb && !isUnsafeHomeCardUrl(thumb)) return thumb;
+
   const feelingSlug = product.primaryFeelingSlug ?? product.feelingSlug;
   const feelingProof = feelingSlug ? STOREFRONT_IMAGE_SLOTS.feelings[feelingSlug]?.proof?.src : undefined;
-  if (feelingProof && feelingProof !== heroVectorizedV2) {
-    return feelingProof;
+  if (feelingProof && feelingProof !== heroVectorizedV2) return feelingProof;
+
+  return interimCardImageForSlug(product.slug);
+}
+
+export function getProductCardImageSrc(product: Product): string {
+  const primary = pickHomeCardImageSrc(product);
+  if (primary && primary !== FALLBACK_PRODUCT_GALLERY[0] && primary !== heroVectorizedV2) {
+    return primary;
   }
   return interimCardImageForSlug(product.slug);
 }
 
 /** Secondary PLP hover image when gallery has a second slot (P2). */
 export function getProductCardHoverImageSrc(product: Product): string | null {
+  const primary = pickHomeCardImageSrc(product);
+  const lifestyle = galleryUrlByTag(product, 'lifestyle');
+  if (lifestyle && lifestyle !== primary) return lifestyle;
   const gallery = galleryItemsToSrcList(product.media?.gallery);
-  const secondary = gallery[1];
+  const secondary = gallery.find((src) => src !== primary && !isUnsafeHomeCardUrl(src));
   if (!secondary || secondary === heroVectorizedV2) return null;
-  const primary = getProductCardImageSrc(product);
-  return secondary !== primary ? secondary : null;
+  return secondary;
 }
 
 export function getProductComparisonImageSrc(product: Product): string {

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-import { trackHeroCtaClick } from '../analytics/events';
+import { trackCloserLookClick, trackHeroCtaClick } from '../analytics/events';
 
 import { PAGE_HEROES } from '../content/page-heroes';
 import {
@@ -169,12 +169,81 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     copy.home.heroCanvasLine ??
     BRAND_COPY.canvasLine;
 
+  const tertiaryPayloadCta = ctaFromVariant('tertiaryCta');
+  const tertiaryCtaLabel =
+    localizedPayloadText(tertiaryPayloadCta?.label, locale as 'en' | 'ar') ??
+    copy.home.heroTertiaryCta;
+  const tertiaryHref = tertiaryPayloadCta?.href ?? '#editorial-feature';
+  const heroLayout = payloadString(sectionPayload?.layout) ?? 'split';
+  const isEditorialLayout = heroLayout === 'editorial';
+
+  if (isEditorialLayout) {
+    return (
+      <section
+        id="home-hero"
+        aria-labelledby="home-hero-heading"
+        data-test-id={`home-hero-${safeTestId(heroVariant)}`}
+        data-hero-variant={heroVariant}
+        data-hero-layout="editorial"
+        className={`home-hero-editorial relative isolate min-h-[min(72vh,52rem)] overflow-hidden ${HERO_NAV_OFFSET}`}
+      >
+        <Image
+          src={heroImageSrc}
+          alt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
+          fill
+          priority
+          placeholder="blur"
+          blurDataURL={HERO_BLUR_DATA_URL}
+          sizes="100vw"
+          className="object-cover object-[50%_42%]"
+        />
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#241f21]/78 via-[#241f21]/28 to-transparent"
+          aria-hidden
+        />
+        <div className="relative z-10 mx-auto flex min-h-[min(72vh,52rem)] max-w-[1400px] flex-col justify-end px-4 pb-10 pt-24 sm:px-6 md:pb-14 lg:px-8">
+          <h1 id="home-hero-heading" className="home-hero-editorial__title max-w-xl text-white">
+            <HeroTitleDisplay title={title} />
+          </h1>
+          <p className="font-body mt-4 max-w-lg text-[15px] leading-relaxed text-white/92 md:text-base">
+            {promiseLine}
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href={primaryHref}
+              onClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}
+              className="home-btn home-btn--primary font-body inline-flex min-h-[44px] items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {primaryCtaLabel}
+            </Link>
+            <Link
+              href={secondaryHref}
+              onClick={() => trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant)}
+              className="home-btn home-btn--secondary font-body inline-flex min-h-[44px] items-center justify-center rounded-[4px] border border-white/80 bg-transparent px-5 py-2 text-[12px] font-bold text-white hover:bg-white/12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {secondaryCtaLabel}
+            </Link>
+            <Link
+              href={tertiaryHref}
+              onClick={() => trackCloserLookClick('hero', tertiaryHref)}
+              className="font-body inline-flex min-h-[44px] items-center justify-center px-2 text-[12px] font-semibold text-white/95 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {tertiaryCtaLabel}
+            </Link>
+          </div>
+        </div>
+        <div id={HERO_BOTTOM_SENTINEL_ID} aria-hidden="true" className="h-px w-full" />
+      </section>
+    );
+  }
+
   return (
     <section
       id="home-hero"
       aria-labelledby="home-hero-heading"
       data-test-id={`home-hero-${safeTestId(heroVariant)}`}
       data-hero-variant={heroVariant}
+      data-hero-layout="split"
       className={`home-hero-split ${HERO_NAV_OFFSET}`}
     >
       <div className="mx-auto grid max-w-[1400px] lg:grid-cols-2 lg:items-stretch">
@@ -201,6 +270,13 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
               className="home-btn home-btn--secondary font-body inline-flex min-h-[42px] items-center justify-center rounded-[4px] border border-horo-pulse bg-transparent px-5 py-2 text-[12px] font-bold text-horo-root transition-[transform,background-color,color] hover:bg-horo-root hover:text-horo-breath focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
             >
               {secondaryCtaLabel}
+            </Link>
+            <Link
+              href={tertiaryHref}
+              onClick={() => trackCloserLookClick('hero', tertiaryHref)}
+              className="font-body inline-flex min-h-[42px] items-center justify-center px-2 text-[12px] font-semibold text-horo-pulse underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
+            >
+              {tertiaryCtaLabel}
             </Link>
           </div>
         </div>

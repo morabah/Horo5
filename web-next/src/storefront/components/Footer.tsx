@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import { BRAND_COPY } from '../data/brand';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
@@ -11,6 +12,8 @@ import { HomeFooterNewsletter } from './home/HomeFooterNewsletter';
 import { HomeServiceTrust } from './home/HomeServiceTrust';
 
 export function Footer() {
+  const pathname = usePathname();
+  const showServiceTrustInFooter = pathname !== '/';
   const renderTime = useRenderTime();
   const year = renderTime.getFullYear();
   const { locale } = useUiLocale();
@@ -24,7 +27,7 @@ export function Footer() {
 
   return (
     <>
-      <HomeServiceTrust />
+      {showServiceTrustInFooter ? <HomeServiceTrust /> : null}
       <footer className="site-footer-mockup pb-[max(3rem,env(safe-area-inset-bottom))] pt-12 text-horo-breath sm:pt-14">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 font-body sm:px-6 md:grid-cols-5 md:gap-7 lg:px-8">
           <div className="space-y-4 lg:col-span-1">

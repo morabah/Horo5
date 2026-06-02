@@ -440,6 +440,57 @@ export type SearchZeroResultsPayload = {
   scope_occasion?: string;
 };
 
+/** Meaning tile on homepage */
+export function trackMeaningTileClick(feelingSlug: string, label: string, href: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('home_meaning_tile_click', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    feeling_slug: feelingSlug,
+    tile_label: label,
+    href,
+  });
+}
+
+/** A Closer Look / editorial depth CTA */
+export function trackCloserLookClick(location: string, href: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('home_closer_look_click', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    location,
+    href,
+  });
+}
+
+/** Reusable editorial_feature section CTA */
+export function trackEditorialFeatureCtaClick(variant: string, href: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('home_editorial_feature_cta_click', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    variant,
+    href,
+  });
+}
+
+/** Homepage founding product card link */
+export function trackHomeProductCardClick(slug: string, href: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('home_product_card_click', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    product_slug: slug,
+    href,
+  });
+}
+
+/** Gift block CTA on homepage */
+export function trackHomeGiftCtaClick(href: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('home_gift_cta_click', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    href,
+    buyer_route: 'gift',
+  });
+}
+
 /** Hero CTA clicked — primary, secondary, or tertiary (Drop · Feeling · Gift) */
 export function trackHeroCtaClick(ctaLabel: string, ctaHref: string, variant?: string) {
   if (typeof window === 'undefined') return;

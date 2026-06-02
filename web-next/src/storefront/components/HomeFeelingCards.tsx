@@ -1,7 +1,8 @@
 import Link from 'next/link';
 
+import { trackMeaningTileClick } from '../analytics/events';
+import { getFeelingCollectionVisual } from '../data/images';
 import { HOME_FEELING_TILE_SURFACES } from '../data/homeContent';
-import { FeelingTileIcon } from './home/FeelingTileIcon';
 import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
@@ -102,6 +103,7 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
   const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
   const eyebrow = sectionEyebrow ?? copy.home.feelingsRhythmEyebrow;
   const title = sectionTitle ?? copy.home.feelingsTitle;
+  const subtitle = copy.home.feelingsSubtitle;
   const cta = sectionCta ?? copy.home.feelingsCta;
   const feelings = getFeaturedFeelings(section, locale as 'en' | 'ar');
 
@@ -113,7 +115,7 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
     <section
       id="shop-by-meaning"
       aria-labelledby="home-feelings-title"
-      className="home-section border-t border-stone/15 bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
+      className="home-section bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-end justify-between gap-4" data-reveal>
@@ -122,6 +124,11 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
             <h2 id="home-feelings-title" className="home-section-title mt-2 text-[2rem]">
               {title}
             </h2>
+            {subtitle ? (
+              <p className="font-body mt-2 text-sm leading-relaxed text-warm-charcoal md:text-base">
+                {subtitle}
+              </p>
+            ) : null}
           </div>
           <Link
             href={section?.primaryCta?.href ?? '/feelings'}
@@ -139,8 +146,16 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
             const reveal = (['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5'] as const)[index % 5];
             const surface = override?.surface ?? HOME_FEELING_TILE_SURFACES[index % HOME_FEELING_TILE_SURFACES.length];
             const label = override?.label ?? feeling.name;
-            const iconSlug = override?.iconSlug ?? feeling.slug;
             const href = override?.href ?? `/feelings/${feeling.slug}`;
+            const visual = getFeelingCollectionVisual(feeling.slug);
+            const tileImage = visual.hero.src || visual.cover.src;
+            const tileStyle = tileImage
+              ? {
+                  backgroundImage: `linear-gradient(to top, rgba(36,31,33,0.75), rgba(36,31,33,0.2)), url(${tileImage})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }
+              : { backgroundColor: surface };
 
             return (
               <Link
@@ -148,10 +163,10 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
                 id={`feeling-${feeling.slug}`}
                 href={href}
                 data-reveal={reveal}
-                className="home-feeling-pastel-tile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
-                style={{ backgroundColor: surface }}
+                onClick={() => trackMeaningTileClick(feeling.slug, label, href)}
+                className={`home-feeling-pastel-tile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse${tileImage ? ' home-feeling-tile--editorial' : ''}`}
+                style={tileStyle}
               >
-                <FeelingTileIcon slug={iconSlug} className="home-feeling-pastel-tile__icon" />
                 <span className="home-feeling-pastel-tile__label">{label}</span>
               </Link>
             );

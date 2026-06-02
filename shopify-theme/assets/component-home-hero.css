@@ -587,6 +587,19 @@
   margin-top: 32px;
 }
 
+.home-hero-split__tertiary-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-horo-pulse);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .home-hero-split__trust-micro {
   margin: 14px 0 0;
   font-family: var(--font-label);

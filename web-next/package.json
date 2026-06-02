@@ -5,7 +5,7 @@
   "scripts": {
     "sync:public": "node scripts/sync-shared-public.mjs",
     "dev": "npm run sync:public && next dev --webpack",
-    "dev:local": "npm run sync:public && node scripts/free-dev-ports.mjs && concurrently -k -n backend,next -c cyan,magenta \"npm run dev --prefix ../medusa-backend\" \"wait-on http://127.0.0.1:9000/health && npx dotenv-cli -e .env.local -v NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000 -- next dev --webpack\"",
+    "dev:local": "node scripts/free-dev-ports.mjs && npm run sync:public && concurrently --kill-others-on-fail -n backend,next -c cyan,magenta \"npm run dev --prefix ../medusa-backend\" \"node scripts/dev-local-next.mjs\"",
     "dev:railway": "npm run sync:public && npx dotenv-cli -e .env.railway -e .env.railway.local -- next dev --webpack",
     "audit:images": "node scripts/audit-storefront-public-images.mjs",
     "bundle-size:budget": "node scripts/bundle-size-budget.mjs",

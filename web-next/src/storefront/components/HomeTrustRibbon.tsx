@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 import {
   pickLocalizedStorefrontText,
   type LocalizedStorefrontText,
@@ -107,7 +107,11 @@ export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSecti
 
   return (
     <section className="home-trust-bar" aria-label={isArabic ? 'مزايا الخدمة' : 'Service promises'}>
-      <div role="list" className="home-trust-bar__grid mx-auto max-w-6xl">
+      <div
+        role="list"
+        className="home-trust-bar__grid mx-auto max-w-6xl"
+        style={{ '--home-trust-columns': items.length } as CSSProperties}
+      >
         {items.map((badge) => (
           <div key={badge.key} role="listitem" className="home-trust-bar__cell">
             <div className="home-trust-bar__icon mx-auto">{TRUST_ICONS[badge.icon ?? badge.key] ?? TRUST_ICONS[badge.key] ?? null}</div>

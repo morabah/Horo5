@@ -12,6 +12,7 @@ export const HOMEPAGE_SECTION_TYPES = [
   "proof_strip",
   "seen_on_you",
   "artist_spotlight",
+  "editorial_feature",
 ] as const
 
 export type HomepageSectionType = typeof HOMEPAGE_SECTION_TYPES[number]

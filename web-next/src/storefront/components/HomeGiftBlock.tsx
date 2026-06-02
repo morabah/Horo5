@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { trackHomeGiftCtaClick } from '../analytics/events';
 import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
@@ -39,10 +40,10 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
     <section
       id="gift-by-meaning"
       aria-labelledby="home-gift-title"
-      className="home-section border-t border-stone/15 bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
+      className="home-section bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
-        <div className="home-gift-banner overflow-hidden rounded-[6px] border border-[#f0e4e2] bg-[#fbf5f3] md:grid md:grid-cols-[0.36fr_0.64fr]">
+        <div className="home-gift-banner overflow-hidden rounded-[4px] bg-[#fbf5f3] shadow-[0_1px_0_rgba(79,17,31,0.04)] md:grid md:grid-cols-[0.36fr_0.64fr]">
           <div data-reveal className="flex flex-col justify-center p-6 md:p-8">
             <p className="home-section-eyebrow">{eyebrow}</p>
             <h2 id="home-gift-title" className="home-gift-banner__title mt-2">
@@ -60,6 +61,7 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
             <div className="mt-5">
               <Link
                 href={giftHref}
+                onClick={() => trackHomeGiftCtaClick(giftHref)}
                 className="home-btn home-btn--primary font-body inline-flex min-h-[42px] items-center justify-center gap-2 rounded-[4px] bg-horo-pulse px-7 py-2 text-sm font-bold text-white transition-[transform,background-color] hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
               >
                 {cta}

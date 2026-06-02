@@ -236,8 +236,11 @@ export function buildDropMetadata(
   artistMeta: { name: string; avatarUrl?: string } | undefined,
 ): Record<string, unknown> {
   const main = images.find((image) => image.tag === "main")?.url
+  const card =
+    images.find((image) => image.tag === "card")?.url ??
+    main
   const gallery = images
-    .filter((image) => image.tag !== "main")
+    .filter((image) => image.tag !== "main" && image.tag !== "card")
     .map((image) => ({ url: image.url, tag: image.tag }))
   const hasLifestyleImage = hasImageTag(images, "lifestyle")
   const hasFlatLayImage = hasImageTag(images, "flat_lay")
@@ -275,6 +278,7 @@ export function buildDropMetadata(
     hasProofWashImage,
     media: {
       ...(main ? { main } : {}),
+      ...(card ? { card } : {}),
       gallery,
     },
     merchandisingBadge: payload.merchandisingBadge,
