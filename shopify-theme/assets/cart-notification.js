@@ -52,7 +52,7 @@ class CartNotification extends HTMLElement {
     if (shouldOpen) {
       this.open();
     } else if (typeof window.horoShowAddedToBagToast === 'function') {
-      window.horoShowAddedToBagToast();
+      window.horoShowAddedToBagToast(parsedState);
     } else {
       this.open();
     }

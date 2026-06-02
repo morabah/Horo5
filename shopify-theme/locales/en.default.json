@@ -849,6 +849,8 @@
       "added_to_bag": "Added to bag",
       "view_bag": "View bag",
       "continue_shopping": "Continue shopping",
+      "size_label": "Size",
+      "qty_label": "Qty",
       "delivery_estimate": "Delivery estimate",
       "choose_governorate": "Choose governorate",
       "shipping_before_checkout": "Choose your governorate to see shipping before checkout.",

@@ -93,7 +93,7 @@ class CartDrawer extends HTMLElement {
       if (shouldOpen) {
         this.open();
       } else if (typeof window.horoShowAddedToBagToast === 'function') {
-        window.horoShowAddedToBagToast();
+        window.horoShowAddedToBagToast(parsedState);
       }
     });
   }

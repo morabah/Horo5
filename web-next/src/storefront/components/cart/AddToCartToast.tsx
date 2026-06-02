@@ -5,15 +5,20 @@ import { useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useCart } from '../../cart/CartContext';
+import { getProduct } from '../../data/site';
+import { imgUrl } from '../../data/images';
 import { trackAddToCartToastShown, trackCartDrawerOpenedManually } from '../../analytics/events';
 import { useDictionary } from '../../i18n/ui-locale';
+import { formatEgp } from '../../utils/formatPrice';
+import { AppIcon } from '../AppIcon';
 
-const AUTO_DISMISS_MS = 5000;
+const AUTO_DISMISS_MS = 10_000;
 
 export function AddToCartToast() {
   const { addToCartToastOpen, dismissAddToCartToast, lastAddedItem } = useCart();
   const copy = useDictionary();
   const toastCopy = copy.cart;
+  const miniCopy = copy.miniCart;
   const router = useRouter();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -23,17 +28,6 @@ export function AddToCartToast() {
   const close = useCallback(() => {
     dismissAddToCartToast();
   }, [dismissAddToCartToast]);
-
-  useEffect(() => {
-    if (!addToCartToastOpen) {
-      document.documentElement.style.removeProperty('--horo-bottom-fab-offset');
-      return;
-    }
-    document.documentElement.style.setProperty('--horo-bottom-fab-offset', '5.5rem');
-    return () => {
-      document.documentElement.style.removeProperty('--horo-bottom-fab-offset');
-    };
-  }, [addToCartToastOpen]);
 
   useEffect(() => {
     if (!addToCartToastOpen) {
@@ -49,13 +43,6 @@ export function AddToCartToast() {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [addToCartToastOpen, close, lastAddedItem]);
-
-  useEffect(() => {
-    if (!addToCartToastOpen) return;
-    const onScroll = () => close();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [addToCartToastOpen, close]);
 
   const prevPathRef = useRef<string | null>(null);
   useEffect(() => {
@@ -87,29 +74,63 @@ export function AddToCartToast() {
 
   if (!addToCartToastOpen || !lastAddedItem) return null;
 
+  const addedProduct = getProduct(lastAddedItem.productSlug);
+  const addedName = lastAddedItem.productName ?? addedProduct?.name ?? 'Item';
+  const addedImage = lastAddedItem.imageSrc ?? addedProduct?.media?.main ?? addedProduct?.thumbnail;
+  const addedPrice = lastAddedItem.unitPriceEgp ?? addedProduct?.priceEgp ?? 0;
+
   return createPortal(
     <div
       className="add-to-cart-toast-host"
       role="status"
       aria-live="polite"
       aria-atomic="true"
+      aria-label={miniCopy.dialogLabel}
       onPointerEnter={pauseTimer}
       onPointerLeave={resumeTimer}
       onFocusCapture={pauseTimer}
       onBlurCapture={resumeTimer}
     >
       <div ref={panelRef} className="add-to-cart-toast">
-        <p className="add-to-cart-toast__title">
-          <span className="mini-cart-check" aria-hidden>
-            ✓
-          </span>
-          {toastCopy.addedToBag}
-        </p>
+        <header className="add-to-cart-toast__header">
+          <div className="add-to-cart-toast__header-title">
+            <span className="mini-cart-check" aria-hidden>
+              ✓
+            </span>
+            <span className="mini-cart-added-label">{toastCopy.addedToBag}</span>
+          </div>
+          <button
+            type="button"
+            className="mini-cart-close add-to-cart-toast__close"
+            aria-label={miniCopy.closeLabel}
+            onClick={close}
+          >
+            <AppIcon name="close" className="h-5 w-5" />
+          </button>
+        </header>
+
+        <div className="mini-cart-item add-to-cart-toast__item">
+          {addedImage ? (
+            <div className="mini-cart-item-image">
+              <img src={imgUrl(addedImage, 240)} alt="" width={92} height={115} />
+            </div>
+          ) : (
+            <div className="mini-cart-item-image add-to-cart-toast__image-placeholder" aria-hidden />
+          )}
+          <div className="mini-cart-item-info">
+            <p className="mini-cart-item-name">{addedName}</p>
+            <p className="mini-cart-item-meta">
+              {miniCopy.sizeLabel}: {lastAddedItem.size} · {miniCopy.qtyLabel}: {lastAddedItem.qty}
+            </p>
+            <p className="mini-cart-item-price">{formatEgp(addedPrice)}</p>
+          </div>
+        </div>
+
         <div className="add-to-cart-toast__actions">
-          <button type="button" className="add-to-cart-toast__cta add-to-cart-toast__cta--primary" onClick={handleViewBag}>
+          <button type="button" className="mini-cart-cta-primary add-to-cart-toast__cta" onClick={handleViewBag}>
             {toastCopy.viewBag}
           </button>
-          <button type="button" className="add-to-cart-toast__cta add-to-cart-toast__cta--ghost" onClick={close}>
+          <button type="button" className="mini-cart-cta-continue add-to-cart-toast__cta" onClick={close}>
             {toastCopy.continueShopping}
           </button>
         </div>

@@ -489,6 +489,9 @@
         title: {{ 'horo.cart.added_to_bag' | t | json }},
         viewBag: {{ 'horo.cart.view_bag' | t | json }},
         continueShopping: {{ 'horo.cart.continue_shopping' | t | json }},
+        closeLabel: {{ 'accessibility.close' | t | json }},
+        sizeLabel: {{ 'horo.cart.size_label' | t | default: 'Size' | json }},
+        qtyLabel: {{ 'horo.cart.qty_label' | t | default: 'Qty' | json }},
         cartUrl: {{ routes.cart_url | json }},
       };
 

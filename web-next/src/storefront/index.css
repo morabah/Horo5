@@ -1816,71 +1816,123 @@
     .mini-cart-panel { animation: none; transform: translateX(0); }
   }
 
-  /* ——— Add to cart toast (non-blocking) ——— */
+  /* ——— Add to cart toast — upper-right mini-cart popover ——— */
   .add-to-cart-toast-host {
     position: fixed;
-    inset-inline: max(1rem, env(safe-area-inset-left, 0px)) max(1rem, env(safe-area-inset-right, 0px));
-    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-    z-index: 240;
-    display: flex;
-    justify-content: center;
+    top: max(5.5rem, calc(env(safe-area-inset-top, 0px) + 4.5rem));
+    inset-inline-end: max(1rem, env(safe-area-inset-right, 0px));
+    z-index: 250;
     pointer-events: none;
+    width: min(calc(100vw - 2rem), 420px);
   }
 
   .add-to-cart-toast {
     pointer-events: auto;
-    width: min(100%, 420px);
-    padding: 1rem 1.125rem;
-    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 16px;
     background: var(--color-chalk, #fee5e2);
-    border: 1px solid color-mix(in srgb, var(--color-stone) 70%, transparent);
-    box-shadow: 0 12px 40px rgba(26, 26, 26, 0.16);
-    animation: add-to-cart-toast-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    border: 1px solid color-mix(in srgb, var(--color-stone) 65%, transparent);
+    box-shadow:
+      0 16px 48px rgba(26, 26, 26, 0.14),
+      0 4px 12px rgba(26, 26, 26, 0.08);
+    animation: add-to-cart-toast-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   @keyframes add-to-cart-toast-in {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 
-  .add-to-cart-toast__title {
+  [dir='rtl'] .add-to-cart-toast {
+    animation-name: add-to-cart-toast-in-rtl;
+  }
+
+  @keyframes add-to-cart-toast-in-rtl {
+    from {
+      opacity: 0;
+      transform: translateX(-16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .add-to-cart-toast__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-stone) 45%, transparent);
+  }
+
+  .add-to-cart-toast__header-title {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin: 0 0 0.75rem;
-    font-family: var(--font-headline);
-    font-weight: 600;
-    color: var(--color-obsidian, #4f111f);
+    min-width: 0;
+  }
+
+  .add-to-cart-toast__close {
+    flex-shrink: 0;
+  }
+
+  .add-to-cart-toast__item {
+    padding: 1.125rem 1.25rem;
+  }
+
+  .add-to-cart-toast__item .mini-cart-item-image {
+    width: 92px;
+    height: 115px;
+  }
+
+  .add-to-cart-toast__item .mini-cart-item-name {
+    font-size: 1rem;
+  }
+
+  .add-to-cart-toast__item .mini-cart-item-price {
+    font-size: 1rem;
+  }
+
+  .add-to-cart-toast__image-placeholder {
+    width: 92px;
+    height: 115px;
+    background: var(--color-stone, #e8c9c6);
   }
 
   .add-to-cart-toast__actions {
     display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0 1rem 1rem;
   }
 
-  .add-to-cart-toast__cta {
+  .add-to-cart-toast__actions .add-to-cart-toast__cta {
+    width: 100%;
     min-height: 44px;
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-    font-family: var(--font-label);
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    cursor: pointer;
   }
 
-  .add-to-cart-toast__cta--primary {
-    background: var(--color-clay-action, #8c2340);
-    color: #fff;
-    border: none;
+  @media (max-width: 640px) {
+    .add-to-cart-toast-host {
+      top: max(4.75rem, calc(env(safe-area-inset-top, 0px) + 3.75rem));
+      inset-inline: max(0.75rem, env(safe-area-inset-left, 0px)) max(0.75rem, env(safe-area-inset-right, 0px));
+      width: auto;
+    }
   }
 
-  .add-to-cart-toast__cta--ghost {
-    background: transparent;
-    color: var(--color-obsidian, #4f111f);
-    border: 1px solid color-mix(in srgb, var(--color-stone) 80%, transparent);
+  @media (prefers-reduced-motion: reduce) {
+    .add-to-cart-toast {
+      animation: none;
+    }
   }
 
   .delivery-estimate-panel__title {
