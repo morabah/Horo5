@@ -471,13 +471,20 @@ export function trackEditorialFeatureCtaClick(variant: string, href: string) {
   });
 }
 
+export type HomeProductCardClickSource = 'image' | 'title' | 'choose_size';
+
 /** Homepage founding product card link */
-export function trackHomeProductCardClick(slug: string, href: string) {
+export function trackHomeProductCardClick(
+  slug: string,
+  href: string,
+  source: HomeProductCardClickSource = 'image',
+) {
   if (typeof window === 'undefined') return;
   capturePostHogEvent('home_product_card_click', {
     hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
     product_slug: slug,
     href,
+    click_source: source,
   });
 }
 

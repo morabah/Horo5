@@ -47,7 +47,7 @@ export function HomeFoundingProductCard({
     <article className="home-founding-card flex h-full flex-col overflow-hidden rounded-[4px] bg-white shadow-[0_1px_0_rgba(79,17,31,0.04)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(79,17,31,0.05)]" data-reveal={dataReveal}>
       <Link
         href={pdpHref}
-        onClick={() => trackHomeProductCardClick(product.slug, pdpHref)}
+        onClick={() => trackHomeProductCardClick(product.slug, pdpHref, 'image')}
         className="home-founding-card__media block bg-[#faf7f6] p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
         aria-label={displayName}
       >
@@ -72,7 +72,7 @@ export function HomeFoundingProductCard({
       <div className="home-founding-card__body flex flex-1 flex-col p-4 text-center sm:text-start">
         <Link
           href={pdpHref}
-          onClick={() => trackHomeProductCardClick(product.slug, pdpHref)}
+          onClick={() => trackHomeProductCardClick(product.slug, pdpHref, 'title')}
           className="font-headline text-[15px] font-semibold leading-snug text-horo-root transition-colors hover:text-horo-pulse md:text-[16px]"
         >
           {displayName}
@@ -88,7 +88,7 @@ export function HomeFoundingProductCard({
         <div className="mt-auto pt-3.5">
           <Link
             href={pdpHref}
-            onClick={() => trackHomeProductCardClick(product.slug, pdpHref)}
+            onClick={() => trackHomeProductCardClick(product.slug, pdpHref, 'choose_size')}
             className="home-founding-card__cta font-body relative inline-flex min-h-9 w-full items-center justify-center rounded-[4px] border border-horo-pulse/55 px-3 py-2 text-[0.8rem] font-semibold text-horo-pulse transition-colors hover:border-horo-pulse hover:bg-horo-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
           >
             <span>{chooseSizeLabel}</span>

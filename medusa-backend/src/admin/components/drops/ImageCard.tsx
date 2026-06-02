@@ -1,16 +1,26 @@
 import { ArrowDownMini, ArrowUpMini, BarsThree, Trash } from "@medusajs/icons"
 import { IconButton, Select, Text } from "@medusajs/ui"
 
-import type { DropImage, DropImageTag } from "./types"
+import { DROP_IMAGE_TAGS, type DropImageTag } from "../../../lib/drops/types"
+import type { DropImage } from "./types"
 
-const tagOptions: Array<{ value: DropImageTag; label: string }> = [
-  { value: "main", label: "Main" },
-  { value: "lifestyle", label: "Lifestyle" },
-  { value: "flat_lay", label: "Flat lay" },
-  { value: "proof_fabric", label: "Proof fabric" },
-  { value: "proof_print", label: "Proof print" },
-  { value: "proof_wash", label: "Proof wash" },
-]
+const TAG_LABELS: Record<DropImageTag, string> = {
+  main: "Main",
+  card: "Card",
+  lifestyle: "Lifestyle",
+  artwork_detail: "Artwork detail",
+  back: "Back",
+  flat_lay: "Flat lay",
+  gift: "Gift / packaging",
+  proof_fabric: "Proof fabric",
+  proof_print: "Proof print",
+  proof_wash: "Proof wash",
+}
+
+const tagOptions = DROP_IMAGE_TAGS.map((tag) => ({
+  value: tag,
+  label: TAG_LABELS[tag],
+}))
 
 type ImageCardProps = {
   image: DropImage

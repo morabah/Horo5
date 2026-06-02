@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { trackCloserLookClick, trackEditorialFeatureCtaClick } from '../analytics/events';
 import {
@@ -62,7 +63,9 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
   const ctaLabel =
     pickLocalizedStorefrontText(section?.primaryCta?.label, resolvedLocale) ?? 'Shop the Piece';
   const ctaHref = section?.primaryCta?.href?.trim() ?? '/products';
-  const copyOnly = !imageSrc;
+  const [imageFailed, setImageFailed] = useState(false);
+  const showImageColumn = Boolean(imageSrc) && !imageFailed;
+  const layoutCopyOnly = !imageSrc || imageFailed;
 
   if (!title && !body && !imageSrc) {
     return null;
@@ -78,12 +81,12 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     >
       <div
         className={
-          copyOnly
+          layoutCopyOnly
             ? 'home-editorial-feature__copy-only mx-auto max-w-2xl text-center'
             : 'home-editorial-feature__layout mx-auto grid max-w-6xl gap-8 md:grid-cols-2 md:items-center md:gap-10'
         }
       >
-        <div className={copyOnly ? '' : 'home-editorial-feature__copy order-1 md:order-2'}>
+        <div className={layoutCopyOnly ? '' : 'home-editorial-feature__copy order-1 md:order-2'}>
           <p className="home-section-eyebrow">{eyebrow}</p>
           {title ? (
             <h2 id={`${sectionId}-title`} className="home-section-title mt-2">
@@ -108,9 +111,13 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
             {ctaLabel}
           </Link>
         </div>
-        {!copyOnly && imageSrc ? (
+        {showImageColumn && imageSrc ? (
           <div className="home-editorial-feature__media order-2 md:order-1">
-            <EditorialFeatureMedia src={imageSrc} alt={imageAlt} />
+            <EditorialFeatureMedia
+              src={imageSrc}
+              alt={imageAlt}
+              onError={() => setImageFailed(true)}
+            />
           </div>
         ) : null}
       </div>

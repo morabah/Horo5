@@ -8,6 +8,7 @@ export type StorefrontMediaGalleryTag =
   | "flat_lay"
   | "artwork_detail"
   | "back"
+  | "gift"
 
 export type StorefrontMediaGalleryItemDTO = {
   url: string

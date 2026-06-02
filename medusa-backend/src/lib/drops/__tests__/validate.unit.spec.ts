@@ -51,6 +51,8 @@ describe("drop validators", () => {
     expect(filenameToDropImageTag("lifestyle-1.webp")).toBe("lifestyle")
     expect(filenameToDropImageTag("flat_lay.png")).toBe("flat_lay")
     expect(filenameToDropImageTag("proof_print-close.jpg")).toBe("proof_print")
+    expect(filenameToDropImageTag("gift-box.jpg")).toBe("gift")
+    expect(filenameToDropImageTag("packaging-front.png")).toBe("gift")
     expect(filenameToDropImageTag("detail.jpg")).toBeUndefined()
   })
 

@@ -147,7 +147,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     payload: {
       feelings: [
         { slug: "mood", label: { en: "Mood", ar: "مزاج" }, href: "/products?category=mood" },
-        { slug: "zodiac", label: { en: "Zodiac Signs", ar: "كبسولة الأبراج" }, href: "/products?category=zodiac" },
+        { slug: "zodiac", label: { en: "Zodiac Signs", ar: "الأبراج" }, href: "/products?category=zodiac" },
         { slug: "gift-ready", label: { en: "Gift Ready", ar: "جاهزة للهدايا" }, href: "/gifts" },
         { slug: "lifestyle", label: { en: "Lifestyle", ar: "نمط حياة" }, href: "/products?category=lifestyle" },
       ],

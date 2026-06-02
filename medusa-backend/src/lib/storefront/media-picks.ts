@@ -69,11 +69,26 @@ export function pickDropFrontMediaUrls(images: DropImageInput[]): {
   }
 }
 
+const GALLERY_TAGS = new Set<StorefrontMediaGalleryTag>([
+  "proof_fabric",
+  "proof_print",
+  "proof_wash",
+  "lifestyle",
+  "flat_lay",
+  "artwork_detail",
+  "back",
+  "gift",
+])
+
+function asStorefrontGalleryTag(tag: DropImageInput["tag"]): StorefrontMediaGalleryTag | undefined {
+  if (!tag || tag === "main" || tag === "card") return undefined
+  return GALLERY_TAGS.has(tag as StorefrontMediaGalleryTag) ? (tag as StorefrontMediaGalleryTag) : undefined
+}
+
 export function galleryForStorefront(images: DropImageInput[]): StorefrontMediaGalleryItemDTO[] {
-  return images
-    .filter((image) => image.tag !== "main" && image.tag !== "card")
-    .map((image) => ({
-      url: image.url,
-      tag: image.tag,
-    }))
+  return images.flatMap((image) => {
+    const tag = asStorefrontGalleryTag(image.tag)
+    if (!tag) return []
+    return [{ url: image.url, tag }]
+  })
 }

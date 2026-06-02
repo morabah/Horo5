@@ -45,6 +45,8 @@ const TAG_PREFIXES: Array<{ prefix: string; tag: DropImageTag }> = [
   { prefix: "proof-print", tag: "proof_print" },
   { prefix: "proof_wash", tag: "proof_wash" },
   { prefix: "proof-wash", tag: "proof_wash" },
+  { prefix: "gift", tag: "gift" },
+  { prefix: "packaging", tag: "gift" },
 ]
 
 export class DropValidationError extends Error {

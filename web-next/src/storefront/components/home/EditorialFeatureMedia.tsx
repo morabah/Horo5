@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
 
 import {
   resolveProductImageSrcForDisplay,
@@ -11,15 +10,17 @@ import {
 export function EditorialFeatureMedia({
   src,
   alt,
+  onError,
 }: {
   src: string;
   alt: string;
+  onError: () => void;
 }) {
-  const [failed, setFailed] = useState(false);
   const resolved = resolveProductImageSrcForDisplay(src);
   const useOptimizer = useNextImageOptimizerForSrc(resolved);
 
-  if (!resolved.trim() || failed) {
+  if (!resolved.trim()) {
+    onError();
     return null;
   }
 
@@ -32,7 +33,7 @@ export function EditorialFeatureMedia({
           fill
           sizes="(max-width: 768px) 100vw, 50vw"
           className="object-cover object-[center_22%]"
-          onError={() => setFailed(true)}
+          onError={onError}
         />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element -- CMS / Medusa hosts may skip next/image optimizer
@@ -42,7 +43,7 @@ export function EditorialFeatureMedia({
           className="absolute inset-0 h-full w-full object-cover object-[center_22%]"
           loading="lazy"
           decoding="async"
-          onError={() => setFailed(true)}
+          onError={onError}
         />
       )}
     </div>

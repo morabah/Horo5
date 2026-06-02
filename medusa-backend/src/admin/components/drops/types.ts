@@ -4,7 +4,7 @@ export type DropStatus = "draft" | "published" | "archived"
 export type ProductSizeKey = "S" | "M" | "L" | "XL" | "XXL"
 export const DROP_SIZE_KEYS: readonly ProductSizeKey[] = ["S", "M", "L", "XL", "XXL"]
 export const DEFAULT_DROP_TRUST_BADGES = DEFAULT_TRUST_BADGES
-export type DropImageTag = "main" | "lifestyle" | "flat_lay" | "proof_fabric" | "proof_print" | "proof_wash"
+export type { DropImageTag } from "../../../lib/drops/types"
 export type DropArtistPaymentModel = "flat_fee" | "royalty" | "revenue_share" | "hybrid" | "unknown"
 export type DropBuyerRoute = "feeling" | "moment" | "gift" | "personality" | "artist_drop" | "world"
 export type DropPrimaryAudience = "25-40" | "18-24" | "gift-buyer" | "artist-aware" | "40-plus"

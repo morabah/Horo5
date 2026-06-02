@@ -18,6 +18,7 @@ export const DROP_IMAGE_TAGS = [
   "artwork_detail",
   "back",
   "flat_lay",
+  "gift",
   "proof_fabric",
   "proof_print",
   "proof_wash",

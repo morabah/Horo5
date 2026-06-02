@@ -441,6 +441,7 @@ const STOREFRONT_MEDIA_GALLERY_TAGS = new Set<StorefrontMediaGalleryTag>([
   "flat_lay",
   "artwork_detail",
   "back",
+  "gift",
 ])
 
 function asGalleryTag(value: unknown): StorefrontMediaGalleryTag | undefined {

@@ -55,10 +55,15 @@ export function pickGiftBlockImageSrc(options: {
       const url = galleryItemSrc(item);
       if (url && !isBackLikeProductImageSrc(url)) return url;
     }
+  }
+  if (packagingFallback?.trim() && !isBackLikeProductImageSrc(packagingFallback)) {
+    return packagingFallback.trim();
+  }
+  if (product) {
     const card = pickHomeCardImageSrc(product);
     if (card && !isBackLikeProductImageSrc(card)) return card;
   }
-  return packagingFallback;
+  return undefined;
 }
 
 /**
