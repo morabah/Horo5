@@ -80,7 +80,31 @@ function buildConnectSrc() {
   return Array.from(sources).join(" ");
 }
 
+function buildImgSrc() {
+  const sources = new Set(["'self'", "data:", "blob:", "https:"]);
+  const medusa = (
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+    process.env.MEDUSA_BACKEND_URL ||
+    ""
+  ).trim();
+
+  const localMedusaOrigins =
+    process.env.NODE_ENV === "production" ? [] : ["http://localhost:9000", "http://127.0.0.1:9000"];
+
+  for (const raw of [medusa, ...localMedusaOrigins]) {
+    if (!raw) continue;
+    try {
+      sources.add(new URL(raw).origin);
+    } catch {
+      // ignore invalid URL
+    }
+  }
+
+  return Array.from(sources).join(" ");
+}
+
 const connectSrc = buildConnectSrc();
+const imgSrc = buildImgSrc();
 
 const nextConfig: NextConfig = {
   devIndicators: false,
@@ -115,7 +139,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'; " +
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net https://www.clarity.ms; " +
               `connect-src ${connectSrc}; ` +
-              "img-src 'self' data: blob: https:; " +
+              `img-src ${imgSrc}; ` +
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
               "font-src 'self' https://fonts.gstatic.com; " +
               "frame-src 'self'; " +

@@ -4,9 +4,14 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 
 import { trackHomeProductCardClick } from '../../analytics/events';
-import { getProductCardImageSrc, isGenericBrandPlaceholderSrc } from '../../data/images';
+import {
+  getConversionProductCardImageSrc,
+  getProductCardImageSrc,
+  isGenericBrandPlaceholderSrc,
+  shouldUseConversionReferenceImage,
+} from '../../data/images';
 import { getProduct, type Product } from '../../data/site';
-import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
+import { useUiLocale } from '../../i18n/ui-locale';
 import { launchProductEyebrow } from '../../lib/launch-taxonomy-display';
 import { AppIcon } from '../AppIcon';
 import { TeeImageFrame } from '../TeeImage';
@@ -30,11 +35,12 @@ export function HomeFoundingProductCard({
   eager?: boolean;
   'data-reveal'?: string;
 }) {
-  const copy = useDictionary();
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const catalogProduct = useMemo(() => getProduct(product.slug) ?? product, [product]);
-  const imageSrc = getProductCardImageSrc(catalogProduct);
+  const catalogImageSrc = getProductCardImageSrc(catalogProduct);
+  const usingReferenceImage = shouldUseConversionReferenceImage(catalogImageSrc);
+  const imageSrc = getConversionProductCardImageSrc(catalogProduct, catalogImageSrc);
   const useArtworkPlaceholder = isGenericBrandPlaceholderSrc(imageSrc);
   const displayName = product.name;
   const displayPrice = product.priceEgp;
@@ -44,7 +50,7 @@ export function HomeFoundingProductCard({
   const chooseSizeLabel = isArabic ? 'اختر المقاس' : 'Choose size';
 
   return (
-    <article className="home-founding-card flex h-full flex-col overflow-hidden rounded-[4px] bg-white shadow-[0_1px_0_rgba(79,17,31,0.04)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(79,17,31,0.05)]" data-reveal={dataReveal}>
+    <article className={`home-founding-card flex h-full flex-col overflow-hidden rounded-[4px] bg-white shadow-[0_1px_0_rgba(79,17,31,0.04)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(79,17,31,0.05)]${usingReferenceImage ? ' home-founding-card--reference' : ''}`} data-reveal={dataReveal}>
       <Link
         href={pdpHref}
         onClick={() => trackHomeProductCardClick(product.slug, pdpHref, 'image')}
@@ -65,7 +71,7 @@ export function HomeFoundingProductCard({
             eager={eager}
             objectPosition="center 22%"
             frameStyle={{ marginBottom: 0, minHeight: '100%' }}
-            sizes="(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px"
+            sizes="(max-width: 767px) 76vw, (max-width: 1100px) 30vw, 240px"
           />
         )}
       </Link>

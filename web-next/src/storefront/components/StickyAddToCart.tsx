@@ -60,6 +60,8 @@ export function StickyAddToCart({
             <p className="sticky-atc-name">{productName}</p>
             {selectedSize ? (
               <p className="sticky-atc-size">Size: {selectedSize}</p>
+            ) : oosSelected ? (
+              <p className="sticky-atc-size sticky-atc-size--prompt">{notifyMeCta} ↑</p>
             ) : (
               <p className="sticky-atc-size sticky-atc-size--prompt">{selectSizeHint} ↑</p>
             )}

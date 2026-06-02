@@ -549,6 +549,7 @@ export function ProductDetail({
   }, [product, pdpProduct]);
 
   const sizeDef = selectedSize ? sizeButtons.find((s) => s.key === selectedSize) : undefined;
+  const allSizesUnavailable = sizeButtons.length > 0 && sizeButtons.every(({ disabled }) => disabled);
   const oosSelected = Boolean(sizeDef?.disabled);
   const sizeReady = Boolean(selectedSize && sizeDef && !sizeDef.disabled);
   const selectedVariant = selectedSize
@@ -918,7 +919,8 @@ export function ProductDetail({
       return;
     }
 
-    if (!selectedSize || !sizeDef?.disabled) return;
+    const notifySize = (selectedSize ?? preferredDefaultSize ?? sizeButtons[0]?.key ?? null) as ProductSizeKey | null;
+    if (!allSizesUnavailable && (!selectedSize || !sizeDef?.disabled)) return;
     if (product.id) {
       void submitPdpNotify({
         productId: product.id,
@@ -928,8 +930,8 @@ export function ProductDetail({
       }).then((ok) => {
         if (ok) setNotifySuccess(true);
       });
-    } else {
-      notifyRestockSignup({ productSlug: product.slug, size: selectedSize, email, locale });
+    } else if (notifySize) {
+      notifyRestockSignup({ productSlug: product.slug, size: notifySize, email, locale });
       setNotifySuccess(true);
     }
   }
@@ -952,7 +954,7 @@ export function ProductDetail({
       return;
     }
 
-    if (oosSelected) {
+    if (allSizesUnavailable || oosSelected) {
       notifyFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       window.setTimeout(() => notifyInputRef.current?.focus(), 320);
       return;
@@ -1185,6 +1187,7 @@ export function ProductDetail({
           selectedSize={selectedSize}
           selectedStockStatus={selectedStockStatus}
           oosSelected={oosSelected}
+          allSizesUnavailable={allSizesUnavailable}
           sizeReady={sizeReady}
           sizeTableResolved={sizeTableResolved}
           silhouetteCueLabel={silhouetteCueLabel}
@@ -1323,7 +1326,7 @@ export function ProductDetail({
           thumbnail={media.main}
           selectedSize={selectedSize}
           sizeReady={sizeReady}
-          oosSelected={oosSelected}
+          oosSelected={oosSelected || allSizesUnavailable}
           displayPrice={displayPriceEgp}
           onAddToBag={handlePrimaryAction}
           addBtnCta={copy.addBtnCTA}

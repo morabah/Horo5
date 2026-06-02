@@ -151,6 +151,11 @@ export const DICTIONARY = {
           "title": "Easy exchanges",
           "body": "Not the right fit? We've got you. Hassle-free size exchanges.",
           "href": "/exchange"
+        },
+        "whatsapp": {
+          "title": "WhatsApp size help",
+          "body": "Message us before dispatch if you are between sizes or buying as a gift.",
+          "href": "/faq"
         }
       },
       "footerNewsletterTitle": "STAY IN RHYTHM",
@@ -916,6 +921,11 @@ export const DICTIONARY = {
           "title": "استبدال سهل",
           "body": "المقاس مش مظبوط؟ إحنا معاك. استبدال مقاس بدون تعقيد.",
           "href": "/exchange"
+        },
+        "whatsapp": {
+          "title": "مساعدة المقاس على واتساب",
+          "body": "راسلنا قبل الشحن لو محتار بين مقاسين أو بتشتري هدية.",
+          "href": "/faq"
         }
       },
       "footerNewsletterTitle": "خليك في الإيقاع",

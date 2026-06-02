@@ -1,19 +1,28 @@
 import Link from 'next/link';
 
+import { HORO_SUPPORT_CHANNELS, withSupportMessage } from '../../data/support-channels';
 import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
 import { AppIcon, type AppIconName } from '../AppIcon';
 
-const SERVICE_KEYS = ['fitGuide', 'delivery', 'exchange'] as const;
+const SERVICE_KEYS = ['fitGuide', 'delivery', 'exchange', 'whatsapp'] as const;
 const SERVICE_ICONS: Record<(typeof SERVICE_KEYS)[number], AppIconName> = {
   fitGuide: 'checkroom',
   delivery: 'local_shipping',
   exchange: 'history',
+  whatsapp: 'whatsapp',
 };
 
 export function HomeServiceTrust() {
   const copy = useDictionary();
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
+  const whatsappHref =
+    withSupportMessage(
+      HORO_SUPPORT_CHANNELS.whatsappSupportUrl,
+      isArabic
+        ? 'محتاج مساعدة في اختيار مقاس HORO.'
+        : 'I need help choosing my HORO size.',
+    ) ?? copy.home.serviceTrust.whatsapp.href;
 
   return (
     <section
@@ -24,6 +33,8 @@ export function HomeServiceTrust() {
       <div className="home-info-strip__grid mx-auto max-w-6xl">
         {SERVICE_KEYS.map((key) => {
           const item = copy.home.serviceTrust[key];
+          const href = key === 'whatsapp' ? whatsappHref : item.href;
+          const isExternal = Boolean(href && /^https?:\/\//i.test(href));
           const inner = (
             <>
               <span className="home-info-strip__icon" aria-hidden>
@@ -35,8 +46,21 @@ export function HomeServiceTrust() {
               </span>
             </>
           );
-          return item.href ? (
-            <Link key={key} href={item.href} className="home-info-strip__item transition-colors hover:text-horo-pulse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse">
+          if (href && isExternal) {
+            return (
+              <a
+                key={key}
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                className="home-info-strip__item transition-colors hover:text-horo-pulse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
+              >
+                {inner}
+              </a>
+            );
+          }
+          return href ? (
+            <Link key={key} href={href} className="home-info-strip__item transition-colors hover:text-horo-pulse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse">
               {inner}
             </Link>
           ) : (

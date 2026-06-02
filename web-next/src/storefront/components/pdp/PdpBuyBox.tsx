@@ -63,6 +63,7 @@ type PdpBuyBoxProps = {
   selectedSize: string | null;
   selectedStockStatus?: StockStatusKey | null;
   oosSelected: boolean;
+  allSizesUnavailable?: boolean;
   sizeReady: boolean;
   sizeTableResolved: PdpSizeTableConfig;
   silhouetteCueLabel: string | null | undefined;
@@ -118,6 +119,7 @@ export function PdpBuyBox({
   selectedSize,
   selectedStockStatus,
   oosSelected,
+  allSizesUnavailable = false,
   sizeReady,
   sizeTableResolved,
   silhouetteCueLabel,
@@ -147,13 +149,13 @@ export function PdpBuyBox({
 }: PdpBuyBoxProps) {
   const { pdp: copy } = useDictionary();
   function primaryCtaLabel() {
-    if (oosSelected) return copy.notifyMeCTA;
+    if (allSizesUnavailable || oosSelected) return copy.notifyMeCTA;
     if (sizeReady && product) return `${copy.addBtnCTA} — ${formatEgp(displayPriceEgp)}`;
     return copy.selectSizePrompt;
   }
 
   const ctaClass = `cta-clay flex min-h-14 w-full items-center justify-center gap-2 border px-4 py-4 text-[13px] font-semibold uppercase tracking-[0.2em] transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
-    oosSelected
+    allSizesUnavailable || oosSelected
       ? 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90 opacity-90'
       : 'border-obsidian bg-obsidian text-white hover:bg-obsidian/90'
   }`;
@@ -352,7 +354,7 @@ export function PdpBuyBox({
               type="button"
               onClick={onPrimaryAction}
               className={`${ctaClass} flex-1${addedFeedback ? ' pdp-cta-added' : ''}`}
-              aria-describedby={sizeReady || oosSelected ? undefined : 'pdp-size-hint'}
+              aria-describedby={sizeReady || oosSelected || allSizesUnavailable ? undefined : 'pdp-size-hint'}
             >
               {addedFeedback ? (
                 <>
@@ -431,7 +433,7 @@ export function PdpBuyBox({
           ) : null}
 
           {/* Notify form — OOS or reveal mode */}
-          {oosSelected || isRevealMode ? (
+          {allSizesUnavailable || oosSelected || isRevealMode ? (
             <div ref={notifyFormRef} className="space-y-3">
               {notifySuccess ? (
                 <p

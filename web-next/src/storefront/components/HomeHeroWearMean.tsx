@@ -17,6 +17,7 @@ const HERO_BLUR_DATA_URL =
 
 const HERO_NAV_OFFSET = 'pt-[max(3.6rem,calc(env(safe-area-inset-top,0px)+3.6rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
+const HERO_PROOF_KEYS = ['artistMade', 'printedEgypt', 'whatsappSupport'] as const;
 
 type HeroPayloadCta = {
   label?: { en?: string; ar?: string } | string;
@@ -109,6 +110,11 @@ function heroPromiseWithoutRhythm(value: string) {
     .trim();
 }
 
+function isLegacyDefaultHeroImage(src: string | undefined) {
+  const value = src?.trim();
+  return !value || value.endsWith('/images/heroes/home-hero.png');
+}
+
 export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -156,7 +162,11 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
   const secondaryCtaLabel = configuredSecondaryCtaLabel;
   const configuredSecondaryHref = secondaryPayloadCta?.href ?? section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/#shop-by-meaning';
   const secondaryHref = configuredSecondaryHref;
-  const heroImageSrc = section?.image?.src ?? config.desktopImage?.src ?? '/images/homepage-reference/hero-right.png';
+  const configuredHeroImageSrc = config.desktopImage?.src ?? '/images/homepage-reference/hero-right.png';
+  const sectionHeroImageSrc = section?.image?.src?.trim();
+  const heroImageSrc = isLegacyDefaultHeroImage(sectionHeroImageSrc)
+    ? configuredHeroImageSrc
+    : (sectionHeroImageSrc ?? configuredHeroImageSrc);
   const heroImageAlt =
     fromSection(section?.image?.alt) ??
     t(config.desktopImage?.alt) ??
@@ -174,6 +184,7 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     localizedPayloadText(tertiaryPayloadCta?.label, locale as 'en' | 'ar') ??
     copy.home.heroTertiaryCta;
   const tertiaryHref = tertiaryPayloadCta?.href ?? '#editorial-feature';
+  const heroProofItems = HERO_PROOF_KEYS.map((key) => copy.home.trustBadges[key]);
   // Editorial full-bleed only when CMS sets payload.layout === "editorial" (see doc/HOMEPAGE_PRODUCTION_READINESS.md).
   const heroLayout = payloadString(sectionPayload?.layout) ?? 'split';
   const isEditorialLayout = heroLayout === 'editorial';
@@ -248,7 +259,7 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
       className={`home-hero-split ${HERO_NAV_OFFSET}`}
     >
       <div className="mx-auto grid max-w-[1400px] lg:grid-cols-2 lg:items-stretch">
-        <div className="home-hero-split__copy order-2 md:order-1">
+        <div className="home-hero-split__copy order-1">
           <h1 id="home-hero-heading" className="home-hero-split__title">
             <HeroTitleDisplay title={title} />
           </h1>
@@ -280,9 +291,16 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
               {tertiaryCtaLabel}
             </Link>
           </div>
+          <ul className="home-hero-proof-list mt-5" aria-label={isArabic ? 'وعود الخدمة' : 'Service promises'}>
+            {heroProofItems.map((item) => (
+              <li key={item} className="home-hero-proof-pill">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="home-hero-split__media order-1 md:order-2">
+        <div className="home-hero-split__media order-2">
           <Image
             src={heroImageSrc}
             alt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}

@@ -110,6 +110,72 @@ function interimCardImageForSlug(slug: string): string {
   return INTERIM_PRODUCT_CARD_FALLBACKS[hash % INTERIM_PRODUCT_CARD_FALLBACKS.length] ?? tee.studioTee;
 }
 
+const CONVERSION_REFERENCE_IMAGES = [
+  '/images/homepage-reference/product-i-care.png',
+  '/images/homepage-reference/product-find-your-rhythm.png',
+  '/images/homepage-reference/product-walk-alone.png',
+  '/images/homepage-reference/product-i-dont-care.png',
+  '/images/homepage-reference/product-rest-your-mind.png',
+] as const;
+
+const CONVERSION_REFERENCE_BY_DESIGN: Record<string, (typeof CONVERSION_REFERENCE_IMAGES)[number]> = {
+  'i-care': '/images/homepage-reference/product-i-care.png',
+  'i-dont-care': '/images/homepage-reference/product-i-dont-care.png',
+  'walk-alone': '/images/homepage-reference/product-walk-alone.png',
+  'find-your-rhythm': '/images/homepage-reference/product-find-your-rhythm.png',
+  'rest-your-mind': '/images/homepage-reference/product-rest-your-mind.png',
+};
+
+const CONVERSION_REFERENCE_BY_SLUG: Record<string, (typeof CONVERSION_REFERENCE_IMAGES)[number]> = {
+  'the-weight-of-light': '/images/homepage-reference/product-i-care.png',
+  'midnight-compass': '/images/homepage-reference/product-find-your-rhythm.png',
+  'quiet-revolt': '/images/homepage-reference/product-walk-alone.png',
+  'climb-the-ladder': '/images/homepage-reference/product-rest-your-mind.png',
+  'next-wave': '/images/homepage-reference/product-i-dont-care.png',
+};
+
+export function conversionReferenceImageForProduct(product: Product): (typeof CONVERSION_REFERENCE_IMAGES)[number] {
+  if (CONVERSION_REFERENCE_BY_SLUG[product.slug]) {
+    return CONVERSION_REFERENCE_BY_SLUG[product.slug];
+  }
+
+  const designKey = product.launchDesign?.trim();
+  if (designKey && CONVERSION_REFERENCE_BY_DESIGN[designKey]) {
+    return CONVERSION_REFERENCE_BY_DESIGN[designKey];
+  }
+
+  const normalized = `${product.slug} ${product.name}`.toLowerCase();
+  if (normalized.includes('dont-care') || normalized.includes("don't care")) {
+    return CONVERSION_REFERENCE_BY_DESIGN['i-dont-care'];
+  }
+  if (normalized.includes('care')) return CONVERSION_REFERENCE_BY_DESIGN['i-care'];
+  if (normalized.includes('walk') || normalized.includes('revolt')) {
+    return CONVERSION_REFERENCE_BY_DESIGN['walk-alone'];
+  }
+  if (normalized.includes('rest') || normalized.includes('quiet')) {
+    return CONVERSION_REFERENCE_BY_DESIGN['rest-your-mind'];
+  }
+
+  const hash = [...product.slug].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return CONVERSION_REFERENCE_IMAGES[hash % CONVERSION_REFERENCE_IMAGES.length] ?? CONVERSION_REFERENCE_IMAGES[0];
+}
+
+export function shouldUseConversionReferenceImage(src: string | undefined): boolean {
+  const value = src?.trim().toLowerCase() ?? '';
+  return (
+    isGenericBrandPlaceholderSrc(src) ||
+    value.endsWith('.svg') ||
+    value.includes('/images/proof/') ||
+    value.startsWith('http://localhost:9000/static/') ||
+    value.startsWith('http://127.0.0.1:9000/static/')
+  );
+}
+
+export function getConversionProductCardImageSrc(product: Product, candidateSrc?: string): string {
+  const src = candidateSrc?.trim() || getProductCardImageSrc(product);
+  return shouldUseConversionReferenceImage(src) ? conversionReferenceImageForProduct(product) : src;
+}
+
 export type StorefrontImageSlot = {
   src: string;
   alt: string;

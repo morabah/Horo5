@@ -63,7 +63,7 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
       href: "/#shop-by-meaning",
     },
     desktopImage: {
-      src: "/images/heroes/home-hero.png",
+      src: "/images/homepage-reference/hero-right.png",
       alt: {
         en: "Model wearing HORO graphic tee — Wear What You Feel",
         ar: `عارض يرتدي تيشيرت هورو — ${HORO_V19_SOUNDBITES.primary.ar}`,

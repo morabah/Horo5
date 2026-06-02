@@ -39,8 +39,8 @@ export function BrandLogo({
         width={width}
         height={height}
         priority={size === 'header' || size === 'drawer'}
-        className="mx-auto block h-auto w-auto max-w-[min(132px,calc(100vw-10.5rem))] object-contain object-center"
-        style={{ height, width: 'auto', maxHeight: height }}
+        className="mx-auto block object-contain object-center"
+        style={{ width, height }}
       />
       {showArabic ? (
         <span

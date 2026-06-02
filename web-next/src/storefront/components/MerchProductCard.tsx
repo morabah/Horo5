@@ -15,7 +15,11 @@ import { StockStatusChip } from './StockStatusChip';
 import { QuickViewTrigger } from './QuickViewTrigger';
 import { NotifyWhenAvailableButton } from './NotifyWhenAvailableButton';
 import { TeeImageFrame } from './TeeImage';
-import { getProductCardHoverImageSrc } from '../data/images';
+import {
+  getConversionProductCardImageSrc,
+  getProductCardHoverImageSrc,
+  shouldUseConversionReferenceImage,
+} from '../data/images';
 import { formatEgp } from '../utils/formatPrice';
 import { pickLocalizedText } from '../lib/storefront/incentives-client';
 
@@ -111,7 +115,9 @@ export function MerchProductCard({
   const quickAddAvailable = availableSizes.length > 0;
   const hoverImageSrc = product ? getProductCardHoverImageSrc(product) : null;
   const [hovering, setHovering] = useState(false);
-  const displayImageSrc = hovering && hoverImageSrc ? hoverImageSrc : imageSrc;
+  const baseImageSrc = product ? getConversionProductCardImageSrc(product, imageSrc) : imageSrc;
+  const usingReferenceImage = product ? shouldUseConversionReferenceImage(imageSrc) : false;
+  const displayImageSrc = hovering && hoverImageSrc ? hoverImageSrc : baseImageSrc;
   const quickAddLabel = locale === 'ar' ? 'إضافة سريعة' : 'Quick add';
   const chooseSizeLabel = locale === 'ar' ? 'اختر المقاس' : 'Choose size';
   const addedLabel = locale === 'ar' ? 'أُضيف' : 'Added';
@@ -176,7 +182,7 @@ export function MerchProductCard({
 
   return (
     <article
-      className={['group merch-card-lift flex flex-col', className].filter(Boolean).join(' ')}
+      className={['group merch-card-lift flex flex-col', usingReferenceImage ? 'merch-card--reference' : '', className].filter(Boolean).join(' ')}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => {
         setHovering(false);
@@ -205,7 +211,7 @@ export function MerchProductCard({
               aspectRatio="4/5"
               borderRadius="0.375rem"
               eager={eager}
-              objectPosition="center 24%"
+              objectPosition={usingReferenceImage ? 'center center' : 'center 24%'}
               frameStyle={{ marginBottom: 0 }}
             />
           </div>
