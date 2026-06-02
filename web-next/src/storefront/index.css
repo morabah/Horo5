@@ -888,6 +888,111 @@
     border-bottom: 1px solid #f0e4e2;
   }
 
+  .home-image-campaign {
+    margin-bottom: 0;
+  }
+
+  .home-image-campaign__frame {
+    color: #fff;
+  }
+
+  .home-image-campaign__eyebrow {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .home-image-campaign__title {
+    margin-top: 0.5rem;
+    font-family: var(--font-headline);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    color: #fff;
+  }
+
+  .home-image-campaign__body {
+    margin-top: 0.75rem;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .home-image-campaign__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .home-image-campaign__content {
+    justify-content: flex-end;
+  }
+
+  .home-image-campaign__content--bottom-left {
+    align-items: flex-start;
+    text-align: start;
+  }
+
+  .home-image-campaign__content--bottom-center {
+    align-items: center;
+    text-align: center;
+  }
+
+  .home-image-campaign__content--center {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .home-image-campaign--mobile-below .home-image-campaign__frame {
+    min-height: min(42vh, 22rem);
+  }
+
+  @media (max-width: 767px) {
+    .home-image-campaign--mobile-below .home-image-campaign__content {
+      display: none;
+    }
+
+    .home-image-campaign--mobile-below .home-image-campaign__below-panel {
+      color: var(--color-horo-text);
+    }
+
+    .home-image-campaign--mobile-below .home-image-campaign__below-panel .home-image-campaign__eyebrow {
+      color: var(--color-horo-pulse);
+    }
+
+    .home-image-campaign--mobile-below .home-image-campaign__below-panel .home-image-campaign__title {
+      color: var(--color-horo-root);
+    }
+
+    .home-image-campaign--mobile-below .home-image-campaign__below-panel .home-image-campaign__body {
+      color: var(--color-horo-muted);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .home-image-campaign--mobile-below .home-image-campaign__below-panel {
+      display: none;
+    }
+  }
+
+  .home-feeling-pastel-grid--meaning {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.875rem;
+  }
+
+  @media (min-width: 768px) {
+    .home-feeling-pastel-grid--meaning {
+      gap: 1rem;
+    }
+  }
+
   .home-founding-campaign {
     margin-bottom: 2rem;
   }

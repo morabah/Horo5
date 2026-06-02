@@ -9,6 +9,7 @@ import {
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
 import { getFeelings, productHasRealImage, productsByFeeling } from '../data/site';
+import { parseHomepagePresentation } from '../lib/parseHomepagePresentation';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 
 type FeelingTileOverride = {
@@ -17,6 +18,7 @@ type FeelingTileOverride = {
   iconSlug?: string;
   surface?: string;
   href?: string;
+  imageSrc?: string;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -50,12 +52,15 @@ function payloadFeelingOverrides(section: StorefrontHomepageSection | undefined,
     const iconValue = item.iconSlug ?? item.icon;
     const surfaceValue = item.surface ?? item.color ?? item.accent;
     const hrefValue = item.href;
+    const imageSrcValue = item.imageSrc ?? item.image_src;
     return [{
       slug,
       label: localizedPayloadText(item.label ?? item.name ?? item.title, locale),
       iconSlug: typeof iconValue === 'string' ? iconValue : undefined,
       surface: typeof surfaceValue === 'string' ? surfaceValue : undefined,
       href: typeof hrefValue === 'string' ? hrefValue : undefined,
+      imageSrc:
+        typeof imageSrcValue === 'string' && imageSrcValue.trim() ? imageSrcValue.trim() : undefined,
     }];
   });
 }
@@ -98,7 +103,7 @@ function getFeaturedFeelings(section: StorefrontHomepageSection | undefined, loc
 
 const LAUNCH_MEANING_TILES: FeelingTileOverride[] = [
   { slug: 'mood', label: 'Mood', href: '/products?category=mood', iconSlug: 'mood' },
-  { slug: 'zodiac', label: 'Zodiac Signs', href: '/products?category=zodiac', iconSlug: 'zodiac' },
+  { slug: 'zodiac', label: 'Zodiac', href: '/products?category=zodiac', iconSlug: 'zodiac' },
   { slug: 'gift-ready', label: 'Gift Ready', href: '/gifts', iconSlug: 'gift' },
   { slug: 'lifestyle', label: 'Lifestyle', href: '/products?category=lifestyle', iconSlug: 'lifestyle' },
 ];
@@ -122,13 +127,19 @@ function launchMeaningTileEntries(_locale: 'en' | 'ar') {
 export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
+  const presentation = parseHomepagePresentation(
+    section?.payload as Record<string, unknown> | null | undefined,
+  );
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
   const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
   const sectionBody = pickLocalizedStorefrontText(section?.body, locale as 'en' | 'ar');
   const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
-  const eyebrow = sectionEyebrow ?? copy.home.feelingsRhythmEyebrow;
+  const showSectionHeader = presentation.showEyebrow !== false || presentation.showBody !== false;
+  const eyebrow =
+    presentation.showEyebrow === false ? undefined : (sectionEyebrow ?? copy.home.feelingsRhythmEyebrow);
   const title = sectionTitle ?? copy.home.feelingsTitle;
-  const subtitle = sectionBody ?? copy.home.feelingsSubtitle;
+  const subtitle =
+    presentation.showBody === false ? undefined : (sectionBody ?? copy.home.feelingsSubtitle);
   const cta = sectionCta ?? copy.home.feelingsCta;
   const overrides = payloadFeelingOverrides(section, locale as 'en' | 'ar');
   const feelings =
@@ -147,30 +158,41 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
       className="home-section bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex items-end justify-between gap-4" data-reveal>
-          <div>
-            <p className="home-section-eyebrow">{eyebrow}</p>
-            <h2 id="home-feelings-title" className="home-section-title mt-2 text-[2rem]">
-              {title}
-            </h2>
-            {subtitle ? (
-              <p className="font-body mt-2 text-sm leading-relaxed text-warm-charcoal md:text-base">
-                {subtitle}
-              </p>
+        {showSectionHeader ? (
+          <div className="mb-6 flex items-end justify-between gap-4 md:mb-8" data-reveal>
+            <div>
+              {eyebrow ? <p className="home-section-eyebrow">{eyebrow}</p> : null}
+              <h2
+                id="home-feelings-title"
+                className={`home-section-title text-[1.75rem] md:text-[2rem] ${eyebrow ? 'mt-2' : ''}`}
+              >
+                {title}
+              </h2>
+              {subtitle ? (
+                <p className="font-body mt-2 hidden text-sm leading-relaxed text-warm-charcoal md:block md:text-base">
+                  {subtitle}
+                </p>
+              ) : null}
+            </div>
+            {section?.primaryCta?.href && cta ? (
+              <Link
+                href={section.primaryCta.href}
+                className="home-section-link font-body hidden min-h-11 items-center justify-center text-sm font-semibold text-horo-pulse transition-colors hover:text-horo-root sm:inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
+              >
+                {cta}
+                <span aria-hidden className="ms-1">
+                  →
+                </span>
+              </Link>
             ) : null}
           </div>
-          <Link
-            href={section?.primaryCta?.href ?? '/feelings'}
-            className="home-section-link font-body hidden min-h-11 items-center justify-center text-sm font-semibold text-horo-pulse transition-colors hover:text-horo-root sm:inline-flex focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
-          >
-            {cta}
-            <span aria-hidden className="ms-1">
-              →
-            </span>
-          </Link>
-        </div>
+        ) : (
+          <h2 id="home-feelings-title" className="sr-only">
+            {title}
+          </h2>
+        )}
 
-        <div className="home-feeling-pastel-grid">
+        <div className="home-feeling-pastel-grid home-feeling-pastel-grid--meaning">
           {feelings.map(({ feeling, override }, index) => {
             const reveal = (['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5'] as const)[index % 5];
             const surface = override?.surface ?? HOME_FEELING_TILE_SURFACES[index % HOME_FEELING_TILE_SURFACES.length];
@@ -178,7 +200,8 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
             const href = override?.href ?? `/feelings/${feeling.slug}`;
             const iconSlug = override?.iconSlug ?? feeling.slug;
             const visual = getFeelingCollectionVisual(feeling.slug);
-            const tileImageCandidate = visual.hero.src || visual.cover.src;
+            const tileImageCandidate =
+              override?.imageSrc || visual.hero.src || visual.cover.src;
             const tileImage =
               tileImageCandidate && !isStockOrDemoFeelingTileSrc(tileImageCandidate)
                 ? tileImageCandidate
@@ -212,17 +235,19 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
           })}
         </div>
 
-        <div className="mt-6 sm:hidden">
-          <Link
-            href={section?.primaryCta?.href ?? '/feelings'}
-            className="font-body inline-flex min-h-11 items-center justify-center text-sm font-medium text-horo-pulse underline-offset-4 transition-colors hover:text-horo-root hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
-          >
-            {cta}
-            <span aria-hidden className="ms-1">
-              →
-            </span>
-          </Link>
-        </div>
+        {section?.primaryCta?.href && cta && showSectionHeader ? (
+          <div className="mt-6 sm:hidden">
+            <Link
+              href={section.primaryCta.href}
+              className="font-body inline-flex min-h-11 items-center justify-center text-sm font-medium text-horo-pulse underline-offset-4 transition-colors hover:text-horo-root hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
+            >
+              {cta}
+              <span aria-hidden className="ms-1">
+                →
+              </span>
+            </Link>
+          </div>
+        ) : null}
       </div>
     </section>
   );

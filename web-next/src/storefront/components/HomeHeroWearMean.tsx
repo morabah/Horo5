@@ -3,7 +3,9 @@ import Image from 'next/image';
 
 import { trackCloserLookClick, trackHeroCtaClick } from '../analytics/events';
 
+import { HomeImageCampaign } from './home/HomeImageCampaign';
 import { PAGE_HEROES } from '../content/page-heroes';
+import { isImageOverlayPresentation, parseHomepagePresentation } from '../lib/parseHomepagePresentation';
 import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
@@ -186,64 +188,46 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     copy.home.heroTertiaryCta;
   const tertiaryHref = tertiaryPayloadCta?.href ?? '#editorial-feature';
   const heroProofItems = HERO_PROOF_KEYS.map((key) => copy.home.trustBadges[key]);
-  // Editorial full-bleed only when CMS sets payload.layout === "editorial" (see doc/HOMEPAGE_PRODUCTION_READINESS.md).
-  const heroLayout = payloadString(sectionPayload?.layout) ?? 'split';
-  const isEditorialLayout = heroLayout === 'editorial';
+  const heroPresentation = parseHomepagePresentation(sectionPayload);
+  const isOverlayLayout = isImageOverlayPresentation(sectionPayload);
 
-  if (isEditorialLayout) {
+  if (isOverlayLayout) {
     return (
       <section
         id="home-hero"
         aria-labelledby="home-hero-heading"
         data-test-id={`home-hero-${safeTestId(heroVariant)}`}
         data-hero-variant={heroVariant}
-        data-hero-layout="editorial"
-        className={`home-hero-editorial relative isolate min-h-[min(72vh,52rem)] overflow-hidden ${HERO_NAV_OFFSET}`}
+        data-hero-layout="image_overlay"
+        className={`px-4 sm:px-6 lg:px-8 ${HERO_NAV_OFFSET}`}
       >
-        <Image
-          src={heroImageSrc}
-          alt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
-          fill
-          priority
-          placeholder="blur"
-          blurDataURL={HERO_BLUR_DATA_URL}
-          sizes="100vw"
-          className="object-cover object-[50%_42%]"
-        />
-        <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#241f21]/78 via-[#241f21]/28 to-transparent"
-          aria-hidden
-        />
-        <div className="relative z-10 mx-auto flex min-h-[min(72vh,52rem)] max-w-[1400px] flex-col justify-end px-4 pb-10 pt-24 sm:px-6 md:pb-14 lg:px-8">
-          <h1 id="home-hero-heading" className="home-hero-editorial__title max-w-xl text-white">
-            <HeroTitleDisplay title={title} />
-          </h1>
-          <p className="font-body mt-4 max-w-lg text-[15px] leading-relaxed text-white/92 md:text-base">
-            {promiseLine}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href={primaryHref}
-              onClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}
-              className="home-btn home-btn--primary font-body inline-flex min-h-[44px] items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              {primaryCtaLabel}
-            </Link>
-            <Link
-              href={secondaryHref}
-              onClick={() => trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant)}
-              className="home-btn home-btn--secondary font-body inline-flex min-h-[44px] items-center justify-center rounded-[4px] border border-white/80 bg-transparent px-5 py-2 text-[12px] font-bold text-white hover:bg-white/12 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              {secondaryCtaLabel}
-            </Link>
-            <Link
-              href={tertiaryHref}
-              onClick={() => trackCloserLookClick('hero', tertiaryHref)}
-              className="font-body inline-flex min-h-[44px] items-center justify-center px-2 text-[12px] font-semibold text-white/95 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-            >
-              {tertiaryCtaLabel}
-            </Link>
-          </div>
+        <div className="mx-auto max-w-[1400px] pt-4">
+          <HomeImageCampaign
+            id="home-hero-campaign"
+            titleAs="h1"
+            titleId="home-hero-heading"
+            title={title}
+            body={promiseLine}
+            imageSrc={heroImageSrc}
+            imageAlt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
+            primaryCta={{ label: primaryCtaLabel, href: primaryHref }}
+            secondaryCta={{ label: secondaryCtaLabel, href: secondaryHref }}
+            presentation={{
+              ...heroPresentation,
+              layout: 'image_overlay',
+              showEyebrow: false,
+              overlayOpacity: heroPresentation.overlayOpacity ?? 0.5,
+            }}
+            priority
+            minHeight="min-h-[min(72vh,52rem)]"
+            onPrimaryClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}
+            onSecondaryClick={() => {
+              trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant);
+              if (secondaryHref.includes('editorial')) {
+                trackCloserLookClick('hero', secondaryHref);
+              }
+            }}
+          />
         </div>
         <div id={HERO_BOTTOM_SENTINEL_ID} aria-hidden="true" className="h-px w-full" />
       </section>

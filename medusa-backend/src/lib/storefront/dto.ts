@@ -180,6 +180,23 @@ const storefrontPriceBandSchema = z.looseObject({
     label: storefrontLocalizedTextSchema,
   })
 
+export const homepagePresentationSchema = z
+  .object({
+    layout: z
+      .enum(["image_overlay", "split", "rail", "tiles", "compact"])
+      .optional(),
+    textPlacement: z
+      .enum(["bottom-left", "bottom-center", "center", "below"])
+      .optional(),
+    overlayOpacity: z.number().min(0).max(1).optional(),
+    maxTextWidth: z.enum(["sm", "md", "lg"]).optional(),
+    showBody: z.boolean().optional(),
+    showEyebrow: z.boolean().optional(),
+    showPillars: z.boolean().optional(),
+    mobileTextMode: z.enum(["overlay", "below"]).optional(),
+  })
+  .passthrough()
+
 export const storefrontHomepageSectionSchema = z.looseObject({
     id: z.string(),
     key: z.string(),

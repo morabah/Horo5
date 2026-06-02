@@ -65,6 +65,8 @@
     "sync:homepage-section-order:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/sync-homepage-section-order.ts",
     "sync:homepage-hero-safe": "medusa exec ./src/scripts/sync-homepage-hero-safe.ts",
     "sync:homepage-hero-safe:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/sync-homepage-hero-safe.ts",
+    "sync:homepage-image-led": "medusa exec ./src/scripts/sync-homepage-image-led.ts",
+    "sync:homepage-image-led:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/sync-homepage-image-led.ts",
     "seed:homepage-sections:public": "sh scripts/medusa-exec-public-db.sh ./src/scripts/seed-homepage-sections.ts",
     "inspect:incentives": "medusa exec ./src/scripts/inspect-incentives.ts",
     "parity:snapshot:local": "sh -c 'mkdir -p .parity && PARITY_OUTPUT_FILE=.parity/local.json medusa exec ./src/scripts/parity-snapshot.ts'",

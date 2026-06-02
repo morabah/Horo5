@@ -11,7 +11,8 @@ import {
 import { isBackLikeProductImageSrc, pickHomeCardImageSrc } from '../data/images';
 import { getProduct } from '../data/site';
 import { useDictionary, useUiLocale } from '../i18n/ui-locale';
-import { EditorialFeatureMedia } from './home/EditorialFeatureMedia';
+import { isImageOverlayPresentation, parseHomepagePresentation } from '../lib/parseHomepagePresentation';
+import { HomeImageCampaign } from './home/HomeImageCampaign';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -49,6 +50,7 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
   const copy = useDictionary();
   const resolvedLocale = locale as 'en' | 'ar';
   const payload = isRecord(section?.payload) ? section.payload : null;
+  const presentation = parseHomepagePresentation(payload);
   const variant = typeof payload?.variant === 'string' ? payload.variant : 'closer_look';
 
   const eyebrow =
@@ -64,14 +66,48 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     pickLocalizedStorefrontText(section?.primaryCta?.label, resolvedLocale) ?? 'Shop the Piece';
   const ctaHref = section?.primaryCta?.href?.trim() ?? '/products';
   const [imageFailed, setImageFailed] = useState(false);
-  const showImageColumn = Boolean(imageSrc) && !imageFailed;
-  const layoutCopyOnly = !imageSrc || imageFailed;
+  const sectionId = payloadAnchor(section);
+  const useOverlay = Boolean(imageSrc) && !imageFailed && isImageOverlayPresentation(payload);
 
   if (!title && !body && !imageSrc) {
     return null;
   }
 
-  const sectionId = payloadAnchor(section);
+  if (useOverlay && imageSrc && title) {
+    return (
+      <section
+        id={sectionId}
+        aria-labelledby={`${sectionId}-title`}
+        className="home-section home-editorial-feature bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
+      >
+        <div className="mx-auto max-w-6xl" data-reveal>
+          <HomeImageCampaign
+            id={`${sectionId}-campaign`}
+            titleId={`${sectionId}-title`}
+            eyebrow={eyebrow}
+            title={title}
+            body={body ?? undefined}
+            imageSrc={imageSrc}
+            imageAlt={imageAlt}
+            primaryCta={{ label: ctaLabel, href: ctaHref }}
+            presentation={{
+              ...presentation,
+              layout: 'image_overlay',
+              showEyebrow: presentation.showEyebrow !== false,
+              showBody: presentation.showBody !== false,
+            }}
+            minHeight="min-h-[min(48vh,28rem)]"
+            onPrimaryClick={() => {
+              if (variant === 'closer_look') {
+                trackCloserLookClick('editorial_feature', ctaHref);
+              }
+              trackEditorialFeatureCtaClick(variant, ctaHref);
+            }}
+          />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -79,48 +115,36 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
       aria-labelledby={`${sectionId}-title`}
       className="home-section home-editorial-feature bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
     >
-      <div
-        className={
-          layoutCopyOnly
-            ? 'home-editorial-feature__copy-only mx-auto max-w-2xl text-center'
-            : 'home-editorial-feature__layout mx-auto grid max-w-6xl gap-8 md:grid-cols-2 md:items-center md:gap-10'
-        }
-      >
-        <div className={layoutCopyOnly ? '' : 'home-editorial-feature__copy order-1 md:order-2'}>
-          <p className="home-section-eyebrow">{eyebrow}</p>
-          {title ? (
-            <h2 id={`${sectionId}-title`} className="home-section-title mt-2">
-              {title}
-            </h2>
-          ) : null}
-          {body ? (
-            <p className="font-body mt-4 text-[15px] leading-relaxed text-warm-charcoal md:text-base">
-              {body}
-            </p>
-          ) : null}
-          <Link
-            href={ctaHref}
-            onClick={() => {
-              if (variant === 'closer_look') {
-                trackCloserLookClick('editorial_feature', ctaHref);
-              }
-              trackEditorialFeatureCtaClick(variant, ctaHref);
-            }}
-            className="home-btn home-btn--primary font-body mt-6 inline-flex min-h-11 items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
-          >
-            {ctaLabel}
-          </Link>
-        </div>
-        {showImageColumn && imageSrc ? (
-          <div className="home-editorial-feature__media order-2 md:order-1">
-            <EditorialFeatureMedia
-              src={imageSrc}
-              alt={imageAlt}
-              onError={() => setImageFailed(true)}
-            />
-          </div>
+      <div className="home-editorial-feature__copy-only mx-auto max-w-2xl text-center">
+        <p className="home-section-eyebrow">{eyebrow}</p>
+        {title ? (
+          <h2 id={`${sectionId}-title`} className="home-section-title mt-2">
+            {title}
+          </h2>
         ) : null}
+        {body ? (
+          <p className="font-body mt-4 text-[15px] leading-relaxed text-warm-charcoal md:text-base">
+            {body}
+          </p>
+        ) : null}
+        <Link
+          href={ctaHref}
+          onClick={() => {
+            if (variant === 'closer_look') {
+              trackCloserLookClick('editorial_feature', ctaHref);
+            }
+            trackEditorialFeatureCtaClick(variant, ctaHref);
+          }}
+          className="home-btn home-btn--primary font-body mt-6 inline-flex min-h-11 items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
+        >
+          {ctaLabel}
+        </Link>
       </div>
+      {imageSrc && !imageFailed ? (
+        <div className="sr-only">
+          <img src={imageSrc} alt="" onError={() => setImageFailed(true)} />
+        </div>
+      ) : null}
     </section>
   );
 }

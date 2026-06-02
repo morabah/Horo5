@@ -1,3 +1,4 @@
+import { withDefaultPresentation } from "./presentation"
 import type { HomepageSectionInput } from "./types"
 
 export type HomepageSectionSeed = Required<
@@ -23,22 +24,20 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     type: "hero",
     title_en: "Wear What You Feel",
     title_ar: "إلبس اللي بتحس بيه",
-    body_en: "Artist-made passion wear for feelings, identity, and meaningful gifts.",
-    body_ar: "قطع فنية قابلة للّبس للمشاعر، الهوية، والهدايا اللي لها معنى.",
-    primary_cta_label_en: "Shop the Founding Drop",
-    primary_cta_label_ar: "تسوق الإطلاق الأول",
+    body_en: "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
+    body_ar: "تيشيرتات من فنانين للمشاعر والهوية والهدايا اللي لها معنى.",
+    primary_cta_label_en: "Shop the Drop",
+    primary_cta_label_ar: "تسوق الإطلاق",
     primary_cta_href: "/products",
-    secondary_cta_label_en: "Shop by Meaning",
-    secondary_cta_label_ar: "تسوّق حسب المعنى",
-    secondary_cta_href: "/#shop-by-meaning",
+    secondary_cta_label_en: "A Closer Look",
+    secondary_cta_label_ar: "نظرة أقرب",
+    secondary_cta_href: "/#editorial-feature",
     image_src: "/images/hero/home-hero-wear-feel.png",
     image_alt_en: "Model wearing HORO graphic tee — Wear What You Feel",
     image_alt_ar: "عارض يرتدي تيشيرت هورو — إلبس اللي بتحس بيه",
     sort_order: 0,
     active: true,
-    payload: {
-      // Full-bleed hero: set layout to "editorial" in CMS only after final hero art is uploaded.
-      // Default remains split until production intentionally enables editorial.
+    payload: withDefaultPresentation("hero", {
       soundbite_en: "Find Your Rhythm",
       soundbite_ar: "اكتشف إيقاعك",
       canvas_en: "We are the canvas. You are the story.",
@@ -51,29 +50,29 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
         pulse_action: "#8C2340",
         usage: "Soft/white canvas first; Breath for trust/story/gift panels; Root for depth and text; Pulse only for CTAs, badges, and active states.",
       },
-    },
+    }),
   },
   {
     key: "trust_ribbon",
     type: "trust_ribbon",
     sort_order: 10,
     active: true,
-    payload: {
+    payload: withDefaultPresentation("trust_ribbon", {
       items: [
         { key: "artistMade", label_en: "Artist-made", label_ar: "تصميم فنانين", icon: "artistSigned" },
         { key: "printedEgypt", label_en: "Printed in Egypt", label_ar: "مطبوعة في مصر", icon: "printedEgypt" },
-        { key: "paymentAtCheckout", label_en: "Payment options shown at checkout", label_ar: "طرق الدفع بتظهر في صفحة الدفع", icon: "codExchange" },
-        { key: "clearFitDetails", label_en: "Clear fit details", label_ar: "تفاصيل مقاس واضحة", icon: "clearFitDetails" },
-        { key: "whatsappSupport", label_en: "WhatsApp size help", label_ar: "مساعدة المقاس على واتساب", icon: "whatsappSupport" },
+        { key: "paymentAtCheckout", label_en: "Payment at checkout", label_ar: "الدفع عند الدفع", icon: "codExchange" },
+        { key: "clearFitDetails", label_en: "Clear fit", label_ar: "مقاس واضح", icon: "clearFitDetails" },
+        { key: "whatsappSupport", label_en: "WhatsApp help", label_ar: "مساعدة واتساب", icon: "whatsappSupport" },
       ],
       trustStripItems: [
-        { key: "artistMade", label: { en: "Artist-made designs", ar: "تصميمات فنانين" } },
+        { key: "artistMade", label: { en: "Artist-made", ar: "تصميم فنانين" } },
         { key: "printedEgypt", label: { en: "Printed in Egypt", ar: "مطبوعة في مصر" } },
-        { key: "paymentAtCheckout", label: { en: "Payment options shown at checkout", ar: "طرق الدفع بتظهر في صفحة الدفع" } },
-        { key: "clearFitDetails", label: { en: "Clear fit details", ar: "تفاصيل مقاس واضحة" } },
-        { key: "whatsappSupport", label: { en: "WhatsApp size help before dispatch", ar: "مساعدة المقاس على واتساب قبل الشحن" } },
+        { key: "paymentAtCheckout", label: { en: "Payment at checkout", ar: "الدفع عند الدفع" } },
+        { key: "clearFitDetails", label: { en: "Clear fit", ar: "مقاس واضح" } },
+        { key: "whatsappSupport", label: { en: "WhatsApp help", ar: "مساعدة واتساب" } },
       ],
-    },
+    }),
   },
   {
     key: "primary_routes",
@@ -101,11 +100,12 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     eyebrow_ar: "الإطلاق الأول",
     title_en: "Wearable artwork for signs, moods, and personal stories.",
     title_ar: "فن قابل للّبس للأبراج والمزاج والقصص الشخصية.",
-    body_en:
-      "Our first collection of artist-made T-shirts, printed in Egypt and made to be worn, gifted, and remembered.",
-    body_ar:
-      "أول مجموعة من التيشيرتات المصنوعة يدويًا من فنانين، مطبوعة في مصر لتُلبس وتُهدى وتُتذكر.",
-    primary_cta_label_en: "Shop the Founding Drop",
+    body_en: null,
+    body_ar: null,
+    image_src: "/images/homepage-reference/founding-drop-campaign.png",
+    image_alt_en: "The Founding Drop — wearable artwork",
+    image_alt_ar: "الإطلاق الأول — فن قابل للّبس",
+    primary_cta_label_en: "Shop Now",
     primary_cta_label_ar: "تسوّق الإطلاق الأول",
     primary_cta_href: "/products",
     secondary_cta_label_en: "A Closer Look",
@@ -113,9 +113,9 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     secondary_cta_href: "/#editorial-feature",
     sort_order: 20,
     active: true,
-    payload: {
+    payload: withDefaultPresentation("founding_drop", {
       limit: 5,
-    },
+    }),
   },
   {
     key: "featured_piece",
@@ -133,25 +133,25 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
   {
     key: "feeling_grid",
     type: "feeling_grid",
-    eyebrow_en: "START WITH YOUR RHYTHM",
-    eyebrow_ar: "تسوق حسب الشعور",
+    eyebrow_en: null,
+    eyebrow_ar: null,
     title_en: "Shop by Meaning",
     title_ar: "تسوّق حسب المعنى",
-    body_en: "Start with the feeling. Then choose the design.",
-    body_ar: "ابدأ بالشعور. ثم اختر التصميم.",
-    primary_cta_label_en: "Shop the Founding Drop",
-    primary_cta_label_ar: "تسوّق الإطلاق الأول",
-    primary_cta_href: "/products",
+    body_en: null,
+    body_ar: null,
+    primary_cta_label_en: null,
+    primary_cta_label_ar: null,
+    primary_cta_href: null,
     sort_order: 30,
     active: true,
-    payload: {
+    payload: withDefaultPresentation("feeling_grid", {
       feelings: [
         { slug: "mood", label: { en: "Mood", ar: "مزاج" }, href: "/products?category=mood" },
-        { slug: "zodiac", label: { en: "Zodiac Signs", ar: "الأبراج" }, href: "/products?category=zodiac" },
+        { slug: "zodiac", label: { en: "Zodiac", ar: "الأبراج" }, href: "/products?category=zodiac" },
         { slug: "gift-ready", label: { en: "Gift Ready", ar: "جاهزة للهدايا" }, href: "/gifts" },
         { slug: "lifestyle", label: { en: "Lifestyle", ar: "نمط حياة" }, href: "/products?category=lifestyle" },
       ],
-    },
+    }),
   },
   {
     key: "gift_block",
@@ -160,9 +160,9 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     eyebrow_ar: "جاهزة للهدايا",
     title_en: "More than a gift.",
     title_ar: "أكثر من هدية.",
-    body_en: "It's a feeling they'll wear. Thoughtful designs for birthdays, anniversaries, graduations, and just because.",
-    body_ar: "إحساس هيلبسوه. تصميمات بهدية معنى لأعياد الميلاد، المناسبات، والتقدير من غير سبب.",
-    primary_cta_label_en: "Find the perfect gift",
+    body_en: "A feeling they'll wear.",
+    body_ar: "إحساس هيلبسوه.",
+    primary_cta_label_en: "Find a Gift",
     primary_cta_label_ar: "تسوق الهدايا",
     primary_cta_href: "/gifts",
     image_src: "/images/homepage-reference/gift-box.png",
@@ -170,6 +170,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     image_alt_ar: "تغليف هورو جاهز للهدايا.",
     sort_order: 45,
     active: true,
+    payload: withDefaultPresentation("gift_block", {}),
   },
   {
     key: "editorial_feature",
@@ -178,17 +179,20 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     eyebrow_ar: "نظرة أقرب",
     title_en: "Calm Inside",
     title_ar: "هدوء من الداخل",
-    body_en: "A quiet figure, soft movement, and a visual language for people who feel deeply but speak softly. Oversized fit. Heavy cotton feel. Printed in Egypt.",
-    body_ar: "شخصية هادئة، حركة ناعمة، ولغة بصرية لمن يشعرون بعمق ويتحدثون بهدوء. مقاس واسع. قطن ثقيل. مطبوع في مصر.",
+    body_en: "Artwork, fit, and print details in one closer view.",
+    body_ar: "العمل الفني والمقاس وتفاصيل الطباعة في نظرة أقرب.",
+    image_src: "/images/homepage-reference/editorial-calm-inside.png",
+    image_alt_en: "Calm Inside — artwork detail",
+    image_alt_ar: "هدوء من الداخل — تفاصيل العمل الفني",
     primary_cta_label_en: "Shop the Piece",
     primary_cta_label_ar: "تسوّق القطعة",
     primary_cta_href: "/products/calm-inside",
     sort_order: 35,
     active: true,
-    payload: {
+    payload: withDefaultPresentation("editorial_feature", {
       variant: "closer_look",
       anchorId: "editorial-feature",
-    },
+    }),
   },
   {
     key: "proof_strip",
@@ -201,16 +205,19 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     type: "why_horo",
     eyebrow_en: "OUR STORY",
     eyebrow_ar: "قصتنا",
-    title_en: "Ritual. Rhythm. Connection.",
-    title_ar: "طقس. إيقاع. اتصال.",
-    body_en: "HORO is a wearable-art brand born in Egypt. We turn emotions into art and art into pieces you live in. Every design is a ritual. Every wear is a reminder. We are the canvas. You are the story.",
-    body_ar: "هورو علامة فنية قابلة للّبس من مصر. بنحوّل المشاعر لفن والفن لقطع تعيش فيها. كل تصميم طقس. كل لبسة تذكير. إحنا القماش. إنت القصة.",
+    title_en: "We are the canvas. You are the story.",
+    title_ar: "إحنا القماش. إنت القصة.",
+    body_en: null,
+    body_ar: null,
+    image_src: "/images/homepage-reference/our-story.png",
+    image_alt_en: "HORO — artist process and product",
+    image_alt_ar: "هورو — عمل الفنان والمنتج",
     primary_cta_label_en: "Read our story",
     primary_cta_label_ar: "اقرأ قصتنا",
     primary_cta_href: "/about",
     sort_order: 50,
     active: true,
-    payload: {
+    payload: withDefaultPresentation("why_horo", {
       pillars: [
         {
           key: "localArtists",
@@ -234,7 +241,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
           },
         },
       ],
-    },
+    }),
   },
   {
     key: "artist_spotlight",

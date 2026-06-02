@@ -7,7 +7,12 @@
   endif
   assign full_width = '100vw'
   assign widths = '375, 550, 750, 1100, 1500, 1780, 2000, 3000, 3840'
-  assign hero_layout = section.settings.hero_layout | default: 'split'
+  assign layout_style = section.settings.layout_style | default: 'split'
+  if layout_style == 'image_overlay'
+    assign hero_layout = 'cinematic'
+  else
+    assign hero_layout = section.settings.hero_layout | default: 'split'
+  endif
   assign use_uploaded_split_image = section.settings.use_uploaded_split_image | default: false
   assign heading_normalized = section.settings.heading | downcase | strip
 -%}
@@ -242,8 +247,18 @@
   "settings": [
     {
       "type": "select",
+      "id": "layout_style",
+      "label": "Layout style (Medusa parity)",
+      "options": [
+        { "value": "split", "label": "Split" },
+        { "value": "image_overlay", "label": "Image overlay (full-bleed)" }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "select",
       "id": "hero_layout",
-      "label": "Layout",
+      "label": "Legacy layout (when style is Split)",
       "options": [
         { "value": "split", "label": "Split (web homepage)" },
         { "value": "cinematic", "label": "Cinematic full-bleed" }

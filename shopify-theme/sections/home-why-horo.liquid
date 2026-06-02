@@ -6,6 +6,30 @@
   aria-labelledby="home-our-story-title-{{ section.id }}"
 >
   <div class="home-page__inner">
+    {%- liquid
+      assign layout_style = section.settings.layout_style | default: 'image_overlay'
+      assign show_pillars = section.settings.show_pillars
+      if show_pillars == nil
+        assign show_pillars = false
+      endif
+    -%}
+
+    {%- if layout_style == 'image_overlay' and section.settings.image != blank -%}
+      {% render 'horo-home-campaign-overlay',
+        campaign_image: section.settings.image,
+        eyebrow: section.settings.eyebrow,
+        heading: section.settings.heading,
+        body: section.settings.subheading,
+        button_primary_label: section.settings.button_label,
+        button_primary_link: section.settings.button_link,
+        overlay_opacity: section.settings.overlay_opacity,
+        show_body: section.settings.show_body,
+        show_eyebrow: section.settings.show_eyebrow,
+        text_position: section.settings.text_position,
+        mobile_text_mode: section.settings.mobile_text_mode,
+        block_id: section.id
+      %}
+    {%- else -%}
     <div class="home-our-story__layout">
       <div class="home-our-story__copy">
         {%- if section.settings.eyebrow != blank -%}
@@ -21,7 +45,7 @@
         {%- endif -%}
       </div>
 
-      {%- if section.blocks.size > 0 -%}
+      {%- if show_pillars and section.blocks.size > 0 -%}
         <div class="home-our-story__side">
           {%- if section.settings.image != blank -%}
             <div class="home-our-story__photo">
@@ -76,6 +100,7 @@
         <p>Add three story pillar blocks.</p>
       {%- endif -%}
     </div>
+    {%- endif -%}
   </div>
 </section>
 
@@ -95,13 +120,83 @@
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Ritual. Rhythm. Connection."
+      "default": "We are the canvas. You are the story."
     },
     {
       "type": "textarea",
       "id": "subheading",
-      "label": "Body",
-      "default": "HORO is a wearable-art brand born in Egypt. We turn emotions into art and art into pieces you live in. Every design is a ritual. Every wear is a reminder. We are the canvas. You are the story."
+      "label": "Body (optional on overlay)",
+      "default": ""
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "options": [
+        { "value": "image_overlay", "label": "Image overlay" },
+        { "value": "split", "label": "Split with pillars (legacy)" }
+      ],
+      "default": "image_overlay"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "CTA label",
+      "default": "Read our story"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "CTA link",
+      "default": "/pages/about"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 50
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pillars",
+      "label": "Show pillar blocks on homepage",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_body",
+      "label": "Show body on overlay",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text position",
+      "options": [
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" }
+      ],
+      "default": "bottom-left"
+    },
+    {
+      "type": "select",
+      "id": "mobile_text_mode",
+      "label": "Mobile text",
+      "options": [
+        { "value": "overlay", "label": "On image" },
+        { "value": "below", "label": "Below image" }
+      ],
+      "default": "below"
     },
     {
       "type": "image_picker",

@@ -42,21 +42,51 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
     aria-labelledby="home-start-here-title-{{ section.id }}"
   >
     <div class="home-page__inner home-founding-drop__inner">
-      <div class="home-section-header">
-        <div>
-          {%- if section.settings.eyebrow != blank -%}
-            <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
-          {%- endif -%}
-          {%- if section.settings.heading != blank -%}
-            <h2 id="home-start-here-title-{{ section.id }}" class="home-founding-drop__title">
-              {{ section.settings.heading | escape }}
-            </h2>
-          {%- endif -%}
-          {%- if section.settings.subheading != blank -%}
-            <p class="home-section-subheading">{{ section.settings.subheading | escape }}</p>
-          {%- endif -%}
+      {%- liquid
+        assign layout_style = section.settings.layout_style | default: 'image_overlay'
+        assign show_body = section.settings.show_body
+        if show_body == nil
+          assign show_body = false
+        endif
+      -%}
+
+      {%- if section.settings.campaign_image != blank and layout_style == 'image_overlay' -%}
+        {% render 'horo-home-campaign-overlay',
+          campaign_image: section.settings.campaign_image,
+          eyebrow: section.settings.eyebrow,
+          heading: section.settings.heading,
+          body: section.settings.subheading,
+          button_primary_label: section.settings.campaign_cta_label,
+          button_primary_link: section.settings.campaign_cta_link,
+          button_secondary_label: section.settings.campaign_secondary_label,
+          button_secondary_link: section.settings.campaign_secondary_link,
+          overlay_opacity: section.settings.overlay_opacity,
+          show_body: show_body,
+          show_eyebrow: section.settings.show_eyebrow,
+          text_position: section.settings.text_position,
+          mobile_text_mode: section.settings.mobile_text_mode,
+          block_id: section.id
+        %}
+        <h2 id="home-start-here-title-{{ section.id }}" class="visually-hidden">
+          {{ section.settings.heading | escape }}
+        </h2>
+      {%- else -%}
+        <div class="home-section-header">
+          <div>
+            {%- if section.settings.eyebrow != blank -%}
+              <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+            {%- endif -%}
+            {%- if section.settings.heading != blank -%}
+              <h2 id="home-start-here-title-{{ section.id }}" class="home-founding-drop__title">
+                {{ section.settings.heading | escape }}
+              </h2>
+            {%- endif -%}
+            {%- if section.settings.subheading != blank and show_body -%}
+              <p class="home-section-subheading">{{ section.settings.subheading | escape }}</p>
+            {%- endif -%}
+          </div>
         </div>
-      </div>
+      {%- endif -%}
 
       {%- if primary_collection != blank and primary_collection.products_count > 0 -%}
         {%- if product_limit > 2 -%}
@@ -140,8 +170,88 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
     {
       "type": "textarea",
       "id": "subheading",
-      "label": "Subheading",
-      "default": "Our first collection of artist-made T-shirts, printed in Egypt and made to be worn, gifted, and remembered."
+      "label": "Subheading (optional body on campaign)",
+      "default": ""
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "options": [
+        { "value": "image_overlay", "label": "Image overlay + product rail" },
+        { "value": "header", "label": "Text header + product rail" }
+      ],
+      "default": "image_overlay"
+    },
+    {
+      "type": "image_picker",
+      "id": "campaign_image",
+      "label": "Campaign image"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 45
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text position",
+      "options": [
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" }
+      ],
+      "default": "bottom-left"
+    },
+    {
+      "type": "select",
+      "id": "mobile_text_mode",
+      "label": "Mobile text",
+      "options": [
+        { "value": "overlay", "label": "On image" },
+        { "value": "below", "label": "Below image" }
+      ],
+      "default": "below"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_body",
+      "label": "Show body copy",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "campaign_cta_label",
+      "label": "Campaign primary CTA",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "campaign_cta_link",
+      "label": "Campaign primary CTA link"
+    },
+    {
+      "type": "text",
+      "id": "campaign_secondary_label",
+      "label": "Campaign secondary CTA",
+      "default": "A Closer Look"
+    },
+    {
+      "type": "url",
+      "id": "campaign_secondary_link",
+      "label": "Campaign secondary CTA link",
+      "default": "#editorial-feature"
     },
     {
       "type": "text",

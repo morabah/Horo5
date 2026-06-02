@@ -372,17 +372,34 @@ If `artist` is missing, the API falls back to **`metadata.artistSlug`** plus the
 
 ### Homepage sections
 
-Homepage merchandising lives in the `homepage_section` module and is exposed by **`GET /storefront/homepage`**. Rows are ordered by `sort_order` and filtered to `active=true`. The launch seed creates:
+Homepage merchandising lives in the `homepage_section` module and is exposed by **`GET /storefront/homepage`**. Rows are ordered by `sort_order` and filtered to `active=true`. Active launch sections:
 
-`hero`, `trust_ribbon`, `founding_drop`, `feeling_grid`, `gift_block`
+`hero`, `trust_ribbon`, `founding_drop`, `feeling_grid`, `editorial_feature`, `gift_block`, `proof_strip`, `why_horo`
 
-Seed or refresh the default rows:
+Each row may include `payload.presentation` (`layout`, `showBody`, `overlayOpacity`, etc.) for image-led rendering on web-next and Shopify.
+
+Seed or refresh the default rows (full overwrite):
 
 ```bash
 npm run seed:homepage-sections
 # Railway / DATABASE_PUBLIC_URL:
 npm run seed:homepage-sections:public
 ```
+
+**Safe merge** toward image-led copy (only replaces text that still matches legacy defaults; merges missing `presentation`; fills empty images):
+
+```bash
+npm run sync:homepage-image-led
+npm run sync:homepage-image-led:public
+```
+
+Hero image path-only migration (legacy `/images/heroes/home-hero.png`):
+
+```bash
+npm run sync:homepage-hero-safe
+```
+
+After sync, verify with `GET /store/custom/homepage-debug` when `ENABLE_STOREFRONT_DEBUG_ROUTES=true`.
 
 The older `store.metadata.homepage.sectionsEnabled` list remains a fallback when the module has no active rows.
 

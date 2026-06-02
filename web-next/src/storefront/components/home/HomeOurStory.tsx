@@ -1,4 +1,6 @@
-import Image from 'next/image';
+'use client';
+
+import Link from 'next/link';
 
 import {
   type LocalizedStorefrontText,
@@ -6,6 +8,8 @@ import {
   type StorefrontHomepageSection,
 } from '../../data/catalog-types';
 import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
+import { isImageOverlayPresentation, parseHomepagePresentation } from '../../lib/parseHomepagePresentation';
+import { HomeImageCampaign } from './HomeImageCampaign';
 
 const STORY_PILLAR_KEYS = ['localArtists', 'madeToFeelPersonal', 'realProofOnly'] as const;
 type StoryPillarKey = (typeof STORY_PILLAR_KEYS)[number];
@@ -99,9 +103,14 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
   const { locale } = useUiLocale();
   const resolvedLocale = locale as 'en' | 'ar';
   const isArabic = locale === 'ar';
+  const sectionPayload = section?.payload as Record<string, unknown> | null | undefined;
+  const presentation = parseHomepagePresentation(sectionPayload);
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, resolvedLocale);
   const sectionTitle = pickLocalizedStorefrontText(section?.title, resolvedLocale);
   const sectionBody = pickLocalizedStorefrontText(section?.body, resolvedLocale);
+  const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, resolvedLocale);
+  const ctaHref = section?.primaryCta?.href ?? '/about';
+  const showPillars = presentation.showPillars === true;
   const payloadPillars = storyPillarsFromSection(section, resolvedLocale);
   const pillars =
     payloadPillars.length > 0
@@ -116,6 +125,38 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
   const storyImageAlt =
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
     (isArabic ? 'قصة هورو' : 'HORO brand story');
+  const title = sectionTitle ?? copy.home.ourStoryTitle;
+  const useOverlay = Boolean(storyImageSrc) && isImageOverlayPresentation(sectionPayload);
+
+  if (useOverlay && storyImageSrc) {
+    return (
+      <section
+        id="our-story"
+        aria-labelledby="home-our-story-title"
+        className="home-section home-our-story bg-horo-soft px-4 py-7 sm:px-6 md:py-8 lg:px-8"
+      >
+        <div className="mx-auto max-w-6xl">
+          <HomeImageCampaign
+            id="our-story-campaign"
+            titleId="home-our-story-title"
+            eyebrow={sectionEyebrow ?? copy.home.ourStoryEyebrow}
+            title={title}
+            body={sectionBody ?? undefined}
+            imageSrc={storyImageSrc}
+            imageAlt={storyImageAlt}
+            primaryCta={{ label: sectionCta ?? copy.home.ourStoryCta, href: ctaHref }}
+            presentation={{
+              ...presentation,
+              layout: 'image_overlay',
+              showBody: presentation.showBody === true,
+              showEyebrow: presentation.showEyebrow !== false,
+            }}
+            minHeight="min-h-[min(44vh,24rem)]"
+          />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -127,37 +168,25 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
         <div>
           <p className="home-section-eyebrow">{sectionEyebrow ?? copy.home.ourStoryEyebrow}</p>
           <h2 id="home-our-story-title" className="home-our-story__title mt-2">
-            {sectionTitle ?? copy.home.ourStoryTitle}
+            {title}
           </h2>
-          <p className="home-our-story__body mt-5 max-w-xl">{sectionBody ?? copy.home.ourStoryBody}</p>
+          {sectionBody ?? copy.home.ourStoryBody ? (
+            <p className="home-our-story__body mt-5 max-w-xl">
+              {sectionBody ?? copy.home.ourStoryBody}
+            </p>
+          ) : null}
+          <Link
+            href={ctaHref}
+            className="home-btn home-btn--primary font-body mt-6 inline-flex min-h-11 items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root"
+          >
+            {sectionCta ?? copy.home.ourStoryCta}
+          </Link>
         </div>
 
-        <div className="home-our-story__side">
-          {storyImageSrc ? (
-            <div className="home-our-story__photo relative mb-6 aspect-[4/5] w-full max-w-sm overflow-hidden rounded-[4px] bg-[#faf7f6]">
-              <Image
-                src={storyImageSrc}
-                alt={storyImageAlt}
-                fill
-                sizes="(max-width: 768px) 100vw, 400px"
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div className="home-our-story__emblem" aria-hidden>
-              <div className="home-our-story__rings">
-                <span className="home-our-story__ring home-our-story__ring--1" />
-                <span className="home-our-story__ring home-our-story__ring--2" />
-                <span className="home-our-story__ring home-our-story__ring--3" />
-                <span className="home-our-story__dot home-our-story__dot--1" />
-                <span className="home-our-story__dot home-our-story__dot--2" />
-              </div>
-            </div>
-          )}
-
-          <ul className="home-our-story__pillars" role="list">
-            {pillars.map((pillar) => {
-              return (
+        {showPillars ? (
+          <div className="home-our-story__side">
+            <ul className="home-our-story__pillars" role="list">
+              {pillars.map((pillar) => (
                 <li key={pillar.id} className="home-our-story__pillar">
                   <span className="home-our-story__pillar-icon">
                     <StoryPillarIcon name={pillar.icon} />
@@ -167,12 +196,11 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
                     <p>{pillar.body}</p>
                   </span>
                 </li>
-              );
-            })}
-          </ul>
-        </div>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </div>
-      <p className="sr-only">{isArabic ? 'قصة هورو' : 'HORO brand story'}</p>
     </section>
   );
 }

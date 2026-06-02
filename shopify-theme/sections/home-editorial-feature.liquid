@@ -3,6 +3,7 @@
 {%- liquid
   assign anchor_id = section.settings.anchor_id | default: 'editorial-feature'
   assign fallback_product = section.settings.fallback_product
+  assign layout_style = section.settings.layout_style | default: 'image_overlay'
   assign show_media = false
   assign editorial_media = nil
 
@@ -12,6 +13,15 @@
   elsif fallback_product != blank
     assign show_media = true
   endif
+
+  assign show_body = section.settings.show_body
+  if show_body == nil
+    assign show_body = true
+  endif
+  assign show_eyebrow = section.settings.show_eyebrow
+  if show_eyebrow == nil
+    assign show_eyebrow = true
+  endif
 -%}
 
 <section
@@ -20,45 +30,62 @@
   aria-labelledby="home-editorial-title-{{ section.id }}"
 >
   <div class="home-page__inner">
-    <div class="home-editorial-feature{% unless show_media %} home-editorial-feature--copy-only{% endunless %}">
-      {%- if show_media -%}
-        <div class="home-editorial-feature__media home-editorial-feature__media--visual">
-          {%- if editorial_media != blank -%}
-            {{
-              editorial_media
-              | image_url: width: 1200
-              | image_tag: loading: 'lazy', class: 'home-editorial-feature__img', sizes: '(max-width: 768px) 100vw, 50vw'
-            }}
-          {%- else -%}
-            {% render 'horo-home-card-image',
-              card_product: fallback_product,
-              loading: 'lazy',
-              sizes: '(max-width: 768px) 100vw, 50vw',
-              image_class: 'home-editorial-feature__img',
-              placeholder_class: 'placeholder-svg home-editorial-feature__img'
-            %}
+    {%- if show_media and layout_style == 'image_overlay' and editorial_media != blank -%}
+      {% render 'horo-home-campaign-overlay',
+        campaign_image: editorial_media,
+        eyebrow: section.settings.eyebrow,
+        heading: section.settings.heading,
+        body: section.settings.body,
+        button_primary_label: section.settings.button_label,
+        button_primary_link: section.settings.button_link,
+        overlay_opacity: section.settings.overlay_opacity,
+        show_body: show_body,
+        show_eyebrow: show_eyebrow,
+        text_position: section.settings.text_position,
+        mobile_text_mode: section.settings.mobile_text_mode,
+        block_id: section.id
+      %}
+    {%- else -%}
+      <div class="home-editorial-feature{% unless show_media %} home-editorial-feature--copy-only{% endunless %}">
+        {%- if show_media -%}
+          <div class="home-editorial-feature__media home-editorial-feature__media--visual">
+            {%- if editorial_media != blank -%}
+              {{
+                editorial_media
+                | image_url: width: 1200
+                | image_tag: loading: 'lazy', class: 'home-editorial-feature__img', sizes: '(max-width: 768px) 100vw, 50vw'
+              }}
+            {%- else -%}
+              {% render 'horo-home-card-image',
+                card_product: fallback_product,
+                loading: 'lazy',
+                sizes: '(max-width: 768px) 100vw, 50vw',
+                image_class: 'home-editorial-feature__img',
+                placeholder_class: 'placeholder-svg home-editorial-feature__img'
+              %}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+        <div class="home-editorial-feature__copy home-editorial-feature__copy--primary">
+          {%- if show_eyebrow and section.settings.eyebrow != blank -%}
+            <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 id="home-editorial-title-{{ section.id }}" class="home-section-title">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+          {%- if show_body and section.settings.body != blank -%}
+            <p class="home-section-subheading">{{ section.settings.body | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+            <a href="{{ section.settings.button_link }}" class="home-btn home-btn--primary">
+              {{ section.settings.button_label | escape }}
+            </a>
           {%- endif -%}
         </div>
-      {%- endif -%}
-      <div class="home-editorial-feature__copy home-editorial-feature__copy--primary">
-        {%- if section.settings.eyebrow != blank -%}
-          <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
-        {%- endif -%}
-        {%- if section.settings.heading != blank -%}
-          <h2 id="home-editorial-title-{{ section.id }}" class="home-section-title">
-            {{ section.settings.heading | escape }}
-          </h2>
-        {%- endif -%}
-        {%- if section.settings.body != blank -%}
-          <p class="home-section-subheading">{{ section.settings.body | escape }}</p>
-        {%- endif -%}
-        {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
-          <a href="{{ section.settings.button_link }}" class="home-btn home-btn--primary">
-            {{ section.settings.button_label | escape }}
-          </a>
-        {%- endif -%}
       </div>
-    </div>
+    {%- endif -%}
   </div>
 </section>
 
@@ -78,8 +105,11 @@
   }
   .home-editorial-feature__media--visual {
     order: 2;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #faf7f6;
   }
-  @media (min-width: 768px) {
+  @media screen and (min-width: 750px) {
     .home-editorial-feature {
       grid-template-columns: 1fr 1fr;
     }
@@ -90,48 +120,116 @@
       order: 1;
     }
   }
-  .home-editorial-feature__media {
-    position: relative;
-    aspect-ratio: 4 / 5;
-    max-height: 520px;
-    overflow: hidden;
-    border-radius: 4px;
-    background: #faf7f6;
-  }
-  .home-editorial-feature__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center 22%;
-  }
-  .home-editorial-feature__copy .home-btn {
-    margin-top: 1.5rem;
-  }
-  .home-editorial-feature--copy-only .home-btn {
-    margin-inline: auto;
-  }
 </style>
 
 {% schema %}
 {
-  "name": "HORO Editorial Feature",
+  "name": "HORO A Closer Look",
   "tag": "section",
   "class": "section",
   "settings": [
-    { "type": "text", "id": "anchor_id", "label": "Section anchor ID", "default": "editorial-feature" },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "A Closer Look" },
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Calm Inside" },
-    { "type": "textarea", "id": "body", "label": "Body" },
-    { "type": "image_picker", "id": "image", "label": "Image (theme editor)" },
+    {
+      "type": "text",
+      "id": "anchor_id",
+      "label": "Anchor ID",
+      "default": "editorial-feature"
+    },
+    {
+      "type": "select",
+      "id": "layout_style",
+      "label": "Layout style",
+      "options": [
+        { "value": "image_overlay", "label": "Image overlay" },
+        { "value": "split", "label": "Split (legacy)" }
+      ],
+      "default": "image_overlay"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "A CLOSER LOOK"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Calm Inside"
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "Body",
+      "default": "Artwork, fit, and print details in one closer view."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
     {
       "type": "product",
       "id": "fallback_product",
-      "label": "Fallback product image",
-      "info": "Used when no section image is set. Pick front artwork on the product in Admin."
+      "label": "Fallback product (when no image)"
     },
-    { "type": "text", "id": "button_label", "label": "CTA label", "default": "Shop the Piece" },
-    { "type": "url", "id": "button_link", "label": "CTA link" }
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Shop the Piece"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay opacity",
+      "default": 50
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Text position",
+      "options": [
+        { "value": "bottom-left", "label": "Bottom left" },
+        { "value": "bottom-center", "label": "Bottom center" }
+      ],
+      "default": "bottom-left"
+    },
+    {
+      "type": "select",
+      "id": "mobile_text_mode",
+      "label": "Mobile text",
+      "options": [
+        { "value": "overlay", "label": "On image" },
+        { "value": "below", "label": "Below image" }
+      ],
+      "default": "below"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_body",
+      "label": "Show body",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_eyebrow",
+      "label": "Show eyebrow",
+      "default": true
+    }
   ],
-  "presets": [{ "name": "HORO Editorial Feature" }]
+  "presets": [
+    {
+      "name": "HORO A Closer Look"
+    }
+  ]
 }
 {% endschema %}

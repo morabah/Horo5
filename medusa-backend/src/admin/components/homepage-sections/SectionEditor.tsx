@@ -2,6 +2,7 @@ import { Heading, Input, Label, Select, Text } from "@medusajs/ui"
 import { useEffect, useState } from "react"
 
 import { BilingualInput } from "./BilingualInput"
+import { PresentationFields } from "./PresentationFields"
 import {
   HOMEPAGE_SECTION_TYPES,
   type AdminHomepageSection,
@@ -198,6 +199,13 @@ export function SectionEditor({ value, disabled, isNew, onChange }: SectionEdito
         </div>
       </section>
       ) : null}
+
+      <PresentationFields
+        sectionType={value.type}
+        payload={value.payload}
+        disabled={disabled}
+        onPayloadChange={(payload) => update("payload", payload)}
+      />
 
       <section className="rounded-md border border-ui-border-base p-5">
         <Heading level="h3" className="mb-4">Appearance</Heading>

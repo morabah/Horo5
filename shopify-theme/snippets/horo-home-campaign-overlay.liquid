@@ -1,0 +1,107 @@
+{%- comment -%}
+  Image-led campaign block (web-next HomeImageCampaign parity).
+  Accepts: campaign_image, eyebrow, heading, body, primary/secondary CTA labels+links,
+  overlay_opacity (0-100), show_body, show_eyebrow, text_position, mobile_text_mode, block_id
+{%- endcomment -%}
+{%- liquid
+  assign overlay_pct = overlay_opacity | default: 45
+  if overlay_pct > 100
+    assign overlay_pct = 100
+  endif
+  if overlay_pct < 0
+    assign overlay_pct = 0
+  endif
+  assign overlay_alpha = overlay_pct | times: 1.0 | divided_by: 100.0
+  assign text_pos = text_position | default: 'bottom-left'
+  assign mobile_mode = mobile_text_mode | default: 'overlay'
+  assign show_body_flag = show_body
+  if show_body_flag == nil
+    assign show_body_flag = true
+  endif
+  assign show_eyebrow_flag = show_eyebrow
+  if show_eyebrow_flag == nil
+    assign show_eyebrow_flag = true
+  endif
+  assign block_suffix = block_id | default: section.id | default: 'campaign'
+-%}
+
+<div
+  class="horo-campaign{% if mobile_mode == 'below' %} horo-campaign--mobile-below{% endif %} horo-campaign--{{ text_pos | replace: '-', '_' }}"
+  style="--horo-campaign-overlay: {{ overlay_alpha }};"
+>
+  <div class="horo-campaign__frame">
+    {%- if campaign_image != blank -%}
+      <div class="horo-campaign__media">
+        {{
+          campaign_image
+          | image_url: width: 2000
+          | image_tag:
+            loading: 'lazy',
+            class: 'horo-campaign__img',
+            sizes: '100vw',
+            alt: campaign_image.alt | default: heading
+        }}
+        <div class="horo-campaign__scrim" aria-hidden="true"></div>
+      </div>
+    {%- elsif campaign_image_url != blank -%}
+      <div class="horo-campaign__media">
+        <img
+          src="{{ campaign_image_url | escape }}"
+          alt="{{ heading | escape }}"
+          class="horo-campaign__img"
+          loading="lazy"
+          width="1600"
+          height="900"
+        >
+        <div class="horo-campaign__scrim" aria-hidden="true"></div>
+      </div>
+    {%- endif -%}
+
+    <div class="horo-campaign__content horo-campaign__content--overlay">
+      {%- if show_eyebrow_flag and eyebrow != blank -%}
+        <p class="home-section-eyebrow horo-campaign__eyebrow">{{ eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if heading != blank -%}
+        <h2 id="horo-campaign-title-{{ block_suffix }}" class="horo-campaign__title">
+          {{ heading | escape }}
+        </h2>
+      {%- endif -%}
+      {%- if show_body_flag and body != blank -%}
+        <p class="horo-campaign__body">{{ body | escape }}</p>
+      {%- endif -%}
+      <div class="horo-campaign__actions">
+        {%- if button_primary_label != blank and button_primary_link != blank -%}
+          <a href="{{ button_primary_link }}" class="home-btn home-btn--primary">
+            {{ button_primary_label | escape }}
+          </a>
+        {%- endif -%}
+        {%- if button_secondary_label != blank and button_secondary_link != blank -%}
+          <a href="{{ button_secondary_link }}" class="home-btn home-btn--secondary horo-campaign__cta-secondary">
+            {{ button_secondary_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+
+  {%- if mobile_mode == 'below' -%}
+    <div class="horo-campaign__content horo-campaign__content--below">
+      {%- if show_eyebrow_flag and eyebrow != blank -%}
+        <p class="home-section-eyebrow">{{ eyebrow | escape }}</p>
+      {%- endif -%}
+      {%- if heading != blank -%}
+        <p class="horo-campaign__title horo-campaign__title--below">{{ heading | escape }}</p>
+      {%- endif -%}
+      {%- if show_body_flag and body != blank -%}
+        <p class="horo-campaign__body horo-campaign__body--below">{{ body | escape }}</p>
+      {%- endif -%}
+      <div class="horo-campaign__actions">
+        {%- if button_primary_label != blank and button_primary_link != blank -%}
+          <a href="{{ button_primary_link }}" class="home-btn home-btn--primary">
+            {{ button_primary_label | escape }}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+</div>

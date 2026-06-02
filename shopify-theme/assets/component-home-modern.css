@@ -176,3 +176,120 @@
 .home-page__inner {
   padding-inline: clamp(16px, 4vw, 24px);
 }
+
+/* ——— Image-led campaign overlay (horo-home-campaign-overlay) ——— */
+.horo-campaign {
+  margin-bottom: 1.5rem;
+}
+
+.horo-campaign__frame {
+  position: relative;
+  min-height: min(52vh, 36rem);
+  overflow: hidden;
+  border-radius: var(--home-radius-card, 8px);
+  color: #fff;
+}
+
+.horo-campaign__media {
+  position: absolute;
+  inset: 0;
+}
+
+.horo-campaign__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.horo-campaign__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(36, 31, 33, calc(var(--horo-campaign-overlay, 0.45) + 0.35)) 0%,
+    rgba(36, 31, 33, calc(var(--horo-campaign-overlay, 0.45) * 0.5)) 45%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.horo-campaign__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: inherit;
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.horo-campaign--bottom_left .horo-campaign__content--overlay {
+  align-items: flex-start;
+  text-align: start;
+}
+
+.horo-campaign--bottom_center .horo-campaign__content--overlay {
+  align-items: center;
+  text-align: center;
+}
+
+.horo-campaign__eyebrow {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.horo-campaign__title {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-heading, var(--font-body));
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: #fff;
+}
+
+.horo-campaign__body {
+  margin: 0.65rem 0 0;
+  max-width: 36rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.horo-campaign__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.horo-campaign__cta-secondary {
+  border-color: rgba(255, 255, 255, 0.8);
+  color: #fff;
+}
+
+.horo-campaign--mobile-below .horo-campaign__frame {
+  min-height: min(42vh, 22rem);
+}
+
+@media (max-width: 767px) {
+  .horo-campaign--mobile-below .horo-campaign__content--overlay {
+    display: none;
+  }
+
+  .horo-campaign__content--below {
+    display: flex;
+    color: var(--color-horo-text);
+    padding: 1rem 0 0;
+    min-height: auto;
+  }
+
+  .horo-campaign__title--below,
+  .horo-campaign__body--below {
+    color: var(--color-horo-root);
+  }
+}
+
+@media (min-width: 768px) {
+  .horo-campaign__content--below {
+    display: none;
+  }
+}
