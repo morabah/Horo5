@@ -100,10 +100,11 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
   const copy = useDictionary();
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
   const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
+  const sectionBody = pickLocalizedStorefrontText(section?.body, locale as 'en' | 'ar');
   const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
   const eyebrow = sectionEyebrow ?? copy.home.feelingsRhythmEyebrow;
   const title = sectionTitle ?? copy.home.feelingsTitle;
-  const subtitle = copy.home.feelingsSubtitle;
+  const subtitle = sectionBody ?? copy.home.feelingsSubtitle;
   const cta = sectionCta ?? copy.home.feelingsCta;
   const feelings = getFeaturedFeelings(section, locale as 'en' | 'ar');
 

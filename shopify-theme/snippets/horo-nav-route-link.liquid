@@ -44,6 +44,8 @@
       assign link_class = 'horo-nav__link'
     endif
   endif
+
+  assign label_decoded = label | replace: '&amp;', '&' | replace: '&lt;', '<' | replace: '&gt;', '>' | replace: '&quot;', '"' | replace: '&#39;', "'"
 -%}
 <li>
   <a
@@ -51,6 +53,6 @@
     class="{{ link_class }}"
     {% if is_active %}aria-current="page"{% endif %}
   >
-    {{ label }}
+    {{ label_decoded | escape }}
   </a>
 </li>

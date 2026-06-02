@@ -32,7 +32,15 @@ export function SectionEditor({ value, disabled, isNew, onChange }: SectionEdito
   }
   const compactContent = value.type === "trust_ribbon" || value.type === "proof_strip"
   const showCtas = !["trust_ribbon", "proof_strip", "seen_on_you"].includes(value.type)
-  const showImage = ["hero", "founding_drop", "featured_piece", "gift_block", "artist_spotlight"].includes(value.type)
+  const showImage = [
+    "hero",
+    "founding_drop",
+    "featured_piece",
+    "gift_block",
+    "artist_spotlight",
+    "editorial_feature",
+    "why_horo",
+  ].includes(value.type)
 
   return (
     <div className="grid gap-5">

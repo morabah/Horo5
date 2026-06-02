@@ -174,6 +174,7 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     localizedPayloadText(tertiaryPayloadCta?.label, locale as 'en' | 'ar') ??
     copy.home.heroTertiaryCta;
   const tertiaryHref = tertiaryPayloadCta?.href ?? '#editorial-feature';
+  // Editorial full-bleed only when CMS sets payload.layout === "editorial" (see doc/HOMEPAGE_PRODUCTION_READINESS.md).
   const heroLayout = payloadString(sectionPayload?.layout) ?? 'split';
   const isEditorialLayout = heroLayout === 'editorial';
 

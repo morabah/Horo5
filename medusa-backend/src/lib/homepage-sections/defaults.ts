@@ -25,6 +25,8 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     sort_order: 0,
     active: true,
     payload: {
+      // Full-bleed hero: set layout to "editorial" in CMS only after final hero art is uploaded.
+      // Default remains split until production intentionally enables editorial.
       soundbite_en: "Find Your Rhythm",
       soundbite_ar: "اكتشف إيقاعك",
       canvas_en: "We are the canvas. You are the story.",
@@ -135,6 +137,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
         { slug: "zodiac", label: { en: "Sign Capsule", ar: "كبسولة الأبراج" }, href: "/products?category=zodiac" },
         { slug: "mood", label: { en: "Mood", ar: "مزاج" }, href: "/products?category=mood" },
         { slug: "lifestyle", label: { en: "Lifestyle", ar: "نمط حياة" }, href: "/products?category=lifestyle" },
+        { slug: "gift-ready", label: { en: "Gift Ready", ar: "جاهزة للهدايا" }, href: "/gifts" },
       ],
     },
   },
