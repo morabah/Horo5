@@ -1,11 +1,6 @@
 {%- comment -%}
-  Homepage / PLP card image — parity with web-next pickHomeCardImageSrc.
-  Params:
-    card_product (required)
-    loading — lazy | eager (default lazy)
-    sizes — responsive sizes attribute
-    image_class — class on img
-    placeholder_class — class on placeholder svg
+  Homepage / PLP card image — parity with web-next pickHomeCardImageSrc + preferHomeCardDisplaySrc.
+  Front artwork first; lifestyle second; never back / flat_lay on cards.
 {%- endcomment -%}
 {%- liquid
   assign loading_value = loading | default: 'lazy'
@@ -14,38 +9,37 @@
   assign placeholder_class = placeholder_class | default: 'placeholder-svg home-founding-card__placeholder'
 
   assign card_image = nil
-  assign preferred_image = nil
-  assign fallback_image = nil
+  assign best_score = -1
 
   for image in card_product.images
     assign alt_lower = image.alt | default: '' | downcase
     assign src_probe = image | image_url: width: 80 | downcase
     assign is_unsafe = false
 
-    if alt_lower contains 'back' or alt_lower contains 'rear' or alt_lower contains 'flat_lay' or alt_lower contains 'flat-lay'
+    if alt_lower contains 'back' or alt_lower contains 'rear' or alt_lower contains 'flat_lay' or alt_lower contains 'flat-lay' or alt_lower contains 'flat lay'
       assign is_unsafe = true
     endif
-    if src_probe contains '/back' or src_probe contains '-back' or src_probe contains '_back' or src_probe contains 'flat_lay' or src_probe contains 'flat-lay'
+    if src_probe contains '/back' or src_probe contains '-back' or src_probe contains '_back' or src_probe contains 'backview' or src_probe contains 'back-view' or src_probe contains 'flat_lay' or src_probe contains 'flat-lay'
       assign is_unsafe = true
     endif
 
     unless is_unsafe
+      assign score = 10
+
       if alt_lower contains 'front' or alt_lower contains 'design' or alt_lower contains 'graphic' or alt_lower contains 'print' or alt_lower contains 'artwork'
-        assign preferred_image = image
-        break
+        assign score = 100
+      elsif alt_lower contains 'lifestyle' or alt_lower contains 'fit' or alt_lower contains 'model' or alt_lower contains 'worn'
+        assign score = 80
+      elsif alt_lower contains 'detail' or alt_lower contains 'close'
+        assign score = 60
       endif
 
-      if fallback_image == nil
-        assign fallback_image = image
+      if score > best_score
+        assign card_image = image
+        assign best_score = score
       endif
     endunless
   endfor
-
-  if preferred_image != nil
-    assign card_image = preferred_image
-  elsif fallback_image != nil
-    assign card_image = fallback_image
-  endif
 
   if card_image == nil and card_product.featured_media
     if card_product.featured_media.media_type == 'image'
@@ -55,17 +49,15 @@
       if featured_alt contains 'back' or featured_alt contains 'rear' or featured_alt contains 'flat_lay' or featured_alt contains 'flat-lay'
         assign featured_unsafe = true
       endif
-      if featured_probe contains '/back' or featured_probe contains '-back' or featured_probe contains '_back' or featured_probe contains 'flat_lay' or featured_probe contains 'flat-lay'
+      if featured_probe contains '/back' or featured_probe contains '-back' or featured_probe contains '_back' or featured_probe contains 'flat_lay' or featured_probe contains 'flat-lay' or featured_probe contains 'backview'
         assign featured_unsafe = true
       endif
       unless featured_unsafe
-        assign card_image = card_product.featured_media
+        if featured_alt contains 'front' or featured_alt contains 'design' or featured_alt contains 'graphic' or featured_alt contains 'artwork'
+          assign card_image = card_product.featured_media
+        endif
       endunless
     endif
-  endif
-
-  if card_image == nil and card_product.featured_image
-    assign card_image = card_product.featured_image
   endif
 -%}
 

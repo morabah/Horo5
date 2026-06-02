@@ -17,7 +17,8 @@ const HERO_BLUR_DATA_URL =
 
 const HERO_NAV_OFFSET = 'pt-[max(3.6rem,calc(env(safe-area-inset-top,0px)+3.6rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
-const HERO_PROOF_KEYS = ['artistMade', 'printedEgypt', 'whatsappSupport'] as const;
+/** Short hero pills — distinct from trust ribbon (artist / Egypt / WhatsApp). */
+const HERO_PROOF_KEYS = ['paymentAtCheckout', 'exchange14d', 'premiumCotton'] as const;
 
 type HeroPayloadCta = {
   label?: { en?: string; ar?: string } | string;

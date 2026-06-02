@@ -12,6 +12,12 @@ export function HomeFoundingRail({ products }: { products: Product[] }) {
   }
 
   return (
+    <>
+    {railProducts.length > 2 ? (
+      <p className="home-founding-rail-hint font-body mb-2 text-center text-xs font-medium text-warm-charcoal/80 md:hidden" aria-hidden>
+        Swipe for more pieces →
+      </p>
+    ) : null}
     <div className="home-founding-rail home-founding-grid">
       {railProducts.map((product, index) => (
         <HomeFoundingProductCard
@@ -22,5 +28,6 @@ export function HomeFoundingRail({ products }: { products: Product[] }) {
         />
       ))}
     </div>
+    </>
   );
 }

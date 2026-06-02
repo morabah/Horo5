@@ -16,9 +16,9 @@ import { QuickViewTrigger } from './QuickViewTrigger';
 import { NotifyWhenAvailableButton } from './NotifyWhenAvailableButton';
 import { TeeImageFrame } from './TeeImage';
 import {
-  getConversionProductCardImageSrc,
   getProductCardHoverImageSrc,
-  shouldUseConversionReferenceImage,
+  isHomepageReferenceImageSrc,
+  preferHomeCardDisplaySrc,
 } from '../data/images';
 import { formatEgp } from '../utils/formatPrice';
 import { pickLocalizedText } from '../lib/storefront/incentives-client';
@@ -115,8 +115,8 @@ export function MerchProductCard({
   const quickAddAvailable = availableSizes.length > 0;
   const hoverImageSrc = product ? getProductCardHoverImageSrc(product) : null;
   const [hovering, setHovering] = useState(false);
-  const baseImageSrc = product ? getConversionProductCardImageSrc(product, imageSrc) : imageSrc;
-  const usingReferenceImage = product ? shouldUseConversionReferenceImage(imageSrc) : false;
+  const baseImageSrc = product ? preferHomeCardDisplaySrc(product) : imageSrc;
+  const usingReferenceImage = isHomepageReferenceImageSrc(baseImageSrc);
   const displayImageSrc = hovering && hoverImageSrc ? hoverImageSrc : baseImageSrc;
   const quickAddLabel = locale === 'ar' ? 'إضافة سريعة' : 'Quick add';
   const chooseSizeLabel = locale === 'ar' ? 'اختر المقاس' : 'Choose size';

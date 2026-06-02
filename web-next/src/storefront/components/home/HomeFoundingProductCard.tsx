@@ -5,18 +5,14 @@ import { useMemo } from 'react';
 
 import { trackHomeProductCardClick } from '../../analytics/events';
 import {
-  getConversionProductCardImageSrc,
-  getProductCardImageSrc,
-  isGenericBrandPlaceholderSrc,
-  shouldUseConversionReferenceImage,
+  isHomepageReferenceImageSrc,
+  preferHomeCardDisplaySrc,
 } from '../../data/images';
 import { getProduct, type Product } from '../../data/site';
 import { useUiLocale } from '../../i18n/ui-locale';
 import { launchProductEyebrow } from '../../lib/launch-taxonomy-display';
 import { AppIcon } from '../AppIcon';
 import { TeeImageFrame } from '../TeeImage';
-import { HoroArtworkPlaceholder } from './HoroArtworkPlaceholder';
-
 const homePriceFormatter = new Intl.NumberFormat('en-EG', {
   maximumFractionDigits: 0,
   useGrouping: true,
@@ -38,10 +34,8 @@ export function HomeFoundingProductCard({
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
   const catalogProduct = useMemo(() => getProduct(product.slug) ?? product, [product]);
-  const catalogImageSrc = getProductCardImageSrc(catalogProduct);
-  const usingReferenceImage = shouldUseConversionReferenceImage(catalogImageSrc);
-  const imageSrc = getConversionProductCardImageSrc(catalogProduct, catalogImageSrc);
-  const useArtworkPlaceholder = isGenericBrandPlaceholderSrc(imageSrc);
+  const imageSrc = useMemo(() => preferHomeCardDisplaySrc(catalogProduct), [catalogProduct]);
+  const usingReferenceImage = isHomepageReferenceImageSrc(imageSrc);
   const displayName = product.name;
   const displayPrice = product.priceEgp;
   const launchEyebrow = launchProductEyebrow(catalogProduct);
@@ -57,23 +51,17 @@ export function HomeFoundingProductCard({
         className="home-founding-card__media block bg-[#faf7f6] p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
         aria-label={displayName}
       >
-        {useArtworkPlaceholder ? (
-          <div className="relative aspect-[4/5] w-full">
-            <HoroArtworkPlaceholder ariaLabel={displayImageAlt} />
-          </div>
-        ) : (
-          <TeeImageFrame
-            src={imageSrc}
-            alt={displayImageAlt}
-            w={800}
-            aspectRatio="4/5"
-            borderRadius="0"
-            eager={eager}
-            objectPosition="center 22%"
-            frameStyle={{ marginBottom: 0, minHeight: '100%' }}
-            sizes="(max-width: 767px) 76vw, (max-width: 1100px) 30vw, 240px"
-          />
-        )}
+        <TeeImageFrame
+          src={imageSrc}
+          alt={displayImageAlt}
+          w={800}
+          aspectRatio={usingReferenceImage ? '1' : '4/5'}
+          borderRadius="0"
+          eager={eager}
+          objectPosition={usingReferenceImage ? 'center center' : 'center 22%'}
+          frameStyle={{ marginBottom: 0, minHeight: '100%' }}
+          sizes="(max-width: 767px) 76vw, (max-width: 1100px) 30vw, 240px"
+        />
       </Link>
       <div className="home-founding-card__body flex flex-1 flex-col p-4 text-center sm:text-start">
         <Link

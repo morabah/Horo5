@@ -4,6 +4,7 @@ import Image from 'next/image';
 import {
   imgUrl,
   isGenericBrandPlaceholderSrc,
+  isHomepageReferenceImageSrc,
   resolveProductImageSrcForDisplay,
   useNextImageOptimizerForSrc,
 } from '../data/images';
@@ -48,7 +49,9 @@ export function TeeImage({
   const useNextOptimizer = useNextImageOptimizerForSrc(forDisplay);
   const [errored, setErrored] = useState(false);
   const missingSrc = !forDisplay.trim();
-  const showPlaceholder = missingSrc || errored || isGenericBrandPlaceholderSrc(forDisplay);
+  const isReferenceArt = isHomepageReferenceImageSrc(forDisplay);
+  const showPlaceholder =
+    !isReferenceArt && (missingSrc || errored || isGenericBrandPlaceholderSrc(forDisplay));
 
   return (
     <div

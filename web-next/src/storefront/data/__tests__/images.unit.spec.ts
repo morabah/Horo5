@@ -1,8 +1,12 @@
 import {
   imgUrl,
+  isBackLikeProductImageSrc,
+  preferHomeCardDisplaySrc,
   resolveProductImageSrcForDisplay,
+  shouldUseConversionReferenceImage,
   useNextImageOptimizerForSrc,
 } from '../images';
+import type { Product } from '../site';
 
 describe('imgUrl', () => {
   it('appends Unsplash-style params only for Unsplash hosts', () => {
@@ -64,5 +68,42 @@ describe('useNextImageOptimizerForSrc', () => {
     expect(useNextImageOptimizerForSrc('https://horo5-production.up.railway.app/store-media/a.png')).toBe(true);
     expect(useNextImageOptimizerForSrc('http://localhost:9000/store-media/a.png')).toBe(false);
     expect(useNextImageOptimizerForSrc('https://r2.example.com/obj')).toBe(false);
+  });
+});
+
+describe('homepage card display picks', () => {
+  const baseProduct = {
+    slug: 'quiet-revolt',
+    name: 'Quiet Revolt',
+    priceEgp: 899,
+    launchDesign: 'walk-alone',
+  } as Product;
+
+  it('flags back-like catalog URLs for conversion reference', () => {
+    expect(isBackLikeProductImageSrc('https://cdn.test/tee-back-view.jpg')).toBe(true);
+    expect(shouldUseConversionReferenceImage('https://cdn.test/tee-back-view.jpg')).toBe(true);
+  });
+
+  it('prefers homepage reference art when catalog main is a back photo', () => {
+    const src = preferHomeCardDisplaySrc({
+      ...baseProduct,
+      media: {
+        main: 'https://cdn.test/products/quiet-revolt-back.jpg',
+        gallery: [],
+      },
+    });
+    expect(src).toBe('/images/homepage-reference/product-walk-alone.png');
+  });
+
+  it('keeps tagged card art when it is a safe front image', () => {
+    const src = preferHomeCardDisplaySrc({
+      ...baseProduct,
+      media: {
+        card: 'https://cdn.test/products/quiet-revolt-front.jpg',
+        main: 'https://cdn.test/products/quiet-revolt-back.jpg',
+        gallery: [],
+      },
+    });
+    expect(src).toBe('https://cdn.test/products/quiet-revolt-front.jpg');
   });
 });

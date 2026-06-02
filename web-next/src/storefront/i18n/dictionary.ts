@@ -78,6 +78,7 @@ export const DICTIONARY = {
         "paymentAtCheckout": HORO_V19_TRUST_COPY.paymentAtCheckout.en,
         "codAvailable": HORO_V19_TRUST_COPY.paymentAtCheckout.en,
         "exchange14d": HORO_V19_TRUST_COPY.exchangePolicy.en,
+        "premiumCotton": "Premium cotton",
         "whatsappSupport": "WhatsApp size help"
       },
       // Legacy route card labels:
@@ -850,6 +851,7 @@ export const DICTIONARY = {
         "paymentAtCheckout": HORO_V19_TRUST_COPY.paymentAtCheckout.ar,
         "codAvailable": HORO_V19_TRUST_COPY.paymentAtCheckout.ar,
         "exchange14d": HORO_V19_TRUST_COPY.exchangePolicy.ar,
+        "premiumCotton": "قطن فاخر",
         "whatsappSupport": "مساعدة المقاس على واتساب"
       },
       "routesFeelingLabel": "تسوّق حسب الشعور",

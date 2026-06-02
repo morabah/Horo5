@@ -130,8 +130,14 @@ const CONVERSION_REFERENCE_BY_SLUG: Record<string, (typeof CONVERSION_REFERENCE_
   'the-weight-of-light': '/images/homepage-reference/product-i-care.png',
   'midnight-compass': '/images/homepage-reference/product-find-your-rhythm.png',
   'quiet-revolt': '/images/homepage-reference/product-walk-alone.png',
+  'quiet-revolt-tee': '/images/homepage-reference/product-walk-alone.png',
   'climb-the-ladder': '/images/homepage-reference/product-rest-your-mind.png',
   'next-wave': '/images/homepage-reference/product-i-dont-care.png',
+  'i-care': '/images/homepage-reference/product-i-care.png',
+  'i-dont-care': '/images/homepage-reference/product-i-dont-care.png',
+  'walk-alone': '/images/homepage-reference/product-walk-alone.png',
+  'find-your-rhythm': '/images/homepage-reference/product-find-your-rhythm.png',
+  'rest-your-mind': '/images/homepage-reference/product-rest-your-mind.png',
 };
 
 export function conversionReferenceImageForProduct(product: Product): (typeof CONVERSION_REFERENCE_IMAGES)[number] {
@@ -160,15 +166,43 @@ export function conversionReferenceImageForProduct(product: Product): (typeof CO
   return CONVERSION_REFERENCE_IMAGES[hash % CONVERSION_REFERENCE_IMAGES.length] ?? CONVERSION_REFERENCE_IMAGES[0];
 }
 
+export function isHomepageReferenceImageSrc(src: string | undefined): boolean {
+  const value = src?.trim() ?? '';
+  return value.includes('/images/homepage-reference/');
+}
+
 export function shouldUseConversionReferenceImage(src: string | undefined): boolean {
   const value = src?.trim().toLowerCase() ?? '';
+  if (!value) return true;
   return (
     isGenericBrandPlaceholderSrc(src) ||
+    isBackLikeProductImageSrc(src) ||
     value.endsWith('.svg') ||
     value.includes('/images/proof/') ||
     value.startsWith('http://localhost:9000/static/') ||
     value.startsWith('http://127.0.0.1:9000/static/')
   );
+}
+
+/**
+ * Homepage / PLP card display URL — curated reference art until every drop has a tagged `card` front photo.
+ */
+export function preferHomeCardDisplaySrc(product: Product): string {
+  const taggedCard = product.media?.card?.trim();
+  if (
+    taggedCard &&
+    !isBackLikeProductImageSrc(taggedCard) &&
+    !isGenericBrandPlaceholderSrc(taggedCard)
+  ) {
+    return taggedCard;
+  }
+
+  const picked = pickHomeCardImageSrc(product).trim();
+  if (picked && !shouldUseConversionReferenceImage(picked)) {
+    return picked;
+  }
+
+  return conversionReferenceImageForProduct(product);
 }
 
 export function getConversionProductCardImageSrc(product: Product, candidateSrc?: string): string {
@@ -604,7 +638,7 @@ const PDP_INFOGRAPHIC_IMAGE_PATTERN =
   /(proof|story-card|size-guide|weight-scale|wash-test|macro-detail|fabric-tag|_card|\/cards?\/)/i;
 
 /** Fallback when tags are missing — prefer explicit drop tags over URL guessing. */
-const BACK_LIKE_URL_PATTERN = /(?:^|[/_-])(back|rear)(?:[/_\-.]|$)/i;
+const BACK_LIKE_URL_PATTERN = /(?:^|[/_-])(back|rear|backview|back-view)(?:[/_\-.]|$)/i;
 const FLAT_LAY_URL_PATTERN = /(?:^|[/_-])flat[-_]?lay(?:[/_\-.]|$)/i;
 
 function isUnsafeHomeCardUrl(src: string): boolean {
