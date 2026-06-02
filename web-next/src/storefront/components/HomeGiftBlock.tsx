@@ -5,11 +5,7 @@ import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
-import {
-  getProductComparisonImageSrc,
-  isBackLikeProductImageSrc,
-  pickHomeCardImageSrc,
-} from '../data/images';
+import { pickGiftBlockImageSrc } from '../data/images';
 import { getOccasions, getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
@@ -33,17 +29,12 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
     (giftOccasion
       ? getProducts().find((product) => product.occasionSlugs.includes(giftOccasion.slug) && productHasRealImage(product))
       : null) ?? getProducts().find(productHasRealImage);
-  const sectionImage = section?.image?.src?.trim();
-  const productCardImage = giftProduct ? pickHomeCardImageSrc(giftProduct) : undefined;
-  const comparisonImage =
-    giftProduct && !isBackLikeProductImageSrc(getProductComparisonImageSrc(giftProduct))
-      ? getProductComparisonImageSrc(giftProduct)
-      : undefined;
   const giftImageSrc =
-    (sectionImage && !isBackLikeProductImageSrc(sectionImage) ? sectionImage : undefined) ??
-    (productCardImage && !isBackLikeProductImageSrc(productCardImage) ? productCardImage : undefined) ??
-    comparisonImage ??
-    HOME_GIFT_IMAGE_SRC;
+    pickGiftBlockImageSrc({
+      sectionImage: section?.image?.src?.trim(),
+      product: giftProduct ?? undefined,
+      packagingFallback: HOME_GIFT_IMAGE_SRC,
+    }) ?? HOME_GIFT_IMAGE_SRC;
   const showGiftImage = Boolean(giftImageSrc);
   const headline = sectionTitle ?? copy.home.giftHeadline;
   const headlineLine2 = sectionTitle ? null : copy.home.giftHeadlineLine2;

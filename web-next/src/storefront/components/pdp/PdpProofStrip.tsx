@@ -14,6 +14,7 @@ const CAPTIONS: Record<ProductMediaGalleryTag, { en: string; ar: string }> = {
   flat_lay: { en: 'Flat lay', ar: 'صورة مسطحة' },
   artwork_detail: { en: 'Artwork detail', ar: 'تفاصيل التصميم' },
   back: { en: 'Back view', ar: 'منظر خلفي' },
+  gift: { en: 'Gift packaging', ar: 'تغليف الهدية' },
 };
 
 function isTaggedGalleryItem(entry: unknown): entry is ProductMediaGalleryItem {

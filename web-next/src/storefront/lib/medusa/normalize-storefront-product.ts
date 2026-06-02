@@ -126,6 +126,7 @@ const VALID_GALLERY_TAGS: ProductMediaGalleryTag[] = [
   'flat_lay',
   'artwork_detail',
   'back',
+  'gift',
 ];
 
 export function normalizeMedia(media: Product['media'] | undefined): Product['media'] {

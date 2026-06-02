@@ -28,6 +28,39 @@ export function isGenericBrandPlaceholderSrc(src: string | undefined): boolean {
   return false;
 }
 
+/** Seed/demo URLs and stock tees — not curated category tile photography. */
+const STOCK_FEELING_TILE_PATTERN =
+  /(?:bg_tee|bg_vibe|tee_walking|woman_street|macro-detail|emotions_vibe|unsplash\.com)/i;
+
+export function isStockOrDemoFeelingTileSrc(src: string | undefined): boolean {
+  const value = src?.trim();
+  if (!value) return true;
+  if (isGenericBrandPlaceholderSrc(value)) return true;
+  return STOCK_FEELING_TILE_PATTERN.test(value);
+}
+
+export function pickGiftBlockImageSrc(options: {
+  sectionImage?: string;
+  product?: Product;
+  packagingFallback?: string;
+}): string | undefined {
+  const { sectionImage, product, packagingFallback } = options;
+  if (sectionImage?.trim() && !isBackLikeProductImageSrc(sectionImage)) {
+    return sectionImage.trim();
+  }
+  if (product) {
+    for (const item of product.media?.gallery ?? []) {
+      if (typeof item === 'string') continue;
+      if (item.tag !== 'gift') continue;
+      const url = galleryItemSrc(item);
+      if (url && !isBackLikeProductImageSrc(url)) return url;
+    }
+    const card = pickHomeCardImageSrc(product);
+    if (card && !isBackLikeProductImageSrc(card)) return card;
+  }
+  return packagingFallback;
+}
+
 /**
  * Homepage hero shirt animation (H.264 MP4 under `public/videos/`).
  * Re-encode with ffmpeg for smaller files if needed, e.g. `-an -movflags +faststart`.

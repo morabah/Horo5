@@ -1,4 +1,5 @@
-import Image from 'next/image';
+'use client';
+
 import Link from 'next/link';
 
 import { trackCloserLookClick, trackEditorialFeatureCtaClick } from '../analytics/events';
@@ -6,9 +7,10 @@ import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
-import { pickHomeCardImageSrc } from '../data/images';
+import { isBackLikeProductImageSrc, pickHomeCardImageSrc } from '../data/images';
 import { getProduct } from '../data/site';
 import { useDictionary, useUiLocale } from '../i18n/ui-locale';
+import { EditorialFeatureMedia } from './home/EditorialFeatureMedia';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -29,6 +31,18 @@ function payloadFallbackHandle(section: StorefrontHomepageSection | undefined): 
   return handle || undefined;
 }
 
+function resolveEditorialImageSrc(section: StorefrontHomepageSection | undefined): string | undefined {
+  const cmsImageSrc = section?.image?.src?.trim();
+  if (cmsImageSrc && !isBackLikeProductImageSrc(cmsImageSrc)) {
+    return cmsImageSrc;
+  }
+  const fallbackHandle = payloadFallbackHandle(section);
+  const fallbackProduct = fallbackHandle ? getProduct(fallbackHandle) : undefined;
+  if (!fallbackProduct) return undefined;
+  const fromProduct = pickHomeCardImageSrc(fallbackProduct);
+  return fromProduct && !isBackLikeProductImageSrc(fromProduct) ? fromProduct : undefined;
+}
+
 export function HomeEditorialFeature({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -41,11 +55,7 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     (variant === 'closer_look' ? 'A Closer Look' : copy.home.behindThePieceEyebrow);
   const title = pickLocalizedStorefrontText(section?.title, resolvedLocale);
   const body = pickLocalizedStorefrontText(section?.body, resolvedLocale);
-  const cmsImageSrc = section?.image?.src?.trim();
-  const fallbackHandle = payloadFallbackHandle(section);
-  const fallbackProduct = fallbackHandle ? getProduct(fallbackHandle) : undefined;
-  const imageSrc =
-    cmsImageSrc ?? (fallbackProduct ? pickHomeCardImageSrc(fallbackProduct) : undefined);
+  const imageSrc = resolveEditorialImageSrc(section);
   const imageAlt =
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
     (title ? `HORO — ${title}` : 'HORO editorial feature');
@@ -100,15 +110,7 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
         </div>
         {!copyOnly && imageSrc ? (
           <div className="home-editorial-feature__media order-2 md:order-1">
-            <div className="home-editorial-feature__media-frame relative aspect-[4/5] w-full max-h-[520px] overflow-hidden rounded-[4px] bg-[#faf7f6]">
-              <Image
-                src={imageSrc}
-                alt={imageAlt}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover object-[center_22%]"
-              />
-            </div>
+            <EditorialFeatureMedia src={imageSrc} alt={imageAlt} />
           </div>
         ) : null}
       </div>

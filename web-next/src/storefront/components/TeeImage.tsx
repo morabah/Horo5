@@ -56,7 +56,7 @@ export function TeeImage({
       style={{ ...style }}
     >
       {showPlaceholder ? (
-        <HoroArtworkPlaceholder label={alt} />
+        <HoroArtworkPlaceholder ariaLabel={alt} />
       ) : useNextOptimizer ? (
         <Image
           src={resolvedSrc}

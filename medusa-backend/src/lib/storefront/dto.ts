@@ -18,6 +18,7 @@ export const storefrontMediaSchema = z
               "flat_lay",
               "artwork_detail",
               "back",
+              "gift",
             ])
             .optional(),
         })

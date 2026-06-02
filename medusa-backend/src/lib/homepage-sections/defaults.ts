@@ -146,10 +146,10 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     active: true,
     payload: {
       feelings: [
-        { slug: "zodiac", label: { en: "Sign Capsule", ar: "كبسولة الأبراج" }, href: "/products?category=zodiac" },
         { slug: "mood", label: { en: "Mood", ar: "مزاج" }, href: "/products?category=mood" },
-        { slug: "lifestyle", label: { en: "Lifestyle", ar: "نمط حياة" }, href: "/products?category=lifestyle" },
+        { slug: "zodiac", label: { en: "Zodiac Signs", ar: "كبسولة الأبراج" }, href: "/products?category=zodiac" },
         { slug: "gift-ready", label: { en: "Gift Ready", ar: "جاهزة للهدايا" }, href: "/gifts" },
+        { slug: "lifestyle", label: { en: "Lifestyle", ar: "نمط حياة" }, href: "/products?category=lifestyle" },
       ],
     },
   },

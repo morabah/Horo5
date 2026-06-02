@@ -4,9 +4,9 @@
 {%- endcomment -%}
 {%- liquid
   assign limit = feeling_limit | default: 4
-  assign fallback_slugs = 'zodiac,mood,lifestyle,gift' | split: ','
-  assign fallback_labels = 'Zodiac Signs,Mood,Lifestyle,Gift Ready' | split: ','
-  assign fallback_subtitles = '12 designs,Feelings you can wear,Daily identity pieces,Thoughtful designs for someone close' | split: ','
+  assign fallback_slugs = 'mood,zodiac,gift,lifestyle' | split: ','
+  assign fallback_labels = 'Mood,Zodiac Signs,Gift Ready,Lifestyle' | split: ','
+  assign fallback_subtitles = 'Feelings you can wear,12 designs,Thoughtful designs for someone close,Daily identity pieces' | split: ','
   assign surfaces = '#f8eaea,#f4ede5,#edf1ea,#f5eef3' | split: ','
 -%}
 

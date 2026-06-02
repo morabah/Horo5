@@ -104,7 +104,8 @@ export type ProductMediaGalleryTag =
   | 'lifestyle'
   | 'flat_lay'
   | 'artwork_detail'
-  | 'back';
+  | 'back'
+  | 'gift';
 
 export type ProductMediaGalleryItem = {
   url: string;

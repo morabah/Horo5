@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { trackMeaningTileClick } from '../analytics/events';
-import { getFeelingCollectionVisual, isGenericBrandPlaceholderSrc } from '../data/images';
+import { getFeelingCollectionVisual, isStockOrDemoFeelingTileSrc } from '../data/images';
 import { FeelingTileIcon } from './home/FeelingTileIcon';
 import { HOME_FEELING_TILE_SURFACES } from '../data/homeContent';
 import {
@@ -97,10 +97,10 @@ function getFeaturedFeelings(section: StorefrontHomepageSection | undefined, loc
 }
 
 const LAUNCH_MEANING_TILES: FeelingTileOverride[] = [
-  { slug: 'zodiac', label: 'Zodiac Signs', href: '/products?category=zodiac', iconSlug: 'zodiac' },
   { slug: 'mood', label: 'Mood', href: '/products?category=mood', iconSlug: 'mood' },
-  { slug: 'lifestyle', label: 'Lifestyle', href: '/products?category=lifestyle', iconSlug: 'lifestyle' },
+  { slug: 'zodiac', label: 'Zodiac Signs', href: '/products?category=zodiac', iconSlug: 'zodiac' },
   { slug: 'gift-ready', label: 'Gift Ready', href: '/gifts', iconSlug: 'gift' },
+  { slug: 'lifestyle', label: 'Lifestyle', href: '/products?category=lifestyle', iconSlug: 'lifestyle' },
 ];
 
 function launchMeaningTileEntries(_locale: 'en' | 'ar') {
@@ -180,7 +180,7 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
             const visual = getFeelingCollectionVisual(feeling.slug);
             const tileImageCandidate = visual.hero.src || visual.cover.src;
             const tileImage =
-              tileImageCandidate && !isGenericBrandPlaceholderSrc(tileImageCandidate)
+              tileImageCandidate && !isStockOrDemoFeelingTileSrc(tileImageCandidate)
                 ? tileImageCandidate
                 : '';
             const tileStyle = tileImage
