@@ -10,7 +10,15 @@ export const storefrontMediaSchema = z
         z.looseObject({
           url: z.string(),
           tag: z
-            .enum(["proof_fabric", "proof_print", "proof_wash", "lifestyle", "flat_lay"])
+            .enum([
+              "proof_fabric",
+              "proof_print",
+              "proof_wash",
+              "lifestyle",
+              "flat_lay",
+              "artwork_detail",
+              "back",
+            ])
             .optional(),
         })
       )

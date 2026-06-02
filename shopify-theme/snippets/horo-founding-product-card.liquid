@@ -138,37 +138,6 @@
     endif
   endif
 
-  assign card_image = nil
-  for image in card_product.images
-    assign alt_lower = image.alt | default: '' | downcase
-    if alt_lower contains 'front' or alt_lower contains 'design' or alt_lower contains 'graphic' or alt_lower contains 'print'
-      assign card_image = image
-      break
-    endif
-  endfor
-  if card_image == nil
-    for image in card_product.images
-      assign alt_lower = image.alt | default: '' | downcase
-      unless alt_lower contains 'back' or alt_lower contains 'rear'
-        assign card_image = image
-        break
-      endunless
-    endfor
-  endif
-
-  if card_image == nil and card_product.featured_media
-    if card_product.featured_media.media_type == 'image'
-      assign card_image = card_product.featured_media
-    elsif card_product.featured_media.preview_image
-      assign card_image = card_product.featured_media.preview_image
-    endif
-  endif
-  if card_image == nil and card_product.featured_image
-    assign card_image = card_product.featured_image
-  endif
-  if card_image == nil and card_product.images.size > 0
-    assign card_image = card_product.images.first
-  endif
 -%}
 
 {%- unless skip_card -%}
@@ -180,20 +149,13 @@
     data-horo-home-event="product_card_click"
     data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
   >
-    {%- if card_image -%}
-      {{
-        card_image
-        | image_url: width: 1200
-        | image_tag:
-          loading: loading_value,
-          widths: '200, 400, 600, 800, 1200',
-          sizes: '(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px',
-          alt: card_image.alt | default: card_product.title,
-          class: 'home-founding-card__image'
-      }}
-    {%- else -%}
-      {{ 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg home-founding-card__placeholder' }}
-    {%- endif -%}
+    {% render 'horo-home-card-image',
+      card_product: card_product,
+      loading: loading_value,
+      sizes: '(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px',
+      image_class: 'home-founding-card__image',
+      placeholder_class: 'placeholder-svg home-founding-card__placeholder'
+    %}
   </a>
   <div class="home-founding-card__body">
     {%- if eyebrow_parts != blank -%}

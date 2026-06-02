@@ -1,11 +1,15 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { trackCloserLookClick } from '../analytics/events';
 import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
+import { useNextImageOptimizerForSrc, resolveProductImageSrcForDisplay } from '../data/images';
 import { resolveHomeProducts } from '../lib/resolveHomeProducts';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import type { Product } from '../data/catalog-types';
@@ -14,6 +18,7 @@ import { HomeStartHereGroupedClient } from './HomeStartHereGroupedClient';
 export function HomeStartHere({ products, section }: { products?: Product[]; section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
+  const [campaignImageFailed, setCampaignImageFailed] = useState(false);
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
   const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
   const sectionBody = pickLocalizedStorefrontText(section?.body, locale as 'en' | 'ar');
@@ -24,6 +29,11 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
     pickLocalizedStorefrontText(section?.image?.alt, locale as 'en' | 'ar') ??
     'The Founding Drop campaign';
   const featuredProducts = resolveHomeProducts(products, section);
+  const showCampaignImage = Boolean(campaignImageSrc) && !campaignImageFailed;
+  const campaignResolved = campaignImageSrc
+    ? resolveProductImageSrcForDisplay(campaignImageSrc)
+    : '';
+  const campaignUseOptimizer = useNextImageOptimizerForSrc(campaignResolved);
 
   if (featuredProducts.length === 0) {
     return null;
@@ -42,7 +52,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
         <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="home-section-eyebrow">{sectionEyebrow ?? copy.home.startHereEyebrow}</p>
-            <h2 id="home-start-here-title" data-reveal className="home-section-title mt-2">
+            <h2 id="home-start-here-title" className="home-section-title mt-2">
               {sectionTitle ?? copy.home.startHereTitle}
             </h2>
             {(sectionBody ?? copy.home.startHereSubline) ? (
@@ -62,16 +72,29 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
           </Link>
         </div>
 
-        {campaignImageSrc ? (
+        {showCampaignImage ? (
           <div className="home-founding-campaign" data-reveal>
             <div className="home-founding-campaign__media">
-              <Image
-                src={campaignImageSrc}
-                alt={campaignImageAlt}
-                fill
-                sizes="(max-width: 1280px) 100vw, 1280px"
-                className="object-cover"
-              />
+              {campaignUseOptimizer ? (
+                <Image
+                  src={campaignResolved}
+                  alt={campaignImageAlt}
+                  fill
+                  sizes="(max-width: 1280px) 100vw, 1280px"
+                  className="object-cover"
+                  onError={() => setCampaignImageFailed(true)}
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- local Medusa / private hosts skip next/image optimizer
+                <img
+                  src={campaignResolved}
+                  alt={campaignImageAlt}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  onError={() => setCampaignImageFailed(true)}
+                />
+              )}
             </div>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link

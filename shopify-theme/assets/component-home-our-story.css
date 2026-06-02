@@ -37,6 +37,22 @@
   color: #554c4f;
 }
 
+.home-our-story__photo {
+  overflow: hidden;
+  border-radius: 4px;
+  aspect-ratio: 4 / 5;
+  max-width: 280px;
+  margin-inline: auto;
+  background: #faf7f6;
+}
+
+.home-our-story__photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
 .home-our-story__emblem {
   display: flex;
   justify-content: center;

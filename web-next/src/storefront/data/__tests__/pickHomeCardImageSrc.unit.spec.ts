@@ -41,6 +41,23 @@ describe('pickHomeCardImageSrc', () => {
     expect(src).toBe('https://cdn.example/on-body.jpg');
   });
 
+  it('skips gallery items tagged back even without back in the URL', () => {
+    const src = pickHomeCardImageSrc(
+      product({
+        slug: 'test',
+        name: 'Test',
+        media: {
+          main: 'https://cdn.example/IMG_9968.jpg',
+          gallery: [
+            { url: 'https://cdn.example/IMG_9968.jpg', tag: 'back' },
+            { url: 'https://cdn.example/art-front.jpg', tag: 'artwork_detail' },
+          ],
+        },
+      }),
+    );
+    expect(src).toBe('https://cdn.example/art-front.jpg');
+  });
+
   it('skips back-like URLs when safer gallery exists', () => {
     const src = pickHomeCardImageSrc(
       product({

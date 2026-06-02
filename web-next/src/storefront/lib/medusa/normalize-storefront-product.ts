@@ -118,7 +118,15 @@ function normalizeVariantMap(variants: StorefrontVariantApi | undefined): Produc
   );
 }
 
-const VALID_GALLERY_TAGS: ProductMediaGalleryTag[] = ['proof_fabric', 'proof_print', 'proof_wash', 'lifestyle', 'flat_lay'];
+const VALID_GALLERY_TAGS: ProductMediaGalleryTag[] = [
+  'proof_fabric',
+  'proof_print',
+  'proof_wash',
+  'lifestyle',
+  'flat_lay',
+  'artwork_detail',
+  'back',
+];
 
 export function normalizeMedia(media: Product['media'] | undefined): Product['media'] {
   if (!media) return undefined;

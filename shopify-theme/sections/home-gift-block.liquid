@@ -1,13 +1,33 @@
 {%- if section.settings.show_section or request.design_mode -%}
   {{ 'component-home-gift-block.css' | asset_url | stylesheet_tag }}
 
+  {%- liquid
+    assign gift_fallback_product = nil
+    assign gift_collection = collections['gift-ready']
+    if gift_collection != blank and gift_collection.products_count > 0
+      assign gift_fallback_product = gift_collection.products.first
+    endif
+    if gift_fallback_product == nil
+      assign founding_collection = collections['founding-drop']
+      if founding_collection != blank and founding_collection.products_count > 0
+        assign gift_fallback_product = founding_collection.products.first
+      endif
+    endif
+    assign show_banner_image = false
+    if section.settings.image != blank
+      assign show_banner_image = true
+    elsif gift_fallback_product != blank
+      assign show_banner_image = true
+    endif
+  -%}
+
   <section
     id="gift-by-meaning"
-    class="home-section home-section--bordered home-section--panel section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+    class="home-section home-section--panel section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
     aria-labelledby="home-gift-title-{{ section.id }}"
   >
     <div class="home-page__inner">
-      <div class="home-gift-banner">
+      <div class="home-gift-banner{% unless show_banner_image %} home-gift-banner--copy-only{% endunless %}">
         <div class="home-gift-banner__copy">
           {%- if section.settings.eyebrow != blank -%}
             <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
@@ -42,27 +62,38 @@
             </div>
           {%- endif -%}
         </div>
-        <div class="home-gift-banner__media">
-          {%- if section.settings.image != blank -%}
-            {{
-              section.settings.image
-              | image_url: width: 1200
-              | image_tag:
+        {%- if show_banner_image -%}
+          <div class="home-gift-banner__media">
+            {%- if section.settings.image != blank -%}
+              {{
+                section.settings.image
+                | image_url: width: 1200
+                | image_tag:
+                  loading: 'lazy',
+                  widths: '400, 800, 1200',
+                  sizes: '(max-width: 768px) 100vw, 64vw',
+                  alt: section.settings.image.alt | default: section.settings.heading
+              }}
+            {%- elsif gift_fallback_product != blank -%}
+              {% render 'horo-home-card-image',
+                card_product: gift_fallback_product,
                 loading: 'lazy',
-                widths: '400, 800, 1200',
                 sizes: '(max-width: 768px) 100vw, 64vw',
-                alt: section.settings.image.alt | default: section.settings.heading
-            }}
-          {%- else -%}
-            <img
-              src="{{ 'home-gift-banner.png' | asset_url }}"
-              alt="{{ section.settings.heading | escape }}"
-              width="1200"
-              height="800"
-              loading="lazy"
-            >
-          {%- endif -%}
-        </div>
+                image_class: 'home-gift-banner__product-image',
+                placeholder_class: 'placeholder-svg'
+              %}
+            {%- else -%}
+              <img
+                src="{{ 'home-gift-banner.png' | asset_url }}"
+                alt="{{ section.settings.heading | escape }}"
+                width="1200"
+                height="800"
+                loading="lazy"
+                class="home-gift-banner__asset-image"
+              >
+            {%- endif -%}
+          </div>
+        {%- endif -%}
       </div>
     </div>
   </section>

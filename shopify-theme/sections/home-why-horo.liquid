@@ -2,7 +2,7 @@
 
 <section
   id="our-story"
-  class="home-section home-our-story home-section--bordered home-section--soft section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  class="home-section home-our-story home-section--soft section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
   aria-labelledby="home-our-story-title-{{ section.id }}"
 >
   <div class="home-page__inner">
@@ -23,6 +23,19 @@
 
       {%- if section.blocks.size > 0 -%}
         <div class="home-our-story__side">
+          {%- if section.settings.image != blank -%}
+            <div class="home-our-story__photo">
+              {{
+                section.settings.image
+                | image_url: width: 1200
+                | image_tag:
+                  loading: 'lazy',
+                  class: 'home-our-story__photo-img',
+                  sizes: '(max-width: 768px) 100vw, 40vw',
+                  alt: section.settings.image.alt | default: section.settings.heading
+              }}
+            </div>
+          {%- else -%}
           <div class="home-our-story__emblem" aria-hidden="true">
             <div class="home-our-story__rings">
               <span class="home-our-story__ring home-our-story__ring--1"></span>
@@ -32,6 +45,7 @@
               <span class="home-our-story__dot home-our-story__dot--2"></span>
             </div>
           </div>
+          {%- endif -%}
 
           <ul class="home-our-story__pillars" role="list">
             {%- for block in section.blocks -%}
@@ -88,6 +102,12 @@
       "id": "subheading",
       "label": "Body",
       "default": "HORO is a wearable-art brand born in Egypt. We turn emotions into art and art into pieces you live in. Every design is a ritual. Every wear is a reminder. We are the canvas. You are the story."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Story photo",
+      "info": "Replaces the symbolic rings when set. Upload a human or product-led photo."
     }
   ],
   "blocks": [

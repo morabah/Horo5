@@ -497,6 +497,34 @@ function isUnsafeHomeCardUrl(src: string): boolean {
   return BACK_LIKE_URL_PATTERN.test(src) || FLAT_LAY_URL_PATTERN.test(src);
 }
 
+/** Exported for gift/editorial sections that must not use back/flat-lay fallbacks. */
+export function isBackLikeProductImageSrc(src: string | undefined): boolean {
+  const value = src?.trim();
+  return value ? isUnsafeHomeCardUrl(value) : false;
+}
+
+function isUnsafeHomeCardGalleryItem(item: ProductMediaGalleryItem | string): boolean {
+  if (typeof item === 'string') {
+    return isUnsafeHomeCardUrl(item);
+  }
+  if (item.tag === 'back' || item.tag === 'flat_lay') {
+    return true;
+  }
+  const url = galleryItemSrc(item);
+  return url ? isUnsafeHomeCardUrl(url) : true;
+}
+
+function isPrivateImageHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  if (host === 'localhost' || host === '127.0.0.1' || host === '::1') {
+    return true;
+  }
+  if (host.startsWith('10.') || host.startsWith('192.168.') || host.startsWith('172.')) {
+    return true;
+  }
+  return false;
+}
+
 function galleryUrlByTag(
   product: Product,
   tag: ProductMediaGalleryItem['tag'],
@@ -505,6 +533,7 @@ function galleryUrlByTag(
   for (const item of product.media?.gallery ?? []) {
     if (typeof item === 'string') continue;
     if (item.tag !== tag) continue;
+    if (isUnsafeHomeCardGalleryItem(item)) continue;
     const url = galleryItemSrc(item);
     if (url && !isUnsafeHomeCardUrl(url)) return url;
   }
@@ -597,6 +626,10 @@ export function useNextImageOptimizerForSrc(resolvedSrc: string): boolean {
         : [];
     for (const host of extraHosts) configuredHosts.add(host);
 
+    if (isPrivateImageHost(url.hostname)) {
+      return false;
+    }
+
     return configuredHosts.has(url.host);
   } catch {
     return false;
@@ -618,12 +651,29 @@ export function getProductMedia(slug: string): ProductMedia {
  * Homepage / PLP card image — media contract:
  * card → main → lifestyle → artwork_detail → first safe gallery → thumbnail → feeling proof.
  */
+function backTaggedGalleryUrls(product: Product): Set<string> {
+  const urls = new Set<string>();
+  for (const item of product.media?.gallery ?? []) {
+    if (typeof item === 'string') continue;
+    if (item.tag !== 'back' && item.tag !== 'flat_lay') continue;
+    const url = galleryItemSrc(item);
+    if (url) urls.add(url);
+  }
+  return urls;
+}
+
+function isBlockedHomeCardSrc(src: string, backTaggedUrls: Set<string>): boolean {
+  return isUnsafeHomeCardUrl(src) || backTaggedUrls.has(src);
+}
+
 export function pickHomeCardImageSrc(product: Product): string {
+  const backTaggedUrls = backTaggedGalleryUrls(product);
+
   const card = product.media?.card?.trim();
-  if (card && !isUnsafeHomeCardUrl(card)) return card;
+  if (card && !isBlockedHomeCardSrc(card, backTaggedUrls)) return card;
 
   const main = product.media?.main?.trim();
-  if (main && !isUnsafeHomeCardUrl(main)) return main;
+  if (main && !isBlockedHomeCardSrc(main, backTaggedUrls)) return main;
 
   const lifestyle = galleryUrlByTag(product, 'lifestyle');
   if (lifestyle) return lifestyle;
@@ -632,6 +682,7 @@ export function pickHomeCardImageSrc(product: Product): string {
   if (artworkDetail) return artworkDetail;
 
   for (const item of product.media?.gallery ?? []) {
+    if (isUnsafeHomeCardGalleryItem(item)) continue;
     const url = galleryItemSrc(item);
     if (url && !isUnsafeHomeCardUrl(url)) return url;
   }

@@ -17,6 +17,7 @@ import type ArtistModuleService from "../../modules/artist/service"
 import { OCCASION_MODULE } from "../../modules/occasion"
 import type OccasionModuleService from "../../modules/occasion/service"
 import { FEELINGS_ROOT_HANDLE } from "../storefront/feeling-category-metadata"
+import { galleryForStorefront, pickDropFrontMediaUrls } from "../storefront/media-picks"
 import {
   DEFAULT_DROP_SIZES,
   DEFAULT_DROP_TRUST_BADGES,
@@ -235,13 +236,8 @@ export function buildDropMetadata(
   images: DropImageInput[],
   artistMeta: { name: string; avatarUrl?: string } | undefined,
 ): Record<string, unknown> {
-  const main = images.find((image) => image.tag === "main")?.url
-  const card =
-    images.find((image) => image.tag === "card")?.url ??
-    main
-  const gallery = images
-    .filter((image) => image.tag !== "main" && image.tag !== "card")
-    .map((image) => ({ url: image.url, tag: image.tag }))
+  const { main, card } = pickDropFrontMediaUrls(images)
+  const gallery = galleryForStorefront(images)
   const hasLifestyleImage = hasImageTag(images, "lifestyle")
   const hasFlatLayImage = hasImageTag(images, "flat_lay")
   const hasProofFabricImage = hasImageTag(images, "proof_fabric")

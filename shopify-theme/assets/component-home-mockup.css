@@ -216,11 +216,21 @@
   min-height: 208px;
 }
 
-.home-gift-banner__media img {
+.home-gift-banner__media img,
+.home-gift-banner__media .home-gift-banner__product-image {
   width: 100%;
   height: 100%;
   min-height: 208px;
   object-fit: cover;
+  object-position: center center;
+}
+
+.home-gift-banner--copy-only {
+  display: block;
+}
+
+.home-gift-banner--copy-only .home-gift-banner__copy {
+  max-width: 42rem;
 }
 
 /* Legacy Dawn trust ribbon — never constrain mockup bar */
@@ -469,14 +479,15 @@
 }
 
 .home-founding-card__media img,
-.home-founding-card__media [data-nimg] {
+.home-founding-card__media [data-nimg],
+.home-founding-card__media .home-gift-banner__product-image {
   display: block;
-  width: auto !important;
-  height: auto !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
-  object-position: center center !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  object-position: center 22% !important;
   transform: none;
 }
 

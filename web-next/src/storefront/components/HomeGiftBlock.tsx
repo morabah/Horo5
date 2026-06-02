@@ -5,7 +5,11 @@ import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
-import { getProductComparisonImageSrc } from '../data/images';
+import {
+  getProductComparisonImageSrc,
+  isBackLikeProductImageSrc,
+  pickHomeCardImageSrc,
+} from '../data/images';
 import { getOccasions, getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
@@ -29,7 +33,18 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
     (giftOccasion
       ? getProducts().find((product) => product.occasionSlugs.includes(giftOccasion.slug) && productHasRealImage(product))
       : null) ?? getProducts().find(productHasRealImage);
-  const giftImageSrc = section?.image?.src ?? (giftProduct ? getProductComparisonImageSrc(giftProduct) : HOME_GIFT_IMAGE_SRC);
+  const sectionImage = section?.image?.src?.trim();
+  const productCardImage = giftProduct ? pickHomeCardImageSrc(giftProduct) : undefined;
+  const comparisonImage =
+    giftProduct && !isBackLikeProductImageSrc(getProductComparisonImageSrc(giftProduct))
+      ? getProductComparisonImageSrc(giftProduct)
+      : undefined;
+  const giftImageSrc =
+    (sectionImage && !isBackLikeProductImageSrc(sectionImage) ? sectionImage : undefined) ??
+    (productCardImage && !isBackLikeProductImageSrc(productCardImage) ? productCardImage : undefined) ??
+    comparisonImage ??
+    HOME_GIFT_IMAGE_SRC;
+  const showGiftImage = Boolean(giftImageSrc);
   const headline = sectionTitle ?? copy.home.giftHeadline;
   const headlineLine2 = sectionTitle ? null : copy.home.giftHeadlineLine2;
   const eyebrow = sectionEyebrow ?? copy.home.giftEyebrow;
@@ -43,7 +58,11 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
       className="home-section bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
-        <div className="home-gift-banner overflow-hidden rounded-[4px] bg-[#fbf5f3] shadow-[0_1px_0_rgba(79,17,31,0.04)] md:grid md:grid-cols-[0.36fr_0.64fr]">
+        <div
+          className={`home-gift-banner overflow-hidden rounded-[4px] bg-[#fbf5f3] shadow-[0_1px_0_rgba(79,17,31,0.04)] ${
+            showGiftImage ? 'md:grid md:grid-cols-[0.36fr_0.64fr]' : ''
+          }`}
+        >
           <div data-reveal className="flex flex-col justify-center p-6 md:p-8">
             <p className="home-section-eyebrow">{eyebrow}</p>
             <h2 id="home-gift-title" className="home-gift-banner__title mt-2">
@@ -68,15 +87,17 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
               </Link>
             </div>
           </div>
-          <div data-reveal="stagger-1" className="relative min-h-[13rem] md:min-h-full">
-            <TeeImage
-              src={giftImageSrc}
-              alt={sectionImageAlt ?? (giftProduct ? `HORO ${giftProduct.name} gift-ready tee.` : 'HORO gift-ready package.')}
-              w={1200}
-              className="h-full min-h-[13rem] w-full object-cover"
-              objectPosition="center center"
-            />
-          </div>
+          {showGiftImage ? (
+            <div data-reveal="stagger-1" className="relative min-h-[13rem] md:min-h-full">
+              <TeeImage
+                src={giftImageSrc}
+                alt={sectionImageAlt ?? (giftProduct ? `HORO ${giftProduct.name} gift-ready tee.` : 'HORO gift-ready package.')}
+                w={1200}
+                className="h-full min-h-[13rem] w-full object-cover"
+                objectPosition="center center"
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

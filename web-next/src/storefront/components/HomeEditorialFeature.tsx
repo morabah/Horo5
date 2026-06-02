@@ -6,6 +6,8 @@ import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
+import { pickHomeCardImageSrc } from '../data/images';
+import { getProduct } from '../data/site';
 import { useDictionary, useUiLocale } from '../i18n/ui-locale';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -30,7 +32,10 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     (variant === 'closer_look' ? 'A Closer Look' : copy.home.behindThePieceEyebrow);
   const title = pickLocalizedStorefrontText(section?.title, resolvedLocale);
   const body = pickLocalizedStorefrontText(section?.body, resolvedLocale);
-  const imageSrc = section?.image?.src?.trim();
+  const editorialProduct = getProduct('calm-inside');
+  const imageSrc =
+    section?.image?.src?.trim() ??
+    (editorialProduct ? pickHomeCardImageSrc(editorialProduct) : undefined);
   const imageAlt =
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
     (title ? `HORO — ${title}` : 'HORO editorial feature');
