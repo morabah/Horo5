@@ -45,6 +45,52 @@ function resolveEditorialImageSrc(section: StorefrontHomepageSection | undefined
   return fromProduct && !isBackLikeProductImageSrc(fromProduct) ? fromProduct : undefined;
 }
 
+function EditorialCopyFallback({
+  sectionId,
+  eyebrow,
+  title,
+  body,
+  ctaLabel,
+  ctaHref,
+  variant,
+}: {
+  sectionId: string;
+  eyebrow: string;
+  title?: string;
+  body?: string;
+  ctaLabel: string;
+  ctaHref: string;
+  variant: string;
+}) {
+  return (
+    <div className="home-editorial-feature__copy-only mx-auto max-w-2xl text-center">
+      <p className="home-section-eyebrow">{eyebrow}</p>
+      {title ? (
+        <h2 id={`${sectionId}-title`} className="home-section-title mt-2">
+          {title}
+        </h2>
+      ) : null}
+      {body ? (
+        <p className="font-body mt-4 text-[15px] leading-relaxed text-warm-charcoal md:text-base">
+          {body}
+        </p>
+      ) : null}
+      <Link
+        href={ctaHref}
+        onClick={() => {
+          if (variant === 'closer_look') {
+            trackCloserLookClick('editorial_feature', ctaHref);
+          }
+          trackEditorialFeatureCtaClick(variant, ctaHref);
+        }}
+        className="home-btn home-btn--primary font-body mt-6 inline-flex min-h-11 items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
+      >
+        {ctaLabel}
+      </Link>
+    </div>
+  );
+}
+
 export function HomeEditorialFeature({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -67,20 +113,21 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
   const ctaHref = section?.primaryCta?.href?.trim() ?? '/products';
   const [imageFailed, setImageFailed] = useState(false);
   const sectionId = payloadAnchor(section);
-  const useOverlay = Boolean(imageSrc) && !imageFailed && isImageOverlayPresentation(payload);
+  const wantsOverlay = Boolean(imageSrc) && isImageOverlayPresentation(payload);
+  const showOverlay = wantsOverlay && !imageFailed && Boolean(title);
 
   if (!title && !body && !imageSrc) {
     return null;
   }
 
-  if (useOverlay && imageSrc && title) {
-    return (
-      <section
-        id={sectionId}
-        aria-labelledby={`${sectionId}-title`}
-        className="home-section home-editorial-feature bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
-      >
-        <div className="mx-auto max-w-6xl" data-reveal>
+  return (
+    <section
+      id={sectionId}
+      aria-labelledby={`${sectionId}-title`}
+      className="home-section home-editorial-feature bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
+    >
+      <div className="mx-auto max-w-6xl" data-reveal>
+        {showOverlay && imageSrc && title ? (
           <HomeImageCampaign
             id={`${sectionId}-campaign`}
             titleId={`${sectionId}-title`}
@@ -97,6 +144,7 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
               showBody: presentation.showBody !== false,
             }}
             minHeight="min-h-[min(48vh,28rem)]"
+            onImageError={() => setImageFailed(true)}
             onPrimaryClick={() => {
               if (variant === 'closer_look') {
                 trackCloserLookClick('editorial_feature', ctaHref);
@@ -104,47 +152,18 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
               trackEditorialFeatureCtaClick(variant, ctaHref);
             }}
           />
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section
-      id={sectionId}
-      aria-labelledby={`${sectionId}-title`}
-      className="home-section home-editorial-feature bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
-    >
-      <div className="home-editorial-feature__copy-only mx-auto max-w-2xl text-center">
-        <p className="home-section-eyebrow">{eyebrow}</p>
-        {title ? (
-          <h2 id={`${sectionId}-title`} className="home-section-title mt-2">
-            {title}
-          </h2>
-        ) : null}
-        {body ? (
-          <p className="font-body mt-4 text-[15px] leading-relaxed text-warm-charcoal md:text-base">
-            {body}
-          </p>
-        ) : null}
-        <Link
-          href={ctaHref}
-          onClick={() => {
-            if (variant === 'closer_look') {
-              trackCloserLookClick('editorial_feature', ctaHref);
-            }
-            trackEditorialFeatureCtaClick(variant, ctaHref);
-          }}
-          className="home-btn home-btn--primary font-body mt-6 inline-flex min-h-11 items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
-        >
-          {ctaLabel}
-        </Link>
+        ) : (
+          <EditorialCopyFallback
+            sectionId={sectionId}
+            eyebrow={eyebrow}
+            title={title}
+            body={body}
+            ctaLabel={ctaLabel}
+            ctaHref={ctaHref}
+            variant={variant}
+          />
+        )}
       </div>
-      {imageSrc && !imageFailed ? (
-        <div className="sr-only">
-          <img src={imageSrc} alt="" onError={() => setImageFailed(true)} />
-        </div>
-      ) : null}
     </section>
   );
 }

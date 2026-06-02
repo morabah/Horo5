@@ -1,5 +1,8 @@
 'use client';
 
+import Link from 'next/link';
+import { useState } from 'react';
+
 import { trackHomeGiftCtaClick } from '../analytics/events';
 import {
   pickLocalizedStorefrontText,
@@ -16,6 +19,7 @@ const HOME_GIFT_IMAGE_SRC = '/images/homepage-reference/gift-box.png';
 export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
+  const [imageFailed, setImageFailed] = useState(false);
   const sectionPayload = section?.payload as Record<string, unknown> | null | undefined;
   const presentation = parseHomepagePresentation(sectionPayload);
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
@@ -42,7 +46,8 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
   const body = sectionBody ?? copy.home.giftBody;
   const eyebrow = sectionEyebrow ?? copy.home.giftEyebrow;
   const cta = sectionCta ?? copy.home.giftCta;
-  const useOverlay = Boolean(giftImageSrc) && isImageOverlayPresentation(sectionPayload);
+  const wantsOverlay = Boolean(giftImageSrc) && isImageOverlayPresentation(sectionPayload);
+  const showOverlay = wantsOverlay && !imageFailed;
 
   return (
     <section
@@ -51,7 +56,7 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
       className="home-section bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
-        {useOverlay ? (
+        {showOverlay ? (
           <HomeImageCampaign
             id="gift-block-campaign"
             titleId="home-gift-title"
@@ -71,6 +76,7 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
               showBody: presentation.showBody !== false,
             }}
             minHeight="min-h-[min(44vh,24rem)]"
+            onImageError={() => setImageFailed(true)}
             onPrimaryClick={() => trackHomeGiftCtaClick(giftHref)}
           />
         ) : (
@@ -80,13 +86,13 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
               {headline}
             </h2>
             <p className="mt-4 max-w-md font-body text-[0.9rem] leading-snug text-[#5a5154]">{body}</p>
-            <a
+            <Link
               href={giftHref}
               onClick={() => trackHomeGiftCtaClick(giftHref)}
               className="home-btn home-btn--primary font-body mt-5 inline-flex min-h-[42px] items-center justify-center rounded-[4px] bg-horo-pulse px-7 py-2 text-sm font-bold text-white hover:bg-horo-root"
             >
               {cta}
-            </a>
+            </Link>
           </div>
         )}
       </div>

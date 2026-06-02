@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { trackCloserLookClick } from '../analytics/events';
 import {
@@ -17,6 +18,7 @@ import { HomeImageCampaign } from './home/HomeImageCampaign';
 export function HomeStartHere({ products, section }: { products?: Product[]; section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
+  const [campaignImageFailed, setCampaignImageFailed] = useState(false);
   const sectionPayload = section?.payload as Record<string, unknown> | null | undefined;
   const presentation = parseHomepagePresentation(sectionPayload);
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
@@ -30,9 +32,10 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
     'The Founding Drop campaign';
   const featuredProducts = resolveHomeProducts(products, section);
   const showBody = presentation.showBody !== false && Boolean(sectionBody ?? copy.home.startHereSubline);
-  const useCampaignOverlay =
+  const wantsCampaignOverlay =
     Boolean(campaignImageSrc) &&
     (isImageOverlayPresentation(sectionPayload) || presentation.layout === 'image_overlay');
+  const showCampaignOverlay = wantsCampaignOverlay && !campaignImageFailed;
 
   if (featuredProducts.length === 0) {
     return null;
@@ -40,7 +43,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
 
   const shopHref = section?.primaryCta?.href ?? '/products';
   const closerLookHref = section?.secondaryCta?.href ?? '#editorial-feature';
-  const showHeaderBlock = !useCampaignOverlay || showBody;
+  const showTextHeader = !showCampaignOverlay;
 
   return (
     <section
@@ -49,7 +52,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
       className="home-section bg-horo-white px-4 py-6 sm:px-6 md:py-7 lg:px-8"
     >
       <div className="home-founding-drop__inner mx-auto max-w-6xl">
-        {useCampaignOverlay && campaignImageSrc ? (
+        {showCampaignOverlay && campaignImageSrc ? (
           <div className="mb-8 sm:mb-10" data-reveal>
             <HomeImageCampaign
               id="founding-drop-campaign"
@@ -78,12 +81,13 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
                 showEyebrow: presentation.showEyebrow !== false,
               }}
               minHeight="min-h-[min(40vh,22rem)]"
+              onImageError={() => setCampaignImageFailed(true)}
               onSecondaryClick={() => trackCloserLookClick('founding_drop', closerLookHref)}
             />
           </div>
         ) : null}
 
-        {showHeaderBlock && !useCampaignOverlay ? (
+        {showTextHeader ? (
           <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="home-section-eyebrow">{sectionEyebrow ?? copy.home.startHereEyebrow}</p>
@@ -106,28 +110,6 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
               </span>
             </Link>
           </div>
-        ) : null}
-
-        {!useCampaignOverlay && campaignImageSrc ? (
-          <div className="mb-8" data-reveal>
-            <HomeImageCampaign
-              id="founding-drop-campaign-fallback"
-              titleId="home-start-here-title"
-              eyebrow={sectionEyebrow ?? copy.home.startHereEyebrow}
-              title={sectionTitle ?? copy.home.startHereTitle}
-              imageSrc={campaignImageSrc}
-              imageAlt={campaignImageAlt}
-              primaryCta={{ label: sectionCta ?? copy.home.foundingCampaignCta, href: shopHref }}
-              presentation={{ layout: 'image_overlay', showBody: false }}
-              minHeight="min-h-[14rem]"
-            />
-          </div>
-        ) : null}
-
-        {useCampaignOverlay ? (
-          <h2 id="home-start-here-title" className="sr-only">
-            {sectionTitle ?? copy.home.startHereTitle}
-          </h2>
         ) : null}
 
         <HomeFoundingRail products={featuredProducts} />

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState } from 'react';
 
 import { trackCloserLookClick, trackHeroCtaClick } from '../analytics/events';
 
@@ -182,14 +183,11 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     copy.home.heroCanvasLine ??
     BRAND_COPY.canvasLine;
 
-  const tertiaryPayloadCta = ctaFromVariant('tertiaryCta');
-  const tertiaryCtaLabel =
-    localizedPayloadText(tertiaryPayloadCta?.label, locale as 'en' | 'ar') ??
-    copy.home.heroTertiaryCta;
-  const tertiaryHref = tertiaryPayloadCta?.href ?? '#editorial-feature';
   const heroProofItems = HERO_PROOF_KEYS.map((key) => copy.home.trustBadges[key]);
   const heroPresentation = parseHomepagePresentation(sectionPayload);
-  const isOverlayLayout = isImageOverlayPresentation(sectionPayload);
+  const [overlayImageFailed, setOverlayImageFailed] = useState(false);
+  const isOverlayLayout =
+    isImageOverlayPresentation(sectionPayload) && !overlayImageFailed;
 
   if (isOverlayLayout) {
     return (
@@ -227,6 +225,7 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
                 trackCloserLookClick('hero', secondaryHref);
               }
             }}
+            onImageError={() => setOverlayImageFailed(true)}
           />
         </div>
         <div id={HERO_BOTTOM_SENTINEL_ID} aria-hidden="true" className="h-px w-full" />
@@ -263,17 +262,15 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
             </Link>
             <Link
               href={secondaryHref}
-              onClick={() => trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant)}
+              onClick={() => {
+                trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant);
+                if (secondaryHref.includes('editorial')) {
+                  trackCloserLookClick('hero', secondaryHref);
+                }
+              }}
               className="home-btn home-btn--secondary font-body inline-flex min-h-[42px] items-center justify-center rounded-[4px] border border-horo-pulse bg-transparent px-5 py-2 text-[12px] font-bold text-horo-root transition-[transform,background-color,color] hover:bg-horo-root hover:text-horo-breath focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
             >
               {secondaryCtaLabel}
-            </Link>
-            <Link
-              href={tertiaryHref}
-              onClick={() => trackCloserLookClick('hero', tertiaryHref)}
-              className="font-body inline-flex min-h-[42px] items-center justify-center px-2 text-[12px] font-semibold text-horo-pulse underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
-            >
-              {tertiaryCtaLabel}
             </Link>
           </div>
           <ul className="home-hero-proof-list mt-5" aria-label={isArabic ? 'وعود الخدمة' : 'Service promises'}>

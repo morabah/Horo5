@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 import {
   type LocalizedStorefrontText,
@@ -126,16 +127,18 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
     (isArabic ? 'قصة هورو' : 'HORO brand story');
   const title = sectionTitle ?? copy.home.ourStoryTitle;
-  const useOverlay = Boolean(storyImageSrc) && isImageOverlayPresentation(sectionPayload);
+  const [imageFailed, setImageFailed] = useState(false);
+  const wantsOverlay = Boolean(storyImageSrc) && isImageOverlayPresentation(sectionPayload);
+  const showOverlay = wantsOverlay && !imageFailed;
 
-  if (useOverlay && storyImageSrc) {
-    return (
-      <section
-        id="our-story"
-        aria-labelledby="home-our-story-title"
-        className="home-section home-our-story bg-horo-soft px-4 py-7 sm:px-6 md:py-8 lg:px-8"
-      >
-        <div className="mx-auto max-w-6xl">
+  return (
+    <section
+      id="our-story"
+      aria-labelledby="home-our-story-title"
+      className="home-section home-our-story bg-horo-soft px-4 py-7 sm:px-6 md:py-8 lg:px-8"
+    >
+      <div className="mx-auto max-w-6xl">
+        {showOverlay && storyImageSrc ? (
           <HomeImageCampaign
             id="our-story-campaign"
             titleId="home-our-story-title"
@@ -152,19 +155,10 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
               showEyebrow: presentation.showEyebrow !== false,
             }}
             minHeight="min-h-[min(44vh,24rem)]"
+            onImageError={() => setImageFailed(true)}
           />
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section
-      id="our-story"
-      aria-labelledby="home-our-story-title"
-      className="home-section home-our-story bg-horo-soft px-4 py-7 sm:px-6 md:py-8 lg:px-8"
-    >
-      <div className="home-our-story__layout mx-auto max-w-6xl">
+        ) : (
+        <div className="home-our-story__layout">
         <div>
           <p className="home-section-eyebrow">{sectionEyebrow ?? copy.home.ourStoryEyebrow}</p>
           <h2 id="home-our-story-title" className="home-our-story__title mt-2">
@@ -200,6 +194,8 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
             </ul>
           </div>
         ) : null}
+        </div>
+        )}
       </div>
     </section>
   );
