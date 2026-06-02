@@ -761,7 +761,8 @@ export function Cart({
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
     const root = document.documentElement;
-    if (undoLine) {
+    const needsFabOffset = undoLine != null || itemCount > 0;
+    if (needsFabOffset) {
       root.style.setProperty('--horo-bottom-fab-offset', '5.5rem');
     } else {
       root.style.removeProperty('--horo-bottom-fab-offset');
@@ -769,7 +770,7 @@ export function Cart({
     return () => {
       root.style.removeProperty('--horo-bottom-fab-offset');
     };
-  }, [undoLine]);
+  }, [undoLine, itemCount]);
 
   const undoProductName = undoLine ? getProduct(undoLine.productSlug)?.name ?? 'Item' : '';
 
@@ -1091,12 +1092,17 @@ export function Cart({
         <GovernorateModal
           open={governorateModalOpen}
           subtotalEgp={displaySubtotalEgp + displayGiftWrapEgp}
+          showContinueButton={Boolean(selectedCode)}
           onClose={() => setGovernorateModalOpen(false)}
           onSelect={(code) => {
             setGovernorate(code, { surface: 'cart_modal' });
             setGovernorateModalOpen(false);
           }}
           onContinueToCheckout={() => {
+            if (!selectedCode) {
+              setStatusMessage(copy.cartCheckoutNeedsGovernorate);
+              return;
+            }
             setGovernorateModalOpen(false);
             router.push('/checkout');
           }}

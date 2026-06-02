@@ -1,8 +1,13 @@
 {%- comment -%}
   HORO founding drop card — parity with web-next HomeFoundingProductCard.
-  Accepts: card_product, lazy_load (bool), section_id
+  Accepts: card_product, lazy_load (bool), section_id, choose_size_label
 {%- endcomment -%}
 {%- liquid
+  assign cta_choose_size = choose_size_label | default: 'Choose size'
+  if request.locale.iso_code == 'ar'
+    assign cta_choose_size = 'اختر المقاس'
+  endif
+
   if lazy_load == nil
     assign lazy_load = true
   endif
@@ -31,14 +36,25 @@
     assign selected_variant = first_available | default: card_product.selected_or_first_available_variant
   endif
 
+  assign price_cents = selected_variant.price | default: card_product.price | default: 0
+  if price_cents <= 0
+    assign skip_card = true
+  else
+    assign skip_card = false
+  endif
+
+  assign needs_size_choice = true
+  if card_product.has_only_default_variant
+    assign needs_size_choice = false
+  endif
+
   assign can_add = false
-  if selected_variant and selected_variant.available
+  if selected_variant and selected_variant.available and needs_size_choice == false
     assign can_add = true
   endif
 
-  assign price_display = selected_variant.price | default: card_product.price
-  assign price_amount = price_display | money_without_currency | strip
-  assign price_egp = 'EGP ' | append: price_amount
+  assign price_display = price_cents
+  assign price_egp = price_display | money_with_currency
 
   assign product_form_id = 'founding-' | append: section_id | append: '-' | append: card_product.id
 
@@ -83,7 +99,7 @@
 
   assign group_label = ''
   if launch_group == 'zodiac_capsule'
-    assign group_label = 'Sign Capsule'
+    assign group_label = 'Zodiac Signs'
   elsif launch_group == 'mood'
     assign group_label = 'Mood'
   elsif launch_group == 'lifestyle'
@@ -118,7 +134,24 @@
   endif
 
   assign card_image = nil
-  if card_product.featured_media
+  for image in card_product.images
+    assign alt_lower = image.alt | default: '' | downcase
+    if alt_lower contains 'front' or alt_lower contains 'design' or alt_lower contains 'graphic' or alt_lower contains 'print'
+      assign card_image = image
+      break
+    endif
+  endfor
+  if card_image == nil
+    for image in card_product.images
+      assign alt_lower = image.alt | default: '' | downcase
+      unless alt_lower contains 'back' or alt_lower contains 'rear'
+        assign card_image = image
+        break
+      endunless
+    endfor
+  endif
+
+  if card_image == nil and card_product.featured_media
     if card_product.featured_media.media_type == 'image'
       assign card_image = card_product.featured_media
     elsif card_product.featured_media.preview_image
@@ -133,8 +166,15 @@
   endif
 -%}
 
+{%- unless skip_card -%}
 <article class="home-founding-card">
-  <a href="{{ card_product.url }}" class="home-founding-card__media" aria-label="{{ card_product.title | escape }}">
+  <a
+    href="{{ card_product.url }}"
+    class="home-founding-card__media"
+    aria-label="{{ card_product.title | escape }}"
+    data-horo-home-event="product_card_click"
+    data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
+  >
     {%- if card_image -%}
       {{
         card_image
@@ -154,12 +194,29 @@
     {%- if eyebrow_parts != blank -%}
       <p class="home-founding-card__eyebrow">{{ eyebrow_parts | escape }}</p>
     {%- endif -%}
-    <a href="{{ card_product.url }}" class="home-founding-card__title">
+    <a
+      href="{{ card_product.url }}"
+      class="home-founding-card__title"
+      data-horo-home-event="product_card_click"
+      data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
+    >
       {{ card_product.title | escape }}
     </a>
     <p class="home-founding-card__price">{{ price_egp }}</p>
     <div class="home-founding-card__actions">
-      {%- if can_add -%}
+      {%- if needs_size_choice -%}
+        <a
+          href="{{ card_product.url }}"
+          class="home-founding-card__cta home-founding-card__cta--link"
+          data-horo-home-event="choose_size_click"
+          data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
+        >
+          <span class="home-founding-card__cta-label">{{ cta_choose_size | escape }}</span>
+          <span class="home-founding-card__cta-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          </span>
+        </a>
+      {%- elsif can_add -%}
         <product-form data-section-id="{{ section_id }}" data-hide-errors="true">
           {%- form 'product',
             card_product,
@@ -175,6 +232,8 @@
               class="home-founding-card__cta"
               aria-haspopup="dialog"
               aria-label="{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}: {{ card_product.title | escape }}"
+              data-horo-home-event="add_to_cart_click"
+              data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
             >
               <span class="home-founding-card__cta-label">{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}</span>
               <span class="home-founding-card__cta-icon" aria-hidden="true">
@@ -185,7 +244,12 @@
           {%- endform -%}
         </product-form>
       {%- else -%}
-        <a href="{{ card_product.url }}" class="home-founding-card__cta home-founding-card__cta--link">
+        <a
+          href="{{ card_product.url }}"
+          class="home-founding-card__cta home-founding-card__cta--link"
+          data-horo-home-event="product_card_click"
+          data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
+        >
           <span class="home-founding-card__cta-label">{{ 'products.product.view_full_details' | t | default: 'View piece' }}</span>
           <span class="home-founding-card__cta-icon" aria-hidden="true">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
@@ -195,3 +259,4 @@
     </div>
   </div>
 </article>
+{%- endunless -%}

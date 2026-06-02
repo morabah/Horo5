@@ -50,6 +50,8 @@
               {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
               class="home-btn home-btn--primary"
               {% if section.settings.button_link == blank %}aria-disabled="true"{% endif %}
+              data-horo-home-event="hero_cta_click"
+              data-horo-home-props='{"cta":"primary"}'
             >
               {{ section.settings.button_label | escape }}
             </a>
@@ -59,11 +61,17 @@
               {% if section.settings.button_link_secondary != blank %}href="{{ section.settings.button_link_secondary }}"{% endif %}
               class="home-btn home-btn--secondary"
               {% if section.settings.button_link_secondary == blank %}aria-disabled="true"{% endif %}
+              data-horo-home-event="hero_cta_click"
+              data-horo-home-props='{"cta":"secondary"}'
             >
               {{ section.settings.button_label_secondary | escape }}
             </a>
           {%- endif -%}
         </div>
+
+        {%- if section.settings.trust_micro != blank -%}
+          <p class="home-hero-split__trust-micro">{{ section.settings.trust_micro | escape }}</p>
+        {%- endif -%}
       </div>
 
       <div class="home-hero-split__media">
@@ -254,6 +262,12 @@
       "id": "canvas_line",
       "label": "Canvas line (split layout)",
       "default": "We are the canvas. You are the story."
+    },
+    {
+      "type": "text",
+      "id": "trust_micro",
+      "label": "Trust micro-copy (under CTAs)",
+      "default": "Printed in Egypt · COD · Size exchange"
     },
     {
       "type": "range",

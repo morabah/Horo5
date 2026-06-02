@@ -541,7 +541,10 @@
     "footer": {
       "shop_heading": "Shop",
       "help_heading": "Help",
-      "about_heading": "About",
+      "about_heading": "Company",
+      "shop_by_mood": "Shop by Mood",
+      "shop_by_zodiac": "Shop by Zodiac",
+      "gift_ready": "Gift Ready",
       "all_products": "All Products",
       "shipping_delivery": "Shipping & Delivery",
       "journal": "The Journal",
@@ -846,6 +849,7 @@
       "shippingLabel": "Est. shipping",
       "shippingConfirmedAtCheckout": "Confirmed at checkout",
       "totalLabel": "Est. order total",
+      "choose_size": "Choose size",
       "added_to_bag": "Added to bag",
       "view_bag": "View bag",
       "continue_shopping": "Continue shopping",
@@ -896,6 +900,7 @@
       "popular_searches": "Popular searches"
     },
     "home": {
+      "choose_size": "Choose size",
       "hero_promise_line": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
       "hero_primary_cta": "Shop by Feeling",
       "hero_secondary_cta": "Find a Gift",

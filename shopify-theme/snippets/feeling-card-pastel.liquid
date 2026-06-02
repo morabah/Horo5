@@ -2,6 +2,8 @@
   assign feeling = card
   assign feeling_handle = feeling.handle | default: feeling.slug | default: '' | downcase
   assign feeling_label = override_label | default: feeling.title | default: feeling.name | default: feeling.display_name | default: 'Feeling'
+  assign feeling_subtitle = override_subtitle | default: ''
+  assign feeling_subtitle = override_subtitle | default: ''
   assign card_url = override_url | default: feeling.collection_url | default: feeling.collection.value.url
   if card_url == blank and feeling_handle != blank
     assign card_url = routes.collections_url | append: '/feeling-' | append: feeling_handle
@@ -18,8 +20,13 @@
     class="home-feeling-pastel-tile"
     style="background-color: {{ surface_color }};"
     aria-label="{{ feeling_label | escape }}"
+    data-horo-home-event="category_card_click"
+    data-horo-home-props='{"category":{{ icon_slug | json }}}'
   >
     {% render 'feeling-tile-icon', slug: icon_slug %}
     <span class="home-feeling-pastel-tile__label">{{ feeling_label | escape }}</span>
+    {%- if feeling_subtitle != blank -%}
+      <span class="home-feeling-pastel-tile__subtitle">{{ feeling_subtitle | escape }}</span>
+    {%- endif -%}
   </a>
 </li>

@@ -53,26 +53,35 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
             </h2>
           {%- endif -%}
         </div>
-        {%- if section.settings.view_all_label != blank and view_all_url != blank -%}
-          <a href="{{ view_all_url }}" class="home-section-link">
-            {{ section.settings.view_all_label | escape }}
-            <span aria-hidden="true"> →</span>
-          </a>
-        {%- endif -%}
       </div>
 
       {%- if primary_collection != blank and primary_collection.products_count > 0 -%}
         <div class="home-founding-grid">
           {%- assign cards_rendered = 0 -%}
-          {%- for product in primary_collection.products limit: product_limit -%}
-            {%- assign cards_rendered = cards_rendered | plus: 1 -%}
-            {% render 'horo-founding-product-card',
-              card_product: product,
-              lazy_load: cards_rendered > 3,
-              section_id: section.id
-            %}
+          {%- for product in primary_collection.products -%}
+            {%- if cards_rendered >= product_limit -%}
+              {%- break -%}
+            {%- endif -%}
+            {%- assign price_check = product.selected_or_first_available_variant.price | default: product.price | default: 0 -%}
+            {%- if price_check > 0 -%}
+              {%- assign cards_rendered = cards_rendered | plus: 1 -%}
+              {% render 'horo-founding-product-card',
+                card_product: product,
+                lazy_load: cards_rendered > 2,
+                section_id: section.id,
+                choose_size_label: section.settings.choose_size_label
+              %}
+            {%- endif -%}
           {%- endfor -%}
         </div>
+        {%- if section.settings.view_all_label != blank and view_all_url != blank -%}
+          <p class="home-founding-drop__footer-cta">
+            <a href="{{ view_all_url }}" class="home-section-link">
+              {{ section.settings.view_all_label | escape }}
+              <span aria-hidden="true"> →</span>
+            </a>
+          </p>
+        {%- endif -%}
       {%- elsif request.design_mode -%}
         <p>Add products to the {{ collection_handle | escape }} collection to populate this grid.</p>
       {%- endif -%}
@@ -115,6 +124,12 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
       "id": "collection",
       "label": "Collection",
       "info": "Homepage shows every product in this collection (up to the limit below)."
+    },
+    {
+      "type": "text",
+      "id": "choose_size_label",
+      "label": "Choose size button label",
+      "default": "Choose size"
     },
     {
       "type": "range",

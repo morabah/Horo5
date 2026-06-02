@@ -3,8 +3,8 @@
 .site-footer-mockup.horo-site-footer {
   background: linear-gradient(135deg, #721226 0%, #8c1230 48%, #630b1d 100%);
   color: #fee5e2;
-  padding-top: 48px;
-  padding-bottom: max(48px, env(safe-area-inset-bottom, 0px));
+  padding-top: 32px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
 }
 
 @media screen and (min-width: 750px) {
@@ -24,7 +24,7 @@
 .horo-site-footer__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 40px;
+  gap: 28px;
 }
 
 @media screen and (min-width: 990px) {

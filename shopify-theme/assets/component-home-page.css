@@ -8,6 +8,36 @@
 
 .horo-home-page {
   --home-content-max: min(1400px, calc(100vw - 40px));
+  --header-height-mobile: 4.4rem;
+  scroll-padding-top: max(
+    var(--header-height, var(--header-height-mobile)),
+    calc(env(safe-area-inset-top, 0px) + var(--header-height-mobile))
+  );
+}
+
+@media screen and (max-width: 989px) {
+  .horo-home-page #MainContent {
+    padding-top: max(
+      var(--header-height, var(--header-height-mobile)),
+      calc(env(safe-area-inset-top, 0px) + var(--header-height-mobile))
+    );
+  }
+}
+
+.horo-home-page #MainContent > .shopify-section,
+.horo-home-page .home-section,
+.horo-home-page .home-hero-split {
+  scroll-margin-top: max(
+    var(--header-height, var(--header-height-mobile)),
+    calc(env(safe-area-inset-top, 0px) + var(--header-height-mobile))
+  );
+}
+
+.horo-home-page .horo-site-footer-section {
+  scroll-margin-top: max(
+    var(--header-height, var(--header-height-mobile)),
+    calc(env(safe-area-inset-top, 0px) + var(--header-height-mobile))
+  );
 }
 
 /* ===== Zero inter-section spacing (web-next uses tight stacking) ===== */
@@ -117,6 +147,12 @@
   justify-content: center;
   margin-bottom: 9px;
   color: var(--color-horo-pulse);
+}
+
+@media screen and (max-width: 989px) {
+  .horo-home-page .home-trust-bar--mockup .home-trust-bar__icon {
+    margin-bottom: 0;
+  }
 }
 
 .horo-home-page .home-trust-bar__icon .horo-trust-icon {

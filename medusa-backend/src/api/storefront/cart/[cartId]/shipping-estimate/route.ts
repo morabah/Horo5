@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { updateCartWorkflow } from "@medusajs/medusa/core-flows"
 
+import { medusaAmountToEgp } from "../../../../../../lib/egp-amount"
 import {
   getShippingGovernorate,
   shippingEgpForGovernorate,
@@ -33,10 +34,7 @@ function applyStorefrontCors(req: MedusaRequest, res: MedusaResponse): void {
 }
 
 function cartSubtotalEgp(cart: QueryCart): number {
-  const raw = cart.item_subtotal ?? cart.subtotal ?? 0
-  const n = Number(raw)
-  if (!Number.isFinite(n)) return 0
-  return Math.round(n)
+  return medusaAmountToEgp(cart.item_subtotal ?? cart.subtotal ?? 0)
 }
 
 export async function OPTIONS(req: MedusaRequest, res: MedusaResponse) {

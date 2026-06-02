@@ -12,6 +12,8 @@ type GovernorateModalProps = {
   open: boolean;
   subtotalEgp: number;
   rates?: GovernorateRate[];
+  /** When false, hides Proceed until user picks a governorate (cart page modal). */
+  showContinueButton?: boolean;
   onClose: () => void;
   onSelect: (code: GovernorateCode) => void;
   onContinueToCheckout: () => void;
@@ -21,6 +23,7 @@ export function GovernorateModal({
   open,
   subtotalEgp,
   rates = GOVERNORATE_RATES,
+  showContinueButton = true,
   onClose,
   onSelect,
   onContinueToCheckout,
@@ -78,9 +81,13 @@ export function GovernorateModal({
             </li>
           ))}
         </ul>
-        <button type="button" className="btn btn-primary governorate-modal__continue" onClick={onContinueToCheckout}>
-          {copy.primaryCta}
-        </button>
+        {showContinueButton ? (
+          <button type="button" className="btn btn-primary governorate-modal__continue" onClick={onContinueToCheckout}>
+            {copy.primaryCta}
+          </button>
+        ) : (
+          <p className="governorate-modal__hint font-body text-sm text-clay">{copy.cartChooseGovernorate}</p>
+        )}
       </div>
     </dialog>
   );

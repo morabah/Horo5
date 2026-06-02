@@ -160,6 +160,37 @@
     });
   }
 
+  function checkoutGateMessage() {
+    var preview = document.querySelector('[data-horo-cart-cost-preview]');
+    if (preview) {
+      var msg = preview.getAttribute('data-label-checkout-needs-gov');
+      if (msg) return msg;
+    }
+    return 'Choose your governorate before checkout so we can show shipping.';
+  }
+
+  function showCheckoutGateError(checkoutBtn) {
+    var container = checkoutBtn.closest('.cart__ctas, .cart__footer, .drawer__footer, form') || checkoutBtn.parentElement;
+    if (!container) return;
+    var err = container.querySelector('[data-horo-checkout-gate-error]');
+    if (!err) {
+      err = document.createElement('p');
+      err.className = 'horo-checkout-gate-error';
+      err.setAttribute('data-horo-checkout-gate-error', '');
+      err.setAttribute('role', 'alert');
+      container.insertBefore(err, checkoutBtn);
+    }
+    err.textContent = checkoutGateMessage();
+    err.hidden = false;
+  }
+
+  function clearCheckoutGateErrors() {
+    document.querySelectorAll('[data-horo-checkout-gate-error]').forEach(function (el) {
+      el.hidden = true;
+      el.textContent = '';
+    });
+  }
+
   function bindCheckoutGate() {
     document.querySelectorAll('button[name="checkout"], input[name="checkout"]').forEach(function (btn) {
       if (btn.getAttribute('data-horo-checkout-gate') === 'true') return;
@@ -170,6 +201,7 @@
           var select = document.querySelector('[data-horo-cost-governorate]');
           if (!select || select.value) return;
           evt.preventDefault();
+          showCheckoutGateError(btn);
           select.focus();
           select.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         },
@@ -199,6 +231,7 @@
         } catch (_e2) {
           /* ignore */
         }
+        if (select.value) clearCheckoutGateErrors();
         render(root);
         if (select.value) persistGovernorateToCart(root, select.value);
       });

@@ -314,6 +314,7 @@
       "shippingLabel": "الشحن المقدر",
       "shippingConfirmedAtCheckout": "يتأكد عند الدفع",
       "totalLabel": "الإجمالي المقدر",
+      "choose_size": "اختر المقاس",
       "added_to_bag": "أُضيف إلى الحقيبة",
       "view_bag": "عرض الحقيبة",
       "continue_shopping": "واصل التسوق",
@@ -364,6 +365,7 @@
       "popular_searches": "بحث شائع"
     },
     "home": {
+      "choose_size": "اختر المقاس",
       "hero_promise_line": "تيشيرتات فنانين للمشاعر واللحظات والهدايا اللي ليها معنى.",
       "hero_primary_cta": "تسوّق حسب الشعور",
       "hero_secondary_cta": "لقّي هدية",

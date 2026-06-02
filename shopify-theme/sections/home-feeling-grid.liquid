@@ -34,6 +34,9 @@ User should reach product in 1–2 clicks.
             {{ section.settings.heading | escape }}
           </h2>
         {%- endif -%}
+        {%- if section.settings.subheading != blank -%}
+          <p class="home-section-subheading">{{ section.settings.subheading | escape }}</p>
+        {%- endif -%}
       </div>
       {%- if section.settings.feelings_link_label != blank -%}
         <a href="{{ section.settings.feelings_link | default: '/pages/feelings' }}" class="home-section-link home-feeling-grid__all-link">
@@ -102,7 +105,13 @@ User should reach product in 1–2 clicks.
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Shop by Feeling"
+      "default": "Shop by meaning"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Choose the story first. Then pick the design."
     },
     {
       "type": "text",
@@ -119,9 +128,9 @@ User should reach product in 1–2 clicks.
       "type": "range",
       "id": "feeling_limit",
       "min": 3,
-      "max": 8,
+      "max": 6,
       "step": 1,
-      "default": 5,
+      "default": 4,
       "label": "Maximum feelings (pastel)"
     },
     {

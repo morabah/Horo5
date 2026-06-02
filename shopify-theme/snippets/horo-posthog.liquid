@@ -102,6 +102,32 @@
           posthogEvent('exit_intent_shown', { coupon_code: e.detail.coupon_code });
         }
       });
+
+      // Homepage conversion events (hero, products, categories, gift, WhatsApp)
+      if (document.body.classList.contains('horo-home-page')) {
+        document.addEventListener('click', function (e) {
+          var tracked = e.target.closest('[data-horo-home-event]');
+          if (!tracked) return;
+          var name = tracked.getAttribute('data-horo-home-event');
+          var props = {};
+          var rawProps = tracked.getAttribute('data-horo-home-props');
+          if (rawProps) {
+            try {
+              props = JSON.parse(rawProps);
+            } catch (_err) {
+              props = {};
+            }
+          }
+          posthogEvent(name, props);
+        });
+
+        var searchToggle = document.querySelector('[data-horo-search-toggle], .header__search, [aria-controls*="search"]');
+        if (searchToggle) {
+          searchToggle.addEventListener('click', function () {
+            posthogEvent('search_open', { surface: 'home_header' });
+          });
+        }
+      }
     })();
   </script>
 {%- endif -%}

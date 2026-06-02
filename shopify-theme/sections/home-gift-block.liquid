@@ -22,11 +22,20 @@
           {%- if section.settings.body != blank -%}
             <p class="home-gift-banner__body">{{ section.settings.body | escape }}</p>
           {%- endif -%}
+          {%- if section.settings.show_occasion_chips -%}
+            <ul class="home-gift-banner__chips" role="list">
+              <li>Birthdays</li>
+              <li>Graduation</li>
+              <li>Just because</li>
+            </ul>
+          {%- endif -%}
           {%- if section.settings.button_label != blank -%}
-            <div style="margin-top: 1.25rem;">
+            <div class="home-gift-banner__cta-wrap">
               <a
                 {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
                 class="home-btn home-btn--primary"
+                data-horo-home-event="gift_block_cta_click"
+                data-horo-home-props='{"cta":"shop_gift_ready"}'
               >
                 {{ section.settings.button_label | escape }}
               </a>
@@ -106,6 +115,12 @@
       "type": "url",
       "id": "button_link",
       "label": "Button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_occasion_chips",
+      "label": "Show occasion chips",
+      "default": true
     },
     {
       "type": "image_picker",

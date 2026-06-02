@@ -5,10 +5,11 @@
       "settings": {
         "hero_layout": "split",
         "heading": "Wear What You Feel",
-        "subheading": "Artist-made passion wear for feelings, identity, and meaningful gifts.",
-        "rhythm_line": "Find Your Rhythm",
-        "canvas_line": "We are the canvas. You are the story.",
-        "button_label": "Shop the Founding Drop",
+        "subheading": "Artist-made graphic T-shirts printed in Egypt for moods, identity, and meaningful gifts.",
+        "rhythm_line": "",
+        "canvas_line": "",
+        "trust_micro": "Printed in Egypt · COD · Size exchange",
+        "button_label": "Shop Launch Designs",
         "button_link": "/collections/founding-drop",
         "button_label_secondary": "Shop by Meaning",
         "button_link_secondary": "/#shop-by-meaning",
@@ -50,37 +51,30 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "Payment options shown at checkout"
+            "label": "COD available"
           }
         },
         "badge_4": {
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "clearFitDetails",
-            "label": "Clear fit details"
-          }
-        },
-        "badge_5": {
-          "type": "trust_badge",
-          "settings": {
-            "show_badge": true,
-            "icon": "whatsapp",
-            "label": "WhatsApp size help before dispatch"
+            "icon": "exchange",
+            "label": "Size exchange"
           }
         }
       },
-      "block_order": ["badge_1", "badge_2", "badge_3", "badge_4", "badge_5"]
+      "block_order": ["badge_1", "badge_2", "badge_3", "badge_4"]
     },
     "home_founding_drop": {
       "type": "home-founding-drop",
       "settings": {
         "eyebrow": "THE FOUNDING DROP",
         "heading": "The first HORO drop.",
+        "choose_size_label": "Choose size",
         "view_all_label": "See all launch designs",
         "view_all_link": "/collections/founding-drop",
         "collection": "founding-drop",
-        "product_limit": 11
+        "product_limit": 4
       }
     },
     "feeling_grid": {
@@ -88,30 +82,78 @@
       "settings": {
         "layout_style": "pastel",
         "eyebrow": "START WITH YOUR RHYTHM",
-        "heading": "Shop the launch by meaning",
+        "heading": "Shop by meaning",
+        "subheading": "Choose the story first. Then pick the design.",
         "feelings_link_label": "See all launch designs",
         "feelings_link": "/collections/founding-drop",
-        "feeling_limit": 3
+        "feeling_limit": 4
       }
     },
     "home_gift_block": {
       "type": "home-gift-block",
       "settings": {
-        "show_section": false,
+        "show_section": true,
         "eyebrow": "GIFT READY",
         "heading": "More than a gift.",
-        "heading_line_2": "",
-        "body": "It's a feeling they'll wear. Thoughtful designs for birthdays, anniversaries, graduations, and just because.",
-        "button_label": "Find the perfect gift →",
-        "button_link": "/pages/gifts-hub"
+        "heading_line_2": "A feeling they'll wear.",
+        "body": "Thoughtful designs for someone close.",
+        "button_label": "Shop Gift-Ready Tees",
+        "button_link": "/pages/gifts-hub",
+        "show_occasion_chips": true
       }
+    },
+    "home_reassurance": {
+      "type": "home-service-trust",
+      "settings": {
+        "padding_top": 8,
+        "padding_bottom": 12
+      },
+      "blocks": {
+        "fit": {
+          "type": "item",
+          "settings": {
+            "icon": "fit",
+            "title": "Find your fit with confidence",
+            "body": "Clear size guide and model references on every product page.",
+            "link": "/pages/size-guide"
+          }
+        },
+        "delivery": {
+          "type": "item",
+          "settings": {
+            "icon": "delivery",
+            "title": "Delivery across Egypt",
+            "body": "Reliable delivery. Track your order from our studio to your door.",
+            "link": "/pages/faq-horo"
+          }
+        },
+        "exchange": {
+          "type": "item",
+          "settings": {
+            "icon": "exchange",
+            "title": "Easy exchanges",
+            "body": "Not the right fit? Hassle-free size exchanges.",
+            "link": "/pages/exchange-policy-horo"
+          }
+        },
+        "whatsapp": {
+          "type": "item",
+          "settings": {
+            "icon": "whatsapp",
+            "title": "WhatsApp size help",
+            "body": "Message us before dispatch if you are between sizes.",
+            "link": ""
+          }
+        }
+      },
+      "block_order": ["fit", "delivery", "exchange", "whatsapp"]
     },
     "home_why_horo": {
       "type": "home-why-horo",
       "settings": {
         "eyebrow": "OUR STORY",
         "heading": "Ritual. Rhythm. Connection.",
-        "subheading": "HORO is a wearable-art brand born in Egypt. We turn emotions into art and art into pieces you live in. Every design is a ritual. Every wear is a reminder. We are the canvas. You are the story."
+        "subheading": "HORO is a wearable-art brand from Egypt. We turn feelings, signs, and personal moments into graphic T-shirts made to be worn, gifted, and remembered."
       },
       "blocks": {
         "reason_1": {
@@ -127,7 +169,7 @@
           "settings": {
             "icon": "heart",
             "title": "Made with intention",
-            "body": "Mindful materials. Responsible production."
+            "body": "Mindful materials and careful production."
           }
         },
         "reason_3": {
@@ -144,10 +186,11 @@
   },
   "order": [
     "home_hero",
-    "home_founding_drop",
     "the_proof",
+    "home_founding_drop",
     "feeling_grid",
     "home_gift_block",
+    "home_reassurance",
     "home_why_horo"
   ]
 }

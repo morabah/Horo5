@@ -499,12 +499,29 @@
 }
 
 @media (max-width: 759px) {
-  .home-hero-split__media {
+  .home-hero-split__copy {
     order: 1;
+    padding-top: 20px;
+    padding-bottom: 16px;
   }
 
-  .home-hero-split__copy {
+  .home-hero-split__media {
     order: 2;
+    min-height: clamp(220px, 52vw, 300px);
+  }
+
+  .home-hero-split__rhythm,
+  .home-hero-split__canvas {
+    display: none;
+  }
+
+  .home-hero-split__actions {
+    margin-top: 20px;
+  }
+
+  .home-hero-split__subtitle {
+    margin-top: 12px;
+    font-size: 15px;
   }
 }
 
@@ -568,6 +585,16 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 32px;
+}
+
+.home-hero-split__trust-micro {
+  margin: 14px 0 0;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #776d70;
+  line-height: 1.5;
 }
 
 .home-hero-split__media {

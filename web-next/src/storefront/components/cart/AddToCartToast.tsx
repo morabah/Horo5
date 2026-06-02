@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname } from 'next/navigation';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useCart } from '../../cart/CartContext';
@@ -12,7 +12,14 @@ import { useDictionary } from '../../i18n/ui-locale';
 import { formatEgp } from '../../utils/formatPrice';
 import { AppIcon } from '../AppIcon';
 
-const AUTO_DISMISS_MS = 10_000;
+const DESKTOP_DISMISS_MS = 10_000;
+const MOBILE_DISMISS_MS = 5_500;
+const MOBILE_MAX_WIDTH_PX = 640;
+
+function readCompactViewport(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`).matches;
+}
 
 export function AddToCartToast() {
   const { addToCartToastOpen, dismissAddToCartToast, lastAddedItem } = useCart();
@@ -24,10 +31,22 @@ export function AddToCartToast() {
   const panelRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trackedRef = useRef(false);
+  const [compactViewport, setCompactViewport] = useState(false);
+
+  const dismissMs = compactViewport ? MOBILE_DISMISS_MS : DESKTOP_DISMISS_MS;
 
   const close = useCallback(() => {
     dismissAddToCartToast();
   }, [dismissAddToCartToast]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const media = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`);
+    const sync = () => setCompactViewport(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
 
   useEffect(() => {
     if (!addToCartToastOpen) {
@@ -38,11 +57,11 @@ export function AddToCartToast() {
       trackedRef.current = true;
       trackAddToCartToastShown(lastAddedItem.productSlug);
     }
-    timerRef.current = setTimeout(close, AUTO_DISMISS_MS);
+    timerRef.current = setTimeout(close, dismissMs);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [addToCartToastOpen, close, lastAddedItem]);
+  }, [addToCartToastOpen, close, dismissMs, lastAddedItem]);
 
   const prevPathRef = useRef<string | null>(null);
   useEffect(() => {
@@ -63,8 +82,8 @@ export function AddToCartToast() {
 
   const resumeTimer = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(close, AUTO_DISMISS_MS);
-  }, [close]);
+    timerRef.current = setTimeout(close, dismissMs);
+  }, [close, dismissMs]);
 
   const handleViewBag = useCallback(() => {
     trackCartDrawerOpenedManually('view_bag_toast');
@@ -81,7 +100,7 @@ export function AddToCartToast() {
 
   return createPortal(
     <div
-      className="add-to-cart-toast-host"
+      className={`add-to-cart-toast-host${compactViewport ? ' add-to-cart-toast-host--compact' : ''}`}
       role="status"
       aria-live="polite"
       aria-atomic="true"
@@ -91,7 +110,7 @@ export function AddToCartToast() {
       onFocusCapture={pauseTimer}
       onBlurCapture={resumeTimer}
     >
-      <div ref={panelRef} className="add-to-cart-toast">
+      <div ref={panelRef} className={`add-to-cart-toast${compactViewport ? ' add-to-cart-toast--compact' : ''}`}>
         <header className="add-to-cart-toast__header">
           <div className="add-to-cart-toast__header-title">
             <span className="mini-cart-check" aria-hidden>
@@ -109,20 +128,22 @@ export function AddToCartToast() {
           </button>
         </header>
 
-        <div className="mini-cart-item add-to-cart-toast__item">
-          {addedImage ? (
-            <div className="mini-cart-item-image">
-              <img src={imgUrl(addedImage, 240)} alt="" width={92} height={115} />
+        <div className="add-to-cart-toast__rich">
+          <div className="mini-cart-item add-to-cart-toast__item">
+            {addedImage ? (
+              <div className="mini-cart-item-image">
+                <img src={imgUrl(addedImage, 240)} alt="" width={92} height={115} />
+              </div>
+            ) : (
+              <div className="mini-cart-item-image add-to-cart-toast__image-placeholder" aria-hidden />
+            )}
+            <div className="mini-cart-item-info">
+              <p className="mini-cart-item-name">{addedName}</p>
+              <p className="mini-cart-item-meta">
+                {miniCopy.sizeLabel}: {lastAddedItem.size} · {miniCopy.qtyLabel}: {lastAddedItem.qty}
+              </p>
+              <p className="mini-cart-item-price">{formatEgp(addedPrice)}</p>
             </div>
-          ) : (
-            <div className="mini-cart-item-image add-to-cart-toast__image-placeholder" aria-hidden />
-          )}
-          <div className="mini-cart-item-info">
-            <p className="mini-cart-item-name">{addedName}</p>
-            <p className="mini-cart-item-meta">
-              {miniCopy.sizeLabel}: {lastAddedItem.size} · {miniCopy.qtyLabel}: {lastAddedItem.qty}
-            </p>
-            <p className="mini-cart-item-price">{formatEgp(addedPrice)}</p>
           </div>
         </div>
 

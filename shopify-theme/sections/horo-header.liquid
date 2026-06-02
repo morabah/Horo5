@@ -144,7 +144,9 @@
     }
 
     setHeaderHeight() {
-      document.documentElement.style.setProperty('--header-height', `${this.header.offsetHeight}px`);
+      const heightPx = `${this.header.offsetHeight}px`;
+      document.documentElement.style.setProperty('--header-height', heightPx);
+      document.documentElement.style.setProperty('--header-height-mobile', heightPx);
     }
 
     disconnectedCallback() {

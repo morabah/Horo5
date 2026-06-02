@@ -1,10 +1,12 @@
 /**
- * Upper-right "added to bag" mini-cart toast — product image, price, variant; 3s auto-dismiss.
+ * Upper-right "added to bag" toast — rich on desktop; compact header + CTAs on mobile (≤640px).
  */
 (function () {
   'use strict';
 
-  var DISMISS_MS = 10000;
+  var DESKTOP_DISMISS_MS = 10000;
+  var MOBILE_DISMISS_MS = 5500;
+  var COMPACT_MAX_WIDTH = 640;
   var host = null;
   var timer = null;
 
@@ -20,6 +22,14 @@
         cartUrl: '/cart',
       }
     );
+  }
+
+  function isCompactViewport() {
+    return window.matchMedia('(max-width: ' + COMPACT_MAX_WIDTH + 'px)').matches;
+  }
+
+  function dismissMs() {
+    return isCompactViewport() ? MOBILE_DISMISS_MS : DESKTOP_DISMISS_MS;
   }
 
   function escapeHtml(value) {
@@ -103,10 +113,35 @@
 
   function scheduleDismiss() {
     if (timer) window.clearTimeout(timer);
-    timer = window.setTimeout(dismiss, DISMISS_MS);
+    timer = window.setTimeout(dismiss, dismissMs());
   }
 
-  function buildToastHtml(labels, item) {
+  function buildCompactToastHtml(labels) {
+    return (
+      '<div class="horo-added-to-bag-toast horo-added-to-bag-toast--compact">' +
+      '<header class="horo-added-to-bag-toast__header">' +
+      '<div class="horo-added-to-bag-toast__header-title">' +
+      '<span class="horo-added-to-bag-toast__check" aria-hidden="true">✓</span>' +
+      '<span class="horo-added-to-bag-toast__heading">' +
+      escapeHtml(labels.title) +
+      '</span></div>' +
+      '<button type="button" class="horo-added-to-bag-toast__close" aria-label="' +
+      escapeHtml(labels.closeLabel) +
+      '">×</button>' +
+      '</header>' +
+      '<div class="horo-added-to-bag-toast__actions">' +
+      '<a class="horo-added-to-bag-toast__cta horo-added-to-bag-toast__cta--primary" href="' +
+      escapeHtml(labels.cartUrl) +
+      '">' +
+      escapeHtml(labels.viewBag) +
+      '</a>' +
+      '<button type="button" class="horo-added-to-bag-toast__cta horo-added-to-bag-toast__cta--ghost">' +
+      escapeHtml(labels.continueShopping) +
+      '</button></div></div>'
+    );
+  }
+
+  function buildRichToastHtml(labels, item) {
     var meta = '';
     if (item.size) {
       meta =
@@ -173,29 +208,17 @@
     dismiss();
     var labels = copy();
     var item = lineItemFromState(cartState);
+    var compact = isCompactViewport();
 
     host = document.createElement('div');
-    host.className = 'horo-added-to-bag-toast-host';
+    host.className = 'horo-added-to-bag-toast-host' + (compact ? ' horo-added-to-bag-toast-host--compact' : '');
     host.setAttribute('role', 'status');
     host.setAttribute('aria-live', 'polite');
 
-    if (item && item.title) {
-      host.innerHTML = buildToastHtml(labels, item);
+    if (compact || !item || !item.title) {
+      host.innerHTML = buildCompactToastHtml(labels);
     } else {
-      host.innerHTML =
-        '<div class="horo-added-to-bag-toast horo-added-to-bag-toast--compact">' +
-        '<p class="horo-added-to-bag-toast__heading-only"><span aria-hidden="true">✓</span> ' +
-        escapeHtml(labels.title) +
-        '</p>' +
-        '<div class="horo-added-to-bag-toast__actions">' +
-        '<a class="horo-added-to-bag-toast__cta horo-added-to-bag-toast__cta--primary" href="' +
-        escapeHtml(labels.cartUrl) +
-        '">' +
-        escapeHtml(labels.viewBag) +
-        '</a>' +
-        '<button type="button" class="horo-added-to-bag-toast__cta horo-added-to-bag-toast__cta--ghost">' +
-        escapeHtml(labels.continueShopping) +
-        '</button></div></div>';
+      host.innerHTML = buildRichToastHtml(labels, item);
     }
 
     var closeBtn = host.querySelector('.horo-added-to-bag-toast__close');

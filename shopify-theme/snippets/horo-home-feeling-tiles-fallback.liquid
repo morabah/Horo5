@@ -1,14 +1,13 @@
 {%- comment -%}
   Default homepage feeling tiles when metaobjects or collections are not seeded yet.
-  Launch taxonomy: Zodiac / Mood / Lifestyle (3 tiles).
-  Legacy full taxonomy kept for future restoration:
-  Lifestyle / Zodiac / Mood / Dream / Art.
+  Launch taxonomy: Zodiac / Mood / Lifestyle / Gift Ready.
 {%- endcomment -%}
 {%- liquid
-  assign limit = feeling_limit | default: 3
-  assign fallback_slugs = 'zodiac,mood,lifestyle' | split: ','
-  assign fallback_labels = 'Sign Capsule,Mood,Lifestyle' | split: ','
-  assign surfaces = '#f8eaea,#f4ede5,#edf1ea' | split: ','
+  assign limit = feeling_limit | default: 4
+  assign fallback_slugs = 'zodiac,mood,lifestyle,gift' | split: ','
+  assign fallback_labels = 'Zodiac Signs,Mood,Lifestyle,Gift Ready' | split: ','
+  assign fallback_subtitles = '12 designs,Feelings you can wear,Daily identity pieces,Thoughtful designs for someone close' | split: ','
+  assign surfaces = '#f8eaea,#f4ede5,#edf1ea,#f5eef3' | split: ','
 -%}
 
 <ul class="home-feeling-pastel-grid" role="list">
@@ -17,7 +16,8 @@
       {%- break -%}
     {%- endif -%}
     {%- assign label = fallback_labels[forloop.index0] -%}
-    {%- assign surface_index = forloop.index0 | modulo: 3 -%}
+    {%- assign subtitle = fallback_subtitles[forloop.index0] -%}
+    {%- assign surface_index = forloop.index0 | modulo: 4 -%}
     {%- assign surface_color = surfaces[surface_index] -%}
     {%- assign card_url = '/collections/founding-drop' -%}
     {%- if slug == 'zodiac' -%}
@@ -35,6 +35,13 @@
       {%- if mood_lifestyle != blank -%}
         {%- assign card_url = mood_lifestyle.url -%}
       {%- endif -%}
+    {%- elsif slug == 'gift' -%}
+      {%- assign gift_collection = collections['gift-ready'] -%}
+      {%- if gift_collection != blank -%}
+        {%- assign card_url = gift_collection.url -%}
+      {%- else -%}
+        {%- assign card_url = '/pages/gifts-hub' -%}
+      {%- endif -%}
     {%- endif -%}
     <li class="home-feeling-pastel-grid__item" role="listitem">
       <a
@@ -42,9 +49,14 @@
         class="home-feeling-pastel-tile"
         style="background-color: {{ surface_color }};"
         aria-label="{{ label | escape }}"
+        data-horo-home-event="category_card_click"
+        data-horo-home-props='{"category":{{ slug | json }}}'
       >
         {% render 'feeling-tile-icon', slug: slug %}
         <span class="home-feeling-pastel-tile__label">{{ label | escape }}</span>
+        {%- if subtitle != blank -%}
+          <span class="home-feeling-pastel-tile__subtitle">{{ subtitle | escape }}</span>
+        {%- endif -%}
       </a>
     </li>
   {%- endfor -%}

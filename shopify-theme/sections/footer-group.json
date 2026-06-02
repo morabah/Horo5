@@ -2,54 +2,12 @@
   "name": "HORO Footer Group",
   "type": "footer",
   "sections": {
-    "home_service_trust": {
-      "type": "home-service-trust",
-      "settings": {
-        "padding_top": 8,
-        "padding_bottom": 12
-      },
-      "blocks": {
-        "fit": {
-          "type": "item",
-          "settings": {
-            "icon": "fit",
-            "title": "Find your fit with confidence",
-            "body": "Clear size guide and model references on every product page.",
-            "link": "/pages/size-guide"
-          }
-        },
-        "delivery": {
-          "type": "item",
-          "settings": {
-            "icon": "delivery",
-            "title": "Delivery across Egypt",
-            "body": "Reliable delivery. Track your order from our studio to your door.",
-            "link": "/pages/faq-horo"
-          }
-        },
-        "exchange": {
-          "type": "item",
-          "settings": {
-            "icon": "exchange",
-            "title": "Easy exchanges",
-            "body": "Not the right fit? We've got you. Hassle-free size exchanges.",
-            "link": "/pages/exchange-policy-horo"
-          }
-        }
-      },
-      "block_order": [
-        "fit",
-        "delivery",
-        "exchange"
-      ]
-    },
     "horo_site_footer": {
       "type": "horo-site-footer",
       "settings": {}
     }
   },
   "order": [
-    "home_service_trust",
     "horo_site_footer"
   ]
 }
