@@ -1,6 +1,7 @@
 {%- comment -%}
   HORO founding drop card — parity with web-next HomeFoundingProductCard.
-  Accepts: card_product, lazy_load (bool), section_id, choose_size_label
+  Accepts: card_product, card_variant (optional; parent should pass resolved variant), lazy_load, section_id, choose_size_label
+  Variant pick (when card_variant omitted): prefer available M, else first available, else selected_or_first_available — keep in sync with home-founding-drop.liquid.
 {%- endcomment -%}
 {%- liquid
   assign cta_choose_size = choose_size_label | default: 'Choose size'
@@ -17,23 +18,27 @@
     assign loading_value = 'eager'
   endif
 
-  assign selected_variant = nil
-  assign first_available = nil
+  if card_variant != blank
+    assign selected_variant = card_variant
+  else
+    assign selected_variant = nil
+    assign first_available = nil
 
-  for variant in card_product.variants
-    if variant.available
-      if first_available == nil
-        assign first_available = variant
+    for variant in card_product.variants
+      if variant.available
+        if first_available == nil
+          assign first_available = variant
+        endif
+        if variant.option1 == 'M' or variant.option2 == 'M' or variant.option3 == 'M'
+          assign selected_variant = variant
+          break
+        endif
       endif
-      if variant.option1 == 'M' or variant.option2 == 'M' or variant.option3 == 'M'
-        assign selected_variant = variant
-        break
-      endif
+    endfor
+
+    if selected_variant == nil
+      assign selected_variant = first_available | default: card_product.selected_or_first_available_variant
     endif
-  endfor
-
-  if selected_variant == nil
-    assign selected_variant = first_available | default: card_product.selected_or_first_available_variant
   endif
 
   assign price_cents = selected_variant.price | default: card_product.price | default: 0

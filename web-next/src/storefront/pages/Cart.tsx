@@ -761,8 +761,7 @@ export function Cart({
   useEffect(() => {
     if (typeof document === 'undefined') return undefined;
     const root = document.documentElement;
-    const needsFabOffset = undoLine != null || itemCount > 0;
-    if (needsFabOffset) {
+    if (undoLine != null) {
       root.style.setProperty('--horo-bottom-fab-offset', '5.5rem');
     } else {
       root.style.removeProperty('--horo-bottom-fab-offset');
@@ -770,7 +769,7 @@ export function Cart({
     return () => {
       root.style.removeProperty('--horo-bottom-fab-offset');
     };
-  }, [undoLine, itemCount]);
+  }, [undoLine]);
 
   const undoProductName = undoLine ? getProduct(undoLine.productSlug)?.name ?? 'Item' : '';
 

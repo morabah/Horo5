@@ -58,15 +58,37 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
       {%- if primary_collection != blank and primary_collection.products_count > 0 -%}
         <div class="home-founding-grid">
           {%- assign cards_rendered = 0 -%}
+          {%- comment -%}
+            Variant pick mirrors horo-founding-product-card: prefer available M, else first available, else selected_or_first_available.
+          {%- endcomment -%}
           {%- for product in primary_collection.products -%}
             {%- if cards_rendered >= product_limit -%}
               {%- break -%}
             {%- endif -%}
-            {%- assign price_check = product.selected_or_first_available_variant.price | default: product.price | default: 0 -%}
+            {%- liquid
+              assign display_variant = nil
+              assign first_available = nil
+              for variant in product.variants
+                if variant.available
+                  if first_available == nil
+                    assign first_available = variant
+                  endif
+                  if variant.option1 == 'M' or variant.option2 == 'M' or variant.option3 == 'M'
+                    assign display_variant = variant
+                    break
+                  endif
+                endif
+              endfor
+              if display_variant == nil
+                assign display_variant = first_available | default: product.selected_or_first_available_variant
+              endif
+              assign price_check = display_variant.price | default: product.price | default: 0
+            -%}
             {%- if price_check > 0 -%}
               {%- assign cards_rendered = cards_rendered | plus: 1 -%}
               {% render 'horo-founding-product-card',
                 card_product: product,
+                card_variant: display_variant,
                 lazy_load: cards_rendered > 2,
                 section_id: section.id,
                 choose_size_label: section.settings.choose_size_label

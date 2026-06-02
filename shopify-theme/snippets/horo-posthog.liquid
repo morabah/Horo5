@@ -78,12 +78,18 @@
         posthogEvent('cart_viewed', {});
       }
 
-      // checkout_started — Shopify checkout begin
-      document.addEventListener('click', function (e) {
-        var btn = e.target.closest('[name="checkout"], button[type="submit"][name="checkout"]');
-        if (btn) {
-          posthogEvent('checkout_started', { currency: '{{ shop.currency | escape }}' });
-        }
+      // checkout analytics — gated by horo-cart-cost-preview governorate gate
+      window.addEventListener('horo:checkoutBlocked', function (e) {
+        posthogEvent('checkout_blocked_missing_governorate', {
+          surface: e.detail && e.detail.surface ? e.detail.surface : 'unknown'
+        });
+      });
+
+      window.addEventListener('horo:checkoutProceeding', function (e) {
+        posthogEvent('checkout_started', {
+          currency: '{{ shop.currency | escape }}',
+          surface: e.detail && e.detail.surface ? e.detail.surface : 'unknown'
+        });
       });
 
       // quiz_complete — custom event

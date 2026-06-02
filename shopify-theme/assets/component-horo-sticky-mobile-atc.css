@@ -68,4 +68,8 @@
     flex-shrink: 0;
     min-inline-size: 9.5rem;
   }
+
+  body:has(.horo-sticky-mobile-atc:not([hidden])) #MainContent {
+    padding-block-end: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
 }

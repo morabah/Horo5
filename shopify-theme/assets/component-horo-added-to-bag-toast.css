@@ -177,7 +177,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.75rem;
+  min-height: 44px;
   padding: 0.5rem 1rem;
   border-radius: 999px;
   font-size: 0.6875rem;
@@ -216,6 +216,7 @@
   max-width: min(20rem, calc(100vw - 1.5rem));
 }
 
+/* Compact toast tier (640px) — intentional; header/nav breakpoints use 750px */
 @media screen and (max-width: 640px) {
   .horo-added-to-bag-toast-host--compact {
     top: max(4.75rem, calc(env(safe-area-inset-top, 0px) + 3.75rem));

@@ -15,15 +15,6 @@
   );
 }
 
-@media screen and (max-width: 989px) {
-  .horo-home-page #MainContent {
-    padding-top: max(
-      var(--header-height, var(--header-height-mobile)),
-      calc(env(safe-area-inset-top, 0px) + var(--header-height-mobile))
-    );
-  }
-}
-
 .horo-home-page #MainContent > .shopify-section,
 .horo-home-page .home-section,
 .horo-home-page .home-hero-split {

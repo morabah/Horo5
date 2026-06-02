@@ -23,6 +23,19 @@
     };
   }
 
+  function previewSurface(root) {
+    return root.classList.contains('horo-cart-cost-preview--drawer') ? 'drawer' : 'cart_page';
+  }
+
+  function checkoutGateScope(root) {
+    if (previewSurface(root) === 'drawer') {
+      return root.closest('cart-drawer') || document.querySelector('cart-drawer, .cart-drawer') || root;
+    }
+    var footer = document.getElementById('main-cart-footer');
+    if (footer) return footer;
+    return root.closest('.cart__footer') || root;
+  }
+
   function formatMoney(cents, locale) {
     var amount = Math.round(Number(cents) / 100);
     if (!Number.isFinite(amount)) amount = 0;
@@ -160,16 +173,15 @@
     });
   }
 
-  function checkoutGateMessage() {
-    var preview = document.querySelector('[data-horo-cart-cost-preview]');
-    if (preview) {
-      var msg = preview.getAttribute('data-label-checkout-needs-gov');
+  function checkoutGateMessage(root) {
+    if (root) {
+      var msg = root.getAttribute('data-label-checkout-needs-gov');
       if (msg) return msg;
     }
     return 'Choose your governorate before checkout so we can show shipping.';
   }
 
-  function showCheckoutGateError(checkoutBtn) {
+  function showCheckoutGateError(checkoutBtn, root) {
     var container = checkoutBtn.closest('.cart__ctas, .cart__footer, .drawer__footer, form') || checkoutBtn.parentElement;
     if (!container) return;
     var err = container.querySelector('[data-horo-checkout-gate-error]');
@@ -180,28 +192,40 @@
       err.setAttribute('role', 'alert');
       container.insertBefore(err, checkoutBtn);
     }
-    err.textContent = checkoutGateMessage();
+    err.textContent = checkoutGateMessage(root);
     err.hidden = false;
   }
 
-  function clearCheckoutGateErrors() {
-    document.querySelectorAll('[data-horo-checkout-gate-error]').forEach(function (el) {
+  function clearCheckoutGateErrors(scope) {
+    var root = scope && scope.querySelectorAll ? scope : document;
+    root.querySelectorAll('[data-horo-checkout-gate-error]').forEach(function (el) {
       el.hidden = true;
       el.textContent = '';
     });
   }
 
-  function bindCheckoutGate() {
-    document.querySelectorAll('button[name="checkout"], input[name="checkout"]').forEach(function (btn) {
-      if (btn.getAttribute('data-horo-checkout-gate') === 'true') return;
-      btn.setAttribute('data-horo-checkout-gate', 'true');
+  function bindCheckoutGate(root, select) {
+    var scope = checkoutGateScope(root);
+    var surface = previewSurface(root);
+    var gateAttr = 'data-horo-checkout-gate-' + surface;
+
+    scope.querySelectorAll('button[name="checkout"], input[name="checkout"]').forEach(function (btn) {
+      if (btn.getAttribute(gateAttr) === 'true') return;
+      btn.setAttribute(gateAttr, 'true');
       btn.addEventListener(
         'click',
         function (evt) {
-          var select = document.querySelector('[data-horo-cost-governorate]');
-          if (!select || select.value) return;
+          if (!select || select.value) {
+            window.dispatchEvent(
+              new CustomEvent('horo:checkoutProceeding', { detail: { surface: surface } })
+            );
+            return;
+          }
           evt.preventDefault();
-          showCheckoutGateError(btn);
+          showCheckoutGateError(btn, root);
+          window.dispatchEvent(
+            new CustomEvent('horo:checkoutBlocked', { detail: { surface: surface } })
+          );
           select.focus();
           select.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         },
@@ -231,7 +255,7 @@
         } catch (_e2) {
           /* ignore */
         }
-        if (select.value) clearCheckoutGateErrors();
+        if (select.value) clearCheckoutGateErrors(checkoutGateScope(root));
         render(root);
         if (select.value) persistGovernorateToCart(root, select.value);
       });
@@ -239,7 +263,7 @@
     }
 
     render(root);
-    bindCheckoutGate();
+    bindCheckoutGate(root, select);
   }
 
   function initAll() {

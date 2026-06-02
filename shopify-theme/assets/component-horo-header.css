@@ -573,6 +573,14 @@
   transform: translateX(0);
 }
 
+[dir='rtl'] .horo-drawer__panel {
+  transform: translateX(100%);
+}
+
+[dir='rtl'] .horo-drawer.is-open .horo-drawer__panel {
+  transform: translateX(0);
+}
+
 .horo-drawer__header {
   display: flex;
   align-items: center;

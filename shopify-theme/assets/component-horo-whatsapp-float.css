@@ -48,6 +48,13 @@
   }
 }
 
+/* PDP sticky mobile ATC includes WhatsApp — hide duplicate global FAB */
+@media screen and (max-width: 749px) {
+  body:has(.horo-sticky-mobile-atc:not([hidden])) .horo-whatsapp-float {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .horo-whatsapp-float,
   .horo-whatsapp-float:hover {

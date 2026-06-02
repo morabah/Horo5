@@ -2032,7 +2032,10 @@
   }
 
   .governorate-modal__panel {
+    display: flex;
+    flex-direction: column;
     width: min(100vw - 2rem, 440px);
+    max-height: min(90dvh, calc(100dvh - 2rem));
     margin: auto;
     padding: 1.25rem;
     border-radius: 16px;
@@ -2076,6 +2079,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .governorate-modal__option {
@@ -2239,13 +2246,6 @@
 
   @media (prefers-reduced-motion: reduce) {
     .sticky-atc { transition: none; }
-  }
-
-  /* PDP content clearance for sticky add-to-cart bar on mobile */
-  @media (max-width: 767px) {
-    .pdp-page-content {
-      padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
-    }
   }
 
   /* Cart: sticky checkout CTA on mobile */

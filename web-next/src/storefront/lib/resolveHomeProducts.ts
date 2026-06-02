@@ -76,5 +76,7 @@ export function resolveHomeProducts(inputProducts: Product[] | undefined, sectio
     .forEach(add);
   pool.forEach(add);
 
-  return selected.slice(0, payloadLimit(section));
+  return selected
+    .filter((product) => (product.priceEgp ?? 0) > 0)
+    .slice(0, payloadLimit(section));
 }
