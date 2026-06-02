@@ -25,13 +25,19 @@ export function PdpRelatedProducts({
   const { pdp: copy, shell } = useDictionary();
   if (products.length < 3) return null;
 
+  const showGiftComplete =
+    products.some((item) => item.giftable) &&
+    'pdpCompleteTheGiftEyebrow' in copy &&
+    typeof copy.pdpCompleteTheGiftEyebrow === 'string';
+  const sectionEyebrow = showGiftComplete ? copy.pdpCompleteTheGiftEyebrow : copy.pdpRelatedEyebrow;
+
   return (
     <section className="bg-papyrus">
       <div className="mx-auto max-w-[1080px] px-4 pb-14 pt-12 md:px-12 lg:px-8 md:pb-16 md:pt-14">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="font-label text-[10px] font-medium uppercase tracking-[0.25em] text-clay">
-              {copy.pdpRelatedEyebrow}
+              {sectionEyebrow}
             </span>
             <h2 className="font-headline mt-1 text-2xl font-semibold uppercase tracking-tight text-obsidian md:text-3xl">
               {'pdpRelatedMoreFromTitle' in copy ? copy.pdpRelatedMoreFromTitle : 'More from the Founding Drop'}

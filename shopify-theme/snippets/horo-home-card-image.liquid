@@ -1,6 +1,7 @@
 {%- comment -%}
   Homepage / PLP card image — parity with web-next pickHomeCardImageSrc + preferHomeCardDisplaySrc.
   Front artwork first; lifestyle second; never back / flat_lay on cards.
+  Fallback: metafield custom.homepage_reference_image → theme asset by handle → placeholder.
 {%- endcomment -%}
 {%- liquid
   assign loading_value = loading | default: 'lazy'
@@ -49,7 +50,7 @@
       if featured_alt contains 'back' or featured_alt contains 'rear' or featured_alt contains 'flat_lay' or featured_alt contains 'flat-lay'
         assign featured_unsafe = true
       endif
-      if featured_probe contains '/back' or featured_probe contains '-back' or featured_probe contains '_back' or featured_probe contains 'flat_lay' or featured_probe contains 'flat-lay' or featured_probe contains 'backview'
+      if featured_probe contains '/back' or featured_probe contains '-back' or featured_probe contains '_back' or featured_probe contains 'flat_lay' or featured_probe contains 'flat-lay' or featured_probe contains 'backview' or featured_probe contains 'back-view'
         assign featured_unsafe = true
       endif
       unless featured_unsafe
@@ -59,19 +60,58 @@
       endunless
     endif
   endif
+
+  if card_image == nil
+    assign ref_metafield = card_product.metafields.custom.homepage_reference_image
+    if ref_metafield != blank and ref_metafield.value != blank
+      assign card_image = ref_metafield.value
+    endif
+  endif
+
+  if card_image == nil
+    case card_product.handle
+      when 'i-care'
+        assign reference_asset = 'homepage-reference-i-care.png'
+      when 'i-dont-care'
+        assign reference_asset = 'homepage-reference-i-dont-care.png'
+      when 'walk-alone'
+        assign reference_asset = 'homepage-reference-walk-alone.png'
+      when 'find-your-rhythm'
+        assign reference_asset = 'homepage-reference-find-your-rhythm.png'
+      when 'rest-your-mind'
+        assign reference_asset = 'homepage-reference-rest-your-mind.png'
+    endcase
+    if reference_asset != blank
+      assign reference_url = reference_asset | asset_url
+      if reference_url != blank
+        assign card_image = reference_url
+      endif
+    endif
+  endif
 -%}
 
 {%- if card_image -%}
-  {{
-    card_image
-    | image_url: width: 1200
-    | image_tag:
-      loading: loading_value,
-      widths: '200, 400, 600, 800, 1200',
-      sizes: sizes_value,
-      alt: card_image.alt | default: card_product.title,
-      class: image_class
-  }}
+  {%- if card_image.media_type -%}
+    {{
+      card_image
+      | image_url: width: 1200
+      | image_tag:
+        loading: loading_value,
+        widths: '200, 400, 600, 800, 1200',
+        sizes: sizes_value,
+        alt: card_image.alt | default: card_product.title,
+        class: image_class
+    }}
+  {%- else -%}
+    <img
+      src="{{ card_image }}"
+      alt="{{ card_product.title | escape }}"
+      loading="{{ loading_value }}"
+      class="{{ image_class }}"
+      width="600"
+      height="750"
+    >
+  {%- endif -%}
 {%- else -%}
   {{ 'product-apparel-1' | placeholder_svg_tag: placeholder_class }}
 {%- endif -%}

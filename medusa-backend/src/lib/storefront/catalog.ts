@@ -60,6 +60,7 @@ import type {
   StorefrontVariantDTO,
 } from "./types"
 import { retrieveStorefrontSettingsPayload, type LocalizedText, type StorefrontSettingsDTO } from "./store-settings"
+import { isBackLikeMediaUrl, orderGalleryByTags } from "./media-picks"
 
 export function filterStorefrontProductsByQuery(
   products: StorefrontProductDTO[],
@@ -1075,13 +1076,23 @@ function buildProduct(
   // Prefer metadata.media.gallery (drop-defined order) over product.images (may be unordered).
   // Fall back to product.images when metadata has no gallery (e.g. pre-drop products).
   const metadataGallery = galleryFromLegacyMedia(legacyMedia)
-  const gallery = orderedUniqueGalleryItems([
+  const rawGallery = orderedUniqueGalleryItems([
     ...(metadataGallery.length > 0
       ? metadataGallery
-      : (product.images || []).map((image) => image.url ? { url: image.url } : undefined)),
+      : (product.images || []).map((image) => (image.url ? { url: image.url } : undefined))),
     product.thumbnail ? { url: product.thumbnail } : undefined,
   ])
-  const mainImage = galleryItemUrl(gallery[0]) || product.thumbnail || legacyMedia?.main || null
+  const safeMain =
+    legacyMedia?.main && !isBackLikeMediaUrl(legacyMedia.main) ? legacyMedia.main : undefined
+  const gallery = orderGalleryByTags(rawGallery, { mainUrl: safeMain ?? legacyMedia?.main })
+  const mainImage =
+    safeMain ||
+    galleryItemUrl(gallery.find((item) => item.tag === "artwork_detail" || item.tag === "lifestyle")) ||
+    galleryItemUrl(gallery.find((item) => !isBackLikeMediaUrl(galleryItemUrl(item)))) ||
+    galleryItemUrl(gallery[0]) ||
+    product.thumbnail ||
+    legacyMedia?.main ||
+    null
   const inventoryHints = asRecord(metadata.inventoryHintBySize) as Record<string, string>
   const derived = categoriesById
     ? derivePrimaryFeelingSlugsFromFlat(

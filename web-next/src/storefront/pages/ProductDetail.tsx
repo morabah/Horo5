@@ -33,7 +33,7 @@ import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
 import { StickyAddToCart } from '../components/StickyAddToCart';
 import {
-  buildProductPdpGallery,
+  buildProductPdpGalleryFromProduct,
   galleryItemsToSrcList,
   getProductMedia,
   imgUrl,
@@ -394,7 +394,7 @@ export function ProductDetail({
       main: product.media?.main ?? backendGallery[0] ?? product.thumbnail ?? '',
     };
   }, [preferBackendCatalog, product, colorVariantMedia]);
-  const gallery = product ? buildProductPdpGallery(product.name, media) : [];
+  const gallery = product ? buildProductPdpGalleryFromProduct(product.name, product) : [];
   const feelingSlug = product?.primaryFeelingSlug ?? product?.feelingSlug;
   const feeling = feelingSlug
     ? feelingLookup.get(feelingSlug) ?? (!preferBackendCatalog ? getFeeling(feelingSlug) : undefined)

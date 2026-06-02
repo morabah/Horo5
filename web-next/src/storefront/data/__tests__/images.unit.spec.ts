@@ -1,6 +1,9 @@
 import {
+  buildProductPdpGalleryFromProduct,
+  collectPdpGallerySources,
   imgUrl,
   isBackLikeProductImageSrc,
+  isHomepageReferenceImageSrc,
   preferHomeCardDisplaySrc,
   resolveProductImageSrcForDisplay,
   shouldUseConversionReferenceImage,
@@ -81,6 +84,10 @@ describe('homepage card display picks', () => {
 
   it('flags back-like catalog URLs for conversion reference', () => {
     expect(isBackLikeProductImageSrc('https://cdn.test/tee-back-view.jpg')).toBe(true);
+    expect(isBackLikeProductImageSrc('https://cdn.test/tee-backview.jpg')).toBe(true);
+    expect(isBackLikeProductImageSrc('https://cdn.test/product_rear.png')).toBe(true);
+    expect(isBackLikeProductImageSrc('https://cdn.test/flat_lay.png')).toBe(true);
+    expect(isBackLikeProductImageSrc('https://cdn.test/flat-lay.png')).toBe(true);
     expect(shouldUseConversionReferenceImage('https://cdn.test/tee-back-view.jpg')).toBe(true);
   });
 
@@ -105,5 +112,43 @@ describe('homepage card display picks', () => {
       },
     });
     expect(src).toBe('https://cdn.test/products/quiet-revolt-front.jpg');
+  });
+});
+
+describe('PDP gallery guards', () => {
+  const product = {
+    slug: 'i-care',
+    name: 'I Care',
+    priceEgp: 899,
+    media: {
+      main: 'https://cdn.test/i-care-front.jpg',
+      gallery: [
+        { url: '/images/homepage-reference/product-i-care.png', tag: 'lifestyle' },
+        { url: 'https://cdn.test/i-care-back.jpg', tag: 'back' },
+      ],
+    },
+  } as Product;
+
+  it('excludes homepage reference paths from PDP sources', () => {
+    const sources = collectPdpGallerySources(product);
+    expect(sources.every((src) => !isHomepageReferenceImageSrc(src))).toBe(true);
+  });
+
+  it('buildProductPdpGalleryFromProduct never returns reference art', () => {
+    const gallery = buildProductPdpGalleryFromProduct(product.name, product);
+    expect(gallery.every((view) => !isHomepageReferenceImageSrc(view.src))).toBe(true);
+    expect(gallery[0]?.src).toBe('https://cdn.test/i-care-front.jpg');
+  });
+
+  it('promotes a front image ahead of back when main is back-like', () => {
+    const backFirst = {
+      ...product,
+      media: {
+        main: 'https://cdn.test/i-care-back-view.jpg',
+        gallery: [{ url: 'https://cdn.test/i-care-lifestyle.jpg', tag: 'lifestyle' }],
+      },
+    } as Product;
+    const gallery = buildProductPdpGalleryFromProduct(backFirst.name, backFirst);
+    expect(isBackLikeProductImageSrc(gallery[0]?.src)).toBe(false);
   });
 });

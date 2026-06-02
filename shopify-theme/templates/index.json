@@ -51,19 +51,27 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "COD available"
+            "label": "Payment options shown at checkout"
           }
         },
         "badge_4": {
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "exchange",
-            "label": "Size exchange"
+            "icon": "clearFitDetails",
+            "label": "Clear fit details"
+          }
+        },
+        "badge_5": {
+          "type": "trust_badge",
+          "settings": {
+            "show_badge": true,
+            "icon": "whatsapp",
+            "label": "WhatsApp size help"
           }
         }
       },
-      "block_order": ["badge_1", "badge_2", "badge_3", "badge_4"]
+      "block_order": ["badge_1", "badge_2", "badge_3", "badge_4", "badge_5"]
     },
     "home_founding_drop": {
       "type": "home-founding-drop",

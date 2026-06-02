@@ -31,7 +31,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     secondary_cta_label_en: "Shop by Meaning",
     secondary_cta_label_ar: "تسوّق حسب المعنى",
     secondary_cta_href: "/#shop-by-meaning",
-    image_src: "/images/heroes/home-hero.png",
+    image_src: "/images/hero/home-hero-wear-feel.png",
     image_alt_en: "Model wearing HORO graphic tee — Wear What You Feel",
     image_alt_ar: "عارض يرتدي تيشيرت هورو — إلبس اللي بتحس بيه",
     sort_order: 0,

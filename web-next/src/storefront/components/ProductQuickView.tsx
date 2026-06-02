@@ -2,7 +2,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useMemo, useRef, useState, type SyntheticEvent } from 'react';
 
-import { buildProductPdpGallery, galleryItemsToSrcList, getProductMedia, imgUrl } from '../data/images';
+import {
+  buildProductPdpGallery,
+  buildProductPdpGalleryFromProduct,
+  galleryItemsToSrcList,
+  getProductMedia,
+  imgUrl,
+} from '../data/images';
 import { getFeeling, getProduct, type ProductSizeKey } from '../data/site';
 import { trackSizeSelected } from '../analytics/events';
 import { useCart } from '../cart/CartContext';
@@ -89,7 +95,12 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
       main: product.media?.main ?? backendGallery[0] ?? fallbackMedia.main,
     };
   }, [product]);
-  const gallery = product && media ? buildProductPdpGallery(product.name, media) : [];
+  const gallery =
+    product && product.media?.gallery?.length
+      ? buildProductPdpGalleryFromProduct(product.name, product)
+      : product && media
+        ? buildProductPdpGallery(product.name, media)
+        : [];
   const galleryLen = gallery.length;
   const safePhotoIndex = galleryLen > 0 ? Math.min(photoIndex, galleryLen - 1) : 0;
   const mainView =

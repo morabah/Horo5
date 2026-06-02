@@ -126,6 +126,23 @@ const CONVERSION_REFERENCE_BY_DESIGN: Record<string, (typeof CONVERSION_REFERENC
   'rest-your-mind': '/images/homepage-reference/product-rest-your-mind.png',
 };
 
+/** Five launch founding-drop handles — canonical for parity tests and baseline audits. */
+export const FOUNDING_DROP_LAUNCH_SLUGS = [
+  'i-care',
+  'i-dont-care',
+  'walk-alone',
+  'find-your-rhythm',
+  'rest-your-mind',
+] as const;
+
+export type FoundingDropLaunchSlug = (typeof FOUNDING_DROP_LAUNCH_SLUGS)[number];
+
+export type HomepageCardImageClass = 'real' | 'reference';
+
+export function classifyHomepageCardImageSrc(src: string): HomepageCardImageClass {
+  return isHomepageReferenceImageSrc(src) ? 'reference' : 'real';
+}
+
 const CONVERSION_REFERENCE_BY_SLUG: Record<string, (typeof CONVERSION_REFERENCE_IMAGES)[number]> = {
   'the-weight-of-light': '/images/homepage-reference/product-i-care.png',
   'midnight-compass': '/images/homepage-reference/product-find-your-rhythm.png',
@@ -618,6 +635,20 @@ export const PDP_VIEW_ORDER = [
   'gallery-7',
 ] as const;
 
+/** PDP gallery tag order — align with medusa-backend `PDP_GALLERY_TAG_PRIORITY`. */
+export const PDP_GALLERY_TAG_PRIORITY: NonNullable<ProductMediaGalleryItem['tag']>[] = [
+  'artwork_detail',
+  'lifestyle',
+  'proof_print',
+  'proof_fabric',
+  'proof_wash',
+  'back',
+  'gift',
+  'flat_lay',
+];
+
+const PDP_GALLERY_LABELS = ['front', 'model', 'detail', 'fabric', 'print proof', 'back', 'gift', 'flat lay'] as const;
+
 export type ProductPdpViewKey = (typeof PDP_VIEW_ORDER)[number];
 
 export type ProductPdpGalleryView = {
@@ -876,19 +907,96 @@ export function getProductComparisonImageSrc(product: Product): string {
   );
 }
 
-export function buildProductPdpGallery(productName: string, media: ProductMedia): ProductPdpGalleryView[] {
-  const ordered = Array.from(new Set([media.main, ...(media.gallery ?? [])].filter(Boolean)));
-  const productPhotoOnly = ordered.filter((src) => !PDP_INFOGRAPHIC_IMAGE_PATTERN.test(src));
-  const gallerySources = productPhotoOnly.length > 0 ? productPhotoOnly : ordered;
+function isSafePdpGalleryUrl(src: string | undefined): boolean {
+  const value = src?.trim();
+  if (!value) return false;
+  return !isHomepageReferenceImageSrc(value) && !PDP_INFOGRAPHIC_IMAGE_PATTERN.test(value);
+}
+
+/** Collect PDP URLs in tag order; excludes homepage reference art. */
+export function collectPdpGallerySources(product: Product): string[] {
+  const urls: string[] = [];
+  const push = (src: string | undefined) => {
+    const value = src?.trim();
+    if (!value || !isSafePdpGalleryUrl(value)) return;
+    if (urls.includes(value)) return;
+    urls.push(value);
+  };
+
+  const main = product.media?.main?.trim();
+  const card = product.media?.card?.trim();
+  if (main && !isBackLikeProductImageSrc(main)) {
+    push(main);
+  } else if (card && !isBackLikeProductImageSrc(card)) {
+    push(card);
+  }
+
+  for (const tag of PDP_GALLERY_TAG_PRIORITY) {
+    for (const item of product.media?.gallery ?? []) {
+      if (typeof item === 'string') continue;
+      if (item.tag !== tag) continue;
+      push(galleryItemSrc(item));
+    }
+  }
+
+  for (const item of product.media?.gallery ?? []) {
+    push(galleryItemSrc(item));
+  }
+
+  push(product.thumbnail ?? undefined);
+
+  if (urls.length > 1 && isBackLikeProductImageSrc(urls[0])) {
+    const frontIndex = urls.findIndex((url) => !isBackLikeProductImageSrc(url));
+    if (frontIndex > 0) {
+      const [front] = urls.splice(frontIndex, 1);
+      urls.unshift(front);
+    }
+  }
+
+  return urls;
+}
+
+function buildProductPdpGalleryFromSources(
+  productName: string,
+  sources: string[],
+): ProductPdpGalleryView[] {
+  const gallerySources = sources.length > 0 ? sources : FALLBACK_PRODUCT_GALLERY;
 
   return gallerySources.map((src, index) => ({
     alt: `HORO “${productName}” gallery image ${index + 1}.`,
     key: (PDP_VIEW_ORDER[index] ?? `gallery-${index}`) as ProductPdpViewKey,
-    label: index === 0 ? 'hero image' : `gallery image ${index + 1}`,
+    label: PDP_GALLERY_LABELS[index] ?? (index === 0 ? 'hero image' : `gallery image ${index + 1}`),
     src,
   }));
 }
 
+export function buildProductPdpGalleryFromProduct(
+  productName: string,
+  product: Product,
+): ProductPdpGalleryView[] {
+  return buildProductPdpGalleryFromSources(productName, collectPdpGallerySources(product));
+}
+
+export function buildProductPdpGallery(productName: string, media: ProductMedia): ProductPdpGalleryView[] {
+  const ordered = Array.from(new Set([media.main, ...(media.gallery ?? [])].filter(Boolean))).filter(
+    (src) => isSafePdpGalleryUrl(src),
+  );
+
+  if (ordered.length > 1 && isBackLikeProductImageSrc(ordered[0])) {
+    const frontIndex = ordered.findIndex((url) => !isBackLikeProductImageSrc(url));
+    if (frontIndex > 0) {
+      const [front] = ordered.splice(frontIndex, 1);
+      ordered.unshift(front);
+    }
+  }
+
+  return buildProductPdpGalleryFromSources(productName, ordered);
+}
+
 export function getProductPdpGallery(productName: string, slug: string): ProductPdpGalleryView[] {
+  const product = getProduct(slug);
+  if (product) {
+    return buildProductPdpGalleryFromProduct(productName, product);
+  }
   return buildProductPdpGallery(productName, getProductMedia(slug));
 }
