@@ -1136,8 +1136,20 @@
 
   @media (min-width: 900px) {
     .home-feeling-pastel-grid {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
+  }
+
+  .home-founding-rail {
+    /* Single-row founding drop rail — shares breakpoints with .home-founding-grid */
+  }
+
+  .home-editorial-feature__media-frame {
+    max-height: 520px;
+  }
+
+  .home-editorial-feature__copy-only .home-btn {
+    margin-inline: auto;
   }
 
   .home-feeling-pastel-tile {

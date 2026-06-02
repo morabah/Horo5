@@ -7,7 +7,7 @@ import { useCart } from '../../cart/CartContext';
 import { formatCartStockMessage } from '../../cart/stock';
 import { trackHomeProductCardClick, trackSizeSelected } from '../../analytics/events';
 import { PDP_SCHEMA } from '../../data/domain-config';
-import { pickHomeCardImageSrc } from '../../data/images';
+import { getProductCardImageSrc, isGenericBrandPlaceholderSrc } from '../../data/images';
 import { getProduct, type Product, type ProductSizeKey } from '../../data/site';
 import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
 import { productAvailableSizes } from '../../utils/productSizes';
@@ -15,6 +15,7 @@ import { deriveProductStockStatus } from '../../utils/productStock';
 import { launchProductEyebrow } from '../../lib/launch-taxonomy-display';
 import { AppIcon } from '../AppIcon';
 import { TeeImageFrame } from '../TeeImage';
+import { HoroArtworkPlaceholder } from './HoroArtworkPlaceholder';
 
 const homePriceFormatter = new Intl.NumberFormat('en-EG', {
   maximumFractionDigits: 0,
@@ -48,7 +49,8 @@ export function HomeFoundingProductCard({
   const { addItem, showAddToCartToast } = useCart();
   const [feedback, setFeedback] = useState<string | null>(null);
   const catalogProduct = useMemo(() => getProduct(product.slug) ?? product, [product]);
-  const imageSrc = pickHomeCardImageSrc(catalogProduct);
+  const imageSrc = getProductCardImageSrc(catalogProduct);
+  const useArtworkPlaceholder = isGenericBrandPlaceholderSrc(imageSrc);
   const displayName = product.name;
   const displayPrice = product.priceEgp;
   const launchEyebrow = launchProductEyebrow(catalogProduct);
@@ -78,17 +80,23 @@ export function HomeFoundingProductCard({
         className="home-founding-card__media block bg-[#faf7f6] p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
         aria-label={displayName}
       >
-        <TeeImageFrame
-          src={imageSrc}
-          alt={displayImageAlt}
-          w={800}
-          aspectRatio="4/5"
-          borderRadius="0"
-          eager={eager}
-          objectPosition="center 22%"
-          frameStyle={{ marginBottom: 0, minHeight: '100%' }}
-          sizes="(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px"
-        />
+        {useArtworkPlaceholder ? (
+          <div className="relative aspect-[4/5] w-full">
+            <HoroArtworkPlaceholder label={displayImageAlt} />
+          </div>
+        ) : (
+          <TeeImageFrame
+            src={imageSrc}
+            alt={displayImageAlt}
+            w={800}
+            aspectRatio="4/5"
+            borderRadius="0"
+            eager={eager}
+            objectPosition="center 22%"
+            frameStyle={{ marginBottom: 0, minHeight: '100%' }}
+            sizes="(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px"
+          />
+        )}
       </Link>
       <div className="home-founding-card__body flex flex-1 flex-col p-4 text-center sm:text-start">
         <Link

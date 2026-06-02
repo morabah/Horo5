@@ -1,3 +1,13 @@
+/**
+ * Homepage / PLP media contract:
+ * - card — homepage and PLP card image
+ * - main — PDP primary hero
+ * - artwork_detail — print close-up (editorial, cards)
+ * - lifestyle — on-body front
+ * - back — PDP gallery only (never card/main)
+ * - flat_lay — folded product / proof
+ * - gift — packaging / gift context (gift block)
+ */
 import type { DropImageInput } from "../drops/types"
 import type { StorefrontMediaGalleryItemDTO, StorefrontMediaGalleryTag } from "./types"
 

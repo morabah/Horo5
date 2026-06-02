@@ -57,6 +57,14 @@ function mapLegacyNavItem(item: SettingsNavItem, label: string): RenderedNavItem
     case 'products':
     case 'founding_drop':
       return { key: 'products', label, href: NAV_ROUTE.products.path };
+    case 'shop_by_meaning':
+    case 'feeling_grid':
+    case 'meanings':
+      return { key: 'shopByMeaning', label, href: NAV_ROUTE.shopByMeaning.path };
+    case 'gifts':
+    case 'gift_ready':
+    case 'gift_block':
+      return { key: 'gifts', label, href: NAV_ROUTE.gifts.path };
     case 'about':
       return { key: 'about', label, href: NAV_ROUTE.about.path };
     case 'size_guide':
@@ -69,7 +77,6 @@ function mapLegacyNavItem(item: SettingsNavItem, label: string): RenderedNavItem
     case 'collection':
       if (isZodiacNavItem(item, label)) return null;
       return null;
-    case 'gifts':
     case 'occasions':
       return null;
     case 'drops':

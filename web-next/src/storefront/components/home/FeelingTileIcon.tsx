@@ -67,6 +67,23 @@ export function FeelingTileIcon({ slug, className = '' }: { slug: string; classN
           <path d="M18 24h12" />
         </svg>
       );
+    case 'lifestyle':
+      return (
+        <svg {...common}>
+          <circle cx="16" cy="18" r="3" />
+          <path d="M10 36c3-8 8-12 14-12s11 4 14 12" />
+          <path d="M28 14l6 4-6 4" />
+        </svg>
+      );
+    case 'gift':
+    case 'gift-ready':
+      return (
+        <svg {...common}>
+          <rect x="10" y="18" width="28" height="20" rx="2" />
+          <path d="M24 18v20M10 24h28" />
+          <path d="M24 18c-4-6-8-4-8 0s4 6 8 0 8-6 8 0 8 4 8 0-4-6-8 0z" />
+        </svg>
+      );
     case 'zodiac':
       return (
         <svg {...common}>

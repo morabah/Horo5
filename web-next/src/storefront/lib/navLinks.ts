@@ -2,6 +2,8 @@
 export const NAV_ROUTE = {
   home: { path: '/', end: true },
   products: { path: '/products', end: false },
+  shopByMeaning: { path: '/#shop-by-meaning', end: false },
+  gifts: { path: '/gifts', end: false },
   zodiac: { path: '/feelings/zodiac', end: false },
   about: { path: '/about', end: false },
   search: { path: '/search', end: false },
@@ -15,13 +17,21 @@ export const NAV_ROUTE = {
   // drops: { path: '/drops', end: false },
 } as const;
 
-export const NAV_PRIMARY_ROUTE_KEYS = ['products', 'about', 'sizeGuide'] as const;
+export const NAV_PRIMARY_ROUTE_KEYS = [
+  'products',
+  'shopByMeaning',
+  'gifts',
+  'about',
+  'sizeGuide',
+] as const;
 
 export type NavRouteKey = keyof typeof NAV_ROUTE;
 
 export const NAV_DRAWER_ROUTE_KEYS = [
   'home',
   'products',
+  'shopByMeaning',
+  'gifts',
   'about',
   'sizeGuide',
   'search',
@@ -30,6 +40,8 @@ export const NAV_DRAWER_ROUTE_KEYS = [
 /** Launch nav keys allowed in header/drawer during founding drop. */
 export const LAUNCH_NAV_KEYS = new Set<NavRouteKey>([
   'products',
+  'shopByMeaning',
+  'gifts',
   'about',
   'sizeGuide',
   'home',

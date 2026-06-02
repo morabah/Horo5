@@ -20,6 +20,15 @@ function payloadAnchor(section: StorefrontHomepageSection | undefined): string {
   return anchor || 'editorial-feature';
 }
 
+function payloadFallbackHandle(section: StorefrontHomepageSection | undefined): string | undefined {
+  const payload = isRecord(section?.payload) ? section.payload : null;
+  const handle =
+    (typeof payload?.fallbackProductHandle === 'string' && payload.fallbackProductHandle.trim()) ||
+    (typeof payload?.fallback_product_handle === 'string' && payload.fallback_product_handle.trim()) ||
+    '';
+  return handle || undefined;
+}
+
 export function HomeEditorialFeature({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -32,16 +41,18 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     (variant === 'closer_look' ? 'A Closer Look' : copy.home.behindThePieceEyebrow);
   const title = pickLocalizedStorefrontText(section?.title, resolvedLocale);
   const body = pickLocalizedStorefrontText(section?.body, resolvedLocale);
-  const editorialProduct = getProduct('calm-inside');
+  const cmsImageSrc = section?.image?.src?.trim();
+  const fallbackHandle = payloadFallbackHandle(section);
+  const fallbackProduct = fallbackHandle ? getProduct(fallbackHandle) : undefined;
   const imageSrc =
-    section?.image?.src?.trim() ??
-    (editorialProduct ? pickHomeCardImageSrc(editorialProduct) : undefined);
+    cmsImageSrc ?? (fallbackProduct ? pickHomeCardImageSrc(fallbackProduct) : undefined);
   const imageAlt =
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
     (title ? `HORO — ${title}` : 'HORO editorial feature');
   const ctaLabel =
     pickLocalizedStorefrontText(section?.primaryCta?.label, resolvedLocale) ?? 'Shop the Piece';
   const ctaHref = section?.primaryCta?.href?.trim() ?? '/products';
+  const copyOnly = !imageSrc;
 
   if (!title && !body && !imageSrc) {
     return null;
@@ -53,21 +64,16 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     <section
       id={sectionId}
       aria-labelledby={`${sectionId}-title`}
-      className="home-section bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
+      className="home-section home-editorial-feature bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
     >
-      <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 md:items-center md:gap-10">
-        {imageSrc ? (
-          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[4px] bg-[#faf7f6] md:aspect-[5/6]">
-            <Image
-              src={imageSrc}
-              alt={imageAlt}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-            />
-          </div>
-        ) : null}
-        <div>
+      <div
+        className={
+          copyOnly
+            ? 'home-editorial-feature__copy-only mx-auto max-w-2xl text-center'
+            : 'home-editorial-feature__layout mx-auto grid max-w-6xl gap-8 md:grid-cols-2 md:items-center md:gap-10'
+        }
+      >
+        <div className={copyOnly ? '' : 'home-editorial-feature__copy order-1 md:order-2'}>
           <p className="home-section-eyebrow">{eyebrow}</p>
           {title ? (
             <h2 id={`${sectionId}-title`} className="home-section-title mt-2">
@@ -92,6 +98,19 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
             {ctaLabel}
           </Link>
         </div>
+        {!copyOnly && imageSrc ? (
+          <div className="home-editorial-feature__media order-2 md:order-1">
+            <div className="home-editorial-feature__media-frame relative aspect-[4/5] w-full max-h-[520px] overflow-hidden rounded-[4px] bg-[#faf7f6]">
+              <Image
+                src={imageSrc}
+                alt={imageAlt}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover object-[center_22%]"
+              />
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

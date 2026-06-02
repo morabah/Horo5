@@ -42,7 +42,13 @@ export function payloadLimit(section: StorefrontHomepageSection | undefined) {
   const payload = isRecord(section?.payload) ? section.payload : null;
   const raw = payload?.limit ?? payload?.productLimit;
   const parsed = typeof raw === 'number' || typeof raw === 'string' ? Number(raw) : NaN;
-  return Number.isFinite(parsed) && parsed > 0 ? Math.min(Math.trunc(parsed), 12) : 11;
+  const isFounding =
+    section?.type === 'founding_drop' || section?.key === 'founding_drop';
+  const defaultLimit = isFounding ? 5 : 11;
+  const maxLimit = isFounding ? 5 : 12;
+  return Number.isFinite(parsed) && parsed > 0
+    ? Math.min(Math.trunc(parsed), maxLimit)
+    : defaultLimit;
 }
 
 export function resolveHomeProducts(inputProducts: Product[] | undefined, section: StorefrontHomepageSection | undefined) {

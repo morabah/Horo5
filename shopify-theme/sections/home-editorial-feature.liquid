@@ -3,17 +3,14 @@
 {%- liquid
   assign anchor_id = section.settings.anchor_id | default: 'editorial-feature'
   assign fallback_product = section.settings.fallback_product
-  if fallback_product == blank
-    assign fallback_product = all_products['calm-inside']
-  endif
   assign show_media = false
+  assign editorial_media = nil
 
   if section.settings.image != blank
     assign show_media = true
     assign editorial_media = section.settings.image
   elsif fallback_product != blank
     assign show_media = true
-    assign editorial_media = nil
   endif
 -%}
 
@@ -23,9 +20,9 @@
   aria-labelledby="home-editorial-title-{{ section.id }}"
 >
   <div class="home-page__inner">
-    <div class="home-editorial-feature">
+    <div class="home-editorial-feature{% unless show_media %} home-editorial-feature--copy-only{% endunless %}">
       {%- if show_media -%}
-        <div class="home-editorial-feature__media">
+        <div class="home-editorial-feature__media home-editorial-feature__media--visual">
           {%- if editorial_media != blank -%}
             {{
               editorial_media
@@ -43,7 +40,7 @@
           {%- endif -%}
         </div>
       {%- endif -%}
-      <div class="home-editorial-feature__copy">
+      <div class="home-editorial-feature__copy home-editorial-feature__copy--primary">
         {%- if section.settings.eyebrow != blank -%}
           <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
         {%- endif -%}
@@ -71,14 +68,32 @@
     gap: 2rem;
     align-items: center;
   }
+  .home-editorial-feature--copy-only {
+    max-width: 42rem;
+    margin-inline: auto;
+    text-align: center;
+  }
+  .home-editorial-feature__copy--primary {
+    order: 1;
+  }
+  .home-editorial-feature__media--visual {
+    order: 2;
+  }
   @media (min-width: 768px) {
     .home-editorial-feature {
       grid-template-columns: 1fr 1fr;
+    }
+    .home-editorial-feature__copy--primary {
+      order: 2;
+    }
+    .home-editorial-feature__media--visual {
+      order: 1;
     }
   }
   .home-editorial-feature__media {
     position: relative;
     aspect-ratio: 4 / 5;
+    max-height: 520px;
     overflow: hidden;
     border-radius: 4px;
     background: #faf7f6;
@@ -91,6 +106,9 @@
   }
   .home-editorial-feature__copy .home-btn {
     margin-top: 1.5rem;
+  }
+  .home-editorial-feature--copy-only .home-btn {
+    margin-inline: auto;
   }
 </style>
 

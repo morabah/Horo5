@@ -2,11 +2,12 @@ import { useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 
 import {
-  heroVectorizedV2,
   imgUrl,
+  isGenericBrandPlaceholderSrc,
   resolveProductImageSrcForDisplay,
   useNextImageOptimizerForSrc,
 } from '../data/images';
+import { HoroArtworkPlaceholder } from './home/HoroArtworkPlaceholder';
 
 export type TeeImageProps = {
   /** Unsplash base URL (no query) or absolute product image URL */
@@ -47,7 +48,7 @@ export function TeeImage({
   const useNextOptimizer = useNextImageOptimizerForSrc(forDisplay);
   const [errored, setErrored] = useState(false);
   const missingSrc = !forDisplay.trim();
-  const showPlaceholder = missingSrc || errored;
+  const showPlaceholder = missingSrc || errored || isGenericBrandPlaceholderSrc(forDisplay);
 
   return (
     <div
@@ -55,21 +56,7 @@ export function TeeImage({
       style={{ ...style }}
     >
       {showPlaceholder ? (
-        <div
-          role="img"
-          aria-label={alt}
-          className="absolute inset-0 flex items-center justify-center overflow-hidden bg-linen text-obsidian/70"
-        >
-          <img
-            src={heroVectorizedV2}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover opacity-45"
-            loading={eager ? 'eager' : 'lazy'}
-            decoding="async"
-          />
-          <span className="sr-only">{alt}</span>
-        </div>
+        <HoroArtworkPlaceholder label={alt} />
       ) : useNextOptimizer ? (
         <Image
           src={resolvedSrc}

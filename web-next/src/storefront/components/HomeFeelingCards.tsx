@@ -1,7 +1,8 @@
 import Link from 'next/link';
 
 import { trackMeaningTileClick } from '../analytics/events';
-import { getFeelingCollectionVisual } from '../data/images';
+import { getFeelingCollectionVisual, isGenericBrandPlaceholderSrc } from '../data/images';
+import { FeelingTileIcon } from './home/FeelingTileIcon';
 import { HOME_FEELING_TILE_SURFACES } from '../data/homeContent';
 import {
   pickLocalizedStorefrontText,
@@ -95,6 +96,29 @@ function getFeaturedFeelings(section: StorefrontHomepageSection | undefined, loc
   return allEntries.slice(0, 5);
 }
 
+const LAUNCH_MEANING_TILES: FeelingTileOverride[] = [
+  { slug: 'zodiac', label: 'Zodiac Signs', href: '/products?category=zodiac', iconSlug: 'zodiac' },
+  { slug: 'mood', label: 'Mood', href: '/products?category=mood', iconSlug: 'mood' },
+  { slug: 'lifestyle', label: 'Lifestyle', href: '/products?category=lifestyle', iconSlug: 'lifestyle' },
+  { slug: 'gift-ready', label: 'Gift Ready', href: '/gifts', iconSlug: 'gift' },
+];
+
+function launchMeaningTileEntries(_locale: 'en' | 'ar') {
+  return LAUNCH_MEANING_TILES.map((override, index) => ({
+    feeling: {
+      slug: override.slug,
+      name: override.label ?? override.slug,
+      active: true,
+      accent: HOME_FEELING_TILE_SURFACES[index % HOME_FEELING_TILE_SURFACES.length],
+      blurb: '',
+      tagline: '',
+    },
+    index,
+    count: 0,
+    override,
+  }));
+}
+
 export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
@@ -106,7 +130,11 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
   const title = sectionTitle ?? copy.home.feelingsTitle;
   const subtitle = sectionBody ?? copy.home.feelingsSubtitle;
   const cta = sectionCta ?? copy.home.feelingsCta;
-  const feelings = getFeaturedFeelings(section, locale as 'en' | 'ar');
+  const overrides = payloadFeelingOverrides(section, locale as 'en' | 'ar');
+  const feelings =
+    overrides.length > 0
+      ? getFeaturedFeelings(section, locale as 'en' | 'ar')
+      : launchMeaningTileEntries(locale as 'en' | 'ar');
 
   if (feelings.length === 0) {
     return null;
@@ -148,8 +176,13 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
             const surface = override?.surface ?? HOME_FEELING_TILE_SURFACES[index % HOME_FEELING_TILE_SURFACES.length];
             const label = override?.label ?? feeling.name;
             const href = override?.href ?? `/feelings/${feeling.slug}`;
+            const iconSlug = override?.iconSlug ?? feeling.slug;
             const visual = getFeelingCollectionVisual(feeling.slug);
-            const tileImage = visual.hero.src || visual.cover.src;
+            const tileImageCandidate = visual.hero.src || visual.cover.src;
+            const tileImage =
+              tileImageCandidate && !isGenericBrandPlaceholderSrc(tileImageCandidate)
+                ? tileImageCandidate
+                : '';
             const tileStyle = tileImage
               ? {
                   backgroundImage: `linear-gradient(to top, rgba(36,31,33,0.75), rgba(36,31,33,0.2)), url(${tileImage})`,
@@ -168,6 +201,11 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
                 className={`home-feeling-pastel-tile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse${tileImage ? ' home-feeling-tile--editorial' : ''}`}
                 style={tileStyle}
               >
+                {!tileImage ? (
+                  <span className="home-feeling-pastel-tile__icon text-horo-pulse">
+                    <FeelingTileIcon slug={iconSlug} />
+                  </span>
+                ) : null}
                 <span className="home-feeling-pastel-tile__label">{label}</span>
               </Link>
             );

@@ -189,6 +189,12 @@ export function SectionEditor({ value, disabled, isNew, onChange }: SectionEdito
             disabled={disabled}
             onChange={(en, ar) => updateMany({ imageAltEn: en, imageAltAr: ar })}
           />
+          {value.type === "editorial_feature" ? (
+            <Text size="small" className="text-ui-fg-subtle">
+              Prefer front artwork: tag drop images as artwork_detail, lifestyle (front on-body), or
+              card. Do not use back or flat_lay for this section.
+            </Text>
+          ) : null}
         </div>
       </section>
       ) : null}

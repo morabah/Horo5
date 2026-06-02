@@ -32,7 +32,8 @@ function groupHeadingKey(group: ResolvedLaunchGroup): keyof typeof DICTIONARY.en
   }
 }
 
-export function HomeStartHereGroupedClient({ products }: { products: Product[] }) {
+/** Grouped founding-drop grid with launch taxonomy chips — for PLP experiments, not homepage. */
+export function LaunchGroupedProductGrid({ products }: { products: Product[] }) {
   const copy = useDictionary();
   const [activeChip, setActiveChip] = useState<LaunchChip>('all');
 

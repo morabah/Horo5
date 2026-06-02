@@ -13,7 +13,7 @@ import { useNextImageOptimizerForSrc, resolveProductImageSrcForDisplay } from '.
 import { resolveHomeProducts } from '../lib/resolveHomeProducts';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import type { Product } from '../data/catalog-types';
-import { HomeStartHereGroupedClient } from './HomeStartHereGroupedClient';
+import { HomeFoundingRail } from './home/HomeFoundingRail';
 
 export function HomeStartHere({ products, section }: { products?: Product[]; section?: StorefrontHomepageSection }) {
   const { locale } = useUiLocale();
@@ -114,7 +114,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
           </div>
         ) : null}
 
-        <HomeStartHereGroupedClient products={featuredProducts} />
+        <HomeFoundingRail products={featuredProducts} />
       </div>
     </section>
   );

@@ -18,6 +18,16 @@ import { productMediaGalleryItemSrc, type ProductMediaGalleryItem } from './cata
 /** On-brand vector mark — default storefront slot fill until Cairo photography ships (§3.4). */
 export const heroVectorizedV2 = '/images/hero/horo_vectorized_v2.svg';
 
+/** True when src is empty or a generic HORO brand mark used before product photography ships. */
+export function isGenericBrandPlaceholderSrc(src: string | undefined): boolean {
+  const value = src?.trim();
+  if (!value) return true;
+  if (value === heroVectorizedV2) return true;
+  if (value.includes('horo_vectorized') || value.includes('brand-placeholder')) return true;
+  if (value.includes('placeholder') && value.includes('/images/')) return true;
+  return false;
+}
+
 /**
  * Homepage hero shirt animation (H.264 MP4 under `public/videos/`).
  * Re-encode with ffmpeg for smaller files if needed, e.g. `-an -movflags +faststart`.

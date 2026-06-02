@@ -1,7 +1,7 @@
 import { mergeLaunchNavWithFallback, resolveLaunchNav, sanitizeLaunchNav } from '../sanitizeLaunchNav';
 
 describe('sanitizeLaunchNav', () => {
-  it('drops zodiac nav items and legacy gifts links', () => {
+  it('drops zodiac nav items but keeps gift ready links', () => {
     const items = sanitizeLaunchNav(
       [
         {
@@ -13,7 +13,7 @@ describe('sanitizeLaunchNav', () => {
         },
         {
           key: 'gifts',
-          label: { en: 'Gifts' },
+          label: { en: 'Gift Ready' },
           href: '/gifts',
           active: true,
           sortOrder: 1,
@@ -29,7 +29,7 @@ describe('sanitizeLaunchNav', () => {
       'en',
     );
 
-    expect(items.map((item) => item.key)).toEqual(['products']);
+    expect(items.map((item) => item.key)).toEqual(['gifts', 'products']);
   });
 
   it('drops full feelings hub collection links', () => {

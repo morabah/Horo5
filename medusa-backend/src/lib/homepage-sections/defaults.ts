@@ -5,6 +5,18 @@ export type HomepageSectionSeed = Required<
 > &
   Omit<HomepageSectionInput, "key" | "type" | "sort_order" | "active">
 
+/** Active homepage sections in render order (matches Shopify index.json). */
+export const HOMEPAGE_SECTION_ORDER_BY_KEY = [
+  "hero",
+  "trust_ribbon",
+  "founding_drop",
+  "feeling_grid",
+  "editorial_feature",
+  "gift_block",
+  "proof_strip",
+  "why_horo",
+] as const
+
 export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
   {
     key: "hero",
@@ -102,7 +114,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     sort_order: 20,
     active: true,
     payload: {
-      limit: 6,
+      limit: 5,
     },
   },
   {

@@ -192,13 +192,25 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const activeSuggestionId = activeSuggestion ? `nav-search-suggestions-${activeSuggestionIndex}` : undefined;
   const routeLabelByKey = useMemo<Record<NavRouteKey, string>>(() => ({
     home: copy.shell.home,
-    products: copy.shell.shopAll,
+    products: locale === 'ar' ? copy.home.startHereViewAll : 'Founding Drop',
+    shopByMeaning: copy.home.feelingsTitle,
+    gifts: locale === 'ar' ? 'جاهزة للهدايا' : 'Gift Ready',
     zodiac: copy.shell.shopByFeeling,
     about: copy.shell.about,
     sizeGuide: locale === 'ar' ? copy.shell.sizeGuide : 'Size & Help',
     search: copy.shell.search,
     cart: copy.shell.cart,
-  }), [copy.shell.about, copy.shell.cart, copy.shell.home, copy.shell.search, copy.shell.shopAll, copy.shell.shopByFeeling, copy.shell.sizeGuide, locale]);
+  }), [
+    copy.home.feelingsTitle,
+    copy.home.startHereViewAll,
+    copy.shell.about,
+    copy.shell.cart,
+    copy.shell.home,
+    copy.shell.search,
+    copy.shell.shopByFeeling,
+    copy.shell.sizeGuide,
+    locale,
+  ]);
   const primaryNavItems = useMemo(() => {
     return resolveLaunchNav(
       navigation?.primary,
