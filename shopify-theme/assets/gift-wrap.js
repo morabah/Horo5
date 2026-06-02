@@ -38,7 +38,7 @@
 
     if (drawer && typeof drawer.renderContents === 'function' && parsedState.id) {
       try {
-        drawer.renderContents(parsedState);
+        drawer.renderContents(parsedState, { open: false });
       } catch (e) {
         /* renderContents optional */
       }

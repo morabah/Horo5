@@ -327,7 +327,7 @@ export const DICTIONARY = {
       "noSuggestions": "No matching suggestions yet."
     },
     "cartService": {
-      "shippingExplainerArabic": "الشحن المعروض تقديراً (قياسي داخل مصر)؛ ستؤكد السرعة والتكلفة النهائية عند إتمام الطلب.",
+      "shippingExplainerArabic": "اختر محافظتك أدناه لمعرفة تقدير الشحن قبل الدفع.",
       "estimatedDeliveryCheckoutNoteArabic": "التواريخ تقريبية أيام عمل من تأكيد الطلب؛ التفاصيل النهائية في الخطوة التالية."
     },
     "search": {
@@ -638,9 +638,10 @@ export const DICTIONARY = {
       "primaryCta": "Proceed to checkout",
       "secondaryCta": "Continue shopping",
       "orderSummaryHeading": "Order summary",
-      "shippingExplainer": "Estimated shipping (standard, Egypt): you’ll confirm speed at checkout.",
+      "shippingExplainer": "Choose your governorate below to see estimated shipping before checkout.",
       "shippingLabel": "Est. shipping",
-      "shippingConfirmedAtCheckout": "Confirmed at checkout",
+      "shippingConfirmedAtCheckout": "Select governorate for estimate",
+      "shippingEstimateBeforeCheckoutNote": "Estimated shipping is shown before checkout. Final speed and cost are confirmed during checkout.",
       "totalLabel": "Est. order total",
       "subtotalLabel": "Subtotal",
       "quantityLabel": "Qty",
@@ -669,7 +670,7 @@ export const DICTIONARY = {
       "giftWrapRemoved": "Gift wrap removed from your order estimate.",
       "whatsappSizeHelpLabel": "Need size help? Chat with us",
       "estimatedDeliveryLabel": "Est. delivery (standard)",
-      "estimatedDeliveryCheckoutNote": "Express options and exact dates are confirmed at checkout.",
+      "estimatedDeliveryCheckoutNote": "Delivery window is an estimate. Express options and exact dates are confirmed at checkout.",
       "cartGovernorateTitle": "Delivery estimate",
       "cartGovernorateEmpty": "Choose your governorate to see shipping before checkout.",
       "cartGovernorateSelected": "Delivery to {governorate}",
@@ -690,7 +691,7 @@ export const DICTIONARY = {
       "continueCta": "Continue shopping",
       "subtotalLabel": "Subtotal",
       "promotionDiscountLabel": "Promotion",
-      "shippingAtCheckoutNote": "Shipping is confirmed at checkout.",
+      "shippingAtCheckoutNote": "Choose governorate on the cart page to see shipping before checkout.",
       "itemSingular": "item",
       "itemPlural": "items",
       "sizeLabel": "Size",
@@ -1079,7 +1080,7 @@ export const DICTIONARY = {
       }
     },
     "cartService": {
-      "shippingExplainerArabic": "الشحن المعروض تقديراً (قياسي داخل مصر)؛ ستؤكد السرعة والتكلفة النهائية عند إتمام الطلب.",
+      "shippingExplainerArabic": "اختر محافظتك أدناه لمعرفة تقدير الشحن قبل الدفع.",
       "estimatedDeliveryCheckoutNoteArabic": "التواريخ تقريبية أيام عمل من تأكيد الطلب؛ التفاصيل النهائية في الخطوة التالية."
     },
     "nav": {
@@ -1398,9 +1399,10 @@ export const DICTIONARY = {
       "primaryCta": "Proceed to checkout",
       "secondaryCta": "Continue shopping",
       "orderSummaryHeading": "Order summary",
-      "shippingExplainer": "Estimated shipping (standard, Egypt): you’ll confirm speed at checkout.",
-      "shippingLabel": "Est. shipping",
-      "shippingConfirmedAtCheckout": "Confirmed at checkout",
+      "shippingExplainer": "اختر محافظتك أدناه لمعرفة تقدير الشحن قبل الدفع.",
+      "shippingLabel": "تقدير الشحن",
+      "shippingConfirmedAtCheckout": "اختر المحافظة للتقدير",
+      "shippingEstimateBeforeCheckoutNote": "يُعرض تقدير الشحن قبل الدفع. السرعة والتكلفة النهائية تُؤكَّدان عند إتمام الطلب.",
       "totalLabel": "Est. order total",
       "subtotalLabel": "Subtotal",
       "quantityLabel": "Qty",
@@ -1429,7 +1431,7 @@ export const DICTIONARY = {
       "giftWrapRemoved": "Gift wrap removed from your order estimate.",
       "whatsappSizeHelpLabel": "محتاج مساعدة في المقاس؟ تواصل معنا",
       "estimatedDeliveryLabel": "Est. delivery (standard)",
-      "estimatedDeliveryCheckoutNote": "Express options and exact dates are confirmed at checkout.",
+      "estimatedDeliveryCheckoutNote": "Delivery window is an estimate. Express options and exact dates are confirmed at checkout.",
       "cartGovernorateTitle": "تقدير التوصيل",
       "cartGovernorateEmpty": "اختر محافظتك لمعرفة الشحن قبل الدفع.",
       "cartGovernorateSelected": "التوصيل إلى {governorate}",
@@ -1450,7 +1452,7 @@ export const DICTIONARY = {
       "continueCta": "واصل التسوق",
       "subtotalLabel": "الإجمالي الفرعي",
       "promotionDiscountLabel": "عرض",
-      "shippingAtCheckoutNote": "يُؤكَّد الشحن عند الدفع.",
+      "shippingAtCheckoutNote": "اختر المحافظة في السلة لمعرفة الشحن قبل الدفع.",
       "itemSingular": "قطعة",
       "itemPlural": "قطع",
       "sizeLabel": "المقاس",

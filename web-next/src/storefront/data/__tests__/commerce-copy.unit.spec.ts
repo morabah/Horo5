@@ -9,9 +9,10 @@ import {
 } from "../commerce-copy"
 
 describe("commerce-copy", () => {
-  it("cartCostPreviewCheckoutNote mentions payment and tax", () => {
+  it("cartCostPreviewCheckoutNote mentions estimate before checkout", () => {
+    expect(cartCostPreviewCheckoutNote(false)).toContain("before checkout")
     expect(cartCostPreviewCheckoutNote(false)).toContain("payment methods")
-    expect(cartCostPreviewCheckoutNote(true)).toContain("الدفع")
+    expect(cartCostPreviewCheckoutNote(true)).toContain("قبل الدفع")
   })
 
   it("uses hedged PDP and recovery copy", () => {

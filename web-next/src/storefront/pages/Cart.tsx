@@ -217,7 +217,7 @@ function CartSummary({
       </h2>
       <p className="cart-summary-note">{shippingNote}</p>
       <p className="font-body mt-1 text-xs text-clay">
-        {cartCostPreviewCheckoutNote(locale === 'ar')}
+        {copy.shippingEstimateBeforeCheckoutNote || cartCostPreviewCheckoutNote(locale === 'ar')}
       </p>
 
       {showDeliveryEstimate ? (

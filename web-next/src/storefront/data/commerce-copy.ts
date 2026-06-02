@@ -11,8 +11,8 @@ export function pdpExchangeTrustCopy(isArabic: boolean): string {
 /** Cart / checkout preview footnote — shipping, tax, and payment truth. */
 export function cartCostPreviewCheckoutNote(isArabic: boolean): string {
   return isArabic
-    ? "يتم تأكيد الشحن النهائي والضرائب إن وُجدت وطرق الدفع عند إتمام الدفع."
-    : "Final shipping, taxes if applicable, and payment methods are confirmed at checkout."
+    ? "يُعرض تقدير الشحن قبل الدفع. الخيارات النهائية والضرائب إن وُجدت وطرق الدفع تُؤكَّد عند إتمام الطلب."
+    : "Estimated shipping is shown before checkout. Final options, taxes if applicable, and payment methods are confirmed at checkout."
 }
 
 export function recoveryBodyCopy(isArabic: boolean): string {

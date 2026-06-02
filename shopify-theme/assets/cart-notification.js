@@ -34,7 +34,12 @@ class CartNotification extends HTMLElement {
     removeTrapFocus(this.activeElement);
   }
 
-  renderContents(parsedState) {
+  /**
+   * @param {Record<string, unknown>} parsedState
+   * @param {{ open?: boolean }} [options]
+   */
+  renderContents(parsedState, options = {}) {
+    const shouldOpen = options.open === true;
     this.cartItemKey = parsedState.key;
     this.getSectionsToRender().forEach((section) => {
       document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
@@ -44,7 +49,9 @@ class CartNotification extends HTMLElement {
     });
 
     if (this.header) this.header.reveal();
-    if (typeof window.horoShowAddedToBagToast === 'function') {
+    if (shouldOpen) {
+      this.open();
+    } else if (typeof window.horoShowAddedToBagToast === 'function') {
       window.horoShowAddedToBagToast();
     } else {
       this.open();

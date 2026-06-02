@@ -70,7 +70,12 @@ class CartDrawer extends HTMLElement {
     cartDrawerNote.parentElement.addEventListener('keyup', onKeyUpEscape);
   }
 
-  renderContents(parsedState) {
+  /**
+   * @param {Record<string, unknown>} parsedState
+   * @param {{ open?: boolean }} [options] — open drawer only when true (e.g. cart icon). Add-to-cart uses open: false + toast.
+   */
+  renderContents(parsedState, options = {}) {
+    const shouldOpen = options.open === true;
     this.querySelector('.drawer__inner').classList.contains('is-empty') &&
       this.querySelector('.drawer__inner').classList.remove('is-empty');
     this.productId = parsedState.id;
@@ -85,7 +90,9 @@ class CartDrawer extends HTMLElement {
 
     setTimeout(() => {
       this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
-      if (typeof window.horoShowAddedToBagToast === 'function') {
+      if (shouldOpen) {
+        this.open();
+      } else if (typeof window.horoShowAddedToBagToast === 'function') {
         window.horoShowAddedToBagToast();
       }
     });

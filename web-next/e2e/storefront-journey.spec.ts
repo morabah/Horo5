@@ -180,13 +180,13 @@ test.describe("storefront journey", () => {
       )
       .toBeGreaterThan(0)
 
-    const miniCart = page.getByRole("dialog", { name: /added to bag|item added/i })
+    const addedToast = page.getByRole("status").filter({ hasText: /Added to bag|أُضيف/i })
     try {
-      await miniCart.waitFor({ state: "visible", timeout: 8000 })
-      await miniCart.getByRole("button", { name: /^Close$/i }).click()
-      await expect(miniCart).toBeHidden({ timeout: 8000 })
+      await addedToast.waitFor({ state: "visible", timeout: 8000 })
+      await addedToast.getByRole("button", { name: /Continue shopping|واصل/i }).click()
+      await expect(addedToast).toBeHidden({ timeout: 8000 })
     } catch {
-      /* Drawer is optional if state batching delayed open. */
+      /* Toast is optional if add feedback was inline only. */
     }
 
     await page.goto("/cart", { waitUntil: "domcontentloaded" })
