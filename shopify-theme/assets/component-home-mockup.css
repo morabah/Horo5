@@ -395,9 +395,12 @@
 }
 
 .home-founding-card__media {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   aspect-ratio: 4 / 5;
   min-height: clamp(216px, 22vw, 296px);
+  padding: 0.5rem;
   background: #faf7f6;
   overflow: hidden;
 }
@@ -412,9 +415,14 @@
 
 .home-founding-card__media img,
 .home-founding-card__media [data-nimg] {
-  object-fit: cover !important;
-  transform: scale(1.06);
-  transform-origin: center center;
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none;
 }
 
 .home-founding-grid {

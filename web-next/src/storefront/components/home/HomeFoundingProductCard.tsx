@@ -45,7 +45,7 @@ export function HomeFoundingProductCard({
   const copy = useDictionary();
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
-  const { addItem, setMiniCartOpen } = useCart();
+  const { addItem, showAddToCartToast } = useCart();
   const [feedback, setFeedback] = useState<string | null>(null);
   const catalogProduct = useMemo(() => getProduct(product.slug) ?? product, [product]);
   const imageSrc = getProductComparisonImageSrc(catalogProduct);
@@ -66,7 +66,7 @@ export function HomeFoundingProductCard({
       return;
     }
     setFeedback(isArabic ? 'تمت الإضافة' : 'Added');
-    setMiniCartOpen(true);
+    showAddToCartToast();
     window.setTimeout(() => setFeedback(null), 2200);
   };
 

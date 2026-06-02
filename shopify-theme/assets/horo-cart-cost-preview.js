@@ -136,6 +136,48 @@
     if (totalEl) totalEl.textContent = formatMoney(baseCents + shippingCents, locale);
   }
 
+  function governorateCartAttribute(gov) {
+    if (gov === 'cairo_giza') return 'cairo';
+    if (gov === 'alexandria') return 'alexandria';
+    if (gov === 'other') return 'other';
+    return '';
+  }
+
+  function persistGovernorateToCart(root, gov) {
+    var shippingEgp = shippingEgpForGov(root, gov);
+    var payload = {
+      attributes: {
+        'Delivery governorate': governorateCartAttribute(gov),
+        'Estimated shipping': shippingEgp != null ? String(shippingEgp) : '',
+      },
+    };
+    return fetch('/cart/update.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(function () {
+      /* non-blocking */
+    });
+  }
+
+  function bindCheckoutGate() {
+    document.querySelectorAll('button[name="checkout"], input[name="checkout"]').forEach(function (btn) {
+      if (btn.getAttribute('data-horo-checkout-gate') === 'true') return;
+      btn.setAttribute('data-horo-checkout-gate', 'true');
+      btn.addEventListener(
+        'click',
+        function (evt) {
+          var select = document.querySelector('[data-horo-cost-governorate]');
+          if (!select || select.value) return;
+          evt.preventDefault();
+          select.focus();
+          select.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        },
+        true
+      );
+    });
+  }
+
   function init(root) {
     if (!root || root.getAttribute('data-horo-cost-bound') === 'true') return;
     root.setAttribute('data-horo-cost-bound', 'true');
@@ -158,10 +200,13 @@
           /* ignore */
         }
         render(root);
+        if (select.value) persistGovernorateToCart(root, select.value);
       });
+      if (select.value) persistGovernorateToCart(root, select.value);
     }
 
     render(root);
+    bindCheckoutGate();
   }
 
   function initAll() {

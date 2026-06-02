@@ -36,10 +36,13 @@ import {
   pickLocalizedText,
   type StorefrontIncentivesClient,
 } from '../lib/storefront/incentives-client';
-import { fetchStorefrontSettingsClient } from '../lib/storefront/settings-client';
-import { cartCostPreviewCheckoutNote, governorateShippingBasisCopy } from '../data/commerce-copy';
-import { estimateShippingEgpForGovernorate } from '../lib/shipping-estimate';
-import type { StorefrontSettingsPayload } from '@/lib/storefront-server';
+import { CheckoutGate } from '../components/cart/CheckoutGate';
+import { DeliveryEstimatePanel } from '../components/cart/DeliveryEstimatePanel';
+import { GovernorateModal } from '../components/cart/GovernorateModal';
+import { cartCostPreviewCheckoutNote } from '../data/commerce-copy';
+import { shippingEgpForGovernorateCode, type GovernorateRate } from '../lib/delivery/governorates';
+import { useDeliveryGovernorate } from '../lib/delivery/useDeliveryGovernorate';
+import { trackShippingGovernoratePrompted } from '../analytics/events';
 
 type CartShippingFetchState =
   | { kind: 'inactive' }
@@ -165,11 +168,13 @@ function CartSummary({
   locale,
   cartService,
   incentives,
-  showGovernoratePreview,
-  governorateOptions,
-  previewGovernorate,
-  onPreviewGovernorateChange,
-  shippingBasisCopy,
+  showDeliveryEstimate,
+  selectedRate,
+  deliveryShippingEgp,
+  deliveryEstimatedTotal,
+  onChooseGovernorate,
+  onChangeGovernorate,
+  onProceedCheckout,
 }: {
   itemCount: number;
   subtotalEgp: number;
@@ -184,11 +189,13 @@ function CartSummary({
   cartService: { shippingExplainerArabic: string; estimatedDeliveryCheckoutNoteArabic: string };
   /** Operator-controlled free-shipping incentive used for the progress bar. */
   incentives: StorefrontIncentivesClient | null;
-  showGovernoratePreview: boolean;
-  governorateOptions: { value: string; label: string }[];
-  previewGovernorate: string;
-  onPreviewGovernorateChange: (code: string) => void;
-  shippingBasisCopy: string;
+  showDeliveryEstimate: boolean;
+  selectedRate: GovernorateRate | null;
+  deliveryShippingEgp: number | null;
+  deliveryEstimatedTotal: number | null;
+  onChooseGovernorate: () => void;
+  onChangeGovernorate: () => void;
+  onProceedCheckout: () => void;
 }) {
   const dict = useDictionary();
   const copy = dict.cart;
@@ -213,27 +220,16 @@ function CartSummary({
         {cartCostPreviewCheckoutNote(locale === 'ar')}
       </p>
 
-      {showGovernoratePreview && governorateOptions.length > 0 ? (
+      {showDeliveryEstimate ? (
         <div className="mt-4">
-          <label htmlFor="cart-governorate-preview" className="font-label mb-1 block text-[10px] font-semibold uppercase tracking-[0.16em] text-label">
-            {locale === 'ar' ? 'المحافظة (تقدير الشحن)' : 'Governorate (shipping estimate)'}
-          </label>
-          <select
-            id="cart-governorate-preview"
-            value={previewGovernorate}
-            onChange={(event) => onPreviewGovernorateChange(event.target.value)}
-            className="min-h-11 w-full rounded-lg border border-stone/50 bg-white px-3 font-body text-sm text-obsidian focus-visible:border-deep-teal focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-deep-teal/25"
-          >
-            <option value="">{locale === 'ar' ? 'اختر المحافظة' : 'Select governorate'}</option>
-            {governorateOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <p className="mt-2 font-body text-xs text-clay" data-testid="cart-shipping-basis">
-            {shippingBasisCopy}
-          </p>
+          <DeliveryEstimatePanel
+            subtotalEgp={subtotalEgp}
+            shippingEgp={deliveryShippingEgp}
+            estimatedTotalEgp={deliveryEstimatedTotal}
+            selectedRate={selectedRate}
+            onChooseGovernorate={onChooseGovernorate}
+            onChangeGovernorate={onChangeGovernorate}
+          />
         </div>
       ) : null}
 
@@ -315,7 +311,9 @@ function CartSummary({
             })() : null}
             {shippingRow.mode === 'copy' ? (
               <span className="font-body text-sm text-warm-charcoal">
-                {showGovernoratePreview ? shippingBasisCopy : copy.shippingConfirmedAtCheckout}
+                {showDeliveryEstimate && !selectedRate
+                  ? copy.cartGovernorateEmpty
+                  : copy.shippingConfirmedAtCheckout}
               </span>
             ) : null}
           </span>
@@ -332,14 +330,11 @@ function CartSummary({
       </div>
 
       <div className="cart-summary-actions">
-        <button
-          type="button"
-          className="btn btn-primary"
-          style={{ width: '100%' }}
-          onClick={() => router.push('/checkout')}
-        >
-          {copy.primaryCta}
-        </button>
+        <CheckoutGate subtotalEgp={subtotalEgp + giftWrapEgp} onProceed={onProceedCheckout}>
+          <button type="button" className="btn btn-primary" style={{ width: '100%' }}>
+            {copy.primaryCta}
+          </button>
+        </CheckoutGate>
         <button
           type="button"
           className="btn btn-ghost"
@@ -582,8 +577,9 @@ export function Cart({
   }, [displayItems]);
   const [shippingFetch, setShippingFetch] = useState<CartShippingFetchState>({ kind: 'inactive' });
   const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
-  const [storefrontSettings, setStorefrontSettings] = useState<StorefrontSettingsPayload | null>(null);
-  const [previewGovernorate, setPreviewGovernorate] = useState('');
+  const [governorateModalOpen, setGovernorateModalOpen] = useState(false);
+  const router = useRouter();
+  const { selectedCode, selectedRate, setGovernorate, hydrated: governorateHydrated } = useDeliveryGovernorate();
 
   /* Fetch incentives after mount (per repo hydration baseline: server render uses null). */
   useEffect(() => {
@@ -592,29 +588,10 @@ export function Cart({
       if (cancelled) return;
       setIncentives(data);
     });
-    void fetchStorefrontSettingsClient().then((data) => {
-      if (cancelled) return;
-      setStorefrontSettings(data);
-    });
     return () => {
       cancelled = true;
     };
   }, []);
-
-  const governorateOptions = useMemo(() => {
-    const list = storefrontSettings?.checkout?.governorates ?? [];
-    if (list.length === 0) {
-      return [
-        { value: 'cairo', label: locale === 'ar' ? 'القاهرة' : 'Cairo' },
-        { value: 'giza', label: locale === 'ar' ? 'الجيزة' : 'Giza' },
-        { value: 'alexandria', label: locale === 'ar' ? 'الإسكندرية' : 'Alexandria' },
-      ];
-    }
-    return list.map((row) => ({
-      value: row.code,
-      label: pickLocalizedText(row.name, locale === 'ar' ? 'ar' : 'en') || row.code,
-    }));
-  }, [locale, storefrontSettings?.checkout?.governorates]);
 
   useEffect(() => {
     if (!storageReady) {
@@ -691,17 +668,14 @@ export function Cart({
       };
     }
     if (shippingFetch.kind === 'pending_cart_id') {
-      if (!previewGovernorate.trim()) {
+      if (!selectedCode) {
         return {
           shippingRow: { mode: 'copy' as const },
           estimatedOrderTotal: base,
           originalShippingEgp: 0,
         };
       }
-      const previewEgp = estimateShippingEgpForGovernorate(
-        previewGovernorate,
-        storefrontSettings?.delivery,
-      );
+      const previewEgp = shippingEgpForGovernorateCode(selectedCode);
       return {
         shippingRow: { mode: 'amount' as const, egp: previewEgp },
         estimatedOrderTotal: base + previewEgp,
@@ -741,22 +715,22 @@ export function Cart({
       estimatedOrderTotal: base + quoteEgp,
       originalShippingEgp: 0,
     };
-  }, [shippingFetch, displaySubtotalEgp, displayGiftWrapEgp, freeShippingUnlocked, previewGovernorate, storefrontSettings?.delivery]);
+  }, [shippingFetch, displaySubtotalEgp, displayGiftWrapEgp, freeShippingUnlocked, selectedCode]);
 
-  const showGovernoratePreview = lineViews.length > 0 && governorateOptions.length > 0;
+  const showDeliveryEstimate = lineViews.length > 0 && governorateHydrated;
+  const deliveryShippingEgp =
+    selectedRate && shippingRow.mode === 'amount'
+      ? shippingRow.egp
+      : selectedRate
+        ? selectedRate.shippingEgp
+        : null;
+  const deliveryEstimatedTotal =
+    deliveryShippingEgp != null ? displaySubtotalEgp + displayGiftWrapEgp + deliveryShippingEgp : null;
 
-  const cartGovernorateBasisLabel = useMemo(() => {
-    const fromPreview = governorateOptions.find((option) => option.value === previewGovernorate)?.label;
-    if (fromPreview) return fromPreview;
-    if (shippingFetch.kind === 'ok') {
-      const city = shippingFetch.cart.shipping_address?.city?.trim();
-      if (!city) return null;
-      return governorateOptions.find((option) => option.value === city || option.label === city)?.label ?? city;
-    }
-    return null;
-  }, [governorateOptions, previewGovernorate, shippingFetch]);
-
-  const shippingBasisCopy = governorateShippingBasisCopy(locale === 'ar', cartGovernorateBasisLabel);
+  const openGovernoratePicker = () => {
+    trackShippingGovernoratePrompted('cart');
+    setGovernorateModalOpen(true);
+  };
 
   const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && displayGiftWrapEgp === 0);
 
@@ -1104,13 +1078,29 @@ export function Cart({
             locale={locale}
             cartService={shellCopy.cartService}
             incentives={incentives}
-            showGovernoratePreview={showGovernoratePreview}
-            governorateOptions={governorateOptions}
-            previewGovernorate={previewGovernorate}
-            onPreviewGovernorateChange={setPreviewGovernorate}
-            shippingBasisCopy={shippingBasisCopy}
+            showDeliveryEstimate={showDeliveryEstimate}
+            selectedRate={selectedRate}
+            deliveryShippingEgp={deliveryShippingEgp}
+            deliveryEstimatedTotal={deliveryEstimatedTotal}
+            onChooseGovernorate={openGovernoratePicker}
+            onChangeGovernorate={openGovernoratePicker}
+            onProceedCheckout={() => router.push('/checkout')}
           />
         </div>
+
+        <GovernorateModal
+          open={governorateModalOpen}
+          subtotalEgp={displaySubtotalEgp + displayGiftWrapEgp}
+          onClose={() => setGovernorateModalOpen(false)}
+          onSelect={(code) => {
+            setGovernorate(code, { surface: 'cart_modal' });
+            setGovernorateModalOpen(false);
+          }}
+          onContinueToCheckout={() => {
+            setGovernorateModalOpen(false);
+            router.push('/checkout');
+          }}
+        />
 
         <ExitIntentModal surface="cart" cartValueEgp={displaySubtotalEgp} cartId={medusaCartId} />
       </div>

@@ -1,14 +1,15 @@
 {%- comment -%}
-  HORO Brand Logo — dual-line wordmark (HORO / هورو).
+  HORO brand wordmark — transparent PNG from official artwork.
 
-  Mirrors web-next BrandLogo.tsx.
   Usage:
-    {% render 'horo-brand-logo', variant: 'dark', class: 'my-class' %}
-    {% render 'horo-brand-logo', variant: 'light' %}
+    {% render 'horo-brand-logo', variant: 'dark' %}
+    {% render 'horo-brand-logo', variant: 'light', show_arabic: false, size: 'footer' %}
 
   Params:
-    - variant : 'dark' | 'light'  (default: 'dark')
-    - class   : extra CSS classes (optional)
+    - variant     : 'dark' | 'light' (default: 'dark')
+    - show_arabic : bool (default: true)
+    - size        : 'header' | 'footer' | 'drawer' (default: 'header')
+    - class       : extra CSS classes (optional)
 {%- endcomment -%}
 
 {%- liquid
@@ -17,21 +18,41 @@
   if show_arabic_line == nil
     assign show_arabic_line = true
   endif
+  assign logo_size = size | default: 'header'
+
   if logo_variant == 'light'
-    assign latin_class = 'horo-wordmark--light'
+    assign logo_asset = 'horo-wordmark-light.png'
     assign arabic_class = 'horo-wordmark__ar--light'
   else
-    assign latin_class = 'horo-wordmark--dark'
+    assign logo_asset = 'horo-wordmark-dark.png'
     assign arabic_class = 'horo-wordmark__ar--dark'
   endif
+
+  if logo_size == 'footer'
+    assign logo_height = 30
+  elsif logo_size == 'drawer'
+    assign logo_height = 22
+  else
+    assign logo_height = 26
+  endif
+
+  assign logo_width = logo_height | times: 438 | divided_by: 100
 -%}
 
 <span
-  class="horo-wordmark{% if show_arabic_line == false %} horo-wordmark--latin-only{% endif %} {{ class }}"
+  class="horo-brand-logo horo-brand-logo--{{ logo_size }}{% if show_arabic_line == false %} horo-brand-logo--latin-only{% endif %} {{ class }}"
   aria-label="{{ shop.name }}"
 >
-  <span class="horo-wordmark__latin {{ latin_class }}">HORO</span>
+  <img
+    src="{{ logo_asset | asset_url }}"
+    alt="{{ shop.name | escape }}"
+    class="horo-brand-logo__image"
+    width="{{ logo_width }}"
+    height="{{ logo_height }}"
+    loading="eager"
+    decoding="async"
+  >
   {%- if show_arabic_line -%}
-    <span lang="ar" dir="rtl" class="horo-wordmark__ar {{ arabic_class }}">هورو</span>
+    <span lang="ar" dir="rtl" class="horo-brand-logo__ar {{ arabic_class }}">هورو</span>
   {%- endif -%}
 </span>

@@ -29,7 +29,7 @@ export function Footer() {
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 font-body sm:px-6 md:grid-cols-5 md:gap-7 lg:px-8">
           <div className="space-y-4 lg:col-span-1">
             <Link href="/" className="inline-flex items-center" aria-label={copy.shell.home}>
-              <BrandLogo variant="light" showArabic={false} className="text-[1.45rem]" />
+              <BrandLogo variant="light" showArabic={false} size="footer" />
             </Link>
             <p className="font-headline text-sm font-semibold text-horo-breath">{BRAND_COPY.mantra}</p>
             <p className="text-sm leading-relaxed text-horo-breath/88">{BRAND_COPY.canvasLine}</p>

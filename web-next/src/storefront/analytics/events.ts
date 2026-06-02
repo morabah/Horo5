@@ -604,3 +604,57 @@ export function trackGiftWrapToggle(enabled: boolean, surface: 'cart' | 'mini_ca
     content_job: 'action',
   });
 }
+
+export function trackAddToCartToastShown(productSlug: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('add_to_cart_toast_shown', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    product_slug: productSlug,
+    content_job: 'action',
+  });
+}
+
+export function trackCartDrawerOpenedManually(source: 'cart_icon' | 'view_bag_toast') {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('cart_drawer_opened_manually', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    source,
+    content_job: 'action',
+  });
+}
+
+export function trackShippingGovernoratePrompted(surface: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('shipping_governorate_prompted', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    surface,
+    content_job: 'action',
+  });
+}
+
+export function trackShippingGovernorateSelected(governorateCode: string, surface: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('shipping_governorate_selected', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    governorate_code: governorateCode,
+    surface,
+    content_job: 'action',
+  });
+}
+
+export function trackCheckoutBlockedMissingGovernorate() {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('checkout_blocked_missing_governorate', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    content_job: 'action',
+  });
+}
+
+export function trackCheckoutStartedWithShippingEstimate(governorateCode: string) {
+  if (typeof window === 'undefined') return;
+  capturePostHogEvent('checkout_started_with_shipping_estimate', {
+    hypothesis_segment: HYPOTHESIS_PRIMARY_SEGMENT,
+    governorate_code: governorateCode,
+    content_job: 'action',
+  });
+}

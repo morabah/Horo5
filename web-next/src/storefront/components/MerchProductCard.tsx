@@ -79,7 +79,7 @@ export function MerchProductCard({
 }: MerchProductCardProps) {
   const { locale } = useUiLocale();
   const copy = useDictionary();
-  const { addItem, setMiniCartOpen } = useCart();
+  const { addItem, showAddToCartToast } = useCart();
   const { has: isWishlisted, toggle: toggleWishlist } = useWishlist();
   const wishlisted = isWishlisted(slug);
   const minimal = variant === 'minimal';
@@ -152,7 +152,7 @@ export function MerchProductCard({
       setQuickAddMessage(formatCartStockMessage(result, product?.name ?? name, locale === 'ar'));
       return;
     }
-    setMiniCartOpen(true);
+    showAddToCartToast();
     setQuickAddOpen(false);
     setQuickAddMessage('');
     setAddedFeedback(true);

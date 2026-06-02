@@ -8,6 +8,16 @@ export const BRAND_NAME = {
   arabic: 'هورو',
 } as const;
 
+/** Transparent wordmark extracted from brand artwork — aspect ratio ~943:215. */
+export const BRAND_LOGO = {
+  dark: '/images/brand/horo-wordmark-dark.png',
+  light: '/images/brand/horo-wordmark-light.png',
+  aspectRatio: 943 / 215,
+  headerHeightPx: 26,
+  mobileHeaderHeightPx: 22,
+  footerHeightPx: 30,
+} as const;
+
 export const BRAND_COPY = {
   publicLine: `${HORO_V19_SOUNDBITES.primary.en} | ${HORO_V19_SOUNDBITES.primary.ar}`,
   mantra: HORO_V19_SOUNDBITES.primary.en,

@@ -1,25 +1,47 @@
-import { BRAND_NAME } from '../data/brand';
+import Image from 'next/image';
+
+import { BRAND_LOGO, BRAND_NAME } from '../data/brand';
 import { useUiLocale } from '../i18n/ui-locale';
 
 type BrandLogoProps = {
   variant?: 'dark' | 'light';
   className?: string;
   showArabic?: boolean;
+  /** Header (default), footer, drawer/mobile density. */
+  size?: 'header' | 'footer' | 'drawer';
 };
 
-export function BrandLogo({ variant = 'dark', className = '', showArabic = true }: BrandLogoProps) {
+function logoHeight(size: BrandLogoProps['size']) {
+  if (size === 'footer') return BRAND_LOGO.footerHeightPx;
+  if (size === 'drawer') return BRAND_LOGO.mobileHeaderHeightPx;
+  return BRAND_LOGO.headerHeightPx;
+}
+
+export function BrandLogo({
+  variant = 'dark',
+  className = '',
+  showArabic = true,
+  size = 'header',
+}: BrandLogoProps) {
   const { locale } = useUiLocale();
-  const latinTone = variant === 'light' ? 'text-papyrus' : 'text-obsidian';
+  const height = logoHeight(size);
+  const width = Math.round(height * BRAND_LOGO.aspectRatio);
+  const src = variant === 'light' ? BRAND_LOGO.light : BRAND_LOGO.dark;
   const arabicTone = variant === 'light' ? 'text-stone' : 'text-warm-charcoal';
 
   return (
     <span
-      aria-hidden
-      className={`inline-flex flex-col justify-center leading-none ${className}`.trim()}
+      className={`inline-flex flex-col items-start justify-center leading-none ${className}`.trim()}
     >
-      <span className={`font-headline text-[1.08rem] font-semibold tracking-[0.28em] ${latinTone}`}>
-        {BRAND_NAME.latin}
-      </span>
+      <Image
+        src={src}
+        alt={BRAND_NAME.latin}
+        width={width}
+        height={height}
+        priority={size === 'header' || size === 'drawer'}
+        className="mx-auto block h-auto w-auto max-w-[min(132px,calc(100vw-10.5rem))] object-contain object-center"
+        style={{ height, width: 'auto', maxHeight: height }}
+      />
       {showArabic ? (
         <span
           lang="ar"

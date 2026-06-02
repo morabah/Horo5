@@ -8,11 +8,7 @@
 <div class="horo-account-surface page-width">
   <div class="horo-account-surface__header">
     <a href="{{ routes.root_url }}" class="horo-account-surface__logo" aria-label="{{ shop.name }}">
-      {%- if settings.logo != blank -%}
-        {{ settings.logo | image_url: width: 120 | image_tag: alt: shop.name, loading: 'eager' }}
-      {%- else -%}
-        <span class="font-wordmark">{{ shop.name }}</span>
-      {%- endif -%}
+      {% render 'horo-brand-logo', variant: 'dark', show_arabic: false, size: 'footer' %}
     </a>
     <p class="horo-account-surface__mantra font-wordmark">{{ 'horo.brand.mantra' | t }}</p>
   </div>

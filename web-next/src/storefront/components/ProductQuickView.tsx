@@ -43,7 +43,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<Element | null>(null);
   const router = useRouter();
-  const { addItem, setMiniCartOpen } = useCart();
+  const { addItem, showAddToCartToast } = useCart();
   const { locale } = useUiLocale();
   const titleId = useId();
   const descId = useId();
@@ -213,9 +213,8 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
     }
     setStockMessage('');
     setAddedToBag(true);
-    // Close the dialog and open the mini-cart drawer for a consistent experience
     onClose();
-    setMiniCartOpen(true);
+    showAddToCartToast();
   };
 
   const handleSizeSelect = (size: ProductSizeKey, isSelected: boolean) => {
@@ -240,7 +239,7 @@ export function ProductQuickView({ open, productSlug, onClose, sizeTableConfig }
 
   const handleViewBag = () => {
     onClose();
-    setMiniCartOpen(true);
+    router.push('/cart');
   };
 
   return (

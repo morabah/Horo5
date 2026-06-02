@@ -85,7 +85,9 @@ class CartDrawer extends HTMLElement {
 
     setTimeout(() => {
       this.querySelector('#CartDrawer-Overlay').addEventListener('click', this.close.bind(this));
-      this.open();
+      if (typeof window.horoShowAddedToBagToast === 'function') {
+        window.horoShowAddedToBagToast();
+      }
     });
   }
 

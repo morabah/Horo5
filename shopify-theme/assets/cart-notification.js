@@ -44,7 +44,11 @@ class CartNotification extends HTMLElement {
     });
 
     if (this.header) this.header.reveal();
-    this.open();
+    if (typeof window.horoShowAddedToBagToast === 'function') {
+      window.horoShowAddedToBagToast();
+    } else {
+      this.open();
+    }
   }
 
   getSectionsToRender() {

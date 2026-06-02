@@ -56,7 +56,7 @@
     <div class="horo-drawer__panel" data-horo-drawer-panel-inner>
       <div class="horo-drawer__header">
         <a href="{{ routes.root_url }}" class="horo-drawer__logo" aria-label="{{ 'horo.shell.home' | t | default: 'Home' }}">
-          {% render 'horo-brand-logo', variant: 'dark' %}
+          {% render 'horo-brand-logo', variant: 'dark', show_arabic: false, size: 'drawer' %}
         </a>
         <button
           type="button"

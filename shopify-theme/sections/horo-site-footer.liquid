@@ -15,7 +15,7 @@
     <div class="horo-site-footer__grid">
       <div class="horo-site-footer__brand">
         <a href="{{ routes.root_url }}" class="horo-site-footer__logo" aria-label="{{ shop.name | escape }}">
-          {% render 'horo-brand-logo', variant: 'light', show_arabic: false, class: 'horo-site-footer__wordmark' %}
+          {% render 'horo-brand-logo', variant: 'light', show_arabic: false, size: 'footer', class: 'horo-site-footer__wordmark' %}
         </a>
         <p class="horo-site-footer__mantra">{{ 'horo.brand.mantra' | t }}</p>
         <p class="horo-site-footer__canvas">{{ 'horo.brand.canvas_line' | t }}</p>

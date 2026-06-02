@@ -669,7 +669,19 @@ export const DICTIONARY = {
       "giftWrapRemoved": "Gift wrap removed from your order estimate.",
       "whatsappSizeHelpLabel": "Need size help? Chat with us",
       "estimatedDeliveryLabel": "Est. delivery (standard)",
-      "estimatedDeliveryCheckoutNote": "Express options and exact dates are confirmed at checkout."
+      "estimatedDeliveryCheckoutNote": "Express options and exact dates are confirmed at checkout.",
+      "cartGovernorateTitle": "Delivery estimate",
+      "cartGovernorateEmpty": "Choose your governorate to see shipping before checkout.",
+      "cartGovernorateSelected": "Delivery to {governorate}",
+      "cartShippingEstimate": "Estimated shipping",
+      "cartEstimatedTotal": "Estimated total",
+      "cartChooseGovernorate": "Choose governorate",
+      "cartChangeGovernorate": "Change",
+      "cartCheckoutNeedsGovernorate": "Choose your governorate before checkout",
+      "cartNoCheckoutSurprise": "We show shipping before checkout so there are no price surprises.",
+      "addedToBag": "Added to bag",
+      "viewBag": "View bag",
+      "continueShopping": "Continue shopping"
     },
     "miniCart": {
       "addedLabel": "Added to bag",
@@ -1417,7 +1429,19 @@ export const DICTIONARY = {
       "giftWrapRemoved": "Gift wrap removed from your order estimate.",
       "whatsappSizeHelpLabel": "محتاج مساعدة في المقاس؟ تواصل معنا",
       "estimatedDeliveryLabel": "Est. delivery (standard)",
-      "estimatedDeliveryCheckoutNote": "Express options and exact dates are confirmed at checkout."
+      "estimatedDeliveryCheckoutNote": "Express options and exact dates are confirmed at checkout.",
+      "cartGovernorateTitle": "تقدير التوصيل",
+      "cartGovernorateEmpty": "اختر محافظتك لمعرفة الشحن قبل الدفع.",
+      "cartGovernorateSelected": "التوصيل إلى {governorate}",
+      "cartShippingEstimate": "تقدير الشحن",
+      "cartEstimatedTotal": "الإجمالي التقديري",
+      "cartChooseGovernorate": "اختر المحافظة",
+      "cartChangeGovernorate": "تغيير",
+      "cartCheckoutNeedsGovernorate": "اختر محافظتك قبل الدفع",
+      "cartNoCheckoutSurprise": "نعرض الشحن قبل الدفع حتى لا تفاجئك الأسعار.",
+      "addedToBag": "أُضيف إلى الحقيبة",
+      "viewBag": "عرض الحقيبة",
+      "continueShopping": "واصل التسوق"
     },
     "miniCart": {
       "addedLabel": "أُضيف إلى الحقيبة",

@@ -145,6 +145,14 @@ function buildProductMetafields(
     mf('complementary_products', 'list.product_reference', JSON.stringify(refs.crossSellIds)),
     mf('customers_also_bought_products', 'list.product_reference', JSON.stringify(refs.crossSellIds)),
     mf('pair_with_products', 'list.product_reference', JSON.stringify(refs.crossSellIds)),
+    ...(seed.launchGroup
+      ? [
+          mf('launch_group', 'single_line_text_field', seed.launchGroup),
+          mf('launch_audience', 'single_line_text_field', seed.launchAudience ?? ''),
+          mf('launch_design', 'single_line_text_field', seed.launchDesign ?? ''),
+          mf('zodiac_sign', 'single_line_text_field', seed.zodiacSign ?? ''),
+        ]
+      : []),
   ].filter((m) => m.value !== '' && m.value !== '[]' && m.value !== '""');
 }
 

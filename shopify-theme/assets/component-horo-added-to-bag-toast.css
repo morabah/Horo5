@@ -1,0 +1,69 @@
+.horo-added-to-bag-toast-host {
+  position: fixed;
+  inset-inline: max(1rem, env(safe-area-inset-left, 0px)) max(1rem, env(safe-area-inset-right, 0px));
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  z-index: 240;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.horo-added-to-bag-toast {
+  pointer-events: auto;
+  width: min(100%, 420px);
+  padding: 1rem 1.125rem;
+  border-radius: 14px;
+  background: var(--color-chalk, #fee5e2);
+  border: 1px solid color-mix(in srgb, var(--color-stone, #e8c9c6) 70%, transparent);
+  box-shadow: 0 12px 40px rgba(26, 26, 26, 0.16);
+  animation: horo-toast-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes horo-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.horo-added-to-bag-toast__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-family: var(--font-heading-family, inherit);
+  font-weight: 600;
+  color: var(--color-obsidian, #4f111f);
+}
+
+.horo-added-to-bag-toast__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.horo-added-to-bag-toast__cta {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.horo-added-to-bag-toast__cta--primary {
+  background: var(--color-clay-action, #8c2340);
+  color: #fff;
+  border: none;
+}
+
+.horo-added-to-bag-toast__cta--ghost {
+  background: transparent;
+  color: var(--color-obsidian, #4f111f);
+  border: 1px solid color-mix(in srgb, var(--color-stone, #e8c9c6) 80%, transparent);
+}

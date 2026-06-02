@@ -1,0 +1,16 @@
+{%- comment -%}
+  Governorate selector for cart attributes (no-JS fallback when inside cart form).
+  Prefer horo-cart-cost-preview for drawer/page estimates; include this on cart page if needed.
+{%- endcomment -%}
+<select
+  name="attributes[Delivery governorate]"
+  id="CartGovernorate"
+  class="horo-governorate-selector"
+  form="cart"
+  {% if require_governorate %}required{% endif %}
+>
+  <option value="">{{ 'horo.cart.choose_governorate' | t }}</option>
+  <option value="cairo">{{ 'horo.cart.cost_preview_gov_cairo_giza' | t }}</option>
+  <option value="alexandria">{{ 'horo.cart.cost_preview_gov_alex' | t }}</option>
+  <option value="other">{{ 'horo.cart.cost_preview_gov_other' | t }}</option>
+</select>

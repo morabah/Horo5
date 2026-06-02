@@ -1,9 +1,20 @@
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 
 import "./globals.css";
 import { RootProviders } from "./root-providers";
 import type { UiLocale } from "@/storefront/i18n/ui-locale";
 import { UI_LOCALE_COOKIE_KEY } from "@/storefront/i18n/ui-locale";
+
+export const metadata: Metadata = {
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+};
 
 // Root: minimal i18n so `not-found` and other root-only trees work. Catalog + full providers
 // live in route-group layouts so `/checkout` can skip the heavy `/storefront/catalog` fetch.

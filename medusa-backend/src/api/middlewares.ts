@@ -6,6 +6,8 @@ import {
 } from "@medusajs/framework/http"
 import multer from "multer"
 
+import { requireDeliveryGovernorate } from "./middlewares/require-delivery-governorate"
+
 const dropsUpload = multer({ storage: multer.memoryStorage() })
 
 const PUBLIC_STOREFRONT_CACHE_MAX_AGE = parseInt(
@@ -176,6 +178,16 @@ export default defineMiddlewares({
     {
       matcher: /^\/store(\/|$)/,
       middlewares: [rateLimit, httpRequestTiming],
+    },
+    {
+      method: ["POST"],
+      matcher: /^\/store\/carts\/[^/]+\/complete$/,
+      middlewares: [requireDeliveryGovernorate],
+    },
+    {
+      method: ["POST"],
+      matcher: /^\/store\/payment-collections\/[^/]+\/payment-sessions$/,
+      middlewares: [requireDeliveryGovernorate],
     },
     {
       matcher: /^\/(admin|store-media|integrations)(\/|$)/,

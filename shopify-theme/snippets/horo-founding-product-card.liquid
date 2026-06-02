@@ -116,23 +116,38 @@
       assign eyebrow_parts = audience_label
     endif
   endif
+
+  assign card_image = nil
+  if card_product.featured_media
+    if card_product.featured_media.media_type == 'image'
+      assign card_image = card_product.featured_media
+    elsif card_product.featured_media.preview_image
+      assign card_image = card_product.featured_media.preview_image
+    endif
+  endif
+  if card_image == nil and card_product.featured_image
+    assign card_image = card_product.featured_image
+  endif
+  if card_image == nil and card_product.images.size > 0
+    assign card_image = card_product.images.first
+  endif
 -%}
 
 <article class="home-founding-card">
   <a href="{{ card_product.url }}" class="home-founding-card__media" aria-label="{{ card_product.title | escape }}">
-    {%- if card_product.featured_media -%}
+    {%- if card_image -%}
       {{
-        card_product.featured_media
-        | image_url: width: 800
+        card_image
+        | image_url: width: 1200
         | image_tag:
           loading: loading_value,
-          widths: '200, 400, 600, 800',
+          widths: '200, 400, 600, 800, 1200',
           sizes: '(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 240px',
-          alt: card_product.featured_media.alt | default: card_product.title,
+          alt: card_image.alt | default: card_product.title,
           class: 'home-founding-card__image'
       }}
     {%- else -%}
-      {{ 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      {{ 'product-apparel-1' | placeholder_svg_tag: 'placeholder-svg home-founding-card__placeholder' }}
     {%- endif -%}
   </a>
   <div class="home-founding-card__body">

@@ -56,9 +56,10 @@ test.describe("checkout shipping clarity", () => {
 
     await page.goto("/cart")
     await expectMainShell(page)
-    await expect(page.getByTestId("cart-shipping-basis")).toContainText(/Choose governorate/i)
-    await page.selectOption("#cart-governorate-preview", { index: 1 })
-    await expect(page.getByTestId("cart-shipping-basis")).toContainText(/based on/i)
+    await expect(page.getByText(/Choose your governorate to see shipping/i)).toBeVisible()
+    await page.getByRole("button", { name: /Choose governorate/i }).click()
+    await page.getByRole("button", { name: /Cairo/i }).first().click()
+    await expect(page.getByTestId("cart-shipping-basis")).toContainText(/Delivery to/i)
     const shippingRow = page.locator(".cart-summary-row--meta").filter({ hasText: /shipping/i })
     await expect(shippingRow).not.toContainText("—")
   })

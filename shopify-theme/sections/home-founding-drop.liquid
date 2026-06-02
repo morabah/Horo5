@@ -3,32 +3,45 @@ Legacy full taxonomy kept for future restoration:
 Lifestyle / Zodiac / Mood / Dream / Art.
 
 Current launch taxonomy is intentionally shallow:
-Founding Drop / Zodiac / Mood / Lifestyle.
-User should reach product in 1–2 clicks.
+Founding Drop / Sign Capsule / Mood / Lifestyle.
 {%- endcomment -%}
 {{ 'component-home-founding-drop.css' | asset_url | stylesheet_tag }}
+{{ 'component-home-mockup.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
-  assign collection = section.settings.collection
-  assign product_limit = section.settings.product_limit
-  assign product_count = 0
-  if collection != blank
-    assign product_count = collection.products_count
+  assign product_limit = section.settings.product_limit | default: 11
+  if product_limit < 1
+    assign product_limit = 11
   endif
+
+  assign collection_handle = 'founding-drop'
+  if section.settings.collection != blank
+    if section.settings.collection.handle != blank
+      assign collection_handle = section.settings.collection.handle
+    else
+      assign collection_handle = section.settings.collection
+    endif
+  endif
+
+  assign primary_collection = collections[collection_handle]
+  if primary_collection == blank and section.settings.collection != blank and section.settings.collection.products != blank
+    assign primary_collection = section.settings.collection
+  endif
+
   assign view_all_url = section.settings.view_all_link
-  if view_all_url == blank and collection != blank
-    assign view_all_url = collection.url
+  if view_all_url == blank and primary_collection != blank
+    assign view_all_url = primary_collection.url
   endif
 -%}
 
-{%- if product_count > 0 or request.design_mode -%}
+{%- if primary_collection != blank or request.design_mode -%}
   <section
     id="founding-drop"
     class="home-section home-section--bordered home-section--white section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
     aria-labelledby="home-start-here-title-{{ section.id }}"
   >
-    <div class="home-page__inner">
+    <div class="home-page__inner home-founding-drop__inner">
       <div class="home-section-header">
         <div>
           {%- if section.settings.eyebrow != blank -%}
@@ -48,18 +61,20 @@ User should reach product in 1–2 clicks.
         {%- endif -%}
       </div>
 
-      {%- if product_count > 0 -%}
+      {%- if primary_collection != blank and primary_collection.products_count > 0 -%}
         <div class="home-founding-grid">
-          {%- for product in collection.products limit: product_limit -%}
+          {%- assign cards_rendered = 0 -%}
+          {%- for product in primary_collection.products limit: product_limit -%}
+            {%- assign cards_rendered = cards_rendered | plus: 1 -%}
             {% render 'horo-founding-product-card',
               card_product: product,
-              lazy_load: forloop.index > 3,
+              lazy_load: cards_rendered > 3,
               section_id: section.id
             %}
           {%- endfor -%}
         </div>
       {%- elsif request.design_mode -%}
-        <p>Select the founding-drop collection in section settings.</p>
+        <p>Add products to the {{ collection_handle | escape }} collection to populate this grid.</p>
       {%- endif -%}
     </div>
   </section>
@@ -81,13 +96,13 @@ User should reach product in 1–2 clicks.
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Our first 5 pieces. Limited quantities."
+      "default": "The first HORO drop."
     },
     {
       "type": "text",
       "id": "view_all_label",
       "label": "View all link label",
-      "default": "View all"
+      "default": "See all launch designs"
     },
     {
       "type": "url",
@@ -98,7 +113,8 @@ User should reach product in 1–2 clicks.
     {
       "type": "collection",
       "id": "collection",
-      "label": "Collection"
+      "label": "Collection",
+      "info": "Homepage shows every product in this collection (up to the limit below)."
     },
     {
       "type": "range",
@@ -106,7 +122,7 @@ User should reach product in 1–2 clicks.
       "min": 2,
       "max": 12,
       "step": 1,
-      "default": 5,
+      "default": 11,
       "label": "Maximum products"
     }
   ],

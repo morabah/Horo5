@@ -9,6 +9,8 @@
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- else -%}
+      <link rel="icon" type="image/png" href="{{ 'horo-wordmark-dark.png' | asset_url }}">
     {%- endif -%}
 
     {%- unless settings.type_header_font.system? and settings.type_body_font.system? -%}
@@ -379,6 +381,9 @@
       {{ 'component-horo-cart-cost-preview.css' | asset_url | stylesheet_tag }}
     {%- endif -%}
     {%- if settings.cart_type == 'drawer' -%}
+      {{ 'component-horo-added-to-bag-toast.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- if settings.cart_type == 'drawer' -%}
       {{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
       {{ 'component-horo-cart-drawer.css' | asset_url | stylesheet_tag }}
       {{ 'component-cart.css' | asset_url | stylesheet_tag }}
@@ -480,6 +485,13 @@
         step_error: `{{- 'sections.quick_order_list.step_error' | t: step: '[step]' }}`,
       };
 
+      window.horoAddedToBagCopy = {
+        title: {{ 'horo.cart.added_to_bag' | t | json }},
+        viewBag: {{ 'horo.cart.view_bag' | t | json }},
+        continueShopping: {{ 'horo.cart.continue_shopping' | t | json }},
+        cartUrl: {{ routes.cart_url | json }},
+      };
+
       window.accessibilityStrings = {
         imageAvailable: `{{ 'products.product.media.image_available' | t: index: '[index]' }}`,
         shareSuccess: `{{ 'general.share.success_message' | t }}`,
@@ -496,6 +508,7 @@
     {%- endif -%}
 
     {%- if settings.cart_type == 'drawer' -%}
+      <script src="{{ 'horo-added-to-bag-toast.js' | asset_url }}" defer="defer"></script>
       <script src="{{ 'cart-drawer.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
     {%- if settings.cart_type == 'drawer' or template.name == 'cart' -%}

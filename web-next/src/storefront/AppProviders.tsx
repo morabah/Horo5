@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { setRuntimeCatalog, type RuntimeCatalog } from './data/site';
 import { CartProvider } from './cart/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
-import { MiniCartDrawer } from './components/MiniCartDrawer';
+import { AddToCartToast } from './components/cart/AddToCartToast';
 import { WhatsAppFloatingButton } from './components/WhatsAppFloatingButton';
 import { UiLocaleProvider } from './i18n/ui-locale';
 import { hydrateRuntimeCatalog } from './lib/medusa/catalog';
@@ -80,7 +80,7 @@ export function AppProviders({
         <WishlistProvider>
           <CartProvider>
             {children}
-            <MiniCartDrawer />
+            <AddToCartToast />
             <Suspense fallback={null}>
               <WhatsAppFloatingButton />
             </Suspense>

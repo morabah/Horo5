@@ -507,8 +507,8 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
           >
             <AppIcon name={menuVisible && menuPanelOpen ? 'close' : 'menu'} className="h-6 w-6" />
           </button>
-          <Link href="/" className="flex min-w-0 flex-1 justify-center" aria-label={copy.shell.home}>
-            <BrandLogo variant={logoVariant} showArabic={false} className="text-[1.15rem]" />
+          <Link href="/" className="flex min-w-0 flex-1 justify-center overflow-visible px-1" aria-label={copy.shell.home}>
+            <BrandLogo variant={logoVariant} showArabic={false} size="drawer" />
           </Link>
           <div className="flex shrink-0 items-center gap-1">
             <button
@@ -552,7 +552,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
       <div className="mx-auto hidden max-w-[1920px] items-center gap-6 py-2.5 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:flex md:gap-8 md:py-2.5 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
         <div className="flex shrink-0 items-center gap-4">
           <Link href="/" className="flex shrink-0 items-center" aria-label={copy.shell.home}>
-            <BrandLogo variant={logoVariant} showArabic={false} className="text-[1.35rem]" />
+            <BrandLogo variant={logoVariant} showArabic={false} />
           </Link>
         </div>
 

@@ -56,11 +56,23 @@
 }
 
 .horo-header__mobile {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  column-gap: 6px;
   padding-top: env(safe-area-inset-top, 0px);
+  overflow: visible;
+}
+
+.horo-header__mobile .horo-drawer-wrapper {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.horo-header__mobile .horo-header__actions {
+  grid-column: 3;
+  justify-self: end;
 }
 
 @media screen and (min-width: 990px) {
@@ -73,6 +85,65 @@
 }
 
 /* --- Wordmark / Brand Logo --- */
+.horo-brand-logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  line-height: 1;
+}
+
+.horo-brand-logo--latin-only {
+  flex-direction: row;
+}
+
+.horo-brand-logo__image {
+  display: block;
+  width: auto;
+  height: 24px;
+  max-width: min(148px, 42vw);
+  object-fit: contain;
+  object-position: center center;
+}
+
+.horo-brand-logo--header .horo-brand-logo__image {
+  height: 26px;
+}
+
+.horo-brand-logo--drawer .horo-brand-logo__image {
+  height: 22px;
+  max-width: min(120px, calc(100vw - 10.5rem));
+}
+
+.horo-header__logo--center .horo-brand-logo {
+  align-items: center;
+  width: 100%;
+}
+
+.horo-header__logo--center .horo-brand-logo__image {
+  margin-inline: auto;
+}
+
+.horo-brand-logo--footer .horo-brand-logo__image {
+  height: 30px;
+  max-width: min(168px, 52vw);
+}
+
+.horo-brand-logo__ar {
+  font-size: 12px;
+  margin-top: 4px;
+  font-family: Inter, Arial, Helvetica, sans-serif;
+}
+
+.horo-brand-logo__ar--dark {
+  color: var(--horo-warm-charcoal, #4a4440);
+}
+
+.horo-brand-logo__ar--light {
+  color: rgba(245, 240, 232, 0.7);
+}
+
+/* Legacy text wordmark classes — kept for any stale references */
 .horo-wordmark {
   display: inline-flex;
   flex-direction: column;
@@ -114,12 +185,6 @@
   color: rgba(245, 240, 232, 0.7);
 }
 
-@media screen and (min-width: 990px) {
-  .horo-wordmark__latin {
-    font-size: 17px;
-  }
-}
-
 /* --- Header logo positioning --- */
 .horo-header__logo {
   flex-shrink: 0;
@@ -129,9 +194,15 @@
 }
 
 .horo-header__logo--center {
-  position: absolute;
-  inset-inline-start: 50%;
-  transform: translateX(-50%);
+  grid-column: 2;
+  position: static;
+  inset: auto;
+  transform: none;
+  justify-self: center;
+  align-self: center;
+  max-width: 100%;
+  min-width: 0;
+  z-index: 1;
 }
 
 /* --- Primary navigation --- */

@@ -152,8 +152,13 @@ type CartContextValue = {
   giftWrapCatalogPriceEgp: number | null;
   addGiftWrap: () => Promise<void>;
   removeGiftWrap: () => void;
+  /** @deprecated Use addToCartToastOpen — kept for gradual migration */
   miniCartOpen: boolean;
+  /** @deprecated Use dismissAddToCartToast / showAddToCartToast */
   setMiniCartOpen: (open: boolean) => void;
+  addToCartToastOpen: boolean;
+  showAddToCartToast: () => void;
+  dismissAddToCartToast: () => void;
   lastAddedItem: LastAddedItem | null;
   /** Identity keys for rows with an in-flight quantity update. */
   lineQtySavingKeys: string[];
@@ -257,7 +262,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [giftWrapCatalogPriceEgp, setGiftWrapCatalogPriceEgp] = useState<number | null>(null);
   const [medusaCartId, setMedusaCartId] = useState<string | null>(null);
   const [storageReady, setStorageReady] = useState(false);
-  const [miniCartOpen, setMiniCartOpen] = useState(false);
+  const [addToCartToastOpen, setAddToCartToastOpen] = useState(false);
+  const showAddToCartToast = useCallback(() => setAddToCartToastOpen(true), []);
+  const dismissAddToCartToast = useCallback(() => setAddToCartToastOpen(false), []);
+  const setMiniCartOpen = useCallback((open: boolean) => {
+    if (open) setAddToCartToastOpen(true);
+    else setAddToCartToastOpen(false);
+  }, []);
+  const miniCartOpen = addToCartToastOpen;
   const [lastAddedItem, setLastAddedItem] = useState<LastAddedItem | null>(null);
   const [lineQtySavingKeys, setLineQtySavingKeys] = useState<string[]>([]);
   const [cartPromotionDiscountEgp, setCartPromotionDiscountEgp] = useState(0);
@@ -905,6 +917,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeGiftWrap,
       miniCartOpen,
       setMiniCartOpen,
+      addToCartToastOpen,
+      showAddToCartToast,
+      dismissAddToCartToast,
       lastAddedItem,
       lineQtySavingKeys,
     }),
@@ -926,7 +941,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       giftWrapCatalogPriceEgp,
       addGiftWrap,
       removeGiftWrap,
-      miniCartOpen,
+      addToCartToastOpen,
+      showAddToCartToast,
+      dismissAddToCartToast,
       lastAddedItem,
       lineQtySavingKeys,
     ],

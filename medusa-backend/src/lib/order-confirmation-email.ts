@@ -234,9 +234,15 @@ export function buildOrderConfirmationHtml(order: OrderConfirmationInput): strin
       ? `${order.storeUrl.replace(/\/$/, "")}/checkout/success?order_id=${encodeURIComponent(order.id)}`
       : ""
 
+  const logoUrl =
+    order.storeUrl && order.storeUrl.length > 0
+      ? `${order.storeUrl.replace(/\/$/, "")}/images/brand/horo-wordmark-dark.png`
+      : ""
+
   return `<!DOCTYPE html>
 <html><body style="font-family:Inter,Arial,Helvetica,sans-serif;background:#FFF7F5;color:#4F111F;padding:24px;">
   <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;padding:28px;border:1px solid #E8C9C6;">
+    ${logoUrl ? `<p style="margin:0 0 18px;"><img src="${escapeHtml(logoUrl)}" alt="HORO" width="118" height="27" style="display:block;width:118px;height:auto;max-width:100%;" /></p>` : ""}
     <h1 style="font-family:'Space Grotesk',Inter,Arial,Helvetica,sans-serif;font-size:20px;margin:0 0 8px;">Thank you — order confirmed</h1>
     <p style="margin:0 0 16px;color:#4F111F;">Order <strong>${escapeHtml(display)}</strong>${created ? ` · ${escapeHtml(created)}` : ""}</p>
     ${trackUrl ? `<p style="margin:0 0 20px;"><a href="${escapeHtml(trackUrl)}" style="color:#8C2340;">View order summary</a></p>` : ""}

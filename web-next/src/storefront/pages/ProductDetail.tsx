@@ -204,7 +204,7 @@ export function ProductDetail({
   const isRevealMode = preLaunchPhase === 'reveal';
   const now = useStableNow();
   const [searchParams] = useAppSearchParams();
-  const { addItem, setMiniCartOpen } = useCart();
+  const { addItem, showAddToCartToast } = useCart();
   const { recordView } = useRecentlyViewed();
   const { has: isWishlisted, toggle: toggleWishlist } = useWishlist();
   const preferBackendCatalog = Boolean(initialProduct || catalogSnapshot);
@@ -973,7 +973,7 @@ export function ProductDetail({
     }
     setStockMessage('');
     setAddedFeedback(true);
-    setMiniCartOpen(true);
+    showAddToCartToast();
     window.setTimeout(() => setAddedFeedback(false), 2200);
   }
 
@@ -1009,7 +1009,7 @@ export function ProductDetail({
     }
     setStockMessage(blockedMessage);
     setAddedFeedback(true);
-    setMiniCartOpen(true);
+    showAddToCartToast();
     window.setTimeout(() => setAddedFeedback(false), 2200);
   }
 
