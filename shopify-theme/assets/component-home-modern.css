@@ -1,0 +1,178 @@
+/**
+ * HORO homepage — modern layout refresh (2026)
+ * Loaded after component-home-mockup.css on the index template.
+ */
+
+:root {
+  --home-radius-card: 8px;
+  --home-radius-btn: 6px;
+  --home-shadow-card: 0 1px 2px rgb(79 17 31 / 4%), 0 8px 24px -12px rgb(79 17 31 / 8%);
+  --home-shadow-card-hover: 0 12px 32px -16px rgb(79 17 31 / 14%);
+}
+
+/* ——— Founding drop: horizontal rail on mobile (web-next parity) ——— */
+.home-founding-rail-hint {
+  margin: 0 0 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  color: color-mix(in srgb, var(--color-horo-text) 72%, transparent);
+}
+
+@media (min-width: 768px) {
+  .home-founding-rail-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .home-founding-rail.home-founding-grid {
+    display: flex;
+    grid-template-columns: none;
+    gap: 14px;
+    margin-inline: max(-1rem, calc((100vw - 100%) / -2));
+    padding: 0 1rem 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .home-founding-rail.home-founding-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-founding-rail.home-founding-grid > .home-founding-card {
+    flex: 0 0 min(76vw, 18rem);
+    scroll-snap-align: start;
+    max-width: none;
+  }
+}
+
+/* ——— Cards & surfaces ——— */
+.home-founding-card,
+.home-feeling-pastel-tile,
+.home-gift-banner,
+.home-info-strip__grid {
+  border-radius: var(--home-radius-card);
+}
+
+.home-founding-card {
+  box-shadow: var(--home-shadow-card);
+}
+
+.home-founding-card:hover {
+  box-shadow: var(--home-shadow-card-hover);
+}
+
+.home-btn {
+  border-radius: var(--home-radius-btn);
+  letter-spacing: 0.02em;
+}
+
+.home-btn:focus-visible,
+.home-founding-card__cta:focus-visible,
+.home-section-link:focus-visible {
+  outline: 2px solid var(--color-horo-focus);
+  outline-offset: 2px;
+}
+
+/* ——— Trust ribbon: horizontal scroll on small screens (5 badges) ——— */
+@media (max-width: 749px) {
+  .home-trust-bar--mockup .home-trust-bar__grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 12px;
+    gap: 0;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .home-trust-bar--mockup .home-trust-bar__grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-trust-bar--mockup .home-trust-bar__cell {
+    flex: 0 0 min(68vw, 10.5rem);
+    scroll-snap-align: start;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 12px;
+    text-align: center;
+    border-bottom: none;
+    border-inline-end: 1px solid #f0e4e2;
+  }
+
+  .home-trust-bar--mockup .home-trust-bar__cell:nth-child(2n) {
+    border-inline-end: 1px solid #f0e4e2;
+  }
+
+  .home-trust-bar--mockup .home-trust-bar__cell:last-child {
+    grid-column: auto;
+    border-inline-end: 0;
+  }
+
+  .home-trust-bar--mockup .home-trust-bar__icon {
+    margin-bottom: 0;
+  }
+
+  .home-trust-bar--mockup .home-trust-bar__label {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+}
+
+/* ——— Hero: cleaner split & tertiary CTA ——— */
+.home-hero-split {
+  background: linear-gradient(
+    105deg,
+    #ffffff 0%,
+    #fffdfc 38%,
+    color-mix(in srgb, var(--color-horo-breath) 42%, #fff) 100%
+  );
+}
+
+.home-hero-split__tertiary-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-horo-pulse);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+
+.home-hero-split__tertiary-link:hover {
+  color: var(--color-horo-root);
+}
+
+.home-hero-split__trust-micro {
+  margin-top: 20px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--color-horo-muted) 90%, transparent);
+}
+
+/* ——— Section rhythm ——— */
+@media (min-width: 990px) {
+  .horo-home-page .home-section {
+    padding-block: clamp(40px, 4vw, 56px);
+  }
+}
+
+.home-page__inner {
+  padding-inline: clamp(16px, 4vw, 24px);
+}

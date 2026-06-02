@@ -10,9 +10,9 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
 <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
 
 {%- liquid
-  assign product_limit = section.settings.product_limit | default: 11
+  assign product_limit = section.settings.product_limit | default: 5
   if product_limit < 1
-    assign product_limit = 11
+    assign product_limit = 5
   endif
 
   assign collection_handle = 'founding-drop'
@@ -59,7 +59,12 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
       </div>
 
       {%- if primary_collection != blank and primary_collection.products_count > 0 -%}
-        <div class="home-founding-grid">
+        {%- if product_limit > 2 -%}
+          <p class="home-founding-rail-hint" aria-hidden="true">
+            {{ 'horo.home.founding_rail_hint' | t | default: 'Swipe for more pieces →' }}
+          </p>
+        {%- endif -%}
+        <div class="home-founding-rail home-founding-grid">
           {%- assign cards_rendered = 0 -%}
           {%- comment -%}
             Variant pick mirrors horo-founding-product-card: prefer available M, else first available, else selected_or_first_available.
@@ -168,7 +173,7 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
       "min": 2,
       "max": 12,
       "step": 1,
-      "default": 11,
+      "default": 5,
       "label": "Maximum products"
     }
   ],

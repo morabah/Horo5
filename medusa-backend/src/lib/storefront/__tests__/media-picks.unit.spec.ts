@@ -46,7 +46,7 @@ describe("pickDropFrontMediaUrls", () => {
 })
 
 describe("orderGalleryByTags", () => {
-  it("orders tagged gallery for PDP consumers", () => {
+  it("orders main, lifestyle, then artwork_detail before back", () => {
     const ordered = orderGalleryByTags(
       [
         { url: "https://cdn.example/back.jpg", tag: "back" },
@@ -58,13 +58,46 @@ describe("orderGalleryByTags", () => {
 
     expect(ordered.map((item) => item.url)).toEqual([
       "https://cdn.example/main-front.jpg",
-      "https://cdn.example/detail.jpg",
       "https://cdn.example/lifestyle.jpg",
+      "https://cdn.example/detail.jpg",
       "https://cdn.example/back.jpg",
     ])
   })
 
-  it("exports PDP tag priority including back before gift", () => {
+  it("places safe untagged images before tagged back", () => {
+    const ordered = orderGalleryByTags(
+      [
+        { url: "https://cdn.example/back-tagged.jpg", tag: "back" },
+        { url: "https://cdn.example/untagged-front.jpg" },
+      ],
+      { mainUrl: null },
+    )
+
+    expect(ordered.map((item) => item.url)).toEqual([
+      "https://cdn.example/untagged-front.jpg",
+      "https://cdn.example/back-tagged.jpg",
+    ])
+  })
+
+  it("places back-like untagged URLs after tagged gallery", () => {
+    const ordered = orderGalleryByTags(
+      [
+        { url: "https://cdn.example/lifestyle.jpg", tag: "lifestyle" },
+        { url: "https://cdn.example/tee-backview.jpg" },
+      ],
+      { mainUrl: null },
+    )
+
+    expect(ordered.map((item) => item.url)).toEqual([
+      "https://cdn.example/lifestyle.jpg",
+      "https://cdn.example/tee-backview.jpg",
+    ])
+  })
+
+  it("exports PDP tag priority with lifestyle before artwork_detail", () => {
+    expect(PDP_GALLERY_TAG_PRIORITY.indexOf("lifestyle")).toBeLessThan(
+      PDP_GALLERY_TAG_PRIORITY.indexOf("artwork_detail"),
+    )
     expect(PDP_GALLERY_TAG_PRIORITY.indexOf("back")).toBeLessThan(PDP_GALLERY_TAG_PRIORITY.indexOf("gift"))
   })
 })

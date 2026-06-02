@@ -637,8 +637,8 @@ export const PDP_VIEW_ORDER = [
 
 /** PDP gallery tag order — align with medusa-backend `PDP_GALLERY_TAG_PRIORITY`. */
 export const PDP_GALLERY_TAG_PRIORITY: NonNullable<ProductMediaGalleryItem['tag']>[] = [
-  'artwork_detail',
   'lifestyle',
+  'artwork_detail',
   'proof_print',
   'proof_fabric',
   'proof_wash',

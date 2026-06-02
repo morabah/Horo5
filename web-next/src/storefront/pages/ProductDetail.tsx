@@ -38,6 +38,7 @@ import {
   getProductMedia,
   imgUrl,
 } from '../data/images';
+import type { ProductMediaGalleryItem } from '../data/catalog-types';
 import dynamic from 'next/dynamic';
 import { Skeleton, SkeletonText } from '../components/ui/Skeleton';
 
@@ -394,7 +395,33 @@ export function ProductDetail({
       main: product.media?.main ?? backendGallery[0] ?? product.thumbnail ?? '',
     };
   }, [preferBackendCatalog, product, colorVariantMedia]);
-  const gallery = product ? buildProductPdpGalleryFromProduct(product.name, product) : [];
+
+  const gallerySourceProduct = useMemo((): Product | null => {
+    if (!product) return null;
+    if (!colorVariantMedia) return product;
+
+    const variantGallery = colorVariantMedia.gallery ?? [];
+    const hasVariantGallery =
+      variantGallery.length > 0 &&
+      variantGallery.some((entry) => galleryItemsToSrcList([entry as ProductMediaGalleryItem]).length > 0);
+
+    if (!colorVariantMedia.main?.trim() && !hasVariantGallery) {
+      return product;
+    }
+
+    return {
+      ...product,
+      media: {
+        ...product.media,
+        main: colorVariantMedia.main ?? product.media?.main,
+        gallery: hasVariantGallery ? variantGallery : product.media?.gallery,
+      },
+    };
+  }, [colorVariantMedia, product]);
+
+  const gallery = gallerySourceProduct
+    ? buildProductPdpGalleryFromProduct(gallerySourceProduct.name, gallerySourceProduct)
+    : [];
   const feelingSlug = product?.primaryFeelingSlug ?? product?.feelingSlug;
   const feeling = feelingSlug
     ? feelingLookup.get(feelingSlug) ?? (!preferBackendCatalog ? getFeeling(feelingSlug) : undefined)

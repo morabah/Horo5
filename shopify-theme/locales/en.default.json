@@ -852,7 +852,6 @@
       "choose_size": "Choose size",
       "added_to_bag": "Added to bag",
       "view_bag": "View bag",
-      "continue_shopping": "Continue shopping",
       "size_label": "Size",
       "qty_label": "Qty",
       "delivery_estimate": "Delivery estimate",
@@ -901,6 +900,7 @@
     },
     "home": {
       "choose_size": "Choose size",
+      "founding_rail_hint": "Swipe for more pieces →",
       "hero_promise_line": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
       "hero_primary_cta": "Shop by Feeling",
       "hero_secondary_cta": "Find a Gift",

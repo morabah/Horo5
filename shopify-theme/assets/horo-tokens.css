@@ -80,7 +80,11 @@
   --radius-sm: 0.125rem;
   --radius-lg: 0.25rem;
   --radius-xl: 0.5rem;
+  --radius-card: 0.5rem;
   --radius-full: 0.75rem;
+
+  /* Homepage content width (mockup + modern layouts) */
+  --home-content-max: min(1400px, calc(100vw - 40px));
 }
 
 body.gradient {

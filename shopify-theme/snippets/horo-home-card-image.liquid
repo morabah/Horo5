@@ -1,7 +1,7 @@
 {%- comment -%}
   Homepage / PLP card image — parity with web-next pickHomeCardImageSrc + preferHomeCardDisplaySrc.
   Front artwork first; lifestyle second; never back / flat_lay on cards.
-  Fallback: metafield custom.homepage_reference_image → theme asset by handle → placeholder.
+  Renders Shopify image objects via image_url; string URLs (metafield / theme asset) via <img>.
 {%- endcomment -%}
 {%- liquid
   assign loading_value = loading | default: 'lazy'
@@ -9,7 +9,8 @@
   assign image_class = image_class | default: 'home-founding-card__image'
   assign placeholder_class = placeholder_class | default: 'placeholder-svg home-founding-card__placeholder'
 
-  assign card_image = nil
+  assign card_image_object = nil
+  assign card_image_url = nil
   assign best_score = -1
 
   for image in card_product.images
@@ -36,13 +37,13 @@
       endif
 
       if score > best_score
-        assign card_image = image
+        assign card_image_object = image
         assign best_score = score
       endif
     endunless
   endfor
 
-  if card_image == nil and card_product.featured_media
+  if card_image_object == nil and card_product.featured_media
     if card_product.featured_media.media_type == 'image'
       assign featured_probe = card_product.featured_media | image_url: width: 80 | downcase
       assign featured_alt = card_product.featured_media.alt | default: '' | downcase
@@ -55,20 +56,28 @@
       endif
       unless featured_unsafe
         if featured_alt contains 'front' or featured_alt contains 'design' or featured_alt contains 'graphic' or featured_alt contains 'artwork'
-          assign card_image = card_product.featured_media
+          assign card_image_object = card_product.featured_media
         endif
       endunless
     endif
   endif
 
-  if card_image == nil
+  if card_image_object == nil and card_image_url == nil
     assign ref_metafield = card_product.metafields.custom.homepage_reference_image
     if ref_metafield != blank and ref_metafield.value != blank
-      assign card_image = ref_metafield.value
+      assign ref_value = ref_metafield.value
+      assign ref_probe = ref_value | image_url: width: 80
+      if ref_probe != blank
+        assign card_image_object = ref_value
+      elsif ref_value contains 'http' or ref_value contains '//'
+        assign card_image_url = ref_value
+      else
+        assign card_image_url = ref_value | file_url
+      endif
     endif
   endif
 
-  if card_image == nil
+  if card_image_object == nil and card_image_url == nil
     case card_product.handle
       when 'i-care'
         assign reference_asset = 'homepage-reference-i-care.png'
@@ -82,36 +91,31 @@
         assign reference_asset = 'homepage-reference-rest-your-mind.png'
     endcase
     if reference_asset != blank
-      assign reference_url = reference_asset | asset_url
-      if reference_url != blank
-        assign card_image = reference_url
-      endif
+      assign card_image_url = reference_asset | asset_url
     endif
   endif
 -%}
 
-{%- if card_image -%}
-  {%- if card_image.media_type -%}
-    {{
-      card_image
-      | image_url: width: 1200
-      | image_tag:
-        loading: loading_value,
-        widths: '200, 400, 600, 800, 1200',
-        sizes: sizes_value,
-        alt: card_image.alt | default: card_product.title,
-        class: image_class
-    }}
-  {%- else -%}
-    <img
-      src="{{ card_image }}"
-      alt="{{ card_product.title | escape }}"
-      loading="{{ loading_value }}"
-      class="{{ image_class }}"
-      width="600"
-      height="750"
-    >
-  {%- endif -%}
+{%- if card_image_object -%}
+  {{
+    card_image_object
+    | image_url: width: 1200
+    | image_tag:
+      loading: loading_value,
+      widths: '200, 400, 600, 800, 1200',
+      sizes: sizes_value,
+      alt: card_image_object.alt | default: card_product.title,
+      class: image_class
+  }}
+{%- elsif card_image_url != blank -%}
+  <img
+    src="{{ card_image_url }}"
+    alt="{{ card_product.title | escape }}"
+    loading="{{ loading_value }}"
+    class="{{ image_class }}"
+    width="600"
+    height="750"
+  >
 {%- else -%}
   {{ 'product-apparel-1' | placeholder_svg_tag: placeholder_class }}
 {%- endif -%}

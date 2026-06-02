@@ -94,10 +94,13 @@ export function galleryForStorefront(images: DropImageInput[]): StorefrontMediaG
   })
 }
 
-/** PDP / storefront gallery order (Kith-inspired). `main` is passed separately when present. */
+/**
+ * PDP gallery tag order (after safe `mainUrl`).
+ * Lifestyle before artwork_detail so on-body fit precedes print close-ups.
+ */
 export const PDP_GALLERY_TAG_PRIORITY: StorefrontMediaGalleryTag[] = [
-  "artwork_detail",
   "lifestyle",
+  "artwork_detail",
   "proof_print",
   "proof_fabric",
   "proof_wash",
@@ -124,7 +127,8 @@ export function orderGalleryByTags(
 ): StorefrontMediaGalleryItemDTO[] {
   const mainUrl = options?.mainUrl?.trim()
   const byTag = new Map<StorefrontMediaGalleryTag, StorefrontMediaGalleryItemDTO[]>()
-  const untagged: StorefrontMediaGalleryItemDTO[] = []
+  const safeUntagged: StorefrontMediaGalleryItemDTO[] = []
+  const backLikeUntagged: StorefrontMediaGalleryItemDTO[] = []
 
   for (const item of items) {
     const url = item.url?.trim()
@@ -134,8 +138,10 @@ export function orderGalleryByTags(
       const bucket = byTag.get(tag) ?? []
       bucket.push({ url, tag })
       byTag.set(tag, bucket)
+    } else if (isBackLikeMediaUrl(url)) {
+      backLikeUntagged.push({ url })
     } else {
-      untagged.push(item.url ? item : { url })
+      safeUntagged.push({ url })
     }
   }
 
@@ -143,9 +149,10 @@ export function orderGalleryByTags(
   if (mainUrl && !isBackLikeMediaUrl(mainUrl)) {
     ordered.push({ url: mainUrl })
   }
+  ordered.push(...safeUntagged)
   for (const tag of PDP_GALLERY_TAG_PRIORITY) {
     ordered.push(...(byTag.get(tag) ?? []))
   }
-  ordered.push(...untagged)
+  ordered.push(...backLikeUntagged)
   return dedupeGalleryItems(ordered)
 }
