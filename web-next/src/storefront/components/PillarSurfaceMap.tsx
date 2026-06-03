@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useUiLocale } from '../i18n/ui-locale';
 
 const PILLARS = [

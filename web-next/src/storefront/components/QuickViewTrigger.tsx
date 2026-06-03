@@ -1,5 +1,4 @@
 import { DICTIONARY } from "@/storefront/i18n/dictionary";
-import { QUICK_VIEW_SCHEMA } from '../data/domain-config';
 
 type QuickViewVisibilityMode = 'desktop-hover' | 'mobile-inline' | 'plp-bar';
 

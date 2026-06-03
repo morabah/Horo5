@@ -1,5 +1,4 @@
 import { DICTIONARY } from '../i18n/dictionary';
-import { PDP_SCHEMA } from '../data/domain-config';
 import type { PdpFitModel, Product } from '../data/site';
 
 const copy = DICTIONARY.en.pdp;

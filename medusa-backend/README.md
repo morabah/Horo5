@@ -386,6 +386,17 @@ npm run seed:homepage-sections
 npm run seed:homepage-sections:public
 ```
 
+Create **only missing** section keys from defaults (no overwrite — safe for production):
+
+```bash
+npm run ensure:homepage-sections
+npm run ensure:homepage-sections:public
+```
+
+After `ensure`, run `sync:homepage-section-order` and `sync:homepage-image-led` to align order and image-led copy.
+
+**Production:** run `npm run migrate` on Railway first (`Migration20260602150000` adds `editorial_feature` to the section type check). If `ensure:homepage-sections:public` fails with `storefront_homepage_section_type_check`, the migration has not been applied yet.
+
 **Safe merge** toward image-led copy (only replaces text that still matches legacy defaults; merges missing `presentation`; fills empty images):
 
 ```bash

@@ -8,6 +8,7 @@ import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../../data/catalog-types';
+import { isUnavailableHomepageReferenceImageSrc } from '../../data/images';
 import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
 import { isImageOverlayPresentation, parseHomepagePresentation } from '../../lib/parseHomepagePresentation';
 import { HomeImageCampaign } from './HomeImageCampaign';
@@ -33,6 +34,10 @@ function isStoryPillarKey(value: unknown): value is StoryPillarKey {
 function localizedPayloadText(value: unknown, locale: 'en' | 'ar') {
   if (typeof value !== 'string' && !isRecord(value)) return undefined;
   return pickLocalizedStorefrontText(value as LocalizedStorefrontText, locale);
+}
+
+function containsArabicText(value: string | undefined) {
+  return Boolean(value && /[\u0600-\u06FF]/.test(value));
 }
 
 function storyPillarsFromSection(
@@ -108,7 +113,8 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
   const presentation = parseHomepagePresentation(sectionPayload);
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, resolvedLocale);
   const sectionTitle = pickLocalizedStorefrontText(section?.title, resolvedLocale);
-  const sectionBody = pickLocalizedStorefrontText(section?.body, resolvedLocale);
+  const rawSectionBody = pickLocalizedStorefrontText(section?.body, resolvedLocale);
+  const sectionBody = resolvedLocale === 'en' && containsArabicText(rawSectionBody) ? undefined : rawSectionBody;
   const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, resolvedLocale);
   const ctaHref = section?.primaryCta?.href ?? '/about';
   const showPillars = presentation.showPillars === true;
@@ -122,7 +128,8 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
           id: key,
           title: copy.home.ourStoryPillars[key].title,
         }));
-  const storyImageSrc = section?.image?.src?.trim();
+  const rawStoryImageSrc = section?.image?.src?.trim();
+  const storyImageSrc = isUnavailableHomepageReferenceImageSrc(rawStoryImageSrc) ? undefined : rawStoryImageSrc;
   const storyImageAlt =
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
     (isArabic ? 'قصة هورو' : 'HORO brand story');

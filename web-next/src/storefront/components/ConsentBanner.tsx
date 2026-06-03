@@ -54,27 +54,27 @@ export function ConsentBanner() {
 
   return (
     <div
-      role="dialog"
+      role="region"
       aria-label={isArabic ? 'موافقة ملفات تعريف الارتباط' : 'Cookie consent'}
-      className="fixed bottom-4 left-4 right-4 z-[500] mx-auto max-w-xl rounded-xl border border-stone/30 bg-white/95 p-4 shadow-lg backdrop-blur-sm md:bottom-6 md:left-6 md:right-auto md:p-5"
+      className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] z-[80] mx-auto max-w-md rounded-[10px] border border-stone/30 bg-white/95 p-3 shadow-[0_12px_34px_rgba(79,17,31,0.16)] backdrop-blur-sm md:bottom-6 md:left-6 md:right-auto md:mx-0 md:p-4"
     >
-      <p className="font-body text-sm leading-relaxed text-obsidian">
+      <p className="font-body text-[12px] leading-snug text-obsidian md:text-sm md:leading-relaxed">
         {isArabic
           ? 'نستخدم أدوات تحليلية لتحسين تجربتك. هل توافق على جمع البيانات المجهولة؟'
           : 'We use analytics to improve your experience. Do you agree to anonymous data collection?'}
       </p>
-      <div className="mt-3 flex items-center gap-3">
+      <div className="mt-3 flex items-center gap-2 md:gap-3">
         <button
           type="button"
           onClick={grant}
-          className="font-label inline-flex min-h-10 items-center rounded-full bg-obsidian px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white transition-colors hover:bg-deep-teal"
+          className="font-label inline-flex min-h-9 items-center rounded-[7px] bg-obsidian px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-white transition-colors hover:bg-deep-teal md:min-h-10 md:px-5 md:text-[11px]"
         >
           {isArabic ? 'موافق' : 'Agree'}
         </button>
         <button
           type="button"
           onClick={deny}
-          className="font-label inline-flex min-h-10 items-center rounded-full border border-stone/50 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian"
+          className="font-label inline-flex min-h-9 items-center rounded-[7px] border border-stone/50 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-obsidian transition-colors hover:border-obsidian md:min-h-10 md:px-5 md:text-[11px]"
         >
           {isArabic ? 'رفض' : 'Decline'}
         </button>

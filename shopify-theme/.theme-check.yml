@@ -2,3 +2,13 @@ MatchingTranslations:
   enabled: false
 TemplateLength:
   enabled: false
+OrphanedSnippet:
+  enabled: true
+  ignore:
+    - snippets/horo-account-surface.liquid
+    - snippets/horo-founding-product-card.liquid
+    - snippets/horo-governorate-selector.liquid
+    - snippets/horo-product-field.liquid
+    - snippets/horo-section-divider.liquid
+    - snippets/horo-wishlist-button.liquid
+    - snippets/quick-order-product-row.liquid

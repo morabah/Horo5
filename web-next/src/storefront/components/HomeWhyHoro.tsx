@@ -1,5 +1,5 @@
 import { HOME_WHY_HORO_BLOCKS } from '../data/homeContent';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 
 function WhyIcon({ name }: { name: string }) {
   switch (name) {

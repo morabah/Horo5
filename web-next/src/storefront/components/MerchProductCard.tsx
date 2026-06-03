@@ -6,7 +6,7 @@ import { useWishlist } from '../hooks/useWishlist';
 import { useCart } from '../cart/CartContext';
 import { formatCartStockMessage } from '../cart/stock';
 import { trackSizeSelected, trackWishlistAdd, trackWishlistRemove } from '../analytics/events';
-import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, PDP_SCHEMA } from '../data/domain-config';
+import { PDP_SCHEMA } from '../data/domain-config';
 import { getOccasions, getProduct, type Product, type ProductSizeKey } from '../data/site';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { productAvailableSizes } from '../utils/productSizes';
@@ -16,11 +16,14 @@ import { QuickViewTrigger } from './QuickViewTrigger';
 import { NotifyWhenAvailableButton } from './NotifyWhenAvailableButton';
 import { TeeImageFrame } from './TeeImage';
 import {
+  conversionReferenceImageForProduct,
   getProductCardHoverImageSrc,
   isHomepageReferenceImageSrc,
   preferHomeCardDisplaySrc,
+  shouldUseConversionReferenceImage,
 } from '../data/images';
 import { formatEgp } from '../utils/formatPrice';
+import { getProductCardBadges } from '../utils/productCardBadges';
 import { pickLocalizedText } from '../lib/storefront/incentives-client';
 
 type MerchProductCardProps = {
@@ -115,12 +118,21 @@ export function MerchProductCard({
   const quickAddAvailable = availableSizes.length > 0;
   const hoverImageSrc = product ? getProductCardHoverImageSrc(product) : null;
   const [hovering, setHovering] = useState(false);
-  const baseImageSrc = product ? preferHomeCardDisplaySrc(product) : imageSrc;
+  const baseImageSrc = product
+    ? preferHomeCardDisplaySrc(product)
+    : shouldUseConversionReferenceImage(imageSrc)
+      ? conversionReferenceImageForProduct({ slug, name })
+      : imageSrc;
   const usingReferenceImage = isHomepageReferenceImageSrc(baseImageSrc);
   const displayImageSrc = hovering && hoverImageSrc ? hoverImageSrc : baseImageSrc;
   const quickAddLabel = locale === 'ar' ? 'إضافة سريعة' : 'Quick add';
   const chooseSizeLabel = locale === 'ar' ? 'اختر المقاس' : 'Choose size';
   const addedLabel = locale === 'ar' ? 'أُضيف' : 'Added';
+  const viewPieceLabel = copy.home.viewPiece;
+  const cardBadges = useMemo(
+    () => (product ? getProductCardBadges(product, locale === 'ar' ? 'ar' : 'en') : []),
+    [product, locale],
+  );
 
   useEffect(() => {
     setQuickAddOpen(false);
@@ -182,7 +194,7 @@ export function MerchProductCard({
 
   return (
     <article
-      className={['group merch-card-lift flex flex-col', usingReferenceImage ? 'merch-card--reference' : '', className].filter(Boolean).join(' ')}
+      className={['group merch-card-lift flex h-full flex-col', usingReferenceImage ? 'merch-card--reference' : '', className].filter(Boolean).join(' ')}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => {
         setHovering(false);
@@ -190,7 +202,7 @@ export function MerchProductCard({
       }}
       {...(dataReveal ? { 'data-reveal': dataReveal } : {})}
     >
-      <div className="relative mb-4 w-full">
+      <div className="merch-card__media relative mb-4 w-full">
         <Link
           href={`/products/${slug}`}
           className="block overflow-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
@@ -310,29 +322,17 @@ export function MerchProductCard({
                 className="font-label pointer-events-auto inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/90 px-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-obsidian shadow-sm backdrop-blur-sm"
                 onClick={(e) => e.stopPropagation()}
               >
-                {copy.home.viewPiece}
+                {viewPieceLabel}
               </Link>
             )}
           </div>
         </div>
       </div>
 
-      {quickAddAvailable ? (
-        <div className="mb-3 md:hidden">
-          <Link
-            href={`/products/${slug}`}
-            className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
-            onClick={onProductClick}
-          >
-            {copy.home.viewPiece}
-          </Link>
-        </div>
-      ) : null}
-
       <div className="flex min-h-0 flex-1 flex-col text-left">
         <Link
           href={`/products/${slug}`}
-          className={`font-headline block font-semibold leading-snug tracking-[0.01em] text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
+          className={`merch-card__title font-headline block font-semibold leading-snug tracking-[0.01em] text-obsidian transition-colors hover:text-clay focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal ${
             minimal ? 'mt-3 text-[0.92rem] md:text-[1rem]' : 'mt-2 text-[1rem] md:text-[1.08rem]'
           }`}
           onClick={onProductClick}
@@ -340,17 +340,35 @@ export function MerchProductCard({
           {name}
         </Link>
         {artistCredit?.trim() ? (
-          <p className="font-label mt-1.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-warm-charcoal md:mt-2 md:text-[10px]">
+          <p className="merch-card__artist font-label mt-1.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-warm-charcoal md:mt-2 md:text-[10px]">
             {artistCredit.trim()}
           </p>
         ) : null}
-        {eyebrow?.trim() ? (
-          <span className="font-label mt-1 inline-flex w-fit rounded-full border border-deep-teal/15 bg-deep-teal/5 px-2 py-0.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-deep-teal md:mt-1.5 md:text-[10px]">
+        {eyebrow?.trim() && cardBadges.length === 0 ? (
+          <span className="merch-card__eyebrow font-label mt-1 inline-flex w-fit rounded-full border border-deep-teal/15 bg-deep-teal/5 px-2 py-0.5 text-[8.5px] font-medium uppercase tracking-[0.16em] text-deep-teal md:mt-1.5 md:text-[10px]">
             {eyebrow.trim()}
           </span>
         ) : null}
+        {cardBadges.length > 0 ? (
+          <div className="merch-card__badges mt-1.5 flex flex-wrap gap-1 md:mt-2">
+            {cardBadges.map((badge) => (
+              <span
+                key={badge.key}
+                className={`merch-card__badge font-label inline-flex max-w-full truncate rounded-full border px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] md:text-[9px] ${
+                  badge.tone === 'gift'
+                    ? 'border-horo-pulse/25 bg-horo-pulse/8 text-horo-pulse'
+                    : badge.tone === 'accent'
+                      ? 'border-dusk-violet/25 bg-dusk-violet/8 text-dusk-violet'
+                      : 'border-stone/40 bg-white/90 text-warm-charcoal'
+                }`}
+              >
+                {badge.label}
+              </span>
+            ))}
+          </div>
+        ) : null}
         {product && product.occasionSlugs.some((s) => getOccasions().some((o) => o.slug === s && o.isGiftOccasion)) ? (
-          <span className="font-label mt-1 inline-flex w-fit items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-horo-pulse md:mt-1.5 md:text-[10px]">
+          <span className="merch-card__gift font-label mt-1 inline-flex w-fit items-center gap-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-horo-pulse md:mt-1.5 md:text-[10px]">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <polyline points="20 6 9 17 4 12" />
             </svg>
@@ -358,12 +376,12 @@ export function MerchProductCard({
           </span>
         ) : null}
         {!minimal && promoLabel?.trim() ? (
-          <p className="font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-horo-pulse md:mt-1.5 md:text-[10px]">
+          <p className="merch-card__promo font-label mt-1 text-[8.5px] font-medium uppercase tracking-[0.16em] text-horo-pulse md:mt-1.5 md:text-[10px]">
             {promoLabel.trim()}
           </p>
         ) : null}
         <div className={`mt-auto ${minimal ? 'pt-2.5' : 'pt-3'}`}>
-          <div className="flex flex-wrap items-baseline gap-2">
+          <div className="merch-card__price-row flex flex-wrap items-baseline gap-2">
             <p className={`font-headline font-semibold ${compareAtPriceEgp ? 'text-horo-pulse' : 'text-obsidian'} ${minimal ? 'text-[1rem]' : 'text-[1.125rem]'}`}>
               {formatEgp(priceEgp)}
             </p>
@@ -391,6 +409,17 @@ export function MerchProductCard({
                 ? `وفر ${formatEgp(savingsEgp)}${savingsPct ? ` (${savingsPct}%)` : ''}`
                 : `Save ${formatEgp(savingsEgp)}${savingsPct ? ` (${savingsPct}%)` : ''}`}
             </p>
+          ) : null}
+          {quickAddAvailable ? (
+            <div className="mt-2.5 md:hidden">
+              <Link
+                href={`/products/${slug}`}
+                className="merch-card__mobile-cta font-label inline-flex min-h-11 w-full items-center justify-center rounded-full border border-stone/60 bg-white px-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-obsidian transition-colors hover:border-obsidian"
+                onClick={onProductClick}
+              >
+                {viewPieceLabel}
+              </Link>
+            </div>
           ) : null}
           {!quickAddAvailable ? (
             <div className="mt-2.5" onClick={(e) => e.stopPropagation()}>

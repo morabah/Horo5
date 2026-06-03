@@ -2,12 +2,17 @@
   Renders proof strip list items for a product (HORO data contract).
   1. custom.proof_gallery metaobject list
   2. Else media alt-tag scan
+  3. Else branded SVG fallbacks (web-next pdpProof parity)
   Accepts: product (required)
 {%- endcomment -%}
 {%- liquid
   assign proof_tags = 'proof_fabric,proof_print,proof_wash,lifestyle,flat_lay' | split: ','
   assign proof_gallery = product.metafields.custom.proof_gallery.value
   assign rendered_any = false
+  assign is_ar = false
+  if request.locale.iso_code == 'ar'
+    assign is_ar = true
+  endif
 -%}
 
 {%- if proof_gallery != blank -%}
@@ -68,3 +73,37 @@
     {%- endfor -%}
   {%- endfor -%}
 {%- endif -%}
+
+{%- unless rendered_any -%}
+  {%- liquid
+    if is_ar
+      assign fallback_items = 'proof_print:تفاصيل الطباعة|proof_fabric:تفاصيل القماش|proof_wash:اختبار الغسيل' | split: '|'
+    else
+      assign fallback_items = 'proof_print:Print detail|proof_fabric:Fabric close-up|proof_wash:Wash proof' | split: '|'
+    endif
+  -%}
+  {%- for item in fallback_items -%}
+    {%- assign parts = item | split: ':' -%}
+    {%- assign fallback_tag = parts[0] -%}
+    {%- assign fallback_label = parts[1] -%}
+    {%- assign fallback_asset = 'macro-detail-card.svg' -%}
+    {%- if fallback_tag == 'proof_fabric' -%}
+      {%- assign fallback_asset = 'fabric-tag-card.svg' -%}
+    {%- elsif fallback_tag == 'proof_wash' -%}
+      {%- assign fallback_asset = 'wash-test-card.svg' -%}
+    {%- endif -%}
+    <li class="product-proof-strip__item product-proof-strip__item--fallback" role="listitem">
+      <div class="product-proof-strip__media">
+        <img
+          src="{{ fallback_asset | asset_url }}"
+          alt="{{ fallback_label | escape }} — {{ product.title | escape }}"
+          width="600"
+          height="450"
+          loading="lazy"
+          class="product-proof-strip__image product-proof-strip__image--fallback"
+        >
+      </div>
+      <span class="product-proof-strip__label">{{ fallback_label | escape }}</span>
+    </li>
+  {%- endfor -%}
+{%- endunless -%}

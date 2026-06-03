@@ -67,13 +67,18 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.about.path}>
-                  {copy.shell.about}
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.shopByMeaning.path}>
+                  {copy.shell.shopByFeeling}
                 </Link>
               </li>
               <li>
-                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.products.path}>
-                  {locale === 'ar' ? 'كل المنتجات' : 'All Products'}
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.gifts.path}>
+                  {locale === 'ar' ? 'الهدايا' : 'Gifts'}
+                </Link>
+              </li>
+              <li>
+                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.zodiac.path}>
+                  {locale === 'ar' ? 'كبسولة الأبراج' : 'Zodiac'}
                 </Link>
               </li>
             </ul>
@@ -84,7 +89,7 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm text-horo-breath/88">
               <li>
                 <Link className="transition-colors hover:text-white" href="/size-guide">
-                  {locale === 'ar' ? copy.shell.sizeGuide : 'Size & Fit Guide'}
+                  {copy.shell.sizeGuide}
                 </Link>
               </li>
               <li>
@@ -94,7 +99,7 @@ export function Footer() {
               </li>
               <li>
                 <Link className="transition-colors hover:text-white" href="/exchange">
-                  {copy.shell.deliveryReturns}
+                  {copy.shell.exchangePolicy}
                 </Link>
               </li>
               <li>

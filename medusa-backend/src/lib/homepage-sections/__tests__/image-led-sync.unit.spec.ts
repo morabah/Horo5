@@ -60,4 +60,38 @@ describe("buildImageLedSectionPatch", () => {
     expect(patch).not.toHaveProperty("title_en")
     expect(patch?.payload?.presentation).toBeDefined()
   })
+
+  it("fills missing founding_drop secondary CTA from seed", () => {
+    const patch = buildImageLedSectionPatch(
+      {
+        key: "founding_drop",
+        title_en: "Our first 5 pieces. Limited quantities.",
+        payload: {
+          presentation: {
+            layout: "image_overlay",
+            textPlacement: "bottom-left",
+            showBody: false,
+            showEyebrow: true,
+            overlayOpacity: 0.45,
+            mobileTextMode: "below",
+          },
+        },
+      },
+      {
+        key: "founding_drop",
+        type: "founding_drop",
+        sort_order: 30,
+        active: true,
+        secondary_cta_label_en: "A Closer Look",
+        secondary_cta_label_ar: "نظرة أقرب",
+        secondary_cta_href: "/#editorial-feature",
+      },
+      undefined,
+    )
+
+    expect(patch).toMatchObject({
+      secondary_cta_label_en: "A Closer Look",
+      secondary_cta_href: "/#editorial-feature",
+    })
+  })
 })

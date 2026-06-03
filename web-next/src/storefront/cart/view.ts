@@ -1,6 +1,6 @@
 import type { CartLine } from './types';
 import { cartLineViewKey } from './types';
-import { getProductMedia, heroVectorizedV2 } from '../data/images';
+import { heroVectorizedV2, preferHomeCardDisplaySrc } from '../data/images';
 import { getArtist, getProduct } from '../data/site';
 
 /** Neutral mark when a Medusa order line has no thumbnail — avoids implying another SKU’s catalog art. */
@@ -42,7 +42,7 @@ export function getCartLineView(
       : unitPrice * line.qty;
   const productName = line.productName ?? product?.name ?? line.productSlug;
   const productUrl = product ? `/products/${product.slug}` : '/search';
-  const productImageSrc = product ? getProductMedia(product.slug).main : null;
+  const productImageSrc = product ? preferHomeCardDisplaySrc(product) : null;
   const imageSrc =
     (productImageSrc && isLikelyRenderableImageSrc(productImageSrc) ? productImageSrc : null) ??
     (isLikelyRenderableImageSrc(line.imageSrc) ? line.imageSrc : null) ??

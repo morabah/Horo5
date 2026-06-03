@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 
 const FIRST_DROP_STORAGE_KEY = 'horo-first-drop-v1';

@@ -37,6 +37,29 @@ function isZodiacNavItem(item: SettingsNavItem, label: string): boolean {
   return normalizedLabel === 'zodiac' || normalizedLabel.includes('your zodiac');
 }
 
+function normalizeLegacyLaunchLabel(key: string, label: string, locale: 'en' | 'ar'): string {
+  const normalized = label.trim().toLowerCase();
+  const ar = locale === 'ar';
+
+  if (key === 'products' && (normalized === 'founding drop' || label === 'الإطلاق الأول')) {
+    return ar ? 'تسوّق الكل' : 'Shop All';
+  }
+  if (key === 'shopByMeaning' && (normalized === 'shop by meaning' || label === 'تسوّق حسب المعنى')) {
+    return ar ? 'تسوّق حسب الشعور' : 'Shop by Feeling';
+  }
+  if (key === 'gifts' && (normalized === 'gift ready' || label === 'جاهزة للهدايا')) {
+    return ar ? 'الهدايا' : 'Gifts';
+  }
+  if (key === 'sizeGuide' && (normalized === 'size & help' || label === 'المقاسات والمساعدة')) {
+    return ar ? 'دليل المقاسات' : 'Size Guide';
+  }
+  if (key === 'zodiac' && normalized === 'zodiac signs') {
+    return ar ? 'كبسولة الأبراج' : 'Zodiac';
+  }
+
+  return label;
+}
+
 function mapLegacyNavItem(item: SettingsNavItem, label: string): RenderedNavItem | null {
   const key = item.key.trim().toLowerCase();
   const href = item.href.trim();
@@ -70,6 +93,18 @@ function mapLegacyNavItem(item: SettingsNavItem, label: string): RenderedNavItem
     case 'size_guide':
     case 'sizeguide':
       return { key: 'sizeGuide', label, href: NAV_ROUTE.sizeGuide.path };
+    case 'zodiac':
+    case 'sign_capsule':
+      return { key: 'zodiac', label, href: NAV_ROUTE.zodiac.path };
+    case 'career':
+    case 'work':
+      return { key: 'career', label, href: NAV_ROUTE.career.path };
+    case 'faq':
+    case 'help':
+      return { key: 'faq', label, href: NAV_ROUTE.faq.path };
+    case 'exchange':
+    case 'returns':
+      return { key: 'exchange', label, href: NAV_ROUTE.exchange.path };
     case 'home':
       return { key: 'home', label, href: NAV_ROUTE.home.path, end: true };
     case 'search':
@@ -100,7 +135,8 @@ export function sanitizeLaunchNav(
       const mapped = mapLegacyNavItem(item, label);
       if (!mapped) return null;
       const badge = localizedNavText(item.badge, locale);
-      return badge ? { ...mapped, badge } : mapped;
+      const normalizedLabel = normalizeLegacyLaunchLabel(mapped.key, mapped.label, locale);
+      return badge ? { ...mapped, label: normalizedLabel, badge } : { ...mapped, label: normalizedLabel };
     })
     .filter((item): item is RenderedNavItem => item !== null);
 }

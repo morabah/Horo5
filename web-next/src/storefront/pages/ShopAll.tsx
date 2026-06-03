@@ -13,8 +13,7 @@ import { ExitIntentModal } from '../components/ExitIntentModal';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { SkeletonGrid } from '../components/ui/Skeleton';
 import { Button } from '../components/ui/Button';
-import { SEARCH_SCHEMA } from '../data/domain-config';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import {
   fetchStorefrontSearch,
@@ -35,6 +34,7 @@ import {
 import { defaultCatalogSizeKeys } from '../utils/productSizes';
 import { getProduct, getProducts, getSubfeeling, setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
 import { trackShopAllView } from '../analytics/funnel';
+import { CollectionRouteIntro } from '../components/CollectionRouteIntro';
 import {
   launchCategoryFilterLabel,
   parseLaunchCategoryFilter,
@@ -159,17 +159,17 @@ export function ShopAll({
   const mobileFilterCloseBtnRef = useRef<HTMLButtonElement>(null);
   const mobileFilterTriggerRef = useRef<HTMLElement | null>(null);
 
-  const DEFAULT_PRICE_OPTIONS: { value: SearchPriceFilter; label: string }[] = [
-  { value: 'all', label: copy.search.allPricesLabel },
-  { value: 'under-800', label: copy.search.under800Label },
-  { value: '800-899', label: copy.search.between800And899Label },
-  { value: '900+', label: copy.search.over900Label },
-];
-const SIZE_FILTER_OPTIONS: { value: string; label: string }[] = [
-  { value: 'all', label: copy.search.allSizesLabel },
-  ...defaultCatalogSizeKeys().map((size) => ({ value: size, label: size })),
-];
-const priceOptions = useMemo(() => {
+  const SIZE_FILTER_OPTIONS: { value: string; label: string }[] = [
+    { value: 'all', label: copy.search.allSizesLabel },
+    ...defaultCatalogSizeKeys().map((size) => ({ value: size, label: size })),
+  ];
+  const priceOptions = useMemo(() => {
+    const defaultPriceOptions: { value: SearchPriceFilter; label: string }[] = [
+      { value: 'all', label: copy.search.allPricesLabel },
+      { value: 'under-800', label: copy.search.under800Label },
+      { value: '800-899', label: copy.search.between800And899Label },
+      { value: '900+', label: copy.search.over900Label },
+    ];
     const configured =
       priceBands
         ?.filter((band) => band.key.trim() && pickLocalizedText(band.label, isArabic ? 'ar' : 'en'))
@@ -179,8 +179,15 @@ const priceOptions = useMemo(() => {
         })) ?? [];
     return configured.length > 0
       ? [{ value: 'all', label: copy.search.allPricesLabel }, ...configured]
-      : DEFAULT_PRICE_OPTIONS;
-  }, [isArabic, priceBands]);
+      : defaultPriceOptions;
+  }, [
+    copy.search.allPricesLabel,
+    copy.search.between800And899Label,
+    copy.search.over900Label,
+    copy.search.under800Label,
+    isArabic,
+    priceBands,
+  ]);
 
   const sortKey = SORT_OPTIONS.some((option) => option.value === params.get('sort'))
     ? (params.get('sort') as SearchSortKey)
@@ -193,6 +200,7 @@ const priceOptions = useMemo(() => {
   const fallbackFacetOptions = useMemo(() => getSearchFacetOptions(), []);
   const feelingFilter = params.get('feelingFilter') ?? params.get('vibeFilter') ?? 'all';
   const categoryFilter = parseLaunchCategoryFilter(params.get('category'));
+  const giftOnlyFilter = params.get('gift') === '1' || params.get('gift') === 'true';
   const rawFilterArtist = params.get('fArtist') ?? 'all';
   const rawFilterOccasion = params.get('fOccasion') ?? 'all';
   const rawFilterColor = params.get('fColor') ?? 'all';
@@ -289,8 +297,14 @@ const priceOptions = useMemo(() => {
         return productMatchesLaunchCategory(product, categoryFilter);
       });
     }
+    if (giftOnlyFilter) {
+      matches = matches.filter((card) => {
+        const product = resolveProduct(card.slug);
+        return Boolean(product?.giftable || product?.buyerRoute === 'gift');
+      });
+    }
     return matches;
-  }, [categoryFilter, lineFilter, resolveProduct, results.designMatches]);
+  }, [categoryFilter, giftOnlyFilter, lineFilter, resolveProduct, results.designMatches]);
 
   const PLP_PAGE_SIZE = 24;
   const pageFromUrl = Math.max(1, Number.parseInt(params.get('page') ?? '1', 10) || 1);
@@ -340,6 +354,7 @@ const priceOptions = useMemo(() => {
     lineFilter !== 'all' ||
     feelingFilter !== 'all' ||
     categoryFilter !== null ||
+    giftOnlyFilter ||
     filterArtist !== 'all' ||
     filterOccasion !== 'all' ||
     filterColor !== 'all';
@@ -386,6 +401,7 @@ const priceOptions = useMemo(() => {
       next.delete('fColor');
       next.delete('line');
       next.delete('category');
+      next.delete('gift');
       return next;
     });
   }, [setParams]);
@@ -509,8 +525,8 @@ const priceOptions = useMemo(() => {
             <Button
               variant="chip"
               size="sm"
-              active={filterOccasion === 'gift-something-real'}
-              onClick={() => updateParams({ fOccasion: filterOccasion === 'gift-something-real' ? null : 'gift-something-real' })}
+              active={giftOnlyFilter}
+              onClick={() => updateParams({ gift: giftOnlyFilter ? null : '1' })}
             >
               {isArabic ? 'جاهز للهدايا' : 'Gift-ready'}
             </Button>
@@ -530,6 +546,9 @@ const priceOptions = useMemo(() => {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-8 md:py-10">
+        {categoryFilter || giftOnlyFilter ? (
+          <CollectionRouteIntro categoryFilter={categoryFilter ?? undefined} giftOnly={giftOnlyFilter} />
+        ) : null}
         <section aria-labelledby="shop-all-grid-title">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-stone/25 pb-4">
             <div className="flex flex-wrap items-center gap-3">

@@ -7,7 +7,7 @@ import { fillPdpCopyTemplate } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
 import { compareAtPrice } from '../../utils/productPricing';
 import { TeeImageFrame } from '../TeeImage';
-import { getProductMedia } from '../../data/images';
+import { preferHomeCardDisplaySrc } from '../../data/images';
 import { QuickViewTrigger } from '../QuickViewTrigger';
 
 
@@ -74,7 +74,7 @@ export function PdpRelatedProducts({
                 <div className="relative overflow-hidden rounded-t-[18px]">
                   <div className="transition-transform duration-700 ease-out group-hover:scale-[1.03]">
                     <TeeImageFrame
-                      src={item.media?.main ?? item.thumbnail ?? getProductMedia(item.slug).main}
+                      src={preferHomeCardDisplaySrc(item)}
                       alt={fillPdpCopyTemplate(copy.pdpRelatedCardImageAltTemplate, { name: item.name })}
                       w={500}
                       aspectRatio="4/5"

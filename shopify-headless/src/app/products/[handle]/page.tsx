@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 
 import { ProductViewTracker } from "@/components/analytics/product-view-tracker";
 import { AddToCartButton } from "@/components/cart/add-to-cart-button";
+import { HoroImagePlaceholder } from "@/components/horo-image-placeholder";
 import { formatMoney } from "@/lib/format";
 import { env, siteUrl } from "@/lib/env";
+import { isUnsafeShopifyProductImage, pickShopifyPdpHeroImage } from "@/lib/product-images";
 import { getProductByHandle } from "@/lib/shopify/commerce";
 import type { ShopifyImage, ShopifyMetafield } from "@/lib/shopify/types";
 
@@ -40,8 +42,15 @@ function imageHasTag(image: ShopifyImage, tag: string): boolean {
   return (image.altText || "").toLowerCase().includes(tag);
 }
 
-function firstTaggedImage(images: ShopifyImage[], tag: string): ShopifyImage | undefined {
-  return images.find((image) => imageHasTag(image, tag));
+function firstTaggedImage(
+  images: ShopifyImage[],
+  tag: string,
+  options: { allowProofImage?: boolean } = {},
+): ShopifyImage | undefined {
+  return images.find((image) => {
+    if (!imageHasTag(image, tag)) return false;
+    return options.allowProofImage || !isUnsafeShopifyProductImage(image);
+  });
 }
 
 export async function generateMetadata({ params }: ProductDetailPageProps): Promise<Metadata> {
@@ -52,6 +61,7 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
       title: "Product not found",
     };
   }
+  const metaImage = pickShopifyPdpHeroImage(product);
 
   return {
     title: `${product.title} | HORO`,
@@ -62,7 +72,7 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
     openGraph: {
       title: product.title,
       description: product.description.slice(0, 160),
-      images: product.featuredImage ? [{ url: product.featuredImage.url }] : [],
+      images: metaImage ? [{ url: metaImage.url }] : [],
     },
   };
 }
@@ -74,7 +84,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     notFound();
   }
 
-  const heroImage = product.featuredImage ?? product.images[0];
+  const heroImage = pickShopifyPdpHeroImage(product);
   const defaultVariant = product.variants[0];
   const fields = product.metafields;
   const feelsLike = metafieldList(fields, "feels_like");
@@ -95,7 +105,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const deliveryNote = metafield(fields, "delivery_note") || "Delivery timing appears at checkout.";
   const exchangeNote = metafield(fields, "exchange_note") || "Exchange support is available according to policy.";
   const lifestyleImage = firstTaggedImage(product.images, "lifestyle");
-  const flatLayImage = firstTaggedImage(product.images, "flat_lay");
+  const flatLayImage = firstTaggedImage(product.images, "flat_lay", { allowProofImage: true });
   const fabricProofImage = firstTaggedImage(product.images, "proof_fabric");
   const printProofImage = firstTaggedImage(product.images, "proof_print");
   const proofImages = [
@@ -103,7 +113,8 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     { label: "Flat-lay", image: flatLayImage },
     { label: "Fabric proof", image: fabricProofImage },
     { label: "Print proof", image: printProofImage },
-  ].filter((item): item is { label: string; image: ShopifyImage } => Boolean(item.image));
+  ];
+  const hasProofImages = proofImages.some((item) => Boolean(item.image));
   const sizes = product.variants.map((variant) => ({
     label: variant.selectedOptions.find((option) => option.name.toLowerCase() === "size")?.value || variant.title,
     available: variant.availableForSale,
@@ -130,20 +141,30 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
               />
-            ) : null}
+            ) : (
+              <HoroImagePlaceholder label={`${product.title} artwork preview`} />
+            )}
           </div>
-          {proofImages.length > 0 ? (
-            <div className="grid grid-cols-4 gap-2">
-              {proofImages.map(({ label, image }) => (
-                <div key={label} className="space-y-1">
-                  <div className="relative aspect-square overflow-hidden rounded-xl bg-black/5">
-                    <Image src={image.url} alt={image.altText ?? `${label} for ${product.title}`} fill sizes="25vw" className="object-cover" />
-                  </div>
-                  <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-black/55">{label}</p>
+          <div className="grid grid-cols-4 gap-2">
+            {proofImages.map(({ label, image }) => (
+              <div key={label} className="space-y-1">
+                <div className="relative aspect-square overflow-hidden rounded-xl bg-black/5">
+                  {image ? (
+                    <Image
+                      src={image.url}
+                      alt={image.altText ?? `${label} for ${product.title}`}
+                      fill
+                      sizes="25vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <HoroImagePlaceholder label={`${label} placeholder for ${product.title}`} compact />
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : null}
+                <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-black/55">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-5">
@@ -220,7 +241,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
           <p className="mt-2 text-sm text-black/70">
             {artistDisplay ? `Artist: ${artistDisplay}` : "Artist credit appears when configured in Shopify metafields."}
           </p>
-          {proofImages.length > 0 ? <p className="mt-2 text-sm text-black/70">Proof images are tagged in Shopify media alt text.</p> : null}
+          {hasProofImages ? <p className="mt-2 text-sm text-black/70">Proof images are tagged in Shopify media alt text.</p> : null}
         </div>
         <div className="rounded-2xl border border-black/10 p-5">
           <h2 className="text-lg font-semibold">Fabric, print, and care</h2>

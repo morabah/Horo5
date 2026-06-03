@@ -91,6 +91,7 @@ describe("drop upsert metadata", () => {
   "hasProofWashImage": false,
   "launchAt": "2026-05-01T00:00:00.000Z",
   "media": {
+    "card": "https://cdn.test/main.jpg",
     "gallery": [
       {
         "tag": "proof_print",

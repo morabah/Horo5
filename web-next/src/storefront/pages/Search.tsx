@@ -24,8 +24,7 @@ const ProductQuickView = dynamic(
   { ssr: false },
 );
 import { SkeletonGrid } from '../components/ui/Skeleton';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
-import { SEARCH_SCHEMA } from '../data/domain-config';
+import { useDictionary } from '../i18n/ui-locale';
 import {
   getFeelingCollectionVisual,
   getOccasionCollectionVisual,

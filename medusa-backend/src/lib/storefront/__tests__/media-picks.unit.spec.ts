@@ -1,5 +1,6 @@
 import {
   isBackLikeMediaUrl,
+  isPlainGarmentMediaUrl,
   orderGalleryByTags,
   pickDropFrontMediaUrls,
   PDP_GALLERY_TAG_PRIORITY,
@@ -21,6 +22,13 @@ describe("isBackLikeMediaUrl", () => {
   })
 })
 
+describe("isPlainGarmentMediaUrl", () => {
+  it("matches plain and blank garment URL shapes", () => {
+    expect(isPlainGarmentMediaUrl("https://cdn.example/plain-white-tee.jpg")).toBe(true)
+    expect(isPlainGarmentMediaUrl("https://cdn.example/front-artwork.png")).toBe(false)
+  })
+})
+
 describe("pickDropFrontMediaUrls", () => {
   it("prefers artwork_detail over back-tagged main for card", () => {
     const picked = pickDropFrontMediaUrls([
@@ -32,6 +40,16 @@ describe("pickDropFrontMediaUrls", () => {
 
     expect(picked.card).toBe("https://cdn.example/art-front.png")
     expect(picked.main).toBe("https://cdn.example/art-front.png")
+  })
+
+  it("rejects plain garment main when lifestyle exists", () => {
+    const picked = pickDropFrontMediaUrls([
+      image("main", "https://cdn.example/product-plain-white-tee.jpg"),
+      image("lifestyle", "https://cdn.example/on-body-graphic.jpg"),
+    ])
+
+    expect(picked.card).toBe("https://cdn.example/on-body-graphic.jpg")
+    expect(picked.main).toBe("https://cdn.example/on-body-graphic.jpg")
   })
 
   it("rejects backview filename for main when card alternatives exist", () => {

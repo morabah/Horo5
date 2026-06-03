@@ -60,7 +60,7 @@ export function HomeFoundingProductCard({
           eager={eager}
           objectPosition={usingReferenceImage ? 'center center' : 'center 22%'}
           frameStyle={{ marginBottom: 0, minHeight: '100%' }}
-          sizes="(max-width: 767px) 76vw, (max-width: 1100px) 30vw, 240px"
+          sizes="(max-width: 767px) 46vw, (max-width: 1100px) 30vw, 240px"
         />
       </Link>
       <div className="home-founding-card__body flex flex-1 flex-col p-4 text-center sm:text-start">

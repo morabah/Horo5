@@ -21,7 +21,11 @@
         <ul class="home-trust-bar__grid" role="list" style="--home-trust-columns: {{ visible_count }};">
           {%- for block in section.blocks -%}
             {%- if block.settings.show_badge == true -%}
-              <li class="home-trust-bar__cell" role="listitem" {{ block.shopify_attributes }}>
+              <li
+                class="home-trust-bar__cell home-trust-bar__cell--{{ block.settings.icon }}"
+                role="listitem"
+                {{ block.shopify_attributes }}
+              >
                 <span class="home-trust-bar__icon" aria-hidden="true">
                   {% render 'horo-trust-icon', icon: block.settings.icon %}
                 </span>
@@ -124,7 +128,7 @@
           "settings": {
             "show_badge": true,
             "icon": "exchange",
-            "label": "14-day exchange — see policy"
+            "label": "14-day exchange"
           }
         },
         "badge_5": {

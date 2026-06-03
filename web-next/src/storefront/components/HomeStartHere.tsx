@@ -8,10 +8,15 @@ import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
+import {
+  homeFoundingCampaignReference,
+  isUnavailableHomepageReferenceImageSrc,
+} from '../data/images';
 import { resolveHomeProducts } from '../lib/resolveHomeProducts';
 import { isImageOverlayPresentation, parseHomepagePresentation } from '../lib/parseHomepagePresentation';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import type { Product } from '../data/catalog-types';
+import { normalizeLegacyStorefrontLabel } from '../utils/legacyStorefrontCopy';
 import { HomeFoundingRail } from './home/HomeFoundingRail';
 import { HomeImageCampaign } from './home/HomeImageCampaign';
 
@@ -24,12 +29,25 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
   const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
   const sectionBody = pickLocalizedStorefrontText(section?.body, locale as 'en' | 'ar');
-  const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
-  const secondaryCtaLabel = pickLocalizedStorefrontText(section?.secondaryCta?.label, locale as 'en' | 'ar');
-  const campaignImageSrc = section?.image?.src?.trim();
+  const sectionCta = normalizeLegacyStorefrontLabel(
+    pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar'),
+    locale as 'en' | 'ar',
+  );
+  const secondaryCtaLabel =
+    normalizeLegacyStorefrontLabel(
+      pickLocalizedStorefrontText(section?.secondaryCta?.label, locale as 'en' | 'ar'),
+      locale as 'en' | 'ar',
+    ) ??
+    copy.home.foundingCloserLookCta;
+  const rawCampaignImageSrc = section?.image?.src?.trim();
+  const campaignImageSrc = isUnavailableHomepageReferenceImageSrc(rawCampaignImageSrc)
+    ? homeFoundingCampaignReference.src
+    : rawCampaignImageSrc;
   const campaignImageAlt =
     pickLocalizedStorefrontText(section?.image?.alt, locale as 'en' | 'ar') ??
-    'The Founding Drop campaign';
+    (campaignImageSrc === homeFoundingCampaignReference.src
+      ? homeFoundingCampaignReference.alt
+      : 'The Founding Drop campaign');
   const featuredProducts = resolveHomeProducts(products, section);
   const showBody = presentation.showBody !== false && Boolean(sectionBody ?? copy.home.startHereSubline);
   const wantsCampaignOverlay =
@@ -112,7 +130,11 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
           </div>
         ) : null}
 
-        <HomeFoundingRail products={featuredProducts} />
+        <HomeFoundingRail
+          products={featuredProducts}
+          viewAllHref={shopHref}
+          viewAllLabel={copy.home.foundingGridViewAll}
+        />
       </div>
     </section>
   );

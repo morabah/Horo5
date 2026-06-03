@@ -3,7 +3,7 @@ import { useDictionary } from '../../i18n/ui-locale';
 
 import { TeeImage } from '../TeeImage';
 import type { Product } from '../../data/catalog-types';
-import { fillPdpCopyTemplate, PDP_SCHEMA } from '../../data/domain-config';
+import { fillPdpCopyTemplate } from '../../data/domain-config';
 
 
 type GalleryItem = {

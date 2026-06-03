@@ -1,15 +1,18 @@
 import {
   buildProductPdpGalleryFromProduct,
   collectPdpGallerySources,
+  conversionReferenceImageForProduct,
+  getOccasionCollectionVisual,
   imgUrl,
   isBackLikeProductImageSrc,
   isHomepageReferenceImageSrc,
+  isPlainGarmentProductImageSrc,
   preferHomeCardDisplaySrc,
   resolveProductImageSrcForDisplay,
   shouldUseConversionReferenceImage,
   useNextImageOptimizerForSrc,
 } from '../images';
-import type { Product } from '../site';
+import { setRuntimeCatalog, type Product } from '../site';
 
 describe('imgUrl', () => {
   it('appends Unsplash-style params only for Unsplash hosts', () => {
@@ -115,6 +118,46 @@ describe('homepage card display picks', () => {
   });
 });
 
+describe('occasion visual fallbacks', () => {
+  afterEach(() => {
+    setRuntimeCatalog(null);
+  });
+
+  it('uses product reference art when occasion media is only a placeholder', () => {
+    setRuntimeCatalog({
+      occasions: [
+        {
+          slug: 'birthday-pick',
+          name: 'Birthday Pick',
+          blurb: 'Gift by feeling.',
+          cardImageSrc: '/images/hero/horo_vectorized_v2.svg',
+          cardImageAlt: 'Birthday Pick occasion placeholder.',
+          heroImageSrc: '/images/hero/horo_vectorized_v2.svg',
+          heroImageAlt: 'Birthday Pick collection placeholder.',
+          isGiftOccasion: true,
+        },
+      ],
+      products: [
+        {
+          slug: 'quiet-revolt',
+          name: 'Quiet Revolt',
+          priceEgp: 899,
+          launchDesign: 'walk-alone',
+          occasionSlugs: ['birthday-pick'],
+          media: {
+            main: 'http://localhost:9000/static/quiet-revolt-back.jpg',
+          },
+        } as Product,
+      ],
+    });
+
+    const visual = getOccasionCollectionVisual('birthday-pick');
+
+    expect(visual.hero.src).toBe('/images/homepage-reference/product-walk-alone.png');
+    expect(visual.proof.src).toBe('/images/homepage-reference/product-walk-alone.png');
+  });
+});
+
 describe('PDP gallery guards', () => {
   const product = {
     slug: 'i-care',
@@ -150,5 +193,36 @@ describe('PDP gallery guards', () => {
     } as Product;
     const gallery = buildProductPdpGalleryFromProduct(backFirst.name, backFirst);
     expect(isBackLikeProductImageSrc(gallery[0]?.src)).toBe(false);
+  });
+
+  it('uses curated reference art as PDP lead when main is a plain garment photo', () => {
+    const plainMain = {
+      slug: 'the-weight-of-light',
+      name: 'The Weight of Light',
+      priceEgp: 799,
+      media: {
+        main: 'https://cdn.test/the-weight-of-light-plain-white-tee.jpg',
+        gallery: [{ url: 'https://cdn.test/the-weight-of-light-back.jpg', tag: 'back' }],
+      },
+    } as Product;
+    expect(isPlainGarmentProductImageSrc(plainMain.media?.main ?? undefined)).toBe(true);
+    const sources = collectPdpGallerySources(plainMain);
+    expect(sources[0]).toBe(conversionReferenceImageForProduct(plainMain));
+    const gallery = buildProductPdpGalleryFromProduct(plainMain.name, plainMain);
+    expect(gallery[0]?.src).toBe('/images/homepage-reference/product-i-care.png');
+  });
+
+  it('assigns distinct reference art per zodiac sign', () => {
+    const gemini = conversionReferenceImageForProduct({
+      slug: 'zodiac-astral-body',
+      name: 'Astral Body',
+      zodiacSign: 'gemini',
+    });
+    const cancer = conversionReferenceImageForProduct({
+      slug: 'zodiac-lunar-pull',
+      name: 'Lunar Pull',
+      zodiacSign: 'cancer',
+    });
+    expect(gemini).not.toBe(cancer);
   });
 });

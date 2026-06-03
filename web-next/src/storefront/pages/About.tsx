@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
+import { HoroArtworkPlaceholder } from '../components/home/HoroArtworkPlaceholder';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { ABOUT_SCHEMA, PDP_SCHEMA } from '../data/domain-config';
+import { PDP_SCHEMA } from '../data/domain-config';
 import { BRAND_COPY } from '../data/brand';
 import { PAGE_HEROES } from '../content/page-heroes';
 import { aboutBridgeAlt, aboutBridgeImage, imgUrl } from '../data/images';
@@ -11,6 +13,7 @@ import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 
 export function About() {
   useScrollReveal();
+  const [bridgeImageFailed, setBridgeImageFailed] = useState(false);
   const { locale } = useUiLocale();
   const copy = useDictionary();
   const config = PAGE_HEROES.about;
@@ -94,14 +97,22 @@ export function About() {
           className="relative isolate overflow-hidden rounded-[1.75rem] border border-stone/65 bg-obsidian shadow-[0_28px_68px_-36px_rgba(26,26,26,0.32)]"
         >
           <div className="relative min-h-[20rem] sm:min-h-[24rem]">
-            <img
-              src={imgUrl(aboutBridgeImage, 1600)}
-              alt={aboutBridgeAlt}
-              className="absolute inset-0 h-full w-full object-cover object-center"
-              width={1600}
-              height={1200}
-              decoding="async"
-            />
+            {!bridgeImageFailed ? (
+              <img
+                src={imgUrl(aboutBridgeImage, 1600)}
+                alt={aboutBridgeAlt}
+                className="absolute inset-0 h-full w-full object-cover object-center"
+                width={1600}
+                height={1200}
+                decoding="async"
+                onError={() => setBridgeImageFailed(true)}
+              />
+            ) : (
+              <HoroArtworkPlaceholder
+                ariaLabel={aboutBridgeAlt}
+                className="bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.74),rgba(250,247,246,0.92)_45%,rgba(207,187,178,0.72))]"
+              />
+            )}
             <div
               className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(18,18,18,0.24)_0%,rgba(18,18,18,0.36)_42%,rgba(18,18,18,0.82)_100%)]"
               aria-hidden

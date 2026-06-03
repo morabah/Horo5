@@ -36,7 +36,6 @@ export function EditorialFeatureMedia({
           onError={onError}
         />
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element -- CMS / Medusa hosts may skip next/image optimizer
         <img
           src={resolved}
           alt={alt}

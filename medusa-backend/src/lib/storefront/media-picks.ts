@@ -14,6 +14,9 @@ import type { StorefrontMediaGalleryItemDTO, StorefrontMediaGalleryTag } from ".
 /** Align with web-next `images.ts` — backview/back-view must not become card/main. */
 const BACK_LIKE_URL_PATTERN = /(?:^|[/_-])(back|rear|backview|back-view)(?:[/_\-.]|$)/i
 const FLAT_LAY_URL_PATTERN = /(?:^|[/_-])flat[-_]?lay(?:[/_\-.]|$)/i
+/** Plain garment / blank tee — not a graphic-forward PDP or card lead. */
+const PLAIN_GARMENT_URL_PATTERN =
+  /(?:^|[/_-])(?:plain|blank|white[-_]?tee|garment[-_]?only|undecorated|no[-_]?print|tee[-_]?only|mock[-_]?blank|studio[-_]?blank)(?:[/_\-.]|$)/i
 
 const BACK_LIKE_TAGS = new Set<StorefrontMediaGalleryTag | "main" | "card">([
   "back",
@@ -24,6 +27,21 @@ export function isBackLikeMediaUrl(src: string | null | undefined): boolean {
   const value = src?.trim()
   if (!value) return false
   return BACK_LIKE_URL_PATTERN.test(value) || FLAT_LAY_URL_PATTERN.test(value)
+}
+
+export function isPlainGarmentMediaUrl(src: string | null | undefined): boolean {
+  const value = src?.trim()
+  if (!value) return false
+  return PLAIN_GARMENT_URL_PATTERN.test(value)
+}
+
+function isGraphicForwardMediaUrl(src: string | null | undefined): boolean {
+  const value = src?.trim()
+  if (!value) return false
+  if (isBackLikeMediaUrl(value) || isPlainGarmentMediaUrl(value)) return false
+  if (value.includes("horo_vectorized") || value.includes("brand-placeholder")) return false
+  if (value.includes("/images/proof/") && value.endsWith(".svg")) return false
+  return true
 }
 
 export function isBackLikeGalleryTag(tag: string | undefined): boolean {
@@ -50,7 +68,7 @@ export function pickDropFrontMediaUrls(images: DropImageInput[]): {
   let card: string | undefined
   for (const tag of frontOrder) {
     const url = byTag(tag)
-    if (url && !isBackLikeMediaUrl(url) && !isBackLikeGalleryTag(tag)) {
+    if (url && !isBackLikeMediaUrl(url) && !isPlainGarmentMediaUrl(url) && !isBackLikeGalleryTag(tag)) {
       card = url
       break
     }
@@ -58,7 +76,9 @@ export function pickDropFrontMediaUrls(images: DropImageInput[]): {
 
   const mainCandidate = byTag("main")
   const main =
-    mainCandidate && !isBackLikeMediaUrl(mainCandidate) ? mainCandidate : card ?? byTag("artwork_detail")
+    mainCandidate && isGraphicForwardMediaUrl(mainCandidate)
+      ? mainCandidate
+      : card ?? byTag("artwork_detail") ?? byTag("lifestyle")
 
   if (!card) {
     card = main
@@ -146,13 +166,19 @@ export function orderGalleryByTags(
   }
 
   const ordered: StorefrontMediaGalleryItemDTO[] = []
+  const plainMain: StorefrontMediaGalleryItemDTO[] = []
   if (mainUrl && !isBackLikeMediaUrl(mainUrl)) {
-    ordered.push({ url: mainUrl })
+    if (isPlainGarmentMediaUrl(mainUrl)) {
+      plainMain.push({ url: mainUrl })
+    } else {
+      ordered.push({ url: mainUrl })
+    }
   }
   ordered.push(...safeUntagged)
   for (const tag of PDP_GALLERY_TAG_PRIORITY) {
     ordered.push(...(byTag.get(tag) ?? []))
   }
+  ordered.push(...plainMain)
   ordered.push(...backLikeUntagged)
   return dedupeGalleryItems(ordered)
 }

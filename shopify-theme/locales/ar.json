@@ -10,6 +10,9 @@
       "shop_heading": "التسوّق",
       "help_heading": "المساعدة",
       "about_heading": "عن هورو",
+      "shop_by_mood": "تسوّق حسب الشعور",
+      "shop_by_zodiac": "كبسولة الأبراج",
+      "gift_ready": "الهدايا",
       "all_products": "كل المنتجات",
       "shipping_delivery": "الشحن والتوصيل",
       "journal": "المجلة",
@@ -27,16 +30,22 @@
       "occasions": "مناسبات",
       "gifts": "هدايا",
       "shop_all": "تسوق الكل",
-      "founding_drop": "الإطلاق الأول",
+      "founding_drop": "تسوّق الكل",
       "zodiac": "برج",
-      "shop_by_feeling": "تسوق بالمشاعر",
+      "zodiac_signs": "كبسولة الأبراج",
+      "career": "المهنة والشغل",
+      "whatsapp_size_help": "واتساب — مساعدة المقاس",
+      "shop_by_feeling": "تسوّق حسب الشعور",
       "gift_by_meaning": "هدية لها معنى",
       "our_story": "قصتنا",
-      "size_help": "المقاسات والمساعدة",
+      "size_help": "دليل المقاسات",
       "about": "عن هورو",
       "size_guide": "دليل المقاسات",
       "faq": "أسئلة شائعة",
       "exchange": "سياسة الاستبدال",
+      "shop_preview_title": "تسوّق الإطلاق",
+      "shop_preview_browse_all": "تسوّق الكل",
+      "product_image_placeholder": "صورة المنتج",
       "searchPlaceholder": "ابحث عن تصاميم، مشاعر، أو مناسبات...",
       "searchSubmit": "بحث",
       "searchClear": "مسح البحث",
@@ -49,7 +58,7 @@
     "home_hero": {
       "title": "إلبس اللي بتحس بيه",
       "subtitle": "قطع فنية قابلة للّبس للمشاعر، الهوية، والهدايا اللي لها معنى.",
-      "cta": "تسوّق الإطلاق الأول"
+      "cta": "تسوّق الإطلاق"
     },
     "trust_ribbon": {
       "artist_made": "تصميم فنان",
@@ -247,7 +256,7 @@
         "cod_available": "طرق الدفع بتظهر في صفحة الدفع"
       },
       "size_guide_link": "دليل المقاسات",
-      "view_piece": "شوف القطعة",
+      "view_piece": "شاهد التصميم",
       "add_to_cart": "أضف للسلة",
       "sold_out": "نفذت الكمية",
       "select_size": "اختار المقاس",
@@ -276,6 +285,9 @@
       "default_trust_printed": "مطبوع في مصر",
       "default_trust_cod": "طرق الدفع بتظهر في صفحة الدفع",
       "default_trust_exchange": "الاستبدال حسب السياسة"
+    },
+    "zodiac": {
+      "entertainment_disclaimer": "للمرح والشخصية فقط — مش تنبؤات ولا حظ."
     },
     "product_card": {
       "gift_ready": "مناسب كهدية",
@@ -366,8 +378,8 @@
     "home": {
       "choose_size": "اختر المقاس",
       "hero_promise_line": "تيشيرتات فنانين للمشاعر واللحظات والهدايا اللي ليها معنى.",
-      "hero_primary_cta": "تسوّق حسب الشعور",
-      "hero_secondary_cta": "لقّي هدية",
+      "hero_primary_cta": "تسوّق الإطلاق",
+      "hero_secondary_cta": "تسوّق الهدايا",
       "hero_subheading": "تيشيرتات فنانين للمشاعر واللحظات والهدايا اللي لها معنى.",
       "plan_eyebrow": "خطوات واضحة",
       "plan_title": "كيف يعمل HORO",

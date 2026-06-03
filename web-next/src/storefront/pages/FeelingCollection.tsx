@@ -6,6 +6,7 @@ import { useAppSearchParams } from '@/storefront/hooks/useAppSearchParams';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { CollectionRouteIntro } from '../components/CollectionRouteIntro';
 import { MerchProductCard } from '../components/MerchProductCard';
 import { AppIcon } from '../components/AppIcon';
 import {
@@ -37,7 +38,7 @@ import { sortProductList, type ProductSortKey } from '../utils/productSort';
 import { ProductQuickView } from '../components/ProductQuickView';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { useMediaQuery } from '../hooks/useMediaQuery';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 import { trackFeelingCollectionView } from '../analytics/funnel';
 
 /** Show numeric design count in hero only when catalog feels substantial */
@@ -410,6 +411,9 @@ export function FeelingCollection({
       ) : null}
 
       <div className="mx-auto max-w-7xl space-y-14 px-6 pt-8 pb-12 md:space-y-16 md:px-10 md:pt-10 md:pb-16">
+        {feeling.slug === 'zodiac' || feeling.slug === 'career' ? (
+          <CollectionRouteIntro feelingSlug={feeling.slug} />
+        ) : null}
         <section id="feeling-collection-products" className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
           {subfeelings.length > 0 ? (
             <div className="mb-6 flex flex-wrap gap-2 border-b border-stone/20 pb-5">

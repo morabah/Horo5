@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { getProductComparisonImageSrc } from '../data/images';
 import { getProducts, productHasRealImage } from '../data/site';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
 import { formatEgp } from '../utils/formatPrice';
 

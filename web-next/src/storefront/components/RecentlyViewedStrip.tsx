@@ -6,7 +6,7 @@ import { ProductQuickView } from './ProductQuickView';
 import { getProductCardImageSrc } from '../data/images';
 import { getArtist, getFeeling, getProduct, getSubfeeling, productHasRealImage } from '../data/site';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 
 type RecentlyViewedStripProps = {
   /** Hide current PDP product from the strip */

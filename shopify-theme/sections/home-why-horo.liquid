@@ -12,23 +12,61 @@
       if show_pillars == nil
         assign show_pillars = false
       endif
+      assign story_button_link = section.settings.button_link
+      if story_button_link == blank
+        assign story_button_link = '/pages/about'
+      endif
+      assign story_campaign_image = section.settings.image
+      assign story_campaign_image_url = nil
+      if story_campaign_image == blank
+        assign story_campaign_image_url = 'horo-our-story-artist.png' | asset_url
+      endif
     -%}
 
-    {%- if layout_style == 'image_overlay' and section.settings.image != blank -%}
-      {% render 'horo-home-campaign-overlay',
-        campaign_image: section.settings.image,
-        eyebrow: section.settings.eyebrow,
-        heading: section.settings.heading,
-        body: section.settings.subheading,
-        button_primary_label: section.settings.button_label,
-        button_primary_link: section.settings.button_link,
-        overlay_opacity: section.settings.overlay_opacity,
-        show_body: section.settings.show_body,
-        show_eyebrow: section.settings.show_eyebrow,
-        text_position: section.settings.text_position,
-        mobile_text_mode: section.settings.mobile_text_mode,
-        block_id: section.id
-      %}
+    {%- liquid
+      assign show_story_campaign = false
+      if layout_style == 'image_overlay'
+        if story_campaign_image != blank or story_campaign_image_url != blank
+          assign show_story_campaign = true
+        endif
+      endif
+    -%}
+    {%- if show_story_campaign -%}
+      <div class="home-our-story__intro-mobile">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 id="home-our-story-title-{{ section.id }}" class="home-our-story__title">
+            {{ section.settings.heading | escape }}
+          </h2>
+        {%- endif -%}
+        {%- if section.settings.button_label != blank -%}
+          <p class="home-our-story__mobile-cta">
+            <a href="{{ story_button_link }}" class="home-section-link">
+              {{ section.settings.button_label | escape }}
+              <span aria-hidden="true"> →</span>
+            </a>
+          </p>
+        {%- endif -%}
+      </div>
+      <div class="home-our-story__campaign-desktop">
+        {% render 'horo-home-campaign-overlay',
+          campaign_image: story_campaign_image,
+          campaign_image_url: story_campaign_image_url,
+          eyebrow: section.settings.eyebrow,
+          heading: section.settings.heading,
+          body: section.settings.subheading,
+          button_primary_label: section.settings.button_label,
+          button_primary_link: story_button_link,
+          overlay_opacity: section.settings.overlay_opacity,
+          show_body: section.settings.show_body,
+          show_eyebrow: section.settings.show_eyebrow,
+          text_position: section.settings.text_position,
+          mobile_text_mode: section.settings.mobile_text_mode,
+          block_id: section.id
+        %}
+      </div>
     {%- else -%}
     <div class="home-our-story__layout">
       <div class="home-our-story__copy">
@@ -125,8 +163,7 @@
     {
       "type": "textarea",
       "id": "subheading",
-      "label": "Body (optional on overlay)",
-      "default": ""
+      "label": "Body (optional on overlay)"
     },
     {
       "type": "select",
@@ -147,8 +184,7 @@
     {
       "type": "url",
       "id": "button_link",
-      "label": "CTA link",
-      "default": "/pages/about"
+      "label": "CTA link"
     },
     {
       "type": "range",

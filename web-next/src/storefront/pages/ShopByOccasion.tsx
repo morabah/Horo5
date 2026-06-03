@@ -9,7 +9,8 @@ import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { TeeImageFrame } from '../components/TeeImage';
 import { PAGE_HEROES } from '../content/page-heroes';
-import { getOccasionCollectionVisual, getProductCardImageSrc, imgUrl } from '../data/images';
+import { HORO_SUPPORT_CHANNELS } from '../data/support-channels';
+import { GIFT_PACKAGING_REFERENCE_IMAGE, getOccasionCollectionVisual, getProductCardImageSrc, imgUrl } from '../data/images';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import {
   getFeeling,
@@ -22,6 +23,7 @@ import {
   type Product,
 } from '../data/site';
 import { trackGiftsHubView, trackOccasionsHubView } from '../analytics/funnel';
+import { buildGiftHubWhatsAppUrl } from '../utils/giftWhatsApp';
 
 function getOccasionHeroTiles(occasions: Occasion[]) {
   return occasions
@@ -47,6 +49,10 @@ type ShopByOccasionProps = {
 
 function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }: Occasion) {
   const copy = useDictionary();
+  const visual = getOccasionCollectionVisual(slug).proof;
+  const imageSrc = visual.src || cardImageSrc;
+  const imageAlt = visual.alt || cardImageAlt || name;
+
   return (
     <Link
       href={`/occasions/${slug}`}
@@ -54,7 +60,14 @@ function SecondaryOccasionCard({ slug, name, blurb, cardImageSrc, cardImageAlt }
     >
       <div className="overflow-hidden">
         <div className="transition-transform duration-500 ease-out group-hover:scale-[1.03]">
-          <TeeImageFrame src={cardImageSrc} alt={cardImageAlt} w={900} aspectRatio="4/5" borderRadius="0" />
+          <TeeImageFrame
+            src={imageSrc}
+            alt={imageAlt}
+            w={900}
+            aspectRatio="4/5"
+            borderRadius="0"
+            objectPosition={visual.objectPosition}
+          />
         </div>
       </div>
       <div className="space-y-3 p-4 md:p-5">
@@ -108,6 +121,10 @@ export function ShopByOccasion({ initialOccasions, initialProducts, mode = 'occa
     return [...new Set(giftProducts.map((product) => product.primaryFeelingSlug ?? product.feelingSlug).filter(Boolean))]
       .slice(0, 6);
   }, [giftProducts]);
+  const giftWhatsAppUrl = useMemo(
+    () => buildGiftHubWhatsAppUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl, locale === 'ar' ? 'ar' : 'en'),
+    [locale],
+  );
 
   useEffect(() => {
     if (isGiftsHub) {
@@ -309,46 +326,70 @@ export function ShopByOccasion({ initialOccasions, initialProducts, mode = 'occa
         ) : null}
 
         {isGiftsHub ? (
-          <section aria-label={isArabic ? 'مساعدة الهدية' : 'Gift help'} className="grid gap-4 border-y border-stone/25 py-8 md:grid-cols-2">
-            <div className="rounded-2xl border border-stone/30 bg-white/65 p-6">
-              <h2 className="font-headline text-lg font-semibold text-obsidian">
-                {isArabic ? 'مساعدة في المقاس على واتساب' : 'Size help through WhatsApp'}
-              </h2>
-              <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
-                {isArabic
-                  ? 'لو الهدية لشخص تاني، اسألنا قبل الطلب ونساعدك تختار المقاس الأقرب.'
-                  : 'If the gift is for someone else, ask us before ordering and we will help pick the safest size.'}
-              </p>
+          <section aria-label={isArabic ? 'مساعدة الهدية' : 'Gift help'} className="space-y-4 border-y border-stone/25 py-8">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-stone/30 bg-white/65 p-6">
+                <h2 className="font-headline text-lg font-semibold text-obsidian">
+                  {isArabic ? 'مساعدة في المقاس على واتساب' : 'Size help through WhatsApp'}
+                </h2>
+                <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
+                  {isArabic
+                    ? 'لو الهدية لشخص تاني، اسألنا قبل الطلب ونساعدك تختار المقاس الأقرب.'
+                    : 'If the gift is for someone else, ask us before ordering and we will help pick the safest size.'}
+                </p>
+                {giftWhatsAppUrl ? (
+                  <a
+                    href={giftWhatsAppUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary mt-5 inline-flex min-h-12 items-center justify-center px-6"
+                  >
+                    {isArabic ? 'راسلنا على واتساب' : 'Message us on WhatsApp'}
+                  </a>
+                ) : null}
+              </div>
+              <div className="rounded-2xl border border-stone/30 bg-white/65 p-6">
+                <h2 className="font-headline text-lg font-semibold text-obsidian">
+                  {isArabic ? 'توصيل واستبدال واضح' : 'Delivery and exchange reassurance'}
+                </h2>
+                <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
+                  {isArabic
+                    ? 'القاهرة والجيزة غالباً ٢–٥ أيام عمل؛ باقي المحافظات ٣–٧. التكلفة تظهر في السلة بعد اختيار المحافظة.'
+                    : 'Cairo & Giza often arrive in 2–5 business days; other governorates 3–7. Shipping cost appears in cart after you pick your area.'}
+                </p>
+                <Link
+                  href="/exchange"
+                  className="font-label mt-4 inline-flex min-h-11 items-center text-[11px] font-semibold uppercase tracking-[0.18em] text-deep-teal underline decoration-deep-teal/35 underline-offset-4"
+                >
+                  {isArabic ? 'سياسة الاستبدال' : 'Exchange policy'}
+                </Link>
+              </div>
             </div>
-            <div className="rounded-2xl border border-stone/30 bg-white/65 p-6">
-              <h2 className="font-headline text-lg font-semibold text-obsidian">
-                {isArabic ? 'توصيل واستبدال واضح' : 'Delivery and exchange reassurance'}
-              </h2>
-              <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
-                {isArabic
-                  ? 'الدفع عند الاستلام متاح حيث ينطبق، والاستبدال خلال 14 يوم حسب سياسة الاستبدال.'
-                  : 'Payment options are shown at checkout. Exchange is supported for 14 days under the exchange policy.'}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-stone/30 bg-white/65 p-6 md:col-span-2">
-              <h2 className="font-headline text-lg font-semibold text-obsidian">
-                {isArabic ? 'منتج واضح وصدق' : 'Honest product proof'}
-              </h2>
-              <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
-                {isArabic
-                  ? 'كل قطعة لها صور منتج حقيقية (تفاصيل، طباعة، مقاس) وصور فنية (ليف ستايل، فلات لي).'
-                  : 'Every piece has real product photos (detail, print, fit) and artistic photos (lifestyle, flat-lay).'}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-stone/30 bg-white/65 p-6 md:col-span-2">
-              <h2 className="font-headline text-lg font-semibold text-obsidian">
-                {isArabic ? 'تغليف الهدية' : 'Gift packaging'}
-              </h2>
-              <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
-                {isArabic
-                  ? 'تغليف الهدايا قيد الاختبار حالياً. الطلبات الحالية تشمل التغليف القياسي لـ HORO.'
-                  : 'Gift packaging is being tested. Current orders include standard HORO packaging.'}
-              </p>
+            <div className="grid gap-6 overflow-hidden rounded-2xl border border-stone/30 bg-white/65 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+              <div className="overflow-hidden">
+                <TeeImageFrame
+                  src={GIFT_PACKAGING_REFERENCE_IMAGE}
+                  alt={isArabic ? 'تغليف هدية HORO' : 'HORO gift packaging reference'}
+                  w={720}
+                  aspectRatio="4/5"
+                  borderRadius="0"
+                />
+              </div>
+              <div className="flex flex-col justify-center p-6 md:p-8">
+                <h2 className="font-headline text-lg font-semibold text-obsidian">
+                  {isArabic ? 'تغليف الهدية' : 'Gift packaging'}
+                </h2>
+                <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
+                  {isArabic
+                    ? 'تغليف الهدايا قيد الاختبار حالياً. الطلبات الحالية تشمل التغليف القياسي لـ HORO.'
+                    : 'Gift packaging is being tested. Current orders include standard HORO packaging.'}
+                </p>
+                <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">
+                  {isArabic
+                    ? 'كل قطعة لها صور منتج حقيقية (تفاصيل، طباعة، مقاس) وصور فنية (ليف ستايل، فلات لي).'
+                    : 'Every piece has real product photos (detail, print, fit) and artistic photos (lifestyle, flat-lay).'}
+                </p>
+              </div>
             </div>
           </section>
         ) : null}

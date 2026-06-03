@@ -49,7 +49,7 @@ const DEFAULT_SLIDES: ArtistStorySlide[] = [
   },
 ];
 
-export function ArtistStudioBlock({ slides, artistName, isRevealMode }: ArtistStudioBlockProps) {
+export function ArtistStudioBlock({ slides, artistName }: ArtistStudioBlockProps) {
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
   

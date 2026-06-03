@@ -941,6 +941,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       giftWrapCatalogPriceEgp,
       addGiftWrap,
       removeGiftWrap,
+      miniCartOpen,
+      setMiniCartOpen,
       addToCartToastOpen,
       showAddToCartToast,
       dismissAddToCartToast,

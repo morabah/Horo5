@@ -55,12 +55,12 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
       ar: HORO_V19_HERO_SUBTITLE.ar,
     },
     primaryCta: {
-      label: { en: "Shop the Founding Drop", ar: "تسوّق الإطلاق الأول" },
+      label: { en: "Shop the Drop", ar: "تسوّق الإطلاق" },
       href: "/products",
     },
     secondaryCta: {
-      label: { en: "Shop by Meaning", ar: "تسوّق حسب المعنى" },
-      href: "/#shop-by-meaning",
+      label: { en: "See the Details", ar: "شاهد التفاصيل" },
+      href: "/#editorial-feature",
     },
     desktopImage: {
       src: "/images/homepage-reference/hero-right.png",
@@ -82,7 +82,7 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
       ar: "تيشيرتات برسومات فنانين، مطبوعة في مصر، جاهزة للبس أو الهدية.",
     },
     primaryCta: {
-      label: { en: "Browse the drop", ar: "تصفح المجموعة" },
+      label: { en: "Shop All Designs", ar: "تسوّق كل التصاميم" },
       href: "/products",
     },
     desktopImage: {
@@ -171,7 +171,7 @@ export const PAGE_HEROES: Record<string, PageHeroConfig> = {
       ar: "فن قابل للّبس من مصر — للمشاعر، الهوية، والمعنى اللي تقدر تلبسه.",
     },
     primaryCta: {
-      label: { en: "Shop the Founding Drop", ar: "تسوّق الإطلاق الأول" },
+      label: { en: "Shop the Drop", ar: "تسوّق الإطلاق" },
       href: "/products",
     },
     desktopImage: {

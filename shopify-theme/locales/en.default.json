@@ -541,10 +541,10 @@
     "footer": {
       "shop_heading": "Shop",
       "help_heading": "Help",
-      "about_heading": "Company",
-      "shop_by_mood": "Shop by Mood",
-      "shop_by_zodiac": "Shop by Zodiac",
-      "gift_ready": "Gift Ready",
+      "about_heading": "About",
+      "shop_by_mood": "Shop by Feeling",
+      "shop_by_zodiac": "Zodiac",
+      "gift_ready": "Gifts",
       "all_products": "All Products",
       "shipping_delivery": "Shipping & Delivery",
       "journal": "The Journal",
@@ -562,16 +562,22 @@
       "occasions": "Occasions",
       "gifts": "Gifts",
       "shop_all": "Shop All",
-      "founding_drop": "Founding Drop",
+      "founding_drop": "Shop All",
       "zodiac": "Zodiac",
+      "zodiac_signs": "Zodiac",
+      "career": "Career & Work",
+      "whatsapp_size_help": "WhatsApp size help",
       "shop_by_feeling": "Shop by Feeling",
       "gift_by_meaning": "Gift by Meaning",
       "our_story": "Our Story",
-      "size_help": "Size & Help",
+      "size_help": "Size Guide",
       "about": "About",
       "size_guide": "Size Guide",
       "faq": "FAQ",
       "exchange": "Exchange Policy",
+      "shop_preview_title": "Shop the Drop",
+      "shop_preview_browse_all": "Shop All",
+      "product_image_placeholder": "Product image",
       "searchPlaceholder": "Search designs, feelings, or occasions...",
       "searchSubmit": "Search",
       "searchClear": "Clear search",
@@ -584,7 +590,7 @@
     "home_hero": {
       "title": "Wear What You Feel",
       "subtitle": "Artist-made passion wear for feelings, identity, and meaningful gifts.",
-      "cta": "Shop the Founding Drop"
+      "cta": "Shop the Drop"
     },
     "trust_ribbon": {
       "artist_made": "Artist-made design",
@@ -782,7 +788,7 @@
         "cod_available": "Payment options shown at checkout"
       },
       "size_guide_link": "Size guide",
-      "view_piece": "View piece",
+      "view_piece": "View Design",
       "add_to_cart": "Add to cart",
       "sold_out": "Sold out",
       "select_size": "Select size",
@@ -811,6 +817,9 @@
       "default_trust_printed": "Printed in Egypt",
       "default_trust_cod": "Payment options shown at checkout",
       "default_trust_exchange": "Exchange applies according to policy"
+    },
+    "zodiac": {
+      "entertainment_disclaimer": "For fun and personality only — not predictions or fortune-telling."
     },
     "product_card": {
       "gift_ready": "Gift-ready",
@@ -902,8 +911,8 @@
       "choose_size": "Choose size",
       "founding_rail_hint": "Swipe for more pieces →",
       "hero_promise_line": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
-      "hero_primary_cta": "Shop by Feeling",
-      "hero_secondary_cta": "Find a Gift",
+      "hero_primary_cta": "Shop the Drop",
+      "hero_secondary_cta": "Shop Gifts",
       "hero_subheading": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
       "plan_eyebrow": "Simple plan",
       "plan_title": "How it works",

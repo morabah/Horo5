@@ -6,9 +6,8 @@ import { useEffect } from 'react';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { VibeCommerceCard } from '../components/VibeCommerceCard';
-import { VIBES_SCHEMA } from '../data/domain-config';
 import { PAGE_HEROES } from '../content/page-heroes';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import {
   getFeelings,
   setRuntimeCatalog,
@@ -42,7 +41,6 @@ export function ShopByFeeling({ initialCatalog }: ShopByFeelingProps = {}) {
 
   const { locale } = useUiLocale();
   const copy = useDictionary();
-  const isArabic = locale === 'ar';
   const feelings = sortActiveFeelings(getFeelings());
 
   useEffect(() => {

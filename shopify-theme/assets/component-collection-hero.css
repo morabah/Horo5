@@ -114,6 +114,37 @@
   z-index: 10;
 }
 
+.horo-collection-intro {
+  margin: 0 auto;
+  max-width: var(--page-width);
+  padding: 1.25rem 1.5rem 0;
+}
+
+.horo-collection-intro__title {
+  font-family: var(--font-heading-family);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+}
+
+.horo-collection-intro__body {
+  color: rgba(var(--color-foreground), 0.78);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  margin: 0 0 0.5rem;
+  max-width: 42rem;
+}
+
+.horo-collection-intro__disclaimer {
+  color: rgb(var(--color-button));
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
 /* Mobile */
 @media screen and (max-width: 749px) {
   .collection-hero {

@@ -33,6 +33,17 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
   if view_all_url == blank and primary_collection != blank
     assign view_all_url = primary_collection.url
   endif
+
+  assign campaign_secondary_link = section.settings.campaign_secondary_link
+  if campaign_secondary_link == blank
+    assign campaign_secondary_link = '#editorial-feature'
+  endif
+
+  assign campaign_media = section.settings.campaign_image
+  assign campaign_image_url = nil
+  if campaign_media == blank
+    assign campaign_image_url = 'horo-founding-drop-campaign.png' | asset_url
+  endif
 -%}
 
 {%- if primary_collection != blank or request.design_mode -%}
@@ -50,26 +61,44 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
         endif
       -%}
 
-      {%- if section.settings.campaign_image != blank and layout_style == 'image_overlay' -%}
-        {% render 'horo-home-campaign-overlay',
-          campaign_image: section.settings.campaign_image,
-          eyebrow: section.settings.eyebrow,
-          heading: section.settings.heading,
-          body: section.settings.subheading,
-          button_primary_label: section.settings.campaign_cta_label,
-          button_primary_link: section.settings.campaign_cta_link,
-          button_secondary_label: section.settings.campaign_secondary_label,
-          button_secondary_link: section.settings.campaign_secondary_link,
-          overlay_opacity: section.settings.overlay_opacity,
-          show_body: show_body,
-          show_eyebrow: section.settings.show_eyebrow,
-          text_position: section.settings.text_position,
-          mobile_text_mode: section.settings.mobile_text_mode,
-          block_id: section.id
-        %}
-        <h2 id="home-start-here-title-{{ section.id }}" class="visually-hidden">
-          {{ section.settings.heading | escape }}
-        </h2>
+      {%- liquid
+        assign show_founding_campaign = false
+        if layout_style == 'image_overlay'
+          if campaign_media != blank or campaign_image_url != blank
+            assign show_founding_campaign = true
+          endif
+        endif
+      -%}
+      {%- if show_founding_campaign -%}
+        <div class="home-founding-drop__intro-mobile">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="home-section-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 id="home-start-here-title-{{ section.id }}" class="home-founding-drop__title home-section-title">
+              {{ section.settings.heading | escape }}
+            </h2>
+          {%- endif -%}
+        </div>
+        <div class="home-founding-drop__campaign-desktop">
+          {% render 'horo-home-campaign-overlay',
+            campaign_image: campaign_media,
+            campaign_image_url: campaign_image_url,
+            eyebrow: section.settings.eyebrow,
+            heading: section.settings.heading,
+            body: section.settings.subheading,
+            button_primary_label: section.settings.campaign_cta_label,
+            button_primary_link: section.settings.campaign_cta_link,
+            button_secondary_label: section.settings.campaign_secondary_label,
+            button_secondary_link: campaign_secondary_link,
+            overlay_opacity: section.settings.overlay_opacity,
+            show_body: show_body,
+            show_eyebrow: section.settings.show_eyebrow,
+            text_position: section.settings.text_position,
+            mobile_text_mode: section.settings.mobile_text_mode,
+            block_id: section.id
+          %}
+        </div>
       {%- else -%}
         <div class="home-section-header">
           <div>
@@ -89,12 +118,7 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
       {%- endif -%}
 
       {%- if primary_collection != blank and primary_collection.products_count > 0 -%}
-        {%- if product_limit > 2 -%}
-          <p class="home-founding-rail-hint" aria-hidden="true">
-            {{ 'horo.home.founding_rail_hint' | t | default: 'Swipe for more pieces →' }}
-          </p>
-        {%- endif -%}
-        <div class="home-founding-rail home-founding-grid">
+        <div class="home-founding-grid">
           {%- assign cards_rendered = 0 -%}
           {%- comment -%}
             Variant pick mirrors horo-founding-product-card: prefer available M, else first available, else selected_or_first_available.
@@ -133,6 +157,12 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
               %}
             {%- endif -%}
           {%- endfor -%}
+          {%- if section.settings.view_all_label != blank and view_all_url != blank -%}
+            {% render 'horo-founding-view-all-card',
+              href: view_all_url,
+              label: section.settings.view_all_label
+            %}
+          {%- endif -%}
         </div>
         {%- if section.settings.view_all_label != blank and view_all_url != blank -%}
           <p class="home-founding-drop__footer-cta">
@@ -170,8 +200,7 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
     {
       "type": "textarea",
       "id": "subheading",
-      "label": "Subheading (optional body on campaign)",
-      "default": ""
+      "label": "Subheading (optional body on campaign)"
     },
     {
       "type": "select",
@@ -234,7 +263,7 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
       "type": "text",
       "id": "campaign_cta_label",
       "label": "Campaign primary CTA",
-      "default": "Shop Now"
+      "default": "Shop the Drop"
     },
     {
       "type": "url",
@@ -245,19 +274,18 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
       "type": "text",
       "id": "campaign_secondary_label",
       "label": "Campaign secondary CTA",
-      "default": "A Closer Look"
+      "default": "See the Details"
     },
     {
       "type": "url",
       "id": "campaign_secondary_link",
-      "label": "Campaign secondary CTA link",
-      "default": "#editorial-feature"
+      "label": "Campaign secondary CTA link"
     },
     {
       "type": "text",
       "id": "view_all_label",
       "label": "View all link label",
-      "default": "See all launch designs"
+      "default": "Shop All Designs"
     },
     {
       "type": "url",

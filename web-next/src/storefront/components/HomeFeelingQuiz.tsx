@@ -8,7 +8,7 @@ import {
   productHasRealImage,
   type Feeling,
 } from '../data/site';
-import { useUiLocale, useDictionary } from '../i18n/ui-locale';
+import { useUiLocale } from '../i18n/ui-locale';
 import { getFeelingCollectionVisual, imgUrl, resolveProductImageSrcForDisplay } from '../data/images';
 
 function getTopFeelings(): Feeling[] {
@@ -26,7 +26,6 @@ function getTopFeelings(): Feeling[] {
 
 export function HomeFeelingQuiz() {
   const { locale } = useUiLocale();
-  const copy = useDictionary();
   const isArabic = locale === 'ar';
   const feelings = getTopFeelings();
   const [selected, setSelected] = useState<string | null>(null);

@@ -3,7 +3,6 @@ import { useDictionary } from '../../i18n/ui-locale';
 
 import { TeeImage } from '../TeeImage';
 import type { Artist } from '../../data/catalog-types';
-import { PDP_SCHEMA } from '../../data/domain-config';
 
 
 type PdpArtistCardProps = {
@@ -65,13 +64,19 @@ export function PdpArtistCard({ artistDisplay, catalogArtist, isArabic = false }
       {style || location ? (
         <div className="mt-4 space-y-1">
           {style ? (
-            <p className="font-body text-sm text-warm-charcoal">
-              <span className="font-medium text-obsidian">Style:</span> {style}
+            <p className="font-body text-sm leading-relaxed text-warm-charcoal">
+              <span className="font-medium text-obsidian">
+                {isArabic ? 'العملية' : 'Process'}:
+              </span>{' '}
+              {style}
             </p>
           ) : null}
           {location ? (
             <p className="font-body text-sm text-warm-charcoal">
-              <span className="font-medium text-obsidian">Based in</span> {location}
+              <span className="font-medium text-obsidian">
+                {isArabic ? 'مقرها' : 'Based in'}
+              </span>{' '}
+              {location}
             </p>
           ) : null}
         </div>

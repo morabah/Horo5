@@ -41,3 +41,25 @@ export function governorateLabel(rate: GovernorateRate, isArabic: boolean): stri
 export function shippingEgpForGovernorateCode(code: string): number {
   return getGovernorateRate(code)?.shippingEgp ?? GOVERNORATE_RATES.find((row) => row.code === 'other')!.shippingEgp;
 }
+
+/** Maps cart governorate codes to checkout `EGYPT_CITY_OPTIONS` select values when possible. */
+export function checkoutCityForGovernorateCode(code: string | null | undefined): string | null {
+  const normalized = code?.trim().toLowerCase();
+  if (!normalized || !isGovernorateCode(normalized)) return null;
+  switch (normalized) {
+    case 'cairo':
+      return 'Cairo';
+    case 'giza':
+      return 'Giza';
+    case 'alexandria':
+      return 'Alexandria';
+    case 'delta':
+      return 'Sharqia';
+    case 'upper_egypt':
+      return 'Assiut';
+    case 'other':
+      return null;
+    default:
+      return null;
+  }
+}

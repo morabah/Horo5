@@ -8,7 +8,7 @@
         "color_scheme": "scheme-1",
         "use_web_next_primary_nav": true,
         "menu": "main-menu",
-        "sticky_header_type": "on-scroll-up",
+        "sticky_header_type": "always",
         "show_line_separator": true,
         "show_locale_toggle": true,
         "show_wishlist": true,

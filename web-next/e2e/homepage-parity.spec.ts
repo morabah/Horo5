@@ -15,7 +15,7 @@ test.describe("homepage parity (visual baseline)", () => {
       expect(res?.ok(), "home should return 2xx").toBeTruthy()
       await expectMainShell(page)
 
-      const foundingCards = page.locator(".home-founding-card__image, .home-founding-rail .product-card img")
+      const foundingCards = page.locator(".home-founding-card__image, .home-founding-grid .product-card img")
       const count = await foundingCards.count()
       if (count > 0) {
         await expect(foundingCards.first()).toBeVisible({ timeout: 30_000 })
@@ -36,5 +36,40 @@ test.describe("homepage parity (visual baseline)", () => {
     await expect(page.getByRole("link", { name: /shop the founding drop/i }).first()).toBeVisible({
       timeout: 30_000,
     })
+  })
+
+  test("editorial feature and service proof sections render", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" })
+    await expect(page.locator("#editorial-feature")).toBeVisible({ timeout: 30_000 })
+    await expect(page.locator("#size-help")).toBeVisible({ timeout: 30_000 })
+  })
+
+  test("founding secondary CTA targets editorial anchor", async ({ page }) => {
+    await page.goto("/", { waitUntil: "networkidle" })
+    const closerLook = page
+      .locator("#founding-drop-campaign, #founding-drop")
+      .getByRole("link", { name: /a closer look/i })
+      .first()
+    await expect(closerLook).toBeVisible({ timeout: 30_000 })
+    const href = await closerLook.getAttribute("href")
+    expect(href ?? "").toMatch(/editorial-feature/)
+    await closerLook.click()
+    await expect(page.locator("#editorial-feature")).toBeInViewport({ timeout: 10_000 })
+  })
+
+  test("mobile campaigns expose one heading per block", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto("/", { waitUntil: "networkidle" })
+    await page.locator(".home-image-campaign").first().waitFor({ state: "visible", timeout: 30_000 })
+
+    const campaigns = page.locator(".home-image-campaign")
+    const campaignCount = await campaigns.count()
+    expect(campaignCount).toBeGreaterThan(0)
+
+    for (let i = 0; i < campaignCount; i += 1) {
+      const block = campaigns.nth(i)
+      await expect(block.getByRole("heading")).toHaveCount(1)
+    }
+
   })
 })

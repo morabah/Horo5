@@ -83,6 +83,7 @@ export function CheckoutRecoveryBar({ cartId, cartValueEgp }: CheckoutRecoveryBa
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-ghost min-h-10 px-4 text-sm"
+                  aria-label={isArabic ? 'مساعدة إتمام الطلب على واتساب' : 'Checkout help on WhatsApp'}
                 >
                   {isArabic ? 'واتساب' : 'WhatsApp'}
                 </a>

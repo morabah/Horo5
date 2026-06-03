@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 
 export type PageBreadcrumbItem = {
   label: string;

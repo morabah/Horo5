@@ -17,7 +17,6 @@ import {
   fillPdpCopyTemplate,
   mergePdpSizeTableConfig,
   PDP_SCHEMA,
-  QUICK_VIEW_SCHEMA,
   resolvePdpDisplayFitModels,
   type PdpSizeTableConfig,
 } from '../data/domain-config';
@@ -26,7 +25,7 @@ import { formatPdpFitModelLine } from '../utils/pdpFitModels';
 import { compareAtPrice, getDisplayPriceSelection, productHasVariablePricing } from '../utils/productPricing';
 import { productAvailableSizes } from '../utils/productSizes';
 import { launchProductEyebrow } from '../lib/launch-taxonomy-display';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useUiLocale } from '../i18n/ui-locale';
 import { AppIcon } from './AppIcon';
 
 type ProductQuickViewProps = {

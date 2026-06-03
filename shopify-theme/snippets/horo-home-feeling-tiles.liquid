@@ -5,14 +5,14 @@
 {%- liquid
   assign limit = feeling_limit | default: 4
   assign launch_slugs = 'zodiac,mood,lifestyle,gift' | split: ','
-  assign launch_labels = 'Zodiac Signs,Mood,Lifestyle,Gift Ready' | split: ','
-  assign launch_subtitles = '12 designs,Feelings you can wear,Daily identity pieces,Thoughtful designs for someone close' | split: ','
+  assign launch_labels = 'Zodiac Signs,Mood,Lifestyle,For Someone' | split: ','
+  assign launch_subtitles = '12 designs,Feelings you wear,Daily pieces,Gifting' | split: ','
   assign surfaces = '#f8eaea,#f4ede5,#edf1ea,#f5eef3' | split: ','
   assign sorted_feelings = shop.metaobjects.feeling.values | sort: 'sort_order'
   assign tiles_shown = 0
 -%}
 
-<ul class="home-feeling-pastel-grid" role="list">
+<ul class="home-feeling-pastel-grid home-feeling-pastel-grid--meaning" role="list">
   {%- for slug in launch_slugs -%}
     {%- if tiles_shown >= limit -%}
       {%- break -%}

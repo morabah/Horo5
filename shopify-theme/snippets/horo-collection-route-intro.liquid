@@ -1,0 +1,74 @@
+{%- comment -%}
+  Collection / feeling route intro + zodiac entertainment disclaimer (web-next CollectionRouteIntro).
+  Params: collection (required)
+{%- endcomment -%}
+{%- liquid
+  assign collection_handle = collection.handle | downcase
+  assign feeling = collection.metafields.custom.feeling.value
+  assign feeling_handle = ''
+  if feeling != blank
+    assign feeling_handle = feeling.handle | default: feeling.slug | default: '' | downcase
+  endif
+
+  assign route_kind = ''
+  if collection_handle contains 'zodiac' or feeling_handle == 'zodiac'
+    assign route_kind = 'zodiac'
+  elsif collection_handle contains 'career' or feeling_handle == 'career'
+    assign route_kind = 'career'
+  elsif collection_handle contains 'gift'
+    assign route_kind = 'gift'
+  endif
+-%}
+{%- if route_kind != blank -%}
+  <aside class="horo-collection-intro" aria-label="{{ collection.title | escape }}">
+    {%- if route_kind == 'zodiac' -%}
+      <h2 class="horo-collection-intro__title">
+        {%- if request.locale.iso_code == 'ar' -%}
+          كبسولة الأبراج
+        {%- else -%}
+          Sign Capsule
+        {%- endif -%}
+      </h2>
+      <p class="horo-collection-intro__body">
+        {%- if request.locale.iso_code == 'ar' -%}
+          تيشيرتات بتعبّر عن طاقة برجك — للمرح والشخصية، مش تنبؤات.
+        {%- else -%}
+          Tees that match your sign energy — for fun and personality, not predictions.
+        {%- endif -%}
+      </p>
+      <p class="horo-collection-intro__disclaimer">
+        {{ 'horo.zodiac.entertainment_disclaimer' | t }}
+      </p>
+    {%- elsif route_kind == 'career' -%}
+      <h2 class="horo-collection-intro__title">
+        {%- if request.locale.iso_code == 'ar' -%}
+          تعبّر عن شغلك
+        {%- else -%}
+          Wear your work
+        {%- endif -%}
+      </h2>
+      <p class="horo-collection-intro__body">
+        {%- if request.locale.iso_code == 'ar' -%}
+          قطع للي بياخد شغله بجد — فخر مهني من غير كليشيهات عامة.
+        {%- else -%}
+          Pieces for people who take their craft seriously — career pride without generic slogans.
+        {%- endif -%}
+      </p>
+    {%- elsif route_kind == 'gift' -%}
+      <h2 class="horo-collection-intro__title">
+        {%- if request.locale.iso_code == 'ar' -%}
+          جاهز للهدايا
+        {%- else -%}
+          Gift-ready picks
+        {%- endif -%}
+      </h2>
+      <p class="horo-collection-intro__body">
+        {%- if request.locale.iso_code == 'ar' -%}
+          قطع مختارة للهدايا — مع مساعدة مقاس على واتساب قبل الطلب.
+        {%- else -%}
+          Curated giftable pieces — WhatsApp size help before you order.
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+  </aside>
+{%- endif -%}

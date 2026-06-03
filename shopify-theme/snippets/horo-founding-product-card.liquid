@@ -48,20 +48,9 @@
     assign skip_card = false
   endif
 
-  assign needs_size_choice = true
-  if card_product.has_only_default_variant
-    assign needs_size_choice = false
-  endif
-
-  assign can_add = false
-  if selected_variant and selected_variant.available and needs_size_choice == false
-    assign can_add = true
-  endif
-
   assign price_display = price_cents
-  assign price_egp = price_display | money_with_currency
-
-  assign product_form_id = 'founding-' | append: section_id | append: '-' | append: card_product.id
+  assign price_amount = price_display | money_without_currency | strip | replace: '.00', '' | replace: ',00', ''
+  assign price_egp = price_amount | append: ' EGP'
 
   assign launch_group = card_product.metafields.custom.launch_group.value | default: ''
   assign launch_audience = card_product.metafields.custom.launch_audience.value | default: ''
@@ -120,6 +109,13 @@
     assign audience_label = 'Unisex'
   endif
 
+  if launch_group == 'zodiac_capsule' and zodiac_sign != blank
+    capture zodiac_badge
+      render 'horo-zodiac-sign-label', sign: zodiac_sign
+    endcapture
+    assign design_label = zodiac_badge | strip
+  endif
+
   if design_label != blank
     assign eyebrow_parts = design_label
   endif
@@ -171,58 +167,17 @@
     </a>
     <p class="home-founding-card__price">{{ price_egp }}</p>
     <div class="home-founding-card__actions">
-      {%- if needs_size_choice -%}
-        <a
-          href="{{ card_product.url }}"
-          class="home-founding-card__cta home-founding-card__cta--link"
-          data-horo-home-event="choose_size_click"
-          data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
-        >
-          <span class="home-founding-card__cta-label">{{ cta_choose_size | escape }}</span>
-          <span class="home-founding-card__cta-icon" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-          </span>
-        </a>
-      {%- elsif can_add -%}
-        <product-form data-section-id="{{ section_id }}" data-hide-errors="true">
-          {%- form 'product',
-            card_product,
-            id: product_form_id,
-            class: 'home-founding-card__form',
-            novalidate: 'novalidate',
-            data-type: 'add-to-cart-form'
-          -%}
-            <input type="hidden" name="id" value="{{ selected_variant.id }}" class="product-variant-id">
-            <button
-              type="submit"
-              name="add"
-              class="home-founding-card__cta"
-              aria-haspopup="dialog"
-              aria-label="{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}: {{ card_product.title | escape }}"
-              data-horo-home-event="add_to_cart_click"
-              data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
-            >
-              <span class="home-founding-card__cta-label">{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}</span>
-              <span class="home-founding-card__cta-icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-              </span>
-              {%- render 'loading-spinner' -%}
-            </button>
-          {%- endform -%}
-        </product-form>
-      {%- else -%}
-        <a
-          href="{{ card_product.url }}"
-          class="home-founding-card__cta home-founding-card__cta--link"
-          data-horo-home-event="product_card_click"
-          data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
-        >
-          <span class="home-founding-card__cta-label">{{ 'products.product.view_full_details' | t | default: 'View piece' }}</span>
-          <span class="home-founding-card__cta-icon" aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-          </span>
-        </a>
-      {%- endif -%}
+      <a
+        href="{{ card_product.url }}"
+        class="home-founding-card__cta home-founding-card__cta--link"
+        data-horo-home-event="choose_size_click"
+        data-horo-home-props='{"product_handle":{{ card_product.handle | json }}}'
+      >
+        <span class="home-founding-card__cta-label">{{ cta_choose_size | escape }}</span>
+        <span class="home-founding-card__cta-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        </span>
+      </a>
     </div>
   </div>
 </article>

@@ -15,7 +15,7 @@ import { ExitIntentModal } from '../components/ExitIntentModal';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { Skeleton } from '../components/ui/Skeleton';
-import { CART_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, PDP_SCHEMA } from '../data/domain-config';
+import { CART_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
 import { getProductCardImageSrc, giftWrapPreview, heroVectorizedV2 } from '../data/images';
 import {  useUiLocale, useDictionary, type UiLocale  } from '../i18n/ui-locale';
 import { useStableNow } from '../runtime/render-time';
@@ -93,6 +93,9 @@ function CartUpsell({
   const copy = (useDictionary().cart);
 
   if (totalQty === 1) {
+    if (!giftWrapSelected && (!giftWrapPriceEgp || giftWrapPriceEgp <= 0)) {
+      return null;
+    }
     return (
       <section className="cart-upsell card-glass" aria-labelledby="cart-upsell-title">
         <div className="cart-upsell-media">
@@ -170,6 +173,7 @@ function CartSummary({
   incentives,
   showDeliveryEstimate,
   selectedRate,
+  isDefaultEstimate,
   deliveryShippingEgp,
   deliveryEstimatedTotal,
   onChooseGovernorate,
@@ -191,6 +195,7 @@ function CartSummary({
   incentives: StorefrontIncentivesClient | null;
   showDeliveryEstimate: boolean;
   selectedRate: GovernorateRate | null;
+  isDefaultEstimate: boolean;
   deliveryShippingEgp: number | null;
   deliveryEstimatedTotal: number | null;
   onChooseGovernorate: () => void;
@@ -227,6 +232,7 @@ function CartSummary({
             shippingEgp={deliveryShippingEgp}
             estimatedTotalEgp={deliveryEstimatedTotal}
             selectedRate={selectedRate}
+            isDefaultEstimate={isDefaultEstimate}
             onChooseGovernorate={onChooseGovernorate}
             onChangeGovernorate={onChangeGovernorate}
           />
@@ -579,7 +585,14 @@ export function Cart({
   const [incentives, setIncentives] = useState<StorefrontIncentivesClient | null>(null);
   const [governorateModalOpen, setGovernorateModalOpen] = useState(false);
   const router = useRouter();
-  const { selectedCode, selectedRate, setGovernorate, hydrated: governorateHydrated } = useDeliveryGovernorate();
+  const {
+    selectedCode,
+    selectedRate,
+    setGovernorate,
+    hydrated: governorateHydrated,
+    hasStoredGovernorate,
+    isDefaultEstimate,
+  } = useDeliveryGovernorate();
 
   /* Fetch incentives after mount (per repo hydration baseline: server render uses null). */
   useEffect(() => {
@@ -732,7 +745,10 @@ export function Cart({
     setGovernorateModalOpen(true);
   };
 
-  const showUpsell = itemCount > 0 && !(itemCount === 1 && giftUpsellDismissed && displayGiftWrapEgp === 0);
+  const showUpsell =
+    itemCount > 0 &&
+    (itemCount !== 1 ||
+      ((giftWrapDisplayPriceEgp ?? 0) > 0 && !(giftUpsellDismissed && displayGiftWrapEgp === 0)));
 
   useEffect(() => {
     if (trackedCartViewRef.current || lineViews.length === 0) return;
@@ -1080,6 +1096,7 @@ export function Cart({
             incentives={incentives}
             showDeliveryEstimate={showDeliveryEstimate}
             selectedRate={selectedRate}
+            isDefaultEstimate={isDefaultEstimate}
             deliveryShippingEgp={deliveryShippingEgp}
             deliveryEstimatedTotal={deliveryEstimatedTotal}
             onChooseGovernorate={openGovernoratePicker}
@@ -1091,14 +1108,14 @@ export function Cart({
         <GovernorateModal
           open={governorateModalOpen}
           subtotalEgp={displaySubtotalEgp + displayGiftWrapEgp}
-          showContinueButton={Boolean(selectedCode)}
+          showContinueButton={hasStoredGovernorate}
           onClose={() => setGovernorateModalOpen(false)}
           onSelect={(code) => {
             setGovernorate(code, { surface: 'cart_modal' });
             setGovernorateModalOpen(false);
           }}
           onContinueToCheckout={() => {
-            if (!selectedCode) {
+            if (!hasStoredGovernorate) {
               setStatusMessage(copy.cartCheckoutNeedsGovernorate);
               return;
             }

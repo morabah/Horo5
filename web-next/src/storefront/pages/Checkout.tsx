@@ -33,7 +33,6 @@ import {
   type StorefrontIncentivesClient,
 } from '../lib/storefront/incentives-client';
 import {
-  CART_SCHEMA,
   CHECKOUT_SCHEMA,
   EGYPT_CITY_OPTIONS,
   HORO_SUPPORT_CHANNELS,
@@ -96,6 +95,7 @@ import type {
 } from '../lib/medusa/types';
 import { useStableNow } from '../runtime/render-time';
 import { formatDeliveryWindow } from '../utils/deliveryEstimate';
+import { checkoutCityForGovernorateCode } from '../lib/delivery/governorates';
 import {
   checkoutStickyCostLine,
   governorateShippingBasisCopy,
@@ -641,7 +641,12 @@ export function Checkout({
     setFullName(composedName || saved?.fullName || '');
     setLine1(cart.shipping_address?.address_1 || saved?.line1 || '');
     setLine2(cart.shipping_address?.address_2 || saved?.line2 || '');
-    setCity(cart.shipping_address?.city || saved?.city || '');
+    const cityFromCart = cart.shipping_address?.city || saved?.city || '';
+    const govMeta =
+      typeof cart.metadata?.deliveryGovernorate === 'string' ? cart.metadata.deliveryGovernorate : null;
+    const cityFromGovernorate =
+      !cityFromCart.trim() && govMeta ? checkoutCityForGovernorateCode(govMeta) : null;
+    setCity(cityFromCart || cityFromGovernorate || '');
     setProvince(cart.shipping_address?.province || saved?.province || '');
     setPostalCode(cart.shipping_address?.postal_code || saved?.postalCode || '');
     setWhatsappOptIn(cart.metadata?.whatsapp_opt_in === false ? false : true);
@@ -1736,7 +1741,7 @@ export function Checkout({
       { label: copy.cart.heading, to: "/cart" as const },
       { label: copy.checkout.breadcrumbTitle },
     ],
-    [copy.checkout.breadcrumbTitle, copy.shell.home],
+    [copy.cart.heading, copy.checkout.breadcrumbTitle, copy.shell.home],
   );
 
   if (loadingCheckout) {
@@ -2745,7 +2750,7 @@ function OrderSummary({
           ) : shipping > 0 ? (
             formatEgp(shipping)
           ) : cart?.shipping_methods?.length ? (
-            formatEgp(0)
+            <span className="font-body text-sm text-deep-teal">{isArabic ? 'مجاني' : 'Free'}</span>
           ) : (
             <span className="font-body text-sm text-warm-charcoal">
               {shippingCalculatedAfterAddressCopy(isArabic)}

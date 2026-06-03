@@ -46,24 +46,24 @@ export const HORO_V19_SOUNDBITES = {
 
 export const HORO_V19_TRUST_COPY = {
   artistMade: {
-    en: 'Artist-made designs',
-    ar: 'تصميمات فنانين',
+    en: 'Artist-made',
+    ar: 'تصميم فنانين',
   },
   printedEgypt: {
     en: 'Printed in Egypt',
     ar: 'مطبوعة في مصر',
   },
   paymentAtCheckout: {
-    en: 'Payment options shown at checkout',
-    ar: 'طرق الدفع بتظهر في صفحة الدفع',
+    en: 'Payment at checkout',
+    ar: 'الدفع عند الدفع',
   },
   exchangePolicy: {
-    en: '14-day exchange — see policy',
-    ar: 'استبدال خلال ١٤ يوم — راجع السياسة',
+    en: '14-day exchange',
+    ar: 'استبدال ١٤ يوم',
   },
   whatsappSupport: {
-    en: 'WhatsApp size help before dispatch',
-    ar: 'مساعدة المقاس على واتساب قبل الشحن',
+    en: 'WhatsApp size help',
+    ar: 'مساعدة واتساب',
   },
 } as const;
 

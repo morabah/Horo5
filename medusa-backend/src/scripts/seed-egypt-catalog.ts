@@ -101,6 +101,9 @@ type LegacyProduct = {
 
 const DEFAULT_PRODUCT_TRUST_BADGES = [...DEFAULT_TRUST_BADGES] as const
 
+const DEFAULT_HORO_CARE_INSTRUCTIONS =
+  "Machine wash cold, inside out. Do not iron directly on the print. Hang dry when possible."
+
 /** Canonical feeling slugs for Egypt hero tees (aligned with migrate-feelings hero fallbacks). */
 const EGYPT_HERO_FEELING_BY_HANDLE: Record<string, string> = {
   "horo-emotions-vibe": "mood",
@@ -492,6 +495,7 @@ function metadataFromProduct(
     complementarySlugs: product.complementarySlugs,
     customersAlsoBoughtSlugs: product.customersAlsoBoughtSlugs,
     decorationType: "graphic",
+    careInstructions: DEFAULT_HORO_CARE_INSTRUCTIONS,
     fitLabel: product.fitLabel,
     frequentlyBoughtWithSlugs: product.frequentlyBoughtWithSlugs,
     garmentColors: product.garmentColors,

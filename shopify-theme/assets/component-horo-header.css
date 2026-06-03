@@ -243,10 +243,152 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
+.horo-nav__item {
+  position: relative;
+}
+
+.horo-nav-preview {
+  position: absolute;
+  inset-block-start: calc(100% + 0.65rem);
+  inset-inline-start: 0;
+  z-index: 120;
+  width: min(34rem, calc(100vw - 2rem));
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+}
+
+.horo-nav__item--shop-preview:hover .horo-nav-preview,
+.horo-nav__item--shop-preview:focus-within .horo-nav-preview {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.horo-nav-preview__inner {
+  padding: 1.2rem;
+  border: 1px solid rgba(196, 184, 171, 0.35);
+  border-radius: 0.5rem;
+  background: rgb(var(--color-background));
+  box-shadow: 0 22px 54px rgba(26, 26, 26, 0.16);
+}
+
+.horo-nav-preview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.horo-nav-preview__header p,
+.horo-drawer__shop-preview-header p {
+  margin: 0;
+  font-family: var(--font-body-family);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 0.68);
+}
+
+.horo-nav-preview__header a,
+.horo-drawer__shop-preview-header a {
+  font-family: var(--font-body-family);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 1);
+  text-underline-offset: 0.25rem;
+}
+
+.horo-nav-preview__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.horo-nav-preview__card {
+  min-width: 0;
+  color: rgba(var(--color-foreground), 1);
+  text-decoration: none;
+  outline-offset: 3px;
+}
+
+.horo-nav-preview__image {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid rgba(196, 184, 171, 0.35);
+  border-radius: 0.25rem;
+  background: rgba(196, 184, 171, 0.25);
+}
+
+.horo-nav-preview__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 220ms ease;
+}
+
+.horo-nav-preview__card:hover .horo-nav-preview__image img,
+.horo-nav-preview__card:focus-visible .horo-nav-preview__image img {
+  transform: scale(1.03);
+}
+
+.horo-nav-preview__placeholder,
+.horo-drawer__shop-preview-image > span {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+  font-family: var(--font-body-family);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  color: rgba(var(--color-foreground), 0.55);
+}
+
+.horo-nav-preview__title,
+.horo-drawer__shop-preview-title {
+  display: block;
+  min-width: 0;
+  margin-top: 0.65rem;
+  overflow: hidden;
+  color: rgba(var(--color-foreground), 0.9);
+  font-family: var(--font-body-family);
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.horo-nav-preview__card:hover .horo-nav-preview__title,
+.horo-nav-preview__card:focus-visible .horo-nav-preview__title,
+.horo-drawer__shop-preview-card:hover .horo-drawer__shop-preview-title,
+.horo-drawer__shop-preview-card:focus-visible .horo-drawer__shop-preview-title {
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
 @media screen and (min-width: 990px) {
   .horo-nav__link {
     font-size: 15px;
     padding: 8px 12px;
+  }
+}
+
+@media screen and (max-width: 989px) {
+  .horo-nav-preview {
+    display: none;
   }
 }
 
@@ -615,6 +757,47 @@
   padding: 1.5rem 1rem;
 }
 
+.horo-drawer__shop-preview {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(196, 184, 171, 0.25);
+}
+
+.horo-drawer__shop-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.horo-drawer__shop-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.horo-drawer__shop-preview-card {
+  min-width: 0;
+  color: rgba(var(--color-foreground), 1);
+  text-decoration: none;
+}
+
+.horo-drawer__shop-preview-image {
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid rgba(196, 184, 171, 0.35);
+  border-radius: 0.25rem;
+  background: rgba(196, 184, 171, 0.25);
+}
+
+.horo-drawer__shop-preview-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .horo-drawer__open {
   display: block;
 }
@@ -760,6 +943,7 @@
   .horo-header,
   .horo-drawer__overlay,
   .horo-drawer__panel,
+  .horo-nav-preview,
   .horo-search__form,
   .horo-search__input,
   .horo-nav__link::after {

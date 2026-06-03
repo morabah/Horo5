@@ -12,6 +12,7 @@ import { pickGiftBlockImageSrc } from '../data/images';
 import { getOccasions, getProducts, productHasRealImage } from '../data/site';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { isImageOverlayPresentation, parseHomepagePresentation } from '../lib/parseHomepagePresentation';
+import { normalizeLegacyStorefrontLabel } from '../utils/legacyStorefrontCopy';
 import { HomeImageCampaign } from './home/HomeImageCampaign';
 
 const HOME_GIFT_IMAGE_SRC = '/images/homepage-reference/gift-box.png';
@@ -25,7 +26,10 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
   const sectionEyebrow = pickLocalizedStorefrontText(section?.eyebrow, locale as 'en' | 'ar');
   const sectionTitle = pickLocalizedStorefrontText(section?.title, locale as 'en' | 'ar');
   const sectionBody = pickLocalizedStorefrontText(section?.body, locale as 'en' | 'ar');
-  const sectionCta = pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar');
+  const sectionCta = normalizeLegacyStorefrontLabel(
+    pickLocalizedStorefrontText(section?.primaryCta?.label, locale as 'en' | 'ar'),
+    locale as 'en' | 'ar',
+  );
   const sectionImageAlt = pickLocalizedStorefrontText(section?.image?.alt, locale as 'en' | 'ar');
   const giftOccasion = getOccasions()
     .filter((occasion) => occasion.active !== false && occasion.isGiftOccasion)

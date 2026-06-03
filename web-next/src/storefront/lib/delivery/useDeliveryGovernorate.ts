@@ -13,6 +13,9 @@ import {
   type GovernorateRate,
 } from './governorates';
 
+/** Cairo estimate for first cart visit before the shopper picks a governorate. */
+export const DEFAULT_SHIPPING_ESTIMATE_GOVERNORATE: GovernorateCode = 'cairo';
+
 function readStoredGovernorate(): GovernorateCode | null {
   if (typeof window === 'undefined') return null;
   try {
@@ -53,10 +56,18 @@ async function syncGovernorateToMedusaCart(
 export function useDeliveryGovernorate() {
   const { medusaCartId } = useCart();
   const [selectedCode, setSelectedCode] = useState<GovernorateCode | null>(null);
+  const [hasStoredGovernorate, setHasStoredGovernorate] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setSelectedCode(readStoredGovernorate());
+    const stored = readStoredGovernorate();
+    if (stored) {
+      setSelectedCode(stored);
+      setHasStoredGovernorate(true);
+    } else {
+      setSelectedCode(DEFAULT_SHIPPING_ESTIMATE_GOVERNORATE);
+      setHasStoredGovernorate(false);
+    }
     setHydrated(true);
   }, []);
 
@@ -65,6 +76,8 @@ export function useDeliveryGovernorate() {
     [selectedCode],
   );
 
+  const isDefaultEstimate = hydrated && !hasStoredGovernorate;
+
   const setGovernorate = useCallback(
     (code: GovernorateCode, options: { remember?: boolean; surface?: string } = {}) => {
       const rate = getGovernorateRate(code);
@@ -72,6 +85,7 @@ export function useDeliveryGovernorate() {
       const remember = options.remember !== false;
       if (remember) {
         writeStoredGovernorate(code);
+        setHasStoredGovernorate(true);
       }
       setSelectedCode(code);
       trackShippingGovernorateSelected(code, options.surface ?? 'cart');
@@ -86,7 +100,8 @@ export function useDeliveryGovernorate() {
 
   const clearGovernorate = useCallback(() => {
     writeStoredGovernorate(null);
-    setSelectedCode(null);
+    setHasStoredGovernorate(false);
+    setSelectedCode(DEFAULT_SHIPPING_ESTIMATE_GOVERNORATE);
     if (medusaCartId) {
       void updateCart(medusaCartId, {
         metadata: {
@@ -103,6 +118,8 @@ export function useDeliveryGovernorate() {
     hydrated,
     selectedCode,
     selectedRate,
+    hasStoredGovernorate,
+    isDefaultEstimate,
     setGovernorate,
     clearGovernorate,
   };

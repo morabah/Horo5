@@ -16,11 +16,6 @@ const DESKTOP_DISMISS_MS = 10_000;
 const MOBILE_DISMISS_MS = 5_500;
 const MOBILE_MAX_WIDTH_PX = 640;
 
-function readCompactViewport(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH_PX}px)`).matches;
-}
-
 export function AddToCartToast() {
   const { addToCartToastOpen, dismissAddToCartToast, lastAddedItem } = useCart();
   const copy = useDictionary();

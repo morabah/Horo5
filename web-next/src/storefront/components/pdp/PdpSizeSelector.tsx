@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { ProductSizeKey } from '../../data/catalog-types';
-import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
+import type { PdpSizeTableConfig } from '../../data/domain-config';
 import {  useUiLocale, useDictionary  } from '../../i18n/ui-locale';
 import { PdpSizeFlatDiagram } from '../PdpSizeFlatDiagram';
 

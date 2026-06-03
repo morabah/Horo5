@@ -7,6 +7,8 @@
   endif
   assign instagram_url = settings.social_instagram_link
   assign whatsapp_url = settings.horo_whatsapp_support_url
+  assign founding_drop_url = routes.collections_url | append: '/founding-drop'
+  assign zodiac_url = routes.collections_url | append: '/zodiac'
   assign year = 'now' | date: '%Y'
 -%}
 
@@ -53,28 +55,28 @@
         </div>
       </div>
 
-      <div>
-        <h4 class="horo-site-footer__col-title">{{ 'horo.footer.shop_heading' | t }}</h4>
+      <details class="horo-footer-accordion">
+        <summary class="horo-site-footer__col-title">{{ 'horo.footer.shop_heading' | t }}</summary>
         <ul class="horo-site-footer__links">
-          <li><a href="/collections/founding-drop">{{ 'horo.nav.founding_drop' | t }}</a></li>
-          <li><a href="/#shop-by-meaning">{{ 'horo.footer.shop_by_mood' | t | default: 'Shop by Mood' }}</a></li>
-          <li><a href="/collections/zodiac">{{ 'horo.footer.shop_by_zodiac' | t | default: 'Shop by Zodiac' }}</a></li>
-          <li><a href="/pages/gifts-hub">{{ 'horo.footer.gift_ready' | t | default: 'Gift Ready' }}</a></li>
+          <li><a href="{{ founding_drop_url }}">{{ 'horo.nav.founding_drop' | t }}</a></li>
+          <li><a href="/#shop-by-meaning">{{ 'horo.footer.shop_by_mood' | t | default: 'Shop by Feeling' }}</a></li>
+          <li><a href="/pages/gifts-hub">{{ 'horo.footer.gift_ready' | t | default: 'Gifts' }}</a></li>
+          <li><a href="{{ zodiac_url }}">{{ 'horo.footer.shop_by_zodiac' | t | default: 'Zodiac' }}</a></li>
         </ul>
-      </div>
+      </details>
 
-      <div>
-        <h4 class="horo-site-footer__col-title">{{ 'horo.footer.help_heading' | t }}</h4>
+      <details class="horo-footer-accordion">
+        <summary class="horo-site-footer__col-title">{{ 'horo.footer.help_heading' | t }}</summary>
         <ul class="horo-site-footer__links">
           <li><a href="/pages/size-guide">{{ 'horo.nav.size_guide' | t }}</a></li>
           <li><a href="/pages/faq-horo">{{ 'horo.footer.shipping_delivery' | t }}</a></li>
           <li><a href="/pages/exchange-policy-horo">{{ 'horo.nav.exchange' | t }}</a></li>
           <li><a href="/pages/faq-horo">{{ 'horo.nav.faq' | t }}</a></li>
         </ul>
-      </div>
+      </details>
 
-      <div>
-        <h4 class="horo-site-footer__col-title">{{ 'horo.footer.about_heading' | t }}</h4>
+      <details class="horo-footer-accordion">
+        <summary class="horo-site-footer__col-title">{{ 'horo.footer.about_heading' | t }}</summary>
         <ul class="horo-site-footer__links">
           <li><a href="/pages/about-horo">{{ 'horo.nav.about' | t }}</a></li>
           <li><a href="/pages/comparison-faq">{{ 'horo.footer.journal' | t }}</a></li>
@@ -84,38 +86,40 @@
             </li>
           {%- endif -%}
         </ul>
-      </div>
+      </details>
 
-      <div class="horo-site-footer__newsletter">
-        <h4 class="horo-site-footer__col-title">{{ 'horo.footer.newsletter_title' | t }}</h4>
-        <p class="horo-site-footer__newsletter-body">{{ 'horo.footer.newsletter_body' | t }}</p>
-        {%- form 'customer', id: 'HoroFooterNewsletter', class: 'footer-newsletter__form' -%}
-          <input type="hidden" name="contact[tags]" value="newsletter">
-          <label class="visually-hidden" for="HoroFooterNewsletter-email">
-            {%- if is_ar -%}البريد الإلكتروني{%- else -%}Email{%- endif -%}
-          </label>
-          <input
-            id="HoroFooterNewsletter-email"
-            type="email"
-            name="contact[email]"
-            value="{{ form.email }}"
-            autocomplete="email"
-            placeholder="{% if is_ar %}بريدك الإلكتروني{% else %}Enter your email{% endif %}"
-            required
-            {% if form.posted_successfully? %}disabled{% endif %}
-          >
-          <button type="submit" aria-label="{% if is_ar %}اشترك{% else %}Subscribe{% endif %}">→</button>
-        {%- endform -%}
-        {%- if form.posted_successfully? -%}
-          <p class="horo-site-footer__newsletter-status" role="status">
-            {%- if is_ar -%}تم — شكراً.{%- else -%}You're in — thank you.{%- endif -%}
-          </p>
-        {%- elsif form.errors -%}
-          <p class="horo-site-footer__newsletter-status" role="alert">
-            {%- if is_ar -%}حاول مرة أخرى.{%- else -%}Please try again.{%- endif -%}
-          </p>
-        {%- endif -%}
-      </div>
+      <details class="horo-footer-accordion horo-footer-accordion--newsletter">
+        <summary class="horo-site-footer__col-title">{{ 'horo.footer.newsletter_title' | t }}</summary>
+        <div class="horo-site-footer__newsletter">
+          <p class="horo-site-footer__newsletter-body">{{ 'horo.footer.newsletter_body' | t }}</p>
+          {%- form 'customer', id: 'HoroFooterNewsletter', class: 'footer-newsletter__form' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+            <label class="visually-hidden" for="HoroFooterNewsletter-email">
+              {%- if is_ar -%}البريد الإلكتروني{%- else -%}Email{%- endif -%}
+            </label>
+            <input
+              id="HoroFooterNewsletter-email"
+              type="email"
+              name="contact[email]"
+              value="{{ form.email }}"
+              autocomplete="email"
+              placeholder="{% if is_ar %}بريدك الإلكتروني{% else %}Enter your email{% endif %}"
+              required
+              {% if form.posted_successfully? %}disabled{% endif %}
+            >
+            <button type="submit" aria-label="{% if is_ar %}اشترك{% else %}Subscribe{% endif %}">→</button>
+            {%- if form.posted_successfully? -%}
+              <p class="horo-site-footer__newsletter-status" role="status">
+                {%- if is_ar -%}تم — شكراً.{%- else -%}You're in — thank you.{%- endif -%}
+              </p>
+            {%- elsif form.errors -%}
+              <p class="horo-site-footer__newsletter-status" role="alert">
+                {%- if is_ar -%}حاول مرة أخرى.{%- else -%}Please try again.{%- endif -%}
+              </p>
+            {%- endif -%}
+          {%- endform -%}
+        </div>
+      </details>
     </div>
 
     <div class="horo-site-footer__bar">

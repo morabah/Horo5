@@ -2,8 +2,8 @@
 export const HOME_TRUST_BADGES = [
   { key: 'artistMade' },
   { key: 'printedEgypt' },
-  { key: 'clearFitDetails' },
   { key: 'paymentAtCheckout' },
+  { key: 'exchange14d' },
   { key: 'whatsappSupport' },
 ] as const;
 

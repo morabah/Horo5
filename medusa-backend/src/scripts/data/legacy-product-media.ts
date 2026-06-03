@@ -180,13 +180,15 @@ const LEGACY_MEDIA_BY_PRODUCT: Record<string, LegacyProductMedia> = {
     flatLay: proofCards.macroDetail,
     lifestyle: proofCards.washTest,
   }),
-  "zodiac-lunar-pull": legacyGallery(BRAND_PLACEHOLDER, {
+  "zodiac-lunar-pull": legacyGallery("/images/product-photos/cancer-woman.jpg", {
+    backOnBody: proofCards.backFit,
     flatLay: proofCards.macroDetail,
-    lifestyle: proofCards.backFit,
+    lifestyle: "/images/product-photos/cancer-man.jpg",
   }),
-  "zodiac-solar-flare": legacyGallery(BRAND_PLACEHOLDER, {
+  "zodiac-solar-flare": legacyGallery("/images/product-photos/cancer-man.jpg", {
+    backOnBody: proofCards.backFit,
     flatLay: proofCards.macroDetail,
-    lifestyle: proofCards.weightScale,
+    lifestyle: "/images/product-photos/cancer-woman.jpg",
   }),
   "zodiac-star-alignment": legacyGallery(BRAND_PLACEHOLDER, {
     flatLay: proofCards.macroDetail,

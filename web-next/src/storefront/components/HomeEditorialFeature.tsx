@@ -1,17 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 
 import { trackCloserLookClick, trackEditorialFeatureCtaClick } from '../analytics/events';
 import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
-import { isBackLikeProductImageSrc, pickHomeCardImageSrc } from '../data/images';
+import {
+  HOME_EDITORIAL_REFERENCE_IMAGES,
+  isBackLikeProductImageSrc,
+  isGenericBrandPlaceholderSrc,
+  isUnavailableHomepageReferenceImageSrc,
+  pickHomeCardImageSrc,
+  shouldUseConversionReferenceImage,
+} from '../data/images';
 import { getProduct } from '../data/site';
 import { useDictionary, useUiLocale } from '../i18n/ui-locale';
 import { isImageOverlayPresentation, parseHomepagePresentation } from '../lib/parseHomepagePresentation';
+import { normalizeLegacyStorefrontLabel } from '../utils/legacyStorefrontCopy';
 import { HomeImageCampaign } from './home/HomeImageCampaign';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -35,14 +42,33 @@ function payloadFallbackHandle(section: StorefrontHomepageSection | undefined): 
 
 function resolveEditorialImageSrc(section: StorefrontHomepageSection | undefined): string | undefined {
   const cmsImageSrc = section?.image?.src?.trim();
-  if (cmsImageSrc && !isBackLikeProductImageSrc(cmsImageSrc)) {
+  if (
+    cmsImageSrc &&
+    !isBackLikeProductImageSrc(cmsImageSrc) &&
+    !isUnavailableHomepageReferenceImageSrc(cmsImageSrc)
+  ) {
     return cmsImageSrc;
   }
+
+  for (const referenceSrc of HOME_EDITORIAL_REFERENCE_IMAGES) {
+    if (!isUnavailableHomepageReferenceImageSrc(referenceSrc)) {
+      return referenceSrc;
+    }
+  }
+
   const fallbackHandle = payloadFallbackHandle(section);
   const fallbackProduct = fallbackHandle ? getProduct(fallbackHandle) : undefined;
   if (!fallbackProduct) return undefined;
   const fromProduct = pickHomeCardImageSrc(fallbackProduct);
-  return fromProduct && !isBackLikeProductImageSrc(fromProduct) ? fromProduct : undefined;
+  if (
+    fromProduct &&
+    !isBackLikeProductImageSrc(fromProduct) &&
+    !isGenericBrandPlaceholderSrc(fromProduct) &&
+    !shouldUseConversionReferenceImage(fromProduct)
+  ) {
+    return fromProduct;
+  }
+  return undefined;
 }
 
 function EditorialCopyFallback({
@@ -53,6 +79,7 @@ function EditorialCopyFallback({
   ctaLabel,
   ctaHref,
   variant,
+  productRefLabel,
 }: {
   sectionId: string;
   eyebrow: string;
@@ -61,9 +88,13 @@ function EditorialCopyFallback({
   ctaLabel: string;
   ctaHref: string;
   variant: string;
+  productRefLabel?: string;
 }) {
   return (
     <div className="home-editorial-feature__copy-only mx-auto max-w-2xl text-center">
+      {productRefLabel ? (
+        <p className="home-editorial-feature__product-ref">{productRefLabel}</p>
+      ) : null}
       <p className="home-section-eyebrow">{eyebrow}</p>
       {title ? (
         <h2 id={`${sectionId}-title`} className="home-section-title mt-2">
@@ -109,12 +140,20 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
     (title ? `HORO — ${title}` : 'HORO editorial feature');
   const ctaLabel =
-    pickLocalizedStorefrontText(section?.primaryCta?.label, resolvedLocale) ?? 'Shop the Piece';
+    normalizeLegacyStorefrontLabel(
+      pickLocalizedStorefrontText(section?.primaryCta?.label, resolvedLocale),
+      resolvedLocale,
+    ) ?? (resolvedLocale === 'ar' ? 'شاهد التصميم' : 'View Design');
   const ctaHref = section?.primaryCta?.href?.trim() ?? '/products';
-  const [imageFailed, setImageFailed] = useState(false);
+  const fallbackHandle = payloadFallbackHandle(section) ?? 'calm-inside';
+  const featuredProduct = getProduct(fallbackHandle);
+  const bridgeLine = copy.home.editorialBridge;
   const sectionId = payloadAnchor(section);
-  const wantsOverlay = Boolean(imageSrc) && isImageOverlayPresentation(payload);
-  const showOverlay = wantsOverlay && !imageFailed && Boolean(title);
+  const wantsOverlay = isImageOverlayPresentation(payload);
+  const canShowImageCampaign = wantsOverlay && Boolean(title);
+  const productRefLabel = featuredProduct?.name
+    ? `${copy.home.editorialFeaturing} ${featuredProduct.name}`
+    : undefined;
 
   if (!title && !body && !imageSrc) {
     return null;
@@ -127,14 +166,22 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
       className="home-section home-editorial-feature bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
     >
       <div className="mx-auto max-w-6xl" data-reveal>
-        {showOverlay && imageSrc && title ? (
+        {bridgeLine ? (
+          <p className="home-editorial-bridge" data-reveal>
+            {bridgeLine}
+          </p>
+        ) : null}
+        {productRefLabel && canShowImageCampaign ? (
+          <p className="home-editorial-feature__product-ref mb-3 text-center">{productRefLabel}</p>
+        ) : null}
+        {canShowImageCampaign ? (
           <HomeImageCampaign
             id={`${sectionId}-campaign`}
             titleId={`${sectionId}-title`}
             eyebrow={eyebrow}
-            title={title}
+            title={title ?? ''}
             body={body ?? undefined}
-            imageSrc={imageSrc}
+            imageSrc={imageSrc ?? ''}
             imageAlt={imageAlt}
             primaryCta={{ label: ctaLabel, href: ctaHref }}
             presentation={{
@@ -144,7 +191,6 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
               showBody: presentation.showBody !== false,
             }}
             minHeight="min-h-[min(48vh,28rem)]"
-            onImageError={() => setImageFailed(true)}
             onPrimaryClick={() => {
               if (variant === 'closer_look') {
                 trackCloserLookClick('editorial_feature', ctaHref);
@@ -161,6 +207,7 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
             ctaLabel={ctaLabel}
             ctaHref={ctaHref}
             variant={variant}
+            productRefLabel={productRefLabel}
           />
         )}
       </div>

@@ -1,4 +1,4 @@
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { getGaMeasurementId, getMetaPixelId, hasAnySemIds } from './config';
@@ -62,6 +62,7 @@ fbq('init', ${JSON.stringify(pixelId)});
 
 export function AnalyticsRoot() {
   const pathname = usePathname() ?? '/';
+  const search = useSearchParams().toString();
   const gaId = getGaMeasurementId();
   const pixelId = getMetaPixelId();
   const [ready, setReady] = useState(false);
@@ -111,14 +112,14 @@ export function AnalyticsRoot() {
 
   useEffect(() => {
     if (!ready) return;
-    const path = pathname + (typeof window !== "undefined" ? window.location.search : "");
+    const path = search ? `${pathname}?${search}` : pathname;
     if (window.gtag && gaId) {
       window.gtag('config', gaId, { page_path: path });
     }
     if (window.fbq && pixelId) {
       window.fbq('track', 'PageView');
     }
-  }, [pathname, (typeof window !== "undefined" ? window.location.search : ""), ready, gaId, pixelId]);
+  }, [pathname, search, ready, gaId, pixelId]);
 
   return null;
 }

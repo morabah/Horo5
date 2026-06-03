@@ -11,6 +11,9 @@ export type HomepageSectionRowLike = {
   title_ar?: string | null
   body_en?: string | null
   body_ar?: string | null
+  secondary_cta_label_en?: string | null
+  secondary_cta_label_ar?: string | null
+  secondary_cta_href?: string | null
   image_src?: string | null
   image_alt_en?: string | null
   image_alt_ar?: string | null
@@ -23,11 +26,16 @@ export type HomepageSectionPatch = {
   title_ar?: string | null
   body_en?: string | null
   body_ar?: string | null
+  secondary_cta_label_en?: string | null
+  secondary_cta_label_ar?: string | null
+  secondary_cta_href?: string | null
   image_src?: string | null
   image_alt_en?: string | null
   image_alt_ar?: string | null
   payload?: Record<string, unknown> | null
 }
+
+export type HomepageSectionPatchBody = Omit<HomepageSectionPatch, "id">
 
 export function textStillLegacy(
   current: string | null | undefined,
@@ -67,8 +75,8 @@ export function buildImageLedSectionPatch(
     legacyHeroPath?: string
     currentHeroPath?: string
   },
-): HomepageSectionPatch | null {
-  const patch: Omit<HomepageSectionPatch, "id"> = {}
+): HomepageSectionPatchBody | null {
+  const patch: HomepageSectionPatchBody = {}
   let changed = false
 
   if (legacy) {
@@ -109,6 +117,21 @@ export function buildImageLedSectionPatch(
     if (seed.image_alt_en) patch.image_alt_en = seed.image_alt_en
     if (seed.image_alt_ar) patch.image_alt_ar = seed.image_alt_ar
     changed = true
+  }
+
+  if (row.key === "founding_drop" || row.key === "hero") {
+    if (!row.secondary_cta_label_en?.trim() && seed.secondary_cta_label_en) {
+      patch.secondary_cta_label_en = seed.secondary_cta_label_en
+      changed = true
+    }
+    if (!row.secondary_cta_label_ar?.trim() && seed.secondary_cta_label_ar) {
+      patch.secondary_cta_label_ar = seed.secondary_cta_label_ar
+      changed = true
+    }
+    if (!row.secondary_cta_href?.trim() && seed.secondary_cta_href) {
+      patch.secondary_cta_href = seed.secondary_cta_href
+      changed = true
+    }
   }
 
   return changed ? patch : null

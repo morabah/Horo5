@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { getOccasionCollectionVisual, heroVectorizedV2, imgUrl } from '../data/images';
 import { getOccasions } from '../data/site';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 
 export function HomeOccasionCards() {
   const copy = useDictionary();

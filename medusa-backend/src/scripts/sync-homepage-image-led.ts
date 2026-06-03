@@ -38,6 +38,7 @@ const LEGACY_COPY_BY_KEY: Record<
   },
   founding_drop: {
     title_en: "Wearable artwork for signs, moods, and personal stories.",
+    title_ar: "فن قابل للّبس للأبراج والمزاج والقصص الشخصية.",
     body_en:
       "Our first collection of artist-made T-shirts, printed in Egypt and made to be worn, gifted, and remembered.",
     body_ar:

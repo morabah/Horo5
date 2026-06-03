@@ -10,6 +10,7 @@ import {
   getProduct,
   getSubfeeling,
   productsByFeeling,
+  productsByOccasion,
   productsBySubfeeling,
   type Product,
 } from './site.ts';
@@ -83,6 +84,18 @@ export const homeHeroWearFeel = {
   alt: 'Model wearing HORO graphic tee — Wear What You Feel',
 } as const;
 
+export const homeFoundingCampaignReference = {
+  src: '/images/homepage-reference/founding-drop-campaign.png',
+  alt: 'Model wearing a HORO graphic tee in a warm Cairo editorial setting.',
+} as const;
+
+const UNAVAILABLE_HOMEPAGE_REFERENCE_IMAGES = new Set<string>();
+
+export function isUnavailableHomepageReferenceImageSrc(src: string | undefined): boolean {
+  const value = src?.trim();
+  return Boolean(value && UNAVAILABLE_HOMEPAGE_REFERENCE_IMAGES.has(value));
+}
+
 /**
  * Named slot paths for layouts — all point at the brand vector until real product/lifestyle photography exists.
  */
@@ -118,12 +131,20 @@ const CONVERSION_REFERENCE_IMAGES = [
   '/images/homepage-reference/product-rest-your-mind.png',
 ] as const;
 
+export const GIFT_PACKAGING_REFERENCE_IMAGE = '/images/homepage-reference/gift-box.png';
+
 const CONVERSION_REFERENCE_BY_DESIGN: Record<string, (typeof CONVERSION_REFERENCE_IMAGES)[number]> = {
   'i-care': '/images/homepage-reference/product-i-care.png',
   'i-dont-care': '/images/homepage-reference/product-i-dont-care.png',
   'walk-alone': '/images/homepage-reference/product-walk-alone.png',
   'find-your-rhythm': '/images/homepage-reference/product-find-your-rhythm.png',
   'rest-your-mind': '/images/homepage-reference/product-rest-your-mind.png',
+  gemini: '/images/homepage-reference/product-find-your-rhythm.png',
+  cancer: '/images/homepage-reference/product-i-care.png',
+  leo: '/images/homepage-reference/product-walk-alone.png',
+  virgo: '/images/homepage-reference/product-rest-your-mind.png',
+  aries: '/images/homepage-reference/product-i-dont-care.png',
+  calm: '/images/homepage-reference/product-rest-your-mind.png',
 };
 
 /** Five launch founding-drop handles — canonical for parity tests and baseline audits. */
@@ -155,9 +176,30 @@ const CONVERSION_REFERENCE_BY_SLUG: Record<string, (typeof CONVERSION_REFERENCE_
   'walk-alone': '/images/homepage-reference/product-walk-alone.png',
   'find-your-rhythm': '/images/homepage-reference/product-find-your-rhythm.png',
   'rest-your-mind': '/images/homepage-reference/product-rest-your-mind.png',
+  'zodiac-astral-body': '/images/homepage-reference/product-find-your-rhythm.png',
+  'zodiac-star-alignment': '/images/homepage-reference/product-find-your-rhythm.png',
+  'zodiac-lunar-pull': '/images/homepage-reference/product-i-care.png',
+  'zodiac-solar-flare': '/images/homepage-reference/product-i-care.png',
+  'zodiac-cosmic-dust': '/images/homepage-reference/product-walk-alone.png',
+  'fiction-neon-dreams': '/images/homepage-reference/product-walk-alone.png',
+  'fiction-dragon-scale': '/images/homepage-reference/product-rest-your-mind.png',
+  'fiction-distant-suns': '/images/homepage-reference/product-rest-your-mind.png',
+  'emotions-silent-scream': '/images/homepage-reference/product-i-care.png',
+  'emotions-raw-nerve': '/images/homepage-reference/product-i-dont-care.png',
+  'calm-inside': '/images/homepage-reference/product-rest-your-mind.png',
+  'calm-inside-graphic-tee': '/images/homepage-reference/product-rest-your-mind.png',
 };
 
-export function conversionReferenceImageForProduct(product: Product): (typeof CONVERSION_REFERENCE_IMAGES)[number] {
+/** Homepage editorial section fallbacks when CMS or product media is missing. */
+export const HOME_EDITORIAL_REFERENCE_IMAGES = [
+  '/images/homepage-reference/editorial-artwork-detail.png',
+  '/images/homepage-reference/editorial-calm-inside.png',
+] as const;
+
+type ConversionReferenceProduct = Pick<Product, 'slug' | 'name'> &
+  Partial<Pick<Product, 'launchDesign' | 'zodiacSign'>>;
+
+export function conversionReferenceImageForProduct(product: ConversionReferenceProduct): (typeof CONVERSION_REFERENCE_IMAGES)[number] {
   if (CONVERSION_REFERENCE_BY_SLUG[product.slug]) {
     return CONVERSION_REFERENCE_BY_SLUG[product.slug];
   }
@@ -165,6 +207,11 @@ export function conversionReferenceImageForProduct(product: Product): (typeof CO
   const designKey = product.launchDesign?.trim();
   if (designKey && CONVERSION_REFERENCE_BY_DESIGN[designKey]) {
     return CONVERSION_REFERENCE_BY_DESIGN[designKey];
+  }
+
+  const signKey = product.zodiacSign?.trim();
+  if (signKey && CONVERSION_REFERENCE_BY_DESIGN[signKey]) {
+    return CONVERSION_REFERENCE_BY_DESIGN[signKey];
   }
 
   const normalized = `${product.slug} ${product.name}`.toLowerCase();
@@ -209,7 +256,8 @@ export function preferHomeCardDisplaySrc(product: Product): string {
   if (
     taggedCard &&
     !isBackLikeProductImageSrc(taggedCard) &&
-    !isGenericBrandPlaceholderSrc(taggedCard)
+    !isGenericBrandPlaceholderSrc(taggedCard) &&
+    !shouldUseConversionReferenceImage(taggedCard)
   ) {
     return taggedCard;
   }
@@ -441,12 +489,12 @@ export const STOREFRONT_IMAGE_SLOTS: {
   },
   about: {
     hero: {
-      src: tee.friendsTees,
+      src: '/images/homepage-reference/our-story.png',
       alt: 'Group editorial image of young adults wearing HORO graphic tees, representing shared identity and belonging.',
       objectPosition: 'center 22%',
     },
     bridge: {
-      src: tee.walkingStreet,
+      src: '/images/homepage-reference/our-story-artist.png',
       alt: 'Editorial street image of a HORO graphic tee, bridging the brand story back into the collection.',
       objectPosition: 'center 24%',
     },
@@ -515,6 +563,20 @@ function firstRuntimeProductImage(productSlugs: string[]): string | undefined {
   return undefined;
 }
 
+function usableOccasionImageSrc(src: string | undefined): string | undefined {
+  const value = src?.trim();
+  if (!value) return undefined;
+  return shouldUseConversionReferenceImage(value) ? undefined : value;
+}
+
+function firstOccasionProductCardImage(occasionSlug: string): string | undefined {
+  for (const product of productsByOccasion(occasionSlug)) {
+    const src = getConversionProductCardImageSrc(product);
+    if (src && !isGenericBrandPlaceholderSrc(src)) return src;
+  }
+  return undefined;
+}
+
 export function getFeelingCollectionVisual(slug: string): FeelingStorefrontImages {
   const feeling = getFeeling(slug);
   const productFallback = firstRuntimeProductImage(productsByFeeling(slug).map((product) => product.slug));
@@ -578,21 +640,55 @@ export function getSubfeelingCollectionVisual(slug: string): StorefrontImageSlot
 
 export function getOccasionCollectionVisual(slug: string): OccasionStorefrontImages {
   const occasion = getOccasion(slug);
-  const runtimeVisuals =
-    occasion?.cardImageSrc || occasion?.heroImageSrc
-      ? {
-          hero: {
-            src: occasion.heroImageSrc ?? occasion.cardImageSrc,
-            alt: occasion.heroImageAlt,
-          },
-          proof: {
-            src: occasion.cardImageSrc ?? occasion.heroImageSrc,
-            alt: occasion.cardImageAlt,
-          },
-        }
-      : null;
+  const slotVisuals = STOREFRONT_IMAGE_SLOTS.occasions[slug];
+  const runtimeHeroSrc = usableOccasionImageSrc(occasion?.heroImageSrc);
+  const runtimeProofSrc = usableOccasionImageSrc(occasion?.cardImageSrc);
+  const productFallback = firstOccasionProductCardImage(slug);
+  const giftFallback = occasion?.isGiftOccasion ? GIFT_PACKAGING_REFERENCE_IMAGE : undefined;
+  const name = occasion?.name ?? slug.replace(/-/g, ' ');
+  const heroSrc =
+    firstNonEmptyString(
+      runtimeHeroSrc,
+      runtimeProofSrc,
+      productFallback,
+      giftFallback,
+      usableOccasionImageSrc(slotVisuals?.hero.src),
+      usableOccasionImageSrc(FALLBACK_OCCASION_VISUALS.hero.src),
+    ) ?? heroVectorizedV2;
+  const proofSrc =
+    firstNonEmptyString(
+      runtimeProofSrc,
+      runtimeHeroSrc,
+      productFallback,
+      giftFallback,
+      usableOccasionImageSrc(slotVisuals?.proof.src),
+      heroSrc,
+    ) ?? heroSrc;
 
-  return runtimeVisuals ?? STOREFRONT_IMAGE_SLOTS.occasions[slug] ?? FALLBACK_OCCASION_VISUALS;
+  return {
+    hero: {
+      src: heroSrc,
+      alt:
+        firstNonEmptyString(
+          occasion?.heroImageAlt,
+          occasion?.cardImageAlt,
+          slotVisuals?.hero.alt,
+          `${name} collection image`,
+        ) ?? `${name} collection image`,
+      objectPosition: slotVisuals?.hero.objectPosition,
+    },
+    proof: {
+      src: proofSrc,
+      alt:
+        firstNonEmptyString(
+          occasion?.cardImageAlt,
+          occasion?.heroImageAlt,
+          slotVisuals?.proof.alt,
+          `${name} occasion image`,
+        ) ?? `${name} occasion image`,
+      objectPosition: slotVisuals?.proof.objectPosition,
+    },
+  };
 }
 
 export function getFeelingsHubHeroTiles() {
@@ -671,6 +767,8 @@ const PDP_INFOGRAPHIC_IMAGE_PATTERN =
 /** Fallback when tags are missing — prefer explicit drop tags over URL guessing. */
 const BACK_LIKE_URL_PATTERN = /(?:^|[/_-])(back|rear|backview|back-view)(?:[/_\-.]|$)/i;
 const FLAT_LAY_URL_PATTERN = /(?:^|[/_-])flat[-_]?lay(?:[/_\-.]|$)/i;
+const PLAIN_GARMENT_URL_PATTERN =
+  /(?:^|[/_-])(?:plain|blank|white[-_]?tee|garment[-_]?only|undecorated|no[-_]?print|tee[-_]?only|mock[-_]?blank|studio[-_]?blank)(?:[/_\-.]|$)/i;
 
 function isUnsafeHomeCardUrl(src: string): boolean {
   return BACK_LIKE_URL_PATTERN.test(src) || FLAT_LAY_URL_PATTERN.test(src);
@@ -680,6 +778,29 @@ function isUnsafeHomeCardUrl(src: string): boolean {
 export function isBackLikeProductImageSrc(src: string | undefined): boolean {
   const value = src?.trim();
   return value ? isUnsafeHomeCardUrl(value) : false;
+}
+
+/** Plain garment / blank tee — must not lead PDP or conversion cards. */
+export function isPlainGarmentProductImageSrc(src: string | undefined): boolean {
+  const value = src?.trim();
+  if (!value) return false;
+  return PLAIN_GARMENT_URL_PATTERN.test(value);
+}
+
+/** Catalog URL suitable as a graphic-forward PDP/card lead (not back, plain, or brand placeholder). */
+export function isGraphicForwardCatalogImageSrc(src: string | undefined): boolean {
+  const value = src?.trim();
+  if (!value) return false;
+  if (
+    isBackLikeProductImageSrc(value) ||
+    isPlainGarmentProductImageSrc(value) ||
+    isGenericBrandPlaceholderSrc(value) ||
+    isHomepageReferenceImageSrc(value)
+  ) {
+    return false;
+  }
+  if (PDP_INFOGRAPHIC_IMAGE_PATTERN.test(value)) return false;
+  return true;
 }
 
 function isUnsafeHomeCardGalleryItem(item: ProductMediaGalleryItem | string): boolean {
@@ -913,6 +1034,32 @@ function isSafePdpGalleryUrl(src: string | undefined): boolean {
   return !isHomepageReferenceImageSrc(value) && !PDP_INFOGRAPHIC_IMAGE_PATTERN.test(value);
 }
 
+function sortPdpGallerySources(urls: string[]): string[] {
+  const graphicForward: string[] = [];
+  const neutral: string[] = [];
+  const plainGarment: string[] = [];
+  const backLike: string[] = [];
+
+  for (const url of urls) {
+    if (isBackLikeProductImageSrc(url)) {
+      backLike.push(url);
+    } else if (isPlainGarmentProductImageSrc(url)) {
+      plainGarment.push(url);
+    } else if (isGraphicForwardCatalogImageSrc(url)) {
+      graphicForward.push(url);
+    } else {
+      neutral.push(url);
+    }
+  }
+
+  return [...graphicForward, ...neutral, ...plainGarment, ...backLike];
+}
+
+/** PDP hero when catalog only has plain/placeholder URLs — curated reference art. */
+export function pdpConversionLeadImageForProduct(product: Product): string {
+  return conversionReferenceImageForProduct(product);
+}
+
 /** Collect PDP URLs in tag order; excludes homepage reference art. */
 export function collectPdpGallerySources(product: Product): string[] {
   const urls: string[] = [];
@@ -945,15 +1092,16 @@ export function collectPdpGallerySources(product: Product): string[] {
 
   push(product.thumbnail ?? undefined);
 
-  if (urls.length > 1 && isBackLikeProductImageSrc(urls[0])) {
-    const frontIndex = urls.findIndex((url) => !isBackLikeProductImageSrc(url));
-    if (frontIndex > 0) {
-      const [front] = urls.splice(frontIndex, 1);
-      urls.unshift(front);
+  const ordered = sortPdpGallerySources(urls);
+  const lead = ordered.find((url) => isGraphicForwardCatalogImageSrc(url));
+  if (!lead) {
+    const referenceLead = pdpConversionLeadImageForProduct(product);
+    if (referenceLead && !ordered.includes(referenceLead)) {
+      return [referenceLead, ...ordered];
     }
   }
 
-  return urls;
+  return ordered;
 }
 
 function buildProductPdpGalleryFromSources(

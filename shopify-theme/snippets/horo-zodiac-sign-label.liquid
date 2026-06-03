@@ -1,0 +1,53 @@
+{%- comment -%}
+  Zodiac sign display label + optional date range (web-next zodiacCardBadgeLabel parity).
+  Params: sign (required), show_dates (optional, default true)
+  Outputs badge text only.
+{%- endcomment -%}
+{%- liquid
+  assign sign_raw = sign | downcase | strip
+  assign sign_label = sign_raw
+  if sign_label == 'gemini'
+    assign sign_label = 'Gemini'
+  elsif sign_label == 'cancer'
+    assign sign_label = 'Cancer'
+  elsif sign_label == 'leo'
+    assign sign_label = 'Leo'
+  elsif sign_label == 'virgo'
+    assign sign_label = 'Virgo'
+  endif
+
+  assign show_dates = show_dates | default: true
+  assign date_range = ''
+  if show_dates
+    if request.locale.iso_code == 'ar'
+      case sign_raw
+        when 'gemini'
+          assign date_range = '21 مايو – 20 يونيو'
+        when 'cancer'
+          assign date_range = '21 يونيو – 22 يوليو'
+        when 'leo'
+          assign date_range = '23 يوليو – 22 أغسطس'
+        when 'virgo'
+          assign date_range = '23 أغسطس – 22 سبتمبر'
+      endcase
+    else
+      case sign_raw
+        when 'gemini'
+          assign date_range = 'May 21 – Jun 20'
+        when 'cancer'
+          assign date_range = 'Jun 21 – Jul 22'
+        when 'leo'
+          assign date_range = 'Jul 23 – Aug 22'
+        when 'virgo'
+          assign date_range = 'Aug 23 – Sep 22'
+      endcase
+    endif
+  endif
+-%}
+{%- if sign_label != blank -%}
+  {%- if date_range != blank -%}
+    {{- sign_label }} · {{ date_range -}}
+  {%- else -%}
+    {{- sign_label -}}
+  {%- endif -%}
+{%- endif -%}

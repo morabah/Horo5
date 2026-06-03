@@ -1,0 +1,13 @@
+{%- comment -%}
+  Founding drop grid tile — links to full collection (web-next HomeFoundingViewAllCard parity).
+  Accepts: href, label
+{%- endcomment -%}
+<a
+  href="{{ href }}"
+  class="home-founding-card home-founding-card--view-all"
+>
+  <div class="home-founding-card__view-all-inner">
+    <span class="home-founding-card__view-all-label">{{ label | escape }}</span>
+    <span class="home-founding-card__view-all-arrow" aria-hidden="true">→</span>
+  </div>
+</a>

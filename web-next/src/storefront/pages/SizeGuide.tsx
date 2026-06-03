@@ -2,7 +2,7 @@
 
 import { PolicyPageLayout } from '../components/PolicyPageLayout';
 import { mergePdpSizeTableConfig, type PdpSizeTableConfig } from '../data/domain-config';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 
 export function SizeGuide({ sizeTableConfig }: { sizeTableConfig?: PdpSizeTableConfig }) {
   const copy = useDictionary();

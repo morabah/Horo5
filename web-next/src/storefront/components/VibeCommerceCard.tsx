@@ -1,7 +1,6 @@
 import { DICTIONARY } from "@/storefront/i18n/dictionary";
 import Link from 'next/link';
 
-import { VIBES_SCHEMA } from '../data/domain-config';
 import type { Feeling } from '../data/site';
 import {
   getFeelingCollectionVisual,

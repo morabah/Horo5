@@ -60,7 +60,7 @@ import type {
   StorefrontVariantDTO,
 } from "./types"
 import { retrieveStorefrontSettingsPayload, type LocalizedText, type StorefrontSettingsDTO } from "./store-settings"
-import { isBackLikeMediaUrl, orderGalleryByTags } from "./media-picks"
+import { isBackLikeMediaUrl, isPlainGarmentMediaUrl, orderGalleryByTags } from "./media-picks"
 
 export function filterStorefrontProductsByQuery(
   products: StorefrontProductDTO[],
@@ -1085,10 +1085,19 @@ function buildProduct(
   const safeMain =
     legacyMedia?.main && !isBackLikeMediaUrl(legacyMedia.main) ? legacyMedia.main : undefined
   const gallery = orderGalleryByTags(rawGallery, { mainUrl: safeMain ?? legacyMedia?.main })
+  const graphicForwardFromGallery = (item: StorefrontMediaGalleryItemDTO) => {
+    const url = galleryItemUrl(item)
+    return url && !isBackLikeMediaUrl(url) && !isPlainGarmentMediaUrl(url)
+  }
   const mainImage =
-    safeMain ||
-    galleryItemUrl(gallery.find((item) => item.tag === "artwork_detail" || item.tag === "lifestyle")) ||
-    galleryItemUrl(gallery.find((item) => !isBackLikeMediaUrl(galleryItemUrl(item)))) ||
+    (safeMain && !isPlainGarmentMediaUrl(safeMain) ? safeMain : undefined) ||
+    galleryItemUrl(
+      gallery.find(
+        (item) =>
+          (item.tag === "artwork_detail" || item.tag === "lifestyle") && graphicForwardFromGallery(item),
+      ),
+    ) ||
+    galleryItemUrl(gallery.find((item) => graphicForwardFromGallery(item))) ||
     galleryItemUrl(gallery[0]) ||
     product.thumbnail ||
     legacyMedia?.main ||

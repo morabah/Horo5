@@ -31,7 +31,8 @@ export function GovernorateModal({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
-  const copy = useDictionary().cart;
+  const dict = useDictionary();
+  const copy = dict.cart;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -59,7 +60,7 @@ export function GovernorateModal({
       <div className="governorate-modal__panel" role="document">
         <header className="governorate-modal__header">
           <h2 className="governorate-modal__title">{copy.cartCheckoutNeedsGovernorate}</h2>
-          <button type="button" className="governorate-modal__close" aria-label={copy.cartChangeGovernorate} onClick={onClose}>
+          <button type="button" className="governorate-modal__close" aria-label={dict.shell.closeMenu} onClick={onClose}>
             <AppIcon name="close" className="h-5 w-5" />
           </button>
         </header>

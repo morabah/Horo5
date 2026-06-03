@@ -7,6 +7,9 @@ import { useCart } from '../cart/CartContext';
 import { useWishlist } from '../hooks/useWishlist';
 import { clearPlacedOrderMedusaIdHint, readPlacedOrderMedusaIdHint } from '../cart/placedOrderHint';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
+import { HORO_SUPPORT_CHANNELS } from '../data/support-channels';
+import { getProducts, productHasRealImage } from '../data/site';
+import { imgUrl, preferHomeCardDisplaySrc } from '../data/images';
 import { NAV_DRAWER_ROUTE_KEYS, NAV_PRIMARY_ROUTE_KEYS, NAV_ROUTE, type NavRouteKey } from '../lib/navLinks';
 import { resolveLaunchNav } from '../lib/sanitizeLaunchNav';
 import { getSearchSuggestions, type SearchSuggestion } from '../search/view';
@@ -35,6 +38,13 @@ type RenderedNavItem = {
   href: string;
   badge?: string;
   end?: boolean;
+};
+
+type ShopPreviewItem = {
+  href: string;
+  label: string;
+  imageAlt: string;
+  imageSrc: string | null;
 };
 
 function drawerNavLinkClass(isActive: boolean) {
@@ -80,6 +90,52 @@ function fallbackNavItem(routeKey: NavRouteKey, label: string): RenderedNavItem 
     href: NAV_ROUTE[routeKey].path,
     end: Boolean(NAV_ROUTE[routeKey].end),
   };
+}
+
+function ShopPreviewImage({ item, placeholderLabel }: { item: ShopPreviewItem; placeholderLabel: string }) {
+  if (item.imageSrc) {
+    return (
+      <img
+        src={item.imageSrc}
+        alt={item.imageAlt}
+        width={220}
+        height={275}
+        className="h-full w-full object-cover transition-transform duration-300 group-hover/shop-card:scale-[1.03]"
+        loading="lazy"
+      />
+    );
+  }
+
+  return (
+    <span className="flex h-full w-full items-center justify-center bg-stone/35 px-3 text-center font-label text-[9px] font-semibold uppercase tracking-[0.16em] text-clay">
+      {placeholderLabel}
+    </span>
+  );
+}
+
+function ShopPreviewTile({
+  item,
+  placeholderLabel,
+  onClick,
+}: {
+  item: ShopPreviewItem;
+  placeholderLabel: string;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={item.href}
+      className="group/shop-card min-w-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-obsidian/55 focus-visible:ring-offset-2 focus-visible:ring-offset-papyrus"
+      onClick={onClick}
+    >
+      <span className="block aspect-[4/5] overflow-hidden rounded-sm border border-stone/30 bg-stone/25">
+        <ShopPreviewImage item={item} placeholderLabel={placeholderLabel} />
+      </span>
+      <span className="mt-2 block truncate font-body text-[0.78rem] font-medium text-obsidian group-hover/shop-card:underline">
+        {item.label}
+      </span>
+    </Link>
+  );
 }
 
 function LocaleToggle({
@@ -192,25 +248,29 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   const activeSuggestionId = activeSuggestion ? `nav-search-suggestions-${activeSuggestionIndex}` : undefined;
   const routeLabelByKey = useMemo<Record<NavRouteKey, string>>(() => ({
     home: copy.shell.home,
-    products: locale === 'ar' ? copy.home.startHereViewAll : 'Founding Drop',
+    products: copy.shell.shopAll,
     shopByMeaning: copy.home.feelingsTitle,
-    gifts: locale === 'ar' ? 'جاهزة للهدايا' : 'Gift Ready',
-    zodiac: copy.shell.shopByFeeling,
+    gifts: locale === 'ar' ? 'الهدايا' : 'Gifts',
+    zodiac: locale === 'ar' ? 'كبسولة الأبراج' : 'Zodiac',
+    career: locale === 'ar' ? 'المهنة والشغل' : 'Career & Work',
     about: copy.shell.about,
-    sizeGuide: locale === 'ar' ? copy.shell.sizeGuide : 'Size & Help',
+    sizeGuide: copy.shell.sizeGuide,
+    faq: locale === 'ar' ? 'الأسئلة الشائعة' : 'FAQ',
+    exchange: copy.shell.exchangePolicy,
     search: copy.shell.search,
     cart: copy.shell.cart,
   }), [
     copy.home.feelingsTitle,
-    copy.home.startHereViewAll,
     copy.shell.about,
     copy.shell.cart,
+    copy.shell.exchangePolicy,
     copy.shell.home,
     copy.shell.search,
-    copy.shell.shopByFeeling,
+    copy.shell.shopAll,
     copy.shell.sizeGuide,
     locale,
   ]);
+  const drawerWhatsAppUrl = HORO_SUPPORT_CHANNELS.whatsappSupportUrl;
   const primaryNavItems = useMemo(() => {
     return resolveLaunchNav(
       navigation?.primary,
@@ -228,6 +288,44 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
       (key) => fallbackNavItem(key as NavRouteKey, routeLabelByKey[key as NavRouteKey]),
     );
   }, [locale, navigation?.drawer, routeLabelByKey]);
+
+  const shopPreviewItems = useMemo<ShopPreviewItem[]>(() => {
+    const launchProducts = getProducts().filter(productHasRealImage).slice(0, 3);
+    if (launchProducts.length > 0) {
+      return launchProducts.map((product) => ({
+        href: `/products/${product.slug}`,
+        label: product.name,
+        imageAlt: product.name,
+        imageSrc: imgUrl(preferHomeCardDisplaySrc(product), 360),
+      }));
+    }
+
+    return [
+      {
+        href: NAV_ROUTE.products.path,
+        label: routeLabelByKey.products,
+        imageAlt: copy.nav.shopPreviewPlaceholder,
+        imageSrc: null,
+      },
+      {
+        href: NAV_ROUTE.shopByMeaning.path,
+        label: routeLabelByKey.shopByMeaning,
+        imageAlt: copy.nav.shopPreviewPlaceholder,
+        imageSrc: null,
+      },
+      {
+        href: NAV_ROUTE.gifts.path,
+        label: routeLabelByKey.gifts,
+        imageAlt: copy.nav.shopPreviewPlaceholder,
+        imageSrc: null,
+      },
+    ];
+  }, [
+    copy.nav.shopPreviewPlaceholder,
+    routeLabelByKey.gifts,
+    routeLabelByKey.products,
+    routeLabelByKey.shopByMeaning,
+  ]);
 
   const closeMenu = useCallback(() => {
     setMenuPanelOpen(false);
@@ -569,24 +667,58 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
         </div>
 
         <nav className="hidden shrink-0 items-center gap-1 md:flex" aria-label="Primary shortcuts">
-          {primaryNavItems.map((item) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              className={`nav-link-underline font-body px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
-                  isPathActive(item.href, item.end)
-                    ? 'nav-link-underline--active rounded-full bg-obsidian text-white shadow-sm'
-                    : 'rounded-sm text-obsidian/90 hover:text-obsidian'
-                }`}
-            >
-              {item.label}
-              {item.badge ? (
-                <span className="ml-1 rounded-full bg-ember/10 px-1.5 py-0.5 text-[9px] text-ember">
-                  {item.badge}
-                </span>
-              ) : null}
-            </Link>
-          ))}
+          {primaryNavItems.map((item) => {
+            const navLink = (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={`nav-link-underline font-body px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
+                    isPathActive(item.href, item.end)
+                      ? 'nav-link-underline--active rounded-full bg-obsidian text-white shadow-sm'
+                      : 'rounded-sm text-obsidian/90 hover:text-obsidian'
+                  }`}
+              >
+                {item.label}
+                {item.badge ? (
+                  <span className="ml-1 rounded-full bg-ember/10 px-1.5 py-0.5 text-[9px] text-ember">
+                    {item.badge}
+                  </span>
+                ) : null}
+              </Link>
+            );
+
+            if (item.key !== 'products') return navLink;
+
+            return (
+              <div key={item.key} className="group/shop-nav relative">
+                {navLink}
+                <div className="invisible absolute left-0 top-[calc(100%+0.65rem)] z-120 w-[min(34rem,calc(100vw-2rem))] opacity-0 transition duration-200 group-hover/shop-nav:visible group-hover/shop-nav:opacity-100 group-focus-within/shop-nav:visible group-focus-within/shop-nav:opacity-100">
+                  <div className="rounded-md border border-stone/35 bg-papyrus p-3 shadow-[0_22px_54px_rgba(26,26,26,0.16)]">
+                    <div className="mb-3 flex items-center justify-between gap-4">
+                      <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-label">
+                        {copy.nav.shopPreviewTitle}
+                      </p>
+                      <Link
+                        href={NAV_ROUTE.products.path}
+                        className="font-label text-[10px] font-semibold uppercase tracking-[0.14em] text-obsidian underline-offset-4 hover:underline"
+                      >
+                        {copy.nav.shopPreviewBrowseAll}
+                      </Link>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {shopPreviewItems.map((previewItem) => (
+                        <ShopPreviewTile
+                          key={`${previewItem.href}-${previewItem.label}`}
+                          item={previewItem}
+                          placeholderLabel={copy.nav.shopPreviewPlaceholder}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </nav>
 
         <div className="relative flex min-w-0 flex-1 justify-end px-2 md:px-4">
@@ -663,10 +795,18 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
           <button
             type="button"
             className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
-            aria-label="Wishlist"
+            aria-label={
+              mounted && wishlistCount > 0
+                ? locale === 'ar'
+                  ? `المفضلة (${wishlistCount})`
+                  : `Wishlist (${wishlistCount})`
+                : locale === 'ar'
+                  ? 'المفضلة'
+                  : 'Wishlist'
+            }
             onClick={() => router.push('/wishlist')}
           >
-            <AppIcon name="person" className="h-6 w-6" />
+            <AppIcon name="favorite" className="h-6 w-6" />
           </button>
           <button
             type="button"
@@ -730,6 +870,30 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                   <p className="mb-3 font-body text-sm font-medium text-warm-charcoal">{copy.shell.language}</p>
                   <LocaleToggle locale={locale} setLocale={setLocale} tone="dark" label={copy.shell.language} />
                 </div>
+                <div className="mb-5 border-b border-stone/20 pb-5">
+                  <div className="mb-3 flex items-center justify-between gap-4">
+                    <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-label">
+                      {copy.nav.shopPreviewTitle}
+                    </p>
+                    <Link
+                      href={NAV_ROUTE.products.path}
+                      className="font-label text-[10px] font-semibold uppercase tracking-[0.14em] text-obsidian underline-offset-4"
+                      onClick={closeMenu}
+                    >
+                      {copy.nav.shopPreviewBrowseAll}
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {shopPreviewItems.map((previewItem) => (
+                      <ShopPreviewTile
+                        key={`${previewItem.href}-${previewItem.label}`}
+                        item={previewItem}
+                        placeholderLabel={copy.nav.shopPreviewPlaceholder}
+                        onClick={closeMenu}
+                      />
+                    ))}
+                  </div>
+                </div>
                 {drawerNavItems.map((item) => (
                   <Link
                     key={item.key}
@@ -757,6 +921,17 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                   {copy.shell.cart}
                   {mounted && totalQty > 0 ? ` (${totalQty})` : ''}
                 </Link>
+                {drawerWhatsAppUrl ? (
+                  <a
+                    href={drawerWhatsAppUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={drawerNavLinkClass(false)}
+                    onClick={closeMenu}
+                  >
+                    {locale === 'ar' ? 'واتساب — مساعدة المقاس' : 'WhatsApp size help'}
+                  </a>
+                ) : null}
               </nav>
             </div>
           </div>,

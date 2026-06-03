@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { HoroImagePlaceholder } from "@/components/horo-image-placeholder";
 import { formatMoney } from "@/lib/format";
+import { pickShopifyCardImage } from "@/lib/product-images";
 import type { ShopifyProduct } from "@/lib/shopify/types";
 
 type ProductCardProps = {
@@ -9,14 +11,14 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product }: ProductCardProps) {
-  const image = product.featuredImage ?? product.images[0];
+  const image = pickShopifyCardImage(product);
   const price = formatMoney(
     product.priceRange.minVariantPrice.amount,
     product.priceRange.minVariantPrice.currencyCode
   );
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-black/10 bg-white">
+    <article className="group overflow-hidden rounded-lg border border-black/10 bg-white">
       <Link href={`/products/${product.handle}`} className="block">
         <div className="relative aspect-[4/5] bg-black/5">
           {image ? (
@@ -27,7 +29,9 @@ export function ProductCard({ product }: ProductCardProps) {
               sizes="(max-width: 768px) 50vw, 25vw"
               className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
-          ) : null}
+          ) : (
+            <HoroImagePlaceholder label={`${product.title} artwork preview`} />
+          )}
         </div>
         <div className="space-y-1 p-4">
           <h3 className="line-clamp-1 font-semibold">{product.title}</h3>

@@ -1,7 +1,11 @@
 'use client';
 
+import Link from 'next/link';
+
 import type { Product } from '../../data/catalog-types';
-import { useUiLocale } from '../../i18n/ui-locale';
+import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl, withSupportMessage } from '../../data/support-channels';
+import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
+import { buildPdpWhatsAppSupportMessage } from '../../utils/pdpWhatsApp';
 
 type ProductWithReviewsSummary = Product & {
   reviewsSummary?: {
@@ -52,6 +56,57 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
+function PdpEarlyReviewsPlaceholder({ product }: { product: Product }) {
+  const { locale } = useUiLocale();
+  const { pdp: copy } = useDictionary();
+  const isArabic = locale === 'ar';
+  const lang = isArabic ? 'ar' : 'en';
+  const whatsappBase = HORO_SUPPORT_CHANNELS.whatsappSupportUrl;
+  const whatsappHref = isConfiguredExternalUrl(whatsappBase)
+    ? withSupportMessage(whatsappBase, buildPdpWhatsAppSupportMessage({ productName: product.name, locale: lang }))
+    : null;
+  const instagramHref = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.instagramUrl)
+    ? HORO_SUPPORT_CHANNELS.instagramUrl
+    : null;
+
+  return (
+    <div className="rounded-2xl border border-dashed border-stone/50 bg-white/50 px-5 py-6 md:px-8">
+      <p className="font-label text-[10px] font-semibold uppercase tracking-[0.2em] text-horo-pulse">
+        {isArabic ? 'تقييمات مبكرة' : 'Early reviews'}
+      </p>
+      <h3 className="font-headline mt-2 text-lg font-semibold tracking-tight text-obsidian">
+        {copy.reviewsSoonTitle}
+      </h3>
+      <p className="mt-3 font-body text-sm leading-relaxed text-warm-charcoal">{copy.reviewsSoonBody}</p>
+      <div className="mt-5 flex flex-wrap gap-3">
+        {whatsappHref ? (
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noreferrer"
+            className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian"
+          >
+            {copy.reviewsSoonWhatsappCta}
+          </a>
+        ) : null}
+        {instagramHref ? (
+          <a
+            href={instagramHref}
+            target="_blank"
+            rel="noreferrer"
+            className="font-label inline-flex min-h-11 items-center justify-center rounded-full border border-stone/60 bg-white px-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian transition-colors hover:border-obsidian"
+          >
+            {copy.reviewsSoonInstagramCta}
+          </a>
+        ) : null}
+        {!whatsappHref && !instagramHref ? (
+          <p className="font-body text-xs text-clay">{copy.reviewsSoonNoLinks}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function PdpReviewsZone({ product }: { product: Product }) {
   const { locale } = useUiLocale();
   const isArabic = locale === 'ar';
@@ -69,20 +124,22 @@ export function PdpReviewsZone({ product }: { product: Product }) {
   const hasReviews = reviewCount > 0 && avgRating > 0;
   const hasSold = monthSold > 0;
   const hasProof = proof.length > 0;
+  const showEarlyPlaceholder = !hasReviews && !hasProof;
 
-  if (!hasReviews && !hasSold && !hasProof) return null;
+  if (!hasReviews && !hasSold && !hasProof && !showEarlyPlaceholder) return null;
 
   return (
-    <section className="border-t border-stone/25 bg-papyrus">
+    <section className="border-t border-stone/25 bg-papyrus" aria-labelledby="pdp-reviews-zone-title">
       <div className="mx-auto max-w-[1320px] px-4 py-6 md:px-12 md:py-8">
+        <h2 id="pdp-reviews-zone-title" className="sr-only">
+          {isArabic ? 'التقييمات' : 'Reviews'}
+        </h2>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           {hasReviews ? (
             <div className="flex items-center gap-2">
               <StarRating rating={avgRating} />
               <span className="font-label text-[11px] font-semibold uppercase tracking-[0.16em] text-obsidian">
-                {isArabic
-                  ? `${avgRating.toFixed(1)} / 5`
-                  : `${avgRating.toFixed(1)} / 5`}
+                {avgRating.toFixed(1)} / 5
               </span>
               <span className="font-label text-[11px] font-medium tracking-[0.12em] text-clay">
                 {isArabic
@@ -114,14 +171,14 @@ export function PdpReviewsZone({ product }: { product: Product }) {
                   />
                 ) : null}
                 {review.permissionToRepost && review.videoUrl ? (
-                  <a
+                  <Link
                     href={review.videoUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="mb-3 block font-label text-[11px] font-semibold uppercase tracking-[0.14em] text-obsidian underline"
                   >
                     {isArabic ? 'فيديو العميل' : 'Customer video'}
-                  </a>
+                  </Link>
                 ) : null}
                 {review.body ? (
                   <p className="font-body text-sm leading-6 text-warm-charcoal">{review.body}</p>
@@ -143,6 +200,12 @@ export function PdpReviewsZone({ product }: { product: Product }) {
                 ) : null}
               </article>
             ))}
+          </div>
+        ) : null}
+
+        {showEarlyPlaceholder ? (
+          <div className={hasSold ? 'mt-6' : 'mt-4'}>
+            <PdpEarlyReviewsPlaceholder product={product} />
           </div>
         ) : null}
       </div>

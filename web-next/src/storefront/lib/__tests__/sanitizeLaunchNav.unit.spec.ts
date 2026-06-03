@@ -1,7 +1,7 @@
 import { mergeLaunchNavWithFallback, resolveLaunchNav, sanitizeLaunchNav } from '../sanitizeLaunchNav';
 
 describe('sanitizeLaunchNav', () => {
-  it('drops zodiac nav items but keeps gift ready links', () => {
+  it('drops zodiac nav items but keeps gift links', () => {
     const items = sanitizeLaunchNav(
       [
         {
@@ -30,6 +30,7 @@ describe('sanitizeLaunchNav', () => {
     );
 
     expect(items.map((item) => item.key)).toEqual(['gifts', 'products']);
+    expect(items.map((item) => item.label)).toEqual(['Gifts', 'Shop All']);
   });
 
   it('drops full feelings hub collection links', () => {
@@ -77,7 +78,7 @@ describe('sanitizeLaunchNav', () => {
     );
 
     expect(items.map((item) => item.key)).toEqual(['products', 'about', 'sizeGuide']);
-    expect(items[0]?.label).toBe('Founding Drop');
+    expect(items[0]?.label).toBe('Shop All');
     expect(items[1]?.label).toBe('about');
   });
 
@@ -95,7 +96,7 @@ describe('sanitizeLaunchNav', () => {
       'en',
     );
 
-    expect(items[0]?.label).toBe('Size & Help');
+    expect(items[0]?.label).toBe('Size Guide');
   });
 
   it('preserves sanitized labels for keys that remain', () => {

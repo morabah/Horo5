@@ -1,7 +1,7 @@
 import { HOME_SEEN_ON_YOU } from '../data/homeContent';
 import { getProductComparisonImageSrc, heroVectorizedV2, imgUrl } from '../data/images';
 import { getProducts, productHasRealImage } from '../data/site';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 import { TeeImage } from './TeeImage';
 
 function isCuratedAsset(src: string | undefined) {

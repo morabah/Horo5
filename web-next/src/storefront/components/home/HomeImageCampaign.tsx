@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { resolveProductImageSrcForDisplay, useNextImageOptimizerForSrc } from '../../data/images';
 import type { HomepagePresentation } from '../../lib/parseHomepagePresentation';
+import { HoroArtworkPlaceholder } from './HoroArtworkPlaceholder';
 
 const CAMPAIGN_BLUR_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFklEQVR4nGMQERP6TwxmGFUoQtfgAQAHCnsNFNbySQAAAABJRU5ErkJggg==';
@@ -32,7 +33,7 @@ export type HomeImageCampaignProps = {
   titleId?: string;
   onPrimaryClick?: () => void;
   onSecondaryClick?: () => void;
-  /** Parent should switch to copy-only fallback when the image fails to load. */
+  /** Optional observer for image failures; this component keeps a visual placeholder in place. */
   onImageError?: () => void;
 };
 
@@ -60,6 +61,79 @@ function maxWidthClass(width: HomepagePresentation['maxTextWidth']): string {
   }
 }
 
+type CampaignCopyProps = {
+  eyebrow?: string;
+  title: string;
+  body?: string;
+  showEyebrow: boolean;
+  showBody: boolean;
+  primaryCta?: HomeImageCampaignCta;
+  secondaryCta?: HomeImageCampaignCta;
+  titleAs: 'h1' | 'h2';
+  titleId?: string;
+  titleClassName?: string;
+  eyebrowClassName?: string;
+  bodyClassName?: string;
+  secondaryCtaClassName?: string;
+  onPrimaryClick?: () => void;
+  onSecondaryClick?: () => void;
+};
+
+function CampaignCopy({
+  eyebrow,
+  title,
+  body,
+  showEyebrow,
+  showBody,
+  primaryCta,
+  secondaryCta,
+  titleAs,
+  titleId,
+  titleClassName = 'home-image-campaign__title',
+  eyebrowClassName = 'home-image-campaign__eyebrow',
+  bodyClassName = 'home-image-campaign__body',
+  secondaryCtaClassName,
+  onPrimaryClick,
+  onSecondaryClick,
+}: CampaignCopyProps) {
+  const TitleTag = titleAs;
+
+  return (
+    <>
+      {showEyebrow ? <p className={eyebrowClassName}>{eyebrow}</p> : null}
+      <TitleTag id={titleId} className={titleClassName}>
+        {title}
+      </TitleTag>
+      {showBody && body ? <p className={bodyClassName}>{body}</p> : null}
+      {primaryCta || secondaryCta ? (
+        <div className="home-image-campaign__actions">
+          {primaryCta ? (
+            <Link
+              href={primaryCta.href}
+              onClick={onPrimaryClick}
+              className="home-btn home-btn--primary font-body inline-flex min-h-11 items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse md:focus-visible:outline-white"
+            >
+              {primaryCta.label}
+            </Link>
+          ) : null}
+          {secondaryCta ? (
+            <Link
+              href={secondaryCta.href}
+              onClick={onSecondaryClick}
+              className={
+                secondaryCtaClassName ??
+                'home-btn home-btn--secondary font-body inline-flex min-h-11 items-center justify-center rounded-[4px] border border-horo-pulse bg-transparent px-5 py-2 text-[12px] font-bold text-horo-root hover:bg-horo-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse md:border-white/80 md:text-white md:hover:bg-white/12 md:focus-visible:outline-white'
+              }
+            >
+              {secondaryCta.label}
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 export function HomeImageCampaign({
   id,
   eyebrow,
@@ -79,7 +153,6 @@ export function HomeImageCampaign({
   onSecondaryClick,
   onImageError,
 }: HomeImageCampaignProps) {
-  const TitleTag = titleAs;
   const [imageFailed, setImageFailed] = useState(false);
   const showEyebrow = presentation?.showEyebrow !== false && Boolean(eyebrow?.trim());
   const showBody = presentation?.showBody !== false && Boolean(body?.trim());
@@ -88,6 +161,7 @@ export function HomeImageCampaign({
   const opacity = presentation?.overlayOpacity ?? 0.45;
   const resolvedSrc = resolveProductImageSrcForDisplay(imageSrc);
   const useOptimizer = useNextImageOptimizerForSrc(resolvedSrc);
+  const showPlaceholder = !resolvedSrc || imageFailed;
 
   const handleImageError = () => {
     if (imageFailed) return;
@@ -95,45 +169,23 @@ export function HomeImageCampaign({
     onImageError?.();
   };
 
-  if (!resolvedSrc || imageFailed) {
-    return null;
-  }
-
   const overlayStyle = {
     background: `linear-gradient(to top, rgba(36,31,33,${Math.min(0.88, opacity + 0.35)}) 0%, rgba(36,31,33,${opacity * 0.5}) 45%, transparent 100%)`,
   };
 
-  const copyBlock = (
-    <>
-      {showEyebrow ? <p className="home-image-campaign__eyebrow">{eyebrow}</p> : null}
-      <TitleTag id={titleId} className="home-image-campaign__title">
-        {title}
-      </TitleTag>
-      {showBody && body ? <p className="home-image-campaign__body">{body}</p> : null}
-      {primaryCta || secondaryCta ? (
-        <div className="home-image-campaign__actions">
-          {primaryCta ? (
-            <Link
-              href={primaryCta.href}
-              onClick={onPrimaryClick}
-              className="home-btn home-btn--primary font-body inline-flex min-h-11 items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse md:focus-visible:outline-white"
-            >
-              {primaryCta.label}
-            </Link>
-          ) : null}
-          {secondaryCta ? (
-            <Link
-              href={secondaryCta.href}
-              onClick={onSecondaryClick}
-              className="home-btn home-btn--secondary font-body inline-flex min-h-11 items-center justify-center rounded-[4px] border border-horo-pulse bg-transparent px-5 py-2 text-[12px] font-bold text-horo-root hover:bg-horo-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse md:border-white/80 md:text-white md:hover:bg-white/12 md:focus-visible:outline-white"
-            >
-              {secondaryCta.label}
-            </Link>
-          ) : null}
-        </div>
-      ) : null}
-    </>
-  );
+  const copyProps: CampaignCopyProps = {
+    eyebrow,
+    title,
+    body,
+    showEyebrow,
+    showBody,
+    primaryCta,
+    secondaryCta,
+    titleAs,
+    titleId,
+    onPrimaryClick,
+    onSecondaryClick,
+  };
 
   return (
     <div
@@ -143,7 +195,12 @@ export function HomeImageCampaign({
     >
       <div className={`home-image-campaign__frame relative isolate overflow-hidden rounded-[4px] ${minHeight}`}>
         <div className={`home-image-campaign__media absolute inset-0 ${minHeight}`}>
-          {useOptimizer ? (
+          {showPlaceholder ? (
+            <HoroArtworkPlaceholder
+              ariaLabel={imageAlt}
+              className="bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.76),rgba(250,247,246,0.92)_44%,rgba(223,205,197,0.68))]"
+            />
+          ) : useOptimizer ? (
             <Image
               src={resolvedSrc}
               alt={imageAlt}
@@ -156,7 +213,6 @@ export function HomeImageCampaign({
               onError={handleImageError}
             />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={resolvedSrc}
               alt={imageAlt}
@@ -173,13 +229,21 @@ export function HomeImageCampaign({
           />
         </div>
         <div
-          className={`home-image-campaign__content home-image-campaign__content--overlay relative z-10 flex min-h-[inherit] flex-col p-5 sm:p-6 md:p-8 ${placementClass(placement)} ${maxWidthClass(presentation?.maxTextWidth)}`}
+          className={`home-image-campaign__content home-image-campaign__content--overlay relative z-10 flex min-h-[inherit] flex-col p-5 sm:p-6 md:p-8 ${placementClass(placement)} ${maxWidthClass(presentation?.maxTextWidth)} ${mobileBelow ? 'max-md:hidden' : ''}`}
         >
-          {copyBlock}
+          <CampaignCopy {...copyProps} />
         </div>
       </div>
       {mobileBelow ? (
-        <div className="home-image-campaign__below-panel">{copyBlock}</div>
+        <div className="home-image-campaign__below-panel md:hidden">
+          <CampaignCopy
+            {...copyProps}
+            titleClassName="home-image-campaign__title home-image-campaign__title--below font-headline text-xl text-horo-root"
+            eyebrowClassName="home-image-campaign__eyebrow home-section-eyebrow"
+            bodyClassName="home-image-campaign__body font-body text-[15px] text-horo-muted"
+            secondaryCtaClassName="home-btn home-btn--secondary font-body inline-flex min-h-11 items-center justify-center rounded-[4px] border border-horo-pulse bg-transparent px-5 py-2 text-[12px] font-bold text-horo-root hover:bg-horo-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
+          />
+        </div>
       ) : null}
     </div>
   );

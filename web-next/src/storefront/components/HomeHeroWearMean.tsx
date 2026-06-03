@@ -12,7 +12,7 @@ import {
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
-import { BRAND_COPY } from '../data/brand';
+import { normalizeLegacyStorefrontLabel } from '../utils/legacyStorefrontCopy';
 
 /** Tiny dark blur placeholder matching the hero's muted aesthetic. */
 const HERO_BLUR_DATA_URL =
@@ -20,8 +20,6 @@ const HERO_BLUR_DATA_URL =
 
 const HERO_NAV_OFFSET = 'pt-[max(3.6rem,calc(env(safe-area-inset-top,0px)+3.6rem))]';
 const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
-/** Short hero pills — distinct from trust ribbon (artist / Egypt / WhatsApp). */
-const HERO_PROOF_KEYS = ['paymentAtCheckout', 'exchange14d', 'premiumCotton'] as const;
 
 type HeroPayloadCta = {
   label?: { en?: string; ar?: string } | string;
@@ -99,7 +97,7 @@ function HeroTitleDisplay({ title }: { title: string }) {
   if (match) {
     return (
       <>
-        <span className="block">Wear What</span>
+        <span className="block">Wear What </span>
         <span className="block">You Feel</span>
       </>
     );
@@ -147,23 +145,19 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
       subtitleBase ??
       copy.home.heroPromiseLine,
   );
-  const rhythmLine =
-    (locale === 'ar'
-      ? payloadString(sectionPayload?.soundbite_ar)
-      : payloadString(sectionPayload?.soundbite_en)) ??
-    copy.home.heroRhythmLine;
-  const primaryCtaLabel =
+  const rawPrimaryCtaLabel =
     localizedPayloadText(primaryPayloadCta?.label, locale as 'en' | 'ar') ??
     fromSection(section?.primaryCta?.label) ??
     t(config.primaryCta?.label) ??
     copy.home.heroPrimaryCta;
+  const primaryCtaLabel = normalizeLegacyStorefrontLabel(rawPrimaryCtaLabel, locale as 'en' | 'ar') ?? rawPrimaryCtaLabel;
   const primaryHref = primaryPayloadCta?.href ?? section?.primaryCta?.href ?? config.primaryCta?.href ?? '/products';
-  const configuredSecondaryCtaLabel =
+  const rawSecondaryCtaLabel =
     localizedPayloadText(secondaryPayloadCta?.label, locale as 'en' | 'ar') ??
     fromSection(section?.secondaryCta?.label) ??
     t(config.secondaryCta?.label) ??
     copy.home.heroSecondaryCta;
-  const secondaryCtaLabel = configuredSecondaryCtaLabel;
+  const secondaryCtaLabel = normalizeLegacyStorefrontLabel(rawSecondaryCtaLabel, locale as 'en' | 'ar') ?? rawSecondaryCtaLabel;
   const configuredSecondaryHref = secondaryPayloadCta?.href ?? section?.secondaryCta?.href ?? config.secondaryCta?.href ?? '/#shop-by-meaning';
   const secondaryHref = configuredSecondaryHref;
   const configuredHeroImageSrc = config.desktopImage?.src ?? '/images/homepage-reference/hero-right.png';
@@ -176,14 +170,6 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
     t(config.desktopImage?.alt) ??
     'Model wearing HORO graphic tee — Wear What You Feel';
 
-  const canvasLine =
-    (locale === 'ar'
-      ? payloadString(sectionPayload?.canvas_ar)
-      : payloadString(sectionPayload?.canvas_en)) ??
-    copy.home.heroCanvasLine ??
-    BRAND_COPY.canvasLine;
-
-  const heroProofItems = HERO_PROOF_KEYS.map((key) => copy.home.trustBadges[key]);
   const heroPresentation = parseHomepagePresentation(sectionPayload);
   const [overlayImageFailed, setOverlayImageFailed] = useState(false);
   const isOverlayLayout =
@@ -242,17 +228,15 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
       data-hero-layout="split"
       className={`home-hero-split ${HERO_NAV_OFFSET}`}
     >
-      <div className="mx-auto grid max-w-[1400px] lg:grid-cols-2 lg:items-stretch">
-        <div className="home-hero-split__copy order-1">
+      <div className="mx-auto flex max-w-[1400px] flex-col lg:grid lg:grid-cols-2 lg:items-stretch">
+        <div className="home-hero-split__copy order-1 max-lg:px-4 max-lg:pt-4 max-lg:pb-3">
           <h1 id="home-hero-heading" className="home-hero-split__title">
             <HeroTitleDisplay title={title} />
           </h1>
-          <p className="home-hero-split__subtitle mt-5 max-w-[560px]">
+          <p className="home-hero-split__subtitle mt-4 max-w-[560px] max-lg:mt-3 max-lg:text-[15px] lg:mt-5">
             {promiseLine}
           </p>
-          <p className="home-hero-split__rhythm mt-4">{rhythmLine}</p>
-          <p className="home-hero-split__canvas mt-2">{canvasLine}</p>
-          <div className="home-hero-split__actions mt-8 flex flex-wrap gap-3">
+          <div className="home-hero-split__actions mt-6 flex flex-wrap gap-3 max-lg:mt-4">
             <Link
               href={primaryHref}
               onClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}
@@ -273,13 +257,6 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
               {secondaryCtaLabel}
             </Link>
           </div>
-          <ul className="home-hero-proof-list mt-5" aria-label={isArabic ? 'وعود الخدمة' : 'Service promises'}>
-            {heroProofItems.map((item) => (
-              <li key={item} className="home-hero-proof-pill">
-                {item}
-              </li>
-            ))}
-          </ul>
         </div>
 
         <div className="home-hero-split__media order-2">

@@ -1,5 +1,5 @@
 {%- comment -%}
-  HORO product card meta row (badges, chips, artist, stock).
+  HORO product card meta row (badges, chips, artist, stock) — web-next getProductCardBadges parity.
   Accepts: card_product (required)
 {%- endcomment -%}
 {%- if card_product == blank or card_product == empty -%}
@@ -7,7 +7,6 @@
 {%- endif -%}
 {%- if card_product and card_product != empty -%}
 {%- liquid
-
   assign promo_label = card_product.metafields.custom.promo_label.value
   assign merchandising_badge = card_product.metafields.custom.merchandising_badge.value
   assign feeling_obj = card_product.metafields.custom.feeling.value
@@ -17,8 +16,34 @@
   assign trust_chips = card_product.metafields.custom.trust_chips.value
   assign giftable_val = card_product.metafields.custom.giftable.value
   assign fit_chip = card_product.metafields.custom.fit_note.value | default: card_product.metafields.custom.fit_label.value | default: card_product.metafields.custom.size_fit_note.value
+  assign launch_group = card_product.metafields.custom.launch_group.value | default: ''
+  assign zodiac_sign = card_product.metafields.custom.zodiac_sign.value | default: ''
+  assign use_case = card_product.metafields.custom.use_case.value | default: card_product.metafields.custom.story.value
 
-  assign main_badge = promo_label
+  for tag in card_product.tags
+    assign tag_lower = tag | downcase
+    if tag_lower contains 'launch:'
+      assign launch_group = tag_lower | remove: 'launch:' | strip
+    elsif tag_lower contains 'zodiac:'
+      assign zodiac_sign = tag_lower | remove: 'zodiac:' | strip
+    endif
+  endfor
+
+  assign zodiac_badge = ''
+  if launch_group == 'zodiac_capsule' and zodiac_sign != blank
+    capture zodiac_badge
+      render 'horo-zodiac-sign-label', sign: zodiac_sign
+    endcapture
+    assign zodiac_badge = zodiac_badge | strip
+  endif
+
+  assign main_badge = zodiac_badge
+  if main_badge == blank and use_case != blank
+    assign main_badge = use_case | truncate: 42
+  endif
+  if main_badge == blank and promo_label != blank
+    assign main_badge = promo_label
+  endif
   if main_badge == blank and merchandising_badge != blank
     assign main_badge = merchandising_badge
   endif
@@ -27,12 +52,19 @@
   endif
 
   assign secondary_chip = ''
-  if subfeeling_obj != blank
-    assign secondary_chip = subfeeling_obj.title | default: subfeeling_obj.name | default: subfeeling_obj.display_name
-  elsif fit_chip != blank
+  if zodiac_badge == blank and fit_chip != blank
     assign secondary_chip = fit_chip
+  elsif subfeeling_obj != blank
+    assign secondary_chip = subfeeling_obj.title | default: subfeeling_obj.name | default: subfeeling_obj.display_name
   elsif giftable_val == true or giftable_val == 'true'
     assign secondary_chip = 'horo.product_card.gift_ready' | t
+  endif
+
+  assign gift_badge = ''
+  if giftable_val == true or giftable_val == 'true'
+    assign gift_badge = 'horo.product_card.gift_ready' | t
+  elsif merchandising_badge != blank and main_badge != merchandising_badge
+    assign gift_badge = merchandising_badge
   endif
 
   assign artist_name = ''
@@ -65,13 +97,16 @@
     assign stock_label = 'horo.product_card.low_stock' | t
   endif
 -%}
-{%- if main_badge != blank or secondary_chip != blank or artist_name != blank or trust_cue != blank or stock_label != blank -%}
+{%- if main_badge != blank or secondary_chip != blank or gift_badge != blank or artist_name != blank or trust_cue != blank or stock_label != blank -%}
   <div class="horo-product-card__meta">
     {%- if main_badge != blank -%}
-      <span class="horo-product-card__badge">{{ main_badge | escape }}</span>
+      <span class="horo-product-card__badge{% if zodiac_badge != blank %} horo-product-card__badge--accent{% endif %}">{{ main_badge | escape }}</span>
     {%- endif -%}
     {%- if secondary_chip != blank -%}
       <span class="horo-product-card__chip">{{ secondary_chip | escape }}</span>
+    {%- endif -%}
+    {%- if gift_badge != blank and gift_badge != secondary_chip -%}
+      <span class="horo-product-card__chip horo-product-card__chip--gift">{{ gift_badge | escape }}</span>
     {%- endif -%}
     {%- if artist_name != blank -%}
       <span class="horo-product-card__artist">{{ artist_name | escape }}</span>

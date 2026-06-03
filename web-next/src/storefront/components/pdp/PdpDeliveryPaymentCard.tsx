@@ -6,7 +6,7 @@ import {
   formatPdpExpressBadgeLabel,
   formatPdpStandardBadgeLabel,
 } from '../../utils/deliveryEstimate';
-import { PDP_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../../data/domain-config';
+import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../../data/domain-config';
 
 
 type PdpDeliveryPaymentCardProps = {

@@ -51,7 +51,7 @@
   font-size: 1.5rem;
   font-weight: var(--font-heading-weight);
   line-height: 1.3;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   margin-block: 0 0.4rem;
 }
 
@@ -80,7 +80,7 @@
   font-family: var(--font-heading-family);
   font-size: 1.5rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .horo-product-card .price .price-item--sale {
@@ -174,6 +174,17 @@
   letter-spacing: 0.04em;
 }
 
+.horo-product-card__badge--accent {
+  color: rgb(var(--color-button));
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.horo-product-card__chip--gift {
+  color: rgb(var(--color-button));
+  font-weight: 600;
+}
+
 .horo-product-card__chip,
 .horo-product-card__artist,
 .horo-product-card__trust {
@@ -185,4 +196,107 @@
   font-size: 1.1rem;
   font-weight: 600;
   color: rgb(var(--color-button));
+}
+
+@media screen and (max-width: 749px) {
+  .horo-product-card,
+  .horo-product-card .card {
+    block-size: 100%;
+  }
+
+  .horo-product-card .card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .horo-product-card .card__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    padding-inline: 0.75rem;
+    padding-block: 0.75rem 0.85rem;
+  }
+
+  .horo-product-card .card__information {
+    display: flex;
+    min-block-size: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
+  .horo-product-card .card__heading {
+    min-block-size: 3.2rem;
+    margin-block-end: 0.35rem;
+    font-size: 1.28rem;
+    line-height: 1.25;
+  }
+
+  .horo-product-card .card__heading a {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .horo-product-card__meta {
+    display: flex;
+    min-block-size: 4.4rem;
+    max-block-size: 5rem;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 0.25rem;
+    margin-block: 0.3rem 0.55rem;
+    overflow: hidden;
+  }
+
+  .horo-product-card__meta > * {
+    display: block;
+    max-inline-size: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .horo-product-card__meta > *:nth-child(n + 4) {
+    display: none;
+  }
+
+  .horo-product-card__badge,
+  .horo-product-card__chip,
+  .horo-product-card__artist,
+  .horo-product-card__trust,
+  .horo-product-card__stock {
+    font-size: 1rem;
+    line-height: 1.25;
+  }
+
+  .horo-product-card__chip {
+    max-inline-size: 100%;
+    margin-block: 0;
+    padding-inline: 0.55rem;
+    padding-block: 0.25rem;
+  }
+
+  .horo-product-card .card-information {
+    margin-block-start: auto;
+  }
+
+  .horo-product-card .price {
+    min-block-size: 1.75rem;
+    font-size: 1.3rem;
+    line-height: 1.25;
+  }
+
+  .horo-product-card .quick-add {
+    margin-block-start: 0.8rem;
+  }
+
+  .horo-product-card .quick-add__submit {
+    min-block-size: 4.4rem;
+    padding-inline: 0.75rem;
+    font-size: 1rem;
+    letter-spacing: 0.08em;
+    line-height: 1.15;
+  }
 }

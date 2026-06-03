@@ -73,6 +73,26 @@ export function launchCategoryFilterLabel(category: LaunchCategoryFilter, locale
   }
 }
 
+/** Entertainment-only framing — not fortune-telling (audit P3.2). */
+export const ZODIAC_SIGN_DATE_RANGES: Record<string, { en: string; ar: string }> = {
+  gemini: { en: 'May 21 – Jun 20', ar: '21 مايو – 20 يونيو' },
+  cancer: { en: 'Jun 21 – Jul 22', ar: '21 يونيو – 22 يوليو' },
+  leo: { en: 'Jul 23 – Aug 22', ar: '23 يوليو – 22 أغسطس' },
+  virgo: { en: 'Aug 23 – Sep 22', ar: '23 أغسطس – 22 سبتمبر' },
+};
+
+export function zodiacSignDateRangeLabel(sign: string | undefined, locale: 'en' | 'ar'): string | null {
+  if (!sign) return null;
+  const entry = ZODIAC_SIGN_DATE_RANGES[sign];
+  return entry ? entry[locale] : null;
+}
+
+export function zodiacEntertainmentDisclaimer(locale: 'en' | 'ar'): string {
+  return locale === 'ar'
+    ? 'للمرح والشخصية فقط — مش تنبؤات ولا حظ.'
+    : 'For fun and personality only — not predictions or fortune-telling.';
+}
+
 const DESIGN_LABELS: Record<string, string> = {
   gemini: 'Gemini',
   cancer: 'Cancer',
@@ -98,6 +118,16 @@ const AUDIENCE_LABELS: Record<string, string> = {
 export function launchDesignLabel(design: Product['launchDesign']): string | null {
   if (!design) return null;
   return DESIGN_LABELS[design] ?? null;
+}
+
+/** Card badge: sign name + optional date range for zodiac capsule products. */
+export function zodiacCardBadgeLabel(product: Product, locale: 'en' | 'ar'): string | null {
+  if (getLaunchGroup(product) !== 'zodiac_capsule') return null;
+  const sign = product.zodiacSign ?? product.launchDesign;
+  const name = sign ? launchDesignLabel(sign as Product['launchDesign']) ?? sign : null;
+  if (!name) return null;
+  const dates = zodiacSignDateRangeLabel(sign, locale);
+  return dates ? `${name} · ${dates}` : name;
 }
 
 export function launchProductEyebrow(product: Product): string | null {

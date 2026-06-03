@@ -113,7 +113,11 @@ export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSecti
         style={{ '--home-trust-columns': items.length } as CSSProperties}
       >
         {items.map((badge) => (
-          <div key={badge.key} role="listitem" className="home-trust-bar__cell">
+          <div
+            key={badge.key}
+            role="listitem"
+            className={`home-trust-bar__cell home-trust-bar__cell--${badge.key}${badge.key === 'paymentAtCheckout' ? ' home-trust-bar__cell--desktop-only' : ''}`}
+          >
             <div className="home-trust-bar__icon mx-auto">{TRUST_ICONS[badge.icon ?? badge.key] ?? TRUST_ICONS[badge.key] ?? null}</div>
             <p className="home-trust-bar__label">{badge.label}</p>
           </div>

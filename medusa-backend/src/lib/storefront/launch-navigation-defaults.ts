@@ -1,25 +1,25 @@
-import type { StorefrontNavigationDTO } from "./types"
+import type { StorefrontNavigationDTO } from "./store-settings"
 
 /** Launch IA navigation for store.metadata.navigation — use when re-seeding or clearing legacy nav. */
 export const DEFAULT_LAUNCH_NAVIGATION: StorefrontNavigationDTO = {
   primary: [
     {
       key: "products",
-      label: { en: "Founding Drop", ar: "الإطلاق الأول" },
+      label: { en: "Shop All", ar: "تسوّق الكل" },
       href: "/products",
       active: true,
       sortOrder: 0,
     },
     {
       key: "shop_by_meaning",
-      label: { en: "Shop by Meaning", ar: "تسوّق حسب المعنى" },
+      label: { en: "Shop by Feeling", ar: "تسوّق حسب الشعور" },
       href: "/#shop-by-meaning",
       active: true,
       sortOrder: 10,
     },
     {
       key: "gifts",
-      label: { en: "Gift Ready", ar: "جاهزة للهدايا" },
+      label: { en: "Gifts", ar: "الهدايا" },
       href: "/gifts",
       active: true,
       sortOrder: 20,
@@ -33,7 +33,7 @@ export const DEFAULT_LAUNCH_NAVIGATION: StorefrontNavigationDTO = {
     },
     {
       key: "sizeGuide",
-      label: { en: "Size & Help", ar: "المقاسات والمساعدة" },
+      label: { en: "Size Guide", ar: "دليل المقاسات" },
       href: "/size-guide",
       active: true,
       sortOrder: 40,
@@ -49,45 +49,73 @@ export const DEFAULT_LAUNCH_NAVIGATION: StorefrontNavigationDTO = {
     },
     {
       key: "products",
-      label: { en: "Founding Drop", ar: "الإطلاق الأول" },
+      label: { en: "Shop All", ar: "تسوّق الكل" },
       href: "/products",
       active: true,
       sortOrder: 10,
     },
     {
       key: "shop_by_meaning",
-      label: { en: "Shop by Meaning", ar: "تسوّق حسب المعنى" },
+      label: { en: "Shop by Feeling", ar: "تسوّق حسب الشعور" },
       href: "/#shop-by-meaning",
       active: true,
       sortOrder: 20,
     },
     {
       key: "gifts",
-      label: { en: "Gift Ready", ar: "جاهزة للهدايا" },
+      label: { en: "Gifts", ar: "الهدايا" },
       href: "/gifts",
       active: true,
       sortOrder: 30,
+    },
+    {
+      key: "zodiac",
+      label: { en: "Zodiac", ar: "كبسولة الأبراج" },
+      href: "/feelings/zodiac",
+      active: true,
+      sortOrder: 40,
+    },
+    {
+      key: "career",
+      label: { en: "Career & Work", ar: "المهنة والشغل" },
+      href: "/feelings/career",
+      active: true,
+      sortOrder: 50,
     },
     {
       key: "about",
       label: { en: "Our Story", ar: "قصتنا" },
       href: "/about",
       active: true,
-      sortOrder: 40,
+      sortOrder: 60,
     },
     {
       key: "sizeGuide",
-      label: { en: "Size & Help", ar: "المقاسات والمساعدة" },
+      label: { en: "Size Guide", ar: "دليل المقاسات" },
       href: "/size-guide",
       active: true,
-      sortOrder: 50,
+      sortOrder: 70,
+    },
+    {
+      key: "faq",
+      label: { en: "FAQ", ar: "الأسئلة الشائعة" },
+      href: "/faq",
+      active: true,
+      sortOrder: 80,
+    },
+    {
+      key: "exchange",
+      label: { en: "Exchange Policy", ar: "سياسة الاستبدال" },
+      href: "/exchange",
+      active: true,
+      sortOrder: 90,
     },
     {
       key: "search",
       label: { en: "Search", ar: "بحث" },
       href: "/search",
       active: true,
-      sortOrder: 60,
+      sortOrder: 100,
     },
   ],
 }

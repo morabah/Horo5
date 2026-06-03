@@ -1,5 +1,5 @@
 import type { SearchSuggestion, SearchSuggestionGroup } from '../search/view';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 
 type SearchSuggestionPanelProps = {
   groups: SearchSuggestionGroup[];

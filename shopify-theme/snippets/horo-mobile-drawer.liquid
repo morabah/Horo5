@@ -19,6 +19,7 @@
   assign drawer_label = 'horo.shell.open_menu' | t | default: 'Open menu'
   assign close_label = 'horo.shell.close_menu' | t | default: 'Close menu'
   assign cart_label = 'horo.shell.cart' | t | default: 'Cart'
+  assign founding_drop_url = routes.collections_url | append: '/founding-drop'
 -%}
 
 <div class="horo-drawer-wrapper" data-horo-drawer>
@@ -79,6 +80,66 @@
       </div>
 
       <div class="horo-drawer__nav">
+        <div class="horo-drawer__shop-preview" aria-label="{{ 'horo.nav.shop_preview_title' | t | default: 'Shop the Drop' }}">
+          <div class="horo-drawer__shop-preview-header">
+            <p>{{ 'horo.nav.shop_preview_title' | t | default: 'Shop the Drop' }}</p>
+            <a href="{{ founding_drop_url }}">{{ 'horo.nav.shop_preview_browse_all' | t | default: 'Shop All' }}</a>
+          </div>
+          <div class="horo-drawer__shop-preview-grid">
+            {%- liquid
+              assign preview_collection = collections['founding-drop']
+              if preview_collection == blank
+                assign preview_collection = collections.all
+              endif
+              assign rendered_count = 0
+            -%}
+            {%- if preview_collection != blank and preview_collection.products_count > 0 -%}
+              {%- for product in preview_collection.products limit: 3 -%}
+                {%- assign rendered_count = rendered_count | plus: 1 -%}
+                {%- assign preview_image = product.featured_media.preview_image | default: product.featured_image -%}
+                <a href="{{ product.url }}" class="horo-drawer__shop-preview-card">
+                  <span class="horo-drawer__shop-preview-image">
+                    {%- if preview_image != blank -%}
+                      {{
+                        preview_image
+                        | image_url: width: 300
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '150, 220, 300',
+                          sizes: '30vw',
+                          alt: product.title
+                      }}
+                    {%- else -%}
+                      <span>{{ 'horo.nav.product_image_placeholder' | t | default: 'Product image' }}</span>
+                    {%- endif -%}
+                  </span>
+                  <span class="horo-drawer__shop-preview-title">{{ product.title | escape }}</span>
+                </a>
+              {%- endfor -%}
+            {%- endif -%}
+            {%- if rendered_count == 0 -%}
+              <a href="{{ founding_drop_url }}" class="horo-drawer__shop-preview-card">
+                <span class="horo-drawer__shop-preview-image">
+                  <span>{{ 'horo.nav.product_image_placeholder' | t | default: 'Product image' }}</span>
+                </span>
+                <span class="horo-drawer__shop-preview-title">{{ 'horo.nav.shop_preview_browse_all' | t | default: 'Shop All' }}</span>
+              </a>
+              <a href="{{ routes.root_url }}#shop-by-meaning" class="horo-drawer__shop-preview-card">
+                <span class="horo-drawer__shop-preview-image">
+                  <span>{{ 'horo.nav.product_image_placeholder' | t | default: 'Product image' }}</span>
+                </span>
+                <span class="horo-drawer__shop-preview-title">{{ 'horo.nav.shop_by_feeling' | t | default: 'Shop by Feeling' }}</span>
+              </a>
+              <a href="{{ routes.root_url }}pages/gifts-hub" class="horo-drawer__shop-preview-card">
+                <span class="horo-drawer__shop-preview-image">
+                  <span>{{ 'horo.nav.product_image_placeholder' | t | default: 'Product image' }}</span>
+                </span>
+                <span class="horo-drawer__shop-preview-title">{{ 'horo.nav.gifts' | t | default: 'Gifts' }}</span>
+              </a>
+            {%- endif -%}
+          </div>
+        </div>
+
         {% render 'horo-nav-links', context: 'drawer', drawer_menu: drawer_menu, active_path: active_path %}
 
         <a
@@ -91,6 +152,18 @@
             <span class="horo-nav__drawer-badge">({{ cart.item_count }})</span>
           {%- endif -%}
         </a>
+        {%- assign whatsapp_url = settings.horo_whatsapp_support_url -%}
+        {%- if whatsapp_url != blank -%}
+          <a
+            href="{{ whatsapp_url }}"
+            class="horo-nav__drawer-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="{{ 'horo.nav.whatsapp_size_help' | t | default: 'WhatsApp size help' }}"
+          >
+            {{ 'horo.nav.whatsapp_size_help' | t | default: 'WhatsApp size help' }}
+          </a>
+        {%- endif -%}
       </div>
     </div>
   </div>

@@ -9,6 +9,9 @@ export const NAV_ROUTE = {
   search: { path: '/search', end: false },
   cart: { path: '/cart', end: false },
   sizeGuide: { path: '/size-guide', end: false },
+  career: { path: '/feelings/career', end: false },
+  faq: { path: '/faq', end: true },
+  exchange: { path: '/exchange', end: true },
 
   // Legacy/deeper browse routes kept for later restoration after the catalog grows.
   // collection: { path: '/feelings', end: false },
@@ -32,8 +35,12 @@ export const NAV_DRAWER_ROUTE_KEYS = [
   'products',
   'shopByMeaning',
   'gifts',
+  'zodiac',
+  'career',
   'about',
   'sizeGuide',
+  'faq',
+  'exchange',
   'search',
 ] as const;
 
@@ -42,8 +49,12 @@ export const LAUNCH_NAV_KEYS = new Set<NavRouteKey>([
   'products',
   'shopByMeaning',
   'gifts',
+  'zodiac',
+  'career',
   'about',
   'sizeGuide',
+  'faq',
+  'exchange',
   'home',
   'search',
 ]);

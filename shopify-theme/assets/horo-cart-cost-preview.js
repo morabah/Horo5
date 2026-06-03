@@ -5,6 +5,7 @@
   'use strict';
 
   var STORAGE_KEY = 'horo_cart_cost_governorate_v1';
+  var DEFAULT_GOVERNORATE = 'cairo_giza';
 
   function isArabic(locale) {
     return String(locale || '').toLowerCase().indexOf('ar') === 0;
@@ -234,21 +235,33 @@
     });
   }
 
+  function applyDefaultGovernorate(select) {
+    if (!select || select.value) return false;
+    if (!select.querySelector('option[value="' + DEFAULT_GOVERNORATE + '"]')) return false;
+    select.value = DEFAULT_GOVERNORATE;
+    select.setAttribute('data-horo-default-estimate', 'true');
+    return true;
+  }
+
   function init(root) {
     if (!root || root.getAttribute('data-horo-cost-bound') === 'true') return;
     root.setAttribute('data-horo-cost-bound', 'true');
 
     var select = root.querySelector('[data-horo-cost-governorate]');
     if (select) {
+      var restoredGovernorate = false;
       try {
         var saved = sessionStorage.getItem(STORAGE_KEY);
         if (saved && select.querySelector('option[value="' + saved + '"]')) {
           select.value = saved;
+          restoredGovernorate = true;
         }
       } catch (_e) {
         /* ignore */
       }
+      if (!restoredGovernorate) applyDefaultGovernorate(select);
       select.addEventListener('change', function () {
+        select.removeAttribute('data-horo-default-estimate');
         try {
           if (select.value) sessionStorage.setItem(STORAGE_KEY, select.value);
           else sessionStorage.removeItem(STORAGE_KEY);
@@ -259,7 +272,9 @@
         render(root);
         if (select.value) persistGovernorateToCart(root, select.value);
       });
-      if (select.value) persistGovernorateToCart(root, select.value);
+      if (select.value && select.getAttribute('data-horo-default-estimate') !== 'true') {
+        persistGovernorateToCart(root, select.value);
+      }
     }
 
     render(root);

@@ -9,6 +9,7 @@ import type { Product, ProductSizeKey, Feeling, StockStatusKey } from '../../dat
 import { pdpCodTrustCopy, pdpExchangeTrustCopy } from '../../data/commerce-copy';
 import { PDP_SCHEMA, type PdpSizeTableConfig } from '../../data/domain-config';
 import { formatEgp } from '../../utils/formatPrice';
+import { productMeaningLine } from '../../utils/productMeaningLine';
 import { pickLocalizedText } from '../../lib/storefront/incentives-client';
 import { launchProductEyebrow } from '../../lib/launch-taxonomy-display';
 import { StockStatusChip } from '../StockStatusChip';
@@ -173,6 +174,7 @@ export function PdpBuyBox({
       : `Only ${lowStockCount} left at this price`
     : null;
   const launchEyebrow = launchProductEyebrow(product);
+  const meaningLine = productMeaningLine(product);
 
   return (
     <aside className="md:sticky md:top-24 md:self-start">
@@ -213,10 +215,10 @@ export function PdpBuyBox({
             </p>
           ) : null}
 
-          {/* Design meaning — 1-line "what this design says" for gift / self-expression buyers */}
-          {product.useCase?.trim() ? (
+          {/* Design meaning — one line for gift / self-expression buyers */}
+          {meaningLine ? (
             <p className="font-body text-[15px] leading-snug text-warm-charcoal">
-              {product.useCase.trim()}
+              {meaningLine}
             </p>
           ) : null}
 

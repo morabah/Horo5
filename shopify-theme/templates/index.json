@@ -9,10 +9,10 @@
         "layout_style": "split",
         "rhythm_line": "",
         "canvas_line": "",
-        "trust_micro": "Artist-made in Egypt · Payment at checkout · Size exchange",
-        "button_label": "Shop the Founding Drop",
+        "trust_micro": "",
+        "button_label": "Shop the Drop",
         "button_link": "/collections/founding-drop",
-        "button_label_secondary": "A Closer Look",
+        "button_label_secondary": "See the Details",
         "button_link_secondary": "/#editorial-feature",
         "button_label_tertiary": "",
         "button_link_tertiary": "",
@@ -36,7 +36,7 @@
           "settings": {
             "show_badge": true,
             "icon": "artist",
-            "label": "Artist-made designs"
+            "label": "Artist-made"
           }
         },
         "badge_2": {
@@ -52,15 +52,15 @@
           "settings": {
             "show_badge": true,
             "icon": "cash",
-            "label": "Payment options shown at checkout"
+            "label": "Payment at checkout"
           }
         },
         "badge_4": {
           "type": "trust_badge",
           "settings": {
             "show_badge": true,
-            "icon": "clearFitDetails",
-            "label": "Clear fit details"
+            "icon": "exchange",
+            "label": "14-day exchange"
           }
         },
         "badge_5": {
@@ -68,7 +68,7 @@
           "settings": {
             "show_badge": true,
             "icon": "whatsapp",
-            "label": "WhatsApp size help"
+            "label": "WhatsApp help"
           }
         }
       },
@@ -78,16 +78,20 @@
       "type": "home-founding-drop",
       "settings": {
         "eyebrow": "THE FOUNDING DROP",
-        "heading": "Wearable artwork for signs, moods, and personal stories.",
+        "heading": "Our first 5 pieces. Limited quantities.",
         "subheading": "",
         "layout_style": "image_overlay",
         "show_body": false,
-        "campaign_cta_label": "Shop Now",
+        "show_eyebrow": true,
+        "overlay_opacity": 45,
+        "text_position": "bottom-left",
+        "mobile_text_mode": "below",
+        "campaign_cta_label": "Shop the Drop",
         "campaign_cta_link": "/collections/founding-drop",
-        "campaign_secondary_label": "A Closer Look",
+        "campaign_secondary_label": "See the Details",
         "campaign_secondary_link": "#editorial-feature",
         "choose_size_label": "Choose size",
-        "view_all_label": "Shop the Founding Drop",
+        "view_all_label": "Shop All Designs",
         "view_all_link": "/collections/founding-drop",
         "collection": "founding-drop",
         "product_limit": 5
@@ -96,9 +100,9 @@
     "feeling_grid": {
       "type": "home-feeling-grid",
       "settings": {
-        "layout_style": "photo",
+        "layout_style": "pastel",
         "eyebrow": "",
-        "heading": "Shop by Meaning",
+        "heading": "Shop by Feeling",
         "subheading": "",
         "feelings_link_label": "",
         "feelings_link": "",
@@ -109,24 +113,37 @@
       "type": "home-editorial-feature",
       "settings": {
         "anchor_id": "editorial-feature",
+        "bridge_line": "Chosen by feeling. Made to be seen closer.",
+        "show_product_ref": true,
+        "product_ref_prefix": "Featuring",
         "eyebrow": "A Closer Look",
         "heading": "Calm Inside",
         "body": "Artwork, fit, and print details in one closer view.",
         "layout_style": "image_overlay",
-        "button_label": "Shop the Piece",
-        "button_link": "/collections/founding-drop"
+        "show_body": true,
+        "show_eyebrow": true,
+        "overlay_opacity": 50,
+        "text_position": "bottom-left",
+        "mobile_text_mode": "below",
+        "button_label": "View Design",
+        "button_link": "/products/calm-inside"
       }
     },
     "home_gift_block": {
       "type": "home-gift-block",
       "settings": {
         "show_section": true,
-        "eyebrow": "GIFT READY",
+        "eyebrow": "WHEN YOU'RE GIFTING",
         "heading": "More than a gift.",
         "heading_line_2": "",
-        "body": "A feeling they'll wear.",
+        "body": "Thoughtful picks for someone on your mind.",
         "layout_style": "image_overlay",
-        "button_label": "Find a Gift",
+        "show_body": true,
+        "show_eyebrow": true,
+        "overlay_opacity": 45,
+        "text_position": "bottom-left",
+        "mobile_text_mode": "below",
+        "button_label": "Shop Gifts",
         "button_link": "/pages/gifts-hub",
         "show_occasion_chips": false
       }
@@ -142,7 +159,7 @@
           "type": "item",
           "settings": {
             "icon": "fit",
-            "title": "Find your fit with confidence",
+            "title": "Clear fit details",
             "body": "Clear size guide and model references on every product page.",
             "link": "/pages/size-guide"
           }
@@ -185,6 +202,11 @@
         "subheading": "",
         "layout_style": "image_overlay",
         "show_pillars": false,
+        "show_body": false,
+        "show_eyebrow": true,
+        "overlay_opacity": 50,
+        "text_position": "bottom-left",
+        "mobile_text_mode": "below",
         "button_label": "Read our story",
         "button_link": "/pages/about"
       },

@@ -55,6 +55,7 @@
   {%- endstyle -%}
 
   {%- render 'horo-breadcrumb' -%}
+  {%- render 'horo-collection-route-intro', collection: collection -%}
 
   <div
     id="CollectionHoroHeader-{{ section.id }}"
@@ -113,6 +114,7 @@
   </div>
 {%- else -%}
   {%- render 'horo-breadcrumb' -%}
+  {%- render 'horo-collection-route-intro', collection: collection -%}
   <div class="collection-hero color-{{ section.settings.color_scheme }} gradient">
     <div class="collection-hero__inner page-width {% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
       <div class="collection-hero__text-wrapper">

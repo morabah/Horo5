@@ -199,7 +199,7 @@ export function createPurchasePayload(payload: {
   };
 }
 
-export function trackViewItem(product: Product, assetType?: string) {
+export function trackViewItem(product: Product) {
   if (typeof window === 'undefined') return;
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();

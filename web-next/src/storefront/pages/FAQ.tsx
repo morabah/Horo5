@@ -1,7 +1,7 @@
 "use client";
 
 import { PolicyPageLayout } from '../components/PolicyPageLayout';
-import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
+import { useDictionary } from '../i18n/ui-locale';
 
 export function FAQ() {
   const copy = useDictionary();

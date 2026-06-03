@@ -3,7 +3,9 @@
 import Image from "next/image";
 
 import { useCart } from "@/components/cart/cart-provider";
+import { HoroImagePlaceholder } from "@/components/horo-image-placeholder";
 import { formatMoney } from "@/lib/format";
+import { pickShopifyCartLineImage } from "@/lib/product-images";
 
 export function CartView() {
   const { cart, isLoading, updateLine, beginCheckout } = useCart();
@@ -21,47 +23,53 @@ export function CartView() {
     <section className="space-y-6">
       <h1 className="text-3xl font-bold">Your Cart</h1>
       <div className="space-y-4">
-        {cart.lines.map((line) => (
-          <article key={line.id} className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-4">
-            <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-black/5">
-              {line.merchandise.product.featuredImage ? (
-                <Image
-                  src={line.merchandise.product.featuredImage.url}
-                  alt={line.merchandise.product.featuredImage.altText ?? line.merchandise.product.title}
-                  fill
-                  sizes="80px"
-                  className="object-cover"
-                />
-              ) : null}
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold">{line.merchandise.product.title}</p>
-              <p className="text-sm text-black/60">{line.merchandise.title}</p>
-              <p className="text-sm text-black/80">
-                {formatMoney(line.cost.totalAmount.amount, line.cost.totalAmount.currencyCode)}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="h-8 w-8 rounded-full border border-black/20"
-                disabled={isLoading || line.quantity <= 1}
-                onClick={() => updateLine(line.id, line.quantity - 1)}
-              >
-                -
-              </button>
-              <span className="w-8 text-center text-sm">{line.quantity}</span>
-              <button
-                type="button"
-                className="h-8 w-8 rounded-full border border-black/20"
-                disabled={isLoading}
-                onClick={() => updateLine(line.id, line.quantity + 1)}
-              >
-                +
-              </button>
-            </div>
-          </article>
-        ))}
+        {cart.lines.map((line) => {
+          const image = pickShopifyCartLineImage(line.merchandise.product.featuredImage);
+
+          return (
+            <article key={line.id} className="flex items-center gap-4 rounded-lg border border-black/10 bg-white p-4">
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-black/5">
+                {image ? (
+                  <Image
+                    src={image.url}
+                    alt={image.altText ?? line.merchandise.product.title}
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <HoroImagePlaceholder label={`${line.merchandise.product.title} artwork preview`} compact />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{line.merchandise.product.title}</p>
+                <p className="text-sm text-black/60">{line.merchandise.title}</p>
+                <p className="text-sm text-black/80">
+                  {formatMoney(line.cost.totalAmount.amount, line.cost.totalAmount.currencyCode)}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="h-8 w-8 rounded-full border border-black/20"
+                  disabled={isLoading || line.quantity <= 1}
+                  onClick={() => updateLine(line.id, line.quantity - 1)}
+                >
+                  -
+                </button>
+                <span className="w-8 text-center text-sm">{line.quantity}</span>
+                <button
+                  type="button"
+                  className="h-8 w-8 rounded-full border border-black/20"
+                  disabled={isLoading}
+                  onClick={() => updateLine(line.id, line.quantity + 1)}
+                >
+                  +
+                </button>
+              </div>
+            </article>
+          );
+        })}
       </div>
       <div className="rounded-2xl border border-black/10 bg-white p-6">
         <p className="text-sm text-black/60">Subtotal</p>

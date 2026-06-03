@@ -13,8 +13,13 @@
         assign gift_fallback_product = founding_collection.products.first
       endif
     endif
+    assign gift_campaign_image = section.settings.image
+    assign gift_campaign_image_url = nil
+    if gift_campaign_image == blank
+      assign gift_campaign_image_url = 'horo-gift-box.png' | asset_url
+    endif
     assign show_banner_image = false
-    if section.settings.image != blank
+    if gift_campaign_image != blank or gift_campaign_image_url != blank
       assign show_banner_image = true
     elsif gift_fallback_product != blank
       assign show_banner_image = true
@@ -39,9 +44,18 @@
         endif
       -%}
 
-      {%- if layout_style == 'image_overlay' and section.settings.image != blank -%}
+      {%- liquid
+        assign show_gift_campaign = false
+        if layout_style == 'image_overlay' and show_banner_image
+          if gift_campaign_image != blank or gift_campaign_image_url != blank
+            assign show_gift_campaign = true
+          endif
+        endif
+      -%}
+      {%- if show_gift_campaign -%}
         {% render 'horo-home-campaign-overlay',
-          campaign_image: section.settings.image,
+          campaign_image: gift_campaign_image,
+          campaign_image_url: gift_campaign_image_url,
           eyebrow: section.settings.eyebrow,
           heading: gift_heading,
           body: section.settings.body,
@@ -166,8 +180,7 @@
     {
       "type": "text",
       "id": "heading_line_2",
-      "label": "Heading line 2 (overlay: use body instead)",
-      "default": ""
+      "label": "Heading line 2 (overlay: use body instead)"
     },
     {
       "type": "textarea",
@@ -221,7 +234,7 @@
       "type": "text",
       "id": "button_label",
       "label": "Button label",
-      "default": "Find the perfect gift →"
+      "default": "Shop Gifts"
     },
     {
       "type": "url",

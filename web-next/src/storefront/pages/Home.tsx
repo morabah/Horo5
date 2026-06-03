@@ -40,7 +40,7 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
  * Default homepage section list.
  *
  * Keep the launch-mode storefront short and shop-led (audit P1):
- * hero · trust ribbon · founding drop · feeling grid · gift block · our story.
+ * hero · trust ribbon · founding drop · feeling grid · editorial · gift block · our story.
  *
  * Operators can override the order or re-enable additional sections from the
  * homepage_section module. `store.metadata.homepage.sectionsEnabled` remains a

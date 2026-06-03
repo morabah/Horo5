@@ -68,6 +68,11 @@ const ArtistStudioBlock = dynamic(
 );
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { formatEgp } from '../utils/formatPrice';
+import { buildPdpWhatsAppSupportUrl } from '../utils/pdpWhatsApp';
+import {
+  HORO_DEFAULT_CARE_INSTRUCTIONS,
+  HORO_DEFAULT_PHYSICAL_ATTRIBUTES,
+} from '../data/default-product-physical';
 import { humanizeArtistSlugForDisplay } from '../utils/humanizeArtistSlug';
 import { notifyRestockSignup, submitPdpNotify } from '../utils/pdpNotifyRestock';
 import {
@@ -77,7 +82,6 @@ import {
   mergePdpDeliveryRules,
   mergePdpSizeTableConfig,
   resolvePdpDisplayFitModels,
-  isConfiguredExternalUrl,
   type PdpSizeTableConfig,
 } from '../data/domain-config';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
@@ -523,7 +527,13 @@ export function ProductDetail({
       return copy.pdpPriceForSizeTemplate.replace('{size}', sz);
     }
     return null;
-  }, [displayPriceSelection.size, displayPriceSelection.isSelected, pricingVariesBySize]);
+  }, [
+    copy.pdpPriceForSizeTemplate,
+    copy.pdpPriceSelectedSizeTemplate,
+    displayPriceSelection.size,
+    displayPriceSelection.isSelected,
+    pricingVariesBySize,
+  ]);
   const productDescription = product?.storyDescription ?? product?.description ?? product?.story ?? '';
   const compactProductDescription = useMemo(() => {
     if (!productDescription) return '';
@@ -622,10 +632,10 @@ export function ProductDetail({
       .replace('{shoulder}', row.shoulder)
       .replace('{length}', row.length)
       .replace('{sleeve}', row.sleeve);
-  }, [selectedSize, sizeTableResolved.measurements]);
+  }, [copy.sizeGuideFlatMeasurementsTemplate, selectedSize, sizeTableResolved.measurements]);
 
   const physicalFitDisplayLines = useMemo(() => {
-    const p = product?.physicalAttributes;
+    const p = product?.physicalAttributes ?? HORO_DEFAULT_PHYSICAL_ATTRIBUTES;
     if (!p) return [copy.sizeGuidePhysicalMaterial.replace('{value}', 'Cotton T-shirt')];
     const lines: string[] = [];
     if (p.weight) lines.push(copy.sizeGuidePhysicalWeight.replace('{value}', p.weight));
@@ -642,14 +652,27 @@ export function ProductDetail({
     if (p.hsCode) lines.push(copy.sizeGuidePhysicalHs.replace('{value}', p.hsCode));
     if (p.midCode) lines.push(copy.sizeGuidePhysicalMid.replace('{value}', p.midCode));
     return lines;
-  }, [product?.physicalAttributes]);
+  }, [
+    copy.sizeGuidePhysicalDimensions,
+    copy.sizeGuidePhysicalHs,
+    copy.sizeGuidePhysicalMaterial,
+    copy.sizeGuidePhysicalMid,
+    copy.sizeGuidePhysicalOrigin,
+    copy.sizeGuidePhysicalWeight,
+    product?.physicalAttributes,
+  ]);
   const inlineFitModelDisplay =
     inlineFitModelPart ??
     physicalFitDisplayLines[0] ??
     (displayFitModelsResolved[0] ? formatPdpFitModelLine(displayFitModelsResolved[0]) : copy.sizeGuideModelNote);
-  const whatsappSupportUrl = isConfiguredExternalUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl)
-    ? HORO_SUPPORT_CHANNELS.whatsappSupportUrl
-    : null;
+  const whatsappSupportUrl = useMemo(() => {
+    if (!product) return null;
+    return buildPdpWhatsAppSupportUrl(HORO_SUPPORT_CHANNELS.whatsappSupportUrl, {
+      productName: product.name,
+      size: selectedSize,
+      locale: isArabic ? 'ar' : 'en',
+    });
+  }, [product, selectedSize, isArabic]);
   const primaryCrossSellProducts = frequentlyBoughtWithProducts;
   const fallbackCrossSellProducts =
     primaryCrossSellProducts.length === 0 ? styleWithProducts : [];
@@ -720,7 +743,7 @@ export function ProductDetail({
         label: heroView.label,
       }),
     );
-  }, [product, gallery.length, photoIndex, heroView.label]);
+  }, [copy.pdpGalleryLiveTemplate, product, gallery.length, photoIndex, heroView.label]);
 
   useEffect(() => {
     if (!lightboxOpen) {
@@ -743,7 +766,7 @@ export function ProductDetail({
         }),
       );
     }
-  }, [lightboxOpen, photoIndex, gallery.length, heroView.label]);
+  }, [copy.pdpGalleryLiveTemplate, lightboxOpen, photoIndex, gallery.length, heroView.label]);
 
   useEffect(() => {
     if (!sizeGuideOpen) return;
@@ -1302,7 +1325,10 @@ export function ProductDetail({
 
       <section className="border-t border-stone/25 bg-papyrus">
         <div className="mx-auto max-w-[820px] px-4 py-14 md:px-12 md:py-16">
-          <PdpQualityProofCard physicalLines={physicalFitDisplayLines} careInstructions={product.careInstructions} />
+          <PdpQualityProofCard
+            physicalLines={physicalFitDisplayLines}
+            careInstructions={product.careInstructions?.trim() || HORO_DEFAULT_CARE_INSTRUCTIONS}
+          />
         </div>
       </section>
 
@@ -1350,7 +1376,7 @@ export function ProductDetail({
         <StickyAddToCart
           visible={stickyCtaVisible && !lightboxOpen && !sizeGuideOpen}
           productName={product.name}
-          thumbnail={media.main}
+          thumbnail={primaryGallerySrc}
           selectedSize={selectedSize}
           sizeReady={sizeReady}
           oosSelected={oosSelected || allSizesUnavailable}

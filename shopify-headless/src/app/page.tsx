@@ -3,11 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { CollectionCard } from "@/components/collection-card";
+import { HoroImagePlaceholder } from "@/components/horo-image-placeholder";
 import { ProductCard } from "@/components/product-card";
 import { TrustRibbon } from "@/components/trust-ribbon";
 import { siteUrl } from "@/lib/env";
 import { getDictionary } from "@/lib/i18n/dictionary";
 import { getDefaultLocale } from "@/lib/i18n/locale";
+import { pickShopifyCardImage } from "@/lib/product-images";
 import { getCollections, getProducts } from "@/lib/shopify/commerce";
 
 export const metadata: Metadata = {
@@ -27,8 +29,8 @@ export default async function Home() {
     collections = [];
     products = [];
   }
-  const heroProduct = products.find((product) => product.featuredImage || product.images[0]);
-  const heroImage = heroProduct?.featuredImage ?? heroProduct?.images[0] ?? null;
+  const heroProduct = products.find((product) => pickShopifyCardImage(product));
+  const heroImage = heroProduct ? pickShopifyCardImage(heroProduct) : null;
 
   return (
     <main className="mx-auto w-full max-w-6xl space-y-14 px-4 py-10 md:px-8 md:py-14">
@@ -65,9 +67,10 @@ export default async function Home() {
               className="object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center px-8 text-center text-sm text-white/60">
-              Add Shopify product media to populate the launch hero.
-            </div>
+            <HoroImagePlaceholder
+              label="HORO launch hero artwork preview"
+              className="bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.18),rgba(250,247,246,0.12)_44%,rgba(0,0,0,0.22))] text-white"
+            />
           )}
         </div>
       </section>

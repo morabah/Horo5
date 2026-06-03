@@ -1,5 +1,5 @@
 // src/data/domain-config.ts
-import type { PdpFitModel, ProductSizeKey } from './catalog-types';
+import type { ProductSizeKey } from './catalog-types';
 export type PdpSizeSchemaEntry = { key: ProductSizeKey; disabled?: boolean };
 
 export * from './delivery';

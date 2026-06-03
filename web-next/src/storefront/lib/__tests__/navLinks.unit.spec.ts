@@ -24,4 +24,11 @@ describe("navLinks", () => {
     expect(NAV_DRAWER_ROUTE_KEYS).toContain("home")
     expect(NAV_DRAWER_ROUTE_KEYS).toContain("search")
   })
+
+  it("exposes zodiac, career, faq, and exchange in the drawer IA", () => {
+    expect(NAV_ROUTE.career.path).toBe("/feelings/career")
+    expect(NAV_DRAWER_ROUTE_KEYS).toEqual(
+      expect.arrayContaining(["zodiac", "career", "faq", "exchange"]),
+    )
+  })
 })

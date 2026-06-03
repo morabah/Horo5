@@ -7,10 +7,12 @@
   assign show_media = false
   assign editorial_media = nil
 
+  assign editorial_image_url = nil
   if section.settings.image != blank
     assign show_media = true
     assign editorial_media = section.settings.image
-  elsif fallback_product != blank
+  else
+    assign editorial_image_url = 'horo-editorial-artwork-detail.png' | asset_url
     assign show_media = true
   endif
 
@@ -30,9 +32,27 @@
   aria-labelledby="home-editorial-title-{{ section.id }}"
 >
   <div class="home-page__inner">
-    {%- if show_media and layout_style == 'image_overlay' and editorial_media != blank -%}
+    {%- if section.settings.bridge_line != blank -%}
+      <p class="home-editorial-bridge">{{ section.settings.bridge_line | escape }}</p>
+    {%- endif -%}
+    {%- if fallback_product != blank and section.settings.show_product_ref -%}
+      <p class="home-editorial-feature__product-ref">
+        {{ section.settings.product_ref_prefix | default: 'Featuring' | escape }}
+        {{ fallback_product.title | escape }}
+      </p>
+    {%- endif -%}
+    {%- liquid
+      assign show_editorial_campaign = false
+      if show_media and layout_style == 'image_overlay'
+        if editorial_media != blank or editorial_image_url != blank
+          assign show_editorial_campaign = true
+        endif
+      endif
+    -%}
+    {%- if show_editorial_campaign -%}
       {% render 'horo-home-campaign-overlay',
         campaign_image: editorial_media,
+        campaign_image_url: editorial_image_url,
         eyebrow: section.settings.eyebrow,
         heading: section.settings.heading,
         body: section.settings.body,
@@ -135,6 +155,24 @@
       "default": "editorial-feature"
     },
     {
+      "type": "text",
+      "id": "bridge_line",
+      "label": "Bridge line (above section)",
+      "default": "Chosen by feeling. Made to be seen closer."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_ref",
+      "label": "Show featured product name",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "product_ref_prefix",
+      "label": "Product ref prefix",
+      "default": "Featuring"
+    },
+    {
       "type": "select",
       "id": "layout_style",
       "label": "Layout style",
@@ -176,7 +214,7 @@
       "type": "text",
       "id": "button_label",
       "label": "Button label",
-      "default": "Shop the Piece"
+      "default": "View Design"
     },
     {
       "type": "url",
