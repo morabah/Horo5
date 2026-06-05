@@ -254,8 +254,11 @@ if (!homepageDefaults.includes("trustStripItems")) {
 if (!homepageDefaults.includes("soundbite_en")) {
   fail("medusa-backend/src/lib/homepage-sections/defaults.ts: missing V1.9 hero soundbite payload.");
 }
-if (!homepageDefaults.includes("Payment options shown at checkout")) {
+if (!homepageDefaults.includes("Payment at checkout")) {
   fail("medusa-backend/src/lib/homepage-sections/defaults.ts: missing V1.9 payment trust copy.");
+}
+if (!homepageDefaults.includes("14-day exchange — see policy")) {
+  fail("medusa-backend/src/lib/homepage-sections/defaults.ts: missing policy-qualified exchange trust copy.");
 }
 if (!homepageDefaults.includes("palette_roles")) {
   fail("medusa-backend/src/lib/homepage-sections/defaults.ts: missing V1.9 palette role payload.");

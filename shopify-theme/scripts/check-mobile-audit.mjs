@@ -42,10 +42,12 @@ for (const file of files) {
     const isPseudo = /::after|::before/.test(context);
     // Badge counters are not touch targets
     const isBadge = /wishlist-badge/.test(context);
+    // Icon dimensions inside an already-sized control are not the tappable target
+    const isSvgChild = /\bsvg\b/i.test(context);
 
     // Check for fixed small touch targets (width/height < 44px)
     const touchTargetMatch = line.match(/(?:width|height|min-width|min-height|inline-size|block-size)\s*:\s*(\d+\.?\d*)(?:px|rem)/);
-    if (touchTargetMatch && !isDecorative && !isInfoChip && !isPseudo && !isBadge) {
+    if (touchTargetMatch && !isDecorative && !isInfoChip && !isPseudo && !isBadge && !isSvgChild) {
       const val = parseFloat(touchTargetMatch[1]);
       const unit = touchTargetMatch[0].includes('rem') ? 'rem' : 'px';
       const pxVal = unit === 'rem' ? val * 10 : val;
@@ -69,7 +71,7 @@ for (const file of files) {
     }
 
     // Check for fixed pixel widths that could overflow
-    const fixedWidthMatch = line.match(/width\s*:\s*(\d+)px/);
+    const fixedWidthMatch = line.match(/^\s*width\s*:\s*(\d+)px\b/);
     if (fixedWidthMatch) {
       const pxVal = parseInt(fixedWidthMatch[1], 10);
       if (pxVal > 375) {

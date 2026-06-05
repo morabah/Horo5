@@ -14,7 +14,7 @@
   width: 100%;
   min-width: 32rem;
   border-collapse: collapse;
-  font-size: 0.95rem;
+  font-size: 1.4rem;
 }
 
 .horo-comparison-faq__table th,
@@ -27,7 +27,7 @@
 
 .horo-comparison-faq__table th {
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 1.1rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   opacity: 0.75;
@@ -38,7 +38,7 @@
 }
 
 .horo-comparison-faq__proof {
-  font-size: 0.88rem;
+  font-size: 1.3rem;
   opacity: 0.85;
 }
 
@@ -50,7 +50,7 @@
 
 .gifts-hub-trust__size-help {
   margin-top: 1.2rem;
-  font-size: 0.95rem;
+  font-size: 1.4rem;
 }
 
 .horo-comparison-faq__cta {

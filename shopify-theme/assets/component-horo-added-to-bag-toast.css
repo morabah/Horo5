@@ -2,15 +2,14 @@
 .horo-added-to-bag-toast-host {
   position: fixed;
   top: max(5.5rem, calc(env(safe-area-inset-top, 0px) + 4.5rem));
-  right: max(1rem, env(safe-area-inset-right, 0px));
+  inset-inline-end: max(1rem, env(safe-area-inset-right, 0px));
   z-index: 250;
   width: min(calc(100vw - 2rem), 420px);
   pointer-events: none;
 }
 
 [dir='rtl'] .horo-added-to-bag-toast-host {
-  right: auto;
-  left: max(1rem, env(safe-area-inset-left, 0px));
+  inset-inline-end: max(1rem, env(safe-area-inset-left, 0px));
 }
 
 .horo-added-to-bag-toast {
@@ -76,7 +75,7 @@
   border-radius: 50%;
   background: #8c2340;
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 1.1rem;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -155,7 +154,7 @@
 
 .horo-added-to-bag-toast__meta {
   margin: 0.25rem 0 0;
-  font-size: 0.8125rem;
+  font-size: 1.2rem;
   color: rgba(var(--color-foreground, 79 17 31), 0.72);
 }
 
@@ -180,7 +179,7 @@
   min-height: 44px;
   padding: 0.5rem 1rem;
   border-radius: 999px;
-  font-size: 0.6875rem;
+  font-size: 1.1rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -220,13 +219,11 @@
 @media screen and (max-width: 640px) {
   .horo-added-to-bag-toast-host--compact {
     top: max(4.75rem, calc(env(safe-area-inset-top, 0px) + 3.75rem));
-    right: max(0.75rem, env(safe-area-inset-right, 0px));
-    left: auto;
+    inset-inline-end: max(0.75rem, env(safe-area-inset-right, 0px));
   }
 
   [dir='rtl'] .horo-added-to-bag-toast-host--compact {
-    left: max(0.75rem, env(safe-area-inset-left, 0px));
-    right: auto;
+    inset-inline-end: max(0.75rem, env(safe-area-inset-left, 0px));
   }
 
   .horo-added-to-bag-toast__item {
@@ -252,14 +249,8 @@
 @media screen and (min-width: 641px) and (max-width: 749px) {
   .horo-added-to-bag-toast-host:not(.horo-added-to-bag-toast-host--compact) {
     top: max(4.75rem, calc(env(safe-area-inset-top, 0px) + 3.75rem));
-    right: 0.75rem;
-    left: 0.75rem;
+    inset-inline: 0.75rem;
     width: auto;
-  }
-
-  [dir='rtl'] .horo-added-to-bag-toast-host:not(.horo-added-to-bag-toast-host--compact) {
-    left: 0.75rem;
-    right: 0.75rem;
   }
 }
 

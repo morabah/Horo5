@@ -19,11 +19,18 @@
   }
 {%- endstyle -%}
 
-{%- unless settings.cart_type == 'drawer' -%}
-  <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
-{%- endunless -%}
+  {%- unless settings.cart_type == 'drawer' -%}
+    <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
+  {%- endunless -%}
 
-<script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
+  {%- liquid
+    assign empty_preview_product = collections['founding-drop'].products.first
+    if empty_preview_product == blank
+      assign empty_preview_product = collections.all.products.first
+    endif
+    assign empty_preview_image = empty_preview_product.featured_media.preview_image | default: empty_preview_product.featured_image
+  -%}
 
 <cart-items class="gradient color-{{ section.settings.color_scheme }} isolate{% if cart == empty %} is-empty{% else %} section-{{ section.id }}-padding{% endif %}">
   <div class="page-width">
@@ -35,17 +42,34 @@
     </div>
 
     <div class="cart__warnings">
-      <h1 class="cart__empty-text">{{ 'sections.cart.empty' | t }}</h1>
-      <a href="{{ routes.all_products_collection_url }}" class="button">
-        {{ 'general.continue_shopping' | t }}
-      </a>
-
-      {%- if shop.customer_accounts_enabled and customer == null -%}
-        <h2 class="cart__login-title">{{ 'sections.cart.login.title' | t }}</h2>
-        <p class="cart__login-paragraph">
-          {{ 'sections.cart.login.paragraph_html' | t: link: routes.account_login_url }}
-        </p>
-      {%- endif -%}
+      <section class="horo-cart-empty-card" aria-labelledby="horo-cart-empty-title">
+        <div class="horo-cart-empty-card__media" aria-hidden="true">
+          {%- if empty_preview_image != blank -%}
+            {{
+              empty_preview_image
+              | image_url: width: 960
+              | image_tag:
+                loading: 'eager',
+                widths: '360, 540, 720, 960',
+                sizes: '(max-width: 749px) 100vw, 320px',
+                alt: ''
+            }}
+          {%- else -%}
+            <div class="horo-cart-empty-card__placeholder">
+              <span>HORO</span>
+              <small>{{ 'horo.cart.empty_preview_label' | t }}</small>
+            </div>
+          {%- endif -%}
+        </div>
+        <div class="horo-cart-empty-card__content">
+          <h1 id="horo-cart-empty-title" class="horo-cart-empty-card__title">{{ 'horo.cart.heading' | t }}</h1>
+          <p class="horo-cart-empty-card__count">{{ 'horo.cart.empty_item_count' | t }}</p>
+          <p class="horo-cart-empty-card__copy">{{ 'horo.cart.empty_state' | t }}</p>
+          <a href="{{ routes.all_products_collection_url }}" class="button horo-cart-empty-card__button">
+            {{ 'horo.cart.empty_cta' | t }}
+          </a>
+        </div>
+      </section>
     </div>
 
     <form action="{{ routes.cart_url }}" class="cart__contents critical-hidden" method="post" id="cart">

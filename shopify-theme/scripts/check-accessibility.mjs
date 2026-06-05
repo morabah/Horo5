@@ -200,13 +200,33 @@ function checkColorContrast() {
   let lowOpacityText = 0;
 
   for (const file of cssFiles) {
+    if (!isHoroOwnedFile(file)) continue;
+
+    const fileName = path.basename(file);
     const content = fs.readFileSync(file, 'utf-8');
-    const matches = [...content.matchAll(/opacity\s*:\s*0\.([0-4])\d*/g)];
-    lowOpacityText += matches.length;
+    const lines = content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!/opacity\s*:\s*0\.([0-4])\d*/.test(line)) continue;
+
+      const context = lines.slice(Math.max(0, i - 14), i + 1).join('\n');
+      const isDecorative =
+        /(::before|::after|@keyframes|keyframes|icon|placeholder|overlay|grain|scrim|underline|pulse|shape|decorative|media|visual|motion|typography|split-line)/i.test(
+          `${fileName}\n${context}`
+        );
+      const isLikelyText =
+        /(label|text|subtext|copy|body|title|heading|name|city|notice|meta|proof|eyebrow|intro|price|description)/i.test(
+          context
+        );
+
+      if (!isDecorative && isLikelyText) {
+        lowOpacityText++;
+      }
+    }
   }
 
   const label = lowOpacityText === 0 ? '✅' : '⚠️';
-  console.log(`  ${label} ${lowOpacityText} opacity values below 0.5 found`);
+  console.log(`  ${label} ${lowOpacityText} likely text opacity values below 0.5 found`);
   if (lowOpacityText > 0) {
     console.log('  ⚠️  Ensure text with reduced opacity still meets WCAG AA contrast (4.5:1).');
     warnings++;

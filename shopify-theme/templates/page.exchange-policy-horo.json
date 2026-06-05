@@ -65,7 +65,7 @@
           "settings": {
             "show_badge": true,
             "icon": "exchange",
-            "label": "14-day exchange",
+            "label": "14-day exchange — see policy",
             "subtext": ""
           }
         }

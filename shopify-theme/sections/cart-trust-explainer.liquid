@@ -14,36 +14,38 @@
   }
 {%- endstyle -%}
 
-<div class="color-{{ section.settings.color_scheme }} gradient">
-  <div class="page-width section-{{ section.id }}-padding">
-    <div class="cart-trust-explainer">
-      {%- if section.settings.heading != blank -%}
-        <h2 class="cart-trust-explainer__heading">{{ section.settings.heading | escape }}</h2>
-      {%- endif -%}
+{%- unless cart == empty and request.design_mode == false -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div class="cart-trust-explainer">
+        {%- if section.settings.heading != blank -%}
+          <h2 class="cart-trust-explainer__heading">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
 
-      {% render 'horo-cart-reassurance' %}
+        {% render 'horo-cart-reassurance' %}
 
-      {%- if section.blocks.size > 0 -%}
-        <ul class="cart-trust-explainer__grid" role="list">
-          {%- for block in section.blocks -%}
-            {%- if block.settings.show == true and block.settings.title != blank -%}
-              <li class="cart-trust-explainer__card" role="listitem" {{ block.shopify_attributes }}>
-                <span class="cart-trust-explainer__title">{{ block.settings.title | escape }}</span>
-                {%- if block.settings.subtitle != blank -%}
-                  <span class="cart-trust-explainer__subtitle">{{ block.settings.subtitle | escape }}</span>
-                {%- endif -%}
-              </li>
-            {%- endif -%}
-          {%- endfor -%}
-        </ul>
-      {%- elsif request.design_mode -%}
-        <div class="horo-page__placeholder">
-          <p>Add at least one trust card block to display trust signals.</p>
-        </div>
-      {%- endif -%}
+        {%- if section.blocks.size > 0 -%}
+          <ul class="cart-trust-explainer__grid" role="list">
+            {%- for block in section.blocks -%}
+              {%- if block.settings.show == true and block.settings.title != blank -%}
+                <li class="cart-trust-explainer__card" role="listitem" {{ block.shopify_attributes }}>
+                  <span class="cart-trust-explainer__title">{{ block.settings.title | escape }}</span>
+                  {%- if block.settings.subtitle != blank -%}
+                    <span class="cart-trust-explainer__subtitle">{{ block.settings.subtitle | escape }}</span>
+                  {%- endif -%}
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        {%- elsif request.design_mode -%}
+          <div class="horo-page__placeholder">
+            <p>Add at least one trust card block to display trust signals.</p>
+          </div>
+        {%- endif -%}
+      </div>
     </div>
   </div>
-</div>
+{%- endunless -%}
 
 {% schema %}
 {

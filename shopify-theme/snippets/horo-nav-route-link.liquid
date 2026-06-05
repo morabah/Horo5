@@ -4,7 +4,7 @@
 {%- endcomment -%}
 {%- liquid
   assign about_url = routes.root_url | append: 'pages/about-horo'
-  assign founding_drop_url = routes.collections_url | append: '/founding-drop'
+  assign shop_all_url = routes.all_products_collection_url
   assign link_style = link_style | default: 'primary'
 
   case route_key
@@ -13,7 +13,7 @@
       assign href = routes.root_url
     when 'founding_drop'
       assign label = 'horo.nav.founding_drop' | t | default: 'Shop All'
-      assign href = founding_drop_url
+      assign href = shop_all_url
     when 'shop_by_meaning'
       assign label = 'horo.nav.shop_by_feeling' | t | default: 'Shop by Feeling'
       assign href = routes.root_url | append: '#shop-by-meaning'
@@ -92,7 +92,7 @@
       <div class="horo-nav-preview__inner">
         <div class="horo-nav-preview__header">
           <p>{{ 'horo.nav.shop_preview_title' | t | default: 'Shop the Drop' }}</p>
-          <a href="{{ founding_drop_url }}">{{ 'horo.nav.shop_preview_browse_all' | t | default: 'Shop All' }}</a>
+          <a href="{{ shop_all_url }}">{{ 'horo.nav.shop_preview_browse_all' | t | default: 'Shop All' }}</a>
         </div>
         <div class="horo-nav-preview__grid">
           {%- liquid
@@ -127,7 +127,7 @@
             {%- endfor -%}
           {%- endif -%}
           {%- if rendered_count == 0 -%}
-            <a href="{{ founding_drop_url }}" class="horo-nav-preview__card">
+            <a href="{{ shop_all_url }}" class="horo-nav-preview__card">
               <span class="horo-nav-preview__image">
                 <span class="horo-nav-preview__placeholder">{{ 'horo.nav.product_image_placeholder' | t | default: 'Product image' }}</span>
               </span>

@@ -54,8 +54,8 @@ export const DICTIONARY = {
       "meaningMoodSubtitle": "Feelings you wear",
       "meaningLifestyleTitle": "Lifestyle",
       "meaningLifestyleSubtitle": "Daily pieces",
-      "meaningForSomeoneTitle": "For Someone",
-      "meaningForSomeoneSubtitle": "Gifting",
+      "meaningCareerTitle": "Career",
+      "meaningCareerSubtitle": "Work identity",
       "editorialBridge": "Chosen by feeling. Made to be seen closer.",
       "editorialFeaturing": "Featuring",
       "momentsEyebrow": "Choose by moment",
@@ -419,7 +419,7 @@ export const DICTIONARY = {
       "whatsappOptIn": "Send order updates via WhatsApp",
       "rememberAddressOnDevice": "Remember my shipping details on this device",
       "paymentContinuityTitle": "Built to feel easy from checkout to doorstep.",
-      "paymentContinuityBody": "Clear delivery timing, free exchange, and support only when it is actually available.",
+      "paymentContinuityBody": "Clear delivery timing, eligible exchange support, and help only when it is actually available.",
       "deliveryLabel": "Expected delivery",
       "breadcrumbTitle": "Checkout",
       "backToCart": "← Back to cart",
@@ -518,7 +518,7 @@ export const DICTIONARY = {
     },
     "pdp": {
       "addBtnCTA": "Add to Bag",
-      "shippingLine": "Express shipping · 14-day hassle-free returns · Secure checkout",
+      "shippingLine": "Shipping options · 14-day exchange per policy · Secure checkout",
       "deliveryEyebrow": "Delivery",
       "deliveryEstimateTitle": "Estimated arrival",
       "deliveryStandardBadge": "Standard · 3–5 business days",
@@ -559,11 +559,11 @@ export const DICTIONARY = {
           "body": "Next-day shipping available within Cairo & Giza. 2–3 days for wider regions."
         },
         {
-          "title": "Returns",
-          "body": "14-day hassle-free returns. If you’re not entirely satisfied with your purchase, you may return it within 14 days of receipt for an exchange or full refund."
+          "title": "Exchange",
+          "body": "Eligible exchanges are supported within 14 days of delivery according to the current policy. Keep the item unworn, unwashed, and in its original packaging."
         }
       ],
-      "trustReturnsLine": "14-day hassle-free returns",
+      "trustReturnsLine": "14-day exchange per policy",
       "sizeGuideModelNote": "Open the size guide for measurements and on-body fit notes.",
       "sizeGuideFlatDiagramTitle": "Flat sketch (your size)",
       "sizeGuideFlatDiagramSelectSize": "Select a size in the table above to see the flat measurement sketch.",
@@ -693,7 +693,6 @@ export const DICTIONARY = {
       "cartGovernorateTitle": "Delivery estimate",
       "cartGovernorateEmpty": "Choose your governorate to see shipping before checkout.",
       "cartGovernorateSelected": "Delivery to {governorate}",
-      "cartGovernorateDefaultEstimate": "Showing a Cairo estimate — confirm your governorate for accurate shipping.",
       "cartShippingEstimate": "Estimated shipping",
       "cartEstimatedTotal": "Estimated total",
       "cartChooseGovernorate": "Choose governorate",
@@ -843,8 +842,8 @@ export const DICTIONARY = {
       "meaningMoodSubtitle": "مشاعر تلبسها",
       "meaningLifestyleTitle": "نمط حياة",
       "meaningLifestyleSubtitle": "قطع يومية",
-      "meaningForSomeoneTitle": "لشخص عزيز",
-      "meaningForSomeoneSubtitle": "هدايا",
+      "meaningCareerTitle": "المهنة",
+      "meaningCareerSubtitle": "هوية الشغل",
       "editorialBridge": "اخترت بالشعور. صُمّم ليُرى عن قرب.",
       "editorialFeaturing": "من مجموعة",
       "momentsEyebrow": "اختر حسب اللحظة",
@@ -986,8 +985,8 @@ export const DICTIONARY = {
           "body": "كل صفحة منتج بتعرض المقاسات والملاحظات. تخمين أقل، استبدالات أقل، قرارات أسهل."
         },
         "codAndExchange": {
-          "title": "دفع عند الاستلام واستبدال ١٤ يوم",
-          "body": "ادفع عند باب بيتك. لو المقاس مش مظبوط، استبدل خلال ١٤ يوم لو القطعة جديدة وتغليفها سليم."
+          "title": "شراء أوضح",
+          "body": "خيارات الدفع تظهر عند إتمام الطلب. الاستبدال متاح للقطع المؤهلة حسب السياسة وحالة المنتج."
         },
         "realProofOnly": {
           "title": "دليل حقيقي فقط",
@@ -1305,7 +1304,7 @@ export const DICTIONARY = {
     },
     "pdp": {
       "addBtnCTA": "Add to Bag",
-      "shippingLine": "Express shipping · 14-day hassle-free returns · Secure checkout",
+      "shippingLine": "خيارات الشحن · استبدال ١٤ يوم حسب السياسة · دفع آمن",
       "deliveryEyebrow": "Delivery",
       "deliveryEstimateTitle": "Estimated arrival",
       "deliveryStandardBadge": "Standard · 3–5 business days",
@@ -1346,11 +1345,11 @@ export const DICTIONARY = {
           "body": "Next-day shipping available within Cairo & Giza. 2–3 days for wider regions."
         },
         {
-          "title": "Returns",
-          "body": "14-day hassle-free returns. If you’re not entirely satisfied with your purchase, you may return it within 14 days of receipt for an exchange or full refund."
+          "title": "الاستبدال",
+          "body": "الاستبدالات المؤهلة متاحة خلال ١٤ يوم من التوصيل حسب السياسة الحالية. احتفظ بالقطعة غير ملبوسة وغير مغسولة وفي تغليفها الأصلي."
         }
       ],
-      "trustReturnsLine": "14-day hassle-free returns",
+      "trustReturnsLine": "استبدال ١٤ يوم حسب السياسة",
       "sizeGuideModelNote": "Open the size guide for measurements and on-body fit notes.",
       "sizeGuideFlatDiagramTitle": "Flat sketch (your size)",
       "sizeGuideFlatDiagramSelectSize": "Select a size in the table above to see the flat measurement sketch.",
@@ -1480,7 +1479,6 @@ export const DICTIONARY = {
       "cartGovernorateTitle": "تقدير التوصيل",
       "cartGovernorateEmpty": "اختر محافظتك لمعرفة الشحن قبل الدفع.",
       "cartGovernorateSelected": "التوصيل إلى {governorate}",
-      "cartGovernorateDefaultEstimate": "نعرض تقدير القاهرة — أكّد محافظتك لمعرفة الشحن بدقة.",
       "cartShippingEstimate": "تقدير الشحن",
       "cartEstimatedTotal": "الإجمالي التقديري",
       "cartChooseGovernorate": "اختر المحافظة",

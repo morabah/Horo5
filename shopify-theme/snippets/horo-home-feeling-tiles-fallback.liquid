@@ -1,12 +1,12 @@
 {%- comment -%}
   Default homepage feeling tiles when metaobjects or collections are not seeded yet.
-  Launch taxonomy: Zodiac / Mood / Lifestyle / Gift Ready.
+  Launch taxonomy: Mood / Lifestyle / Career / Zodiac.
 {%- endcomment -%}
 {%- liquid
   assign limit = feeling_limit | default: 4
-  assign fallback_slugs = 'zodiac,mood,lifestyle,gift' | split: ','
-  assign fallback_labels = 'Zodiac Signs,Mood,Lifestyle,For Someone' | split: ','
-  assign fallback_subtitles = '12 designs,Feelings you wear,Daily pieces,Gifting' | split: ','
+  assign fallback_slugs = 'mood,lifestyle,career,zodiac' | split: ','
+  assign fallback_labels = 'Mood,Lifestyle,Career,Zodiac Signs' | split: ','
+  assign fallback_subtitles = 'Feelings you wear,Daily pieces,Work identity,Personality-inspired designs' | split: ','
   assign surfaces = '#f8eaea,#f4ede5,#edf1ea,#f5eef3' | split: ','
 -%}
 
@@ -19,7 +19,7 @@
     {%- assign subtitle = fallback_subtitles[forloop.index0] -%}
     {%- assign surface_index = forloop.index0 | modulo: 4 -%}
     {%- assign surface_color = surfaces[surface_index] -%}
-    {%- assign card_url = '/collections/founding-drop' -%}
+    {%- assign card_url = routes.all_products_collection_url -%}
     {%- if slug == 'zodiac' -%}
       {%- assign zodiac_collection = collections['zodiac'] -%}
       {%- if zodiac_collection != blank -%}
@@ -35,12 +35,15 @@
       {%- if mood_lifestyle != blank -%}
         {%- assign card_url = mood_lifestyle.url -%}
       {%- endif -%}
-    {%- elsif slug == 'gift' -%}
-      {%- assign gift_collection = collections['gift-ready'] -%}
-      {%- if gift_collection != blank -%}
-        {%- assign card_url = gift_collection.url -%}
+    {%- elsif slug == 'career' -%}
+      {%- assign career_collection = collections['career'] -%}
+      {%- if career_collection != blank -%}
+        {%- assign card_url = career_collection.url -%}
       {%- else -%}
-        {%- assign card_url = '/pages/gifts-hub' -%}
+        {%- assign feeling_career = collections['feeling-career'] -%}
+        {%- if feeling_career != blank -%}
+          {%- assign card_url = feeling_career.url -%}
+        {%- endif -%}
       {%- endif -%}
     {%- endif -%}
     <li class="home-feeling-pastel-grid__item" role="listitem">

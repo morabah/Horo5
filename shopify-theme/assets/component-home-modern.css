@@ -52,10 +52,10 @@
 
   .home-founding-grid .home-founding-card__cta {
     width: 100%;
-    min-height: 32px;
+    min-height: 44px;
     margin-top: 6px;
-    padding: 5px 26px 5px 8px;
-    font-size: 11px;
+    padding: 8px 28px 8px 10px;
+    font-size: 12px;
   }
 
   .home-founding-card--view-all {
@@ -387,7 +387,7 @@
 .horo-campaign__body {
   margin: 0.65rem 0 0;
   max-width: 36rem;
-  font-size: 0.9375rem;
+  font-size: 1.4rem;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.92);
 }

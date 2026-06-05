@@ -87,7 +87,7 @@
   margin: 0.4rem 0 0;
   font-size: 1.1rem;
   color: rgb(var(--color-foreground));
-  opacity: 0.4;
+  opacity: 0.68;
   letter-spacing: 0.02em;
 }
 
@@ -95,7 +95,7 @@
   margin: 0.8rem 0 0;
   font-size: 1rem;
   color: rgb(var(--color-foreground));
-  opacity: 0.35;
+  opacity: 0.68;
   font-style: italic;
   letter-spacing: 0.01em;
 }

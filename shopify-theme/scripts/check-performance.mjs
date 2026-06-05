@@ -16,6 +16,11 @@ const JS_SIZE_WARN = 30 * 1024;  // 30 KB
 const JS_SIZE_FAIL = 100 * 1024; // 100 KB
 const CSS_SIZE_WARN = 20 * 1024; // 20 KB
 const CSS_SIZE_FAIL = 50 * 1024; // 50 KB
+const DAWN_BASELINE_JS = new Set([
+  // Dawn global behavior is preserved native-first. Track its size in output,
+  // but do not count it as a HORO performance regression.
+  'global.js',
+]);
 const DAWN_BASELINE_CSS = new Set([
   // Dawn v15 core stylesheets are intentionally preserved by HORO_THEME_BASE.md.
   // They are tracked as baseline warnings so HORO parity work does not rewrite
@@ -69,23 +74,27 @@ function checkFileSizes() {
   for (const file of jsFiles) {
     const stats = fs.statSync(path.join(assetsDir, file));
     const size = stats.size;
-    const label = size > JS_SIZE_FAIL ? '❌' : size > JS_SIZE_WARN ? '⚠️' : '✅';
+    const isDawnBaseline = DAWN_BASELINE_JS.has(file);
+    const label = isDawnBaseline && size > JS_SIZE_WARN ? 'ℹ️' : size > JS_SIZE_FAIL ? '❌' : size > JS_SIZE_WARN ? '⚠️' : '✅';
     const msg = `  ${label} ${file}: ${formatBytes(size)}`;
     console.log(msg);
-    if (size > JS_SIZE_FAIL) errors++;
-    else if (size > JS_SIZE_WARN) warnings++;
+    if (size > JS_SIZE_FAIL && !isDawnBaseline) errors++;
+    else if (size > JS_SIZE_WARN && !isDawnBaseline) warnings++;
+    if (size > JS_SIZE_WARN && isDawnBaseline) {
+      console.log(`    Baseline exception: protected Dawn script, not a HORO parity regression.`);
+    }
   }
 
   for (const file of cssFiles) {
     const stats = fs.statSync(path.join(assetsDir, file));
     const size = stats.size;
     const isDawnBaseline = DAWN_BASELINE_CSS.has(file);
-    const label = size > CSS_SIZE_FAIL && !isDawnBaseline ? '❌' : size > CSS_SIZE_WARN ? '⚠️' : '✅';
+    const label = isDawnBaseline && size > CSS_SIZE_WARN ? 'ℹ️' : size > CSS_SIZE_FAIL ? '❌' : size > CSS_SIZE_WARN ? '⚠️' : '✅';
     const msg = `  ${label} ${file}: ${formatBytes(size)}`;
     console.log(msg);
     if (size > CSS_SIZE_FAIL && !isDawnBaseline) errors++;
-    else if (size > CSS_SIZE_WARN) warnings++;
-    if (size > CSS_SIZE_FAIL && isDawnBaseline) {
+    else if (size > CSS_SIZE_WARN && !isDawnBaseline) warnings++;
+    if (size > CSS_SIZE_WARN && isDawnBaseline) {
       console.log(`    Baseline exception: protected Dawn stylesheet, not a HORO parity regression.`);
     }
   }

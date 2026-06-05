@@ -19,7 +19,7 @@
   assign drawer_label = 'horo.shell.open_menu' | t | default: 'Open menu'
   assign close_label = 'horo.shell.close_menu' | t | default: 'Close menu'
   assign cart_label = 'horo.shell.cart' | t | default: 'Cart'
-  assign founding_drop_url = routes.collections_url | append: '/founding-drop'
+  assign shop_all_url = routes.all_products_collection_url
 -%}
 
 <div class="horo-drawer-wrapper" data-horo-drawer>
@@ -83,7 +83,7 @@
         <div class="horo-drawer__shop-preview" aria-label="{{ 'horo.nav.shop_preview_title' | t | default: 'Shop the Drop' }}">
           <div class="horo-drawer__shop-preview-header">
             <p>{{ 'horo.nav.shop_preview_title' | t | default: 'Shop the Drop' }}</p>
-            <a href="{{ founding_drop_url }}">{{ 'horo.nav.shop_preview_browse_all' | t | default: 'Shop All' }}</a>
+            <a href="{{ shop_all_url }}">{{ 'horo.nav.shop_preview_browse_all' | t | default: 'Shop All' }}</a>
           </div>
           <div class="horo-drawer__shop-preview-grid">
             {%- liquid
@@ -118,7 +118,7 @@
               {%- endfor -%}
             {%- endif -%}
             {%- if rendered_count == 0 -%}
-              <a href="{{ founding_drop_url }}" class="horo-drawer__shop-preview-card">
+              <a href="{{ shop_all_url }}" class="horo-drawer__shop-preview-card">
                 <span class="horo-drawer__shop-preview-image">
                   <span>{{ 'horo.nav.product_image_placeholder' | t | default: 'Product image' }}</span>
                 </span>

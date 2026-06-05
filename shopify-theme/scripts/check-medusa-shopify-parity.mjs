@@ -83,10 +83,11 @@ assertTypesEqual('Home template', indexTypes, [
   'home-hero',
   'horo-trust-ribbon',
   'home-founding-drop',
-  'horo-feeling-quiz',
   'home-feeling-grid',
-  'home-drop-strip',
-  'rich-text',
+  'home-editorial-feature',
+  'home-gift-block',
+  'home-service-trust',
+  'home-why-horo',
 ]);
 
 const productTypes = sectionTypes(readTemplate('templates/product.json'));
@@ -97,18 +98,17 @@ assertSubsequence('Product template', productTypes, [
   'main-product',
   'product-purchase-context',
   'product-trust-strip',
+  'product-delivery-payment',
+  'product-gift-wrap-upsell',
+  'product-size-guide',
   'product-proof-strip',
   'product-details-accordions',
   'product-story',
-  'horo-seen-on-you',
   'product-artist-card',
-  'product-size-guide',
-  'product-delivery-payment',
+  'horo-seen-on-you',
   'product-pair-with',
-  'horo-recently-viewed',
-  'related-products',
   'horo-cross-sell',
-  'horo-trust-ribbon',
+  'horo-recently-viewed',
   'horo-share-your-fit',
 ]);
 
@@ -134,8 +134,7 @@ assertTypesEqual('Search template', searchTypes, [
 
 const collectionTypes = sectionTypes(readTemplate('templates/collection.json'));
 assertTypesInclude('Collection template', collectionTypes, [
-  'collection-feeling-hero',
-  'collection-occasion-hero',
+  'collection-horo-header',
   'collection-subfeeling-nav',
   'collection-editorial-proof',
   'main-collection-product-grid',

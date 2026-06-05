@@ -106,13 +106,6 @@ function getFeaturedFeelings(section: StorefrontHomepageSection | undefined, loc
 function launchMeaningTileEntries(copy: ReturnType<typeof useDictionary>): ReturnType<typeof getFeaturedFeelings> {
   const tiles: FeelingTileOverride[] = [
     {
-      slug: 'zodiac',
-      label: copy.home.meaningZodiacTitle,
-      subtitle: copy.home.meaningZodiacSubtitle,
-      href: '/products?category=zodiac',
-      iconSlug: 'zodiac',
-    },
-    {
       slug: 'mood',
       label: copy.home.meaningMoodTitle,
       subtitle: copy.home.meaningMoodSubtitle,
@@ -127,11 +120,18 @@ function launchMeaningTileEntries(copy: ReturnType<typeof useDictionary>): Retur
       iconSlug: 'lifestyle',
     },
     {
-      slug: 'for-someone',
-      label: copy.home.meaningForSomeoneTitle,
-      subtitle: copy.home.meaningForSomeoneSubtitle,
-      href: '/gifts',
-      iconSlug: 'gift',
+      slug: 'career',
+      label: copy.home.meaningCareerTitle,
+      subtitle: copy.home.meaningCareerSubtitle,
+      href: '/feelings/career',
+      iconSlug: 'career',
+    },
+    {
+      slug: 'zodiac',
+      label: copy.home.meaningZodiacTitle,
+      subtitle: copy.home.meaningZodiacSubtitle,
+      href: '/products?category=zodiac',
+      iconSlug: 'zodiac',
     },
   ];
 

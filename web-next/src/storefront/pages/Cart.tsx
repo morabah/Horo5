@@ -173,7 +173,6 @@ function CartSummary({
   incentives,
   showDeliveryEstimate,
   selectedRate,
-  isDefaultEstimate,
   deliveryShippingEgp,
   deliveryEstimatedTotal,
   onChooseGovernorate,
@@ -195,7 +194,6 @@ function CartSummary({
   incentives: StorefrontIncentivesClient | null;
   showDeliveryEstimate: boolean;
   selectedRate: GovernorateRate | null;
-  isDefaultEstimate: boolean;
   deliveryShippingEgp: number | null;
   deliveryEstimatedTotal: number | null;
   onChooseGovernorate: () => void;
@@ -232,7 +230,6 @@ function CartSummary({
             shippingEgp={deliveryShippingEgp}
             estimatedTotalEgp={deliveryEstimatedTotal}
             selectedRate={selectedRate}
-            isDefaultEstimate={isDefaultEstimate}
             onChooseGovernorate={onChooseGovernorate}
             onChangeGovernorate={onChangeGovernorate}
           />
@@ -591,7 +588,6 @@ export function Cart({
     setGovernorate,
     hydrated: governorateHydrated,
     hasStoredGovernorate,
-    isDefaultEstimate,
   } = useDeliveryGovernorate();
 
   /* Fetch incentives after mount (per repo hydration baseline: server render uses null). */
@@ -1096,7 +1092,6 @@ export function Cart({
             incentives={incentives}
             showDeliveryEstimate={showDeliveryEstimate}
             selectedRate={selectedRate}
-            isDefaultEstimate={isDefaultEstimate}
             deliveryShippingEgp={deliveryShippingEgp}
             deliveryEstimatedTotal={deliveryEstimatedTotal}
             onChooseGovernorate={openGovernoratePicker}

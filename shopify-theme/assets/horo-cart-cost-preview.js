@@ -5,7 +5,6 @@
   'use strict';
 
   var STORAGE_KEY = 'horo_cart_cost_governorate_v1';
-  var DEFAULT_GOVERNORATE = 'cairo_giza';
 
   function isArabic(locale) {
     return String(locale || '').toLowerCase().indexOf('ar') === 0;
@@ -235,33 +234,39 @@
     });
   }
 
-  function applyDefaultGovernorate(select) {
-    if (!select || select.value) return false;
-    if (!select.querySelector('option[value="' + DEFAULT_GOVERNORATE + '"]')) return false;
-    select.value = DEFAULT_GOVERNORATE;
-    select.setAttribute('data-horo-default-estimate', 'true');
-    return true;
+  function syncGovernorateSelections(sourceRoot, gov) {
+    document.querySelectorAll('[data-horo-cart-cost-preview]').forEach(function (root) {
+      if (root === sourceRoot) return;
+      var select = root.querySelector('[data-horo-cost-governorate]');
+      if (!select || select.value === gov) return;
+      if (gov && !select.querySelector('option[value="' + gov + '"]')) return;
+      select.value = gov;
+      render(root);
+      if (gov) clearCheckoutGateErrors(checkoutGateScope(root));
+    });
   }
 
   function init(root) {
-    if (!root || root.getAttribute('data-horo-cost-bound') === 'true') return;
+    if (!root) return;
+    var select = root.querySelector('[data-horo-cost-governorate]');
+    if (root.getAttribute('data-horo-cost-bound') === 'true') {
+      render(root);
+      bindCheckoutGate(root, select);
+      return;
+    }
+
     root.setAttribute('data-horo-cost-bound', 'true');
 
-    var select = root.querySelector('[data-horo-cost-governorate]');
     if (select) {
-      var restoredGovernorate = false;
       try {
         var saved = sessionStorage.getItem(STORAGE_KEY);
         if (saved && select.querySelector('option[value="' + saved + '"]')) {
           select.value = saved;
-          restoredGovernorate = true;
         }
       } catch (_e) {
         /* ignore */
       }
-      if (!restoredGovernorate) applyDefaultGovernorate(select);
       select.addEventListener('change', function () {
-        select.removeAttribute('data-horo-default-estimate');
         try {
           if (select.value) sessionStorage.setItem(STORAGE_KEY, select.value);
           else sessionStorage.removeItem(STORAGE_KEY);
@@ -270,9 +275,10 @@
         }
         if (select.value) clearCheckoutGateErrors(checkoutGateScope(root));
         render(root);
-        if (select.value) persistGovernorateToCart(root, select.value);
+        syncGovernorateSelections(root, select.value);
+        persistGovernorateToCart(root, select.value);
       });
-      if (select.value && select.getAttribute('data-horo-default-estimate') !== 'true') {
+      if (select.value) {
         persistGovernorateToCart(root, select.value);
       }
     }
@@ -283,7 +289,6 @@
 
   function initAll() {
     document.querySelectorAll('[data-horo-cart-cost-preview]').forEach(function (root) {
-      root.removeAttribute('data-horo-cost-bound');
       init(root);
     });
   }

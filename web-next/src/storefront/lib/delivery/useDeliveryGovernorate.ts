@@ -8,20 +8,15 @@ import { updateCart } from '../medusa/client';
 import {
   DELIVERY_GOVERNORATE_STORAGE_KEY,
   getGovernorateRate,
-  isGovernorateCode,
+  normalizeGovernorateCode,
   type GovernorateCode,
   type GovernorateRate,
 } from './governorates';
 
-/** Cairo estimate for first cart visit before the shopper picks a governorate. */
-export const DEFAULT_SHIPPING_ESTIMATE_GOVERNORATE: GovernorateCode = 'cairo';
-
 function readStoredGovernorate(): GovernorateCode | null {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = localStorage.getItem(DELIVERY_GOVERNORATE_STORAGE_KEY)?.trim().toLowerCase();
-    if (!raw || !isGovernorateCode(raw)) return null;
-    return raw;
+    return normalizeGovernorateCode(localStorage.getItem(DELIVERY_GOVERNORATE_STORAGE_KEY));
   } catch {
     return null;
   }
@@ -65,7 +60,7 @@ export function useDeliveryGovernorate() {
       setSelectedCode(stored);
       setHasStoredGovernorate(true);
     } else {
-      setSelectedCode(DEFAULT_SHIPPING_ESTIMATE_GOVERNORATE);
+      setSelectedCode(null);
       setHasStoredGovernorate(false);
     }
     setHydrated(true);
@@ -75,8 +70,6 @@ export function useDeliveryGovernorate() {
     () => (selectedCode ? getGovernorateRate(selectedCode) : null),
     [selectedCode],
   );
-
-  const isDefaultEstimate = hydrated && !hasStoredGovernorate;
 
   const setGovernorate = useCallback(
     (code: GovernorateCode, options: { remember?: boolean; surface?: string } = {}) => {
@@ -101,7 +94,7 @@ export function useDeliveryGovernorate() {
   const clearGovernorate = useCallback(() => {
     writeStoredGovernorate(null);
     setHasStoredGovernorate(false);
-    setSelectedCode(DEFAULT_SHIPPING_ESTIMATE_GOVERNORATE);
+    setSelectedCode(null);
     if (medusaCartId) {
       void updateCart(medusaCartId, {
         metadata: {
@@ -119,7 +112,6 @@ export function useDeliveryGovernorate() {
     selectedCode,
     selectedRate,
     hasStoredGovernorate,
-    isDefaultEstimate,
     setGovernorate,
     clearGovernorate,
   };

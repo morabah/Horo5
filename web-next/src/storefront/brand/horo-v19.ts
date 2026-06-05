@@ -58,8 +58,8 @@ export const HORO_V19_TRUST_COPY = {
     ar: 'الدفع عند الدفع',
   },
   exchangePolicy: {
-    en: '14-day exchange',
-    ar: 'استبدال ١٤ يوم',
+    en: '14-day exchange — see policy',
+    ar: 'استبدال ١٤ يوم — راجع السياسة',
   },
   whatsappSupport: {
     en: 'WhatsApp size help',

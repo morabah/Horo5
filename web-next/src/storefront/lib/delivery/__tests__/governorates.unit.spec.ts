@@ -1,5 +1,6 @@
 import {
   checkoutCityForGovernorateCode,
+  normalizeGovernorateCode,
   shippingEgpForGovernorateCode,
 } from '../governorates';
 
@@ -13,6 +14,12 @@ describe('governorates', () => {
   it('returns null for unknown governorate codes', () => {
     expect(checkoutCityForGovernorateCode('invalid')).toBeNull();
     expect(checkoutCityForGovernorateCode(null)).toBeNull();
+  });
+
+  it('does not synthesize a default governorate from blank input', () => {
+    expect(normalizeGovernorateCode(null)).toBeNull();
+    expect(normalizeGovernorateCode('')).toBeNull();
+    expect(normalizeGovernorateCode('   ')).toBeNull();
   });
 
   it('exposes Cairo shipping fallback for cart estimates', () => {

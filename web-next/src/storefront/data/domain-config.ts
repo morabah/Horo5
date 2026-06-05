@@ -99,7 +99,7 @@ export const SEARCH_SCHEMA = {
 export const CHECKOUT_SCHEMA = {
   trustStripItemsStatic: [
     'SSL-encrypted checkout',
-    '14-day exchange',
+    '14-day exchange — see policy',
     'Guest checkout',
   ] as const,
 } as const;

@@ -10,8 +10,6 @@ type DeliveryEstimatePanelProps = {
   shippingEgp: number | null;
   estimatedTotalEgp: number | null;
   selectedRate: GovernorateRate | null;
-  /** True when showing Cairo fallback before the shopper confirms a governorate. */
-  isDefaultEstimate?: boolean;
   onChooseGovernorate: () => void;
   onChangeGovernorate: () => void;
 };
@@ -21,7 +19,6 @@ export function DeliveryEstimatePanel({
   shippingEgp,
   estimatedTotalEgp,
   selectedRate,
-  isDefaultEstimate = false,
   onChooseGovernorate,
   onChangeGovernorate,
 }: DeliveryEstimatePanelProps) {
@@ -47,11 +44,6 @@ export function DeliveryEstimatePanel({
           <p className="delivery-estimate-panel__selected" data-testid="cart-shipping-basis">
             {copy.cartGovernorateSelected.replace('{governorate}', governorateLabel(selectedRate, isArabic))}
           </p>
-          {isDefaultEstimate ? (
-            <p className="delivery-estimate-panel__hint font-body text-xs text-clay" role="note">
-              {copy.cartGovernorateDefaultEstimate}
-            </p>
-          ) : null}
           <p className="delivery-estimate-panel__line">
             <span>{copy.cartShippingEstimate}</span>
             <span>{shippingEgp != null ? formatEgp(shippingEgp) : '—'}</span>

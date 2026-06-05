@@ -28,8 +28,14 @@ export function isGovernorateCode(value: string): value is GovernorateCode {
   return GOVERNORATE_RATES.some((row) => row.code === value);
 }
 
+export function normalizeGovernorateCode(value: string | null | undefined): GovernorateCode | null {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized || !isGovernorateCode(normalized)) return null;
+  return normalized;
+}
+
 export function getGovernorateRate(code: string | null | undefined): GovernorateRate | null {
-  const normalized = code?.trim().toLowerCase();
+  const normalized = normalizeGovernorateCode(code);
   if (!normalized) return null;
   return GOVERNORATE_RATES.find((row) => row.code === normalized) ?? null;
 }
@@ -44,8 +50,8 @@ export function shippingEgpForGovernorateCode(code: string): number {
 
 /** Maps cart governorate codes to checkout `EGYPT_CITY_OPTIONS` select values when possible. */
 export function checkoutCityForGovernorateCode(code: string | null | undefined): string | null {
-  const normalized = code?.trim().toLowerCase();
-  if (!normalized || !isGovernorateCode(normalized)) return null;
+  const normalized = normalizeGovernorateCode(code);
+  if (!normalized) return null;
   switch (normalized) {
     case 'cairo':
       return 'Cairo';
