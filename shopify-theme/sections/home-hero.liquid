@@ -15,6 +15,8 @@
   endif
   assign use_uploaded_split_image = section.settings.use_uploaded_split_image | default: false
   assign heading_normalized = section.settings.heading | downcase | strip
+  assign hero_poster_url = 'home-hero-video-poster.png' | asset_url
+  assign hero_video_url = 'home-hero-shirt-design.mp4' | asset_url
 -%}
 
 {%- if hero_layout == 'split' -%}
@@ -129,12 +131,35 @@
 {%- endstyle -%}
 
 <div
-  id="HomeHero-{{ section.id }}"
+  id="home-hero"
+  data-section-id="HomeHero-{{ section.id }}"
   class="horo-section home-hero{% if section.settings.enable_cinematic_mode %} home-hero--cinematic{% endif %}{% if section.settings.show_grain_overlay == false %} home-hero--no-grain{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}"
   data-desktop-position="{{ section.settings.hero_cta_position_desktop }}"
   data-mobile-position="{{ section.settings.hero_cta_position_mobile }}"
 >
-  {%- if section.settings.image != blank -%}
+  {%- if section.settings.enable_cinematic_mode -%}
+    <div class="home-hero__media">
+      <img
+        src="{{ hero_poster_url | escape }}"
+        alt="{{ section.settings.heading | escape }}"
+        width="1920"
+        height="1080"
+        class="home-hero__image home-hero__poster"
+        loading="eager"
+        fetchpriority="{{ fetch_priority }}"
+      >
+      <video
+        class="home-hero__video"
+        muted
+        loop
+        playsinline
+        preload="none"
+        poster="{{ hero_poster_url | escape }}"
+        data-video-src="{{ hero_video_url | escape }}"
+        aria-hidden="true"
+      ></video>
+    </div>
+  {%- elsif section.settings.image != blank -%}
     <div class="home-hero__media">
       {%- liquid
         assign image_height = section.settings.image.width | divided_by: section.settings.image.aspect_ratio
@@ -153,8 +178,16 @@
       }}
     </div>
   {%- else -%}
-    <div class="home-hero__media home-hero__media--placeholder">
-      {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    <div class="home-hero__media">
+      <img
+        src="{{ hero_poster_url | escape }}"
+        alt="{{ section.settings.heading | escape }}"
+        width="1920"
+        height="1080"
+        class="home-hero__image home-hero__poster"
+        loading="eager"
+        fetchpriority="{{ fetch_priority }}"
+      >
     </div>
   {%- endif -%}
 
@@ -190,42 +223,51 @@
     <div class="home-hero__text-wrapper">
       {%- if section.settings.heading != blank -%}
         <h1 class="home-hero__heading {{ section.settings.heading_size }}">
-          {{ section.settings.heading }}
+          {%- if heading_normalized == 'wear what you feel' -%}
+            <span class="home-hero__heading-line">Wear What</span>
+            <span class="home-hero__heading-line">You Feel</span>
+          {%- else -%}
+            {{ section.settings.heading | escape }}
+          {%- endif -%}
         </h1>
       {%- endif -%}
 
       {%- if section.settings.subheading != blank -%}
         <p class="home-hero__subheading">
-          {{ section.settings.subheading }}
+          {{ section.settings.subheading | escape }}
         </p>
       {%- endif -%}
 
-      {%- if section.settings.button_label != blank -%}
-        <a
-          {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
-          class="home-hero__cta button{% if section.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
-          {% if section.settings.button_link == blank %}aria-disabled="true"{% endif %}
-        >
-          {{ section.settings.button_label | escape }}
-        </a>
-      {%- endif -%}
-      {%- if section.settings.button_label_secondary != blank -%}
-        <a
-          {% if section.settings.button_link_secondary != blank %}href="{{ section.settings.button_link_secondary }}"{% endif %}
-          class="home-hero__cta button button--secondary"
-          {% if section.settings.button_link_secondary == blank %}aria-disabled="true"{% endif %}
-        >
-          {{ section.settings.button_label_secondary | escape }}
-        </a>
-      {%- endif -%}
-      {%- if section.settings.button_label_tertiary != blank -%}
-        <a
-          {% if section.settings.button_link_tertiary != blank %}href="{{ section.settings.button_link_tertiary }}"{% endif %}
-          class="home-hero__cta button button--tertiary"
-          {% if section.settings.button_link_tertiary == blank %}aria-disabled="true"{% endif %}
-        >
-          {{ section.settings.button_label_tertiary | escape }}
-        </a>
+      {%- if section.settings.button_label != blank or section.settings.button_label_secondary != blank or section.settings.button_label_tertiary != blank -%}
+        <div class="home-hero__actions">
+          {%- if section.settings.button_label != blank -%}
+            <a
+              {% if section.settings.button_link != blank %}href="{{ section.settings.button_link }}"{% endif %}
+              class="home-hero__cta button{% if section.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+              {% if section.settings.button_link == blank %}aria-disabled="true"{% endif %}
+            >
+              {{ section.settings.button_label | escape }}
+            </a>
+          {%- endif -%}
+          {%- if section.settings.button_label_secondary != blank -%}
+            <a
+              {% if section.settings.button_link_secondary != blank %}href="{{ section.settings.button_link_secondary }}"{% endif %}
+              class="home-hero__cta button button--secondary"
+              {% if section.settings.button_link_secondary == blank %}aria-disabled="true"{% endif %}
+            >
+              {{ section.settings.button_label_secondary | escape }}
+            </a>
+          {%- endif -%}
+          {%- if section.settings.button_label_tertiary != blank -%}
+            <a
+              {% if section.settings.button_link_tertiary != blank %}href="{{ section.settings.button_link_tertiary }}"{% endif %}
+              class="home-hero__cta button button--tertiary"
+              {% if section.settings.button_link_tertiary == blank %}aria-disabled="true"{% endif %}
+            >
+              {{ section.settings.button_label_tertiary | escape }}
+            </a>
+          {%- endif -%}
+        </div>
       {%- endif -%}
     </div>
   </div>
@@ -235,8 +277,38 @@
       <span class="home-hero__ribbon-text">{{ section.settings.hero_ribbon_text | escape }}</span>
     </div>
   {%- endif -%}
+  {%- if section.settings.show_scroll_cue and section.settings.scroll_cue_label != blank -%}
+    <a href="#founding-drop" class="home-hero__scroll-cue">
+      <span>{{ section.settings.scroll_cue_label | escape }}</span>
+      <span class="home-hero__scroll-icon" aria-hidden="true">↓</span>
+    </a>
+  {%- endif -%}
+  <div id="home-hero-bottom-sentinel" aria-hidden="true" class="home-hero__bottom-sentinel"></div>
 </div>
 
+{%- endif -%}
+
+{%- if section.settings.enable_cinematic_mode -%}
+  <script>
+    (() => {
+      const hero = document.getElementById('home-hero');
+      if (!hero) return;
+      const video = hero.querySelector('.home-hero__video');
+      if (!video) return;
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) return;
+      const src = video.dataset.videoSrc;
+      if (!src) return;
+      video.src = src;
+      video.addEventListener('playing', () => {
+        video.classList.add('home-hero__video--playing');
+      }, { once: true });
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => {});
+      }
+    })();
+  </script>
 {%- endif -%}
 
 {% schema %}
@@ -449,6 +521,18 @@
       "id": "hero_ribbon_text",
       "default": "Payment options shown at checkout · 14-day exchange — see policy · Printed in Egypt",
       "label": "Hero ribbon text"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_scroll_cue",
+      "default": true,
+      "label": "Show founding drop scroll cue"
+    },
+    {
+      "type": "text",
+      "id": "scroll_cue_label",
+      "default": "Explore the Drop",
+      "label": "Scroll cue label"
     },
     {
       "type": "select",

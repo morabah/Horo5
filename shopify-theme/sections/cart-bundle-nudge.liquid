@@ -39,8 +39,16 @@
   endfor
   assign remaining_items = section.settings.required_quantity | minus: eligible_quantity
   assign show_bundle_nudge = false
-  if settings.horo_incentives_live and section.settings.enable_bundle_message and eligible_quantity >= 2 and remaining_items > 0 and gift_wrap_in_cart == false
-    assign show_bundle_nudge = true
+  assign api_bundle = false
+  if section.settings.use_incentives_api
+    assign api_bundle = true
+  endif
+  if settings.horo_incentives_live and section.settings.enable_bundle_message and gift_wrap_in_cart == false
+    if api_bundle and eligible_quantity > 0
+      assign show_bundle_nudge = true
+    elsif eligible_quantity >= 2 and remaining_items > 0
+      assign show_bundle_nudge = true
+    endif
   endif
 -%}
 
@@ -54,9 +62,11 @@
           data-use-incentives-api="true"
           data-incentives-api-url="{{ section.settings.incentives_api_url | default: '/apps/horo-incentives' }}"
           data-api-timeout-ms="{{ section.settings.api_timeout_ms | default: 2500 }}"
+          data-locale="{{ request.locale.iso_code }}"
           data-eligible-count="{{ eligible_quantity }}"
           data-heading-before="{{ section.settings.heading_before | escape }}"
           data-heading-after="{{ section.settings.heading_after | escape }}"
+          hidden
         {%- endif -%}
       >
         {%- if remaining_items > 0 -%}

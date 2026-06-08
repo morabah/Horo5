@@ -7,6 +7,7 @@
   assign launch_slugs = 'mood,lifestyle,career,zodiac' | split: ','
   assign launch_labels = 'Mood,Lifestyle,Career,Zodiac Signs' | split: ','
   assign launch_subtitles = 'Feelings you wear,Daily pieces,Work identity,Personality-inspired designs' | split: ','
+  assign launch_image_assets = 'horo-editorial-calm-inside.png,horo-editorial-artwork-detail.png,horo-founding-drop-campaign.png,horo-our-story.png' | split: ','
   assign surfaces = '#f8eaea,#f4ede5,#edf1ea,#f5eef3' | split: ','
   assign sorted_feelings = shop.metaobjects.feeling.values | sort: 'sort_order'
   assign tiles_shown = 0
@@ -21,6 +22,7 @@
     {%- liquid
       assign label = launch_labels[forloop.index0]
       assign subtitle = launch_subtitles[forloop.index0]
+      assign image_asset = launch_image_assets[forloop.index0]
       assign surface_index = tiles_shown | modulo: 4
       assign surface_color = surfaces[surface_index]
       assign card_url = routes.all_products_collection_url
@@ -85,19 +87,19 @@
         override_label: label,
         override_subtitle: subtitle,
         override_url: card_url,
-        override_icon_slug: slug
+        override_icon_slug: slug,
+        override_image_asset: image_asset
       -%}
     {%- else -%}
       <li class="home-feeling-pastel-grid__item" role="listitem">
         <a
           href="{{ card_url }}"
-          class="home-feeling-pastel-tile"
-          style="background-color: {{ surface_color }};"
+          class="home-feeling-pastel-tile home-feeling-tile--editorial"
+          style="background-image: url({{ image_asset | asset_url }});"
           aria-label="{{ label | escape }}"
           data-horo-home-event="category_card_click"
           data-horo-home-props='{"category":{{ slug | json }}}'
         >
-          {% render 'feeling-tile-icon', slug: slug %}
           <span class="home-feeling-pastel-tile__label">{{ label | escape }}</span>
           {%- if subtitle != blank -%}
             <span class="home-feeling-pastel-tile__subtitle">{{ subtitle | escape }}</span>

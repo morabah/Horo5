@@ -165,9 +165,50 @@
   box-shadow: var(--home-shadow-card-hover);
 }
 
+.home-feeling-tile--editorial {
+  position: relative;
+  min-height: clamp(168px, 28vw, 224px);
+  overflow: hidden;
+  padding: 0;
+  align-items: flex-end;
+  justify-content: flex-start;
+  color: #fff;
+  background-size: cover;
+  background-position: center;
+}
+
+.home-feeling-tile--editorial::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(36, 31, 33, 0.72) 0%, rgba(36, 31, 33, 0.15) 55%, transparent 100%);
+}
+
+.home-feeling-tile--editorial .home-feeling-pastel-tile__label,
+.home-feeling-tile--editorial .home-feeling-pastel-tile__subtitle {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  color: inherit;
+  text-align: start;
+}
+
+.home-feeling-tile--editorial .home-feeling-pastel-tile__label {
+  padding: 16px 16px 0;
+  font-size: 16px;
+}
+
+.home-feeling-tile--editorial .home-feeling-pastel-tile__subtitle {
+  display: block;
+  margin-top: 0;
+  padding: 0 16px 16px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
 .home-btn {
   border-radius: var(--home-radius-btn);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
 }
 
 .home-btn:focus-visible,

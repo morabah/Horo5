@@ -18,11 +18,40 @@
 {%- endstyle -%}
 
 {%- if settings.horo_incentives_live and section.settings.enable_free_shipping_progress -%}
+  {%- assign api_only = false -%}
+  {%- if section.settings.use_incentives_api and section.settings.fallback_to_manual_threshold == false -%}
+    {%- assign api_only = true -%}
+  {%- endif -%}
   {%- assign threshold_egp = section.settings.threshold_egp | plus: 0 -%}
   {%- if threshold_egp == 0 -%}
     {%- assign threshold_egp = settings.horo_free_shipping_threshold_egp | default: 0 | plus: 0 -%}
   {%- endif -%}
-  {%- if threshold_egp > 0 -%}
+  {%- if api_only -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div
+        class="cart-free-shipping-progress"
+        data-horo-free-shipping-progress
+        data-use-incentives-api="true"
+        data-incentives-api-url="{{ section.settings.incentives_api_url | default: '/apps/horo-incentives' }}"
+        data-api-timeout-ms="{{ section.settings.api_timeout_ms | default: 2500 }}"
+        data-locale="{{ request.locale.iso_code }}"
+        data-cart-total-cents="{{ cart.total_price }}"
+        data-message-before="{{ section.settings.message_before | escape }}"
+        data-message-after="{{ section.settings.message_after | escape }}"
+        hidden
+      >
+        {%- if section.settings.heading_before != blank -%}
+          <h2 class="cart-free-shipping-progress__heading" data-fsp-label>{{ section.settings.heading_before | escape }}</h2>
+        {%- endif -%}
+        <p class="cart-free-shipping-progress__message" data-fsp-message></p>
+        <div class="cart-free-shipping-progress__bar" data-fsp-bar role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="cart-free-shipping-progress__fill" data-fsp-fill style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {%- elsif threshold_egp > 0 -%}
   {%- assign threshold_cents = threshold_egp | times: 100 -%}
   {%- assign total_cents = cart.total_price -%}
   {%- assign remaining_cents = threshold_cents | minus: total_cents -%}

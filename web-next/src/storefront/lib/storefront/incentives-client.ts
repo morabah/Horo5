@@ -26,6 +26,15 @@ export type StorefrontIncentivesClient = {
     applicationKind: "fixed" | "percentage";
     label: StorefrontLocalizedTextClient;
   } | null;
+  timedOffer: {
+    promotionId: string;
+    label: StorefrontLocalizedTextClient;
+    startsAt: string | null;
+    endsAt: string;
+    savingsKind: "fixed" | "percentage";
+    savingsValue: number;
+    scope: "storewide" | "collection";
+  } | null;
   giftWrapProductHandle: string | null;
   giftWrapPriceEgp: number | null;
   giftWrapLabel: StorefrontLocalizedTextClient | null;

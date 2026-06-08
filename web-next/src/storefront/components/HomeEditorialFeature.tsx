@@ -129,12 +129,17 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
   const payload = isRecord(section?.payload) ? section.payload : null;
   const presentation = parseHomepagePresentation(payload);
   const variant = typeof payload?.variant === 'string' ? payload.variant : 'closer_look';
+  const fallbackHandle = payloadFallbackHandle(section) ?? 'calm-inside';
 
   const eyebrow =
     pickLocalizedStorefrontText(section?.eyebrow, resolvedLocale) ??
-    (variant === 'closer_look' ? 'A Closer Look' : copy.home.behindThePieceEyebrow);
-  const title = pickLocalizedStorefrontText(section?.title, resolvedLocale);
-  const body = pickLocalizedStorefrontText(section?.body, resolvedLocale);
+    (variant === 'closer_look' ? copy.home.editorialCloserLookEyebrow : copy.home.behindThePieceEyebrow);
+  const title =
+    pickLocalizedStorefrontText(section?.title, resolvedLocale) ??
+    (variant === 'closer_look' ? copy.home.editorialCloserLookTitle : copy.home.behindThePieceTitle);
+  const body =
+    pickLocalizedStorefrontText(section?.body, resolvedLocale) ??
+    (variant === 'closer_look' ? copy.home.editorialCloserLookBody : copy.home.behindThePieceBody);
   const imageSrc = resolveEditorialImageSrc(section);
   const imageAlt =
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
@@ -143,13 +148,12 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     normalizeLegacyStorefrontLabel(
       pickLocalizedStorefrontText(section?.primaryCta?.label, resolvedLocale),
       resolvedLocale,
-    ) ?? (resolvedLocale === 'ar' ? 'شاهد التصميم' : 'View Design');
-  const ctaHref = section?.primaryCta?.href?.trim() ?? '/products';
-  const fallbackHandle = payloadFallbackHandle(section) ?? 'calm-inside';
+    ) ?? copy.home.viewPiece;
+  const ctaHref = section?.primaryCta?.href?.trim() ?? `/products/${fallbackHandle}`;
   const featuredProduct = getProduct(fallbackHandle);
   const bridgeLine = copy.home.editorialBridge;
   const sectionId = payloadAnchor(section);
-  const wantsOverlay = isImageOverlayPresentation(payload);
+  const wantsOverlay = section ? isImageOverlayPresentation(payload) : true;
   const canShowImageCampaign = wantsOverlay && Boolean(title);
   const productRefLabel = featuredProduct?.name
     ? `${copy.home.editorialFeaturing} ${featuredProduct.name}`
@@ -163,7 +167,7 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     <section
       id={sectionId}
       aria-labelledby={`${sectionId}-title`}
-      className="home-section home-editorial-feature bg-horo-white px-4 py-6 sm:px-6 md:py-8 lg:px-8"
+      className="home-section home-editorial-feature home-editorial-feature--full-bleed bg-horo-white px-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl" data-reveal>
         {bridgeLine ? (
@@ -187,10 +191,12 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
             presentation={{
               ...presentation,
               layout: 'image_overlay',
+              textPlacement: presentation.textPlacement ?? 'bottom-left',
               showEyebrow: presentation.showEyebrow !== false,
               showBody: presentation.showBody !== false,
             }}
-            minHeight="min-h-[min(48vh,28rem)]"
+            minHeight="min-h-[min(52vh,32rem)]"
+            sectionClassName="home-editorial-feature__campaign"
             onPrimaryClick={() => {
               if (variant === 'closer_look') {
                 trackCloserLookClick('editorial_feature', ctaHref);

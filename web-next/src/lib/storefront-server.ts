@@ -567,6 +567,15 @@ export type StorefrontIncentivesPayload = {
     applicationKind: "fixed" | "percentage";
     label: StorefrontLocalizedText;
   } | null;
+  timedOffer: {
+    promotionId: string;
+    label: StorefrontLocalizedText;
+    startsAt: string | null;
+    endsAt: string;
+    savingsKind: "fixed" | "percentage";
+    savingsValue: number;
+    scope: "storewide" | "collection";
+  } | null;
   giftWrapProductHandle: string | null;
   giftWrapPriceEgp: number | null;
   giftWrapLabel: StorefrontLocalizedText | null;

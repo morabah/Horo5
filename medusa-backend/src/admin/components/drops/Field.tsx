@@ -5,12 +5,13 @@ type FieldProps = {
   label: string
   htmlFor?: string
   error?: string
+  className?: string
   children: ReactNode
 }
 
-export function Field({ label, htmlFor, error, children }: FieldProps) {
+export function Field({ label, htmlFor, error, className, children }: FieldProps) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={`flex flex-col gap-1.5${className ? ` ${className}` : ""}`}>
       <Label htmlFor={htmlFor} className="text-xs">
         {label}
       </Label>

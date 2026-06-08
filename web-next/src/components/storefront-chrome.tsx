@@ -7,8 +7,9 @@ import { AppErrorBoundary } from "./app-error-boundary";
 import { FunnelNavigationTracker } from "@/storefront/components/FunnelNavigationTracker";
 import { Nav } from "@/storefront/components/Nav";
 import { Footer } from "@/storefront/components/Footer";
-import type { StorefrontSettingsPayload } from "@/lib/storefront-server";
+import type { StorefrontIncentivesPayload, StorefrontSettingsPayload } from "@/lib/storefront-server";
 import { LaunchCountdownBanner } from "@/storefront/components/LaunchCountdownBanner";
+import { TimedOfferBanner } from "@/storefront/components/TimedOfferBanner";
 import { ConsentBanner } from "@/storefront/components/ConsentBanner";
 import { SkipLink } from "@/storefront/components/SkipLink";
 
@@ -17,10 +18,12 @@ export function StorefrontChrome({
   children,
   navigation = null,
   launchAt = null,
+  timedOffer = null,
 }: {
   children: ReactNode;
   navigation?: StorefrontSettingsPayload["navigation"];
   launchAt?: string | null;
+  timedOffer?: StorefrontIncentivesPayload["timedOffer"];
 }) {
   const pathname = usePathname() ?? "/";
   const isHome = pathname === "/";
@@ -30,8 +33,9 @@ export function StorefrontChrome({
       <SkipLink />
       <FunnelNavigationTracker />
       {launchAt ? <LaunchCountdownBanner launchAt={launchAt} /> : null}
+      {timedOffer ? <TimedOfferBanner offer={timedOffer} /> : null}
       <Suspense fallback={null}>
-        <Nav navigation={navigation} />
+        <Nav navigation={navigation} overlayOnHero={isHome} />
       </Suspense>
       <main id="main-content" className={isHome ? "" : "pt-32 md:pt-24"}>
         <AppErrorBoundary key={pathname}>{children}</AppErrorBoundary>

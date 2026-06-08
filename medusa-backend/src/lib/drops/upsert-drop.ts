@@ -19,7 +19,6 @@ import type OccasionModuleService from "../../modules/occasion/service"
 import { FEELINGS_ROOT_HANDLE } from "../storefront/feeling-category-metadata"
 import { galleryForStorefront, pickDropFrontMediaUrls } from "../storefront/media-picks"
 import {
-  DEFAULT_DROP_SIZES,
   DEFAULT_DROP_TRUST_BADGES,
   type DropImageInput,
   type DropStatus,

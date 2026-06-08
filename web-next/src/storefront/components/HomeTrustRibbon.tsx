@@ -106,7 +106,7 @@ export function HomeTrustRibbon({ section }: { section?: StorefrontHomepageSecti
   if (items.length === 0) return null;
 
   return (
-    <section className="home-trust-bar" aria-label={isArabic ? 'مزايا الخدمة' : 'Service promises'}>
+    <section className="home-section home-section--tight home-trust-bar" aria-label={isArabic ? 'مزايا الخدمة' : 'Service promises'}>
       <div
         role="list"
         className="home-trust-bar__grid mx-auto max-w-6xl"

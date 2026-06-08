@@ -3,24 +3,28 @@
     "home_hero": {
       "type": "home-hero",
       "settings": {
-        "hero_layout": "split",
+        "hero_layout": "cinematic",
         "heading": "Wear What You Feel",
         "subheading": "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
-        "layout_style": "split",
+        "layout_style": "image_overlay",
         "rhythm_line": "",
         "canvas_line": "",
         "trust_micro": "",
         "button_label": "Shop the Drop",
         "button_link": "/collections/founding-drop",
         "button_label_secondary": "See the Details",
-        "button_link_secondary": "/#editorial-feature",
+        "button_link_secondary": "/#shop-by-meaning",
         "button_label_tertiary": "",
         "button_link_tertiary": "",
         "show_hero_ribbon": false,
         "hero_ribbon_text": "",
-        "enable_cinematic_mode": false,
-        "show_grain_overlay": false,
+        "enable_cinematic_mode": true,
+        "show_grain_overlay": true,
         "show_split_typography": false,
+        "hero_cta_position_desktop": "bottom-left",
+        "hero_cta_position_mobile": "bottom-left",
+        "show_scroll_cue": true,
+        "scroll_cue_label": "Explore the Drop",
         "padding_top": 0,
         "padding_bottom": 0
       }
@@ -81,6 +85,7 @@
         "heading": "Our first 5 pieces. Limited quantities.",
         "subheading": "",
         "layout_style": "image_overlay",
+        "show_founding_campaign": false,
         "show_body": false,
         "show_eyebrow": true,
         "overlay_opacity": 45,
@@ -101,7 +106,7 @@
       "type": "home-feeling-grid",
       "settings": {
         "layout_style": "pastel",
-        "eyebrow": "",
+        "eyebrow": "START WITH YOUR RHYTHM",
         "heading": "Shop by Feeling",
         "subheading": "",
         "feelings_link_label": "",
@@ -241,12 +246,12 @@
   },
   "order": [
     "home_hero",
-    "the_proof",
     "home_founding_drop",
+    "the_proof",
     "feeling_grid",
     "home_editorial_feature",
     "home_gift_block",
-    "home_reassurance",
-    "home_why_horo"
+    "home_why_horo",
+    "home_reassurance"
   ]
 }

@@ -1,9 +1,8 @@
-import Link from 'next/link';
-import Image from 'next/image';
 import { useState } from 'react';
 
 import { trackCloserLookClick, trackHeroCtaClick } from '../analytics/events';
 
+import { HomeHeroCinematic, HERO_BOTTOM_SENTINEL_ID } from './home/HomeHeroCinematic';
 import { HomeImageCampaign } from './home/HomeImageCampaign';
 import { PAGE_HEROES } from '../content/page-heroes';
 import { isImageOverlayPresentation, parseHomepagePresentation } from '../lib/parseHomepagePresentation';
@@ -14,12 +13,7 @@ import {
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { normalizeLegacyStorefrontLabel } from '../utils/legacyStorefrontCopy';
 
-/** Tiny dark blur placeholder matching the hero's muted aesthetic. */
-const HERO_BLUR_DATA_URL =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAFklEQVR4nGMQERP6TwxmGFUoQtfgAQAHCnsNFNbySQAAAABJRU5ErkJggg==';
-
 const HERO_NAV_OFFSET = 'pt-[max(3.6rem,calc(env(safe-area-inset-top,0px)+3.6rem))]';
-const HERO_BOTTOM_SENTINEL_ID = 'home-hero-bottom-sentinel';
 
 type HeroPayloadCta = {
   label?: { en?: string; ar?: string } | string;
@@ -88,21 +82,6 @@ function safeTestId(value: string) {
 
 function isLegacyHeroBody(value: string | undefined): boolean {
   return Boolean(value && /\bCODs?\b/i.test(value));
-}
-
-/** Split “Wear What You Feel” across two lines like the homepage mockup. */
-function HeroTitleDisplay({ title }: { title: string }) {
-  const normalized = title.replace(/\s+/g, ' ').trim();
-  const match = normalized.match(/^(wear what)\s+(you feels?)$/i);
-  if (match) {
-    return (
-      <>
-        <span className="block">Wear What </span>
-        <span className="block">You Feel</span>
-      </>
-    );
-  }
-  return normalized;
 }
 
 function heroPromiseWithoutRhythm(value: string) {
@@ -220,60 +199,18 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
   }
 
   return (
-    <section
-      id="home-hero"
-      aria-labelledby="home-hero-heading"
-      data-test-id={`home-hero-${safeTestId(heroVariant)}`}
-      data-hero-variant={heroVariant}
-      data-hero-layout="split"
-      className={`home-hero-split ${HERO_NAV_OFFSET}`}
-    >
-      <div className="mx-auto flex max-w-[1400px] flex-col lg:grid lg:grid-cols-2 lg:items-stretch">
-        <div className="home-hero-split__copy order-1 max-lg:px-4 max-lg:pt-4 max-lg:pb-3">
-          <h1 id="home-hero-heading" className="home-hero-split__title">
-            <HeroTitleDisplay title={title} />
-          </h1>
-          <p className="home-hero-split__subtitle mt-4 max-w-[560px] max-lg:mt-3 max-lg:text-[15px] lg:mt-5">
-            {promiseLine}
-          </p>
-          <div className="home-hero-split__actions mt-6 flex flex-wrap gap-3 max-lg:mt-4">
-            <Link
-              href={primaryHref}
-              onClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}
-              className="home-btn home-btn--primary font-body inline-flex min-h-[42px] items-center justify-center rounded-[4px] bg-horo-pulse px-5 py-2 text-[12px] font-bold text-white transition-[transform,background-color] hover:bg-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
-            >
-              {primaryCtaLabel}
-            </Link>
-            <Link
-              href={secondaryHref}
-              onClick={() => {
-                trackHeroCtaClick(secondaryCtaLabel, secondaryHref, heroVariant);
-                if (secondaryHref.includes('editorial')) {
-                  trackCloserLookClick('hero', secondaryHref);
-                }
-              }}
-              className="home-btn home-btn--secondary font-body inline-flex min-h-[42px] items-center justify-center rounded-[4px] border border-horo-pulse bg-transparent px-5 py-2 text-[12px] font-bold text-horo-root transition-[transform,background-color,color] hover:bg-horo-root hover:text-horo-breath focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
-            >
-              {secondaryCtaLabel}
-            </Link>
-          </div>
-        </div>
-
-        <div className="home-hero-split__media order-2">
-          <Image
-            src={heroImageSrc}
-            alt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
-            fill
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            priority
-            placeholder="blur"
-            blurDataURL={HERO_BLUR_DATA_URL}
-            className="h-full w-full object-cover object-[50%_38%]"
-          />
-        </div>
-      </div>
-
-      <div id={HERO_BOTTOM_SENTINEL_ID} aria-hidden="true" className="h-px w-full" />
-    </section>
+    <div data-test-id={`home-hero-${safeTestId(heroVariant)}`}>
+      <HomeHeroCinematic
+        title={title}
+        promiseLine={promiseLine}
+        primaryCtaLabel={primaryCtaLabel}
+        primaryHref={primaryHref}
+        secondaryCtaLabel={secondaryCtaLabel}
+        secondaryHref={secondaryHref}
+        heroVariant={heroVariant}
+        scrollCueLabel={copy.home.heroScrollCue}
+        posterAlt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
+      />
+    </div>
   );
 }

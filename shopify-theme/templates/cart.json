@@ -27,7 +27,7 @@
     "cart_bundle_nudge": {
       "type": "cart-bundle-nudge",
       "settings": {
-        "enable_bundle_message": false,
+        "enable_bundle_message": true,
         "required_quantity": 3,
         "discount_egp": 100,
         "eligible_collection": "",
@@ -35,7 +35,7 @@
         "heading_after": "Add a 3rd, save 100 EGP",
         "note": "Pick one more design by a different artist and get 100 EGP off.",
         "discount_code_text": "",
-        "use_incentives_api": false,
+        "use_incentives_api": true,
         "incentives_api_url": "/apps/horo-incentives",
         "api_timeout_ms": 2500,
         "color_scheme": "scheme-1",
@@ -46,18 +46,41 @@
     "cart_free_shipping_progress": {
       "type": "cart-free-shipping-progress",
       "settings": {
-        "enable_free_shipping_progress": false,
+        "enable_free_shipping_progress": true,
         "threshold_egp": 1500,
         "heading_before": "Free shipping progress",
         "message_before": "Add [amount] more to reach the free-shipping threshold.",
         "message_after": "Your cart has reached the free-shipping threshold. Final shipping options are confirmed at checkout.",
         "show_admin_warning_in_editor": true,
-        "use_incentives_api": false,
+        "use_incentives_api": true,
         "incentives_api_url": "/apps/horo-incentives",
         "api_timeout_ms": 2500,
-        "fallback_to_manual_threshold": true,
+        "fallback_to_manual_threshold": false,
         "color_scheme": "scheme-1",
         "padding_top": 24,
+        "padding_bottom": 24
+      }
+    },
+    "cart_timed_offer_countdown": {
+      "type": "cart-timed-offer-countdown",
+      "settings": {
+        "enable_timed_offer": true,
+        "incentives_api_url": "/apps/horo-incentives",
+        "api_timeout_ms": 2500,
+        "color_scheme": "scheme-1",
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "cart_cross_sell": {
+      "type": "cart-cross-sell",
+      "settings": {
+        "enable_cross_sell": true,
+        "heading": "",
+        "collection": "",
+        "products_to_show": 4,
+        "color_scheme": "scheme-1",
+        "padding_top": 16,
         "padding_bottom": 24
       }
     },
@@ -128,6 +151,8 @@
   "order": [
     "horo_breadcrumb",
     "cart-items",
+    "cart_timed_offer_countdown",
+    "cart_cross_sell",
     "cart-footer",
     "cart_trust_explainer",
     "cart_free_shipping_progress",

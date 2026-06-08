@@ -181,7 +181,14 @@ function LocaleToggle({
   );
 }
 
-export function Nav({ navigation = null }: { navigation?: NavSettings }) {
+export function Nav({
+  navigation = null,
+  overlayOnHero = false,
+}: {
+  navigation?: NavSettings;
+  /** When true (homepage), nav is transparent over the hero until scroll. */
+  overlayOnHero?: boolean;
+}) {
   const { totalQty, setMiniCartOpen } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { locale, setLocale } = useUiLocale();
@@ -290,17 +297,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   }, [locale, navigation?.drawer, routeLabelByKey]);
 
   const shopPreviewItems = useMemo<ShopPreviewItem[]>(() => {
-    const launchProducts = getProducts().filter(productHasRealImage).slice(0, 3);
-    if (launchProducts.length > 0) {
-      return launchProducts.map((product) => ({
-        href: `/products/${product.slug}`,
-        label: product.name,
-        imageAlt: product.name,
-        imageSrc: imgUrl(preferHomeCardDisplaySrc(product), 360),
-      }));
-    }
-
-    return [
+    const fallbackItems: ShopPreviewItem[] = [
       {
         href: NAV_ROUTE.products.path,
         label: routeLabelByKey.products,
@@ -320,8 +317,23 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
         imageSrc: null,
       },
     ];
+
+    if (!mounted) return fallbackItems;
+
+    const launchProducts = getProducts().filter(productHasRealImage).slice(0, 3);
+    if (launchProducts.length > 0) {
+      return launchProducts.map((product) => ({
+        href: `/products/${product.slug}`,
+        label: product.name,
+        imageAlt: product.name,
+        imageSrc: imgUrl(preferHomeCardDisplaySrc(product), 360),
+      }));
+    }
+
+    return fallbackItems;
   }, [
     copy.nav.shopPreviewPlaceholder,
+    mounted,
     routeLabelByKey.gifts,
     routeLabelByKey.products,
     routeLabelByKey.shopByMeaning,
@@ -521,6 +533,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   }
 
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+  const [heroScrolledPast, setHeroScrolledPast] = useState(!overlayOnHero);
   const lastScrollY = useRef(0);
   const headerHeightRef = useRef(0);
 
@@ -559,7 +572,39 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
     return () => window.removeEventListener('resize', updateHeaderHeight);
   }, []);
 
-  const logoVariant = 'dark';
+  useEffect(() => {
+    if (!overlayOnHero) {
+      setHeroScrolledPast(true);
+      return;
+    }
+
+    setHeroScrolledPast(false);
+    const sentinel = document.getElementById('home-hero-bottom-sentinel');
+    if (!sentinel) {
+      setHeroScrolledPast(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setHeroScrolledPast(!entry?.isIntersecting);
+      },
+      { root: null, rootMargin: '0px', threshold: 0 },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [overlayOnHero, pathname]);
+
+  const isOverHero = overlayOnHero && !heroScrolledPast;
+  const logoVariant = isOverHero ? 'light' : 'dark';
+  const navToneClass = isOverHero ? 'text-white/90 hover:text-white' : 'text-obsidian/90 hover:text-obsidian';
+  const navActiveClass = isOverHero
+    ? 'nav-link-underline--active rounded-full bg-white/18 text-white shadow-sm ring-1 ring-white/22'
+    : 'nav-link-underline--active rounded-full bg-obsidian text-white shadow-sm';
+  const iconToneClass = isOverHero ? 'text-white/88 hover:bg-white/10' : 'text-obsidian/85 hover:bg-black/4';
+  const searchChipClass = isOverHero
+    ? 'border-white/28 bg-white/10 text-white hover:bg-white/16'
+    : 'border-stone/40 bg-white/70 text-obsidian hover:bg-white';
   const handleCartNavigation = useCallback(() => {
     setMiniCartOpen(false);
     router.push('/cart');
@@ -574,7 +619,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
   return (
     <header
       ref={headerRef}
-      className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${isHeaderHidden ? 'md:-translate-y-full' : 'translate-y-0'}`}
+      className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${overlayOnHero ? 'glass-nav--over-hero' : ''} ${heroScrolledPast ? 'glass-nav--scrolled' : ''} ${isHeaderHidden ? 'md:-translate-y-full' : 'translate-y-0'}`}
       role="banner"
     >
       {placedOrderMedusaId ? (
@@ -609,7 +654,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
         <div className="flex items-center justify-between gap-2 py-3 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))]">
           <button
             type="button"
-            className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/90"
+            className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${iconToneClass}`}
             aria-expanded={menuVisible && menuPanelOpen}
             aria-controls="primary-nav-drawer"
             aria-label={menuVisible && menuPanelOpen ? copy.shell.closeMenu : copy.shell.openMenu}
@@ -623,7 +668,7 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
           <div className="flex shrink-0 items-center gap-1">
             <button
               type="button"
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm text-obsidian/85"
+              className={`inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm ${iconToneClass}`}
               aria-label={copy.nav.searchOpen}
               onClick={() => router.push('/search?focus=1')}
             >
@@ -631,26 +676,26 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
             </button>
             <button
               type="button"
-              className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
+              className={`relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${iconToneClass}`}
               aria-label={mounted && wishlistCount > 0 ? `Wishlist (${wishlistCount})` : 'Wishlist'}
               onClick={() => router.push('/wishlist')}
             >
               <AppIcon name="favorite" className="h-6 w-6" />
               {mounted && wishlistCount > 0 ? (
-                <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
+                <span className={`pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 font-label text-[10px] font-semibold leading-none ${isOverHero ? 'bg-white text-obsidian' : 'bg-obsidian text-white'}`}>
                   {wishlistCount > 99 ? '99+' : wishlistCount}
                 </span>
               ) : null}
             </button>
             <button
               type="button"
-              className="relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm text-obsidian/85"
+              className={`relative inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm ${iconToneClass}`}
               aria-label={mounted && totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
               onClick={handleCartNavigation}
             >
               <AppIcon name="shopping_bag" className="h-6 w-6" />
               {mounted && totalQty > 0 ? (
-                <span className="pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
+                <span className={`pointer-events-none absolute right-0 top-0 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 font-label text-[10px] font-semibold leading-none ${isOverHero ? 'bg-white text-obsidian' : 'bg-obsidian text-white'}`}>
                   {totalQty > 99 ? '99+' : totalQty}
                 </span>
               ) : null}
@@ -659,14 +704,14 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
         </div>
       </div>
 
-      <div className="mx-auto hidden max-w-[1920px] items-center gap-6 py-2.5 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:flex md:gap-8 md:py-2.5 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
+      <div className="mx-auto hidden max-w-[1920px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-2.5 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:grid md:gap-6 md:py-2.5 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
         <div className="flex shrink-0 items-center gap-4">
           <Link href="/" className="flex shrink-0 items-center" aria-label={copy.shell.home}>
             <BrandLogo variant={logoVariant} showArabic={false} />
           </Link>
         </div>
 
-        <nav className="hidden shrink-0 items-center gap-1 md:flex" aria-label="Primary shortcuts">
+        <nav className="hidden min-w-0 items-center justify-center gap-1 md:flex" aria-label="Primary shortcuts">
           {primaryNavItems.map((item) => {
             const navLink = (
               <Link
@@ -674,8 +719,8 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                 href={item.href}
                 className={`nav-link-underline font-body px-2.5 py-2 text-[0.95rem] font-medium transition-colors lg:px-3 ${
                     isPathActive(item.href, item.end)
-                      ? 'nav-link-underline--active rounded-full bg-obsidian text-white shadow-sm'
-                      : 'rounded-sm text-obsidian/90 hover:text-obsidian'
+                      ? navActiveClass
+                      : `rounded-sm ${navToneClass}`
                   }`}
               >
                 {item.label}
@@ -721,11 +766,27 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
           })}
         </nav>
 
-        <div className="relative flex min-w-0 flex-1 justify-end px-2 md:px-4">
-          <form onSubmit={handleSearchSubmit} className={`relative transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${searchFocused || q.trim() ? 'w-full max-w-xl min-w-[18rem]' : 'w-10'}`}>
+        <div className="relative flex shrink-0 items-center justify-end gap-2 md:gap-2 lg:gap-3">
+          <form
+            onSubmit={handleSearchSubmit}
+            className={`relative transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${searchFocused || q.trim() ? 'w-full max-w-md min-w-[16rem]' : 'w-auto'}`}
+          >
             <label htmlFor="nav-search-desktop" className="sr-only">
               {copy.nav.searchPlaceholder}
             </label>
+            {!(searchFocused || q.trim()) ? (
+              <button
+                type="button"
+                className={`font-body inline-flex min-h-11 items-center gap-2 rounded-full border px-3.5 text-[13px] font-medium transition-colors ${searchChipClass}`}
+                onClick={() => {
+                  setSearchFocused(true);
+                  window.requestAnimationFrame(() => desktopSearchInputRef.current?.focus());
+                }}
+              >
+                <AppIcon name="search" className="h-[18px] w-[18px]" />
+                <span>{copy.nav.searchOpen}</span>
+              </button>
+            ) : null}
             <input
               ref={desktopSearchInputRef}
               id="nav-search-desktop"
@@ -735,7 +796,6 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
               onChange={(event) => setQ(event.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => {
-                // Short timeout to allow suggestion clicks
                 setTimeout(() => {
                   setSearchFocused(false);
                 }, 200);
@@ -743,8 +803,8 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
               onKeyDown={handleSearchKeyDown}
               className={`font-body box-border h-10 w-full border-b text-[13px] leading-normal transition-all duration-500 bg-transparent outline-none ${
                 searchFocused || q.trim()
-                  ? 'px-4 pl-10 pr-20 border-stone/30 text-obsidian focus:border-obsidian placeholder:text-clay/70'
-                  : 'px-0 pl-10 border-transparent text-transparent placeholder:text-transparent cursor-pointer'
+                  ? `px-4 pl-10 pr-20 border-stone/30 focus:border-obsidian placeholder:text-clay/70 ${isOverHero ? 'text-white border-white/30 focus:border-white placeholder:text-white/55' : 'text-obsidian focus:border-obsidian placeholder:text-clay/70'}`
+                  : 'pointer-events-none absolute h-px w-px overflow-hidden opacity-0'
               }`}
               autoComplete="off"
               aria-expanded={suggestionsOpen}
@@ -752,17 +812,19 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
               aria-activedescendant={activeSuggestionId}
               role="combobox"
             />
-            <span
-              className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-obsidian/62 transition-colors"
-              aria-hidden
-            >
-              <AppIcon name="search" className="h-[18px] w-[18px]" />
-            </span>
+            {searchFocused || q.trim() ? (
+              <span
+                className={`pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 ${isOverHero ? 'text-white/70' : 'text-obsidian/62'}`}
+                aria-hidden
+              >
+                <AppIcon name="search" className="h-[18px] w-[18px]" />
+              </span>
+            ) : null}
             <div className={`absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1 transition-opacity duration-300 ${searchFocused || q.trim() ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
               {q.trim() ? (
                 <button
                   type="button"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full text-obsidian/70 hover:bg-black/5"
+                  className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${isOverHero ? 'text-white/75 hover:bg-white/10' : 'text-obsidian/70 hover:bg-black/5'}`}
                   aria-label={copy.nav.searchClear}
                   onMouseDown={(event) => {
                     event.preventDefault();
@@ -772,14 +834,17 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
                   <AppIcon name="close" className="h-5 w-5" />
                 </button>
               ) : null}
-              <button type="submit" className="inline-flex h-8 items-center justify-center rounded-full px-3 text-obsidian/80 transition-colors hover:text-obsidian">
+              <button
+                type="submit"
+                className={`inline-flex h-8 items-center justify-center rounded-full px-3 transition-colors ${isOverHero ? 'text-white/85 hover:text-white' : 'text-obsidian/80 hover:text-obsidian'}`}
+              >
                 <span className="font-label text-[10px] font-semibold uppercase tracking-[0.18em]">{copy.nav.searchSubmit}</span>
               </button>
             </div>
           </form>
 
           {suggestionsOpen ? (
-            <div className="absolute left-1/2 top-[calc(100%+0.75rem)] z-120 w-full max-w-xl -translate-x-1/2 px-2 md:px-4">
+            <div className="absolute right-0 top-[calc(100%+0.75rem)] z-120 w-full min-w-[18rem] max-w-md">
               <SearchSuggestionPanel
                 groups={suggestionGroups}
                 activeIndex={activeSuggestionIndex}
@@ -789,12 +854,10 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
               />
             </div>
           ) : null}
-        </div>
 
-        <div className="flex shrink-0 items-center gap-2 md:gap-2 lg:gap-3">
           <button
             type="button"
-            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
+            className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm transition-colors ${iconToneClass}`}
             aria-label={
               mounted && wishlistCount > 0
                 ? locale === 'ar'
@@ -810,13 +873,13 @@ export function Nav({ navigation = null }: { navigation?: NavSettings }) {
           </button>
           <button
             type="button"
-            className="relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm text-obsidian/85 transition-colors hover:bg-black/4"
+            className={`relative inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-sm transition-colors ${iconToneClass}`}
             aria-label={mounted && totalQty > 0 ? `${copy.shell.cart} (${totalQty})` : copy.shell.cart}
             onClick={handleCartNavigation}
           >
             <AppIcon name="shopping_bag" className="h-6 w-6" />
             {mounted && totalQty > 0 ? (
-              <span className="pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-obsidian px-1 font-label text-[10px] font-semibold leading-none text-white">
+              <span className={`pointer-events-none absolute right-0.5 top-0.5 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 font-label text-[10px] font-semibold leading-none ${isOverHero ? 'bg-white text-obsidian' : 'bg-obsidian text-white'}`}>
                 {totalQty > 99 ? '99+' : totalQty}
               </span>
             ) : null}

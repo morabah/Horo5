@@ -1,0 +1,129 @@
+{{ 'component-product-promo-countdown.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'horo-incentives.js' | asset_url }}" defer></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if settings.horo_incentives_live and section.settings.enable_timed_offer -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <div
+        class="product-promo-countdown"
+        data-horo-timed-offer-countdown
+        data-incentives-api-url="{{ section.settings.incentives_api_url | default: '/apps/horo-incentives' }}"
+        data-api-timeout-ms="{{ section.settings.api_timeout_ms | default: 2500 }}"
+        data-locale="{{ request.locale.iso_code }}"
+        data-fallback-label="{{ 'horo.incentives.limited_offer' | t | escape }}"
+        aria-live="polite"
+        hidden
+      >
+        <span class="product-promo-countdown__badge">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span data-timed-offer-label>{{ 'horo.incentives.limited_offer' | t }}</span>
+        </span>
+        <div class="product-promo-countdown__body">
+          <p class="product-promo-countdown__label">
+            {{- 'horo.incentives.ends_in' | t -}}
+          </p>
+          <p class="product-promo-countdown__display" data-timed-offer-display>
+            --:--
+          </p>
+          <p class="product-promo-countdown__savings">
+            {{- 'horo.incentives.save_amount' | t: amount: '' -}}
+            <span data-timed-offer-savings></span>
+          </p>
+        </div>
+        <p class="product-promo-countdown__ended" data-timed-offer-ended hidden>
+          {{- 'horo.incentives.offer_ended' | t -}}
+        </p>
+      </div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="color-{{ section.settings.color_scheme }} gradient">
+    <div class="page-width section-{{ section.id }}-padding">
+      <p style="font-size:1.2rem;opacity:0.65;">
+        Enable cart timed offer after the Medusa incentives app proxy is configured.
+      </p>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cart timed offer",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_timed_offer",
+      "default": true,
+      "label": "Enable cart timed offer",
+      "info": "Renders only when the incentives API returns a real future-dated timedOffer."
+    },
+    {
+      "type": "text",
+      "id": "incentives_api_url",
+      "default": "/apps/horo-incentives",
+      "label": "Incentives API URL"
+    },
+    {
+      "type": "range",
+      "id": "api_timeout_ms",
+      "min": 1000,
+      "max": 5000,
+      "step": 500,
+      "unit": "ms",
+      "label": "API timeout",
+      "default": 2500
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart timed offer"
+    }
+  ]
+}
+{% endschema %}

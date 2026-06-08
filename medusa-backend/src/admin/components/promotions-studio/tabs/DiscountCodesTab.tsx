@@ -111,11 +111,11 @@ export function DiscountCodesTab() {
           <Table.Body>
             {isLoading ? (
               <Table.Row>
-                <Table.Cell colSpan={7} className="text-center text-ui-fg-muted">Loading discount codes...</Table.Cell>
+                <td colSpan={7} className="py-8 text-center text-ui-fg-muted">Loading discount codes...</td>
               </Table.Row>
             ) : promotions.length === 0 ? (
               <Table.Row>
-                <Table.Cell colSpan={7} className="text-center text-ui-fg-muted">No native code promotions found.</Table.Cell>
+                <td colSpan={7} className="py-8 text-center text-ui-fg-muted">No native code promotions found.</td>
               </Table.Row>
             ) : (
               promotions.map((promotion) => (

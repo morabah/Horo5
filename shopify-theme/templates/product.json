@@ -85,6 +85,14 @@
         "padding_bottom": 16
       }
     },
+    "product_promo_countdown": {
+      "type": "product-promo-countdown",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 12,
+        "padding_bottom": 16
+      }
+    },
     "product_story": {
       "type": "product-story",
       "settings": {
@@ -281,6 +289,7 @@
     "horo_product_data",
     "main",
     "product_purchase_context",
+    "product_promo_countdown",
     "product_trust_strip",
     "product_delivery_payment",
     "product_gift_wrap_upsell",

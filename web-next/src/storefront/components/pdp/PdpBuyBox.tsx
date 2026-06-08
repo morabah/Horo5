@@ -173,6 +173,12 @@ export function PdpBuyBox({
       ? `باقي ${lowStockCount} فقط بهذا السعر`
       : `Only ${lowStockCount} left at this price`
     : null;
+  const reviewSummary = (product as Product & {
+    reviewsSummary?: { count?: number; averageRating?: number; monthSoldCount?: number };
+  }).reviewsSummary;
+  const reviewCount = reviewSummary?.count ?? 0;
+  const avgRating = reviewSummary?.averageRating ?? 0;
+  const monthSold = reviewSummary?.monthSoldCount ?? 0;
   const launchEyebrow = launchProductEyebrow(product);
   const meaningLine = productMeaningLine(product);
 
@@ -227,6 +233,25 @@ export function PdpBuyBox({
             <p className="font-body text-sm leading-snug text-warm-charcoal">
               <span className="text-clay">{isArabic ? copy.illustratedByLabel : copy.illustratedByLabel}</span>{' '}
               <span className="font-medium text-obsidian">{pdpArtist.name}</span>
+            </p>
+          ) : null}
+
+          {reviewCount > 0 && avgRating > 0 ? (
+            <p className="inline-flex w-fit items-center gap-2 rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 font-label text-[10px] font-semibold uppercase tracking-[0.14em] text-obsidian">
+              <span aria-hidden="true">★★★★★</span>
+              <span>
+                {avgRating.toFixed(1)} / 5
+                {' '}
+                {isArabic
+                  ? `(${reviewCount} تقييم)`
+                  : `(${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'})`}
+              </span>
+            </p>
+          ) : monthSold > 0 ? (
+            <p className="inline-flex w-fit items-center rounded-full border border-stone/35 bg-white/70 px-3 py-1.5 font-label text-[10px] font-semibold uppercase tracking-[0.14em] text-obsidian">
+              {isArabic
+                ? `تم بيع ${monthSold} ${monthSold === 1 ? 'قطعة' : 'قطع'} هذا الشهر`
+                : `${monthSold} ${monthSold === 1 ? 'piece' : 'pieces'} bought this month`}
             </p>
           ) : null}
 

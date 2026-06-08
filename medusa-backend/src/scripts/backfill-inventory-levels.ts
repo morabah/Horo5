@@ -21,7 +21,7 @@ import {
 } from "@medusajs/medusa/core-flows"
 
 import { GIFT_WRAP_HANDLE } from "../lib/shared/constants"
-import { normalizeArgs, readOption } from "../lib/shared/cli-args"
+import { normalizeArgs } from "../lib/shared/cli-args"
 import {
   type StockMap,
   type StockLocationRow,

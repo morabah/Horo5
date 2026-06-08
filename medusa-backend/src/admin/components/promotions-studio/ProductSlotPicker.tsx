@@ -1,5 +1,5 @@
 import { ArrowDownMini, ArrowUpMini, PlusMini, Trash } from "@medusajs/icons"
-import { Badge, Button, IconButton, Input, Label, Text, Tooltip } from "@medusajs/ui"
+import { Badge, IconButton, Input, Label, Text, Tooltip } from "@medusajs/ui"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo, useState } from "react"
 

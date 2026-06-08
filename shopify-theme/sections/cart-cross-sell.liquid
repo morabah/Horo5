@@ -1,0 +1,165 @@
+{{ 'component-cart.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- if cart != empty and section.settings.enable_cross_sell -%}
+  {%- liquid
+    assign source_products = collections[section.settings.collection].products
+    if source_products.size == 0
+      assign source_products = collections['founding-drop'].products
+    endif
+    if source_products.size == 0
+      assign source_products = collections.all.products
+    endif
+    assign cross_sell_heading = section.settings.heading
+    if cross_sell_heading == blank
+      assign cross_sell_heading = 'horo.cart.cross_sell_heading' | t
+    endif
+    assign rendered_count = 0
+  -%}
+  {%- if source_products.size > 0 -%}
+    <div class="color-{{ section.settings.color_scheme }} gradient">
+      <div class="page-width section-{{ section.id }}-padding">
+        <section class="horo-cart-empty-recs" aria-labelledby="cart-cross-sell-title">
+          <div class="horo-cart-empty-recs__header">
+            <div>
+              <p class="horo-cart-empty-recs__eyebrow">{{ 'horo.cart.cross_sell_eyebrow' | t }}</p>
+              <h2 id="cart-cross-sell-title" class="horo-cart-empty-recs__title">
+                {{ cross_sell_heading | escape }}
+              </h2>
+            </div>
+            <a href="{{ routes.all_products_collection_url }}" class="underlined-link">
+              {{ 'horo.cart.empty_recs_cta' | t }}
+            </a>
+          </div>
+          <div class="horo-cart-empty-recs__grid">
+            {%- for product in source_products -%}
+              {%- if rendered_count >= section.settings.products_to_show -%}
+                {%- break -%}
+              {%- endif -%}
+              {%- liquid
+                assign in_cart = false
+                for item in cart.items
+                  if item.product.handle == product.handle
+                    assign in_cart = true
+                  endif
+                endfor
+                assign rec_variant = product.selected_or_first_available_variant
+                assign rec_image = product.featured_media.preview_image | default: product.featured_image
+              -%}
+              {%- if in_cart == false and rec_variant.available -%}
+                {%- assign rendered_count = rendered_count | plus: 1 -%}
+                <article class="horo-cart-empty-recs__card">
+                  <a href="{{ product.url }}" class="horo-cart-empty-recs__media">
+                    {%- if rec_image != blank -%}
+                      {{
+                        rec_image
+                        | image_url: width: 420
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '220, 320, 420',
+                          sizes: '(max-width: 749px) 45vw, 220px',
+                          alt: product.title
+                      }}
+                    {%- else -%}
+                      <span class="horo-cart-empty-recs__placeholder">HORO</span>
+                    {%- endif -%}
+                  </a>
+                  <a href="{{ product.url }}" class="horo-cart-empty-recs__name">{{ product.title | escape }}</a>
+                  {% render 'price', product: product, price_class: 'horo-cart-empty-recs__price', show_compare_at_price: true %}
+                  <form method="post" action="{{ routes.cart_add_url }}" class="horo-cart-cross-sell__form">
+                    <input type="hidden" name="id" value="{{ rec_variant.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="button button--secondary horo-cart-cross-sell__button">
+                      {{ 'horo.cart.cross_sell_add' | t }}
+                    </button>
+                  </form>
+                </article>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        </section>
+      </div>
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Cart cross-sell",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_cross_sell",
+      "default": true,
+      "label": "Enable cart cross-sell"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Complete your look",
+      "label": "Heading"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Recommendation collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Products to show",
+      "default": 4
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart cross-sell"
+    }
+  ]
+}
+{% endschema %}

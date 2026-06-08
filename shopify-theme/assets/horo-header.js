@@ -197,4 +197,34 @@
       });
     }
   })();
+
+  /* --- Homepage: transparent header over cinematic hero --- */
+  (function initHomeHeroHeader() {
+    if (!document.body.classList.contains('template-index')) return;
+
+    const sentinel = document.getElementById('home-hero-bottom-sentinel');
+    const wrapper = document.querySelector('.horo-header-wrapper--home');
+    if (!sentinel || !wrapper) return;
+
+    wrapper.classList.add('horo-header-wrapper--over-hero');
+
+    const setScrolled = function (scrolled) {
+      wrapper.classList.toggle('horo-header-wrapper--scrolled', scrolled);
+    };
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setScrolled(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      function (entries) {
+        const entry = entries[0];
+        setScrolled(!entry || !entry.isIntersecting);
+      },
+      { root: null, rootMargin: '0px', threshold: 0 }
+    );
+
+    observer.observe(sentinel);
+  })();
 })();

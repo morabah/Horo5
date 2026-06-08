@@ -1,7 +1,7 @@
 import { Modules } from "@medusajs/framework/utils"
 import type { MedusaContainer } from "@medusajs/types"
 
-import { asNumber, asString, asStringArrayOrEmpty } from "../shared/type-guards"
+import { asString, asStringArrayOrEmpty } from "../shared/type-guards"
 import { HOMEPAGE_SECTION_TYPES } from "../homepage-sections/types"
 
 /**

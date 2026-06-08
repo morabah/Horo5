@@ -194,7 +194,7 @@
       "horo_delivery_cairo": "Cairo/Giza: 2–4 business days",
       "horo_delivery_alex": "Alexandria: 3–5 business days",
       "horo_delivery_other": "Other governorates: 4–7 business days",
-      "horo_incentives_live": "false",
+      "horo_incentives_live": true,
       "horo_gift_wrap_product": "gift-wrap"
     }
   }

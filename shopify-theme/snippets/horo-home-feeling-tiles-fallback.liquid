@@ -7,6 +7,7 @@
   assign fallback_slugs = 'mood,lifestyle,career,zodiac' | split: ','
   assign fallback_labels = 'Mood,Lifestyle,Career,Zodiac Signs' | split: ','
   assign fallback_subtitles = 'Feelings you wear,Daily pieces,Work identity,Personality-inspired designs' | split: ','
+  assign fallback_image_assets = 'horo-editorial-calm-inside.png,horo-editorial-artwork-detail.png,horo-founding-drop-campaign.png,horo-our-story.png' | split: ','
   assign surfaces = '#f8eaea,#f4ede5,#edf1ea,#f5eef3' | split: ','
 -%}
 
@@ -17,6 +18,7 @@
     {%- endif -%}
     {%- assign label = fallback_labels[forloop.index0] -%}
     {%- assign subtitle = fallback_subtitles[forloop.index0] -%}
+    {%- assign image_asset = fallback_image_assets[forloop.index0] -%}
     {%- assign surface_index = forloop.index0 | modulo: 4 -%}
     {%- assign surface_color = surfaces[surface_index] -%}
     {%- assign card_url = routes.all_products_collection_url -%}
@@ -49,13 +51,12 @@
     <li class="home-feeling-pastel-grid__item" role="listitem">
       <a
         href="{{ card_url }}"
-        class="home-feeling-pastel-tile"
-        style="background-color: {{ surface_color }};"
+        class="home-feeling-pastel-tile home-feeling-tile--editorial"
+        style="background-image: url({{ image_asset | asset_url }});"
         aria-label="{{ label | escape }}"
         data-horo-home-event="category_card_click"
         data-horo-home-props='{"category":{{ slug | json }}}'
       >
-        {% render 'feeling-tile-icon', slug: slug %}
         <span class="home-feeling-pastel-tile__label">{{ label | escape }}</span>
         {%- if subtitle != blank -%}
           <span class="home-feeling-pastel-tile__subtitle">{{ subtitle | escape }}</span>

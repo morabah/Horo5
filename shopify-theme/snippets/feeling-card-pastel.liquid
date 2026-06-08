@@ -12,18 +12,21 @@
   assign surfaces = '#f4ede5,#f8eaea,#edf1ea,#eeebf5,#f7ebe4' | split: ','
   assign surface_index = tile_index | modulo: 5
   assign surface_color = surfaces[surface_index]
+  assign image_asset = override_image_asset | default: ''
 -%}
 
 <li class="home-feeling-pastel-grid__item" role="listitem">
   <a
     href="{{ card_url }}"
-    class="home-feeling-pastel-tile"
-    style="background-color: {{ surface_color }};"
+    class="home-feeling-pastel-tile{% if image_asset != blank %} home-feeling-tile--editorial{% endif %}"
+    style="{% if image_asset != blank %}background-image: url({{ image_asset | asset_url }});{% else %}background-color: {{ surface_color }};{% endif %}"
     aria-label="{{ feeling_label | escape }}"
     data-horo-home-event="category_card_click"
     data-horo-home-props='{"category":{{ icon_slug | json }}}'
   >
-    {% render 'feeling-tile-icon', slug: icon_slug %}
+    {%- if image_asset == blank -%}
+      {% render 'feeling-tile-icon', slug: icon_slug %}
+    {%- endif -%}
     <span class="home-feeling-pastel-tile__label">{{ feeling_label | escape }}</span>
     {%- if feeling_subtitle != blank -%}
       <span class="home-feeling-pastel-tile__subtitle">{{ feeling_subtitle | escape }}</span>

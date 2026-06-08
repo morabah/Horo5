@@ -127,6 +127,115 @@ cart-items.is-empty .title-wrapper-with-link,
   min-width: 22rem;
 }
 
+.horo-cart-empty-recs {
+  width: min(100%, 72rem);
+  margin: 3rem auto 0;
+  text-align: start;
+}
+
+.horo-cart-empty-recs__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.horo-cart-empty-recs__eyebrow {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-body-family);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(79, 17, 31, 0.62);
+}
+
+.horo-cart-empty-recs__title {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-size: clamp(2.2rem, 4vw, 3rem);
+  line-height: 1.1;
+  color: #4f111f;
+}
+
+.horo-cart-empty-recs__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+.horo-cart-empty-recs__card {
+  border: 1px solid rgba(140, 18, 48, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 250, 250, 0.78);
+  padding: 0.8rem;
+}
+
+.horo-cart-empty-recs__media {
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  background: #f8f3f2;
+}
+
+.horo-cart-empty-recs__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.horo-cart-empty-recs__placeholder {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  font-family: var(--font-heading-family);
+  font-size: 1.1rem;
+  letter-spacing: 0.22em;
+  color: rgba(140, 18, 48, 0.42);
+}
+
+.horo-cart-empty-recs__name {
+  display: block;
+  min-height: 3.6rem;
+  margin-top: 1rem;
+  color: #4f111f;
+  font-family: var(--font-body-family);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.horo-cart-empty-recs__price {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-body-family);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(79, 17, 31, 0.68);
+}
+
+.horo-cart-cross-sell__form {
+  margin-top: 1rem;
+}
+
+.horo-cart-cross-sell__button {
+  min-height: 4rem;
+  width: 100%;
+  font-size: 1.1rem;
+}
+
+@media screen and (min-width: 750px) {
+  .horo-cart-empty-recs__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media screen and (min-width: 990px) {
   .cart__warnings {
     padding: 7rem 0 1rem;

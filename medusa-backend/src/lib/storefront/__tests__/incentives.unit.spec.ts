@@ -7,6 +7,10 @@ type FakePromotion = {
   status?: "draft" | "active" | "inactive"
   is_automatic?: boolean
   metadata?: Record<string, unknown> | null
+  campaign?: {
+    starts_at?: string | Date | null
+    ends_at?: string | Date | null
+  } | null
   rules?: Array<{ attribute?: string; operator?: string; values: Array<{ value?: string }> }>
   application_method?: {
     type?: "fixed" | "percentage"
@@ -52,6 +56,7 @@ describe("retrieveStorefrontIncentivesPayload", () => {
     const out = await retrieveStorefrontIncentivesPayload(buildScope([], null))
     expect(out.freeShipping).toBeNull()
     expect(out.bundle).toBeNull()
+    expect(out.timedOffer).toBeNull()
     expect(out.giftWrapProductHandle).toBeNull()
   })
 
@@ -155,5 +160,62 @@ describe("retrieveStorefrontIncentivesPayload", () => {
     ]
     const out = await retrieveStorefrontIncentivesPayload(buildScope(promotions, null))
     expect(out.freeShipping?.label).toEqual({ en: "Free shipping over 1500 EGP", ar: "شحن مجاني" })
+  })
+
+  test("projects a live timed offer from a promotion campaign window", async () => {
+    const promotions: FakePromotion[] = [
+      {
+        id: "promo_timed_1",
+        code: "HORO_FREE_SHIPPING_1500",
+        type: "standard",
+        status: "active",
+        is_automatic: true,
+        campaign: {
+          starts_at: "2026-01-01T00:00:00.000Z",
+          ends_at: "2099-12-31T23:59:59.000Z",
+        },
+        application_method: {
+          type: "percentage",
+          target_type: "shipping_methods",
+          value: 100,
+          currency_code: "egp",
+        },
+        rules: [{ attribute: "cart.subtotal", operator: "gte", values: [{ value: "1500" }] }],
+      },
+    ]
+    const out = await retrieveStorefrontIncentivesPayload(buildScope(promotions, null))
+    expect(out.timedOffer).toEqual({
+      promotionId: "promo_timed_1",
+      label: { en: "Limited-time offer", ar: "عرض لفترة محدودة" },
+      startsAt: "2026-01-01T00:00:00.000Z",
+      endsAt: "2099-12-31T23:59:59.000Z",
+      savingsKind: "percentage",
+      savingsValue: 100,
+      scope: "storewide",
+    })
+  })
+
+  test("does not project expired timed offers", async () => {
+    const promotions: FakePromotion[] = [
+      {
+        id: "promo_expired",
+        code: "HORO_BUNDLE_2_1_PERCENTAGE_100",
+        type: "buyget",
+        status: "active",
+        is_automatic: true,
+        campaign: {
+          ends_at: "2020-01-01T00:00:00.000Z",
+        },
+        application_method: {
+          type: "percentage",
+          target_type: "items",
+          value: 100,
+          buy_rules_min_quantity: 2,
+          apply_to_quantity: 1,
+        },
+      },
+    ]
+    const out = await retrieveStorefrontIncentivesPayload(buildScope(promotions, null))
+    expect(out.timedOffer).toBeNull()
   })
 })

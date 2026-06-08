@@ -42,6 +42,17 @@ export function HomeFoundingProductCard({
   const displayImageAlt = `HORO "${product.name}" graphic tee`;
   const pdpHref = `/products/${product.slug}`;
   const chooseSizeLabel = isArabic ? 'اختر المقاس' : 'Choose size';
+  const inventoryQuantities = Object.values(catalogProduct.variantsBySize ?? {})
+    .map((variant) => variant?.inventoryQuantity)
+    .filter((qty): qty is number => typeof qty === 'number' && Number.isFinite(qty) && qty >= 0);
+  const totalTrackedInventory = inventoryQuantities.length > 0
+    ? inventoryQuantities.reduce((sum, qty) => sum + qty, 0)
+    : null;
+  const lowStockLine = totalTrackedInventory && totalTrackedInventory > 0 && totalTrackedInventory <= 10
+    ? isArabic
+      ? `باقي ${totalTrackedInventory} فقط`
+      : `Only ${totalTrackedInventory} left`
+    : null;
 
   return (
     <article className={`home-founding-card flex h-full flex-col overflow-hidden rounded-[4px] bg-white shadow-[0_1px_0_rgba(79,17,31,0.04)] transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(79,17,31,0.05)]${usingReferenceImage ? ' home-founding-card--reference' : ''}`} data-reveal={dataReveal}>
@@ -79,6 +90,11 @@ export function HomeFoundingProductCard({
         <p className="home-founding-card__price mt-2 font-semibold text-[#50484b]">
           {formatHomeEgp(displayPrice)}
         </p>
+        {lowStockLine ? (
+          <p className="mt-1 font-label text-[10px] font-semibold uppercase tracking-[0.12em] text-horo-pulse">
+            {lowStockLine}
+          </p>
+        ) : null}
         <div className="mt-auto pt-3.5">
           <Link
             href={pdpHref}

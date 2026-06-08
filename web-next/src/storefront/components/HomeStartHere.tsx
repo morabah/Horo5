@@ -51,8 +51,9 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
   const featuredProducts = resolveHomeProducts(products, section);
   const showBody = presentation.showBody !== false && Boolean(sectionBody ?? copy.home.startHereSubline);
   const wantsCampaignOverlay =
+    sectionPayload?.showFoundingCampaign === true &&
     Boolean(campaignImageSrc) &&
-    (isImageOverlayPresentation(sectionPayload) || presentation.layout === 'image_overlay');
+    isImageOverlayPresentation(sectionPayload);
   const showCampaignOverlay = wantsCampaignOverlay && !campaignImageFailed;
 
   if (featuredProducts.length === 0) {
@@ -67,7 +68,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
     <section
       id="founding-drop"
       aria-labelledby="home-start-here-title"
-      className="home-section bg-horo-white px-4 py-6 sm:px-6 md:py-7 lg:px-8"
+      className="home-section bg-horo-white px-4 sm:px-6 lg:px-8"
     >
       <div className="home-founding-drop__inner mx-auto max-w-6xl">
         {showCampaignOverlay && campaignImageSrc ? (
@@ -106,7 +107,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
         ) : null}
 
         {showTextHeader ? (
-          <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between" data-reveal>
             <div>
               <p className="home-section-eyebrow">{sectionEyebrow ?? copy.home.startHereEyebrow}</p>
               <h2 id="home-start-here-title" className="home-section-title mt-2">

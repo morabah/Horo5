@@ -44,6 +44,15 @@ export type StorefrontIncentivesDTO = {
     applicationKind: "fixed" | "percentage"
     label: LocalizedText
   } | null
+  timedOffer: {
+    promotionId: string
+    label: LocalizedText
+    startsAt: string | null
+    endsAt: string
+    savingsKind: "fixed" | "percentage"
+    savingsValue: number
+    scope: "storewide" | "collection"
+  } | null
   /** Handle of the Medusa product that operators created for the gift-wrap line item. */
   giftWrapProductHandle: string | null
   /** Cached price (EGP) of the gift-wrap product so the storefront can show the toggle label without a second roundtrip. */
@@ -55,6 +64,7 @@ export type StorefrontIncentivesDTO = {
 const EMPTY_INCENTIVES: StorefrontIncentivesDTO = {
   freeShipping: null,
   bundle: null,
+  timedOffer: null,
   giftWrapProductHandle: null,
   giftWrapPriceEgp: null,
   giftWrapLabel: null,
@@ -97,6 +107,98 @@ function readFreeShippingThresholdEgp(promotion: {
   const fallback = parseInteger((promotion.metadata as Record<string, unknown> | null | undefined)?.thresholdEgp)
   if (fallback !== null && fallback >= 0) return Math.round(fallback)
   return null
+}
+
+function toIsoDate(value: unknown): string | null {
+  if (!value) return null
+  const ms = Date.parse(String(value))
+  if (!Number.isFinite(ms)) return null
+  return new Date(ms).toISOString()
+}
+
+function firstIsoDate(...values: unknown[]): string | null {
+  for (const value of values) {
+    const iso = toIsoDate(value)
+    if (iso) return iso
+  }
+  return null
+}
+
+function isLiveWindow(startsAt: string | null, endsAt: string, nowMs: number): boolean {
+  const endsMs = Date.parse(endsAt)
+  if (!Number.isFinite(endsMs) || endsMs <= nowMs) return false
+  if (!startsAt) return true
+  const startsMs = Date.parse(startsAt)
+  return !Number.isFinite(startsMs) || startsMs <= nowMs
+}
+
+function timedOfferScope(value: unknown): "storewide" | "collection" {
+  return value === "collection" ? "collection" : "storewide"
+}
+
+function timedOfferFromPromotion(
+  promotion: {
+    id: string
+    code?: string
+    metadata?: Record<string, unknown> | null
+    campaign?: {
+      starts_at?: Date | string | null
+      ends_at?: Date | string | null
+    } | null
+    application_method?: {
+      type?: "fixed" | "percentage"
+      value?: number
+    }
+  },
+  storeIncentiveMetadata: Record<string, unknown>,
+  nowMs: number,
+): StorefrontIncentivesDTO["timedOffer"] {
+  const meta = promotion.metadata ?? undefined
+  const preferredPromotionId =
+    typeof storeIncentiveMetadata.timedOfferPromotionId === "string"
+      ? storeIncentiveMetadata.timedOfferPromotionId
+      : null
+  const isPreferredPromotion = preferredPromotionId === promotion.id
+  const startsAt = firstIsoDate(
+    promotion.campaign?.starts_at,
+    meta?.startsAt,
+    meta?.starts_at,
+    meta?.promoStartsAt,
+    isPreferredPromotion ? storeIncentiveMetadata.timedOfferStartsAt : null,
+  )
+  const endsAt = firstIsoDate(
+    promotion.campaign?.ends_at,
+    meta?.endsAt,
+    meta?.ends_at,
+    meta?.promoEndsAt,
+    isPreferredPromotion ? storeIncentiveMetadata.timedOfferEndsAt : null,
+  )
+  if (!endsAt || !isLiveWindow(startsAt, endsAt, nowMs)) return null
+
+  const savingsKind = promotion.application_method?.type === "fixed" ? "fixed" : "percentage"
+  const savingsValue = asNumber(promotion.application_method?.value) ?? 0
+  if (!Number.isFinite(savingsValue) || savingsValue <= 0) return null
+
+  const label =
+    (isPreferredPromotion ? localizedFromMetadata(storeIncentiveMetadata, "timedOfferLabel") : null) ??
+    localizedFromMetadata(meta, "timedOfferLabel") ??
+    localizedFromMetadata(meta, "label") ??
+    { en: "Limited-time offer", ar: "عرض لفترة محدودة" }
+  const scope = timedOfferScope(
+    (isPreferredPromotion ? storeIncentiveMetadata.timedOfferScope : undefined) ??
+      meta?.timedOfferScope ??
+      meta?.scope,
+  )
+
+  return {
+    promotionId: promotion.id,
+    label,
+    startsAt,
+    endsAt,
+    savingsKind,
+    savingsValue,
+    scope,
+  }
 }
 
 async function findGiftWrapDetails(
@@ -186,6 +288,11 @@ export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer
     status?: "draft" | "active" | "inactive"
     is_automatic?: boolean
     metadata?: Record<string, unknown> | null
+    campaign_id?: string | null
+    campaign?: {
+      starts_at?: Date | string | null
+      ends_at?: Date | string | null
+    } | null
     rules?: Array<{ attribute?: string; operator?: string; values: Array<{ value?: string }> }>
     application_method?: {
       type?: "fixed" | "percentage"
@@ -205,7 +312,7 @@ export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer
     }
     promotions = await promotionModule.listPromotions(
       { is_automatic: true, status: ["active"] },
-      { take: 50, relations: ["application_method", "rules", "rules.values"] },
+      { take: 50, relations: ["application_method", "rules", "rules.values", "campaign"] },
     )
   } catch {
     promotions = []
@@ -213,6 +320,23 @@ export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer
 
   let freeShipping: StorefrontIncentivesDTO["freeShipping"] = null
   let bundle: StorefrontIncentivesDTO["bundle"] = null
+  let timedOffer: StorefrontIncentivesDTO["timedOffer"] = null
+  const nowMs = Date.now()
+  const preferredTimedOfferPromotionId =
+    typeof storeIncentiveMetadata.timedOfferPromotionId === "string"
+      ? storeIncentiveMetadata.timedOfferPromotionId
+      : null
+  const timedOfferCandidates = preferredTimedOfferPromotionId
+    ? [
+        ...promotions.filter((promotion) => promotion.id === preferredTimedOfferPromotionId),
+        ...promotions.filter((promotion) => promotion.id !== preferredTimedOfferPromotionId),
+      ]
+    : promotions
+
+  for (const promotion of timedOfferCandidates) {
+    timedOffer = timedOfferFromPromotion(promotion, storeIncentiveMetadata, nowMs)
+    if (timedOffer) break
+  }
 
   for (const promotion of promotions) {
     const code = (promotion.code ?? "").toUpperCase()
@@ -294,6 +418,7 @@ export async function retrieveStorefrontIncentivesPayload(scope: MedusaContainer
     ...EMPTY_INCENTIVES,
     freeShipping,
     bundle,
+    timedOffer,
     ...giftWrap,
   }
 }

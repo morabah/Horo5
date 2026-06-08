@@ -1,8 +1,16 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { Modules } from "@medusajs/framework/utils"
-import { createPromotionsWorkflow, deletePromotionsWorkflow, updateProductsWorkflow, updatePromotionsWorkflow, updateStoresWorkflow } from "@medusajs/medusa/core-flows"
+import {
+  createCampaignsWorkflow,
+  createPromotionsWorkflow,
+  deletePromotionsWorkflow,
+  updateCampaignsWorkflow,
+  updateProductsWorkflow,
+  updatePromotionsWorkflow,
+  updateStoresWorkflow,
+} from "@medusajs/medusa/core-flows"
 
-import { BUNDLE_CODE_PREFIX, FREE_SHIPPING_CODE_PREFIX, GIFT_WRAP_HANDLE } from "../../../../../lib/shared/constants"
+import { BUNDLE_CODE_PREFIX, FREE_SHIPPING_CODE_PREFIX, GIFT_WRAP_HANDLE, TIMED_OFFER_CAMPAIGN_PREFIX } from "../../../../../lib/shared/constants"
 import {
   buildBundlePromotionConfig,
   cleanPromoLabel,
@@ -23,6 +31,13 @@ type PromotionRow = {
   status?: "draft" | "active" | "inactive"
   is_automatic?: boolean
   type?: "standard" | "buyget"
+  campaign_id?: string | null
+  campaign?: {
+    id?: string
+    starts_at?: string | Date | null
+    ends_at?: string | Date | null
+  } | null
+  metadata?: Record<string, unknown> | null
   application_method?: Record<string, unknown> | null
 }
 
@@ -40,6 +55,23 @@ function positiveInteger(value: unknown): number | null {
   const parsed = Number(value)
   if (!Number.isFinite(parsed) || parsed <= 0) return null
   return Math.trunc(parsed)
+}
+
+function toIso(value: unknown): string | null {
+  if (!value) return null
+  const ms = Date.parse(String(value))
+  if (!Number.isFinite(ms)) return null
+  return new Date(ms).toISOString()
+}
+
+function futureIso(value: unknown): string | null {
+  const iso = toIso(value)
+  if (!iso) return null
+  return Date.parse(iso) > Date.now() ? iso : null
+}
+
+function cleanTimedOfferScope(value: unknown): "storewide" | "collection" {
+  return value === "collection" ? "collection" : "storewide"
 }
 
 async function retrieveStore(req: MedusaRequest): Promise<StoreRow | null> {
@@ -86,6 +118,119 @@ async function deactivateSiblingPromotions(req: MedusaRequest, prefix: string, k
     input: {
       promotionsData: toDisable.map((promotion) => ({ id: promotion.id, status: "inactive" })),
     },
+  })
+}
+
+async function listTimedOfferTargetPromotions(req: MedusaRequest): Promise<PromotionRow[]> {
+  const promotionModule = req.scope.resolve(Modules.PROMOTION) as {
+    listPromotions: (filters: Record<string, unknown>, config: Record<string, unknown>) => Promise<PromotionRow[]>
+  }
+  const promotions = await promotionModule.listPromotions(
+    { is_automatic: true, status: ["active"] },
+    { take: 100, relations: ["application_method", "campaign"] },
+  )
+  return promotions.filter((promotion) => {
+    const code = (promotion.code ?? "").toUpperCase()
+    return code.startsWith(FREE_SHIPPING_CODE_PREFIX) || code.startsWith(BUNDLE_CODE_PREFIX)
+  })
+}
+
+function promotionDisplayName(promotion: PromotionRow): string {
+  const code = promotion.code?.trim()
+  if (code) return code
+  return promotion.type === "buyget" ? "Bundle promotion" : "Free-shipping promotion"
+}
+
+async function upsertTimedOffer(req: MedusaRequest, body: Record<string, unknown>) {
+  const store = await retrieveStore(req)
+  const metadata = store?.metadata ?? {}
+  const enabled = body.enabled !== false
+  const existingPromotionId =
+    typeof metadata.timedOfferPromotionId === "string" ? metadata.timedOfferPromotionId : null
+
+  if (!enabled) {
+    if (existingPromotionId) {
+      await updatePromotionsWorkflow(req.scope).run({
+        input: {
+          promotionsData: [{ id: existingPromotionId, campaign_id: null }],
+        },
+      })
+    }
+    await updateStoreMetadata(req, {
+      timedOfferPromotionId: undefined,
+      timedOfferLabel: undefined,
+      timedOfferScope: undefined,
+      timedOfferStartsAt: undefined,
+      timedOfferEndsAt: undefined,
+    })
+    return
+  }
+
+  const targets = await listTimedOfferTargetPromotions(req)
+  const requestedPromotionId = typeof body.promotionId === "string" ? body.promotionId : null
+  const promotion =
+    targets.find((target) => target.id === requestedPromotionId) ??
+    targets.find((target) => target.id === existingPromotionId) ??
+    targets[0]
+
+  if (!promotion) {
+    throw new Error("No active automatic free-shipping or bundle promotion exists for the timed offer.")
+  }
+
+  const endsAt = futureIso(body.endsAt)
+  if (!endsAt) {
+    throw new Error("Timed-offer end date must be a future ISO date.")
+  }
+  const startsAt = toIso(body.startsAt)
+  if (startsAt && Date.parse(startsAt) >= Date.parse(endsAt)) {
+    throw new Error("Timed-offer start date must be before the end date.")
+  }
+
+  let campaignId = promotion.campaign?.id ?? promotion.campaign_id ?? null
+  if (campaignId) {
+    await updateCampaignsWorkflow(req.scope).run({
+      input: {
+        campaignsData: [
+          {
+            id: campaignId,
+            name: `${promotionDisplayName(promotion)} timed offer`,
+            starts_at: startsAt ? new Date(startsAt) : null,
+            ends_at: new Date(endsAt),
+          },
+        ],
+      },
+    })
+  } else {
+    const { result } = await createCampaignsWorkflow(req.scope).run({
+      input: {
+        campaignsData: [
+          {
+            name: `${promotionDisplayName(promotion)} timed offer`,
+            campaign_identifier: `${TIMED_OFFER_CAMPAIGN_PREFIX}_${promotion.id}_${Date.now()}`,
+            starts_at: startsAt ? new Date(startsAt) : null,
+            ends_at: new Date(endsAt),
+          },
+        ],
+      },
+    })
+    const created = result?.[0] as { id?: string } | undefined
+    if (!created?.id) {
+      throw new Error("Timed-offer campaign creation did not return an id.")
+    }
+    campaignId = created.id
+    await updatePromotionsWorkflow(req.scope).run({
+      input: {
+        promotionsData: [{ id: promotion.id, campaign_id: campaignId }],
+      },
+    })
+  }
+
+  await updateStoreMetadata(req, {
+    timedOfferPromotionId: promotion.id,
+    timedOfferLabel: cleanLabel(body.label) ?? undefined,
+    timedOfferScope: cleanTimedOfferScope(body.scope),
+    timedOfferStartsAt: startsAt ?? undefined,
+    timedOfferEndsAt: endsAt,
   })
 }
 
@@ -228,7 +373,7 @@ async function updateGiftWrap(req: MedusaRequest, body: Record<string, unknown>)
 
 async function retrieveCartIncentivesState(req: MedusaRequest) {
   // Run each leg independently so a single failure doesn't crash the whole response
-  const [store, incentives, giftWrapProduct] = await Promise.all([
+  const [store, incentives, giftWrapProduct, timedOfferTargets] = await Promise.all([
     retrieveStore(req).catch((err) => {
       console.warn("[promotions-studio] retrieveStore failed:", err)
       return null
@@ -238,18 +383,40 @@ async function retrieveCartIncentivesState(req: MedusaRequest) {
       return {
         freeShipping: null,
         bundle: null,
+        timedOffer: null,
         giftWrapProductHandle: null,
         giftWrapPriceEgp: null,
         giftWrapLabel: null,
       }
     }),
     findGiftWrapProduct(req, null),
+    listTimedOfferTargetPromotions(req).catch((err) => {
+      console.warn("[promotions-studio] listTimedOfferTargetPromotions failed:", err)
+      return []
+    }),
   ])
   const metadata = store?.metadata ?? {}
   return {
     ...incentives,
     freeShippingLabel: cleanLabel(metadata.freeShippingLabel),
     bundleLabel: cleanLabel(metadata.bundleLabel),
+    timedOfferLabel: cleanLabel(metadata.timedOfferLabel),
+    timedOfferPromotionId: typeof metadata.timedOfferPromotionId === "string" ? metadata.timedOfferPromotionId : null,
+    timedOfferStartsAt:
+      incentives.timedOffer?.startsAt ??
+      toIso(metadata.timedOfferStartsAt),
+    timedOfferEndsAt:
+      incentives.timedOffer?.endsAt ??
+      toIso(metadata.timedOfferEndsAt),
+    timedOfferScope: cleanTimedOfferScope(metadata.timedOfferScope),
+    timedOfferTargets: timedOfferTargets.map((promotion) => ({
+      id: promotion.id,
+      code: promotion.code ?? "",
+      type: promotion.type ?? "standard",
+      label: promotionDisplayName(promotion),
+      startsAt: toIso(promotion.campaign?.starts_at),
+      endsAt: toIso(promotion.campaign?.ends_at),
+    })),
     giftWrapProduct: giftWrapProduct
       ? {
           id: giftWrapProduct.id,
@@ -286,6 +453,9 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
     const giftWrap = body.giftWrap && typeof body.giftWrap === "object"
       ? body.giftWrap as Record<string, unknown>
       : null
+    const timedOffer = body.timedOffer && typeof body.timedOffer === "object"
+      ? body.timedOffer as Record<string, unknown>
+      : null
 
     if (freeShipping) {
       const threshold = positiveInteger(freeShipping.thresholdEgp)
@@ -318,6 +488,14 @@ export async function PUT(req: MedusaRequest, res: MedusaResponse) {
         await updateGiftWrap(req, giftWrap)
       } catch (err) {
         throw new Error(`Failed to update gift wrap: ${describeUnknownError(err)}`)
+      }
+    }
+
+    if (timedOffer) {
+      try {
+        await upsertTimedOffer(req, timedOffer)
+      } catch (err) {
+        throw new Error(`Failed to update timed offer: ${describeUnknownError(err)}`)
       }
     }
 

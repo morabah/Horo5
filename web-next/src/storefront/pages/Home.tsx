@@ -40,7 +40,7 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
  * Default homepage section list.
  *
  * Keep the launch-mode storefront short and shop-led (audit P1):
- * hero · trust ribbon · founding drop · feeling grid · editorial · gift block · our story.
+ * hero · founding drop · trust ribbon · feeling grid · editorial · gift block · our story · proof strip.
  *
  * Operators can override the order or re-enable additional sections from the
  * homepage_section module. `store.metadata.homepage.sectionsEnabled` remains a
@@ -48,13 +48,13 @@ const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
  */
 const HOME_DEFAULT_SECTIONS: readonly string[] = [
   'hero',
-  'trust_ribbon',
   'founding_drop',
+  'trust_ribbon',
   'feeling_grid',
   'editorial_feature',
   'gift_block',
-  'proof_strip',
   'our_story',
+  'proof_strip',
 ];
 
 type HomeSectionRenderer = (ctx: { initialProducts?: Product[]; section?: StorefrontHomepageSection }) => ReactNode;
@@ -166,7 +166,16 @@ export function Home({
       }))
       .filter((entry) => entry.key in HOME_SECTION_COMPONENTS);
     if (fromHomepage.length > 0) {
-      return fromHomepage;
+      const heroEntry = fromHomepage.find((entry) => entry.key === 'hero');
+      const withoutHero = fromHomepage.filter((entry) => entry.key !== 'hero');
+      const heroFirst = heroEntry ?? { key: 'hero', section: undefined };
+      const sectionOrder = new Map(HOME_DEFAULT_SECTIONS.map((key, index) => [key, index]));
+      const sortedRest = [...withoutHero].sort((a, b) => {
+        const aIndex = sectionOrder.get(a.key) ?? Number.MAX_SAFE_INTEGER;
+        const bIndex = sectionOrder.get(b.key) ?? Number.MAX_SAFE_INTEGER;
+        return aIndex - bIndex;
+      });
+      return [heroFirst, ...sortedRest];
     }
 
     const fromOps = (sectionsEnabled ?? []).filter((key) => key in HOME_SECTION_COMPONENTS);

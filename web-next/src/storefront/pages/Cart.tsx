@@ -14,9 +14,10 @@ import { cartLineIdentityKey, type CartLine } from '../cart/types';
 import { ExitIntentModal } from '../components/ExitIntentModal';
 import { PageBreadcrumb } from '../components/PageBreadcrumb';
 import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
+import { TimedOfferBanner } from '../components/TimedOfferBanner';
 import { Skeleton } from '../components/ui/Skeleton';
 import { CART_SCHEMA, HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
-import { getProductCardImageSrc, giftWrapPreview, heroVectorizedV2 } from '../data/images';
+import { FOUNDING_DROP_LAUNCH_SLUGS, getProductCardImageSrc, giftWrapPreview, heroVectorizedV2 } from '../data/images';
 import {  useUiLocale, useDictionary, type UiLocale  } from '../i18n/ui-locale';
 import { useStableNow } from '../runtime/render-time';
 import { getProduct, getProducts, productHasRealImage, type Product, type ProductSizeKey } from '../data/site';
@@ -236,6 +237,12 @@ function CartSummary({
         </div>
       ) : null}
 
+      {incentives?.timedOffer ? (
+        <div className="mt-4">
+          <TimedOfferBanner offer={incentives.timedOffer} compact />
+        </div>
+      ) : null}
+
       {/*
         Audit S8: free-shipping progress on the full cart page (mirrors mini-cart drawer).
         Threshold + label come from the native Medusa Promotion via /storefront/incentives.
@@ -452,6 +459,67 @@ function CartLineItem({
         </button>
       </div>
     </article>
+  );
+}
+
+function EmptyCartRecommendations({ locale }: { locale: UiLocale }) {
+  const products = useMemo(() => {
+    const selected = new Map<string, Product>();
+    for (const slug of FOUNDING_DROP_LAUNCH_SLUGS) {
+      const product = getProduct(slug);
+      if (product) selected.set(product.slug, product);
+    }
+    if (selected.size < 4) {
+      for (const product of getProducts()) {
+        if (selected.size >= 4) break;
+        selected.set(product.slug, product);
+      }
+    }
+    return [...selected.values()].slice(0, 4);
+  }, []);
+
+  if (products.length === 0) return null;
+
+  return (
+    <section className="mt-10" aria-labelledby="cart-empty-recs-title">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <p className="font-label text-[10px] font-semibold uppercase tracking-[0.18em] text-clay">
+            {locale === 'ar' ? 'الإطلاق الأول' : 'Founding drop'}
+          </p>
+          <h2 id="cart-empty-recs-title" className="font-headline mt-1 text-xl font-semibold tracking-tight text-obsidian md:text-2xl">
+            {locale === 'ar' ? 'ابدأ بتصميم من المجموعة' : 'Start with one of these'}
+          </h2>
+        </div>
+        <Link href="/products" className="font-label inline-flex min-h-11 items-center text-[10px] font-semibold uppercase tracking-[0.16em] text-deep-teal">
+          {locale === 'ar' ? 'كل التصاميم' : 'All designs'}
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {products.map((product) => (
+          <article key={product.slug} className="rounded-xl border border-stone/35 bg-white/75 p-2">
+            <Link href={`/products/${product.slug}`} className="block overflow-hidden rounded-lg bg-stone/20">
+              <TeeImageFrame
+                src={getProductCardImageSrc(product)}
+                alt={`HORO ${product.name}`}
+                w={320}
+                aspectRatio="4 / 5"
+                borderRadius="0"
+                frameStyle={{ height: '100%' }}
+              />
+            </Link>
+            <div className="px-1 py-3">
+              <Link href={`/products/${product.slug}`} className="font-body line-clamp-2 text-sm font-medium text-obsidian">
+                {product.name}
+              </Link>
+              <p className="mt-1 font-label text-[10px] font-semibold uppercase tracking-[0.14em] text-clay">
+                {formatEgp(product.priceEgp)}
+              </p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -924,6 +992,7 @@ export function Cart({
               </Link>
             </div>
           </section>
+          <EmptyCartRecommendations locale={locale} />
           <RecentlyViewedStrip className="mt-10 border-0 pt-0" />
         </div>
       </div>

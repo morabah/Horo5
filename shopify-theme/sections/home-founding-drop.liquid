@@ -63,7 +63,7 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
 
       {%- liquid
         assign show_founding_campaign = false
-        if layout_style == 'image_overlay'
+        if section.settings.show_founding_campaign and layout_style == 'image_overlay'
           if campaign_media != blank or campaign_image_url != blank
             assign show_founding_campaign = true
           endif
@@ -118,7 +118,52 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
       {%- endif -%}
 
       {%- if primary_collection != blank and primary_collection.products_count > 0 -%}
-        <div class="home-founding-grid">
+        {%- assign cards_rendered = 0 -%}
+        {%- comment -%}
+          Pre-count eligible products so the grid column count matches web-next HomeFoundingRail.
+        {%- endcomment -%}
+        {%- for product in primary_collection.products -%}
+          {%- if cards_rendered >= product_limit -%}
+            {%- break -%}
+          {%- endif -%}
+          {%- liquid
+            assign count_variant = nil
+            assign count_first_available = nil
+            for variant in product.variants
+              if variant.available
+                if count_first_available == nil
+                  assign count_first_available = variant
+                endif
+                if variant.option1 == 'M' or variant.option2 == 'M' or variant.option3 == 'M'
+                  assign count_variant = variant
+                  break
+                endif
+              endif
+            endfor
+            if count_variant == nil
+              assign count_variant = count_first_available | default: product.selected_or_first_available_variant
+            endif
+            assign count_price = count_variant.price | default: product.price | default: 0
+          -%}
+          {%- if count_price > 0 -%}
+            {%- assign cards_rendered = cards_rendered | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- liquid
+          assign founding_cols = cards_rendered
+          if founding_cols > 2
+            assign founding_cols = 2
+          endif
+          assign founding_cols_md = cards_rendered
+          if founding_cols_md > 3
+            assign founding_cols_md = 3
+          endif
+          assign founding_cols_lg = cards_rendered
+        -%}
+        <div
+          class="home-founding-grid"
+          style="--founding-cols: {{ founding_cols }}; --founding-cols-md: {{ founding_cols_md }}; --founding-cols-lg: {{ founding_cols_lg }};"
+        >
           {%- assign cards_rendered = 0 -%}
           {%- comment -%}
             Variant pick mirrors horo-founding-product-card: prefer available M, else first available, else selected_or_first_available.
@@ -211,6 +256,13 @@ Founding Drop / Sign Capsule / Mood / Lifestyle.
         { "value": "header", "label": "Text header + product rail" }
       ],
       "default": "image_overlay"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_founding_campaign",
+      "label": "Show founding campaign banner",
+      "default": false,
+      "info": "Matches web-next showFoundingCampaign. Off by default — text header + product rail only."
     },
     {
       "type": "image_picker",

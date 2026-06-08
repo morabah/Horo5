@@ -41,3 +41,6 @@ export const DEFAULT_FREE_SHIPPING_THRESHOLD_EGP = 1500
 
 /** Bundle promotion code prefix. */
 export const BUNDLE_CODE_PREFIX = "HORO_BUNDLE"
+
+/** Campaign identifier prefix for Promotions Studio timed cart offers. */
+export const TIMED_OFFER_CAMPAIGN_PREFIX = "HORO_TIMED_OFFER"

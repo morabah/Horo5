@@ -89,6 +89,14 @@ export const homeFoundingCampaignReference = {
   alt: 'Model wearing a HORO graphic tee in a warm Cairo editorial setting.',
 } as const;
 
+/** Launch "Shop by Feeling" tile imagery (repo reference assets only). */
+export const HOME_MEANING_TILE_IMAGES: Record<string, string> = {
+  mood: '/images/homepage-reference/editorial-calm-inside.png',
+  lifestyle: '/images/homepage-reference/editorial-artwork-detail.png',
+  career: '/images/homepage-reference/product-find-your-rhythm.png',
+  zodiac: '/images/homepage-reference/product-i-care.png',
+};
+
 const UNAVAILABLE_HOMEPAGE_REFERENCE_IMAGES = new Set<string>();
 
 export function isUnavailableHomepageReferenceImageSrc(src: string | undefined): boolean {

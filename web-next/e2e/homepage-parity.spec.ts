@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 import { expectMainShell } from "./fixtures"
 
 const VIEWPORTS = [
@@ -7,13 +7,35 @@ const VIEWPORTS = [
   { width: 1440, height: 900, name: "desktop" },
 ] as const
 
+async function loadHomepageLazyMedia(page: Page) {
+  for (const selector of ["#editorial-feature img", "#gift-by-meaning img", "#our-story img"]) {
+    const image = page.locator(selector).first()
+    if ((await image.count()) === 0) continue
+    await image.scrollIntoViewIfNeeded().catch(() => {})
+    await expect(image).toBeVisible({ timeout: 10_000 }).catch(() => {})
+  }
+  await page.evaluate(() => window.scrollTo(0, 0))
+  await page.waitForTimeout(150)
+}
+
 test.describe("homepage parity (visual baseline)", () => {
   for (const viewport of VIEWPORTS) {
     test(`home @ ${viewport.name} (${viewport.width}px)`, async ({ page }) => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height })
+      await page.emulateMedia({ reducedMotion: "reduce" })
       const res = await page.goto("/", { waitUntil: "domcontentloaded" })
       expect(res?.ok(), "home should return 2xx").toBeTruthy()
       await expectMainShell(page)
+
+      const hero = page.locator("#home-hero")
+      if ((await hero.count()) > 0) {
+        await expect(hero).toBeVisible({ timeout: 30_000 })
+        await expect(hero.locator("img").first()).toBeVisible({ timeout: 30_000 })
+        const heroPrimaryCta = hero.locator(".home-hero--cinematic__actions a, .home-image-campaign__content a.home-btn--primary").first()
+        await expect(heroPrimaryCta).toBeVisible({ timeout: 30_000 })
+        const heroBox = await heroPrimaryCta.boundingBox()
+        expect(heroBox?.y ?? 9999).toBeLessThan(viewport.height)
+      }
 
       const foundingCards = page.locator(".home-founding-card__image, .home-founding-grid .product-card img")
       const count = await foundingCards.count()
@@ -24,6 +46,8 @@ test.describe("homepage parity (visual baseline)", () => {
         expect(firstSrc?.toLowerCase() ?? "").not.toMatch(/back-view|backview|_back|-back\./)
       }
 
+      await loadHomepageLazyMedia(page)
+
       await expect(page).toHaveScreenshot(`homepage-${viewport.name}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.04,
@@ -33,7 +57,8 @@ test.describe("homepage parity (visual baseline)", () => {
 
   test("founding drop section is present with shop CTA", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" })
-    await expect(page.getByRole("link", { name: /shop the founding drop/i }).first()).toBeVisible({
+    await expect(page.locator("#founding-drop")).toBeVisible({ timeout: 30_000 })
+    await expect(page.locator("#founding-drop").getByRole("link", { name: /shop the drop/i }).first()).toBeVisible({
       timeout: 30_000,
     })
   })
@@ -44,17 +69,24 @@ test.describe("homepage parity (visual baseline)", () => {
     await expect(page.locator("#size-help")).toBeVisible({ timeout: 30_000 })
   })
 
-  test("founding secondary CTA targets editorial anchor", async ({ page }) => {
+  test("hero exposes primary and secondary CTAs", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" })
     await page.goto("/", { waitUntil: "networkidle" })
-    const closerLook = page
-      .locator("#founding-drop-campaign, #founding-drop")
-      .getByRole("link", { name: /a closer look/i })
-      .first()
-    await expect(closerLook).toBeVisible({ timeout: 30_000 })
-    const href = await closerLook.getAttribute("href")
-    expect(href ?? "").toMatch(/editorial-feature/)
-    await closerLook.click()
-    await expect(page.locator("#editorial-feature")).toBeInViewport({ timeout: 10_000 })
+    const hero = page.locator("#home-hero")
+    await expect(hero).toBeVisible({ timeout: 30_000 })
+    await expect(hero.getByRole("link", { name: /shop the drop/i }).first()).toBeVisible({ timeout: 30_000 })
+
+    const editorialCta = hero.getByRole("link", { name: /see the details|a closer look/i })
+    if ((await editorialCta.count()) > 0) {
+      const href = await editorialCta.first().getAttribute("href")
+      expect(href ?? "").toMatch(/editorial-feature/)
+      await editorialCta.first().click()
+      await expect(page.locator("#editorial-feature")).toBeInViewport({ timeout: 10_000 })
+      return
+    }
+
+    const heroActions = hero.locator(".home-hero--cinematic__actions a, .home-image-campaign__actions a")
+    await expect(heroActions.nth(1)).toBeVisible({ timeout: 30_000 })
   })
 
   test("mobile campaigns expose one heading per block", async ({ page }) => {

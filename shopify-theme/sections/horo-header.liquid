@@ -30,7 +30,7 @@
 
 <sticky-header
   data-sticky-type="{{ section.settings.sticky_header_type }}"
-  class="section-header horo-header-wrapper{% if section.settings.show_line_separator %} horo-header-wrapper--border{% endif %}"
+  class="section-header horo-header-wrapper{% if section.settings.show_line_separator %} horo-header-wrapper--border{% endif %}{% if template.name == 'index' %} horo-header-wrapper--home{% endif %}"
 >
   <header
     class="horo-header color-{{ section.settings.color_scheme }} gradient"
@@ -43,7 +43,12 @@
         class="horo-header__logo"
         aria-label="{{ shop.name }}"
       >
-        {% render 'horo-brand-logo', variant: 'dark', show_arabic: false %}
+        <span class="horo-header__logo-variant horo-header__logo-variant--dark">
+          {% render 'horo-brand-logo', variant: 'dark', show_arabic: false %}
+        </span>
+        <span class="horo-header__logo-variant horo-header__logo-variant--light">
+          {% render 'horo-brand-logo', variant: 'light', show_arabic: false %}
+        </span>
       </a>
 
       {% render 'horo-nav-links',
@@ -83,7 +88,12 @@
         class="horo-header__logo horo-header__logo--center"
         aria-label="{{ shop.name }}"
       >
-        {% render 'horo-brand-logo', variant: 'dark', show_arabic: false, size: 'drawer' %}
+        <span class="horo-header__logo-variant horo-header__logo-variant--dark">
+          {% render 'horo-brand-logo', variant: 'dark', show_arabic: false, size: 'drawer' %}
+        </span>
+        <span class="horo-header__logo-variant horo-header__logo-variant--light">
+          {% render 'horo-brand-logo', variant: 'light', show_arabic: false, size: 'drawer' %}
+        </span>
       </a>
 
       <div class="horo-header__actions">

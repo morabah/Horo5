@@ -57,9 +57,9 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
     <section
       id="gift-by-meaning"
       aria-labelledby="home-gift-title"
-      className="home-section bg-horo-section px-4 py-5 sm:px-6 md:py-6 lg:px-8"
+      className="home-section home-gift-block bg-horo-breath px-4 sm:px-6 lg:px-8"
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-4xl">
         {showOverlay ? (
           <HomeImageCampaign
             id="gift-block-campaign"
@@ -79,7 +79,8 @@ export function HomeGiftBlock({ section }: { section?: StorefrontHomepageSection
               showEyebrow: presentation.showEyebrow !== false,
               showBody: presentation.showBody !== false,
             }}
-            minHeight="min-h-[min(44vh,24rem)]"
+            minHeight="min-h-[min(40vh,22rem)]"
+            sectionClassName="home-gift-block__campaign"
             onImageError={() => setImageFailed(true)}
             onPrimaryClick={() => trackHomeGiftCtaClick(giftHref)}
           />

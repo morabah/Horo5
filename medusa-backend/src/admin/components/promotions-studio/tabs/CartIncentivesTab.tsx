@@ -1,4 +1,4 @@
-import { Gift, TruckFast } from "@medusajs/icons"
+import { Gift, Tag, TruckFast } from "@medusajs/icons"
 import { Badge, Button, Input, Label, Select, Switch, Text, toast } from "@medusajs/ui"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
@@ -24,11 +24,33 @@ type CartIncentivesResponse = {
     applicationKind: "fixed" | "percentage"
     label: PromoLabelValue
   } | null
+  timedOffer: {
+    promotionId: string
+    label: PromoLabelValue
+    startsAt: string | null
+    endsAt: string
+    savingsKind: "fixed" | "percentage"
+    savingsValue: number
+    scope: "storewide" | "collection"
+  } | null
   giftWrapProductHandle: string | null
   giftWrapPriceEgp: number | null
   giftWrapLabel: PromoLabelValue | null
   freeShippingLabel?: PromoLabelValue | null
   bundleLabel?: PromoLabelValue | null
+  timedOfferLabel?: PromoLabelValue | null
+  timedOfferPromotionId?: string | null
+  timedOfferStartsAt?: string | null
+  timedOfferEndsAt?: string | null
+  timedOfferScope?: "storewide" | "collection"
+  timedOfferTargets?: Array<{
+    id: string
+    code: string
+    type: "standard" | "buyget"
+    label: string
+    startsAt: string | null
+    endsAt: string | null
+  }>
   giftWrapProduct?: {
     id: string
     title: string
@@ -51,6 +73,23 @@ function labelForApi(value: { en: string; ar: string }): PromoLabelValue | null 
   const ar = value.ar.trim()
   if (!en && !ar) return null
   return { ...(en ? { en } : {}), ...(ar ? { ar } : {}) }
+}
+
+function toLocalDateTimeInput(value: string | null | undefined): string {
+  if (!value) return ""
+  const ms = Date.parse(value)
+  if (!Number.isFinite(ms)) return ""
+  const date = new Date(ms)
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16)
+}
+
+function fromLocalDateTimeInput(value: string): string | null {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const ms = Date.parse(trimmed)
+  if (!Number.isFinite(ms)) return null
+  return new Date(ms).toISOString()
 }
 
 async function fetchCartIncentives(): Promise<CartIncentivesResponse> {
@@ -78,6 +117,12 @@ export function CartIncentivesTab() {
   const [giftWrapSearch, setGiftWrapSearch] = useState("")
   const [giftWrapPriceEgp, setGiftWrapPriceEgp] = useState("")
   const [giftWrapLabel, setGiftWrapLabel] = useState({ en: "", ar: "" })
+  const [timedOfferEnabled, setTimedOfferEnabled] = useState(false)
+  const [timedOfferPromotionId, setTimedOfferPromotionId] = useState("")
+  const [timedOfferStartsAt, setTimedOfferStartsAt] = useState("")
+  const [timedOfferEndsAt, setTimedOfferEndsAt] = useState("")
+  const [timedOfferScope, setTimedOfferScope] = useState<"storewide" | "collection">("storewide")
+  const [timedOfferLabel, setTimedOfferLabel] = useState({ en: "", ar: "" })
 
   const { data, isLoading } = useQuery({
     queryKey: ["horo", "promotions-studio", "cart-incentives"],
@@ -105,6 +150,12 @@ export function CartIncentivesTab() {
     setGiftWrapProduct(data.giftWrapProduct ?? null)
     setGiftWrapPriceEgp(data.giftWrapPriceEgp != null ? String(data.giftWrapPriceEgp) : "")
     setGiftWrapLabel(labelInput(data.giftWrapLabel))
+    setTimedOfferEnabled(Boolean(data.timedOffer ?? data.timedOfferEndsAt))
+    setTimedOfferPromotionId(data.timedOfferPromotionId ?? data.timedOffer?.promotionId ?? data.timedOfferTargets?.[0]?.id ?? "")
+    setTimedOfferStartsAt(toLocalDateTimeInput(data.timedOfferStartsAt ?? data.timedOffer?.startsAt))
+    setTimedOfferEndsAt(toLocalDateTimeInput(data.timedOfferEndsAt ?? data.timedOffer?.endsAt))
+    setTimedOfferScope(data.timedOfferScope ?? data.timedOffer?.scope ?? "storewide")
+    setTimedOfferLabel(labelInput(data.timedOfferLabel ?? data.timedOffer?.label))
   }, [data])
 
   const giftWrapMatches = useMemo(() => {
@@ -122,6 +173,11 @@ export function CartIncentivesTab() {
       const bundleValue = Number(bundleApplicationValue)
       if (bundleEnabled && (!Number.isFinite(bundleValue) || bundleValue <= 0)) {
         throw new Error("Bundle value must be positive.")
+      }
+      const timedEndsAt = fromLocalDateTimeInput(timedOfferEndsAt)
+      const timedStartsAt = fromLocalDateTimeInput(timedOfferStartsAt)
+      if (timedOfferEnabled && !timedEndsAt) {
+        throw new Error("Timed offer needs a valid future end date.")
       }
       return saveCartIncentives({
         freeShipping: {
@@ -141,6 +197,14 @@ export function CartIncentivesTab() {
           handle: giftWrapProduct?.handle,
           priceEgp: giftWrapPriceEgp ? Math.max(1, Math.trunc(Number(giftWrapPriceEgp))) : null,
           label: labelForApi(giftWrapLabel),
+        },
+        timedOffer: {
+          enabled: timedOfferEnabled,
+          promotionId: timedOfferPromotionId || undefined,
+          startsAt: timedStartsAt,
+          endsAt: timedEndsAt,
+          scope: timedOfferScope,
+          label: labelForApi(timedOfferLabel),
         },
       })
     },
@@ -174,6 +238,86 @@ export function CartIncentivesTab() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
         <div className="grid gap-5">
+          <section className="rounded-md border border-ui-border-base p-5">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Tag className="h-5 w-5 text-ui-fg-muted" />
+                <div>
+                  <Text weight="plus">Timed cart offer</Text>
+                  <Text size="small" className="text-ui-fg-muted">Attaches a real campaign window to an active automatic incentive promotion.</Text>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch checked={timedOfferEnabled} disabled={busy} onCheckedChange={setTimedOfferEnabled} />
+                <Text size="small">Enabled</Text>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="timed-offer-promotion" className="text-xs">Target promotion</Label>
+                <Select
+                  size="small"
+                  value={timedOfferPromotionId}
+                  disabled={busy || !timedOfferEnabled || !(data?.timedOfferTargets?.length)}
+                  onValueChange={setTimedOfferPromotionId}
+                >
+                  <Select.Trigger id="timed-offer-promotion">
+                    <Select.Value />
+                  </Select.Trigger>
+                  <Select.Content>
+                    {(data?.timedOfferTargets ?? []).map((target) => (
+                      <Select.Item key={target.id} value={target.id}>
+                        {target.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="timed-offer-scope" className="text-xs">Display scope</Label>
+                <Select
+                  size="small"
+                  value={timedOfferScope}
+                  disabled={busy || !timedOfferEnabled}
+                  onValueChange={(value) => setTimedOfferScope(value as "storewide" | "collection")}
+                >
+                  <Select.Trigger id="timed-offer-scope">
+                    <Select.Value />
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Item value="storewide">Storewide</Select.Item>
+                    <Select.Item value="collection">Collection</Select.Item>
+                  </Select.Content>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="timed-offer-start" className="text-xs">Starts at (optional)</Label>
+                <Input
+                  id="timed-offer-start"
+                  size="small"
+                  type="datetime-local"
+                  value={timedOfferStartsAt}
+                  disabled={busy || !timedOfferEnabled}
+                  onChange={(event) => setTimedOfferStartsAt(event.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="timed-offer-end" className="text-xs">Ends at</Label>
+                <Input
+                  id="timed-offer-end"
+                  size="small"
+                  type="datetime-local"
+                  value={timedOfferEndsAt}
+                  disabled={busy || !timedOfferEnabled}
+                  onChange={(event) => setTimedOfferEndsAt(event.target.value)}
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <PromoLabelInput idPrefix="timed-offer" value={timedOfferLabel} disabled={busy || !timedOfferEnabled} onChange={setTimedOfferLabel} />
+            </div>
+          </section>
+
           <section className="rounded-md border border-ui-border-base p-5">
             <div className="mb-4 flex items-center gap-2">
               <TruckFast className="h-5 w-5 text-ui-fg-muted" />

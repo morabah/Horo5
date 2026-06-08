@@ -78,6 +78,41 @@
   background: var(--color-horo-section, #fff7f5);
 }
 
+.horo-home-page .home-section--breath {
+  background: var(--color-horo-breath, #fee5e2);
+}
+
+.horo-home-page .home-our-story--immersive {
+  background: color-mix(in srgb, var(--color-horo-root, #4f111f) 6%, var(--color-horo-soft, #fff7f5));
+}
+
+/* Homepage grain overlay (web-next .home-grain) */
+.horo-home-page .home-grain {
+  position: relative;
+  isolation: isolate;
+}
+
+.horo-home-page .home-grain > * {
+  position: relative;
+  z-index: 0;
+}
+
+.horo-home-page .home-grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.028;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+.horo-home-page #our-story .horo-campaign__media {
+  will-change: transform;
+}
+
 /* ===== Section headers ===== */
 .horo-home-page .home-section-header {
   margin-bottom: 32px;
@@ -96,6 +131,12 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 32px;
+}
+
+@media screen and (max-width: 767px) {
+  .horo-home-page .home-section-header--feelings .home-section-subheading {
+    display: none;
+  }
 }
 
 .horo-home-page .home-section-header--feelings > div:first-child {

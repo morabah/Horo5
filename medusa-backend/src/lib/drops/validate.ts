@@ -7,7 +7,6 @@ import {
   DROP_DECORATION_TYPES,
   DROP_IMAGE_TAGS,
   DROP_PRIMARY_AUDIENCES,
-  DROP_SIZE_KEYS,
   DROP_STATUSES,
   type DropImageInput,
   type DropImageTag,

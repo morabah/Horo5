@@ -7,6 +7,7 @@ import {
   pickLocalizedStorefrontText,
   type StorefrontHomepageSection,
 } from '../data/catalog-types';
+import { HOME_MEANING_TILE_IMAGES, isUnavailableHomepageReferenceImageSrc } from '../data/images';
 import { getFeelings, productHasRealImage, productsByFeeling } from '../data/site';
 import { parseHomepagePresentation } from '../lib/parseHomepagePresentation';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
@@ -187,7 +188,7 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
     <section
       id="shop-by-meaning"
       aria-labelledby="home-feelings-title"
-      className="home-section bg-horo-section px-4 py-4 pt-3 sm:px-6 md:py-6 lg:px-8"
+      className="home-section bg-horo-section px-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
         {showSectionHeader ? (
@@ -232,7 +233,15 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
             const tileSubtitle = override?.subtitle ?? feeling.tagline ?? feeling.blurb;
             const href = override?.href ?? `/feelings/${feeling.slug}`;
             const iconSlug = override?.iconSlug ?? feeling.slug;
-            const tileStyle = { backgroundColor: surface };
+            const tileImageSrc =
+              override?.imageSrc ??
+              HOME_MEANING_TILE_IMAGES[feeling.slug] ??
+              HOME_MEANING_TILE_IMAGES[iconSlug];
+            const useEditorialTile =
+              Boolean(tileImageSrc) && !isUnavailableHomepageReferenceImageSrc(tileImageSrc);
+            const tileStyle = useEditorialTile
+              ? { backgroundImage: `url(${tileImageSrc})` }
+              : { backgroundColor: surface };
 
             return (
               <Link
@@ -241,12 +250,14 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
                 href={href}
                 data-reveal={reveal}
                 onClick={() => trackMeaningTileClick(feeling.slug, label, href)}
-                className="home-feeling-pastel-tile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
+                className={`home-feeling-pastel-tile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse${useEditorialTile ? ' home-feeling-tile--editorial' : ''}`}
                 style={tileStyle}
               >
-                <span className="home-feeling-pastel-tile__icon text-horo-pulse">
-                  <FeelingTileIcon slug={iconSlug} />
-                </span>
+                {!useEditorialTile ? (
+                  <span className="home-feeling-pastel-tile__icon text-horo-pulse">
+                    <FeelingTileIcon slug={iconSlug} />
+                  </span>
+                ) : null}
                 <span className="home-feeling-pastel-tile__label">{label}</span>
                 {tileSubtitle ? (
                   <span className="home-feeling-pastel-tile__subtitle">{tileSubtitle}</span>

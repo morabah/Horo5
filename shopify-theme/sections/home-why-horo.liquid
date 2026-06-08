@@ -2,7 +2,7 @@
 
 <section
   id="our-story"
-  class="home-section home-our-story home-section--soft section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
+  class="home-section home-our-story home-our-story--immersive section-padding-zero{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}"
   aria-labelledby="home-our-story-title-{{ section.id }}"
 >
   <div class="home-page__inner">
@@ -50,7 +50,7 @@
           </p>
         {%- endif -%}
       </div>
-      <div class="home-our-story__campaign-desktop">
+      <div id="our-story-campaign" class="home-our-story__campaign-desktop">
         {% render 'horo-home-campaign-overlay',
           campaign_image: story_campaign_image,
           campaign_image_url: story_campaign_image_url,
@@ -141,6 +141,26 @@
     {%- endif -%}
   </div>
 </section>
+
+<script>
+  (() => {
+    const campaign = document.getElementById('our-story-campaign');
+    if (!campaign) return;
+    const media = campaign.querySelector('.horo-campaign__media');
+    if (!media) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const onScroll = () => {
+      const rect = media.getBoundingClientRect();
+      const progress = Math.min(1, Math.max(0, (window.innerHeight - rect.top) / (window.innerHeight + rect.height)));
+      const offset = (progress - 0.5) * 36;
+      media.style.transform = `translate3d(0, ${offset}px, 0) scale(1.04)`;
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
 
 {% schema %}
 {

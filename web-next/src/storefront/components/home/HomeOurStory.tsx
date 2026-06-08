@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   type LocalizedStorefrontText,
@@ -10,7 +10,7 @@ import {
 } from '../../data/catalog-types';
 import { isUnavailableHomepageReferenceImageSrc } from '../../data/images';
 import { useDictionary, useUiLocale } from '../../i18n/ui-locale';
-import { isImageOverlayPresentation, parseHomepagePresentation } from '../../lib/parseHomepagePresentation';
+import { parseHomepagePresentation } from '../../lib/parseHomepagePresentation';
 import { HomeImageCampaign } from './HomeImageCampaign';
 
 const STORY_PILLAR_KEYS = ['localArtists', 'madeToFeelPersonal', 'realProofOnly'] as const;
@@ -129,20 +129,47 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
           title: copy.home.ourStoryPillars[key].title,
         }));
   const rawStoryImageSrc = section?.image?.src?.trim();
-  const storyImageSrc = isUnavailableHomepageReferenceImageSrc(rawStoryImageSrc) ? undefined : rawStoryImageSrc;
+  const storyImageSrc =
+    rawStoryImageSrc && !isUnavailableHomepageReferenceImageSrc(rawStoryImageSrc)
+      ? rawStoryImageSrc
+      : '/images/homepage-reference/our-story.png';
   const storyImageAlt =
     pickLocalizedStorefrontText(section?.image?.alt, resolvedLocale) ??
     (isArabic ? 'قصة هورو' : 'HORO brand story');
   const title = sectionTitle ?? copy.home.ourStoryTitle;
   const [imageFailed, setImageFailed] = useState(false);
-  const wantsOverlay = Boolean(storyImageSrc) && isImageOverlayPresentation(sectionPayload);
+  const wantsSplitLayout = presentation.layout === 'split' || sectionPayload?.layout === 'split';
+  const wantsOverlay = Boolean(storyImageSrc) && !wantsSplitLayout;
   const showOverlay = wantsOverlay && !imageFailed;
+
+  useEffect(() => {
+    if (!showOverlay) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const media = document.querySelector<HTMLElement>('#our-story-campaign .home-image-campaign__media');
+    if (!media) return;
+
+    const onScroll = () => {
+      const rect = media.getBoundingClientRect();
+      const progress = Math.min(1, Math.max(0, (window.innerHeight - rect.top) / (window.innerHeight + rect.height)));
+      const offset = (progress - 0.5) * 36;
+      media.style.transform = `translate3d(0, ${offset}px, 0) scale(1.04)`;
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      media.style.transform = '';
+    };
+  }, [showOverlay]);
 
   return (
     <section
       id="our-story"
       aria-labelledby="home-our-story-title"
-      className="home-section home-our-story bg-horo-soft px-4 py-7 sm:px-6 md:py-8 lg:px-8"
+      className="home-section home-our-story home-our-story--immersive px-4 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-6xl">
         {showOverlay && storyImageSrc ? (
@@ -161,7 +188,8 @@ export function HomeOurStory({ section }: { section?: StorefrontHomepageSection 
               showBody: presentation.showBody === true,
               showEyebrow: presentation.showEyebrow !== false,
             }}
-            minHeight="min-h-[min(44vh,24rem)]"
+            minHeight="min-h-[min(56vh,34rem)]"
+            sectionClassName="home-our-story__campaign"
             onImageError={() => setImageFailed(true)}
           />
         ) : (
