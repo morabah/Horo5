@@ -33,7 +33,10 @@ export type HomepagePresentation = {
   showBody?: boolean;
   showEyebrow?: boolean;
   showPillars?: boolean;
+  showSecondaryCta?: boolean;
+  fullBleed?: boolean;
   mobileTextMode?: HomepageMobileTextMode;
+  feelingLayout?: 'tiles' | 'pills';
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -72,6 +75,11 @@ function parsePresentationObject(raw: unknown): HomepagePresentation | null {
   if (typeof raw.showBody === 'boolean') presentation.showBody = raw.showBody;
   if (typeof raw.showEyebrow === 'boolean') presentation.showEyebrow = raw.showEyebrow;
   if (typeof raw.showPillars === 'boolean') presentation.showPillars = raw.showPillars;
+  if (typeof raw.showSecondaryCta === 'boolean') presentation.showSecondaryCta = raw.showSecondaryCta;
+  if (typeof raw.fullBleed === 'boolean') presentation.fullBleed = raw.fullBleed;
+  if (raw.feelingLayout === 'pills' || raw.feelingLayout === 'tiles') {
+    presentation.feelingLayout = raw.feelingLayout;
+  }
   const mobileTextMode = raw.mobileTextMode;
   if (
     typeof mobileTextMode === 'string' &&

@@ -15,6 +15,7 @@ import { resolveLaunchNav } from '../lib/sanitizeLaunchNav';
 import { getSearchSuggestions, type SearchSuggestion } from '../search/view';
 import { AppIcon } from './AppIcon';
 import { BrandLogo } from './BrandLogo';
+import { CategoryShortcutPills } from './CategoryShortcutPills';
 import { SearchSuggestionPanel } from './SearchSuggestionPanel';
 
 type LocalizedNavText = string | { en?: string; ar?: string };
@@ -619,7 +620,7 @@ export function Nav({
   return (
     <header
       ref={headerRef}
-      className={`glass-nav fixed top-0 z-100 w-full transition-transform duration-300 ease-in-out ${overlayOnHero ? 'glass-nav--over-hero' : ''} ${heroScrolledPast ? 'glass-nav--scrolled' : ''} ${isHeaderHidden ? 'md:-translate-y-full' : 'translate-y-0'}`}
+      className={`glass-nav relative w-full transition-transform duration-300 ease-in-out ${overlayOnHero ? 'glass-nav--over-hero' : ''} ${heroScrolledPast ? 'glass-nav--scrolled' : ''} ${isHeaderHidden ? 'md:-translate-y-full' : 'translate-y-0'}`}
       role="banner"
     >
       {placedOrderMedusaId ? (
@@ -704,14 +705,8 @@ export function Nav({
         </div>
       </div>
 
-      <div className="mx-auto hidden max-w-[1920px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-2.5 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:grid md:gap-6 md:py-2.5 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
-        <div className="flex shrink-0 items-center gap-4">
-          <Link href="/" className="flex shrink-0 items-center" aria-label={copy.shell.home}>
-            <BrandLogo variant={logoVariant} showArabic={false} />
-          </Link>
-        </div>
-
-        <nav className="hidden min-w-0 items-center justify-center gap-1 md:flex" aria-label="Primary shortcuts">
+      <div className="mx-auto hidden max-w-[1920px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 py-2.5 pl-[max(1rem,env(safe-area-inset-left,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] md:grid md:gap-6 md:py-2.5 md:pl-6 md:pr-6 lg:pl-8 lg:pr-8">
+        <nav className="hidden min-w-0 items-center justify-start gap-1 md:flex" aria-label="Primary shortcuts">
           {primaryNavItems.map((item) => {
             const navLink = (
               <Link
@@ -766,7 +761,13 @@ export function Nav({
           })}
         </nav>
 
-        <div className="relative flex shrink-0 items-center justify-end gap-2 md:gap-2 lg:gap-3">
+        <div className="hidden shrink-0 justify-center md:flex">
+          <Link href="/" className="flex shrink-0 items-center" aria-label={copy.shell.home}>
+            <BrandLogo variant={logoVariant} showArabic={false} />
+          </Link>
+        </div>
+
+        <div className="relative hidden shrink-0 items-center justify-end gap-2 md:flex md:gap-2 lg:gap-3">
           <form
             onSubmit={handleSearchSubmit}
             className={`relative transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${searchFocused || q.trim() ? 'w-full max-w-md min-w-[16rem]' : 'w-auto'}`}
@@ -972,6 +973,12 @@ export function Nav({
                     ) : null}
                   </Link>
                 ))}
+                <CategoryShortcutPills
+                  surface="drawer"
+                  className="border-t border-stone/25 px-1 py-4"
+                  listClassName="home-feeling-pills flex gap-2 overflow-x-auto pb-1"
+                  accentFirst={false}
+                />
                 <Link
                   href="/cart"
                   className={drawerNavLinkClass(pathname === '/cart')}

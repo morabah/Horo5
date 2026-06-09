@@ -287,6 +287,87 @@
     {{ 'horo-tokens.css' | asset_url | stylesheet_tag }}
     {{ 'component-horo-motion.css' | asset_url | stylesheet_tag }}
     {{ 'component-horo-visual-system.css' | asset_url | stylesheet_tag }}
+    {%- style -%}
+      :root {
+        --color-horo-root: {{ settings.horo_color_obsidian }};
+        --color-horo-breath: {{ settings.horo_color_desert_sand }};
+        --color-horo-pulse: {{ settings.horo_color_ember }};
+        --color-horo-soft: {{ settings.horo_color_papyrus }};
+        --color-horo-section: {{ settings.horo_color_papyrus }};
+        --color-horo-text: {{ settings.horo_color_warm_charcoal }};
+        --color-horo-muted: {{ settings.horo_color_clay_earth }};
+        --color-horo-page: {{ settings.horo_color_papyrus }};
+        --color-horo-panel: {{ settings.horo_color_desert_sand }};
+        --color-horo-border: {{ settings.horo_color_stone }};
+        --color-horo-focus: {{ settings.horo_color_ember }};
+
+        --color-chalk: {{ settings.horo_color_desert_sand }};
+        --color-linen: {{ settings.horo_color_papyrus }};
+        --color-ink: {{ settings.horo_color_obsidian }};
+        --color-burgundy: {{ settings.horo_color_burgundy }};
+        --color-warm-charcoal: {{ settings.horo_color_warm_charcoal }};
+        --color-dusk-plum: {{ settings.horo_color_dusk_violet }};
+        --color-moon-gold: {{ settings.horo_color_kohl_gold_bright }};
+        --color-clay-action: {{ settings.horo_color_ember }};
+        --color-cta-primary: {{ settings.horo_color_ember }};
+        --color-moss: {{ settings.horo_color_clay_earth }};
+        --color-river: {{ settings.horo_color_dusk_violet }};
+        --color-outline: {{ settings.horo_color_stone }};
+        --color-secondary-fixed: {{ settings.horo_color_desert_sand }};
+        --color-ember: {{ settings.horo_color_ember }};
+        --color-primary: {{ settings.horo_color_ember }};
+        --color-surface: {{ settings.horo_color_papyrus }};
+        --color-on-surface: {{ settings.horo_color_obsidian }};
+        --color-secondary: {{ settings.horo_color_warm_charcoal }};
+        --color-outline-variant: {{ settings.horo_color_stone }};
+        --color-surface-container-high: {{ settings.horo_color_papyrus }};
+        --color-surface-container: {{ settings.horo_color_papyrus }};
+        --color-papyrus: {{ settings.horo_color_papyrus }};
+        --color-obsidian: {{ settings.horo_color_obsidian }};
+        --color-stone: {{ settings.horo_color_stone }};
+        --color-clay: {{ settings.horo_color_clay_earth }};
+        --color-label: {{ settings.horo_color_clay_earth }};
+        --color-desert-sand: {{ settings.horo_color_desert_sand }};
+        --color-deep-teal: {{ settings.horo_color_kohl_gold }};
+        --color-dusk-violet: {{ settings.horo_color_dusk_violet }};
+        --color-nile-dark: {{ settings.horo_color_kohl_gold }};
+        --color-kohl-gold-bright: {{ settings.horo_color_kohl_gold_bright }};
+        --color-kohl-gold-dark: {{ settings.horo_color_obsidian }};
+
+        --horo-obsidian: {{ settings.horo_color_obsidian }};
+        --horo-root: {{ settings.horo_color_obsidian }};
+        --horo-breath: {{ settings.horo_color_desert_sand }};
+        --horo-pulse: {{ settings.horo_color_ember }};
+        --horo-page: {{ settings.horo_color_papyrus }};
+        --horo-papyrus: {{ settings.horo_color_papyrus }};
+        --horo-linen: {{ settings.horo_color_papyrus }};
+        --horo-clay: {{ settings.horo_color_clay_earth }};
+        --horo-warm-charcoal: {{ settings.horo_color_warm_charcoal }};
+        --horo-deep-teal: {{ settings.horo_color_kohl_gold }};
+        --horo-stone: {{ settings.horo_color_stone }};
+        --horo-ember: {{ settings.horo_color_ember }};
+        --horo-amber-700: {{ settings.horo_color_kohl_gold }};
+        --horo-chalk: {{ settings.horo_color_desert_sand }};
+        --horo-ink: {{ settings.horo_color_obsidian }};
+        --horo-burgundy: {{ settings.horo_color_burgundy }};
+        --horo-dusk-plum: {{ settings.horo_color_dusk_violet }};
+        --horo-moon-gold: {{ settings.horo_color_kohl_gold_bright }};
+        --horo-clay-action: {{ settings.horo_color_ember }};
+        --horo-moss: {{ settings.horo_color_clay_earth }};
+        --horo-river: {{ settings.horo_color_dusk_violet }};
+
+        --font-headline: {{ settings.horo_heading_font }};
+        --font-body: {{ settings.horo_body_font }};
+        --font-label: {{ settings.horo_body_font }};
+        --font-wordmark: {{ settings.horo_heading_font }};
+        --font-pdp-serif: {{ settings.horo_heading_font }};
+        --font-heading-family: {{ settings.horo_heading_font }};
+        --font-body-family: {{ settings.horo_body_font }};
+        --font-horo-headline: {{ settings.horo_heading_font }};
+        --font-horo-body: {{ settings.horo_body_font }};
+        --font-horo-serif: {{ settings.horo_heading_font }};
+      }
+    {%- endstyle -%}
     <link rel="stylesheet" href="{{ 'component-horo-breadcrumb.css' | asset_url }}" media="print" onload="this.media='all'">
     {{ 'component-horo-header.css' | asset_url | stylesheet_tag }}
     {%- if template.name == 'index' -%}
@@ -502,6 +583,35 @@
         cartUrl: {{ routes.cart_url | json }},
       };
 
+      window.HoroShop = {
+        currency: {{ cart.currency.iso_code | default: shop.currency | json }},
+        moneyFormat: {{ shop.money_format | json }},
+        moneyWithCurrencyFormat: {{ shop.money_with_currency_format | json }}
+      };
+
+      window.theme = window.theme || {};
+      window.theme.moneyFormat = window.theme.moneyFormat || window.HoroShop.moneyFormat;
+
+      window.HoroFormatMoney = window.HoroFormatMoney || function (cents, format) {
+        var amount = Number(cents) / 100;
+        if (!Number.isFinite(amount)) amount = 0;
+        var activeFormat = format || window.HoroShop.moneyFormat || '{% raw %}{{amount}}{% endraw %} ' + (window.HoroShop.currency || '');
+        var locale = document.documentElement.lang || 'en';
+        var amountWithDecimals = amount.toLocaleString(locale, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        var amountWithoutDecimals = Math.round(amount).toLocaleString(locale);
+        var commaAmount = amountWithDecimals.replace(/,/g, 'TMP').replace(/\./g, ',').replace(/TMP/g, '.');
+        var commaAmountNoDecimals = amountWithoutDecimals.replace(/,/g, '.');
+
+        return activeFormat
+          .replace(/\{\{\s*amount\s*\}\}/g, amountWithDecimals)
+          .replace(/\{\{\s*amount_no_decimals\s*\}\}/g, amountWithoutDecimals)
+          .replace(/\{\{\s*amount_with_comma_separator\s*\}\}/g, commaAmount)
+          .replace(/\{\{\s*amount_no_decimals_with_comma_separator\s*\}\}/g, commaAmountNoDecimals);
+      };
+
       window.accessibilityStrings = {
         imageAvailable: `{{ 'products.product.media.image_available' | t: index: '[index]' }}`,
         shareSuccess: `{{ 'general.share.success_message' | t }}`,
@@ -525,7 +635,9 @@
       <script src="{{ 'horo-cart-cost-preview.js' | asset_url }}" defer="defer"></script>
     {%- endif -%}
 
-    {%- render 'horo-order-placed-hint' -%}
+    {%- if settings.horo_show_order_placed_hint -%}
+      {%- render 'horo-order-placed-hint' -%}
+    {%- endif -%}
     {% section 'horo-exit-intent' %}
     {%- render 'horo-quick-view-modal' -%}
     {%- render 'horo-whatsapp-float' -%}

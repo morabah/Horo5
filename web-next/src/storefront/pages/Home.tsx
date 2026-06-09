@@ -8,7 +8,6 @@ import { trackHomeScrollMilestone, trackHomeView } from '../analytics/funnel';
 import { HomeArtistSpotlight } from '../components/HomeArtistSpotlight';
 import { HomeBehindThePiece } from '../components/HomeBehindThePiece';
 import { HomeEditorialFeature } from '../components/HomeEditorialFeature';
-import { HomeServiceTrust } from '../components/home/HomeServiceTrust';
 import { HomeFeelingCards } from '../components/HomeFeelingCards';
 import { HomeFeelingQuiz } from '../components/HomeFeelingQuiz';
 import { HomeFeaturedPiece } from '../components/HomeFeaturedPiece';
@@ -23,6 +22,7 @@ import { HomeSeenOnYou } from '../components/HomeSeenOnYou';
 import { HomeStartHere } from '../components/HomeStartHere';
 import { HomeTrustRibbon } from '../components/HomeTrustRibbon';
 import { HomeOurStory } from '../components/home/HomeOurStory';
+import { RecentlyViewedStrip } from '../components/RecentlyViewedStrip';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import type { RuntimeCatalog, StorefrontHomepageSection } from '../data/catalog-types';
 import {
@@ -31,30 +31,29 @@ import {
   setRuntimeCatalog,
   type Product,
 } from '../data/site';
-import { HOME_FEATURED_ARTIST, HOME_SEEN_ON_YOU } from '../data/homeContent';
+import { HOME_FEATURED_ARTIST } from '../data/homeContent';
 
 const COMPACT_HOME_STORAGE = 'horo_home_compact';
 const HOME_VIEW_SESSION_KEY = 'horo_home_view_session_v1';
 
+const SECTION_KEY_ALIASES: Record<string, string> = {
+  why_horo: 'our_story',
+  our_story: 'our_story',
+};
+
 /**
- * Default homepage section list.
- *
- * Keep the launch-mode storefront short and shop-led (audit P1):
- * hero · founding drop · trust ribbon · feeling grid · editorial · gift block · our story · proof strip.
- *
- * Operators can override the order or re-enable additional sections from the
- * homepage_section module. `store.metadata.homepage.sectionsEnabled` remains a
- * backward-compatible lightweight fallback. Unknown keys are ignored at render time.
+ * Default homepage section list (editorial hybrid).
  */
-const HOME_DEFAULT_SECTIONS: readonly string[] = [
+export const HOME_DEFAULT_SECTIONS: readonly string[] = [
   'hero',
-  'founding_drop',
+  'primary_routes',
   'trust_ribbon',
+  'founding_drop',
   'feeling_grid',
   'editorial_feature',
-  'gift_block',
   'our_story',
-  'proof_strip',
+  'seen_on_you',
+  'recently_viewed',
 ];
 
 type HomeSectionRenderer = (ctx: { initialProducts?: Product[]; section?: StorefrontHomepageSection }) => ReactNode;
@@ -62,13 +61,13 @@ type HomeSectionRenderer = (ctx: { initialProducts?: Product[]; section?: Storef
 const HOME_SECTION_COMPONENTS: Record<string, HomeSectionRenderer> = {
   hero: ({ section }) => <HomeHeroWearMean section={section} />,
   trust_ribbon: ({ section }) => <HomeTrustRibbon section={section} />,
-  primary_routes: () => <HomePrimaryRoutes />,
+  primary_routes: ({ section }) => <HomePrimaryRoutes section={section} />,
   founding_drop: ({ initialProducts, section }) => <HomeStartHere products={initialProducts} section={section} />,
   featured_piece: () => <HomeFeaturedPiece />,
   behind_the_piece: () => <HomeBehindThePiece artists={getArtists()} />,
   feeling_grid: ({ section }) => <HomeFeelingCards section={section} />,
   editorial_feature: ({ section }) => <HomeEditorialFeature section={section} />,
-  proof_strip: () => <HomeServiceTrust />,
+  proof_strip: () => null,
   feeling_quiz: () => <HomeFeelingQuiz />,
   occasion_grid: () => <HomeOccasionCards />,
   why_horo: ({ section }) => <HomeOurStory section={section} />,
@@ -79,8 +78,13 @@ const HOME_SECTION_COMPONENTS: Record<string, HomeSectionRenderer> = {
   first_drop_circle: () => <HomeFirstDropCircle />,
   artist_spotlight: () =>
     HOME_FEATURED_ARTIST || getArtists().length > 0 ? <HomeArtistSpotlight /> : null,
-  seen_on_you: () => (HOME_SEEN_ON_YOU.length >= 4 ? <HomeSeenOnYou /> : null),
+  seen_on_you: ({ section }) => <HomeSeenOnYou section={section} />,
+  recently_viewed: () => <RecentlyViewedStrip className="home-section border-t-0 bg-horo-section" />,
 };
+
+function normalizeSectionKey(key: string): string {
+  return SECTION_KEY_ALIASES[key] ?? key;
+}
 
 export function Home({
   homepageSections,
@@ -91,7 +95,6 @@ export function Home({
   homepageSections?: StorefrontHomepageSection[] | null;
   initialCatalog?: RuntimeCatalog | null;
   initialProducts?: Product[];
-  /** Backward-compatible section list from Medusa `store.metadata.homepage.sectionsEnabled`. */
   sectionsEnabled?: string[] | null;
 } = {}) {
   if (initialCatalog) {
@@ -160,22 +163,23 @@ export function Home({
   const orderedSections = useMemo(() => {
     const fromHomepage = (homepageSections ?? [])
       .filter((section) => section.active !== false)
-      .map((section) => ({
-        key: section.key in HOME_SECTION_COMPONENTS ? section.key : section.type,
-        section,
-      }))
+      .map((section) => {
+        const rawKey = section.key in HOME_SECTION_COMPONENTS ? section.key : section.type;
+        const key = normalizeSectionKey(rawKey);
+        return {
+          key,
+          section,
+          sortOrder: Number(section.sortOrder ?? 0),
+        };
+      })
       .filter((entry) => entry.key in HOME_SECTION_COMPONENTS);
+
     if (fromHomepage.length > 0) {
       const heroEntry = fromHomepage.find((entry) => entry.key === 'hero');
       const withoutHero = fromHomepage.filter((entry) => entry.key !== 'hero');
-      const heroFirst = heroEntry ?? { key: 'hero', section: undefined };
-      const sectionOrder = new Map(HOME_DEFAULT_SECTIONS.map((key, index) => [key, index]));
-      const sortedRest = [...withoutHero].sort((a, b) => {
-        const aIndex = sectionOrder.get(a.key) ?? Number.MAX_SAFE_INTEGER;
-        const bIndex = sectionOrder.get(b.key) ?? Number.MAX_SAFE_INTEGER;
-        return aIndex - bIndex;
-      });
-      return [heroFirst, ...sortedRest];
+      const sortedRest = [...withoutHero].sort((a, b) => a.sortOrder - b.sortOrder);
+      const heroFirst = heroEntry ?? { key: 'hero', section: undefined, sortOrder: 0 };
+      return [heroFirst, ...sortedRest].map(({ key, section }) => ({ key, section }));
     }
 
     const fromOps = (sectionsEnabled ?? []).filter((key) => key in HOME_SECTION_COMPONENTS);

@@ -21,9 +21,13 @@
       endif
     endfor
 
-    assign cairo_egp = settings.horo_shipping_cairo_egp | default: 60 | plus: 0
-    assign alex_egp = settings.horo_shipping_alex_egp | default: 80 | plus: 0
-    assign other_egp = settings.horo_shipping_other_egp | default: 100 | plus: 0
+    assign cairo_egp = settings.horo_shipping_cairo_egp | default: 0 | plus: 0
+    assign alex_egp = settings.horo_shipping_alex_egp | default: 0 | plus: 0
+    assign other_egp = settings.horo_shipping_other_egp | default: 0 | plus: 0
+    assign has_shipping_estimates = false
+    if cairo_egp > 0 or alex_egp > 0 or other_egp > 0
+      assign has_shipping_estimates = true
+    endif
 
     assign incentives_live = false
     if settings.horo_incentives_live
@@ -45,6 +49,7 @@
     data-label-choose="{{ 'horo.cart.cost_preview_choose_governorate' | t | escape }}"
     data-label-basis-prefix="{{ 'horo.cart.cost_preview_basis_prefix' | t | escape }}"
     data-label-shipping-choose="{{ 'horo.cart.cost_preview_shipping_choose' | t | escape }}"
+    data-label-shipping-checkout="{{ 'horo.cart.cost_preview_checkout_note' | t | escape }}"
     data-label-shipping-free="{{ 'horo.cart.cost_preview_shipping_free' | t | escape }}"
     data-label-total-plus="{{ 'horo.cart.cost_preview_total_plus_shipping' | t | escape }}"
     data-label-gov-cairo="{{ 'horo.cart.cost_preview_gov_cairo_giza' | t | escape }}"
@@ -56,6 +61,7 @@
     data-shipping-cairo="{{ cairo_egp }}"
     data-shipping-alex="{{ alex_egp }}"
     data-shipping-other="{{ other_egp }}"
+    data-shipping-estimates-enabled="{% if has_shipping_estimates %}true{% else %}false{% endif %}"
     data-incentives-live="{% if incentives_live %}true{% else %}false{% endif %}"
     data-free-shipping-threshold-egp="{{ fs_threshold_egp }}"
     role="region"
@@ -72,23 +78,25 @@
       </div>
     {%- endif -%}
 
-    <label class="horo-cart-cost-preview__gov-label" for="horo-cost-gov-{{ preview_context }}">
-      {{ 'horo.cart.cost_preview_governorate_label' | t }}
-    </label>
-    <select
-      id="horo-cost-gov-{{ preview_context }}"
-      class="horo-cart-cost-preview__gov-select"
-      data-horo-cost-governorate
-    >
-      <option value="">{{ 'horo.cart.cost_preview_choose_governorate' | t }}</option>
-      <option value="cairo_giza">{{ 'horo.cart.cost_preview_gov_cairo_giza' | t }}</option>
-      <option value="alexandria">{{ 'horo.cart.cost_preview_gov_alex' | t }}</option>
-      <option value="other">{{ 'horo.cart.cost_preview_gov_other' | t }}</option>
-    </select>
+    {%- if has_shipping_estimates -%}
+      <label class="horo-cart-cost-preview__gov-label" for="horo-cost-gov-{{ preview_context }}">
+        {{ 'horo.cart.cost_preview_governorate_label' | t }}
+      </label>
+      <select
+        id="horo-cost-gov-{{ preview_context }}"
+        class="horo-cart-cost-preview__gov-select"
+        data-horo-cost-governorate
+      >
+        <option value="">{{ 'horo.cart.cost_preview_choose_governorate' | t }}</option>
+        <option value="cairo_giza">{{ 'horo.cart.cost_preview_gov_cairo_giza' | t }}</option>
+        <option value="alexandria">{{ 'horo.cart.cost_preview_gov_alex' | t }}</option>
+        <option value="other">{{ 'horo.cart.cost_preview_gov_other' | t }}</option>
+      </select>
 
-    <p class="horo-cart-cost-preview__basis" data-horo-cost-basis>
-      {{ 'horo.cart.cost_preview_choose_governorate' | t }}
-    </p>
+      <p class="horo-cart-cost-preview__basis" data-horo-cost-basis>
+        {{ 'horo.cart.cost_preview_choose_governorate' | t }}
+      </p>
+    {%- endif -%}
 
     <dl class="horo-cart-cost-preview__rows">
       <div class="horo-cart-cost-preview__row">
@@ -107,7 +115,13 @@
       </div>
       <div class="horo-cart-cost-preview__row">
         <dt>{{ 'horo.cart.shippingLabel' | t }}</dt>
-        <dd data-horo-cost-shipping>{{ 'horo.cart.cost_preview_shipping_choose' | t }}</dd>
+        <dd data-horo-cost-shipping>
+          {%- if has_shipping_estimates -%}
+            {{ 'horo.cart.cost_preview_shipping_choose' | t }}
+          {%- else -%}
+            {{ 'horo.cart.cost_preview_checkout_note' | t }}
+          {%- endif -%}
+        </dd>
       </div>
       <div class="horo-cart-cost-preview__row horo-cart-cost-preview__row--total">
         <dt>{{ 'horo.cart.totalLabel' | t }}</dt>

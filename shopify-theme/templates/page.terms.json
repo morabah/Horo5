@@ -31,7 +31,7 @@
           "settings": {
             "show": true,
             "title": "Orders and payments",
-            "text": "<p>All orders are subject to availability and confirmation. Prices are shown in EGP and include applicable taxes. Payment options available at checkout are the ones shown on the site at the time of purchase.</p>"
+            "text": "<p>All orders are subject to availability and confirmation. Prices, taxes if applicable, shipping, and payment methods are confirmed by Shopify checkout at the time of purchase.</p>"
           }
         },
         "contact": {

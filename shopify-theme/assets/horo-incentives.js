@@ -71,6 +71,14 @@
     return value[locale] || value.en || value.ar || '';
   }
 
+  function formatMoney(cents) {
+    if (window.HoroFormatMoney) return window.HoroFormatMoney(cents);
+    var amount = Math.round(Number(cents) / 100);
+    if (!Number.isFinite(amount)) amount = 0;
+    var currency = (window.HoroShop && window.HoroShop.currency) || '';
+    return amount.toLocaleString(undefined) + (currency ? ' ' + currency : '');
+  }
+
   function normalizeFreeShipping(data) {
     var free = data && data.freeShipping;
     if (!free || free.active === false) return null;
@@ -144,14 +152,9 @@
         container.hidden = false;
 
         if (remainingCents > 0) {
-          var amount = (remainingCents / 100).toLocaleString(undefined, {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2
-          });
-
           var beforeTemplate = container.getAttribute('data-message-before');
           if (msgEl && beforeTemplate) {
-            msgEl.textContent = beforeTemplate.replace(/\[amount\]/g, amount + ' EGP');
+            msgEl.textContent = beforeTemplate.replace(/\[amount\]/g, formatMoney(remainingCents));
           }
 
           if (barEl) {
@@ -256,7 +259,7 @@
         var endedEl = container.querySelector('[data-timed-offer-ended]');
         var label = localizedText(offer.label, locale) || container.getAttribute('data-fallback-label') || 'Limited-time offer';
         var savings = offer.savingsKind === 'fixed'
-          ? (offer.savingsValue + ' EGP')
+          ? formatMoney(Math.round((Number(offer.savingsValue) || 0) * 100))
           : (offer.savingsValue + '%');
 
         if (labelEl) labelEl.textContent = label;

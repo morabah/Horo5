@@ -41,12 +41,14 @@
   }
 
   function formatMoney(cents) {
+    if (window.HoroFormatMoney) return window.HoroFormatMoney(cents);
+    if (typeof Shopify !== 'undefined' && Shopify.formatMoney) {
+      return Shopify.formatMoney(cents, window.theme && window.theme.moneyFormat);
+    }
     var amount = Math.round(Number(cents) / 100);
     if (!Number.isFinite(amount)) amount = 0;
-    if (typeof Shopify !== 'undefined' && Shopify.formatMoney) {
-      return Shopify.formatMoney(amount * 100, window.theme && window.theme.moneyFormat);
-    }
-    return 'EGP ' + amount.toLocaleString('en-US');
+    var currency = (window.HoroShop && window.HoroShop.currency) || '';
+    return amount.toLocaleString('en-US') + (currency ? ' ' + currency : '');
   }
 
   function optionSummary(options) {

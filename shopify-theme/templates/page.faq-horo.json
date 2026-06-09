@@ -25,8 +25,8 @@
           "type": "faq_item",
           "settings": {
             "show": true,
-            "question": "Can I pay cash on delivery?",
-            "answer": "<p>Payment options are shown at checkout. COD appears only if your address and order qualify.</p>"
+            "question": "Which payment methods are available?",
+            "answer": "<p>Payment options are shown by Shopify checkout for the current order.</p>"
           }
         },
         "faq-2": {
@@ -58,7 +58,7 @@
           "settings": {
             "show": true,
             "question": "Can I exchange my size?",
-            "answer": "<p>Eligible size exchanges are supported within 14 days of delivery. Review the Delivery & Returns page for the current policy details.</p>"
+            "answer": "<p>Return and exchange details are shown only when the store policy is configured in Shopify.</p>"
           }
         },
         "faq-6": {

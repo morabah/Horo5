@@ -138,6 +138,17 @@ export type StorefrontLoyaltySettingsDTO = {
   expiryDays: number | null
 }
 
+export type StorefrontAnnouncementMessageDTO = {
+  text: LocalizedText
+  href?: string
+}
+
+export type StorefrontAnnouncementBarDTO = {
+  active: boolean
+  showOnHomeOnly?: boolean
+  messages: StorefrontAnnouncementMessageDTO[]
+}
+
 export type StorefrontSettingsDTO = {
   delivery: Record<string, unknown> | null
   sizeTables: Record<string, unknown> | null
@@ -147,6 +158,7 @@ export type StorefrontSettingsDTO = {
   search: StorefrontSearchSettingsDTO | null
   homepage: StorefrontHomepageSettingsDTO | null
   loyalty: StorefrontLoyaltySettingsDTO | null
+  announcementBar: StorefrontAnnouncementBarDTO | null
   /** Trust-badge fallback list when a product has no explicit `metadata.trustBadges`. */
   defaultTrustBadges: string[] | null
   /** Free-shipping threshold in EGP used by incentives/seed scripts. */
@@ -292,6 +304,30 @@ function parseLoyalty(raw: unknown): StorefrontLoyaltySettingsDTO | null {
   return { creditOnSecondOrderEgp, expiryDays }
 }
 
+function parseAnnouncementMessage(raw: unknown): StorefrontAnnouncementMessageDTO | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null
+  const r = raw as Record<string, unknown>
+  const text = asLocalizedText(r.text)
+  if (!text) return null
+  const href = asString(r.href)
+  return href ? { text, href } : { text }
+}
+
+function parseAnnouncementBar(raw: unknown): StorefrontAnnouncementBarDTO | null {
+  const obj = parseObjectBlob(raw)
+  if (!obj) return null
+  const messagesRaw = Array.isArray(obj.messages) ? obj.messages : []
+  const messages = messagesRaw
+    .map(parseAnnouncementMessage)
+    .filter((message): message is StorefrontAnnouncementMessageDTO => message !== null)
+  if (messages.length === 0 && obj.active !== true) return null
+  return {
+    active: obj.active === false ? false : true,
+    showOnHomeOnly: obj.showOnHomeOnly === true,
+    messages,
+  }
+}
+
 /**
  * Public storefront settings subset (no secrets).
  * Operators set `store.metadata.delivery`, `store.metadata.sizeTables`, `store.metadata.defaultSizeTableKey`,
@@ -313,6 +349,7 @@ export async function retrieveStorefrontSettingsPayload(scope: MedusaContainer):
   const search = parseSearch(meta.search)
   const homepage = parseHomepage(meta.homepage)
   const loyalty = parseLoyalty(meta.loyalty)
+  const announcementBar = parseAnnouncementBar(meta.announcementBar)
 
   /** Store-level override for default product trust badges. */
   const defaultTrustBadges = asStringArrayOrEmpty(meta.defaultTrustBadges)
@@ -342,6 +379,7 @@ export async function retrieveStorefrontSettingsPayload(scope: MedusaContainer):
     search,
     homepage,
     loyalty,
+    announcementBar,
     defaultTrustBadges: defaultTrustBadges.length > 0 ? defaultTrustBadges : null,
     freeShippingThresholdEgp:
       freeShippingThresholdEgp !== null && Number.isFinite(freeShippingThresholdEgp) && freeShippingThresholdEgp >= 0

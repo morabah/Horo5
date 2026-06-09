@@ -17,7 +17,7 @@
           "settings": {
             "show": true,
             "title": "What this covers",
-            "body": "<p>We offer exchange support for sizing issues and eligible defects within 14 days of delivery.</p><p>Items should be unworn, unwashed, and returned with the original packaging so we can process the exchange quickly.</p>"
+            "body": "<p>Policy content is pulled from Shopify Admin when configured.</p>"
           }
         },
         "policy-1": {
@@ -63,9 +63,9 @@
         "badge_2": {
           "type": "trust_badge",
           "settings": {
-            "show_badge": true,
+            "show_badge": false,
             "icon": "exchange",
-            "label": "14-day exchange — see policy",
+            "label": "",
             "subtext": ""
           }
         }

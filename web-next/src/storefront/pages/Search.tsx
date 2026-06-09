@@ -981,7 +981,7 @@ const urlQuery = params.get('q') ?? '';
             ) : null}
           </div>
 
-          <div className="sticky top-[calc(7.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex">
+          <div className="sticky top-[calc(var(--horo-chrome-top,3.6rem)+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex">
             <div className="flex min-w-0 flex-wrap items-end gap-4">
                 {!isBrowsePage || desktopAdvancedFiltersOpen ? (
                 <div className="flex min-w-[13rem] flex-col gap-2">

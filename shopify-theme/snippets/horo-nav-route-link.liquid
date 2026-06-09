@@ -47,7 +47,12 @@
       assign href = routes.root_url | append: 'pages/faq-horo'
     when 'exchange'
       assign label = 'horo.nav.exchange' | t | default: 'Exchange Policy'
-      assign href = routes.root_url | append: 'pages/exchange-policy-horo'
+      if shop.refund_policy != blank and shop.refund_policy.url != blank
+        assign href = shop.refund_policy.url
+        assign label = shop.refund_policy.title | default: label
+      else
+        assign href = ''
+      endif
     when 'search'
       assign label = 'horo.shell.search' | t | default: 'Search'
       assign href = routes.search_url

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 
 import { trackCloserLookClick, trackEditorialFeatureCtaClick } from '../analytics/events';
 import {
@@ -18,8 +19,14 @@ import {
 import { getProduct } from '../data/site';
 import { useDictionary, useUiLocale } from '../i18n/ui-locale';
 import { isImageOverlayPresentation, parseHomepagePresentation } from '../lib/parseHomepagePresentation';
+import { resolveHomeProducts } from '../lib/resolveHomeProducts';
 import { normalizeLegacyStorefrontLabel } from '../utils/legacyStorefrontCopy';
+import { HomeFoundingProductCard } from './home/HomeFoundingProductCard';
 import { HomeImageCampaign } from './home/HomeImageCampaign';
+
+const LOW_CONTRAST_EDITORIAL_IMAGES = new Set([
+  '/images/homepage-reference/editorial-artwork-detail.png',
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -45,7 +52,8 @@ function resolveEditorialImageSrc(section: StorefrontHomepageSection | undefined
   if (
     cmsImageSrc &&
     !isBackLikeProductImageSrc(cmsImageSrc) &&
-    !isUnavailableHomepageReferenceImageSrc(cmsImageSrc)
+    !isUnavailableHomepageReferenceImageSrc(cmsImageSrc) &&
+    !LOW_CONTRAST_EDITORIAL_IMAGES.has(cmsImageSrc)
   ) {
     return cmsImageSrc;
   }
@@ -151,6 +159,19 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
     ) ?? copy.home.viewPiece;
   const ctaHref = section?.primaryCta?.href?.trim() ?? `/products/${fallbackHandle}`;
   const featuredProduct = getProduct(fallbackHandle);
+  const lookProducts = useMemo(
+    () => (section ? resolveHomeProducts(undefined, section).slice(0, 3) : []),
+    [section],
+  );
+  const isShopTheLook = variant === 'shop_the_look' || lookProducts.length >= 2;
+  const shopLookHref =
+    lookProducts[0]?.slug ? `/products/${lookProducts[0].slug}` : ctaHref;
+  const shopLookCtaLabel =
+    normalizeLegacyStorefrontLabel(copy.home.shopTheLookCta, resolvedLocale) ??
+    copy.home.shopTheLookCta;
+  const displayPrimaryCta = isShopTheLook
+    ? { label: shopLookCtaLabel, href: shopLookHref }
+    : { label: ctaLabel, href: ctaHref };
   const bridgeLine = copy.home.editorialBridge;
   const sectionId = payloadAnchor(section);
   const wantsOverlay = section ? isImageOverlayPresentation(payload) : true;
@@ -169,9 +190,9 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
       aria-labelledby={`${sectionId}-title`}
       className="home-section home-editorial-feature home-editorial-feature--full-bleed bg-horo-white px-4 sm:px-6 lg:px-8"
     >
-      <div className="mx-auto max-w-6xl" data-reveal>
+      <div className="mx-auto max-w-6xl">
         {bridgeLine ? (
-          <p className="home-editorial-bridge" data-reveal>
+          <p className="home-editorial-bridge">
             {bridgeLine}
           </p>
         ) : null}
@@ -187,7 +208,7 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
             body={body ?? undefined}
             imageSrc={imageSrc ?? ''}
             imageAlt={imageAlt}
-            primaryCta={{ label: ctaLabel, href: ctaHref }}
+            primaryCta={displayPrimaryCta}
             presentation={{
               ...presentation,
               layout: 'image_overlay',
@@ -201,7 +222,7 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
               if (variant === 'closer_look') {
                 trackCloserLookClick('editorial_feature', ctaHref);
               }
-              trackEditorialFeatureCtaClick(variant, ctaHref);
+              trackEditorialFeatureCtaClick(variant, isShopTheLook ? shopLookHref : ctaHref);
             }}
           />
         ) : (
@@ -216,6 +237,29 @@ export function HomeEditorialFeature({ section }: { section?: StorefrontHomepage
             productRefLabel={productRefLabel}
           />
         )}
+        {isShopTheLook && lookProducts.length >= 2 ? (
+          <div className="home-editorial-feature__look-rail mt-8">
+            <div className="mb-4 flex items-end justify-between gap-4">
+              <h3 className="font-headline text-lg font-semibold tracking-tight text-horo-root md:text-xl">
+                {copy.home.shopTheLookTitle}
+              </h3>
+              <Link
+                href={shopLookHref}
+                onClick={() => trackEditorialFeatureCtaClick('shop_the_look', shopLookHref)}
+                className="font-body text-sm font-medium text-horo-pulse underline decoration-horo-pulse/35 underline-offset-4"
+              >
+                {shopLookCtaLabel}
+              </Link>
+            </div>
+            <div className="home-founding-grid home-founding-grid--featured flex gap-4 overflow-x-auto pb-2">
+              {lookProducts.map((product, index) => (
+                <div key={product.slug} className="w-[min(72vw,16rem)] shrink-0">
+                  <HomeFoundingProductCard product={product} eager={index === 0} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

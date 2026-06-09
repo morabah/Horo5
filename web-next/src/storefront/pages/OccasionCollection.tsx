@@ -355,7 +355,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
       <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 pt-8 pb-12 md:gap-14 md:px-10 md:pt-10 md:pb-16">
         <section
           id="occasion-proof"
-          className="order-2 scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-b border-stone/25 pb-10 md:pb-12"
+          className="order-2 scroll-mt-[calc(var(--horo-chrome-top,3.6rem)+env(safe-area-inset-top,0px))] border-b border-stone/25 pb-10 md:pb-12"
           aria-labelledby="occasion-proof-heading"
         >
           <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:gap-10 lg:gap-14">
@@ -419,7 +419,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
           </section>
         ) : null}
 
-        <section id="occasion-collection-products" className="order-1 scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
+        <section id="occasion-collection-products" className="order-1 scroll-mt-[calc(var(--horo-chrome-top,3.6rem)+env(safe-area-inset-top,0px))]">
           <div className="mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-stone/30 pb-4 md:hidden">
             <button
               type="button"
@@ -435,7 +435,7 @@ export function OccasionCollection({ initialOccasion, initialSlug }: OccasionCol
               {copy.occasion.searchThisOccasionCta}
             </Link>
           </div>
-          <div className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex">
+          <div className="sticky top-[calc(var(--horo-chrome-top,3.6rem)+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex">
             <div className="flex min-w-0 flex-wrap items-end gap-4">
               <button
                 type="button"

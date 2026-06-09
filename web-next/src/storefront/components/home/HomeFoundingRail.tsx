@@ -28,15 +28,13 @@ export function HomeFoundingRail({
   } as CSSProperties;
 
   return (
-    <div className="home-founding-grid" style={gridStyle}>
+    <div className="home-founding-grid home-founding-grid--featured overflow-x-auto pb-2 md:overflow-visible md:pb-0" style={gridStyle}>
       {railProducts.map((product, index) => {
-        const reveal = (['stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'stagger-5'] as const)[index % 5];
         return (
         <HomeFoundingProductCard
           key={product.slug}
           product={product}
           eager={index < 4}
-          data-reveal={reveal}
         />
         );
       })}

@@ -11,9 +11,7 @@ describe("navLinks", () => {
     expect([...NAV_PRIMARY_ROUTE_KEYS]).toEqual([
       "products",
       "shopByMeaning",
-      "gifts",
       "about",
-      "sizeGuide",
     ])
   })
 

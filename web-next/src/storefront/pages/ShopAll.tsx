@@ -35,6 +35,8 @@ import { defaultCatalogSizeKeys } from '../utils/productSizes';
 import { getProduct, getProducts, getSubfeeling, setRuntimeCatalog, type Product, type RuntimeCatalog } from '../data/site';
 import { trackShopAllView } from '../analytics/funnel';
 import { CollectionRouteIntro } from '../components/CollectionRouteIntro';
+import { CategoryShortcutPills } from '../components/CategoryShortcutPills';
+import { PLP_SCROLL_MARGIN, StickyPlpToolbar } from '../components/StickyPlpToolbar';
 import {
   launchCategoryFilterLabel,
   parseLaunchCategoryFilter,
@@ -189,8 +191,10 @@ export function ShopAll({
     priceBands,
   ]);
 
-  const sortKey = SORT_OPTIONS.some((option) => option.value === params.get('sort'))
-    ? (params.get('sort') as SearchSortKey)
+  const rawSort = params.get('sort');
+  const normalizedSort = rawSort === 'new' ? 'newest' : rawSort;
+  const sortKey = SORT_OPTIONS.some((option) => option.value === normalizedSort)
+    ? (normalizedSort as SearchSortKey)
     : 'featured';
   const priceFilter = priceOptions.some((option) => option.value === params.get('price'))
     ? (params.get('price') as SearchPriceFilter)
@@ -549,16 +553,46 @@ export function ShopAll({
         {categoryFilter || giftOnlyFilter ? (
           <CollectionRouteIntro categoryFilter={categoryFilter ?? undefined} giftOnly={giftOnlyFilter} />
         ) : null}
-        <section aria-labelledby="shop-all-grid-title">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-stone/25 pb-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={isMobile ? openMobileFilters : () => setDesktopFiltersOpen((open) => !open)}
-                className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-              >
-                {copy.search.filterAndSortCta}
-              </button>
+        <section aria-labelledby="shop-all-grid-title" className={PLP_SCROLL_MARGIN}>
+          <StickyPlpToolbar
+            shortcuts={<CategoryShortcutPills />}
+            actions={
+              <>
+                <button
+                  type="button"
+                  onClick={isMobile ? openMobileFilters : () => setDesktopFiltersOpen((open) => !open)}
+                  className="font-label inline-flex min-h-12 items-center rounded-sm border border-stone bg-white px-5 py-3 text-[11px] font-medium uppercase tracking-[0.2em] text-obsidian shadow-sm transition-colors hover:border-desert-sand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                >
+                  {copy.search.filterAndSortCta}
+                </button>
+                {hasActiveFilters ? (
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
+                  >
+                    {copy.search.resetFiltersCta}
+                  </button>
+                ) : null}
+                <p
+                  id="shop-all-grid-title"
+                  className="font-body hidden text-sm text-warm-charcoal md:block"
+                >
+                  {visibleCount === totalCount
+                    ? formatDesignCount(visibleCount, designSingularLabel, designPluralLabel)
+                    : `${visibleCount} ${isArabic ? 'ظاهر الآن' : 'showing now'}`}
+                </p>
+              </>
+            }
+          />
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 md:hidden">
+            <p className="font-body text-sm text-warm-charcoal">
+              {visibleCount === totalCount
+                ? formatDesignCount(visibleCount, designSingularLabel, designPluralLabel)
+                : `${visibleCount} ${isArabic ? 'ظاهر الآن' : 'showing now'}`}
+            </p>
+          </div>
+          <div className="mb-6 hidden flex-wrap items-center gap-3 border-b border-stone/25 pb-4 md:flex">
               <div className="hidden flex-wrap gap-2 md:flex">
                 <button
                   type="button"
@@ -587,27 +621,6 @@ export function ShopAll({
                   </span>
                 ) : null}
               </div>
-              {hasActiveFilters ? (
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="font-label inline-flex min-h-12 items-center text-[11px] font-medium uppercase tracking-[0.18em] text-deep-teal transition-colors hover:text-obsidian focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-deep-teal"
-                >
-                  {copy.search.resetFiltersCta}
-                </button>
-              ) : null}
-            </div>
-
-            <div className="flex items-center gap-4">
-              <p
-                id="shop-all-grid-title"
-                className="font-body text-sm text-warm-charcoal"
-              >
-                {visibleCount === totalCount
-                  ? formatDesignCount(visibleCount, designSingularLabel, designPluralLabel)
-                  : `${visibleCount} ${isArabic ? 'ظاهر الآن' : 'showing now'}`}
-              </p>
-            </div>
           </div>
 
           {desktopFiltersOpen ? (

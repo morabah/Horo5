@@ -2,6 +2,40 @@
   "name": "HORO Header Group",
   "type": "header",
   "sections": {
+    "announcement_bar": {
+      "type": "announcement-bar",
+      "blocks": {
+        "announcement_1": {
+          "type": "announcement",
+          "settings": {
+            "text": "",
+            "link": "/collections/founding-drop"
+          }
+        },
+        "announcement_2": {
+          "type": "announcement",
+          "settings": {
+            "text": "Wearable art. Bold expression. Your story.",
+            "link": ""
+          }
+        },
+        "announcement_3": {
+          "type": "announcement",
+          "settings": {
+            "text": "Delivery across Egypt",
+            "link": "/pages/faq-horo"
+          }
+        }
+      },
+      "block_order": ["announcement_1", "announcement_2", "announcement_3"],
+      "settings": {
+        "auto_rotate": false,
+        "change_slides_speed": 5,
+        "color_scheme": "scheme-3",
+        "show_line_separator": true,
+        "show_social": false
+      }
+    },
     "horo-header": {
       "type": "horo-header",
       "settings": {
@@ -18,6 +52,7 @@
     }
   },
   "order": [
+    "announcement_bar",
     "horo-header"
   ]
 }

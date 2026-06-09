@@ -9,13 +9,13 @@ export type HomepageSectionSeed = Required<
 /** Active homepage sections in render order (matches Shopify index.json). */
 export const HOMEPAGE_SECTION_ORDER_BY_KEY = [
   "hero",
+  "primary_routes",
   "trust_ribbon",
   "founding_drop",
   "feeling_grid",
   "editorial_feature",
-  "gift_block",
-  "proof_strip",
   "why_horo",
+  "seen_on_you",
 ] as const
 
 export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
@@ -43,6 +43,49 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
       canvas_en: "We are the canvas. You are the story.",
       canvas_ar: "إحنا القماش. إنت القصة.",
       story_system: "HORO V1.9 / StoryBrand 2 soundbite strategy",
+      carouselMode: true,
+      selectedVariant: "drop",
+      heroVariants: [
+        {
+          key: "drop",
+          title: { en: "Wear What You Feel", ar: "إلبس اللي بتحس بيه" },
+          body: {
+            en: "Artist-made T-shirts for feelings, identity, and meaningful gifts.",
+            ar: "تيشيرتات من فنانين للمشاعر والهوية والهدايا اللي لها معنى.",
+          },
+          primaryCta: {
+            label: { en: "Shop the Drop", ar: "تسوّق الإطلاق" },
+            href: "/products",
+          },
+          imageSrc: "/images/hero/home-hero-wear-feel.png",
+        },
+        {
+          key: "collections",
+          title: { en: "Five pieces. Real meanings.", ar: "خمس قطع. معاني حقيقية." },
+          body: {
+            en: "A focused launch, not a category maze — choose the piece that fits today.",
+            ar: "إطلاق مركز، مش متاهة تصنيفات — اختار القطعة اللي تناسبك النهارده.",
+          },
+          primaryCta: {
+            label: { en: "View the pieces", ar: "شاهد القطع" },
+            href: "/products",
+          },
+          imageSrc: "/images/homepage-reference/editorial-artwork-detail.png",
+        },
+        {
+          key: "gifts",
+          title: { en: "Gift-ready pieces", ar: "قطع جاهزة للهدايا" },
+          body: {
+            en: "Thoughtful picks with WhatsApp size help before you order.",
+            ar: "اختيارات مدروسة مع مساعدة مقاس على واتساب قبل الطلب.",
+          },
+          primaryCta: {
+            label: { en: "Shop Gifts", ar: "تسوّق الهدايا" },
+            href: "/gifts",
+          },
+          imageSrc: "/images/homepage-reference/gift-box.png",
+        },
+      ],
       palette_roles: {
         page_canvas: "#FFF7F5",
         breath_panel: "#FEE5E2",
@@ -55,7 +98,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
   {
     key: "trust_ribbon",
     type: "trust_ribbon",
-    sort_order: 10,
+    sort_order: 15,
     active: true,
     payload: withDefaultPresentation("trust_ribbon", {
       items: [
@@ -77,18 +120,40 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
   {
     key: "primary_routes",
     type: "primary_routes",
-    eyebrow_en: "SHOP YOUR WAY",
-    eyebrow_ar: "تسوق بطريقتك",
-    title_en: "Start with feeling, gift, or moment",
-    title_ar: "ابدأ بالشعور أو الهدية أو المناسبة",
-    sort_order: 60,
-    active: false,
+    eyebrow_en: "SIGNATURE PIECES",
+    eyebrow_ar: "قطع مميزة",
+    title_en: "Choose the piece",
+    title_ar: "اختار القطعة",
+    sort_order: 10,
+    active: true,
     payload: {
-      giftRoutes: [
+      items: [
         {
-          key: "gift_hub",
-          label: { en: "Shop Gifts", ar: "تسوّق الهدايا" },
-          href: "/gifts",
+          key: "walk_alone",
+          label: { en: "Walk Alone", ar: "امشي لوحدك" },
+          subtitle: { en: "A signature piece for choosing your own path.", ar: "قطعة مميزة لمن يختار طريقه بنفسه." },
+          href: "/products/quiet-revolt",
+          productHandle: "quiet-revolt",
+          accent: "#241f21",
+          imageSrc: "/images/homepage-reference/product-walk-alone.png",
+        },
+        {
+          key: "i_care",
+          label: { en: "I Care", ar: "اهتم" },
+          subtitle: { en: "A direct tee for the ones who feel deeply.", ar: "تيشيرت مباشر لمن يشعر بعمق." },
+          href: "/products/the-weight-of-light",
+          productHandle: "the-weight-of-light",
+          accent: "#4F111F",
+          imageSrc: "/images/homepage-reference/product-i-care.png",
+        },
+        {
+          key: "i_dont_care",
+          label: { en: "I Don't Care", ar: "مش فارق" },
+          subtitle: { en: "A statement tee for the ones who own their freedom.", ar: "تيشيرت موقف لمن يملك حريته." },
+          href: "/products/trends-next-wave",
+          productHandle: "trends-next-wave",
+          accent: "#241f21",
+          imageSrc: "/images/homepage-reference/product-i-dont-care.png",
         },
       ],
     },
@@ -96,8 +161,8 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
   {
     key: "founding_drop",
     type: "founding_drop",
-    eyebrow_en: "THE FOUNDING DROP",
-    eyebrow_ar: "الإطلاق الأول",
+    eyebrow_en: "FEATURED PIECES",
+    eyebrow_ar: "قطع مختارة",
     title_en: "Our first 5 pieces. Limited quantities.",
     title_ar: "أول ٥ قطع. كميات محدودة.",
     body_en: null,
@@ -193,7 +258,7 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     image_alt_en: "HORO gift-ready package.",
     image_alt_ar: "تغليف هورو جاهز للهدايا.",
     sort_order: 45,
-    active: true,
+    active: false,
     payload: withDefaultPresentation("gift_block", {}),
   },
   {
@@ -205,42 +270,43 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
     title_ar: "هدوء من الداخل",
     body_en: "Artwork, fit, and print details in one closer view.",
     body_ar: "العمل الفني والمقاس وتفاصيل الطباعة في نظرة أقرب.",
-    image_src: "/images/homepage-reference/editorial-artwork-detail.png",
-    image_alt_en: "Calm Inside — printed artwork detail",
-    image_alt_ar: "هدوء من الداخل — تفاصيل العمل الفني",
+    image_src: "/images/homepage-reference/editorial-calm-inside.png",
+    image_alt_en: "Calm Inside — styled HORO product detail",
+    image_alt_ar: "هدوء من الداخل — تفاصيل منتج هورو",
     primary_cta_label_en: "View Design",
     primary_cta_label_ar: "شاهد التصميم",
     primary_cta_href: "/products/calm-inside",
     sort_order: 35,
     active: true,
     payload: withDefaultPresentation("editorial_feature", {
-      variant: "closer_look",
+      variant: "shop_the_look",
       anchorId: "editorial-feature",
       fallbackProductHandle: "calm-inside",
+      productHandles: ["calm-inside", "walk-alone-tee"],
     }),
   },
   {
     key: "proof_strip",
     type: "proof_strip",
     sort_order: 48,
-    active: true,
+    active: false,
   },
   {
     key: "why_horo",
     type: "why_horo",
-    eyebrow_en: "OUR STORY",
-    eyebrow_ar: "قصتنا",
-    title_en: "We are the canvas. You are the story.",
-    title_ar: "إحنا القماش. إنت القصة.",
-    body_en: null,
-    body_ar: null,
+    eyebrow_en: "THIS IS HORO",
+    eyebrow_ar: "هذا هو هورو",
+    title_en: "Find Your Rhythm",
+    title_ar: "اكتشف إيقاعك",
+    body_en: "HORO is more than clothing — it's a language of self-expression. Artist-made pieces for feelings, identity, and meaningful gifts.",
+    body_ar: "هورو أكثر من ملابس — لغة للتعبير عن الذات. قطع من فنانين للمشاعر والهوية والهدايا اللي لها معنى.",
     image_src: "/images/homepage-reference/our-story-artist.png",
     image_alt_en: "HORO — artist process and studio",
     image_alt_ar: "هورو — عمل الفنان والمنتج",
     primary_cta_label_en: "Read our story",
     primary_cta_label_ar: "اقرأ قصتنا",
     primary_cta_href: "/about",
-    sort_order: 50,
+    sort_order: 45,
     active: true,
     payload: withDefaultPresentation("why_horo", {
       pillars: [
@@ -281,11 +347,31 @@ export const DEFAULT_HOMEPAGE_SECTIONS: HomepageSectionSeed[] = [
   {
     key: "seen_on_you",
     type: "seen_on_you",
-    eyebrow_en: "SEEN ON YOU",
-    eyebrow_ar: "كما يظهر عليكم",
-    title_en: "Reviews and UGC when available",
-    title_ar: "آراء وصور العملاء عند توفرها",
-    sort_order: 90,
-    active: false,
+    eyebrow_en: "YOU WEAR IT BEST",
+    eyebrow_ar: "أنتم ترتدونه بأجمل شكل",
+    title_en: "Real people. Real stories.",
+    title_ar: "ناس حقيقيون. قصص حقيقية.",
+    sort_order: 50,
+    active: true,
+    payload: {
+      gallery: [
+        {
+          imageSrc: "/images/proof/back-fit-card.svg",
+          imageAlt: { en: "Customer wearing HORO — back fit proof.", ar: "عميل يرتدي هورو — دليل المقاس." },
+        },
+        {
+          imageSrc: "/images/proof/macro-detail-card.svg",
+          imageAlt: { en: "Close-up of HORO print quality.", ar: "تفاصيل مقربة لجودة طباعة هورو." },
+        },
+        {
+          imageSrc: "/images/proof/fabric-tag-card.svg",
+          imageAlt: { en: "Fabric and tag detail on a HORO tee.", ar: "تفاصيل القماش والبطاقة على تيشيرت هورو." },
+        },
+        {
+          imageSrc: "/images/proof/weight-scale-card.svg",
+          imageAlt: { en: "Weight and quality proof for HORO cotton.", ar: "دليل الوزن والجودة لقطن هورو." },
+        },
+      ],
+    },
   },
 ]

@@ -1,8 +1,11 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useMemo } from 'react';
 
 import { trackCloserLookClick, trackHeroCtaClick } from '../analytics/events';
 
 import { HomeHeroCinematic, HERO_BOTTOM_SENTINEL_ID } from './home/HomeHeroCinematic';
+import { HomeHeroCarousel, type HeroCarouselSlide } from './home/HomeHeroCarousel';
 import { HomeImageCampaign } from './home/HomeImageCampaign';
 import { PAGE_HEROES } from '../content/page-heroes';
 import { isImageOverlayPresentation, parseHomepagePresentation } from '../lib/parseHomepagePresentation';
@@ -13,7 +16,8 @@ import {
 import {  useUiLocale, useDictionary  } from '../i18n/ui-locale';
 import { normalizeLegacyStorefrontLabel } from '../utils/legacyStorefrontCopy';
 
-const HERO_NAV_OFFSET = 'pt-[max(3.6rem,calc(env(safe-area-inset-top,0px)+3.6rem))]';
+const HERO_NAV_OFFSET =
+  'pt-[max(var(--horo-chrome-top,3.6rem),calc(env(safe-area-inset-top,0px)+var(--horo-chrome-top,3.6rem)))]';
 
 type HeroPayloadCta = {
   label?: { en?: string; ar?: string } | string;
@@ -26,6 +30,8 @@ type HeroPayloadVariant = {
   headline?: { en?: string; ar?: string } | string;
   body?: { en?: string; ar?: string } | string;
   subtitle?: { en?: string; ar?: string } | string;
+  imageSrc?: string;
+  image_src?: string;
   primaryCta?: HeroPayloadCta;
   secondaryCta?: HeroPayloadCta;
   tertiaryCta?: HeroPayloadCta;
@@ -153,8 +159,96 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
   const [overlayImageFailed, setOverlayImageFailed] = useState(false);
   const isOverlayLayout =
     isImageOverlayPresentation(sectionPayload) && !overlayImageFailed;
+  const carouselMode = sectionPayload?.carouselMode === true;
+  const carouselSlides = useMemo((): HeroCarouselSlide[] => {
+    if (!carouselMode || !sectionPayload) return [];
+    const variants = Array.isArray(sectionPayload.heroVariants)
+      ? sectionPayload.heroVariants.filter(isRecord).map((entry) => entry as HeroPayloadVariant)
+      : [];
+    if (variants.length <= 1) return [];
+
+    return variants
+      .map((entry) => {
+        const slideTitle =
+          localizedPayloadText(entry.title ?? entry.headline, locale as 'en' | 'ar') ?? title;
+        const slideBody = heroPromiseWithoutRhythm(
+          localizedPayloadText(entry.body ?? entry.subtitle, locale as 'en' | 'ar') ?? promiseLine,
+        );
+        const slidePrimary = asHeroPayloadCta(entry.primaryCta);
+        const slideSecondary = asHeroPayloadCta(entry.secondaryCta);
+        const slidePrimaryLabel =
+          normalizeLegacyStorefrontLabel(
+            localizedPayloadText(slidePrimary?.label, locale as 'en' | 'ar') ?? primaryCtaLabel,
+            locale as 'en' | 'ar',
+          ) ?? primaryCtaLabel;
+        const slideSecondaryLabel =
+          normalizeLegacyStorefrontLabel(
+            localizedPayloadText(slideSecondary?.label, locale as 'en' | 'ar') ?? secondaryCtaLabel,
+            locale as 'en' | 'ar',
+          ) ?? secondaryCtaLabel;
+        const variantImage =
+          payloadString(entry.imageSrc) ??
+          payloadString(entry.image_src) ??
+          heroImageSrc;
+
+        return {
+          key: entry.key || slideTitle,
+          title: slideTitle,
+          body: slideBody,
+          imageSrc: variantImage,
+          imageAlt: heroImageAlt,
+          primaryCta: {
+            label: slidePrimaryLabel,
+            href: slidePrimary?.href ?? primaryHref,
+          },
+          secondaryCta:
+            heroPresentation.showSecondaryCta === true && slideSecondaryLabel
+              ? {
+                  label: slideSecondaryLabel,
+                  href: slideSecondary?.href ?? secondaryHref,
+                }
+              : undefined,
+          presentation: heroPresentation,
+        };
+      })
+      .filter((slide) => slide.title && slide.imageSrc);
+  }, [
+    carouselMode,
+    heroImageAlt,
+    heroImageSrc,
+    heroPresentation,
+    locale,
+    primaryCtaLabel,
+    primaryHref,
+    promiseLine,
+    secondaryCtaLabel,
+    secondaryHref,
+    sectionPayload,
+    title,
+  ]);
+
+  if (isOverlayLayout && carouselSlides.length > 1) {
+    const fullBleed = heroPresentation.fullBleed !== false;
+    return (
+      <section
+        id="home-hero"
+        aria-labelledby="home-hero-heading"
+        data-test-id={`home-hero-${safeTestId(heroVariant)}`}
+        data-hero-variant={heroVariant}
+        data-hero-layout="carousel"
+        className={`${fullBleed ? 'home-hero--full-bleed' : 'px-4 sm:px-6 lg:px-8'} ${HERO_NAV_OFFSET}`}
+      >
+        <div className={fullBleed ? 'w-full' : 'mx-auto max-w-[1400px] pt-4'}>
+          <HomeHeroCarousel slides={carouselSlides} />
+        </div>
+        <div id={HERO_BOTTOM_SENTINEL_ID} aria-hidden="true" className="h-px w-full" />
+      </section>
+    );
+  }
 
   if (isOverlayLayout) {
+    const fullBleed = heroPresentation.fullBleed !== false;
+    const showSecondaryCta = heroPresentation.showSecondaryCta === true;
     return (
       <section
         id="home-hero"
@@ -162,9 +256,9 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
         data-test-id={`home-hero-${safeTestId(heroVariant)}`}
         data-hero-variant={heroVariant}
         data-hero-layout="image_overlay"
-        className={`px-4 sm:px-6 lg:px-8 ${HERO_NAV_OFFSET}`}
+        className={`${fullBleed ? 'home-hero--full-bleed' : 'px-4 sm:px-6 lg:px-8'} ${HERO_NAV_OFFSET}`}
       >
-        <div className="mx-auto max-w-[1400px] pt-4">
+        <div className={fullBleed ? 'w-full' : 'mx-auto max-w-[1400px] pt-4'}>
           <HomeImageCampaign
             id="home-hero-campaign"
             titleAs="h1"
@@ -174,13 +268,14 @@ export function HomeHeroWearMean({ section }: { section?: StorefrontHomepageSect
             imageSrc={heroImageSrc}
             imageAlt={isArabic ? (t(config.desktopImage?.alt) ?? 'هورو — ارتدِ ما تشعر به') : heroImageAlt}
             primaryCta={{ label: primaryCtaLabel, href: primaryHref }}
-            secondaryCta={{ label: secondaryCtaLabel, href: secondaryHref }}
+            secondaryCta={showSecondaryCta ? { label: secondaryCtaLabel, href: secondaryHref } : undefined}
             presentation={{
               ...heroPresentation,
               layout: 'image_overlay',
               showEyebrow: false,
               overlayOpacity: heroPresentation.overlayOpacity ?? 0.5,
             }}
+            sectionClassName={fullBleed ? 'home-hero__campaign--full-bleed' : ''}
             priority
             minHeight="min-h-[min(72vh,52rem)]"
             onPrimaryClick={() => trackHeroCtaClick(primaryCtaLabel, primaryHref, heroVariant)}

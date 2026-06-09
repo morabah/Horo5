@@ -26,14 +26,10 @@
   assign price_min = product.price_min
   assign price_max = product.price_max
   assign available = target.available | default: false
-  assign money_amount = price | money_without_currency | strip | replace: '.00', '' | replace: ',00', ''
-  assign money_amount_min = price_min | money_without_currency | strip | replace: '.00', '' | replace: ',00', ''
-  assign money_amount_max = price_max | money_without_currency | strip | replace: '.00', '' | replace: ',00', ''
-  assign compare_at_amount = compare_at_price | money_without_currency | strip | replace: '.00', '' | replace: ',00', ''
-  assign money_price = money_amount | append: ' EGP'
-  assign money_price_min = money_amount_min | append: ' EGP'
-  assign money_price_max = money_amount_max | append: ' EGP'
-  assign compare_at_money = compare_at_amount | append: ' EGP'
+  assign money_price = price | money
+  assign money_price_min = price_min | money
+  assign money_price_max = price_max | money
+  assign compare_at_money = compare_at_price | money
 
   if target == product and product.price_varies
     assign money_price = 'products.product.price.from_price_html' | t: price: money_price

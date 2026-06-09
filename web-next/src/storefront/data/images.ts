@@ -200,8 +200,8 @@ const CONVERSION_REFERENCE_BY_SLUG: Record<string, (typeof CONVERSION_REFERENCE_
 
 /** Homepage editorial section fallbacks when CMS or product media is missing. */
 export const HOME_EDITORIAL_REFERENCE_IMAGES = [
-  '/images/homepage-reference/editorial-artwork-detail.png',
   '/images/homepage-reference/editorial-calm-inside.png',
+  '/images/homepage-reference/editorial-artwork-detail.png',
 ] as const;
 
 type ConversionReferenceProduct = Pick<Product, 'slug' | 'name'> &

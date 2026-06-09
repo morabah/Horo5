@@ -21,6 +21,8 @@
   endif
   if section.settings.drawer_menu != blank
     assign drawer_menu_linklist = section.settings.drawer_menu
+  elsif settings.horo_drawer_menu != blank
+    assign drawer_menu_linklist = settings.horo_drawer_menu
   elsif section.settings.use_web_next_primary_nav
     assign drawer_menu_linklist = blank
   else

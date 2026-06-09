@@ -1,5 +1,7 @@
-{{ 'component-horo-launch-countdown.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'horo-launch-countdown.js' | asset_url }}" defer></script>
+{%- if settings.horo_show_launch_countdown or request.design_mode -%}
+  {{ 'component-horo-launch-countdown.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'horo-launch-countdown.js' | asset_url }}" defer></script>
+{%- endif -%}
 
 {%- liquid
   assign launch_at = shop.metafields.custom.launch_at.value
@@ -12,7 +14,7 @@
   endif
 -%}
 
-{%- if launch_phase == 'launch' and is_future -%}
+{%- if settings.horo_show_launch_countdown and launch_phase == 'launch' and is_future -%}
   {%- style -%}
     .section-{{ section.id }}-padding {
       padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
@@ -93,7 +95,7 @@
           </div>
         </div>
         <p style="font-size:1.2rem;opacity:0.55;margin-top:0.6rem;">
-          Set <code>custom.launch_phase="launch"</code> and <code>custom.launch_at</code> shop metafields to display this countdown.
+          Enable Theme settings → HORO Chrome → Show launch countdown, then set <code>custom.launch_phase="launch"</code> and <code>custom.launch_at</code> shop metafields.
         </p>
       </div>
     </div>

@@ -5,38 +5,24 @@ export const DEFAULT_LAUNCH_NAVIGATION: StorefrontNavigationDTO = {
   primary: [
     {
       key: "products",
-      label: { en: "Shop All", ar: "تسوّق الكل" },
+      label: { en: "Shop", ar: "تسوّق" },
       href: "/products",
       active: true,
       sortOrder: 0,
     },
     {
       key: "shop_by_meaning",
-      label: { en: "Shop by Feeling", ar: "تسوّق حسب الشعور" },
+      label: { en: "Collections", ar: "المجموعات" },
       href: "/#shop-by-meaning",
       active: true,
       sortOrder: 10,
     },
     {
-      key: "gifts",
-      label: { en: "Gifts", ar: "الهدايا" },
-      href: "/gifts",
-      active: true,
-      sortOrder: 20,
-    },
-    {
       key: "about",
-      label: { en: "Our Story", ar: "قصتنا" },
+      label: { en: "About", ar: "عن هورو" },
       href: "/about",
       active: true,
-      sortOrder: 30,
-    },
-    {
-      key: "sizeGuide",
-      label: { en: "Size Guide", ar: "دليل المقاسات" },
-      href: "/size-guide",
-      active: true,
-      sortOrder: 40,
+      sortOrder: 20,
     },
   ],
   drawer: [

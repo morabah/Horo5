@@ -37,8 +37,21 @@
               assign show_key = 'show_badge_' | append: i
               assign label_key = 'badge_' | append: i | append: '_label'
               assign icon_key = 'badge_' | append: i | append: '_icon'
+              assign global_label_key = 'horo_trust_badge_' | append: i
+              assign badge_label = section.settings[label_key]
+              if section.settings.use_global_trust_badges and settings[global_label_key] != blank
+                assign badge_label = settings[global_label_key]
+              endif
+              assign hide_badge = false
+              if section.settings[icon_key] == 'chat' and settings.horo_whatsapp_support_url == blank
+                assign hide_badge = true
+              elsif section.settings[icon_key] == 'exchange'
+                if shop.refund_policy == blank or shop.refund_policy.url == blank
+                  assign hide_badge = true
+                endif
+              endif
             -%}
-            {%- if section.settings[show_key] == true -%}
+            {%- if section.settings[show_key] == true and badge_label != blank and hide_badge == false -%}
               <li class="trust-strip__item" role="listitem">
                 <span class="trust-strip__icon" aria-hidden="true">
                   {%- case section.settings[icon_key] -%}
@@ -54,7 +67,7 @@
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                   {%- endcase -%}
                 </span>
-                <span class="trust-strip__label">{{ section.settings[label_key] | escape }}</span>
+                <span class="trust-strip__label">{{ badge_label | escape }}</span>
               </li>
             {%- endif -%}
           {%- endfor -%}
@@ -79,6 +92,13 @@
       "id": "color_scheme",
       "label": "Color scheme",
       "default": "scheme-1"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_global_trust_badges",
+      "default": true,
+      "label": "Use global HORO trust badge labels",
+      "info": "When enabled, labels come from Theme settings → HORO Trust & Delivery."
     },
     {
       "type": "header",
@@ -193,7 +213,6 @@
     {
       "type": "text",
       "id": "badge_4_label",
-      "default": "14-day exchange — see policy",
       "label": "Badge 4 label"
     },
     {

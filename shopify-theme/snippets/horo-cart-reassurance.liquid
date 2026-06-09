@@ -6,8 +6,12 @@
   <ul class="horo-cart-reassurance__list" role="list">
     <li>{{ 'horo.cart.reassurance_cod' | t }}</li>
     <li>{{ 'horo.cart.reassurance_payment_methods' | t }}</li>
-    <li>{{ 'horo.cart.reassurance_whatsapp_confirm' | t }}</li>
-    <li>{{ 'horo.cart.reassurance_exchange' | t }}</li>
+    {%- if settings.horo_whatsapp_support_url != blank -%}
+      <li>{{ 'horo.cart.reassurance_whatsapp_confirm' | t }}</li>
+    {%- endif -%}
+    {%- if shop.refund_policy != blank and shop.refund_policy.url != blank -%}
+      <li>{{ 'horo.cart.reassurance_exchange' | t }}</li>
+    {%- endif -%}
     <li>{{ 'horo.cart.reassurance_shipping_note' | t }}</li>
     {%- if settings.horo_delivery_cairo != blank -%}
       <li>{{ settings.horo_delivery_cairo | escape }}</li>

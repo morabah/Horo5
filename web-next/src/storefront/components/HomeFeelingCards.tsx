@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { CategoryShortcutPills } from './CategoryShortcutPills';
+
 import { trackMeaningTileClick } from '../analytics/events';
 import { FeelingTileIcon } from './home/FeelingTileIcon';
 import { HOME_FEELING_TILE_SURFACES } from '../data/homeContent';
@@ -179,9 +181,27 @@ export function HomeFeelingCards({ section }: { section?: StorefrontHomepageSect
     overrides.length > 0
       ? getFeaturedFeelings(section, locale as 'en' | 'ar')
       : launchMeaningTileEntries(copy);
+  const usePills = presentation.feelingLayout !== 'tiles';
 
   if (feelings.length === 0) {
     return null;
+  }
+
+  if (usePills) {
+    return (
+      <section
+        id="shop-by-meaning"
+        aria-labelledby="home-feelings-title"
+        className="bg-horo-section px-4 py-4 md:hidden"
+      >
+        <h2 id="home-feelings-title" className="sr-only">
+          {title}
+        </h2>
+        <div className="mx-auto max-w-6xl">
+          <CategoryShortcutPills />
+        </div>
+      </section>
+    );
   }
 
   return (

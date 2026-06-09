@@ -27,7 +27,12 @@ export default async function MainStoreLayout({
   return (
     <Providers initialCatalog={null} renderedAt={renderedAt} skipCatalogHydration>
       <OrganizationJsonLd />
-      <StorefrontChrome navigation={settings?.navigation ?? null} launchAt={launchAt} timedOffer={incentives?.timedOffer ?? null}>
+      <StorefrontChrome
+        navigation={settings?.navigation ?? null}
+        launchAt={launchAt}
+        timedOffer={incentives?.timedOffer ?? null}
+        announcementBar={settings?.announcementBar ?? null}
+      >
         {children}
       </StorefrontChrome>
     </Providers>

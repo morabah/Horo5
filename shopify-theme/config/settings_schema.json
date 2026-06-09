@@ -976,6 +976,16 @@
     "name": "t:settings_schema.media.name",
     "settings": [
       {
+        "type": "range",
+        "id": "media_padding",
+        "min": 0,
+        "max": 20,
+        "step": 2,
+        "unit": "px",
+        "label": "t:settings_schema.global.settings.image_padding.label",
+        "default": 0
+      },
+      {
         "type": "header",
         "content": "t:settings_schema.global.settings.header__border.content"
       },
@@ -1575,8 +1585,7 @@
       {
         "type": "text",
         "id": "horo_trust_badge_4",
-        "label": "Trust badge 4",
-        "default": "14-day exchange — see policy"
+        "label": "Trust badge 4"
       },
       {
         "type": "text",
@@ -1587,32 +1596,27 @@
       {
         "type": "textarea",
         "id": "horo_delivery_cairo",
-        "label": "Delivery: Cairo",
-        "default": "1–2 business days"
+        "label": "Delivery: Cairo"
       },
       {
         "type": "textarea",
         "id": "horo_delivery_alex",
-        "label": "Delivery: Alexandria",
-        "default": "2–3 business days"
+        "label": "Delivery: Alexandria"
       },
       {
         "type": "textarea",
         "id": "horo_delivery_other",
-        "label": "Delivery: Other cities",
-        "default": "3–5 business days"
+        "label": "Delivery: Other cities"
       },
       {
         "type": "textarea",
         "id": "horo_instapay_instructions",
-        "label": "Instapay transfer instructions",
-        "default": "Transfer the order total via Instapay to 01XXXXXXXX. Use your order number as the reference."
+        "label": "Manual payment instructions"
       },
       {
         "type": "text",
         "id": "horo_whatsapp_support_url",
         "label": "WhatsApp support URL",
-        "default": "https://wa.me/201XXXXXXXXX",
         "info": "Used on order confirmation and product pages for WhatsApp deep-links."
       }
     ]
@@ -1627,20 +1631,20 @@
       {
         "type": "number",
         "id": "horo_shipping_cairo_egp",
-        "label": "Estimated shipping — Cairo & Giza (EGP)",
-        "default": 60
+        "label": "Estimated shipping — Cairo & Giza (store currency)",
+        "default": 0
       },
       {
         "type": "number",
         "id": "horo_shipping_alex_egp",
-        "label": "Estimated shipping — Alexandria (EGP)",
-        "default": 80
+        "label": "Estimated shipping — Alexandria (store currency)",
+        "default": 0
       },
       {
         "type": "number",
         "id": "horo_shipping_other_egp",
-        "label": "Estimated shipping — other governorates (EGP)",
-        "default": 100
+        "label": "Estimated shipping — other governorates (store currency)",
+        "default": 0
       },
       {
         "type": "textarea",
@@ -1651,7 +1655,7 @@
       {
         "type": "number",
         "id": "horo_free_shipping_threshold_egp",
-        "label": "Free shipping threshold (EGP, optional)",
+        "label": "Free shipping threshold (store currency, optional)",
         "info": "Used in the cost preview only when “Show cart incentive messages” is enabled and a matching Shopify shipping rule exists.",
         "default": 0
       }
@@ -1678,8 +1682,7 @@
       {
         "type": "text",
         "id": "horo_gift_wrap_price_hint",
-        "label": "Price hint text",
-        "default": "+ EGP 50"
+        "label": "Price hint text"
       }
     ]
   },
@@ -1734,14 +1737,25 @@
         "type": "text",
         "id": "horo_storefront_api_base",
         "label": "Headless storefront API base (wishlist sync)",
-        "info": "e.g. https://horo.eg — must list this Shopify origin in STOREFRONT_PUBLIC_API_CORS_ORIGINS on web-next. Clear to use localStorage-only wishlist.",
-        "default": "https://horo.eg"
+        "info": "e.g. https://horo.eg — must list this Shopify origin in STOREFRONT_PUBLIC_API_CORS_ORIGINS on web-next. Leave blank to use localStorage-only wishlist."
       },
       {
         "type": "text",
         "id": "horo_wishlist_api_path",
         "label": "Wishlist API path",
         "default": "/api/wishlist"
+      },
+      {
+        "type": "text",
+        "id": "horo_posthog_key",
+        "label": "PostHog project key",
+        "info": "Optional fallback when shop metafield custom.posthog_project_key is not set. Leave blank to disable PostHog."
+      },
+      {
+        "type": "text",
+        "id": "horo_posthog_api_host",
+        "label": "PostHog API host",
+        "default": "https://app.posthog.com"
       }
     ]
   }

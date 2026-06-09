@@ -96,7 +96,7 @@
           "type": "body_section",
           "settings": {
             "title": "Exchange support",
-            "body": "<p>HORO supports eligible size exchanges within 14 days of delivery when items are unworn, unwashed, and kept with original packaging.</p>"
+            "body": "<p>Return and exchange details are shown only when the store policy is configured in Shopify.</p>"
           }
         }
       },

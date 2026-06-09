@@ -7,6 +7,11 @@
       assign visible_count = visible_count | plus: 1
     endif
   endfor
+  assign refund_policy = shop.refund_policy
+  assign has_shop_refund_policy = false
+  if refund_policy != blank and refund_policy.body != blank
+    assign has_shop_refund_policy = true
+  endif
 -%}
 
 {%- style -%}
@@ -30,14 +35,22 @@
     {%- endif -%}
 
     <h1 class="main-page-title page-title {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--fade-in{% endif %}">
-      {{ section.settings.heading | escape }}
+      {%- if has_shop_refund_policy and refund_policy.title != blank -%}
+        {{ refund_policy.title | escape }}
+      {%- else -%}
+        {{ section.settings.heading | escape }}
+      {%- endif -%}
     </h1>
 
-    {%- if section.settings.intro != blank -%}
+    {%- if has_shop_refund_policy == false and section.settings.intro != blank -%}
       <p class="horo-page__intro">{{ section.settings.intro | escape }}</p>
     {%- endif -%}
 
-    {%- if visible_count > 0 -%}
+    {%- if has_shop_refund_policy -%}
+      <div class="horo-policy__body rte">
+        {{ refund_policy.body }}
+      </div>
+    {%- elsif visible_count > 0 and request.design_mode -%}
       <ul class="horo-policy__list" role="list">
         {%- for block in section.blocks -%}
           {%- if block.settings.show == true and block.settings.title != blank -%}
@@ -52,7 +65,7 @@
       </ul>
     {%- elsif request.design_mode -%}
       <div class="horo-page__placeholder">
-        <p>Enable at least one policy block to display the exchange policy section.</p>
+        <p>Configure a return/refund policy in Shopify Admin to display this page.</p>
       </div>
     {%- endif -%}
   </div>
@@ -79,7 +92,7 @@
     {
       "type": "textarea",
       "id": "intro",
-      "default": "This page explains how HORO handles exchanges so sizing decisions feel lower risk before checkout.",
+      "default": "Policy content is pulled from Shopify Admin when a return/refund policy is configured.",
       "label": "Intro text"
     },
     {
@@ -144,7 +157,7 @@
         {
           "type": "richtext",
           "id": "body",
-          "default": "<p>You may request an exchange within 14 days of receiving your order.</p>",
+          "default": "<p>Policy content is pulled from Shopify Admin when configured.</p>",
           "label": "Body"
         }
       ]
@@ -159,7 +172,7 @@
           "settings": {
             "show": true,
             "title": "Exchange window",
-            "body": "<p>You may request an exchange within 14 days of receiving your order. The request must be made before the 14-day window closes.</p>"
+            "body": "<p>Policy content is pulled from Shopify Admin when configured.</p>"
           }
         },
         "policy-1": {

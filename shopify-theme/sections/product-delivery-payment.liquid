@@ -10,6 +10,14 @@
   endfor
   assign delivery_note = product.metafields.custom.delivery_note.value
   assign exchange_note = product.metafields.custom.exchange_note.value
+  assign refund_policy = shop.refund_policy
+  assign has_refund_policy = false
+  if refund_policy != blank and refund_policy.url != blank
+    assign has_refund_policy = true
+  endif
+  if has_refund_policy == false
+    assign exchange_note = blank
+  endif
   assign has_product_notes = false
   if delivery_note != blank or exchange_note != blank
     assign has_product_notes = true
@@ -55,8 +63,14 @@
               assign title_key = 'card_' | append: i | append: '_title'
               assign body_key = 'card_' | append: i | append: '_body'
               assign icon_key = 'card_' | append: i | append: '_icon'
+              assign hide_card = false
+              if section.settings[icon_key] == 'exchange' and has_refund_policy == false
+                assign hide_card = true
+              elsif section.settings[icon_key] == 'support' and settings.horo_whatsapp_support_url == blank
+                assign hide_card = true
+              endif
             -%}
-            {%- if section.settings[show_key] == true -%}
+            {%- if section.settings[show_key] == true and hide_card == false -%}
               <li class="delivery-payment__card" role="listitem">
                 <div class="delivery-payment__icon" aria-hidden="true">
                   {%- case section.settings[icon_key] -%}
@@ -205,7 +219,7 @@
     {
       "type": "text",
       "id": "card_2_title",
-      "default": "Bank Transfer / Instapay",
+      "default": "Manual payment details",
       "label": "Card 2 title"
     },
     {

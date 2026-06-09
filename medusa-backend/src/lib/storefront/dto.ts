@@ -284,6 +284,19 @@ export const storefrontSettingsSchema = z.object({
     })
     .nullable()
     .optional(),
+  announcementBar: z
+    .object({
+      active: z.boolean(),
+      showOnHomeOnly: z.boolean().optional(),
+      messages: z.array(
+        z.object({
+          text: storefrontLocalizedTextSchema,
+          href: z.string().optional(),
+        }),
+      ),
+    })
+    .nullable()
+    .optional(),
 })
 
 export const storefrontPdpResponseSchema = z.object({

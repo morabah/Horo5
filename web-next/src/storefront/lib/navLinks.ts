@@ -23,9 +23,7 @@ export const NAV_ROUTE = {
 export const NAV_PRIMARY_ROUTE_KEYS = [
   'products',
   'shopByMeaning',
-  'gifts',
   'about',
-  'sizeGuide',
 ] as const;
 
 export type NavRouteKey = keyof typeof NAV_ROUTE;

@@ -25,10 +25,18 @@
   assign english_label = 'horo.shell.english_short' | t | default: 'EN'
   assign arabic_label = 'horo.shell.arabic_short' | t | default: 'AR'
   assign lang_label = 'horo.shell.language' | t | default: 'Language'
+  assign locale_mode = settings.horo_locale_toggle_mode | default: 'auto'
+  assign use_native_locale = false
+
+  if locale_mode == 'native' and has_multiple_languages
+    assign use_native_locale = true
+  elsif locale_mode == 'auto' and has_multiple_languages
+    assign use_native_locale = true
+  endif
 -%}
 
-<div class="horo-locale-toggle" aria-label="{{ lang_label }}">
-  {%- if has_multiple_languages -%}
+<div class="horo-locale-toggle" aria-label="{{ lang_label }}" data-horo-locale-mode="{% if use_native_locale %}native{% else %}ui_only{% endif %}">
+  {%- if use_native_locale -%}
     {%- comment -%} Native Shopify Markets form with styled pills {%- endcomment -%}
     <localization-form data-prevent-hide>
       {%- form 'localization', id: 'HoroLocaleForm', class: 'horo-locale-form' -%}

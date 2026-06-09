@@ -33,7 +33,10 @@ export type HomepagePresentation = {
   showBody?: boolean
   showEyebrow?: boolean
   showPillars?: boolean
+  showSecondaryCta?: boolean
+  fullBleed?: boolean
   mobileTextMode?: HomepageMobileTextMode
+  feelingLayout?: "tiles" | "pills"
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -90,6 +93,11 @@ function parsePresentationObject(raw: unknown): HomepagePresentation | null {
   if (typeof raw.showBody === "boolean") presentation.showBody = raw.showBody
   if (typeof raw.showEyebrow === "boolean") presentation.showEyebrow = raw.showEyebrow
   if (typeof raw.showPillars === "boolean") presentation.showPillars = raw.showPillars
+  if (typeof raw.showSecondaryCta === "boolean") presentation.showSecondaryCta = raw.showSecondaryCta
+  if (typeof raw.fullBleed === "boolean") presentation.fullBleed = raw.fullBleed
+  if (raw.feelingLayout === "pills" || raw.feelingLayout === "tiles") {
+    presentation.feelingLayout = raw.feelingLayout
+  }
   if (mobileTextMode) presentation.mobileTextMode = mobileTextMode
 
   return Object.keys(presentation).length > 0 ? presentation : null
@@ -123,10 +131,13 @@ export const DEFAULT_PRESENTATION_BY_SECTION_KEY: Partial<
   Record<string, HomepagePresentation>
 > = {
   hero: {
-    layout: "split",
+    layout: "image_overlay",
     textPlacement: "bottom-left",
     showEyebrow: false,
     showBody: true,
+    showSecondaryCta: false,
+    fullBleed: true,
+    overlayOpacity: 0.5,
     mobileTextMode: "overlay",
   },
   trust_ribbon: { layout: "compact" },
@@ -140,6 +151,7 @@ export const DEFAULT_PRESENTATION_BY_SECTION_KEY: Partial<
   },
   feeling_grid: {
     layout: "tiles",
+    feelingLayout: "pills",
     showBody: false,
     showEyebrow: false,
   },
@@ -160,9 +172,9 @@ export const DEFAULT_PRESENTATION_BY_SECTION_KEY: Partial<
     mobileTextMode: "below",
   },
   why_horo: {
-    layout: "image_overlay",
+    layout: "split",
     textPlacement: "bottom-left",
-    showBody: false,
+    showBody: true,
     showEyebrow: true,
     showPillars: false,
     overlayOpacity: 0.5,

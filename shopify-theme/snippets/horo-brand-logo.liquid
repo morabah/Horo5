@@ -19,6 +19,7 @@
     assign show_arabic_line = true
   endif
   assign logo_size = size | default: 'header'
+  assign custom_logo = settings.logo
 
   if logo_variant == 'light'
     assign logo_asset = 'horo-wordmark-light.png'
@@ -37,21 +38,43 @@
   endif
 
   assign logo_width = logo_height | times: 438 | divided_by: 100
+  if custom_logo != blank
+    assign logo_width = settings.logo_width | default: 100
+    if logo_size == 'footer'
+      assign logo_width = logo_width | times: 0.84 | round
+    elsif logo_size == 'drawer'
+      assign logo_width = logo_width | times: 0.72 | round
+    endif
+    assign logo_image_width = logo_width | times: 2
+    assign logo_height = logo_width | divided_by: custom_logo.aspect_ratio | round
+  endif
 -%}
 
 <span
   class="horo-brand-logo horo-brand-logo--{{ logo_size }}{% if show_arabic_line == false %} horo-brand-logo--latin-only{% endif %} {{ class }}"
   aria-label="{{ shop.name }}"
 >
-  <img
-    src="{{ logo_asset | asset_url }}"
-    alt="{{ shop.name | escape }}"
-    class="horo-brand-logo__image"
-    width="{{ logo_width }}"
-    height="{{ logo_height }}"
-    loading="eager"
-    decoding="async"
-  >
+  {%- if custom_logo != blank -%}
+    <img
+      src="{{ custom_logo | image_url: width: logo_image_width }}"
+      alt="{{ custom_logo.alt | default: shop.name | escape }}"
+      class="horo-brand-logo__image"
+      width="{{ logo_width }}"
+      height="{{ logo_height }}"
+      loading="eager"
+      decoding="async"
+    >
+  {%- else -%}
+    <img
+      src="{{ logo_asset | asset_url }}"
+      alt="{{ shop.name | escape }}"
+      class="horo-brand-logo__image"
+      width="{{ logo_width }}"
+      height="{{ logo_height }}"
+      loading="eager"
+      decoding="async"
+    >
+  {%- endif -%}
   {%- if show_arabic_line -%}
     <span lang="ar" dir="rtl" class="horo-brand-logo__ar {{ arabic_class }}">هورو</span>
   {%- endif -%}

@@ -18,19 +18,22 @@ export const HOME_FEELING_TILE_SURFACES = [
 
 export const HOME_PRIMARY_ROUTES = [
   {
-    key: 'founding_drop',
-    href: '/products',
-    accent: '#8C2340',
+    key: 'walk_alone',
+    href: '/products/quiet-revolt',
+    productHandle: 'quiet-revolt',
+    accent: '#241f21',
   },
   {
-    key: 'zodiac',
-    href: '/products?category=zodiac',
+    key: 'i_care',
+    href: '/products/the-weight-of-light',
+    productHandle: 'the-weight-of-light',
     accent: '#4F111F',
   },
   {
-    key: 'mood_lifestyle',
-    href: '/products?category=mood-lifestyle',
-    accent: '#FEE5E2',
+    key: 'i_dont_care',
+    href: '/products/trends-next-wave',
+    productHandle: 'trends-next-wave',
+    accent: '#241f21',
   },
 ] as const;
 

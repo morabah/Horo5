@@ -1,12 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const uiLocaleButtons = document.querySelectorAll('[data-horo-locale]');
+  if (uiLocaleButtons.length === 0) return;
+
   const urlParams = new URLSearchParams(window.location.search);
   let uiLocale = urlParams.get('uiLocale');
 
   if (uiLocale) {
     localStorage.setItem('horo-ui-locale', uiLocale);
   } else {
-    uiLocale = localStorage.getItem('horo-ui-locale') || 'en';
+    uiLocale = localStorage.getItem('horo-ui-locale') || document.documentElement.lang || 'en';
   }
+  uiLocale = uiLocale === 'ar' ? 'ar' : 'en';
 
   const isAr = uiLocale === 'ar';
   document.documentElement.lang = isAr ? 'ar' : 'en';
@@ -45,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Bind toggle buttons
-  document.querySelectorAll('[data-horo-locale]').forEach((btn) => {
+  uiLocaleButtons.forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const targetLocale = e.currentTarget.getAttribute('data-horo-locale');
       if (targetLocale) {

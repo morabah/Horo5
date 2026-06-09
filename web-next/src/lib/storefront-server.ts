@@ -295,6 +295,16 @@ function normalizeStorefrontSettings(data: StorefrontSettingsResponse | null | u
           expiryDays: data.loyalty.expiryDays ?? null,
         }
       : null,
+    announcementBar: data?.announcementBar
+      ? {
+          active: data.announcementBar.active !== false,
+          showOnHomeOnly: data.announcementBar.showOnHomeOnly === true,
+          messages: (data.announcementBar.messages ?? []).map((message) => ({
+            text: message.text,
+            ...(typeof message.href === 'string' && message.href.trim() ? { href: message.href.trim() } : {}),
+          })),
+        }
+      : null,
   };
 }
 
@@ -448,6 +458,13 @@ type StorefrontSettingsResponse = {
   search?: { priceBands: StorefrontPriceBandRaw[] } | null;
   homepage?: { sectionsEnabled: string[] | null } | null;
   loyalty?: { creditOnSecondOrderEgp: number | null; expiryDays: number | null } | null;
+  announcementBar?: StorefrontAnnouncementBarResponse | null;
+};
+
+type StorefrontAnnouncementBarResponse = {
+  active: boolean;
+  showOnHomeOnly?: boolean;
+  messages: Array<{ text: StorefrontLocalizedTextRaw; href?: string }>;
 };
 
 type StorefrontHomepageResponse = {
@@ -483,6 +500,12 @@ export type StorefrontPriceBand = {
 };
 
 /** Medusa `GET /storefront/settings` payload. */
+export type StorefrontAnnouncementBarPayload = {
+  active: boolean;
+  showOnHomeOnly?: boolean;
+  messages: Array<{ text: StorefrontLocalizedText; href?: string }>;
+};
+
 export type StorefrontSettingsPayload = {
   delivery: unknown | null;
   sizeTables: unknown | null;
@@ -493,6 +516,7 @@ export type StorefrontSettingsPayload = {
   /** Operator-controlled homepage layout. When null, storefront uses its built-in 5-section default. */
   homepage: { sectionsEnabled: string[] | null } | null;
   loyalty: { creditOnSecondOrderEgp: number | null; expiryDays: number | null } | null;
+  announcementBar: StorefrontAnnouncementBarPayload | null;
 };
 
 async function fetchStorefrontSettingsServerImpl(): Promise<StorefrontSettingsPayload | null> {

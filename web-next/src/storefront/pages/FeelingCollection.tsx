@@ -414,7 +414,7 @@ export function FeelingCollection({
         {feeling.slug === 'zodiac' || feeling.slug === 'career' ? (
           <CollectionRouteIntro feelingSlug={feeling.slug} />
         ) : null}
-        <section id="feeling-collection-products" className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))]">
+        <section id="feeling-collection-products" className="scroll-mt-[calc(var(--horo-chrome-top,3.6rem)+env(safe-area-inset-top,0px))]">
           {subfeelings.length > 0 ? (
             <div className="mb-6 flex flex-wrap gap-2 border-b border-stone/20 pb-5">
               <Link
@@ -459,7 +459,7 @@ export function FeelingCollection({
             </Link>
           </div>
           <div
-            className="sticky top-[calc(5.5rem+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex"
+            className="sticky top-[calc(var(--horo-chrome-top,3.6rem)+env(safe-area-inset-top,0px))] z-20 mb-8 hidden items-end justify-between gap-6 border-b border-stone/30 bg-papyrus/95 pb-4 backdrop-blur-sm md:flex"
           >
               <div className="flex min-w-0 flex-wrap items-end gap-4">
                 <button
@@ -590,7 +590,7 @@ export function FeelingCollection({
 
         <section
           id="feeling-proof"
-          className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] border-t border-stone/25 pt-12 md:pt-14"
+          className="scroll-mt-[calc(var(--horo-chrome-top,3.6rem)+env(safe-area-inset-top,0px))] border-t border-stone/25 pt-12 md:pt-14"
           aria-labelledby="feeling-proof-heading"
         >
           <div className="grid items-center gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-12 lg:gap-16">

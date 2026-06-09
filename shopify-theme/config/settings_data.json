@@ -185,16 +185,16 @@
         }
       },
       "horo_gift_wrap_label": "Add gift wrap",
-      "horo_gift_wrap_price_hint": "+ EGP 50",
+      "horo_gift_wrap_price_hint": "",
       "horo_trust_badge_1": "Artist-made design",
       "horo_trust_badge_2": "Printed in Egypt",
       "horo_trust_badge_3": "Payment options shown at checkout",
-      "horo_trust_badge_4": "14-day exchange — see policy",
+      "horo_trust_badge_4": "",
       "horo_trust_badge_5": "WhatsApp support",
-      "horo_delivery_cairo": "Cairo/Giza: 2–4 business days",
-      "horo_delivery_alex": "Alexandria: 3–5 business days",
-      "horo_delivery_other": "Other governorates: 4–7 business days",
-      "horo_incentives_live": true,
+      "horo_delivery_cairo": "",
+      "horo_delivery_alex": "",
+      "horo_delivery_other": "",
+      "horo_incentives_live": false,
       "horo_gift_wrap_product": "gift-wrap"
     }
   }

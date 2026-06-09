@@ -57,12 +57,16 @@
     }
     if (!v) return;
 
-    var currency = (window.Shopify && window.Shopify.currencyActive) ? window.Shopify.currencyActive : 'EGP';
     if (priceEl) {
-      priceEl.textContent = (v.price / 100).toLocaleString('en-EG', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }) + ' ' + currency;
+      if (window.HoroFormatMoney) {
+        priceEl.textContent = window.HoroFormatMoney(v.price);
+      } else {
+        var currency = (window.HoroShop && window.HoroShop.currency) || '';
+        priceEl.textContent = (v.price / 100).toLocaleString('en-EG', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }) + (currency ? ' ' + currency : '');
+      }
     }
 
     if (btn) {

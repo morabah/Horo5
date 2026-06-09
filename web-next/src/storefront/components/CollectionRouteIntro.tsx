@@ -2,6 +2,7 @@
 
 import type { LaunchCategoryFilter } from '../lib/launch-taxonomy-display';
 import {
+  isLaunchDesignCategoryFilter,
   launchCategoryFilterLabel,
   zodiacEntertainmentDisclaimer,
 } from '../lib/launch-taxonomy-display';
@@ -12,6 +13,48 @@ type CollectionRouteIntroProps = {
   feelingSlug?: string;
   giftOnly?: boolean;
 };
+
+function designCategoryIntro(
+  category: 'walk-alone' | 'i-care' | 'i-dont-care',
+  lang: 'en' | 'ar',
+): { title: string; body: string } {
+  if (lang === 'ar') {
+    switch (category) {
+      case 'walk-alone':
+        return {
+          title: 'امشي لوحدك',
+          body: 'قطع للي بيمشي على إيقاعه — استقلالية من غير تصنّع.',
+        };
+      case 'i-care':
+        return {
+          title: 'اهتم',
+          body: 'لللي بيحس بعمق — تعبير عن مشاعر حقيقية مش شعارات عامة.',
+        };
+      case 'i-dont-care':
+        return {
+          title: 'مش فارق',
+          body: 'لللي بيختار الحرية — موقف واضح من غير مبالغة.',
+        };
+    }
+  }
+  switch (category) {
+    case 'walk-alone':
+      return {
+        title: 'Walk Alone',
+        body: 'Pieces for your own pace — independence without trying too hard.',
+      };
+    case 'i-care':
+      return {
+        title: 'I Care',
+        body: 'For people who feel deeply — real emotion, not generic slogans.',
+      };
+    case 'i-dont-care':
+      return {
+        title: "I Don't Care",
+        body: 'For those who choose freedom — attitude without the noise.',
+      };
+  }
+}
 
 function feelingIntro(slug: string, locale: 'en' | 'ar'): { title: string; body: string } | null {
   if (slug === 'zodiac') {
@@ -45,6 +88,10 @@ export function CollectionRouteIntro({ categoryFilter, feelingSlug, giftOnly }: 
 
   const fromFeeling = feelingSlug ? feelingIntro(feelingSlug, lang) : null;
   const categoryLabel = categoryFilter ? launchCategoryFilterLabel(categoryFilter, lang) : null;
+  const fromDesignCategory =
+    categoryFilter && isLaunchDesignCategoryFilter(categoryFilter)
+      ? designCategoryIntro(categoryFilter, lang)
+      : null;
   const fromCategory =
     categoryFilter === 'zodiac'
       ? {
@@ -57,7 +104,7 @@ export function CollectionRouteIntro({ categoryFilter, feelingSlug, giftOnly }: 
       : null;
 
   const giftIntro =
-    giftOnly && !fromFeeling && !fromCategory
+    giftOnly && !fromFeeling && !fromCategory && !fromDesignCategory
       ? lang === 'ar'
         ? {
             title: 'جاهز للهدايا',
@@ -69,7 +116,7 @@ export function CollectionRouteIntro({ categoryFilter, feelingSlug, giftOnly }: 
           }
       : null;
 
-  const intro = fromFeeling ?? fromCategory ?? giftIntro;
+  const intro = fromFeeling ?? fromDesignCategory ?? fromCategory ?? giftIntro;
   if (!intro) return null;
 
   const disclaimer = categoryFilter === 'zodiac' || feelingSlug === 'zodiac'

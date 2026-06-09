@@ -2,7 +2,22 @@ import type { HoroLaunchGroup, Product } from '../data/catalog-types';
 
 export type ResolvedLaunchGroup = HoroLaunchGroup | 'unknown';
 
-export type LaunchCategoryFilter = 'mood-lifestyle' | 'mood' | 'lifestyle' | 'zodiac' | null;
+export type LaunchCategoryFilter =
+  | 'mood-lifestyle'
+  | 'mood'
+  | 'lifestyle'
+  | 'zodiac'
+  | 'walk-alone'
+  | 'i-care'
+  | 'i-dont-care'
+  | null;
+
+const DESIGN_CATEGORY_SLUGS = ['walk-alone', 'i-care', 'i-dont-care'] as const;
+export type LaunchDesignCategoryFilter = (typeof DESIGN_CATEGORY_SLUGS)[number];
+
+function isDesignCategoryFilter(value: string): value is LaunchDesignCategoryFilter {
+  return (DESIGN_CATEGORY_SLUGS as readonly string[]).includes(value);
+}
 
 const ZODIAC_SIGN_ORDER = ['gemini', 'cancer', 'leo', 'virgo'] as const;
 const AUDIENCE_ORDER = ['women', 'men', 'unisex'] as const;
@@ -20,14 +35,29 @@ export function getLaunchGroup(product: Product): ResolvedLaunchGroup {
 
 export function parseLaunchCategoryFilter(raw: string | null): LaunchCategoryFilter {
   const value = raw?.trim();
-  if (value === 'mood-lifestyle' || value === 'mood' || value === 'lifestyle' || value === 'zodiac') {
-    return value;
+  if (
+    value === 'mood-lifestyle' ||
+    value === 'mood' ||
+    value === 'lifestyle' ||
+    value === 'zodiac' ||
+    isDesignCategoryFilter(value ?? '')
+  ) {
+    return value as LaunchCategoryFilter;
   }
   return null;
 }
 
+export function isLaunchDesignCategoryFilter(
+  category: LaunchCategoryFilter,
+): category is LaunchDesignCategoryFilter {
+  return category === 'walk-alone' || category === 'i-care' || category === 'i-dont-care';
+}
+
 export function productMatchesLaunchCategory(product: Product, category: LaunchCategoryFilter): boolean {
   if (!category) return true;
+  if (isLaunchDesignCategoryFilter(category)) {
+    return product.launchDesign === category;
+  }
   const group = getLaunchGroup(product);
   switch (category) {
     case 'mood-lifestyle':
@@ -55,6 +85,12 @@ export function launchCategoryFilterLabel(category: LaunchCategoryFilter, locale
         return 'نمط حياة';
       case 'zodiac':
         return 'كبسولة الأبراج';
+      case 'walk-alone':
+        return 'امشي لوحدك';
+      case 'i-care':
+        return 'اهتم';
+      case 'i-dont-care':
+        return 'مش فارق';
       default:
         return null;
     }
@@ -68,6 +104,12 @@ export function launchCategoryFilterLabel(category: LaunchCategoryFilter, locale
       return 'Lifestyle';
     case 'zodiac':
       return 'Sign Capsule';
+    case 'walk-alone':
+      return 'Walk Alone';
+    case 'i-care':
+      return 'I Care';
+    case 'i-dont-care':
+      return "I Don't Care";
     default:
       return null;
   }

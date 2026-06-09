@@ -11,6 +11,11 @@
   assign trust_chips = product.metafields.custom.trust_chips.value
   assign features = product.metafields.custom.features.value
   assign pdp_tag_labels = product.metafields.custom.pdp_tag_labels.value
+  assign refund_policy = shop.refund_policy
+  assign has_refund_policy = false
+  if refund_policy != blank and refund_policy.url != blank
+    assign has_refund_policy = true
+  endif
 
   assign pdp_tag_labels_count = 0
   if pdp_tag_labels != blank
@@ -64,8 +69,19 @@
   assign trust_chips_count = 0
   if trust_chips != blank
     for chip in trust_chips
+      assign chip_text = chip | downcase
+      assign hide_chip = false
+      if chip_text contains 'cod' or chip_text contains 'cash on delivery'
+        assign hide_chip = true
+      elsif has_refund_policy == false
+        if chip_text contains '14-day' or chip_text contains '14 day' or chip_text contains 'exchange' or chip_text contains 'return' or chip_text contains 'refund'
+          assign hide_chip = true
+        endif
+      endif
       if chip != blank
-        assign trust_chips_count = trust_chips_count | plus: 1
+        unless hide_chip
+          assign trust_chips_count = trust_chips_count | plus: 1
+        endunless
       endif
     endfor
   endif
@@ -152,7 +168,18 @@
             <div class="product-purchase-context__chips product-purchase-context__chips--trust" role="list" aria-label="{{ 'horo.pdp.trust_label' | t }}">
               {%- if trust_chips_count > 0 -%}
                 {%- for chip in trust_chips -%}
-                  {%- if chip != blank -%}
+                  {%- liquid
+                    assign chip_text = chip | downcase
+                    assign hide_chip = false
+                    if chip_text contains 'cod' or chip_text contains 'cash on delivery'
+                      assign hide_chip = true
+                    elsif has_refund_policy == false
+                      if chip_text contains '14-day' or chip_text contains '14 day' or chip_text contains 'exchange' or chip_text contains 'return' or chip_text contains 'refund'
+                        assign hide_chip = true
+                      endif
+                    endif
+                  -%}
+                  {%- if chip != blank and hide_chip == false -%}
                     <span class="product-purchase-context__chip product-purchase-context__chip--trust" role="listitem">{{- chip | escape -}}</span>
                   {%- endif -%}
                 {%- endfor -%}
@@ -160,7 +187,9 @@
                 <span class="product-purchase-context__chip product-purchase-context__chip--trust" role="listitem">{{ 'horo.pdp.default_trust_cotton' | t }}</span>
                 <span class="product-purchase-context__chip product-purchase-context__chip--trust" role="listitem">{{ 'horo.pdp.default_trust_printed' | t }}</span>
                 <span class="product-purchase-context__chip product-purchase-context__chip--trust" role="listitem">{{ 'horo.pdp.default_trust_cod' | t }}</span>
-                <span class="product-purchase-context__chip product-purchase-context__chip--trust" role="listitem">{{ 'horo.pdp.default_trust_exchange' | t }}</span>
+                {%- if has_refund_policy -%}
+                  <span class="product-purchase-context__chip product-purchase-context__chip--trust" role="listitem">{{ 'horo.pdp.default_trust_exchange' | t }}</span>
+                {%- endif -%}
               {%- endif -%}
             </div>
           {%- endif -%}

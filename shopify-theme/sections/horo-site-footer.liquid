@@ -9,6 +9,14 @@
   assign whatsapp_url = settings.horo_whatsapp_support_url
   assign zodiac_url = routes.collections_url | append: '/zodiac'
   assign year = 'now' | date: '%Y'
+  assign privacy_policy = shop.privacy_policy
+  assign terms_policy = shop.terms_of_service
+  assign refund_policy = shop.refund_policy
+  assign shipping_policy = shop.shipping_policy
+  assign refund_policy_label = 'horo.nav.exchange' | t
+  assign shipping_policy_label = 'horo.footer.shipping_delivery' | t
+  assign privacy_policy_label = 'horo.footer.privacy' | t
+  assign terms_policy_label = 'horo.footer.terms' | t
 -%}
 
 <footer class="site-footer-mockup horo-site-footer" role="contentinfo">
@@ -69,7 +77,12 @@
         <ul class="horo-site-footer__links">
           <li><a href="/pages/size-guide">{{ 'horo.nav.size_guide' | t }}</a></li>
           <li><a href="/pages/faq-horo">{{ 'horo.footer.shipping_delivery' | t }}</a></li>
-          <li><a href="/pages/exchange-policy-horo">{{ 'horo.nav.exchange' | t }}</a></li>
+          {%- if refund_policy != blank and refund_policy.url != blank -%}
+            <li><a href="{{ refund_policy.url }}">{{ refund_policy.title | default: refund_policy_label }}</a></li>
+          {%- endif -%}
+          {%- if shipping_policy != blank and shipping_policy.url != blank -%}
+            <li><a href="{{ shipping_policy.url }}">{{ shipping_policy.title | default: shipping_policy_label }}</a></li>
+          {%- endif -%}
           <li><a href="/pages/faq-horo">{{ 'horo.nav.faq' | t }}</a></li>
         </ul>
       </div>
@@ -124,8 +137,12 @@
     <div class="horo-site-footer__bar">
       <p>© {{ year }} HORO. {% if is_ar %}{{ 'horo.footer.rights_ar' | t }}{% else %}{{ 'horo.footer.rights' | t }}{% endif %}</p>
       <div class="horo-site-footer__bar-links">
-        <a href="/pages/privacy-policy">{{ 'horo.footer.privacy' | t }}</a>
-        <a href="/pages/terms-of-service">{{ 'horo.footer.terms' | t }}</a>
+        {%- if privacy_policy != blank and privacy_policy.url != blank -%}
+          <a href="{{ privacy_policy.url }}">{{ privacy_policy.title | default: privacy_policy_label }}</a>
+        {%- endif -%}
+        {%- if terms_policy != blank and terms_policy.url != blank -%}
+          <a href="{{ terms_policy.url }}">{{ terms_policy.title | default: terms_policy_label }}</a>
+        {%- endif -%}
       </div>
       <p>{{ 'horo.footer.made_in' | t }} ♡</p>
     </div>

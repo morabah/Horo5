@@ -31,4 +31,20 @@ describe('parseHomepagePresentation', () => {
       }),
     ).toBe(true);
   });
+
+  it('reads fullBleed and feelingLayout presentation flags', () => {
+    expect(
+      parseHomepagePresentation({
+        presentation: {
+          fullBleed: true,
+          showSecondaryCta: false,
+          feelingLayout: 'pills',
+        },
+      }),
+    ).toMatchObject({
+      fullBleed: true,
+      showSecondaryCta: false,
+      feelingLayout: 'pills',
+    });
+  });
 });

@@ -165,10 +165,10 @@
   function formatPrice(product) {
     var price = product.price;
     var compare = product.compare_at_price;
-    var symbol = (window.Shopify && window.Shopify.currencyActive) ? window.Shopify.currencyActive : 'EGP';
-
     function money(cents) {
-      return (cents / 100).toLocaleString('en-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + symbol;
+      if (window.HoroFormatMoney) return window.HoroFormatMoney(cents);
+      var currency = (window.HoroShop && window.HoroShop.currency) || '';
+      return (cents / 100).toLocaleString('en-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + (currency ? ' ' + currency : '');
     }
 
     if (compare && compare > price) {

@@ -7,6 +7,17 @@
   assign dimensions_note = product.metafields.custom.dimensions_note.value
   assign shipping_returns_note = product.metafields.custom.shipping_returns_note.value
   assign fit_note = product.metafields.custom.fit_note.value | default: product.metafields.custom.fit_label.value | default: product.metafields.custom.size_fit_note.value
+  assign refund_policy = shop.refund_policy
+  assign has_refund_policy = false
+  if refund_policy != blank and refund_policy.url != blank
+    assign has_refund_policy = true
+  endif
+  assign shipping_returns_note_text = shipping_returns_note | strip_html | downcase
+  if has_refund_policy == false
+    if shipping_returns_note_text contains '14-day' or shipping_returns_note_text contains '14 day' or shipping_returns_note_text contains 'exchange' or shipping_returns_note_text contains 'return' or shipping_returns_note_text contains 'refund'
+      assign shipping_returns_note = blank
+    endif
+  endif
 
   assign has_materials = false
   if materials != blank

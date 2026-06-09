@@ -15,6 +15,7 @@
       chooseGovernorate: root.getAttribute('data-label-choose') || '',
       basisPrefix: root.getAttribute('data-label-basis-prefix') || 'Shipping estimate based on:',
       shippingChoose: root.getAttribute('data-label-shipping-choose') || '',
+      shippingCheckout: root.getAttribute('data-label-shipping-checkout') || '',
       shippingFree: root.getAttribute('data-label-shipping-free') || '',
       totalPlusShipping: root.getAttribute('data-label-total-plus') || '',
       govCairoGiza: root.getAttribute('data-label-gov-cairo') || '',
@@ -37,18 +38,18 @@
   }
 
   function formatMoney(cents, locale) {
+    if (window.HoroFormatMoney) return window.HoroFormatMoney(cents);
     var amount = Math.round(Number(cents) / 100);
     if (!Number.isFinite(amount)) amount = 0;
-    if (isArabic(locale)) {
-      return amount.toLocaleString('ar-EG') + ' ج.م';
-    }
-    return 'EGP ' + amount.toLocaleString('en-US');
+    var currency = (window.HoroShop && window.HoroShop.currency) || '';
+    return amount.toLocaleString(isArabic(locale) ? 'ar-EG' : 'en-US') + (currency ? ' ' + currency : '');
   }
 
   function shippingEgpForGov(root, gov) {
-    if (gov === 'cairo_giza') return Number(root.getAttribute('data-shipping-cairo')) || 0;
-    if (gov === 'alexandria') return Number(root.getAttribute('data-shipping-alex')) || 0;
-    if (gov === 'other') return Number(root.getAttribute('data-shipping-other')) || 0;
+    if (root.getAttribute('data-shipping-estimates-enabled') !== 'true') return null;
+    if (gov === 'cairo_giza') return Number(root.getAttribute('data-shipping-cairo')) || null;
+    if (gov === 'alexandria') return Number(root.getAttribute('data-shipping-alex')) || null;
+    if (gov === 'other') return Number(root.getAttribute('data-shipping-other')) || null;
     return null;
   }
 
@@ -114,9 +115,16 @@
     var baseCents = merchCents + giftCents;
     var unlocked = freeShippingUnlocked(root, merchCents);
 
+    if (root.getAttribute('data-shipping-estimates-enabled') !== 'true') {
+      if (basisEl) basisEl.textContent = '';
+      if (shippingEl) shippingEl.textContent = labels.shippingCheckout || labels.shippingChoose || '';
+      if (totalEl) totalEl.textContent = formatMoney(baseCents, locale);
+      return;
+    }
+
     if (!gov) {
       if (basisEl) basisEl.textContent = labels.chooseGovernorate || labels.shippingChoose || '';
-      if (shippingEl) shippingEl.textContent = labels.shippingChoose || '';
+      if (shippingEl) shippingEl.textContent = labels.shippingCheckout || labels.shippingChoose || '';
       if (totalEl) {
         totalEl.textContent =
           labels.totalPlusShipping ||

@@ -9,6 +9,8 @@
   assign feeling = product.metafields.custom.feeling.value
   assign occasions = product.metafields.custom.occasions.value
   assign images = product.images | map: 'src'
+  assign active_currency = cart.currency.iso_code | default: shop.currency
+  assign refund_policy = shop.refund_policy
 
   assign in_stock = false
   for variant in product.variants
@@ -35,10 +37,10 @@
   "url": {{ product_url | json }},
   "brand": {
     "@type": "Brand",
-    "name": "HORO Egypt"
+    "name": {{ shop.name | json }}
   },
   {%- if feeling -%}
-  "category": {{ feeling.title | default: feeling.name | append: ' graphic tee' | json }},
+  "category": {{ feeling.title | default: feeling.name | json }},
   {%- endif -%}
   {%- if occasions and occasions.size > 0 -%}
   "keywords": {{ occasions | map: 'title' | join: ', ' | json }},
@@ -61,25 +63,28 @@
     {%- if variant_count > 1 -%}
     "@type": "AggregateOffer",
     "url": {{ product_url | json }},
-    "priceCurrency": {{ cart.currency.iso_code | default: 'EGP' | json }},
+    "priceCurrency": {{ active_currency | json }},
     "lowPrice": {{ min_price | divided_by: 100.0 | json }},
     "highPrice": {{ max_price | divided_by: 100.0 | json }},
     "offerCount": {{ variant_count | json }},
     {%- else -%}
     "@type": "Offer",
     "url": {{ product_url | json }},
-    "priceCurrency": {{ cart.currency.iso_code | default: 'EGP' | json }},
+    "priceCurrency": {{ active_currency | json }},
     "price": {{ product.selected_or_first_available_variant.price | divided_by: 100.0 | json }},
     {%- endif -%}
     "availability": {{ in_stock | replace: true, 'https://schema.org/InStock' | replace: false, 'https://schema.org/OutOfStock' | json }},
     "itemCondition": "https://schema.org/NewCondition"
-  },
+  }
+  {%- if refund_policy != blank and refund_policy.url != blank -%},
   "hasMerchantReturnPolicy": {
     "@type": "MerchantReturnPolicy",
-    "applicableCountry": "EG",
-    "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-    "merchantReturnDays": 14,
-    "returnPolicyUrl": {{ request.origin | append: '/policies/exchange-policy' | json }}
+    {%- if localization.country.iso_code != blank -%}
+    "applicableCountry": {{ localization.country.iso_code | json }},
+    {%- endif -%}
+    "returnPolicyCategory": "https://schema.org/MerchantReturnUnspecified",
+    "returnPolicyUrl": {{ request.origin | append: refund_policy.url | json }}
   }
+  {%- endif -%}
 }
 </script>

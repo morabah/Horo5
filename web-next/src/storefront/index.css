@@ -1184,8 +1184,27 @@
     max-width: none;
   }
 
-  .home-feeling-pastel-grid--meaning .home-feeling-tile--editorial {
-    min-height: clamp(10.5rem, 28vw, 14rem);
+  .home-founding-grid--featured {
+    scroll-snap-type: x mandatory;
+  }
+
+  @media (max-width: 767px) {
+    .home-founding-grid--featured {
+      display: flex;
+      overflow-x: auto;
+      grid-template-columns: none;
+    }
+
+    .home-founding-grid--featured > * {
+      flex: 0 0 min(72vw, 16rem);
+      scroll-snap-align: start;
+    }
+  }
+
+  .home-feeling-pill:first-child {
+    background: var(--color-horo-root);
+    color: var(--color-horo-breath);
+    border-color: transparent;
   }
 
   .home-editorial-feature--full-bleed .home-editorial-feature__campaign .home-image-campaign__frame {
@@ -1193,6 +1212,37 @@
     margin-inline: calc(-1 * max(1rem, env(safe-area-inset-left, 0px)));
     width: calc(100% + 2 * max(1rem, env(safe-area-inset-left, 0px)));
     max-width: none;
+  }
+
+  @media (max-width: 767px) {
+    .home-editorial-feature__campaign.home-image-campaign--mobile-below .home-image-campaign__frame,
+    .home-editorial-feature__campaign.home-image-campaign--mobile-below .home-image-campaign__media {
+      min-height: min(30vh, 14rem) !important;
+    }
+
+    .home-editorial-feature__look-rail {
+      display: none;
+    }
+  }
+
+  .home-hero--full-bleed .home-hero__campaign--full-bleed .home-image-campaign__frame {
+    border-radius: 0;
+    width: 100%;
+    max-width: none;
+  }
+
+  .home-hero--full-bleed .home-hero__campaign--full-bleed .home-image-campaign__media img,
+  .home-hero--full-bleed .home-hero__campaign--full-bleed .home-image-campaign__media picture {
+    border-radius: 0;
+  }
+
+  .horo-chrome-stack {
+    --horo-nav-height: 3.6rem;
+    --horo-chrome-top: calc(var(--horo-announcement-height, 0px) + var(--horo-nav-height));
+  }
+
+  .horo-announcement-bar {
+    min-height: var(--horo-announcement-height, 0px);
   }
 
   @media (min-width: 640px) {
@@ -1532,7 +1582,7 @@
 
   @media (min-width: 768px) {
     .home-founding-grid .home-founding-card--view-all {
-      display: none;
+      display: none !important;
     }
   }
 

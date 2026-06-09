@@ -76,9 +76,9 @@
         "badge_3": {
           "type": "trust_badge",
           "settings": {
-            "show_badge": true,
+            "show_badge": false,
             "icon": "exchange",
-            "label": "14-day exchange — see policy",
+            "label": "",
             "subtext": ""
           }
         }

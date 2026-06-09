@@ -56,7 +56,8 @@
   <div class="color-{{ section.settings.color_scheme }} gradient">
     <div class="page-width section-{{ section.id }}-padding">
       <div class="cart-savings-summary" style="opacity:0.6;">
-        <p class="cart-savings-summary__label">{{ 'horo.incentives.you_saved' | t: amount: '0 EGP' }}</p>
+        {%- assign zero_money = 0 | money -%}
+        <p class="cart-savings-summary__label">{{ 'horo.incentives.you_saved' | t: amount: zero_money }}</p>
         <p class="cart-savings-summary__amount">{{ 0 | money }}</p>
       </div>
       <p class="cart-savings-summary__note">This block appears only when cart savings are greater than zero.</p>

@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation';
 
 import { BRAND_COPY } from '../data/brand';
 import { HORO_SUPPORT_CHANNELS, isConfiguredExternalUrl } from '../data/domain-config';
+import { plpShortcutsForSurface, shortcutLabel } from '../data/plpCategoryShortcuts';
 import { useUiLocale, useDictionary } from '../i18n/ui-locale';
 import { NAV_ROUTE } from '../lib/navLinks';
 import { useRenderTime } from '../runtime/render-time';
@@ -71,16 +72,13 @@ export function Footer() {
                   {copy.shell.shopByFeeling}
                 </Link>
               </li>
-              <li>
-                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.gifts.path}>
-                  {locale === 'ar' ? 'الهدايا' : 'Gifts'}
-                </Link>
-              </li>
-              <li>
-                <Link className="transition-colors hover:text-white" href={NAV_ROUTE.zodiac.path}>
-                  {locale === 'ar' ? 'كبسولة الأبراج' : 'Zodiac'}
-                </Link>
-              </li>
+              {plpShortcutsForSurface('footer').map((shortcut) => (
+                <li key={shortcut.key}>
+                  <Link className="transition-colors hover:text-white" href={shortcut.href}>
+                    {shortcutLabel(shortcut, locale === 'ar' ? 'ar' : 'en')}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

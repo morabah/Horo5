@@ -5,14 +5,40 @@
   Usage: {% render 'horo-whatsapp-float', whatsapp_number: '+201234567890', message: 'Hi HORO team!', label: 'Chat' %}
 {%- endcomment -%}
 
-{%- assign whatsapp_number = whatsapp_number | default: shop.phone | default: '' -%}
-{%- assign message = message | default: 'Hi HORO team, I have a question about your products.' -%}
-{%- assign label = label | default: 'Chat on WhatsApp' -%}
+{%- liquid
+  assign whatsapp_setting_url = settings.horo_whatsapp_support_url | strip
+  assign whatsapp_number = whatsapp_number | default: shop.phone | default: ''
+  assign message = message | default: 'Hi HORO team, I have a question about your products.'
+  assign label = label | default: 'Chat on WhatsApp'
+  assign whatsapp_href = ''
 
-{%- if whatsapp_number != blank -%}
-  {%- assign clean_number = whatsapp_number | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | remove: '+' -%}
+  if whatsapp_setting_url != blank
+    if whatsapp_setting_url contains 'wa.me' or whatsapp_setting_url contains 'whatsapp.com'
+      assign whatsapp_href = whatsapp_setting_url
+    else
+      assign clean_number = whatsapp_setting_url | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | remove: '+'
+      assign whatsapp_href = 'https://wa.me/' | append: clean_number
+    endif
+  elsif whatsapp_number != blank
+    assign clean_number = whatsapp_number | remove: ' ' | remove: '-' | remove: '(' | remove: ')' | remove: '+'
+    assign whatsapp_href = 'https://wa.me/' | append: clean_number
+  endif
+
+  if whatsapp_href != blank and message != blank
+    unless whatsapp_href contains 'text='
+      assign message_encoded = message | url_encode
+      if whatsapp_href contains '?'
+        assign whatsapp_href = whatsapp_href | append: '&text=' | append: message_encoded
+      else
+        assign whatsapp_href = whatsapp_href | append: '?text=' | append: message_encoded
+      endif
+    endunless
+  endif
+-%}
+
+{%- if whatsapp_href != blank -%}
   <a
-    href="https://wa.me/{{ clean_number }}?text={{ message | url_encode }}"
+    href="{{ whatsapp_href }}"
     class="horo-whatsapp-float"
     target="_blank"
     rel="noopener noreferrer"

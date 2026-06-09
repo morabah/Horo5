@@ -12,6 +12,7 @@ import { LaunchCountdownBanner } from "@/storefront/components/LaunchCountdownBa
 import { TimedOfferBanner } from "@/storefront/components/TimedOfferBanner";
 import { ConsentBanner } from "@/storefront/components/ConsentBanner";
 import { SkipLink } from "@/storefront/components/SkipLink";
+import { AnnouncementBar } from "@/storefront/components/AnnouncementBar";
 
 /** App shell for main storefront pages: skip link, nav, footer, analytics wrapper. */
 export function StorefrontChrome({
@@ -19,11 +20,13 @@ export function StorefrontChrome({
   navigation = null,
   launchAt = null,
   timedOffer = null,
+  announcementBar = null,
 }: {
   children: ReactNode;
   navigation?: StorefrontSettingsPayload["navigation"];
   launchAt?: string | null;
   timedOffer?: StorefrontIncentivesPayload["timedOffer"];
+  announcementBar?: StorefrontSettingsPayload["announcementBar"];
 }) {
   const pathname = usePathname() ?? "/";
   const isHome = pathname === "/";
@@ -34,9 +37,12 @@ export function StorefrontChrome({
       <FunnelNavigationTracker />
       {launchAt ? <LaunchCountdownBanner launchAt={launchAt} /> : null}
       {timedOffer ? <TimedOfferBanner offer={timedOffer} /> : null}
-      <Suspense fallback={null}>
-        <Nav navigation={navigation} overlayOnHero={isHome} />
-      </Suspense>
+      <div className="horo-chrome-stack fixed top-0 z-100 w-full">
+        <AnnouncementBar config={announcementBar} isHome={isHome} />
+        <Suspense fallback={null}>
+          <Nav navigation={navigation} overlayOnHero={isHome} />
+        </Suspense>
+      </div>
       <main id="main-content" className={isHome ? "" : "pt-32 md:pt-24"}>
         <AppErrorBoundary key={pathname}>{children}</AppErrorBoundary>
       </main>

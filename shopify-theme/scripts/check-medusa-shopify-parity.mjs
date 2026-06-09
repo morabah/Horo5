@@ -81,13 +81,14 @@ const failures = [];
 const indexTypes = sectionTypes(readTemplate('templates/index.json'));
 assertTypesEqual('Home template', indexTypes, [
   'home-hero',
-  'home-founding-drop',
+  'home-primary-routes',
   'horo-trust-ribbon',
+  'home-founding-drop',
   'home-feeling-grid',
   'home-editorial-feature',
-  'home-gift-block',
   'home-why-horo',
-  'home-service-trust',
+  'horo-home-seen-on-you',
+  'horo-recently-viewed',
 ]);
 
 const productTypes = sectionTypes(readTemplate('templates/product.json'));

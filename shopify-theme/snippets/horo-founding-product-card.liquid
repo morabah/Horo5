@@ -48,9 +48,7 @@
     assign skip_card = false
   endif
 
-  assign price_display = price_cents
-  assign price_amount = price_display | money_without_currency | strip | replace: '.00', '' | replace: ',00', ''
-  assign price_egp = price_amount | append: ' EGP'
+  assign price_display_text = price_cents | money
 
   assign launch_group = card_product.metafields.custom.launch_group.value | default: ''
   assign launch_audience = card_product.metafields.custom.launch_audience.value | default: ''
@@ -165,7 +163,7 @@
     >
       {{ card_product.title | escape }}
     </a>
-    <p class="home-founding-card__price">{{ price_egp }}</p>
+    <p class="home-founding-card__price">{{ price_display_text }}</p>
     <div class="home-founding-card__actions">
       <a
         href="{{ card_product.url }}"

@@ -107,11 +107,11 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
         ) : null}
 
         {showTextHeader ? (
-          <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+          <div className="mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="home-section-eyebrow">{sectionEyebrow ?? copy.home.startHereEyebrow}</p>
               <h2 id="home-start-here-title" className="home-section-title mt-2">
-                {sectionTitle ?? copy.home.startHereTitle}
+                {sectionTitle ?? copy.home.featuredPiecesTitle}
               </h2>
               {showBody ? (
                 <p className="font-body mt-2 max-w-2xl text-sm leading-relaxed text-warm-charcoal md:text-base">
@@ -123,7 +123,7 @@ export function HomeStartHere({ products, section }: { products?: Product[]; sec
               href={shopHref}
               className="home-section-link font-body inline-flex min-h-11 w-fit items-center justify-center text-sm font-semibold text-horo-pulse transition-colors hover:text-horo-root focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-horo-pulse"
             >
-              {sectionCta ?? copy.home.startHereViewAll}
+              {sectionCta ?? copy.home.featuredPiecesViewAll}
               <span aria-hidden className="ms-1">
                 →
               </span>

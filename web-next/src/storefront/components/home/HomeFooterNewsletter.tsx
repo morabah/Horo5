@@ -11,6 +11,7 @@ export function HomeFooterNewsletter() {
   const isArabic = locale === 'ar';
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'done' | 'error'>('idle');
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -23,9 +24,18 @@ export function HomeFooterNewsletter() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email: trimmed, locale, source: 'footer_newsletter' }),
       });
-      if (res.ok) {
+      const data = (await res.json()) as {
+        ok?: boolean;
+        duplicate?: boolean;
+        referral_code?: string;
+      };
+      if (res.ok && data.ok) {
         setStatus('done');
-        capturePostHogEvent('waitlist_signed_up', { source: 'footer_newsletter' });
+        if (data.referral_code) setReferralCode(data.referral_code);
+        capturePostHogEvent('waitlist_signed_up', {
+          source: 'footer_newsletter',
+          duplicate: data.duplicate === true,
+        });
         return;
       }
       setStatus('error');
@@ -65,9 +75,19 @@ export function HomeFooterNewsletter() {
         </button>
       </form>
       {status === 'done' ? (
-        <p className="mt-2 font-body text-xs text-horo-breath/90" role="status">
-          {isArabic ? 'تم — شكراً.' : "You're in — thank you."}
-        </p>
+        <div className="mt-2" role="status">
+          <p className="font-body text-xs text-horo-breath/90">
+            {isArabic
+              ? 'تم — أول ما ينزل إصدار جديد هنبعتلك.'
+              : "You're in — we'll email you before the next drop."}
+          </p>
+          {referralCode ? (
+            <p className="mt-2 font-body text-xs text-horo-breath/80">
+              {isArabic ? 'شارك رابطك:' : 'Share your link:'}{' '}
+              <span className="break-all">{referralCode}</span>
+            </p>
+          ) : null}
+        </div>
       ) : null}
       {status === 'error' ? (
         <p className="mt-2 font-body text-xs text-horo-breath" role="alert">

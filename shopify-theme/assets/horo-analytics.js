@@ -53,6 +53,10 @@
     }
   }
 
+  function defaultCurrency() {
+    return (window.HoroShop && window.HoroShop.currency) || '';
+  }
+
   function buildItem(productData, variant, qty) {
     if (!productData) return null;
     return {
@@ -62,7 +66,7 @@
       item_variant: (variant && variant.title) || productData.variant_title || 'Default',
       price: (variant && variant.price ? variant.price / 100.0 : productData.price) || 0,
       quantity: qty || 1,
-      currency: productData.currency || 'EGP',
+      currency: productData.currency || defaultCurrency(),
       item_category: productData.category || productData.feeling || '',
       item_category2: productData.occasion || '',
     };
@@ -162,7 +166,7 @@
         item_variant: it.variant_title || '',
         price: (it.final_line_price || 0) / 100.0,
         quantity: it.quantity || 1,
-        currency: snap.currency || 'EGP',
+        currency: snap.currency || defaultCurrency(),
         item_brand: it.vendor || 'HORO Egypt',
       };
     });
@@ -185,7 +189,7 @@
     var pd = window.HoroCurrentProductData;
     if (!pd || !size) return;
     var payload = {
-      currency: pd.currency || 'EGP',
+      currency: pd.currency || defaultCurrency(),
       value: pd.price || 0,
       source: source || 'pdp',
       product_slug: pd.handle,
@@ -206,7 +210,7 @@
         item_variant: it.variant_title || '',
         price: (it.final_line_price || 0) / 100.0,
         quantity: it.quantity || 1,
-        currency: snap.currency || 'EGP',
+        currency: snap.currency || defaultCurrency(),
         item_brand: it.vendor || 'HORO Egypt',
       };
     });
@@ -227,7 +231,7 @@
         item_variant: it.variant_title || '',
         price: (it.final_line_price || 0) / 100.0,
         quantity: it.quantity || 1,
-        currency: snap.currency || 'EGP',
+        currency: snap.currency || defaultCurrency(),
         item_brand: it.vendor || 'HORO Egypt',
       };
     });
@@ -259,19 +263,19 @@
         item_variant: it.variant_title || '',
         price: (it.final_line_price || 0) / 100.0,
         quantity: it.quantity || 1,
-        currency: snap.currency || 'EGP',
+        currency: snap.currency || defaultCurrency(),
         item_brand: it.vendor || 'HORO Egypt',
       };
     });
     if (items.length === 0) return;
     var lineCount = items.length;
     var itemCount = items.reduce(function (s, it) { return s + it.quantity; }, 0);
-    var payload = { transaction_id: transactionId, value: value, currency: currency || 'EGP', items: items };
+    var payload = { transaction_id: transactionId, value: value, currency: currency || defaultCurrency(), items: items };
     pushDataLayer('purchase', payload);
     emitGA4('purchase', payload);
     emitPixel('Purchase', {
       value: value,
-      currency: currency || 'EGP',
+      currency: currency || defaultCurrency(),
       content_ids: items.map(function (it) { return it.item_id; }),
     });
     emitPostHog('commerce_order_completed', {
@@ -394,7 +398,7 @@
       trackPurchase(
         String(checkout.order_id),
         (checkout.subtotal_price || 0) / 100.0,
-        checkout.currency || 'EGP'
+        checkout.currency || defaultCurrency()
       );
     }
 
@@ -433,4 +437,3 @@
     trackSearchZeroResults: trackSearchZeroResults,
   };
 })();
-

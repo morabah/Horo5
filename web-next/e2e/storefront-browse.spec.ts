@@ -28,4 +28,13 @@ test.describe("storefront browse (HTTP 200 + shell)", () => {
       timeout: 90_000,
     })
   })
+
+  test("shop all shows sticky category shortcut pills", async ({ page }) => {
+    const res = await page.goto("/products?category=walk-alone", { waitUntil: "domcontentloaded" })
+    expect(res?.ok()).toBeTruthy()
+    await expectMainShell(page)
+    const pills = page.locator('nav[aria-label="Category shortcuts"] a')
+    await expect(pills.first()).toBeVisible({ timeout: 15_000 })
+    await expect(pills.filter({ hasText: /Walk Alone|امشي لوحدك/i })).toHaveAttribute("aria-current", "page")
+  })
 })
